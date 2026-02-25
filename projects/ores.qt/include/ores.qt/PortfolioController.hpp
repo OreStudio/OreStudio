@@ -32,6 +32,7 @@
 namespace ores::qt {
 
 class PortfolioMdiWindow;
+class ChangeReasonCache;
 class DetachableMdiSubWindow;
 
 /**
@@ -59,12 +60,18 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ImageCache* imageCache,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
+
+    void openAdd();
+    void openAddWithParent(boost::uuids::uuid parentPortfolioId);
+    void openEdit(const refdata::domain::portfolio& portfolio);
+    void openHistory(const refdata::domain::portfolio& portfolio);
 
 signals:
     void statusMessage(const QString& message);
@@ -82,11 +89,12 @@ private slots:
                        int versionNumber);
 
 private:
-    void showAddWindow();
+    void showAddWindow(boost::uuids::uuid parentPortfolioId = {});
     void showDetailWindow(const refdata::domain::portfolio& portfolio);
     void showHistoryWindow(const refdata::domain::portfolio& portfolio);
 
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_;
     PortfolioMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

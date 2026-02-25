@@ -20,6 +20,7 @@
 #include "ores.trading/service/trade_service.hpp"
 
 #include <stdexcept>
+#include <boost/uuid/uuid.hpp>
 
 namespace ores::trading::service {
 
@@ -40,9 +41,25 @@ trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
     return repo_.read_latest(ctx_, offset, limit);
 }
 
+std::vector<domain::trade>
+trade_service::list_trades_filtered(std::uint32_t offset, std::uint32_t limit,
+    std::optional<boost::uuids::uuid> book_id,
+    std::optional<boost::uuids::uuid> portfolio_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing trades (filtered) offset=" << offset
+                               << ", limit=" << limit;
+    return repo_.read_latest_filtered(ctx_, offset, limit, book_id, portfolio_id);
+}
+
 std::uint32_t trade_service::count_trades() {
     BOOST_LOG_SEV(lg(), debug) << "Counting trades";
     return repo_.count_latest(ctx_);
+}
+
+std::uint32_t trade_service::count_trades_filtered(
+    std::optional<boost::uuids::uuid> book_id,
+    std::optional<boost::uuids::uuid> portfolio_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Counting trades (filtered)";
+    return repo_.count_latest_filtered(ctx_, book_id, portfolio_id);
 }
 
 std::optional<domain::trade>

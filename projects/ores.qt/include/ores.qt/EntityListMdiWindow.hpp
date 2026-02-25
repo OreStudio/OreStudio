@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QIcon>
 #include <QCloseEvent>
+#include <QSplitter>
 #include <QTableView>
 #include "ores.logging/make_logger.hpp"
 
@@ -130,7 +131,8 @@ protected:
                                   std::string_view settingsGroup,
                                   const QVector<int>& defaultHiddenColumns = {},
                                   const QSize& defaultSize = {900, 400},
-                                  int settingsVersion = 1);
+                                  int settingsVersion = 1,
+                                  QSplitter* splitter = nullptr);
 
     /**
      * @brief Initialize the stale indicator support.
@@ -182,6 +184,7 @@ private:
     QVector<int> defaultHiddenColumns_;
     QSize defaultSize_{900, 400};
     int settingsVersion_{1};
+    QSplitter* settingsSplitter_{nullptr};
 
 protected:
     /**

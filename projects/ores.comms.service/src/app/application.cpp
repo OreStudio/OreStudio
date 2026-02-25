@@ -36,6 +36,8 @@
 #include "ores.refdata/eventing/counterparty_changed_event.hpp"
 #include "ores.refdata/eventing/counterparty_identifier_changed_event.hpp"
 #include "ores.refdata/eventing/counterparty_contact_information_changed_event.hpp"
+#include "ores.refdata/eventing/book_changed_event.hpp"
+#include "ores.refdata/eventing/portfolio_changed_event.hpp"
 #include "ores.iam/messaging/registrar.hpp"
 #include "ores.dq/messaging/registrar.hpp"
 #include "ores.synthetic/messaging/registrar.hpp"
@@ -293,6 +295,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         trading::eventing::trade_changed_event>(
         event_source, "ores.trading.trade", "ores_trading_trades",
         *channel_registry, "Trade data modified");
+    eventing::service::registrar::register_mapping<
+        refdata::eventing::book_changed_event>(
+        event_source, "ores.refdata.book", "ores_books",
+        *channel_registry, "Book data modified");
+    eventing::service::registrar::register_mapping<
+        refdata::eventing::portfolio_changed_event>(
+        event_source, "ores.refdata.portfolio", "ores_portfolios",
+        *channel_registry, "Portfolio data modified");
 
     // Start the event source to begin listening for database notifications
     event_source.start();
@@ -524,6 +534,22 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 trading::eventing::trade_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.trade_ids, e.tenant_id);
+        });
+
+    auto book_sub = event_bus.subscribe<refdata::eventing::book_changed_event>(
+        [&subscription_mgr](const refdata::eventing::book_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                refdata::eventing::book_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids, e.tenant_id);
+        });
+
+    auto portfolio_sub = event_bus.subscribe<refdata::eventing::portfolio_changed_event>(
+        [&subscription_mgr](const refdata::eventing::portfolio_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                refdata::eventing::portfolio_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids, e.tenant_id);
         });
 
     // Create server with subscription manager

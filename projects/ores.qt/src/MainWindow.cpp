@@ -83,6 +83,7 @@
 #include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
+#include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -224,6 +225,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBusinessCentres->setIcon(IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
+    ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
     ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
@@ -643,6 +645,43 @@ MainWindow::MainWindow(QWidget* parent) :
             bookStatusController_->showListWindow();
     });
 
+    // Connect Portfolio/Book Tree action
+    connect(ui_->ActionPortfolioExplorer, &QAction::triggered, this, [this]() {
+        if (portfolioExplorerSubWindow_) {
+            mdiArea_->setActiveSubWindow(portfolioExplorerSubWindow_);
+            return;
+        }
+
+        auto* window = new PortfolioExplorerMdiWindow(
+            clientManager_,
+            bookController_.get(),
+            portfolioController_.get(),
+            tradeController_.get(),
+            QString::fromStdString(username_),
+            this);
+
+        connect(window, &PortfolioExplorerMdiWindow::statusChanged,
+                this, [this](const QString& msg) {
+                    ui_->statusbar->showMessage(msg, 5000);
+                });
+
+        auto* subWindow = new DetachableMdiSubWindow(this);
+        subWindow->setWidget(window);
+        subWindow->setWindowTitle(tr("Portfolio Explorer"));
+        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+            Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+
+        portfolioExplorerSubWindow_ = subWindow;
+        connect(subWindow, &QObject::destroyed, this, [this]() {
+            portfolioExplorerSubWindow_ = nullptr;
+        });
+
+        mdiArea_->addSubWindow(subWindow);
+        subWindow->resize(window->sizeHint());
+        subWindow->show();
+    });
+
     // Connect Trades action to controller
     connect(ui_->ActionTrades, &QAction::triggered, this, [this]() {
         if (tradeController_)
@@ -1046,6 +1085,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionMonetaryNatures->setEnabled(isLoggedIn);
     ui_->ActionCurrencyMarketTiers->setEnabled(isLoggedIn);
     ui_->ActionTrades->setEnabled(isLoggedIn);
+    ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1566,7 +1606,8 @@ void MainWindow::createControllers() {
 
     // Create portfolio controller
     portfolioController_ = std::make_unique<PortfolioController>(
-        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(portfolioController_.get(), &PortfolioController::statusMessage,
             this, [this](const QString& message) {
@@ -1583,7 +1624,8 @@ void MainWindow::createControllers() {
 
     // Create book controller
     bookController_ = std::make_unique<BookController>(
-        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(bookController_.get(), &BookController::statusMessage,
             this, [this](const QString& message) {

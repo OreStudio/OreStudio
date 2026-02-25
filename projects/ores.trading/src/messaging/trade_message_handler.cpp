@@ -730,8 +730,20 @@ trade_message_handler::handle_get_trades_request(
     }
 
     const auto& request = *request_result;
-    auto trades = svc.list_trades(request.offset, request.limit);
-    const auto total = svc.count_trades();
+
+    std::vector<domain::trade> trades;
+    std::uint32_t total;
+    if (request.book_id.has_value() || request.portfolio_id.has_value()) {
+        trades = svc.list_trades_filtered(
+            request.offset, request.limit,
+            request.book_id, request.portfolio_id);
+        total = svc.count_trades_filtered(
+            request.book_id, request.portfolio_id);
+    } else {
+        trades = svc.list_trades(request.offset, request.limit);
+        total = svc.count_trades();
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Retrieved " << trades.size()
                               << " trades, total available: " << total;
 

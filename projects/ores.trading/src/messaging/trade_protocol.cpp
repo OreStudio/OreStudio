@@ -179,6 +179,10 @@ std::vector<std::byte> get_trades_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_uint32(buffer, offset);
     writer::write_uint32(buffer, limit);
+    writer::write_bool(buffer, book_id.has_value());
+    if (book_id) writer::write_uuid(buffer, *book_id);
+    writer::write_bool(buffer, portfolio_id.has_value());
+    if (portfolio_id) writer::write_uuid(buffer, *portfolio_id);
     return buffer;
 }
 
@@ -193,6 +197,26 @@ get_trades_request::deserialize(std::span<const std::byte> data) {
     auto limit_result = reader::read_uint32(data);
     if (!limit_result) return std::unexpected(limit_result.error());
     request.limit = *limit_result;
+
+    if (!data.empty()) {
+        auto has_book = reader::read_bool(data);
+        if (!has_book) return std::unexpected(has_book.error());
+        if (*has_book) {
+            auto bid = reader::read_uuid(data);
+            if (!bid) return std::unexpected(bid.error());
+            request.book_id = *bid;
+        }
+
+        if (!data.empty()) {
+            auto has_port = reader::read_bool(data);
+            if (!has_port) return std::unexpected(has_port.error());
+            if (*has_port) {
+                auto pid = reader::read_uuid(data);
+                if (!pid) return std::unexpected(pid.error());
+                request.portfolio_id = *pid;
+            }
+        }
+    }
 
     return request;
 }

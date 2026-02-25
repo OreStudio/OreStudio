@@ -67,6 +67,21 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Investigate dashql for ideas
+
+#+begin_quote
+A Dash-based wrapper for QuantLib
+#+end_quote
+
+Links:
+
+- Options: https://options.plotly.app
+- Rates: https://rates.plotly.app
+- Source Code: https://github.com/mkipnis/DashQL
+- Dev guide (Options): https://mkipnis.substack.com/p/plotly-dash-and-quantlib-vanilla
+
+
+
 *** Associating annotations with entities                              :code:
 
 It should be possible to associate annotations with any entity in the system.

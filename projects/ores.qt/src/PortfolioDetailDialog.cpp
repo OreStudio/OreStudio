@@ -31,12 +31,16 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+namespace reason = dq::domain::change_reason_constants;
 
 PortfolioDetailDialog::PortfolioDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
@@ -123,6 +127,7 @@ void PortfolioDetailDialog::populateCurrencyCombo() {
         if (!self) return;
 
         self->ui_->aggregationCcyCombo->clear();
+        self->ui_->aggregationCcyCombo->addItem(QString());  // "(select)" sentinel
         for (const auto& code : codes) {
             self->ui_->aggregationCcyCombo->addItem(
                 QString::fromStdString(code));
@@ -183,6 +188,10 @@ void PortfolioDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
+void PortfolioDetailDialog::setChangeReasonCache(ChangeReasonCache* cache) {
+    changeReasonCache_ = cache;
+}
+
 void PortfolioDetailDialog::setPortfolio(
     const refdata::domain::portfolio& portfolio) {
     portfolio_ = portfolio;
@@ -197,7 +206,6 @@ void PortfolioDetailDialog::setCreateMode(bool createMode) {
         if (clientManager_)
             portfolio_.party_id = clientManager_->currentPartyId();
     }
-    ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
 
     setProvenanceEnabled(!createMode);
@@ -251,9 +259,7 @@ void PortfolioDetailDialog::updateUiFromPortfolio() {
 }
 
 void PortfolioDetailDialog::updatePortfolioFromUi() {
-    if (createMode_) {
-        portfolio_.name = ui_->nameEdit->text().trimmed().toStdString();
-    }
+    portfolio_.name = ui_->nameEdit->text().trimmed().toStdString();
     portfolio_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     portfolio_.aggregation_ccy = ui_->aggregationCcyCombo->currentText().trimmed().toStdString();
     portfolio_.purpose_type = ui_->purposeTypeCombo->currentText().trimmed().toStdString();
@@ -294,8 +300,9 @@ void PortfolioDetailDialog::updateSaveButtonState() {
 
 bool PortfolioDetailDialog::validateInput() {
     const QString name_val = ui_->nameEdit->text().trimmed();
+    const QString ccy_val = ui_->aggregationCcyCombo->currentText().trimmed();
 
-    return !name_val.isEmpty();
+    return !name_val.isEmpty() && !ccy_val.isEmpty();
 }
 
 void PortfolioDetailDialog::onSaveClicked() {
@@ -307,8 +314,27 @@ void PortfolioDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+            "Please fill in all required fields (name and currency are required).");
         return;
+    }
+
+    if (!createMode_) {
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            emit errorMessage("Change reasons not loaded. Please try again.");
+            return;
+        }
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (reasons.empty()) {
+            emit errorMessage("No change reasons available. Please contact administrator.");
+            return;
+        }
+        ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Amend,
+                               hasChanges_, this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+        portfolio_.change_reason_code = dlg.selectedReasonCode();
+        portfolio_.change_commentary  = dlg.commentary();
     }
 
     updatePortfolioFromUi();
@@ -397,6 +423,20 @@ void PortfolioDetailDialog::onDeleteClicked() {
 
     if (reply != QMessageBox::Yes) {
         return;
+    }
+
+    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (!reasons.empty()) {
+            ChangeReasonDialog dlg(reasons,
+                ChangeReasonDialog::OperationType::Delete, true, this);
+            if (dlg.exec() != QDialog::Accepted)
+                return;
+            BOOST_LOG_SEV(lg(), info) << "Delete reason: "
+                << dlg.selectedReasonCode() << " — "
+                << dlg.commentary();
+        }
     }
 
     BOOST_LOG_SEV(lg(), info) << "Deleting portfolio: " << portfolio_.name;

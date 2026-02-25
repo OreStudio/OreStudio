@@ -23,6 +23,7 @@
 #include <span>
 #include <iosfwd>
 #include <vector>
+#include <optional>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
@@ -37,11 +38,21 @@ namespace ores::trading::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all trades.
+ * @brief Request to retrieve all trades with optional filtering.
+ *
+ * Wire format:
+ * - 4 bytes: offset (uint32)
+ * - 4 bytes: limit  (uint32)
+ * - 1 byte : has_book_id (bool)
+ * - 16 bytes: book_id UUID   [only if has_book_id]
+ * - 1 byte : has_portfolio_id (bool)
+ * - 16 bytes: portfolio_id UUID [only if has_portfolio_id]
  */
 struct get_trades_request final {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
+    std::optional<boost::uuids::uuid> book_id;       ///< filter by single book
+    std::optional<boost::uuids::uuid> portfolio_id;  ///< filter by portfolio subtree
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_trades_request,

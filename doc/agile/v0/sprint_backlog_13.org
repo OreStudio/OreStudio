@@ -17,33 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-24 Tue 00:00], for Tuesday, February 24, 2026.
-|      | <75>         |        |     |
-| Tags | Headline     | Time   |   % |
-|------+--------------+--------+-----|
-|      | *Total time* | *0:00* | 0.0 |
+#+CAPTION: Clock summary at [2026-02-25 Wed 15:07], for Wednesday, February 25, 2026.
+|      | <75>                                |        |      |      |       |
+| Tags | Headline                            | Time   |      |      |     % |
+|------+-------------------------------------+--------+------+------+-------|
+|      | *Total time*                        | *4:21* |      |      | 100.0 |
+|------+-------------------------------------+--------+------+------+-------|
+|      | Stories                             | 4:21   |      |      | 100.0 |
+|      | Active                              |        | 4:21 |      | 100.0 |
+| code | Remove toolbars from detail dialogs |        |      | 4:21 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-24 Tue 00:01]
+#+CAPTION: Clock summary at [2026-02-25 Wed 15:07]
 |       | <75>                                                  |         |       |       |       |
 | Tags  | Headline                                              | Time    |       |       |     % |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                          | *26:02* |       |       | 100.0 |
+|       | *Total time*                                          | *44:27* |       |       | 100.0 |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                               | 26:02   |       |       | 100.0 |
-|       | Active                                                |         | 26:02 |       | 100.0 |
-| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.7 |
-| infra | Generate release notes for previous sprint            |         |       |  1:16 |   4.9 |
-| code  | Merge FSM into DQ                                     |         |       |  0:34 |   2.2 |
-| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   9.3 |
-| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |  12.6 |
-| code  | Add plotting of session data                          |         |       |  1:19 |   5.1 |
-| code  | Add account-party management and login support        |         |       | 13:43 |  52.7 |
-| code  | Add rounding type entity                              |         |       |  1:40 |   6.4 |
-| code  | Polish business centre UI and data quality            |         |       |  0:58 |   3.7 |
-| code  | Add portfolio book tree widget                        |         |       |  0:23 |   1.5 |
+|       | Stories                                               | 44:27   |       |       | 100.0 |
+|       | Active                                                |         | 44:27 |       | 100.0 |
+| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.0 |
+| infra | Generate release notes for previous sprint            |         |       |  1:16 |   2.8 |
+| code  | Merge FSM into DQ                                     |         |       |  0:34 |   1.3 |
+| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   5.5 |
+| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |   7.4 |
+| code  | Add plotting of session data                          |         |       |  1:19 |   3.0 |
+| code  | Add account-party management and login support        |         |       | 13:43 |  30.9 |
+| code  | Add rounding type entity                              |         |       |  1:40 |   3.7 |
+| code  | Polish business centre UI and data quality            |         |       |  0:58 |   2.2 |
+| code  | Enhance currency taxonomy                             |         |       |  2:06 |   4.7 |
+| code  | Books, portfolios and trades are not party specific   |         |       |  2:59 |   6.7 |
+| code  | Minor improvements to connection browser              |         |       |  1:17 |   2.9 |
+| code  | Rename currency asset classes                         |         |       |  1:05 |   2.4 |
+| code  | Add portfolio explorer                                |         |       |  4:38 |  10.4 |
+| code  | Add party level currency and country restrictions     |         |       |  0:46 |   1.7 |
+| code  | Remove toolbars from detail dialogs                   |         |       |  5:57 |  13.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -490,7 +500,7 @@ Highlights:
   At' column width was fixed, and the country selection combo box in the detail
   dialog was made non-editable, while also displaying the derived city name.
 #+end_quote
-*** STARTED Enhance currency taxonomy                                  :code:
+*** COMPLETED Enhance currency taxonomy                                :code:
     :LOGBOOK:
     CLOCK: [2026-02-24 Tue 00:35]--[2026-02-24 Tue 02:08] =>  1:33
     CLOCK: [2026-02-24 Tue 00:01]--[2026-02-24 Tue 00:34] =>  0:33
@@ -523,6 +533,106 @@ Highlights:
   test files, wire-format comments, and application code that previously
   referenced the now-removed 'currency_type' field, ensuring full integration of
   the new taxonomy.
+
+*** COMPLETED Books, portfolios and trades are not party specific      :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 09:01]--[2026-02-24 Tue 12:00] =>  2:59
+    :END:
+
+At present I can see these entities from any party in a tenant.
+
+#+begin_quote
+This pull request introduces party isolation for key entities like books,
+portfolios, and trades, enhancing data security and access control. It also
+improves the user interface by adding party context and parent portfolio
+selection features, while centralizing flag icon handling for better code
+maintainability and consistency.
+
+Highlights:
+
+- Party Isolation: Enforced party isolation for books, portfolios, and trades
+  using strict RLS policies, ensuring data visibility is limited to the
+  appropriate party context.
+- Session Management: Enhanced session data to include party context, enabling
+  party-level RLS enforcement via update_session_party() and
+  make_request_context().
+- UI Updates: Improved UI by displaying party name in the portfolio detail
+  dialog, pre-populating party_id in create mode, and adding parent portfolio
+  selectors to both portfolio and book detail dialogs.
+- Flag Icon Handling: Centralized flag icon setup in FlagIconHelper, replacing
+  scattered per-dialog lambdas with a more maintainable and consistent approach.
+#+end_quote
+
+*** COMPLETED Minor improvements to connection browser                 :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 15:20]--[2026-02-24 Tue 16:37] =>  1:17
+    :END:
+
+Quality of life improvements to connection browser so that we don't have to
+spend so much time entering data manually.
+
+#+begin_quote
+This pull request introduces a significant refactoring of how server
+environments and connections are managed, separating host/port configurations
+from credential storage. It enhances the user interface with a unified
+connection browser, new duplication capabilities, and an improved login
+experience. The underlying database schema has been updated to support these
+changes, including an automatic migration process for existing data.
+
+Highlights:
+
+- Environment and Connection Separation: Refactored the server_environment type
+  into two distinct domain types: environment (host + port, no credentials) and
+  connection (credentials, optionally linked to an environment). When a
+  connection is linked to an environment, its host/port are resolved live from
+  the environment.
+- SQLite Database Migration: Introduced new SQLite tables for environments,
+  connections, and connection_tags. Existing server_environments data is
+  automatically migrated to the new connections table on the first launch,
+  ensuring backward compatibility.
+- Unified Connection Browser Tree: The connection browser now displays folders,
+  environments, and connections in a single, unified tree structure with
+  distinct icons. Drag-and-drop functionality between folders has been improved
+  to correctly restore expansion states.
+- Duplicate Action: Added a new 'Duplicate' action accessible via the toolbar
+  and context menus. This allows users to create a copy of any selected node
+  (folder, environment, or connection), appending ' (copy)' to its name.
+- Inherited Tags and Detail Panel Enhancements: Connections linked to an
+  environment now display the environment's tags as outlined badges in the
+  detail panel, distinguishing them from the connection's own filled badges. The
+  detail panel also shows resolved host/port for environment-linked connections
+  in a grayed, italic style with a tooltip indicating the source environment.
+- Login Dialog Quick-Connect Combo: The login dialog's separate environment
+  combo and saved-connections button have been replaced with a single, unified
+  quick-connect combo box. This combo categorizes entries with 'Manual',
+  'Environments', and 'Connections' headers. Selecting an environment pre-fills
+  and locks host/port fields, while selecting a connection pre-fills all four
+  login fields.
+- New Icons: New 'Keyboard' (for manual entry) and 'Copy' (for duplication)
+  icons have been added to the icon system, with Fluent UI and Solarized
+  variants.
+#+end_quote
+
+*** COMPLETED Add concept of "named environments" to connection manager :code:
+
+*Rationale*: implemented as part of improvements to connection browser.
+
+It would be nice if we could do "local2! instead of "localhost@51004". For this
+we need to have the notion of "named environments". This could be another entry
+in the connection manager. Maybe a separate tree widget.
+
+Users could then choose an environment and it would automatically populate host
+and port. These would also show up in drop down box. If using an environment,
+title bar would show that as well as host and port.
+
+*** COMPLETED Rename currency asset classes                            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-24 Tue 20:18]--[2026-02-24 Tue 21:23] =>  1:05
+    :END:
+
+We should avoid the term "asset classes" unless it is used in the usual asset
+class context. Many of the values are not really what one things of asset
+classes.
 
 *** STARTED Analyse caching at dialog level                            :code:
 
@@ -653,8 +763,13 @@ Core needs to have a container for all of the data stored within a context.
 Actually, according to Data Priented Principles, we may not need it. This may be
 a UI concept but not a code concept.
 
-*** STARTED Add portfolio book tree widget                             :code:
+*** STARTED Add portfolio explorer                                     :code:
     :LOGBOOK:
+    CLOCK: [2026-02-25 Wed 15:04]--[2026-02-25 Wed 15:45] =>  0:41
+    CLOCK: [2026-02-24 Tue 22:22]--[2026-02-24 Tue 22:55] =>  0:33
+    CLOCK: [2026-02-24 Tue 18:37]--[2026-02-24 Tue 19:55] =>  1:18
+    CLOCK: [2026-02-24 Tue 18:10]--[2026-02-24 Tue 18:36] =>  0:26
+    CLOCK: [2026-02-24 Tue 16:38]--[2026-02-24 Tue 18:36] =>  1:58
     CLOCK: [2026-02-21 Sat 13:01]--[2026-02-21 Sat 13:24] =>  0:23
     :END:
 
@@ -665,6 +780,48 @@ trade table on the right to show only trades within that branch.
 
 Depends on: "Extend login flow with party selection" (party must be bound to
 session before the tree can scope correctly).
+
+#+begin_quote
+This pull request delivers a significant new feature: the Portfolio Explorer.
+This interactive MDI window provides a hierarchical view of portfolios and
+books, allowing users to intuitively navigate their financial structures. By
+integrating dynamic trade filtering, persistent UI settings, and real-time data
+updates, it greatly enhances the user's ability to monitor and analyze trades
+within specific segments of their portfolio. The changes also include necessary
+backend modifications to support this advanced filtering and UI state
+management.
+
+Highlights:
+
+- New Portfolio Explorer Widget: Introduced a new MDI window that displays a
+  full portfolio/book hierarchy for the session party on the left, with a
+  filtered trade table on the right. This allows users to navigate their
+  portfolio structure and view associated trades.
+- Dynamic Trade Filtering and Navigation: Implemented dynamic trade filtering
+  where selecting any node in the portfolio/book tree scopes the trade table to
+  that specific subtree. A breadcrumb bar provides clickable navigation for the
+  current path.
+- Trade Count Aggregation: Added functionality to fetch and display trade counts
+  per-book, with these counts aggregating up through portfolio and party nodes
+  in the tree view.
+- UI Persistence and Stale Indicators: Ensured window size, splitter position,
+  and trade table column states are persisted across sessions. A stale indicator
+  pulses on book, portfolio, or trade change notifications, alerting users to
+  updated data.
+- Enhanced Trade Protocol and Backend Filtering: Updated the trade protocol
+  (PROTOCOL_VERSION_MAJOR bumped to 43) to support optional book_id and
+  portfolio_id filters in trade requests, enabling server-side filtering for the
+  new widget. Corresponding repository and service methods were added to handle
+  this filtering, including recursive CTEs for portfolio subtrees.
+- Generic UI Component Improvement: Extended
+  EntityListMdiWindow::initializeTableSettings() to accept an optional
+  QSplitter* parameter, allowing splitter state to be saved and restored
+  alongside window size and column headers for any MDI window using this base
+  class.
+- New Eventing for Books and Portfolios: Added book_changed_event and
+  portfolio_changed_event to the eventing system, allowing the UI to react to
+  real-time changes in these entities.
+#+end_quote
 
 **** Acceptance Criteria
 
@@ -750,22 +907,118 @@ PortfolioBookTreeMdiWindow
 └── Status QLabel
 #+end_example
 
-*** STARTED Books, portfolios and trades are not party specific        :code:
+*** STARTED Add party level currency and country restrictions          :code:
     :LOGBOOK:
-    CLOCK: [2026-02-24 Tue 09:01]--[2026-02-24 Tue 12:00] =>  2:59
+    CLOCK: [2026-02-24 Tue 19:31]--[2026-02-24 Tue 20:17] =>  0:46
     :END:
 
-At present I can see these entities from any party in a tenant.
+At present a party can use all currencies and all countries. In reality we
+normally want to restrict this at the party level. We won't be able to do a full
+implementation of this right now but it is a good idea to put in the framework
+so that we start to get a feel for how to work with RLS.
 
-*** Add concept of "named environments" to connection manager          :code:
+#+begin_quote
+This pull request significantly enhances the reference data management system by
+introducing party-specific visibility for currencies and countries. It
+establishes a robust framework for granular control over which reference data
+elements are accessible to different parties, addressing a limitation where all
+such data was previously tenant-wide. The changes span the entire application
+stack, from database schema and generated C++ code to service-level filtering,
+ensuring a comprehensive and well-integrated solution.
 
-It would be nice if we could do "local2! instead of "localhost@51004". For this
-we need to have the notion of "named environments". This could be another entry
-in the connection manager. Maybe a separate tree widget.
+Highlights:
 
-Users could then choose an environment and it would automatically populate host
-and port. These would also show up in drop down box. If using an environment,
-title bar would show that as well as host and port.
+- New Party-Visibility Junction Tables: Introduced
+  ores_refdata_party_currencies_tbl and ores_refdata_party_countries_tbl to
+  control which currencies and countries are visible to specific parties, moving
+  from tenant-wide visibility to per-party control.
+- Full Stack Codegen: Generated the complete domain, repository, service, and
+  test layers for both new entities using codegen models, ensuring consistency
+  and reducing manual effort.
+- Service Integration: Integrated filtering logic into existing currency_service
+  and country_service to leverage the new junction tables, adding
+  list_currencies_for_party and list_countries_for_party methods.
+- Bitemporal Support: Implemented bitemporal functionality for the new junction
+  tables, including valid_from and valid_to columns, versioning, and soft-delete
+  rules.
+#+end_quote
+
+*** STARTED Remove toolbars from detail dialogs                        :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-25 Wed 14:03]--[2026-02-25 Wed 15:03] =>  1:00
+    CLOCK: [2026-02-25 Wed 11:05]--[2026-02-25 Wed 13:05] =>  2:00
+    CLOCK: [2026-02-24 Tue 22:24]--[2026-02-25 Wed 01:21] =>  2:57
+    :END:
+
+At present we have toolbars in detail dialogs. These should just have buttons.
+Actions: delete, cancel, save.
+
+*** Create named profiles                                              :code:
+
+Users should be able to move windows around the screen and get them in the right
+positions and shapes (including detached windows etc) and then save them to the
+database as a named profile. Then, after login:
+
+- if there is only one named profile against the user, just load it.
+- if there is more than one, give the user a selector.
+
+Note that the profile may be created against a specific party. Needs some
+thinking.
+
+*** Portfolio types                                                    :code:
+
+At present a portfolio can be virtual or not. We should really generalise this
+into a portfolio type.
+
+*** Check change reasons on delete                                     :code:
+
+Seems like we do not have change reasons on entity deletes. We need to update
+all entities.
+
+*** Add missing history dialogs                                        :code:
+
+We have an inventory of missing features across entities. Check to see if it
+covers history as well.
+
+*** ORE Importer: portfolio and trade support                          :code:
+
+Now that we have the basics for trades, books and portfolios, we can do a very
+basic ORE importer:
+
+- point it to the samples directory;
+- for each folder, if it has subfolders, create a portfolio. If it contains the
+  trades file, make it a book.
+- add each trade in the trade file.
+
+Notes:
+
+- users should be able to choose top-level portfolio to import it into.
+  counterparty,
+  -
+- users sho
+
+*** No samples in sessions                                             :code:
+
+For some reason we are no longer sampling for sessions. Investigate why.
+
+*** Add virtual portfolio tree support                                 :code:
+
+A virtual portfolio is a reporting overlay that aggregates trades from real
+portfolios and books without owning them directly. Because a book has a single
+=parent_portfolio_id=, virtual portfolio membership requires a separate junction
+table. This story adds the full stack for virtual portfolios:
+
+**** Acceptance Criteria
+
+- New junction table =ores_refdata_virtual_portfolio_books= mapping virtual
+  portfolios to books, with the full SQL machinery (triggers, RLS, notify).
+- Domain type, repository, service, and protocol messages for the junction.
+- Virtual portfolios (=is_virtual = 1=) are shown in the
+  =PortfolioBookTreeMdiWindow= as a separate tree section below the real tree,
+  using =briefcase_20_regular= icons.
+- Selecting a virtual portfolio node or any of its book leaves filters the trade
+  table using the junction membership list.
+- Stale indicator responds to changes on the virtual portfolio membership.
 
 *** Rename currency asset classes                                      :code:
 

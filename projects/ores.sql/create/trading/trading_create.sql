@@ -52,3 +52,6 @@
 
 -- ORE envelope view (depends on trades + party roles)
 \ir ./trading_ore_envelope_view_create.sql
+
+-- Trade query functions (depend on trades table + refdata tables)
+\ir ./trading_trades_functions_create.sql

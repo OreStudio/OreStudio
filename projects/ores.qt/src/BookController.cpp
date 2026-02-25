@@ -22,10 +22,12 @@
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/BookMdiWindow.hpp"
 #include "ores.qt/BookDetailDialog.hpp"
 #include "ores.qt/BookHistoryDialog.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 
 namespace ores::qt {
@@ -37,11 +39,13 @@ BookController::BookController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -121,6 +125,11 @@ void BookController::reloadListWindow() {
     }
 }
 
+void BookController::openAdd()                                         { showAddWindow(); }
+void BookController::openAddWithParent(boost::uuids::uuid parent_id)   { showAddWindow(parent_id); }
+void BookController::openEdit(const refdata::domain::book& b)          { showDetailWindow(b); }
+void BookController::openHistory(const refdata::domain::book& b)       { showHistoryWindow(b); }
+
 void BookController::onShowDetails(
     const refdata::domain::book& book) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << book.name;
@@ -138,13 +147,21 @@ void BookController::onShowHistory(
     showHistoryWindow(book);
 }
 
-void BookController::showAddWindow() {
+void BookController::showAddWindow(boost::uuids::uuid parentPortfolioId) {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book";
 
     auto* detailDialog = new BookDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
+
+    if (!parentPortfolioId.is_nil()) {
+        refdata::domain::book prefilled;
+        prefilled.parent_portfolio_id = parentPortfolioId;
+        detailDialog->setBook(prefilled);
+    }
+
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &BookDetailDialog::statusMessage,
@@ -188,6 +205,7 @@ void BookController::showDetailWindow(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(false);
     detailDialog->setBook(book);
 
@@ -311,6 +329,7 @@ void BookController::onOpenVersion(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBook(book);
     detailDialog->setReadOnly(true);
 
@@ -358,6 +377,7 @@ void BookController::onRevertVersion(
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setBook(book);
     detailDialog->setCreateMode(false);
 

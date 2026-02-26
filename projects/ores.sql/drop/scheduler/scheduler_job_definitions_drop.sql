@@ -18,18 +18,13 @@
  *
  */
 
--- =============================================================================
--- Drop Row-Level Security Policies
--- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
-
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../variability/variability_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+drop rule if exists ores_scheduler_job_definitions_delete_rule on "ores_scheduler_job_definitions_tbl";
+drop trigger if exists ores_scheduler_job_definitions_insert_trg on "ores_scheduler_job_definitions_tbl";
+drop function if exists ores_scheduler_job_definitions_insert_fn;
+drop index if exists ores_scheduler_job_definitions_party_idx;
+drop index if exists ores_scheduler_job_definitions_tenant_idx;
+drop index if exists ores_scheduler_job_definitions_id_uniq_idx;
+drop index if exists ores_scheduler_job_definitions_version_uniq_idx;
+drop index if exists ores_scheduler_job_definitions_name_uniq_idx;
+drop index if exists ores_scheduler_job_definitions_cron_job_id_uniq_idx;
+drop table if exists "ores_scheduler_job_definitions_tbl";

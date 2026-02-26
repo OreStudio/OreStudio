@@ -933,13 +933,15 @@ void OrganisationSetupPage::startSyntheticGeneration() {
             statusLabel_->setText(
                 tr("Synthetic organisation generated successfully!"));
             appendLog(tr("Generated %1 parties, %2 counterparties, "
-                         "%3 portfolios, %4 books, %5 business units, "
-                         "%6 contacts, %7 identifiers.")
+                         "%3 business unit types, %4 business units, "
+                         "%5 portfolios, %6 books, "
+                         "%7 contacts, %8 identifiers.")
                 .arg(result->parties_count)
                 .arg(result->counterparties_count)
+                .arg(result->business_unit_types_count)
+                .arg(result->business_units_count)
                 .arg(result->portfolios_count)
                 .arg(result->books_count)
-                .arg(result->business_units_count)
                 .arg(result->contacts_count)
                 .arg(result->identifiers_count));
             publishSuccess_ = true;

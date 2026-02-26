@@ -29,32 +29,15 @@
 
 \echo '--- Business Unit Types: coding scheme ---'
 
-insert into ores_dq_coding_schemes_tbl (
-    code, tenant_id, version, name, authority_type,
-    subject_area_name, domain_name, description,
-    modified_by, performed_by, change_reason_code, change_commentary
-)
-values (
+select ores_dq_coding_schemes_upsert_fn(ores_iam_system_tenant_id_fn(),
     'ORES-ORG',
-    ores_iam_system_tenant_id_fn(),
-    0,
     'ORE Studio Organisational Hierarchy',
     'internal',
-    'Organization',
+    'Parties',
     'Reference Data',
-    'Internal coding scheme for ORE Studio organisational unit classification.',
-    current_user, current_user, 'system.initial_load',
-    'Initial population of ORES-ORG coding scheme'
-)
-on conflict (tenant_id, code)
-where valid_to = ores_utility_infinity_timestamp_fn()
-do update set
-    name = excluded.name,
-    description = excluded.description,
-    modified_by = current_user,
-    performed_by = current_user,
-    change_reason_code = 'system.initial_load',
-    change_commentary = 'Update during initial population';
+    '',
+    'Internal coding scheme for ORE Studio organisational unit classification.'
+);
 
 \echo '--- Business Unit Types: seed types ---'
 

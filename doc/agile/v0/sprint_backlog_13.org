@@ -1975,7 +1975,10 @@ Key design decisions from analysis:
 ***** Notes
 
 Story is BLOCKED pending PR review and testing. All implementation is complete
-and all tests are passing. Feature branch: =feature/add_basic_scheduler=.
+and all tests are passing.
+
+Pull Request: https://github.com/OreStudio/OreStudio/pull/490
+Branch: =feature/add_basic_scheduler=
 
 * Footer
 

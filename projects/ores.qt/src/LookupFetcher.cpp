@@ -197,7 +197,7 @@ std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm) 
     auto response = cm->process_authenticated_request(std::move(request));
     if (response) {
         for (const auto& bu : response->business_units) {
-            entries.push_back({boost::uuids::to_string(bu.id), bu.name});
+            entries.push_back({boost::uuids::to_string(bu.id), bu.unit_name});
         }
     }
     return entries;

@@ -145,25 +145,13 @@ fi
 
 # Drop existing database if it exists
 echo "--- Dropping ${DB_NAME} (if exists) ---"
-PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();"
-PGPASSWORD="${POSTGRES_PASSWORD}" psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"
+psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();"
+psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"
 
-# Phase 1: Create database as postgres (infrastructure)
-echo "--- Creating ${DB_NAME} (postgres phase) ---"
-PGPASSWORD="${POSTGRES_PASSWORD}" psql \
-    -h localhost \
-    -U postgres \
-    -v db_name="${DB_NAME}" \
-    -f ./create_database.sql
-
-# Phase 2: Setup schema as ores_ddl_user
-echo "--- Setting up schema (ores_ddl_user phase) ---"
-PGPASSWORD="${DDL_PASSWORD}" psql \
-    -h localhost \
-    -U ores_ddl_user \
-    -d "${DB_NAME}" \
-    -v skip_validation="${SKIP_VALIDATION}" \
-    -f ./setup_schema.sql
+# Create database, schema, and metadata via shared helper
+SKIP_ARG=""
+[[ "${SKIP_VALIDATION}" == "on" ]] && SKIP_ARG="--skip-validation"
+"${SCRIPT_DIR}/setup_database.sh" "${DB_NAME}" ${SKIP_ARG}
 
 echo ""
 echo "=========================================="

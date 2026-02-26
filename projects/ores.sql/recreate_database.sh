@@ -190,7 +190,7 @@ if [[ -z "${ASSUME_YES}" ]]; then
     echo ""
 fi
 
-# Phase 1: Run recreate_database.sql as postgres (teardown + users + create database)
+# Phase 1: Drop database, recreate roles and users (postgres superuser)
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
@@ -208,46 +208,10 @@ PGPASSWORD="${POSTGRES_PASSWORD}" psql \
     -v ro_password="${RO_PASSWORD}" \
     -v db_name="${DB_NAME}"
 
-# Phase 2: Run setup_schema.sql as ores_ddl_user (schema + data + grants)
-echo ""
-echo "--- Setting up schema as ores_ddl_user ---"
-PGPASSWORD="${DDL_PASSWORD}" psql \
-    -h localhost \
-    -U ores_ddl_user \
-    -d "${DB_NAME}" \
-    -v skip_validation="${SKIP_VALIDATION}" \
-    -f ./setup_schema.sql
-
-# Phase 3: Populate database metadata (schema version and build info)
-echo ""
-echo "--- Populating database metadata ---"
-
-# Extract schema version from the root CMakeLists.txt
-SCHEMA_VERSION=$(grep -oP 'project\(OreStudio VERSION \K[0-9]+\.[0-9]+\.[0-9]+' \
-    "${SCRIPT_DIR}/../../CMakeLists.txt" 2>/dev/null || echo "0.0.0")
-
-# Determine build environment from env var or default to "local"
-BUILD_ENVIRONMENT="${ORES_BUILD_ENVIRONMENT:-local}"
-
-# Get git info
-GIT_COMMIT=$(git -C "${SCRIPT_DIR}" rev-parse --short HEAD 2>/dev/null || echo "unknown")
-GIT_STATUS=$(git -C "${SCRIPT_DIR}" status --porcelain 2>/dev/null || echo "")
-if [[ -n "${GIT_STATUS}" ]]; then
-    GIT_COMMIT="${GIT_COMMIT}-dirty"
-fi
-GIT_DATE=$(git -C "${SCRIPT_DIR}" log -1 --format='%Y/%m/%d %H:%M:%S' HEAD 2>/dev/null || echo "unknown")
-
-echo "  Schema version:   ${SCHEMA_VERSION}"
-echo "  Build environment: ${BUILD_ENVIRONMENT}"
-echo "  Git commit:        ${GIT_COMMIT}"
-echo "  Git date:          ${GIT_DATE}"
-
-PGPASSWORD="${DDL_PASSWORD}" psql \
-    -h localhost \
-    -U ores_ddl_user \
-    -d "${DB_NAME}" \
-    -c "INSERT INTO ores_database_info_tbl (id, schema_version, build_environment, git_commit, git_date)
-        VALUES (gen_random_uuid(), '${SCHEMA_VERSION}', '${BUILD_ENVIRONMENT}', '${GIT_COMMIT}', '${GIT_DATE}');"
+# Phases 2–4: Create database, schema, and metadata via shared helper
+SKIP_ARG=""
+[[ "${SKIP_VALIDATION}" == "on" ]] && SKIP_ARG="--skip-validation"
+"${SCRIPT_DIR}/setup_database.sh" "${DB_NAME}" ${SKIP_ARG}
 
 echo ""
 echo "=== Database recreation complete ==="

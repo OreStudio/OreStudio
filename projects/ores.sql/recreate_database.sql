@@ -204,7 +204,4 @@ alter  role ores_readonly_user set search_path to public;
 \echo 'Service users ready.'
 \echo ''
 
---------------------------------------------------------------------------------
--- Step 4: Create the target database
---------------------------------------------------------------------------------
-\ir create_database.sql
+

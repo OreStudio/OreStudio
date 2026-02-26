@@ -807,6 +807,7 @@ public:
     ~<Entity>DetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setChangeReasonCache(ChangeReasonCache* cache);
     void setUsername(const std::string& username);
     void set<Entity>(const <component>::domain::<entity>& entity);
     <component>::domain::<entity> get<Entity>() const;
@@ -868,6 +869,7 @@ private:
 
     // Data
     ClientManager* clientManager_{nullptr};
+    ChangeReasonCache* changeReasonCache_{nullptr};
     std::string username_;
     <component>::domain::<entity> current<Entity>_;
     std::vector<<component>::domain::<entity>> history_;
@@ -1049,10 +1051,33 @@ void <Entity>DetailDialog::onSaveClicked() {
         return;
     }
 
+    // Change reason dialog (amend mode only — not required for create)
+    std::string change_reason_code;
+    std::string change_commentary;
+    if (!isAddMode_) {
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            emit errorMessage(tr("Change reasons not loaded. Please try again."));
+            return;
+        }
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (reasons.empty()) {
+            emit errorMessage(tr("No change reasons available. Please contact administrator."));
+            return;
+        }
+        ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Amend,
+                               isDirty_, this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+        change_reason_code = dlg.selectedReasonCode();
+        change_commentary  = dlg.commentary();
+    }
+
     auto entity = get<Entity>();
 
     QPointer<<Entity>DetailDialog> self = this;
-    QFuture<SaveResult> future = QtConcurrent::run([self, entity]() -> SaveResult {
+    QFuture<SaveResult> future = QtConcurrent::run(
+            [self, entity, change_reason_code, change_commentary]() -> SaveResult {
         return exception_helper::wrap_async_fetch<SaveResult>([&]() -> SaveResult {
             if (!self) {
                 return {.success = false,
@@ -1097,13 +1122,97 @@ void <Entity>DetailDialog::onSaveClicked() {
 }
 #+end_src
 
+**** Async delete pattern with change reason
+
+#+begin_src cpp
+struct DeleteResult {
+    bool success;
+    std::string message;
+};
+
+void <Entity>DetailDialog::onDeleteClicked() {
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete <entity> while disconnected from server.");
+        return;
+    }
+
+    // Confirmation dialog
+    auto reply = MessageBoxHelper::question(this, "Delete <Entity>",
+        QString("Are you sure you want to delete '%1'?").arg(identifier()),
+        QMessageBox::Yes | QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
+
+    // Change reason dialog for delete
+    std::string change_reason_code;
+    std::string change_commentary;
+    if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+        emit errorMessage(tr("Change reasons not loaded. Please try again."));
+        return;
+    }
+    auto reasons = changeReasonCache_->getReasonsForDelete(
+        std::string{reason::categories::common});
+    if (reasons.empty()) {
+        emit errorMessage(tr("No change reasons available. Please contact administrator."));
+        return;
+    }
+    ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Delete,
+                           false, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+    change_reason_code = dlg.selectedReasonCode();
+    change_commentary  = dlg.commentary();
+
+    QPointer<<Entity>DetailDialog> self = this;
+    auto task = [self, id = current<Entity>_.id,
+                 change_reason_code, change_commentary]() -> DeleteResult {
+        if (!self || !self->clientManager_)
+            return {.success = false, .message = "Dialog closed"};
+
+        // Build and send delete request...
+        return {.success = response->success, .message = response->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            emit self-><entity>Deleted(self->identifier());
+            self->requestClose();
+        } else {
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+#+end_src
+
+**** Required includes for change reason support
+
+#+begin_src cpp
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
+
+namespace ores::qt {
+
+namespace reason = dq::domain::change_reason_constants;
+#+end_src
+
 *** Commit message
 
 #+begin_example
 [qt] Add <Entity>DetailDialog for <entity> editing
 
 Create detail dialog with create/edit/view-only modes, version
-navigation, and async save/delete operations.
+navigation, and async save/delete operations with change reason tracking.
 #+end_example
 
 
@@ -1493,6 +1602,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        ChangeReasonCache* changeReasonCache,
         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -1516,6 +1626,7 @@ private:
                           bool createMode, bool readOnly = false,
                           int versionNumber = 0);
 
+    ChangeReasonCache* changeReasonCache_;
     QPointer<<Entity>MdiWindow> listWindow_;
     QPointer<DetachableMdiSubWindow> listMdiSubWindow_;
 };
@@ -1523,6 +1634,12 @@ private:
 }
 
 #endif
+#+end_src
+
+Also add the forward declaration before the class:
+
+#+begin_src cpp
+class ChangeReasonCache;
 #+end_src
 
 *** Implementation patterns
@@ -1560,9 +1677,11 @@ namespace {
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+    ChangeReasonCache* changeReasonCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
                        <entity>_event_name, parent),  // Pass event name to base
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -1681,6 +1800,7 @@ void <Entity>Controller::showDetailWindow(
 
     auto* detailDialog = new <Entity>DetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(createMode);
     if (entity) {
@@ -1837,9 +1957,10 @@ Add to =MainWindow.ui=:
 In =MainWindow.cpp= constructor:
 
 #+begin_src cpp
-// Create controller
+// Create controller — pass changeReasonCache_ so dialogs can show
+// the change reason dialog before save (amend) and delete.
 <entity>Controller_ = new <Entity>Controller(
-    this, mdiArea_, clientManager_, username_, this);
+    this, mdiArea_, clientManager_, username_, changeReasonCache_, this);
 
 // Connect signals from controller to MainWindow
 connect(<entity>Controller_, &<Entity>Controller::detachableWindowCreated,

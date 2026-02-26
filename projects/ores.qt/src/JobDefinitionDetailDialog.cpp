@@ -29,12 +29,16 @@
 #include "ores.scheduler/domain/cron_expression.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.scheduler/messaging/scheduler_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+namespace reason = dq::domain::change_reason_constants;
 
 JobDefinitionDetailDialog::JobDefinitionDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
@@ -96,6 +100,10 @@ void JobDefinitionDetailDialog::setupConnections() {
 
 void JobDefinitionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+}
+
+void JobDefinitionDetailDialog::setChangeReasonCache(ChangeReasonCache* cache) {
+    changeReasonCache_ = cache;
 }
 
 void JobDefinitionDetailDialog::setUsername(const std::string& username) {
@@ -201,6 +209,28 @@ void JobDefinitionDetailDialog::onSaveClicked() {
         return;
     }
 
+    // Change reason dialog (amend mode only)
+    std::string change_reason_code;
+    std::string change_commentary;
+    if (!createMode_) {
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            emit errorMessage(tr("Change reasons not loaded. Please try again."));
+            return;
+        }
+        auto reasons = changeReasonCache_->getReasonsForAmend(
+            std::string{reason::categories::common});
+        if (reasons.empty()) {
+            emit errorMessage(tr("No change reasons available. Please contact administrator."));
+            return;
+        }
+        ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Amend,
+                               hasChanges_, this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+        change_reason_code = dlg.selectedReasonCode();
+        change_commentary  = dlg.commentary();
+    }
+
     updateDefinitionFromUi();
 
     BOOST_LOG_SEV(lg(), info) << "Saving job definition: " << definition_.job_name;
@@ -212,13 +242,16 @@ void JobDefinitionDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, definition = definition_]() -> SaveResult {
+    auto task = [self, definition = definition_,
+                 change_reason_code, change_commentary]() -> SaveResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         scheduler::messaging::schedule_job_request request;
         request.definition = definition;
+        request.change_reason_code = change_reason_code;
+        request.change_commentary  = change_commentary;
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -289,6 +322,26 @@ void JobDefinitionDetailDialog::onDeleteClicked() {
         return;
     }
 
+    // Change reason dialog for delete
+    std::string change_reason_code;
+    std::string change_commentary;
+    if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+        emit errorMessage(tr("Change reasons not loaded. Please try again."));
+        return;
+    }
+    auto reasons = changeReasonCache_->getReasonsForDelete(
+        std::string{reason::categories::common});
+    if (reasons.empty()) {
+        emit errorMessage(tr("No change reasons available. Please contact administrator."));
+        return;
+    }
+    ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Delete,
+                           false, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+    change_reason_code = dlg.selectedReasonCode();
+    change_commentary  = dlg.commentary();
+
     BOOST_LOG_SEV(lg(), info) << "Unscheduling job definition: " << definition_.job_name;
 
     QPointer<JobDefinitionDetailDialog> self = this;
@@ -298,13 +351,16 @@ void JobDefinitionDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, id = definition_.id]() -> DeleteResult {
+    auto task = [self, id = definition_.id,
+                 change_reason_code, change_commentary]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         scheduler::messaging::unschedule_job_request request;
         request.job_definition_id = id;
+        request.change_reason_code = change_reason_code;
+        request.change_commentary  = change_commentary;
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(

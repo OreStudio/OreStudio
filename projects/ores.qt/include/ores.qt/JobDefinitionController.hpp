@@ -30,6 +30,7 @@
 
 namespace ores::qt {
 
+class ChangeReasonCache;
 class JobDefinitionMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -58,6 +59,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        ChangeReasonCache* changeReasonCache,
         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -81,6 +83,7 @@ private:
     void showDetailWindow(const scheduler::domain::job_definition& definition);
     void showHistoryWindow(const scheduler::domain::job_definition& definition);
 
+    ChangeReasonCache* changeReasonCache_;
     JobDefinitionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

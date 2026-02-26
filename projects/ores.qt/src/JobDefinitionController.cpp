@@ -20,6 +20,7 @@
 #include "ores.qt/JobDefinitionController.hpp"
 
 #include <QMdiSubWindow>
+#include "ores.qt/ChangeReasonCache.hpp"
 #include <QMessageBox>
 #include <QPointer>
 #include "ores.qt/IconUtils.hpp"
@@ -37,9 +38,11 @@ JobDefinitionController::JobDefinitionController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     const QString& username,
+    ChangeReasonCache* changeReasonCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -141,6 +144,7 @@ void JobDefinitionController::showAddWindow() {
 
     auto* detailDialog = new JobDefinitionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
 
@@ -183,6 +187,7 @@ void JobDefinitionController::showDetailWindow(
 
     auto* detailDialog = new JobDefinitionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setDefinition(definition);

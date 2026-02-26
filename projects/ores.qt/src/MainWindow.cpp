@@ -1798,7 +1798,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_),
+        changeReasonCache_, this);
 
     connect(jobDefinitionController_.get(), &JobDefinitionController::statusMessage,
             this, [this](const QString& message) {

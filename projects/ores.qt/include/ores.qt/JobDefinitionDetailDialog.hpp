@@ -31,6 +31,8 @@ class JobDefinitionDetailDialog;
 
 namespace ores::qt {
 
+class ChangeReasonCache;
+
 /**
  * @brief Detail dialog for viewing and editing job definition records.
  *
@@ -56,6 +58,7 @@ public:
     ~JobDefinitionDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setChangeReasonCache(ChangeReasonCache* cache);
     void setUsername(const std::string& username);
     void setDefinition(const scheduler::domain::job_definition& definition);
     void setCreateMode(bool createMode);
@@ -87,6 +90,7 @@ private:
 
     Ui::JobDefinitionDetailDialog* ui_;
     ClientManager* clientManager_;
+    ChangeReasonCache* changeReasonCache_{nullptr};
     std::string username_;
     scheduler::domain::job_definition definition_;
     bool createMode_{true};

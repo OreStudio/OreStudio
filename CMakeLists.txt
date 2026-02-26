@@ -225,6 +225,9 @@ find_package(Catch2 3 REQUIRED)
 # LibFort
 find_package(libfort)
 
+# croncpp: header-only cron expression parser used by ores.scheduler
+find_package(croncpp CONFIG REQUIRED)
+
 # site (for ctest)
 site_name(VORE_SITE)
 

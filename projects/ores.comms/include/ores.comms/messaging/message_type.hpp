@@ -593,6 +593,15 @@ enum class message_type : std::uint16_t {
     // Synthetic subsystem - Organisation generation
     generate_organisation_request = 0x7000,
     generate_organisation_response = 0x7001,
+    // Scheduler subsystem - Job definitions
+    get_job_definitions_request = 0x9000,
+    get_job_definitions_response = 0x9001,
+    schedule_job_request = 0x9002,
+    schedule_job_response = 0x9003,
+    unschedule_job_request = 0x9004,
+    unschedule_job_response = 0x9005,
+    get_job_history_request = 0x9006,
+    get_job_history_response = 0x9007,
 };
 
 /**
@@ -1087,6 +1096,14 @@ enum class message_type : std::uint16_t {
     case message_type::get_lei_entities_summary_response: return "get_lei_entities_summary_response";
     case message_type::generate_organisation_request: return "generate_organisation_request";
     case message_type::generate_organisation_response: return "generate_organisation_response";
+    case message_type::get_job_definitions_request: return "get_job_definitions_request";
+    case message_type::get_job_definitions_response: return "get_job_definitions_response";
+    case message_type::schedule_job_request: return "schedule_job_request";
+    case message_type::schedule_job_response: return "schedule_job_response";
+    case message_type::unschedule_job_request: return "unschedule_job_request";
+    case message_type::unschedule_job_response: return "unschedule_job_response";
+    case message_type::get_job_history_request: return "get_job_history_request";
+    case message_type::get_job_history_response: return "get_job_history_response";
     default: return {};
     }
 }

@@ -78,6 +78,7 @@ ImportTradeDialog::ImportTradeDialog(
 
     // Fetch counterparties asynchronously
     loadCounterparties();
+    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 ImportTradeDialog::~ImportTradeDialog() {
@@ -121,11 +122,8 @@ void ImportTradeDialog::setupUI() {
     auto* selectionLayout = new QHBoxLayout();
     selectAllCheckbox_ = new QCheckBox(tr("Select All"));
     selectAllCheckbox_->setChecked(true);
-    QT_WARNING_PUSH
-    QT_WARNING_DISABLE_DEPRECATED
-    connect(selectAllCheckbox_, &QCheckBox::stateChanged,
+    connect(selectAllCheckbox_, &QCheckBox::checkStateChanged,
             this, &ImportTradeDialog::onSelectAllChanged);
-    QT_WARNING_POP
     selectionLayout->addWidget(selectAllCheckbox_);
 
     selectionCountLabel_ = new QLabel();
@@ -231,11 +229,8 @@ void ImportTradeDialog::populateTradeTable() {
 
         auto* checkBox = new QCheckBox();
         checkBox->setProperty("row", static_cast<int>(i));
-        QT_WARNING_PUSH
-        QT_WARNING_DISABLE_DEPRECATED
-        connect(checkBox, &QCheckBox::stateChanged,
-                this, &ImportTradeDialog::onTradeCheckChanged);
-        QT_WARNING_POP
+        connect(checkBox, &QCheckBox::toggled,
+                this, [this](bool) { onTradeCheckChanged(); });
 
         if (!is_valid) {
             checkBox->setChecked(false);
@@ -451,8 +446,9 @@ ImportTradeDialog::resolveCounterpartyId(const std::string& ore_name) const {
     }
 }
 
-void ImportTradeDialog::onSelectAllChanged(int state) {
-    BOOST_LOG_SEV(lg(), debug) << "Select all changed: " << state;
+void ImportTradeDialog::onSelectAllChanged(Qt::CheckState state) {
+    BOOST_LOG_SEV(lg(), debug) << "Select all changed: "
+                               << static_cast<int>(state);
 
     const bool checked = (state == Qt::Checked);
     for (int i = 0; i < tradeTable_->rowCount(); ++i) {
@@ -558,7 +554,7 @@ void ImportTradeDialog::onImportClicked() {
     progressBar_->setValue(0);
     statusLabel_->setText(tr("Starting import..."));
 
-    auto self = this;
+    QPointer<ImportTradeDialog> self = this;
 
     QFuture<std::pair<int, int>> future =
         QtConcurrent::run([self, selected, total]() -> std::pair<int, int> {
@@ -568,7 +564,7 @@ void ImportTradeDialog::onImportClicked() {
             int current = 0;
 
             for (const auto& tti : selected) {
-                if (self->cancelRequested_.load()) {
+                if (!self || self->cancelRequested_.load()) {
                     BOOST_LOG_SEV(lg(), info)
                         << "Import cancelled by user at trade "
                         << current << " of " << total;
@@ -579,6 +575,7 @@ void ImportTradeDialog::onImportClicked() {
 
                 QMetaObject::invokeMethod(self,
                     [self, current, total, ext_id = tti.trade.external_id]() {
+                        if (!self) return;
                         self->progressBar_->setValue(current);
                         self->statusLabel_->setText(
                             QString("Importing %1 (%2 of %3)...")
@@ -586,6 +583,8 @@ void ImportTradeDialog::onImportClicked() {
                             .arg(current)
                             .arg(total));
                     }, Qt::QueuedConnection);
+
+                if (!self) break;
 
                 try {
                     save_trade_request request{tti.trade};

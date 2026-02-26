@@ -108,7 +108,7 @@ signals:
 private slots:
     void onImportClicked();
     void onCancelClicked();
-    void onSelectAllChanged(int state);
+    void onSelectAllChanged(Qt::CheckState state);
     void onTradeCheckChanged();
 
 private:

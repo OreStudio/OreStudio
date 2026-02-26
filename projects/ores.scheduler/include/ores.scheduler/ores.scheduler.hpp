@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,19 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#pragma once
 
--- =============================================================================
--- Drop Row-Level Security Policies
--- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
+// Domain types
+#include "ores.scheduler/domain/job_status.hpp"
+#include "ores.scheduler/domain/cron_expression.hpp"
+#include "ores.scheduler/domain/job_definition.hpp"
+#include "ores.scheduler/domain/job_instance.hpp"
 
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../variability/variability_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+// Builder
+#include "ores.scheduler/builder/job_definition_builder.hpp"
+
+// Repository
+#include "ores.scheduler/repository/job_definition_repository.hpp"
+
+// Service
+#include "ores.scheduler/service/cron_scheduler.hpp"
+
+// Generators
+#include "ores.scheduler/generators/job_definition_generator.hpp"

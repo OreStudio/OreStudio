@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,19 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#pragma once
 
--- =============================================================================
--- Drop Row-Level Security Policies
--- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
+namespace ores::scheduler::domain {
 
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../variability/variability_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+/**
+ * @brief Execution status of a job instance as reported by pg_cron.
+ *
+ * Maps directly to the string values stored in cron.job_run_details.status.
+ */
+enum class job_status {
+    starting,   ///< pg_cron has started the job but it has not yet completed.
+    succeeded,  ///< The job ran to completion without error.
+    failed      ///< The job encountered an error during execution.
+};
+
+} // namespace ores::scheduler::domain

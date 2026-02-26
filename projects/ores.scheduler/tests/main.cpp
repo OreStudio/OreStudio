@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,19 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
+#include "ores.testing/test_timeout_listener.hpp"
 
--- =============================================================================
--- Drop Row-Level Security Policies
--- =============================================================================
--- RLS policies must be dropped before the tables they reference. This
--- orchestration file includes all component RLS policy drops.
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
+CATCH_REGISTER_LISTENER(ores::testing::test_timeout_listener)
 
-\ir ../scheduler/scheduler_rls_policies_drop.sql
-\ir ../trading/trading_rls_policies_drop.sql
-\ir ../geo/geo_rls_policies_drop.sql
-\ir ../assets/assets_rls_policies_drop.sql
-\ir ../telemetry/telemetry_rls_policies_drop.sql
-\ir ../variability/variability_rls_policies_drop.sql
-\ir ../iam/iam_rls_policies_drop.sql
-\ir ../refdata/refdata_rls_policies_drop.sql
-\ir ../dq/dq_rls_policies_drop.sql
+int main(int argc, char* argv[]) {
+    ores::testing::logging_listener::set_test_module_name("ores.scheduler.tests");
+    return Catch::Session().run(argc, argv);
+}

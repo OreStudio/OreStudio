@@ -32,7 +32,8 @@
         "cli",
         "faker-cxx",
         "catch2",
-        "libfort"
+        "libfort",
+        "croncpp"
     ],
     "default-features": [ "wt" ],
     "features": {

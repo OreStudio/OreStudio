@@ -32,3 +32,4 @@
 \ir ../variability/variability_rls_policies_create.sql
 \ir ../telemetry/telemetry_rls_policies_create.sql
 \ir ../geo/geo_rls_policies_create.sql
+\ir ../scheduler/scheduler_rls_policies_create.sql

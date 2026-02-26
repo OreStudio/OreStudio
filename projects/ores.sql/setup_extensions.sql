@@ -97,6 +97,36 @@ begin
     end if;
 end $$;
 
+-- pg_cron: Job scheduler extension (OPTIONAL)
+-- Provides cron.schedule(), cron.unschedule(), cron.job, cron.job_run_details.
+-- Required by ores.scheduler library for background SQL job management.
+-- If not available, ores.scheduler cannot schedule or execute jobs.
+--
+-- PREREQUISITES FOR PG_CRON:
+--   - pg_cron must be installed on the system:
+--       Debian/Ubuntu: apt install postgresql-NN-cron
+--       macOS:         brew install pg_cron
+--   - pg_cron must be added to shared_preload_libraries in postgresql.conf:
+--       shared_preload_libraries = 'pg_cron'
+--   - PostgreSQL must be restarted after modifying shared_preload_libraries
+--   - Minimum required version: pg_cron 1.4 (for named job support)
+do $$
+declare
+    pgcron_available boolean;
+begin
+    select exists (
+        select 1 from pg_available_extensions where name = 'pg_cron'
+    ) into pgcron_available;
+
+    if pgcron_available then
+        create extension if not exists pg_cron;
+        raise notice 'Installed: pg_cron';
+    else
+        raise notice 'pg_cron not available - ores.scheduler job scheduling will not function';
+        raise notice '(Install with: apt install postgresql-NN-cron, then add to shared_preload_libraries)';
+    end if;
+end $$;
+
 -- TimescaleDB: Time-series database extension (OPTIONAL)
 -- Provides hypertables, compression, continuous aggregates, and retention policies
 -- If not available, sessions will use regular tables instead.
@@ -127,7 +157,7 @@ end $$;
 -- Show what was installed
 \echo 'Installed extensions:'
 select extname, extversion from pg_extension
-where extname in ('btree_gist', 'unaccent', 'pgtap', 'timescaledb')
+where extname in ('btree_gist', 'unaccent', 'pgtap', 'timescaledb', 'pg_cron')
 order by extname;
 
 \echo ''

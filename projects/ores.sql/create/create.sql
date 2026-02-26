@@ -38,6 +38,7 @@
 \ir ./telemetry/telemetry_create.sql
 \ir ./assets/assets_create.sql
 \ir ./geo/geo_create.sql
+\ir ./scheduler/scheduler_create.sql
 
 -- =============================================================================
 -- 4. Row-Level Security Policies (depend on all tables and IAM functions)

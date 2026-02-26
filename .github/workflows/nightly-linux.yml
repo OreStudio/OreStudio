@@ -171,6 +171,8 @@ jobs:
 
       - name: Run CTest workflow
         run: |
+          export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
+          export CTEST_PARALLEL_LEVEL=$(nproc)
           export PATH=${PATH}:/usr/sbin
           export ORES_BUILD_PROVIDER="github"
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"

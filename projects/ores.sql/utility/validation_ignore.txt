@@ -108,3 +108,10 @@ TENANT_002 ores_iam_login_info_tbl
 TENANT_002 ores_iam_sessions_tbl
 TENANT_002 ores_iam_session_samples_tbl
 TENANT_002 ores_telemetry_logs_tbl
+
+# =============================================================================
+# Database info table - single-row system metadata, not tenant-specific.
+# Records schema version, git commit and build environment at creation time.
+# There is exactly one row per database instance; tenant_id has no meaning here.
+# =============================================================================
+TENANT_001 ores_database_info_tbl

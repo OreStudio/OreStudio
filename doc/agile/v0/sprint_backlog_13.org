@@ -1932,6 +1932,43 @@ Fields:
 
 
 
+*** STARTED Add scheduling support                                     :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-26 Thu 00:00]
+    :END:
+
+Build a library called =ores.scheduler= that wraps the PostgreSQL =pg_cron=
+extension using a Quartz.NET-style fluent API. Strictly distinguishes between
+=job_definition= (the record in =cron.job=) and =job_instance= (the execution
+record in =cron.job_run_details=).
+
+Key design decisions from analysis:
+
+- =croncpp= (already in vcpkg ports) used for a strongly-typed =cron_expression=
+  wrapper class with C++23 =std::expected= error handling.
+- =std::chrono::system_clock::time_point= for all timestamps.
+- =utility::uuid::tenant_id= (from =ores.utility=, no IAM dependency) for tenant
+  isolation; =boost::uuids::uuid= for party_id.
+- Own table =ores_scheduler_job_definitions_tbl= (codegen, UUID PK, full audit
+  trail, RLS for both tenant and party) linked to pg_cron via =cron_job_id=
+  (bigint FK to =cron.job.jobid=).
+- Job instances read directly from =cron.job_run_details= via raw SQL join —
+  no mirror table needed for Phase 1.
+- =description= and =is_active= columns included now for the future UI PR.
+- Phase 2 (separate PR): binary protocol messages for schedule/list/history.
+
+***** Tasks
+
+- [ ] Step 1: SQL setup — pg_cron extension + codegen model + table
+- [ ] Step 2: C++ library scaffold — directory, CMakeLists, umbrella header
+- [ ] Step 3: Domain types — =cron_expression=, =job_status=, =job_definition=, =job_instance=
+- [ ] Step 4: Builder — =job_definition_builder= fluent API
+- [ ] Step 5: Repository — =job_definition_repository= (reads/writes our table)
+- [ ] Step 6: Service — =cron_scheduler= (wraps pg_cron calls + uses repository)
+- [ ] Step 7: Generators — =generate_synthetic_job_definition=
+- [ ] Step 8: Tests — domain/builder unit tests
+- [ ] Step 9: Wire into build — CMakeLists, vcpkg.json, register in projects/
+
 * Footer
 
 | Previous: [[id:1B387E8C-8EC1-4C2A-A321-1593C35A9A77][Sprint Backlog 12]] |

@@ -68,7 +68,7 @@ void JobDefinitionDetailDialog::setupUi() {
     ui_->saveButton->setEnabled(false);
 
     ui_->deleteButton->setIcon(
-        IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor));
+        IconUtils::createRecoloredIcon(Icon::CalendarCancel, IconUtils::DefaultIconColor));
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));

@@ -92,9 +92,9 @@ void JobDefinitionMdiWindow::setupToolbar() {
 
     addAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            Icon::Add, IconUtils::DefaultIconColor),
-        tr("Add"));
-    addAction_->setToolTip(tr("Add new job definition"));
+            Icon::CalendarAdd, IconUtils::DefaultIconColor),
+        tr("Schedule"));
+    addAction_->setToolTip(tr("Schedule a new job definition"));
     connect(addAction_, &QAction::triggered, this,
             &JobDefinitionMdiWindow::addNew);
 
@@ -109,9 +109,9 @@ void JobDefinitionMdiWindow::setupToolbar() {
 
     deleteAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(
-            Icon::Delete, IconUtils::DefaultIconColor),
-        tr("Delete"));
-    deleteAction_->setToolTip(tr("Delete selected job definition"));
+            Icon::CalendarCancel, IconUtils::DefaultIconColor),
+        tr("Unschedule"));
+    deleteAction_->setToolTip(tr("Unschedule selected job definition"));
     deleteAction_->setEnabled(false);
     connect(deleteAction_, &QAction::triggered, this,
             &JobDefinitionMdiWindow::deleteSelected);

@@ -44,6 +44,10 @@ enum class Icon {
     ArrowSync,
     Book,
     BookOpen,
+    // Calendar icons for scheduling operations
+    CalendarAdd,    ///< Schedule a new job (calendar with +)
+    CalendarCancel, ///< Unschedule a job (calendar with X)
+    CalendarClock,  ///< Scheduled jobs / scheduler concept (calendar with clock)
     BookOpenFilled,   // filled variant: trading books (active state)
     Briefcase,
     BriefcaseFilled,  // filled variant: real portfolios (active state)

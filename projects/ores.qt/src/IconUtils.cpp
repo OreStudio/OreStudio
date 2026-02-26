@@ -47,6 +47,9 @@ static IconDef getIconDef(Icon icon) {
         case Icon::ArrowRotateCounterclockwise: return {"ic_fluent_arrow_rotate_counterclockwise_20", "undo-left-round.svg"};
         case Icon::ArrowSync: return {"ic_fluent_arrow_sync_20", "refresh-circle.svg"};
         case Icon::Book: return {"ic_fluent_book_20", "notes-minimalistic.svg"};
+        case Icon::CalendarAdd:    return {"ic_fluent_calendar_add_20",    "calendar-add.svg"};
+        case Icon::CalendarCancel: return {"ic_fluent_calendar_cancel_20", "alarm-remove.svg"};
+        case Icon::CalendarClock:  return {"ic_fluent_calendar_clock_20",  "calendar.svg"};
         case Icon::BookOpen: return {"ic_fluent_book_open_20", "book-2.svg"};
         case Icon::BookOpenFilled:  return {"ic_fluent_book_open_20", "book-2.svg", true};
         case Icon::Briefcase: return {"ic_fluent_briefcase_20", "case-round.svg"};

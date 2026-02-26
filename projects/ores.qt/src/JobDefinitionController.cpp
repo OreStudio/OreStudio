@@ -75,7 +75,7 @@ void JobDefinitionController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Job Definitions");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+        Icon::CalendarClock, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -160,7 +160,7 @@ void JobDefinitionController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Job Definition");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+        Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -209,7 +209,7 @@ void JobDefinitionController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Job Definition: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Clock, IconUtils::DefaultIconColor));
+        Icon::CalendarClock, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

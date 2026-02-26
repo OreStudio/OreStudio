@@ -128,6 +128,7 @@
      <string>&amp;Trading</string>
     </property>
     <addaction name="ActionPortfolioExplorer"/>
+    <addaction name="ActionOrgExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
    </widget>
@@ -223,6 +224,7 @@
    <addaction name="ActionPortfolios"/>
    <addaction name="ActionBooks"/>
    <addaction name="ActionPortfolioExplorer"/>
+   <addaction name="ActionOrgExplorer"/>
    <addaction name="ActionAccounts"/>
    <addaction name="ActionTenants"/>
    <addaction name="ActionFeatureFlags"/>
@@ -566,6 +568,14 @@
    </property>
    <property name="toolTip">
     <string>Open Portfolio Explorer</string>
+   </property>
+  </action>
+  <action name="ActionOrgExplorer">
+   <property name="text">
+    <string>&amp;Org Explorer</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Organisational Explorer</string>
    </property>
   </action>
   <action name="ActionBusinessUnitTypes">

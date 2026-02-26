@@ -66,6 +66,9 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+    void openEdit(const refdata::domain::business_unit& business_unit);
+    void openHistory(const refdata::domain::business_unit& business_unit);
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);

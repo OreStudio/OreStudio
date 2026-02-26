@@ -85,6 +85,7 @@
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
+#include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -228,6 +229,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBusinessUnitTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
+    ui_->ActionOrgExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
     ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
@@ -690,6 +692,42 @@ MainWindow::MainWindow(QWidget* parent) :
         subWindow->show();
     });
 
+    // Connect Org Explorer action
+    connect(ui_->ActionOrgExplorer, &QAction::triggered, this, [this]() {
+        if (orgExplorerSubWindow_) {
+            mdiArea_->setActiveSubWindow(orgExplorerSubWindow_);
+            return;
+        }
+
+        auto* window = new OrgExplorerMdiWindow(
+            clientManager_,
+            businessUnitController_.get(),
+            bookController_.get(),
+            QString::fromStdString(username_),
+            this);
+
+        connect(window, &OrgExplorerMdiWindow::statusChanged,
+                this, [this](const QString& msg) {
+                    ui_->statusbar->showMessage(msg, 5000);
+                });
+
+        auto* subWindow = new DetachableMdiSubWindow(this);
+        subWindow->setWidget(window);
+        subWindow->setWindowTitle(tr("Org Explorer"));
+        subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+            Icon::Organization, IconUtils::DefaultIconColor));
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+
+        orgExplorerSubWindow_ = subWindow;
+        connect(subWindow, &QObject::destroyed, this, [this]() {
+            orgExplorerSubWindow_ = nullptr;
+        });
+
+        mdiArea_->addSubWindow(subWindow);
+        subWindow->resize(window->sizeHint());
+        subWindow->show();
+    });
+
     // Connect Trades action to controller
     connect(ui_->ActionTrades, &QAction::triggered, this, [this]() {
         if (tradeController_)
@@ -1095,6 +1133,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionCurrencyMarketTiers->setEnabled(isLoggedIn);
     ui_->ActionTrades->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
+    ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);

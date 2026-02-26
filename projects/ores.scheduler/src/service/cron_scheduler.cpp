@@ -50,14 +50,19 @@ cron_scheduler::schedule(domain::job_definition def,
     // Persist the definition first (sets our UUID, version etc.)
     repo_.save(def, change_reason_code, change_commentary);
 
-    // Call pg_cron. Returns the assigned cron jobid as a string.
-    const std::string sql = "SELECT cron.schedule($1, $2, $3)";
+    // Call pg_cron via schedule_in_database so that the background worker
+    // (which lives in the postgres database by default) schedules the job
+    // to execute in the current application database. This allows multiple
+    // OreStudio environments to share a single PostgreSQL cluster while each
+    // keeping their jobs isolated to their own database.
+    const std::string sql =
+        "SELECT cron.schedule_in_database($1, $2, $3, current_database())";
     const auto rows = execute_parameterized_string_query(
         ctx_, sql,
         {def.job_name,
          def.schedule_expression.to_string(),
          def.command},
-        lg(), "calling cron.schedule");
+        lg(), "calling cron.schedule_in_database");
 
     if (rows.empty()) {
         BOOST_LOG_SEV(lg(), error) << "cron.schedule returned no rows";
@@ -87,10 +92,12 @@ void cron_scheduler::unschedule(const boost::uuids::uuid& job_definition_id,
                                  + boost::uuids::to_string(job_definition_id));
     }
 
-    // Remove from pg_cron by name.
+    // Remove from pg_cron by name. cron.unschedule() resolves the job name
+    // from the shared cron.job catalog in the postgres database.
     const std::string sql = "SELECT cron.unschedule($1)";
     execute_parameterized_string_query(ctx_, sql, {def->job_name},
         lg(), "calling cron.unschedule");
+
 
     // Mark definition as inactive (clears cron_job_id, sets is_active=false).
     repo_.clear_cron_job_id(job_definition_id, modified_by);

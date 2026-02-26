@@ -78,6 +78,7 @@ class CounterpartyController;
 class BusinessCentreController;
 class BusinessUnitController;
 class BusinessUnitTypeController;
+class JobDefinitionController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
@@ -628,6 +629,7 @@ private:
     std::unique_ptr<MonetaryNatureController> monetaryNatureController_;
     std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
     std::unique_ptr<TradeController> tradeController_;
+    std::unique_ptr<JobDefinitionController> jobDefinitionController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

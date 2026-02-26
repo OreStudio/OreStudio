@@ -84,6 +84,7 @@
 #include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
+#include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -227,6 +228,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnitTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
+    ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
     ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
@@ -694,6 +696,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionTrades, &QAction::triggered, this, [this]() {
         if (tradeController_)
             tradeController_->showListWindow();
+    });
+
+    // Connect Job Definitions action to controller
+    connect(ui_->ActionJobDefinitions, &QAction::triggered, this, [this]() {
+        if (jobDefinitionController_)
+            jobDefinitionController_->showListWindow();
     });
 
     // Connect Purpose Types action to controller
@@ -1787,6 +1795,22 @@ void MainWindow::createControllers() {
     connect(tradeController_.get(), &TradeController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(tradeController_.get(), &TradeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    jobDefinitionController_ = std::make_unique<JobDefinitionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(jobDefinitionController_.get(), &JobDefinitionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(jobDefinitionController_.get(), &JobDefinitionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";

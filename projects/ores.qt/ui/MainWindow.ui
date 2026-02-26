@@ -172,8 +172,15 @@
      </property>
      <addaction name="ActionFeatureFlags"/>
     </widget>
+    <widget class="QMenu" name="menuScheduler">
+     <property name="title">
+      <string>&amp;Scheduler</string>
+     </property>
+     <addaction name="ActionJobDefinitions"/>
+    </widget>
     <addaction name="menuIdentity"/>
     <addaction name="menuConfiguration"/>
+    <addaction name="menuScheduler"/>
     <addaction name="menuTelemetry"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
@@ -582,6 +589,14 @@
    </property>
    <property name="toolTip">
     <string>Manage trades</string>
+   </property>
+  </action>
+  <action name="ActionJobDefinitions">
+   <property name="text">
+    <string>&amp;Job Definitions</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage scheduled job definitions</string>
    </property>
   </action>
   <action name="ActionPortfolios">

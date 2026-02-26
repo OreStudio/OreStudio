@@ -150,6 +150,7 @@ std::vector<std::byte> generate_organisation_response::serialize() const {
     writer::write_uint32(buffer, counterparties_count);
     writer::write_uint32(buffer, portfolios_count);
     writer::write_uint32(buffer, books_count);
+    writer::write_uint32(buffer, business_unit_types_count);
     writer::write_uint32(buffer, business_units_count);
     writer::write_uint32(buffer, contacts_count);
     writer::write_uint32(buffer, identifiers_count);
@@ -183,6 +184,10 @@ generate_organisation_response::deserialize(std::span<const std::byte> data) {
     auto books_result = reader::read_uint32(data);
     if (!books_result) return std::unexpected(books_result.error());
     response.books_count = *books_result;
+
+    auto bu_types_result = reader::read_uint32(data);
+    if (!bu_types_result) return std::unexpected(bu_types_result.error());
+    response.business_unit_types_count = *bu_types_result;
 
     auto bu_result = reader::read_uint32(data);
     if (!bu_result) return std::unexpected(bu_result.error());

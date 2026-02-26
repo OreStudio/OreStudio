@@ -29,6 +29,7 @@
 #include "ores.refdata/domain/counterparty_contact_information.hpp"
 #include "ores.refdata/domain/counterparty_identifier.hpp"
 #include "ores.refdata/domain/party_counterparty.hpp"
+#include "ores.refdata/domain/business_unit_type.hpp"
 #include "ores.refdata/domain/business_unit.hpp"
 #include "ores.refdata/domain/portfolio.hpp"
 #include "ores.refdata/domain/book.hpp"
@@ -99,6 +100,13 @@ struct generated_organisation final {
      * @brief Links between the root party and counterparties.
      */
     std::vector<refdata::domain::party_counterparty> party_counterparties;
+
+    /**
+     * @brief Canonical business unit types for the tenant's ORES-ORG scheme.
+     *
+     * Must be inserted before business_units (FK dependency).
+     */
+    std::vector<refdata::domain::business_unit_type> business_unit_types;
 
     /**
      * @brief Business units in parent-first order.

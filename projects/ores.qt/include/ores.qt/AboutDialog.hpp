@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2024-2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2024-2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,30 +21,25 @@
 #ifndef ORES_QT_ABOUT_DIALOG_HPP
 #define ORES_QT_ABOUT_DIALOG_HPP
 
-#include <QDialog>
+#include <QWidget>
 #include "ui_AboutDialog.h"
 #include "ores.qt/LogoLabel.hpp"
 #include "ores.logging/make_logger.hpp"
 
-namespace Ui {
-
-class AboutDialog;
-
-}
-
 namespace ores::qt {
 
+class ClientManager;
+
 /**
- * @brief Modal dialog displaying application version and build metadata.
+ * @brief Widget displaying application version, build metadata,
+ * and runtime system information, embedded in an MDI subwindow.
  *
- * Presents key runtime information such as the application version, build
- * identifier, and associated branding (e.g., logo or splash image). Used
- * primarily for diagnostics and user-facing transparency.
- *
- * The dialog initializes its UI, loads the application logo, and populates
- * version/build labels using compile-time metadata.
+ * The widget has two tabs:
+ * - **About**: project link and description text
+ * - **System Info**: three-row tree showing database, server, and client
+ *   version strings populated from the ClientManager's system_info_entries.
  */
-class AboutDialog final : public QDialog {
+class AboutDialog final : public QWidget {
     Q_OBJECT
 
 private:
@@ -57,27 +52,25 @@ private:
     }
 
 public:
-    explicit AboutDialog(QWidget* parent = nullptr);
+    explicit AboutDialog(ClientManager* clientManager = nullptr,
+                         QWidget* parent = nullptr);
     ~AboutDialog() override;
 
-private:
+protected:
     void showEvent(QShowEvent* e) override;
 
-    /**
-     * @brief Populate all version and build-related UI labels.
-     *
-     * Retrieves the application version and build metadata (e.g., build
-     * timestamp, commit information) and updates the corresponding labels in
-     * the dialog. This function performs only UI updates; it does not compute
-     * or cache any version data.
-     *
-     * Call this after the UI is initialised.
-     */
-    void updateVersionLabels();
-
 private:
+    /**
+     * @brief Populate the System Info tree with database, server, and client rows.
+     *
+     * Reads KVP entries from the ClientManager (fetched at login time).
+     * Shows "(not connected)" for database and server rows when no data
+     * is available.
+     */
+    void populateSystemInfo();
     Ui::AboutDialog ui_;
     LogoLabel* logoLabel_;
+    ClientManager* clientManager_;
 };
 
 }

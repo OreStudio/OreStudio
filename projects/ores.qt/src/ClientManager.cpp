@@ -469,6 +469,33 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
             }
         }
 
+        // Fetch system info from the server (no auth required — best effort)
+        system_info_entries_.clear();
+        try {
+            comms::messaging::system_info_request si_req{};
+            comms::messaging::frame si_frame(
+                comms::messaging::message_type::get_system_info_request,
+                0,
+                comms::messaging::system_info_request::serialize(si_req));
+            auto si_result = client_->send_request_sync(std::move(si_frame));
+            if (si_result) {
+                auto si_payload = si_result->decompressed_payload();
+                if (si_payload) {
+                    auto si_response =
+                        comms::messaging::system_info_response::deserialize(*si_payload);
+                    if (si_response) {
+                        system_info_entries_ = std::move(si_response->entries);
+                        BOOST_LOG_SEV(lg(), debug)
+                            << "Fetched " << system_info_entries_.size()
+                            << " system info entries";
+                    }
+                }
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Could not fetch system info: " << e.what();
+        }
+
         // Publish connected event to event bus now that login succeeded
         if (event_bus_) {
             event_bus_->publish(comms::eventing::connected_event{

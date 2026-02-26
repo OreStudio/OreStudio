@@ -1932,9 +1932,10 @@ Fields:
 
 
 
-*** STARTED Add scheduling support                                     :code:
+*** BLOCKED Add scheduling support                                     :code:
+CLOSED: [2026-02-26 Thu 10:50]
     :LOGBOOK:
-    CLOCK: [2026-02-26 Thu 00:00]
+    CLOCK: [2026-02-26 Thu 00:00]--[2026-02-26 Thu 10:50] =>  10:50
     :END:
 
 Build a library called =ores.scheduler= that wraps the PostgreSQL =pg_cron=
@@ -1949,25 +1950,32 @@ Key design decisions from analysis:
 - =std::chrono::system_clock::time_point= for all timestamps.
 - =utility::uuid::tenant_id= (from =ores.utility=, no IAM dependency) for tenant
   isolation; =boost::uuids::uuid= for party_id.
-- Own table =ores_scheduler_job_definitions_tbl= (codegen, UUID PK, full audit
-  trail, RLS for both tenant and party) linked to pg_cron via =cron_job_id=
-  (bigint FK to =cron.job.jobid=).
+- Own table =ores_scheduler_job_definitions_tbl= (hand-crafted SQL, not codegen,
+  because =cron_job_id bigint= and =is_active integer= don't fit standard domain
+  entity templates) linked to pg_cron via =cron_job_id= (bigint FK to =cron.job.jobid=).
 - Job instances read directly from =cron.job_run_details= via raw SQL join —
   no mirror table needed for Phase 1.
 - =description= and =is_active= columns included now for the future UI PR.
 - Phase 2 (separate PR): binary protocol messages for schedule/list/history.
+- =cron_expression= bridges pg_cron's 5-field Unix format and croncpp's
+  6-field format transparently; users always see standard cron strings.
 
 ***** Tasks
 
-- [ ] Step 1: SQL setup — pg_cron extension + codegen model + table
-- [ ] Step 2: C++ library scaffold — directory, CMakeLists, umbrella header
-- [ ] Step 3: Domain types — =cron_expression=, =job_status=, =job_definition=, =job_instance=
-- [ ] Step 4: Builder — =job_definition_builder= fluent API
-- [ ] Step 5: Repository — =job_definition_repository= (reads/writes our table)
-- [ ] Step 6: Service — =cron_scheduler= (wraps pg_cron calls + uses repository)
-- [ ] Step 7: Generators — =generate_synthetic_job_definition=
-- [ ] Step 8: Tests — domain/builder unit tests
-- [ ] Step 9: Wire into build — CMakeLists, vcpkg.json, register in projects/
+- [X] Step 1: SQL setup — pg_cron extension + table + RLS policies
+- [X] Step 2: C++ library scaffold — directory, CMakeLists, umbrella header
+- [X] Step 3: Domain types — =cron_expression=, =job_status=, =job_definition=, =job_instance=
+- [X] Step 4: Builder — =job_definition_builder= fluent API
+- [X] Step 5: Repository — =job_definition_repository= (reads/writes our table)
+- [X] Step 6: Service — =cron_scheduler= (wraps pg_cron calls + uses repository)
+- [X] Step 7: Generators — =generate_synthetic_job_definition=
+- [X] Step 8: Tests — domain/builder unit tests (10 test cases, 51 assertions)
+- [X] Step 9: Wire into build — CMakeLists, vcpkg.json, register in projects/
+
+***** Notes
+
+Story is BLOCKED pending PR review and testing. All implementation is complete
+and all tests are passing. Feature branch: =feature/add_basic_scheduler=.
 
 * Footer
 

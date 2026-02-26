@@ -211,6 +211,7 @@ PGPASSWORD="${POSTGRES_PASSWORD}" psql \
 # Phases 2–4: Create database, schema, and metadata via shared helper
 SKIP_ARG=""
 [[ "${SKIP_VALIDATION}" == "on" ]] && SKIP_ARG="--skip-validation"
+export ORES_DB_DDL_PASSWORD="${DDL_PASSWORD}"
 "${SCRIPT_DIR}/setup_database.sh" "${DB_NAME}" ${SKIP_ARG}
 
 echo ""

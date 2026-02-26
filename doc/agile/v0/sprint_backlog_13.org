@@ -1980,6 +1980,48 @@ and all tests are passing.
 Pull Request: https://github.com/OreStudio/OreStudio/pull/490
 Branch: =feature/add_basic_scheduler=
 
+*** BLOCKED Add scheduler binary protocol                              :code:
+CLOSED: [2026-02-26 Thu 14:00]
+    :LOGBOOK:
+    CLOCK: [2026-02-26 Thu 11:00]--[2026-02-26 Thu 14:00] =>  3:00
+    :END:
+
+Add binary protocol support for the =ores.scheduler= subsystem, enabling clients
+to manage pg_cron jobs via the existing comms layer.
+
+Key design decisions:
+
+- Scheduler subsystem assigned message type range =0x9000–0x9FFF=
+  (SCHEDULER_SUBSYSTEM_MIN/MAX constants added to protocol.hpp).
+- Protocol version bumped to =45.0= (breaking change).
+- Four request/response pairs implemented:
+  - =get_job_definitions_request/response= (0x9000/0x9001): list all jobs
+  - =schedule_job_request/response= (0x9002/0x9003): create and activate a job
+  - =unschedule_job_request/response= (0x9004/0x9005): deactivate a job
+  - =get_job_history_request/response= (0x9006/0x9007): execution history
+- Handler registered in =ores.comms.service/app/application.cpp= via the
+  existing registrar pattern (same as trading subsystem).
+- Custom =rfl::Reflector= specialisations for =cron_expression= and =job_status=
+  placed in =ores.scheduler/include/ores.scheduler/rfl/reflectors.hpp= to avoid
+  circular dependency with =ores.utility=.
+
+***** Tasks
+
+- [X] Step 1: Add message types (0x9000–0x9007) to =message_type.hpp=
+- [X] Step 2: Add SCHEDULER_SUBSYSTEM_MIN/MAX + version 45.0 to =protocol.hpp=
+- [X] Step 3: Create =scheduler_protocol.hpp= + =scheduler_protocol.cpp=
+- [X] Step 4: Create =scheduler_message_handler.hpp= + =scheduler_message_handler.cpp=
+- [X] Step 5: Create =registrar.hpp= + =registrar.cpp=
+- [X] Step 6: Wire into =ores.comms.service= (CMakeLists + application.cpp)
+- [X] Step 7: Verify: =ores.scheduler.lib= builds, 51 tests pass
+
+***** Notes
+
+Story is BLOCKED pending PR review and testing.
+
+Pull Request: (pending)
+Branch: =feature/scheduler-binary-protocol=
+
 * Footer
 
 | Previous: [[id:1B387E8C-8EC1-4C2A-A321-1593C35A9A77][Sprint Backlog 12]] |

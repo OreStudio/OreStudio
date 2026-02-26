@@ -45,6 +45,7 @@ namespace ores::refdata::messaging {
  * - Party CRUD + history
  * - Counterparty CRUD + history
  * - Business unit CRUD + history
+ * - Business unit type CRUD + history
  * - Portfolio CRUD + history
  * - Book CRUD + history
  * - Book status CRUD + history
@@ -316,6 +317,20 @@ private:
         const std::string& remote_address);
     boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
     handle_get_business_unit_history_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    // Business unit type handlers
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_business_unit_types_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_save_business_unit_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_delete_business_unit_type_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+    boost::asio::awaitable<std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>>
+    handle_get_business_unit_type_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     // Portfolio handlers

@@ -25,6 +25,7 @@
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
+#include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/messaging/tenant_status_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
@@ -182,6 +183,21 @@ std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm) {
     if (response) {
         for (const auto& pf : response->portfolios) {
             entries.push_back({boost::uuids::to_string(pf.id), pf.name});
+        }
+    }
+    return entries;
+}
+
+std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm) {
+    std::vector<business_unit_entry> entries;
+    if (!cm) return entries;
+
+    refdata::messaging::get_business_units_request request;
+    request.limit = lookup_fetch_limit;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& bu : response->business_units) {
+            entries.push_back({boost::uuids::to_string(bu.id), bu.unit_name});
         }
     }
     return entries;

@@ -21,6 +21,7 @@
 #define ORES_REFDATA_DOMAIN_BOOK_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 
@@ -76,6 +77,14 @@ struct book final {
      * Mandatory: Every book must belong to a portfolio.
      */
     boost::uuids::uuid parent_portfolio_id;
+
+    /**
+     * @brief Business unit that owns this book.
+     *
+     * Optional FK to business_units. Should reference a unit that is an
+     * owner_unit_id in the book's portfolio ancestry chain.
+     */
+    std::optional<boost::uuids::uuid> owner_unit_id;
 
     /**
      * @brief Functional/accounting currency.

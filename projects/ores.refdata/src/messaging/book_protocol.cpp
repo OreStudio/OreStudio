@@ -47,6 +47,9 @@ void write_book(std::vector<std::byte>& buffer,
     writer::write_string(buffer, bk.name);
     writer::write_string(buffer, bk.description);
     writer::write_uuid(buffer, bk.parent_portfolio_id);
+    writer::write_bool(buffer, bk.owner_unit_id.has_value());
+    if (bk.owner_unit_id.has_value())
+        writer::write_uuid(buffer, *bk.owner_unit_id);
     writer::write_string(buffer, bk.ledger_ccy);
     writer::write_string(buffer, bk.gl_account_ref);
     writer::write_string(buffer, bk.cost_center);
@@ -87,6 +90,14 @@ read_book(std::span<const std::byte>& data) {
     auto parent_portfolio_id_result = reader::read_uuid(data);
     if (!parent_portfolio_id_result) return std::unexpected(parent_portfolio_id_result.error());
     bk.parent_portfolio_id = *parent_portfolio_id_result;
+
+    auto owner_unit_id_has_value_result = reader::read_bool(data);
+    if (!owner_unit_id_has_value_result) return std::unexpected(owner_unit_id_has_value_result.error());
+    if (*owner_unit_id_has_value_result) {
+        auto owner_unit_id_result = reader::read_uuid(data);
+        if (!owner_unit_id_result) return std::unexpected(owner_unit_id_result.error());
+        bk.owner_unit_id = *owner_unit_id_result;
+    }
 
     auto ledger_ccy_result = reader::read_string(data);
     if (!ledger_ccy_result) return std::unexpected(ledger_ccy_result.error());

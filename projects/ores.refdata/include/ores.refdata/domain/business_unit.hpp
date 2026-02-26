@@ -74,6 +74,15 @@ struct business_unit final {
     std::optional<boost::uuids::uuid> parent_business_unit_id;
 
     /**
+     * @brief Classification type for this business unit.
+     *
+     * Optional FK to business_unit_type. When set, the level of this unit's
+     * type must be strictly greater than its parent's type level (if the parent
+     * also has a type set).
+     */
+    std::optional<boost::uuids::uuid> unit_type_id;
+
+    /**
      * @brief Optional internal code or alias.
      *
      * Short identifier for the business unit.

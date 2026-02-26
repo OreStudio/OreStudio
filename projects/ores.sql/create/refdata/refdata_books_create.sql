@@ -42,6 +42,7 @@ create table if not exists "ores_refdata_books_tbl" (
     "cost_center" text null,
     "book_status" text not null,
     "is_trading_book" integer not null,
+    "owner_unit_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -76,6 +77,11 @@ create index if not exists ores_refdata_books_tenant_idx
 on "ores_refdata_books_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
+create index if not exists ores_refdata_books_owner_unit_idx
+on "ores_refdata_books_tbl" (tenant_id, owner_unit_id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and owner_unit_id is not null;
+
 create or replace function ores_refdata_books_insert_fn()
 returns trigger as $$
 declare
@@ -104,6 +110,18 @@ begin
         raise exception 'Invalid party_id: %. No active party found with this id.',
             NEW.party_id
             using errcode = '23503';
+    end if;
+
+    -- Validate owner_unit_id (nullable FK)
+    if NEW.owner_unit_id is not null then
+        if not exists (
+            select 1 from ores_refdata_business_units_tbl
+            where tenant_id = NEW.tenant_id and id = NEW.owner_unit_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid owner_unit_id: %. No active business unit found.',
+                NEW.owner_unit_id using errcode = '23503';
+        end if;
     end if;
 
     -- Validate ledger_ccy

@@ -240,6 +240,15 @@ enum class message_type : std::uint16_t {
     delete_currency_market_tier_response = 0x10A6,
     get_currency_market_tier_history_request = 0x10A7,
     get_currency_market_tier_history_response = 0x10A8,
+    // Refdata subsystem - Business unit types
+    get_business_unit_types_request = 0x10A9,
+    get_business_unit_types_response = 0x10AA,
+    save_business_unit_type_request = 0x10AB,
+    save_business_unit_type_response = 0x10AC,
+    delete_business_unit_type_request = 0x10AD,
+    delete_business_unit_type_response = 0x10AE,
+    get_business_unit_type_history_request = 0x10AF,
+    get_business_unit_type_history_response = 0x10B0,
     // Trade subsystem - Trade types
     get_trade_types_request = 0x8001,
     get_trade_types_response = 0x8002,

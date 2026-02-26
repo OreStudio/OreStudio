@@ -97,6 +97,8 @@ void BookDetailDialog::setupConnections() {
             &BookDetailDialog::onFieldChanged);
     connect(ui_->parentPortfolioCombo, &QComboBox::currentTextChanged, this,
             &BookDetailDialog::onFieldChanged);
+    connect(ui_->ownerUnitCombo, &QComboBox::currentIndexChanged, this,
+            &BookDetailDialog::onFieldChanged);
 }
 
 void BookDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -104,6 +106,7 @@ void BookDetailDialog::setClientManager(ClientManager* clientManager) {
     populateCurrencyCombo();
     populateBookStatusCombo();
     populateParentPortfolioCombo();
+    populateOwnerUnitCombo();
 }
 
 void BookDetailDialog::setImageCache(ImageCache* imageCache) {
@@ -185,6 +188,38 @@ void BookDetailDialog::populateParentPortfolioCombo() {
     watcher->setFuture(future);
 }
 
+void BookDetailDialog::populateOwnerUnitCombo() {
+    if (!clientManager_ || !clientManager_->isConnected()) return;
+
+    QPointer<BookDetailDialog> self = this;
+    auto* cm = clientManager_;
+
+    auto task = [cm]() -> std::vector<business_unit_entry> {
+        return fetch_business_unit_entries(cm);
+    };
+
+    auto* watcher = new QFutureWatcher<std::vector<business_unit_entry>>(self);
+    connect(watcher, &QFutureWatcher<std::vector<business_unit_entry>>::finished,
+            self, [self, watcher]() {
+        auto entries = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        self->ownerUnitEntries_ = entries;
+        self->ui_->ownerUnitCombo->clear();
+        self->ui_->ownerUnitCombo->addItem(tr("(none)"), QString{});
+        for (const auto& e : entries) {
+            self->ui_->ownerUnitCombo->addItem(
+                QString::fromStdString(e.name),
+                QString::fromStdString(e.id));
+        }
+        self->updateUiFromBook();
+    });
+
+    QFuture<std::vector<business_unit_entry>> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
 void BookDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -223,6 +258,7 @@ void BookDetailDialog::setReadOnly(bool readOnly) {
     ui_->bookStatusCombo->setEnabled(!readOnly);
     ui_->bookTypeCombo->setEnabled(!readOnly);
     ui_->parentPortfolioCombo->setEnabled(!readOnly);
+    ui_->ownerUnitCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -245,6 +281,19 @@ void BookDetailDialog::updateUiFromBook() {
             ui_->parentPortfolioCombo->setCurrentText(
                 QString::fromStdString(e.name));
             break;
+        }
+    }
+
+    // Select the owner unit: index 0 = "(none)", remaining items carry UUID as data
+    ui_->ownerUnitCombo->setCurrentIndex(0);
+    if (book_.owner_unit_id) {
+        const auto owner_id_str = boost::uuids::to_string(*book_.owner_unit_id);
+        const auto qowner = QString::fromStdString(owner_id_str);
+        for (int i = 1; i < ui_->ownerUnitCombo->count(); ++i) {
+            if (ui_->ownerUnitCombo->itemData(i).toString() == qowner) {
+                ui_->ownerUnitCombo->setCurrentIndex(i);
+                break;
+            }
         }
     }
 
@@ -275,6 +324,15 @@ void BookDetailDialog::updateBookFromUi() {
                 boost::lexical_cast<boost::uuids::uuid>(e.id);
             break;
         }
+    }
+
+    // Resolve owner unit: item data holds the UUID string; index 0 = none
+    const auto owner_data =
+        ui_->ownerUnitCombo->currentData().toString().trimmed().toStdString();
+    if (owner_data.empty()) {
+        book_.owner_unit_id = std::nullopt;
+    } else {
+        book_.owner_unit_id = boost::lexical_cast<boost::uuids::uuid>(owner_data);
     }
 }
 

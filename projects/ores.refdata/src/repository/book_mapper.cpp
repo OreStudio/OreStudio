@@ -41,6 +41,8 @@ book_mapper::map(const book_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.parent_portfolio_id = boost::lexical_cast<boost::uuids::uuid>(v.parent_portfolio_id);
+    if (v.owner_unit_id.has_value() && !v.owner_unit_id->empty())
+        r.owner_unit_id = boost::lexical_cast<boost::uuids::uuid>(*v.owner_unit_id);
     r.ledger_ccy = v.ledger_ccy;
     r.gl_account_ref = v.gl_account_ref;
     r.cost_center = v.cost_center;
@@ -68,6 +70,8 @@ book_mapper::map(const domain::book& v) {
     r.name = v.name;
     r.description = v.description;
     r.parent_portfolio_id = boost::uuids::to_string(v.parent_portfolio_id);
+    if (v.owner_unit_id)
+        r.owner_unit_id = boost::uuids::to_string(*v.owner_unit_id);
     r.ledger_ccy = v.ledger_ccy;
     r.gl_account_ref = v.gl_account_ref;
     r.cost_center = v.cost_center;

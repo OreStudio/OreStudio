@@ -92,6 +92,7 @@ private:
     void populateCurrencyCombo();
     void populateBookStatusCombo();
     void populateParentPortfolioCombo();
+    void populateOwnerUnitCombo();
     bool validateInput();
 
     Ui::BookDetailDialog* ui_;
@@ -101,6 +102,7 @@ private:
     std::string username_;
     refdata::domain::book book_;
     std::vector<portfolio_entry> portfolioEntries_;
+    std::vector<business_unit_entry> ownerUnitEntries_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

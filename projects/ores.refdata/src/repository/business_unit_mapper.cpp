@@ -41,6 +41,8 @@ business_unit_mapper::map(const business_unit_entity& v) {
     r.unit_name = v.unit_name;
     if (v.parent_business_unit_id.has_value() && !v.parent_business_unit_id->empty())
         r.parent_business_unit_id = boost::lexical_cast<boost::uuids::uuid>(*v.parent_business_unit_id);
+    if (v.unit_type_id.has_value() && !v.unit_type_id->empty())
+        r.unit_type_id = boost::lexical_cast<boost::uuids::uuid>(*v.unit_type_id);
     r.unit_code = v.unit_code;
     r.business_centre_code = v.business_centre_code;
     r.status = v.status;
@@ -66,6 +68,8 @@ business_unit_mapper::map(const domain::business_unit& v) {
     r.unit_name = v.unit_name;
     if (v.parent_business_unit_id)
         r.parent_business_unit_id = boost::uuids::to_string(*v.parent_business_unit_id);
+    if (v.unit_type_id)
+        r.unit_type_id = boost::uuids::to_string(*v.unit_type_id);
     r.unit_code = v.unit_code;
     r.business_centre_code = v.business_centre_code;
     r.status = v.status;

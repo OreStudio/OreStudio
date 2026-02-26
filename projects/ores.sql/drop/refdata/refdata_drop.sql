@@ -25,6 +25,8 @@
 \ir ./refdata_portfolios_drop.sql
 \ir ./refdata_business_units_notify_trigger_drop.sql
 \ir ./refdata_business_units_drop.sql
+\ir ./refdata_business_unit_types_notify_trigger_drop.sql
+\ir ./refdata_business_unit_types_drop.sql
 
 -- Party and counterparty contact information (drop first, depends on parties/counterparties)
 \ir ./refdata_counterparty_contact_informations_notify_trigger_drop.sql

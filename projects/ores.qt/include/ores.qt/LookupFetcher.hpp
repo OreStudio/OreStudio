@@ -111,6 +111,22 @@ struct portfolio_entry {
  */
 std::vector<portfolio_entry> fetch_portfolio_entries(ClientManager* cm);
 
+/**
+ * @brief A name/id pair for a business unit, used to populate owner-unit combos.
+ */
+struct business_unit_entry {
+    std::string id;   // UUID as string
+    std::string name;
+};
+
+/**
+ * @brief Fetches all business unit name/id pairs from the server.
+ *
+ * Synchronous call intended to be run from within QtConcurrent::run.
+ * Returns empty vector on failure.
+ */
+std::vector<business_unit_entry> fetch_business_unit_entries(ClientManager* cm);
+
 }
 
 #endif

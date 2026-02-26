@@ -114,6 +114,7 @@
     <addaction name="ActionCounterparties"/>
     <addaction name="separator"/>
     <addaction name="ActionBusinessUnits"/>
+    <addaction name="ActionBusinessUnitTypes"/>
     <addaction name="ActionPortfolios"/>
     <addaction name="ActionBooks"/>
     <addaction name="separator"/>
@@ -565,6 +566,14 @@
    </property>
    <property name="toolTip">
     <string>Open Portfolio Explorer</string>
+   </property>
+  </action>
+  <action name="ActionBusinessUnitTypes">
+   <property name="text">
+    <string>Business Unit &amp;Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage business unit types</string>
    </property>
   </action>
   <action name="ActionTrades">

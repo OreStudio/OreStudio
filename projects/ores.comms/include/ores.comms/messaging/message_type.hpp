@@ -314,8 +314,6 @@ enum class message_type : std::uint16_t {
     delete_trade_party_role_response = 0x8036,
     get_trade_party_role_history_request = 0x8037,
     get_trade_party_role_history_response = 0x8038,
-    // Sentinel value - must remain after the highest message type value
-    last_value,
     // IAM subsystem - Accounts
     get_accounts_request = 0x2003,
     get_accounts_response = 0x2004,
@@ -604,6 +602,8 @@ enum class message_type : std::uint16_t {
     unschedule_job_response = 0x9005,
     get_job_history_request = 0x9006,
     get_job_history_response = 0x9007,
+    // Sentinel value - must remain after the highest message type value
+    last_value,
 };
 
 /**

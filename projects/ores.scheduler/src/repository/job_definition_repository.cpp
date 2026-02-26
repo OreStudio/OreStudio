@@ -99,10 +99,14 @@ domain::job_status parse_status(const std::string& s) {
 job_definition_repository::job_definition_repository(context ctx)
     : ctx_(std::move(ctx)) {}
 
-void job_definition_repository::save(const domain::job_definition& def) {
+void job_definition_repository::save(
+    const domain::job_definition& def,
+    const std::string& change_reason_code,
+    const std::string& change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Saving job definition: " << def.job_name;
 
-    // Build parameterised INSERT. The insert trigger handles versioning.
+    // NULLIF($4, '')::bigint maps an empty string to SQL NULL so that an
+    // absent cron_job_id (std::nullopt) does not cause a type-cast error.
     const std::string sql = R"(
         INSERT INTO ores_scheduler_job_definitions_tbl
             (id, tenant_id, version, party_id, cron_job_id,
@@ -111,10 +115,10 @@ void job_definition_repository::save(const domain::job_definition& def) {
              performed_by, change_reason_code, change_commentary,
              valid_from, valid_to)
         VALUES
-            ($1::uuid, $2::uuid, 0, $3::uuid, $4,
+            ($1::uuid, $2::uuid, 0, $3::uuid, NULLIF($4, '')::bigint,
              $5, $6, $7, $8,
              $9, $10, $11,
-             current_user, 'created', '',
+             current_user, $12, $13,
              current_timestamp, 'infinity'::timestamptz)
     )";
 
@@ -132,7 +136,9 @@ void job_definition_repository::save(const domain::job_definition& def) {
         def.schedule_expression.to_string(),
         def.database_name,
         def.is_active ? "1" : "0",
-        def.modified_by
+        def.modified_by,
+        change_reason_code,
+        change_commentary
     };
 
     execute_parameterized_command(ctx_, sql, params, lg(),

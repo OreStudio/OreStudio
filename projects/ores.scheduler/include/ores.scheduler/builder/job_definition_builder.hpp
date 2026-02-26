@@ -20,10 +20,12 @@
 #pragma once
 
 #include <expected>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.scheduler/domain/cron_expression.hpp"
 #include "ores.scheduler/domain/job_definition.hpp"
 
 namespace ores::scheduler::builder {
@@ -88,7 +90,7 @@ private:
     std::string name_;
     std::string description_;
     std::string command_;
-    std::string cron_expr_str_;
+    std::optional<domain::cron_expression> schedule_expression_; ///< Validated on with_cron_schedule().
     std::string error_;               ///< First validation error, if any.
     std::string database_name_;
     utility::uuid::tenant_id tenant_id_ = utility::uuid::tenant_id::system();

@@ -65,7 +65,9 @@ public:
      * On first write: inserts a new row (version=0, trigger sets version=1).
      * On update: inserts a new temporal row closing the previous one.
      */
-    void save(const domain::job_definition& def);
+    void save(const domain::job_definition& def,
+              const std::string& change_reason_code = "created",
+              const std::string& change_commentary = "");
 
     /**
      * @brief Retrieve a single job_definition by our UUID.

@@ -41,8 +41,7 @@ namespace ores::scheduler::domain {
  */
 struct job_definition final {
     boost::uuids::uuid id;                        ///< Our UUID primary key.
-    utility::uuid::tenant_id tenant_id            ///< Tenant isolation.
-        = utility::uuid::tenant_id::system();
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system(); ///< Tenant isolation.
     boost::uuids::uuid party_id;                  ///< Party isolation.
     std::optional<std::int64_t> cron_job_id;      ///< FK to cron.job.jobid.
     std::string job_name;                         ///< Unique name passed to pg_cron.

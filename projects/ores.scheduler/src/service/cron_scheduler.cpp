@@ -48,7 +48,7 @@ cron_scheduler::schedule(domain::job_definition def,
     BOOST_LOG_SEV(lg(), info) << "Scheduling job: " << def.job_name;
 
     // Persist the definition first (sets our UUID, version etc.)
-    repo_.save(def);
+    repo_.save(def, change_reason_code, change_commentary);
 
     // Call pg_cron. Returns the assigned cron jobid as a string.
     const std::string sql = "SELECT cron.schedule($1, $2, $3)";

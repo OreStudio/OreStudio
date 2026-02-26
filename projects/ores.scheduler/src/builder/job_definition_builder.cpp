@@ -51,7 +51,7 @@ job_definition_builder::with_cron_schedule(std::string_view expr) {
         if (error_.empty())
             error_ = std::move(result.error());
     } else {
-        cron_expr_str_ = std::string(expr);
+        schedule_expression_ = std::move(result).value();
     }
     return *this;
 }
@@ -93,16 +93,12 @@ job_definition_builder::build() const {
         return std::unexpected("job name is required");
     if (command_.empty())
         return std::unexpected("command is required");
-    if (cron_expr_str_.empty())
+    if (!schedule_expression_)
         return std::unexpected("schedule expression is required");
     if (database_name_.empty())
         return std::unexpected("database name is required");
     if (modified_by_.empty())
         return std::unexpected("modified_by is required");
-
-    auto schedule = domain::cron_expression::from_string(cron_expr_str_);
-    if (!schedule)
-        return std::unexpected(schedule.error());
 
     utility::uuid::uuid_v7_generator gen;
     return domain::job_definition{
@@ -113,7 +109,7 @@ job_definition_builder::build() const {
         .job_name = name_,
         .description = description_,
         .command = command_,
-        .schedule_expression = std::move(*schedule),
+        .schedule_expression = *schedule_expression_,
         .database_name = database_name_,
         .is_active = true,
         .version = 0,

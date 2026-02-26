@@ -166,6 +166,25 @@ if [[ $full_install -eq 0 ]]; then
 fi
 
 # ---------------------------------------------------------------------------
+# pg_cron: version-specific install (must match installed PostgreSQL version)
+# Requires post-install configuration in postgresql.conf - see setup notes.
+# ---------------------------------------------------------------------------
+pg_major=$(pg_lsclusters 2>/dev/null | awk 'NR==2 {print $1}')
+if [[ -n "$pg_major" ]]; then
+    echo "Installing pg_cron for PostgreSQL $pg_major..."
+    sudo apt-get install -y "postgresql-${pg_major}-cron" || \
+        echo "Warning: pg_cron install failed. ores.scheduler will not function."
+    echo ""
+    echo "  NOTE: pg_cron requires postgresql.conf changes (restart needed):"
+    echo "    shared_preload_libraries = '...existing...,pg_cron'"
+    echo "    cron.database_name = 'ores_dev_local1'"
+    echo "  Then: sudo systemctl restart postgresql"
+    echo "  Then: psql -U postgres -f projects/ores.sql/setup_extensions.sql"
+else
+    echo "Warning: Could not detect PostgreSQL version; skipping pg_cron install."
+fi
+
+# ---------------------------------------------------------------------------
 # Post-install summary
 # ---------------------------------------------------------------------------
 echo ""

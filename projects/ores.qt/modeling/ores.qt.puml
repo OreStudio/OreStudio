@@ -47,6 +47,7 @@ namespace ores #F2F2F2 {
             class EntityController
             class CurrencyController
             class CountryController
+            class BusinessUnitTypeController
         }
 
         ' Group: Currency Windows
@@ -63,6 +64,14 @@ namespace ores #F2F2F2 {
             class ClientCountryModel
             class CountryDetailDialog
             class CountryHistoryDialog
+        }
+
+        ' Group: BusinessUnitType Windows
+        together {
+            class BusinessUnitTypeMdiWindow
+            class ClientBusinessUnitTypeModel
+            class BusinessUnitTypeDetailDialog
+            class BusinessUnitTypeHistoryDialog
         }
 
         ' Group: Image Caching
@@ -101,12 +110,16 @@ namespace ores #F2F2F2 {
         MdiAreaWithBackground -[hidden]down- DetachableMdiSubWindow
         EntityController -[hidden]down- CurrencyController
         CurrencyController -[hidden]down- CountryController
+        CountryController -[hidden]down- BusinessUnitTypeController
         CurrencyMdiWindow -[hidden]down- ClientCurrencyModel
         ClientCurrencyModel -[hidden]down- CurrencyDetailDialog
         CurrencyDetailDialog -[hidden]down- CurrencyHistoryDialog
         CountryMdiWindow -[hidden]down- ClientCountryModel
         ClientCountryModel -[hidden]down- CountryDetailDialog
         CountryDetailDialog -[hidden]down- CountryHistoryDialog
+        BusinessUnitTypeMdiWindow -[hidden]down- ClientBusinessUnitTypeModel
+        ClientBusinessUnitTypeModel -[hidden]down- BusinessUnitTypeDetailDialog
+        BusinessUnitTypeDetailDialog -[hidden]down- BusinessUnitTypeHistoryDialog
         LoginDialog -[hidden]down- AboutDialog
         AboutDialog -[hidden]down- SplashScreen
         SplashScreen -[hidden]down- MyAccountDialog
@@ -124,7 +137,8 @@ namespace ores #F2F2F2 {
         DetachableMdiSubWindow -[hidden]down- EntityController
         CountryController -[hidden]down- CurrencyMdiWindow
         CurrencyHistoryDialog -[hidden]down- CountryMdiWindow
-        CountryHistoryDialog -[hidden]down- LoginDialog
+        CountryHistoryDialog -[hidden]down- BusinessUnitTypeMdiWindow
+        BusinessUnitTypeHistoryDialog -[hidden]down- LoginDialog
         ChangePasswordDialog -[hidden]down- CurrencyItemDelegate
         ImageCache -[hidden]down- LoginDialog
         LogoLabel -[hidden]down- DataLibrarianWindow
@@ -297,6 +311,188 @@ namespace ores #F2F2F2 {
         Signals:
         - detachableWindowCreated: Emitted when window is registered
         - detachableWindowDestroyed: Emitted when window is destroyed
+        end note
+
+        ' BusinessUnitType Controller
+        class BusinessUnitTypeController #ECECEC {
+            +BusinessUnitTypeController(QMainWindow* mainWindow, QMdiArea* mdiArea, ClientManager* clientManager, const QString& username, QObject* parent)
+            +~BusinessUnitTypeController()
+            +showListWindow() void
+            +closeAllWindows() void
+            +reloadListWindow() void
+            #listWindow() EntityListMdiWindow*
+            -onAddNewRequested() void
+            -onShowDetails(const refdata::domain::business_unit_type& type) void
+            -onShowHistory(const refdata::domain::business_unit_type& type) void
+            -onRevertVersion(const refdata::domain::business_unit_type& type) void
+            -onOpenVersion(const refdata::domain::business_unit_type& type, int versionNumber) void
+            -showAddWindow() void
+            -showDetailWindow(const refdata::domain::business_unit_type* type, bool createMode, bool readOnly, int versionNumber) void
+            -showHistoryWindow(const refdata::domain::business_unit_type& type) void
+            -{field} listWindow_ BusinessUnitTypeMdiWindow*
+            -{field} listMdiSubWindow_ DetachableMdiSubWindow*
+        }
+        note top of BusinessUnitTypeController
+        Controller managing all business unit type windows and operations.
+
+        - listWindow_: Pointer to the list MDI window
+        - listMdiSubWindow_: Pointer to the MDI sub-window wrapper
+
+        Subscribes to business_unit_type_changed events for stale marking.
+        Uses inherited show_managed_window(), try_reuse_window(), and
+        register_detachable_window() for window lifecycle management.
+        end note
+
+        ' BusinessUnitType Windows
+        class BusinessUnitTypeMdiWindow #ECECEC {
+            +BusinessUnitTypeMdiWindow(ClientManager* clientManager, const QString& username, QWidget* parent)
+            +~BusinessUnitTypeMdiWindow()
+            +model() ClientBusinessUnitTypeModel*
+            +sizeHint() QSize
+            +reload() void
+            -onDataLoaded() void
+            -onLoadError(const QString& error_message, const QString& details) void
+            -onSelectionChanged() void
+            -onRowDoubleClicked(const QModelIndex& index) void
+            -onConnectionStateChanged() void
+            -addNew() void
+            -editSelected() void
+            -deleteSelected() void
+            -showHistory() void
+            -setupUi() void
+            -setupToolbar() void
+            -updateActionStates() void
+            -{field} verticalLayout_ QVBoxLayout*
+            -{field} tableView_ QTableView*
+            -{field} toolBar_ QToolBar*
+            -{field} paginationWidget_ PaginationWidget*
+            -{field} addAction_ QAction*
+            -{field} editAction_ QAction*
+            -{field} deleteAction_ QAction*
+            -{field} refreshAction_ QAction*
+            -{field} historyAction_ QAction*
+            -{field} model_ ClientBusinessUnitTypeModel*
+            -{field} proxyModel_ QSortFilterProxyModel*
+            -{field} clientManager_ ClientManager*
+            -{field} username_ QString
+        }
+        note top of BusinessUnitTypeMdiWindow
+        MDI window for displaying and managing business unit types.
+
+        - tableView_: Table view for business unit types
+        - toolBar_: Toolbar with add/edit/delete/refresh/history actions
+        - paginationWidget_: Pagination control for large datasets
+        - model_: Business unit type data model
+        - proxyModel_: Sort/filter proxy
+
+        Inherits stale indicator support from EntityListMdiWindow.
+        end note
+
+        class ClientBusinessUnitTypeModel #ECECEC {
+            +ClientBusinessUnitTypeModel(ClientManager* clientManager, QObject* parent)
+            +~ClientBusinessUnitTypeModel()
+            +rowCount(const QModelIndex& parent) int
+            +columnCount(const QModelIndex& parent) int
+            +data(const QModelIndex& index, int role) QVariant
+            +headerData(int section, Qt::Orientation orientation, int role) QVariant
+            +refresh() void
+            +clear() void
+            +getType(int row) const refdata::domain::business_unit_type*
+            +page_size() std::uint32_t
+            +set_page_size(std::uint32_t size) void
+            +total_available_count() std::uint64_t
+            +load_page(std::uint32_t offset, std::uint32_t limit) void
+            -onTypesLoaded() void
+            -onPulseStateChanged(bool isOn) void
+            -onPulsingComplete() void
+            -{field} clientManager_ ClientManager*
+            -{field} types_ std::vector<refdata::domain::business_unit_type>
+            -{field} watcher_ QFutureWatcher<FetchResult>*
+            -{field} page_size_ std::uint32_t
+            -{field} total_available_count_ std::uint64_t
+            -{field} is_fetching_ bool
+            -{field} recencyTracker_ RecencyTracker<refdata::domain::business_unit_type>
+            -{field} pulseManager_ RecencyPulseManager*
+        }
+        note top of ClientBusinessUnitTypeModel
+        Table model for displaying business unit types fetched from the server.
+
+        - Columns: Code, Name, Level, CodingScheme, Description, Version, ModifiedBy
+        - Recency tracking for highlighting recently changed items
+        - Async loading with FutureWatcher and pagination support
+
+        Signals: dataLoaded, loadError
+        end note
+
+        class BusinessUnitTypeDetailDialog #ECECEC {
+            +BusinessUnitTypeDetailDialog(QWidget* parent)
+            +~BusinessUnitTypeDetailDialog()
+            +setClientManager(ClientManager* clientManager) void
+            +setUsername(const std::string& username) void
+            +setType(const refdata::domain::business_unit_type& type) void
+            +setCreateMode(bool createMode) void
+            +setReadOnly(bool readOnly) void
+            +hasUnsavedChanges() bool
+            -onSaveClicked() void
+            -onDeleteClicked() void
+            -onCodeChanged(const QString& code) void
+            -onFieldChanged() void
+            +{signal} typeSaved(const QString& code) void
+            +{signal} typeDeleted(const QString& code) void
+            -{field} ui_ Ui::BusinessUnitTypeDetailDialog*
+            -{field} clientManager_ ClientManager*
+            -{field} username_ std::string
+            -{field} type_ refdata::domain::business_unit_type
+            -{field} createMode_ bool
+            -{field} readOnly_ bool
+            -{field} hasChanges_ bool
+        }
+        note top of BusinessUnitTypeDetailDialog
+        Dialog for creating and editing business unit types.
+
+        - Inherits from DetailDialogBase for consistent dialog behaviour
+        - Supports create, edit, and read-only (history view) modes
+        - Fields: code, name, level (spinbox), coding scheme, description
+
+        Signals: typeSaved(code), typeDeleted(code)
+        end note
+
+        class BusinessUnitTypeHistoryDialog #ECECEC {
+            +BusinessUnitTypeHistoryDialog(boost::uuids::uuid id, const QString& code, ClientManager* clientManager, QWidget* parent)
+            +~BusinessUnitTypeHistoryDialog()
+            +loadHistory() void
+            +sizeHint() QSize
+            -onVersionSelected() void
+            -onOpenVersionClicked() void
+            -onRevertClicked() void
+            -setupUi() void
+            -setupToolbar() void
+            -setupConnections() void
+            -updateVersionList() void
+            -updateChangesTable() void
+            -updateFullDetails() void
+            -updateActionStates() void
+            +{signal} statusChanged(const QString& message) void
+            +{signal} errorOccurred(const QString& message) void
+            +{signal} openVersionRequested(const refdata::domain::business_unit_type& type, int versionNumber) void
+            +{signal} revertVersionRequested(const refdata::domain::business_unit_type& type) void
+            -{field} ui_ Ui::BusinessUnitTypeHistoryDialog*
+            -{field} id_ boost::uuids::uuid
+            -{field} code_ QString
+            -{field} clientManager_ ClientManager*
+            -{field} versions_ std::vector<refdata::domain::business_unit_type>
+            -{field} toolbar_ QToolBar*
+            -{field} openVersionAction_ QAction*
+            -{field} revertAction_ QAction*
+        }
+        note top of BusinessUnitTypeHistoryDialog
+        Widget for displaying business unit type version history.
+
+        - Splitter layout: version list on left, details on right
+        - Right panel: Changes tab (field diffs) + Full Details tab
+        - Supports open-as-read-only and revert-to-version actions
+
+        Signals: openVersionRequested, revertVersionRequested
         end note
 
         class CurrencyController #ECECEC {
@@ -1014,14 +1210,17 @@ namespace ores #F2F2F2 {
         ores::qt::MainWindow o-- ores::qt::DetachableMdiSubWindow
         ores::qt::MainWindow *-- ores::qt::CurrencyController
         ores::qt::MainWindow *-- ores::qt::CountryController
+        ores::qt::MainWindow *-- ores::qt::BusinessUnitTypeController
         ores::qt::MainWindow *-- ores::qt::ClientManager
         ores::qt::MainWindow *-- ores::qt::ImageCache
 
         ' Relationships - Entity Controller Pattern
         ores::qt::CurrencyController -up-|> ores::qt::EntityController
         ores::qt::CountryController -up-|> ores::qt::EntityController
+        ores::qt::BusinessUnitTypeController -up-|> ores::qt::EntityController
         ores::qt::CurrencyController o-- ores::qt::DetachableMdiSubWindow
         ores::qt::CountryController o-- ores::qt::DetachableMdiSubWindow
+        ores::qt::BusinessUnitTypeController o-- ores::qt::DetachableMdiSubWindow
         ores::qt::EntityController o-- ores::qt::ClientManager
 
         ' Relationships - Currency Components
@@ -1068,6 +1267,18 @@ namespace ores #F2F2F2 {
         ores::qt::CountryController ..> ores::qt::CountryMdiWindow : creates
         ores::qt::CountryController ..> ores::qt::CountryDetailDialog : creates
         ores::qt::CountryController ..> ores::qt::CountryHistoryDialog : creates
+
+        ' Relationships - BusinessUnitType Components
+        ores::qt::BusinessUnitTypeMdiWindow *-- ores::qt::ClientBusinessUnitTypeModel
+        ores::qt::BusinessUnitTypeMdiWindow o-- ores::qt::ClientManager
+        ores::qt::ClientBusinessUnitTypeModel o-- ores::qt::ClientManager
+        ores::qt::BusinessUnitTypeDetailDialog o-- ores::qt::ClientManager
+        ores::qt::BusinessUnitTypeHistoryDialog o-- ores::qt::ClientManager
+
+        ' Relationships - BusinessUnitTypeController creates windows
+        ores::qt::BusinessUnitTypeController ..> ores::qt::BusinessUnitTypeMdiWindow : creates
+        ores::qt::BusinessUnitTypeController ..> ores::qt::BusinessUnitTypeDetailDialog : creates
+        ores::qt::BusinessUnitTypeController ..> ores::qt::BusinessUnitTypeHistoryDialog : creates
 
         ' Relationships - MdiUtils usage for stale window marking
         ores::qt::CurrencyDetailDialog ..> ores::qt::MdiUtils : uses

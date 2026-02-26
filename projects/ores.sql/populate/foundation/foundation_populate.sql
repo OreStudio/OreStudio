@@ -106,6 +106,7 @@
 \ir ../refdata/refdata_contact_types_populate.sql
 \ir ../refdata/refdata_purpose_types_populate.sql
 \ir ../refdata/refdata_book_statuses_populate.sql
+\ir ../refdata/refdata_business_unit_types_populate.sql
 \ir ../refdata/refdata_system_business_centre_populate.sql
 \ir ../refdata/refdata_system_party_populate.sql
 

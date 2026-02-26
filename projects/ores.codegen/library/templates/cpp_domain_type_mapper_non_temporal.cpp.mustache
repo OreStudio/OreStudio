@@ -1,0 +1,63 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/repository/{{entity_singular}}_mapper.hpp"
+
+{{#has_uuid_columns}}
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
+{{/has_uuid_columns}}
+#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+
+namespace ores::{{component}}::repository {
+
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+domain::{{entity_singular}}
+{{entity_singular}}_mapper::map(const {{entity_singular}}_entity& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
+
+    domain::{{entity_singular}} r;
+{{#primary_key.is_text}}
+    r.{{primary_key.column}} = v.{{primary_key.column}}.value();
+{{/primary_key.is_text}}
+{{#primary_key.is_uuid}}
+    r.{{primary_key.column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{primary_key.column}}.value());
+{{/primary_key.is_uuid}}
+{{#natural_keys}}
+    r.{{column}} = v.{{column}};
+{{/natural_keys}}
+{{#columns}}
+{{#is_uuid}}
+    r.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
+{{/is_uuid}}
+{{#is_optional_uuid}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+{{/is_optional_uuid}}
+{{#is_nullable_string}}
+    r.{{name}} = v.{{name}}.value_or("");
+{{/is_nullable_string}}
+{{#is_simple}}
+    r.{{name}} = v.{{name}};
+{{/is_simple}}
+{{/columns}}
+    if (!v.created_at)
+        throw std::logic_error("Cannot map entity with null created_at to domain object.");
+    r.created_at = timestamp_to_timepoint(*v.created_at);
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped db entity. Result: " << r;
+    return r;
+}
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_mapper::map(const std::vector<{{entity_singular}}_entity>& v) {
+    return map_vector<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        v,
+        [](const auto& ve) { return map(ve); },
+        lg(),
+        "db entities");
+}
+
+}
+{{/domain_entity}}

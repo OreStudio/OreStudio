@@ -74,6 +74,7 @@
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ores.database/repository/database_info_repository.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/health_monitor.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -147,6 +148,23 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Set system tenant context for bootstrap initialization
     ctx = database::service::tenant_context::with_system_tenant(ctx);
+
+    // Log database build metadata to correlate service and schema versions
+    try {
+        database::repository::database_info_repository db_info_repo;
+        const auto db_infos = db_info_repo.read(ctx);
+        if (!db_infos.empty()) {
+            const auto& di = db_infos.front();
+            BOOST_LOG_SEV(lg(), info) << "Database schema: v" << di.schema_version
+                << " (" << di.build_environment
+                << " " << di.git_commit
+                << " " << di.git_date << ")";
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Database info record not found";
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Could not read database info: " << e.what();
+    }
 
     // Create shared authorization service for RBAC checks
     // (Permissions and roles are seeded via SQL scripts in the database template)

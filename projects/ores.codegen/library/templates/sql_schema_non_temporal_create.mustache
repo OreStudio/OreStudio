@@ -1,0 +1,24 @@
+{{! Template to generate SQL schema for a non-temporal (no valid_from/valid_to) domain entity table }}
+{{{sql_license}}}
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_non_temporal_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * {{domain_entity.entity_singular_title}} Table
+ *
+ * {{{domain_entity.description_formatted}}}
+ */
+
+create table if not exists "{{domain_entity.sql.tablename}}" (
+    "{{domain_entity.primary_key.column}}" {{domain_entity.primary_key.type}} not null,
+{{#domain_entity.natural_keys}}
+    "{{column}}" {{type}} not null,
+{{/domain_entity.natural_keys}}
+{{#domain_entity.columns}}
+    "{{name}}" {{type}}{{#nullable}} null{{/nullable}}{{^nullable}} not null{{/nullable}}{{#default}} default {{{default}}}{{/default}},
+{{/domain_entity.columns}}
+    "created_at" timestamp with time zone not null default current_timestamp,
+    primary key ({{domain_entity.primary_key.column}}),
+    check ("{{domain_entity.primary_key.column}}" <> '00000000-0000-0000-0000-000000000000'::uuid)
+);

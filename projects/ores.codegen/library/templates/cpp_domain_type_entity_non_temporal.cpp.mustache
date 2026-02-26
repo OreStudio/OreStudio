@@ -1,0 +1,17 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/repository/{{entity_singular}}_entity.hpp"
+
+#include <ostream>
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+
+namespace ores::{{component}}::repository {
+
+std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}
+{{/domain_entity}}

@@ -1,0 +1,60 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
+#define ORES_{{component_upper}}_DOMAIN_{{entity_singular_upper}}_HPP
+
+{{#cpp.includes.domain}}
+#include {{{.}}}
+{{/cpp.includes.domain}}
+
+namespace ores::{{component}}::domain {
+
+/**
+ * @brief {{{brief}}}
+ *
+{{#description_lines}}
+ * {{{.}}}
+{{/description_lines}}
+ */
+struct {{entity_singular}} final {
+    /**
+     * @brief {{{primary_key.description}}}
+{{#primary_key.detail}}
+     *
+     * {{{primary_key.detail}}}
+{{/primary_key.detail}}
+     */
+    {{{primary_key.cpp_type}}} {{primary_key.column}};
+
+{{#natural_keys}}
+    /**
+     * @brief {{{description}}}
+{{#detail}}
+     *
+     * {{{detail}}}
+{{/detail}}
+     */
+    {{{cpp_type}}} {{column}};
+
+{{/natural_keys}}
+{{#columns}}
+    /**
+     * @brief {{{description}}}
+{{#detail}}
+     *
+     * {{{detail}}}
+{{/detail}}
+     */
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+
+{{/columns}}
+    /**
+     * @brief Timestamp when this record was created.
+     */
+    std::chrono::system_clock::time_point created_at;
+};
+
+}
+
+#endif
+{{/domain_entity}}

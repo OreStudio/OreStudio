@@ -17,43 +17,40 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-02-25 Wed 15:07], for Wednesday, February 25, 2026.
-|      | <75>                                |        |      |      |       |
-| Tags | Headline                            | Time   |      |      |     % |
-|------+-------------------------------------+--------+------+------+-------|
-|      | *Total time*                        | *4:21* |      |      | 100.0 |
-|------+-------------------------------------+--------+------+------+-------|
-|      | Stories                             | 4:21   |      |      | 100.0 |
-|      | Active                              |        | 4:21 |      | 100.0 |
-| code | Remove toolbars from detail dialogs |        |      | 4:21 | 100.0 |
+#+CAPTION: Clock summary at [2026-02-26 Thu 10:39], for Thursday, February 26, 2026.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-02-25 Wed 15:07]
+#+CAPTION: Clock summary at [2026-02-26 Thu 10:39]
 |       | <75>                                                  |         |       |       |       |
 | Tags  | Headline                                              | Time    |       |       |     % |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                          | *44:27* |       |       | 100.0 |
+|       | *Total time*                                          | *46:16* |       |       | 100.0 |
 |-------+-------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                               | 44:27   |       |       | 100.0 |
-|       | Active                                                |         | 44:27 |       | 100.0 |
-| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   1.0 |
-| infra | Generate release notes for previous sprint            |         |       |  1:16 |   2.8 |
-| code  | Merge FSM into DQ                                     |         |       |  0:34 |   1.3 |
-| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   5.5 |
-| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |   7.4 |
-| code  | Add plotting of session data                          |         |       |  1:19 |   3.0 |
-| code  | Add account-party management and login support        |         |       | 13:43 |  30.9 |
-| code  | Add rounding type entity                              |         |       |  1:40 |   3.7 |
-| code  | Polish business centre UI and data quality            |         |       |  0:58 |   2.2 |
-| code  | Enhance currency taxonomy                             |         |       |  2:06 |   4.7 |
-| code  | Books, portfolios and trades are not party specific   |         |       |  2:59 |   6.7 |
-| code  | Minor improvements to connection browser              |         |       |  1:17 |   2.9 |
-| code  | Rename currency asset classes                         |         |       |  1:05 |   2.4 |
-| code  | Add portfolio explorer                                |         |       |  4:38 |  10.4 |
+|       | Stories                                               | 46:16   |       |       | 100.0 |
+|       | Active                                                |         | 46:16 |       | 100.0 |
+| agile | Sprint and product backlog refinement                 |         |       |  0:26 |   0.9 |
+| infra | Generate release notes for previous sprint            |         |       |  1:16 |   2.7 |
+| code  | Merge FSM into DQ                                     |         |       |  0:34 |   1.2 |
+| code  | Make all details dialogs tabbed                       |         |       |  2:26 |   5.3 |
+| code  | Provenance: Fix performed by and modified by stamping |         |       |  3:17 |   7.1 |
+| code  | Add plotting of session data                          |         |       |  1:19 |   2.8 |
+| code  | Add account-party management and login support        |         |       | 13:43 |  29.6 |
+| code  | Add rounding type entity                              |         |       |  1:40 |   3.6 |
+| code  | Polish business centre UI and data quality            |         |       |  0:58 |   2.1 |
+| code  | Enhance currency taxonomy                             |         |       |  2:06 |   4.5 |
+| code  | Books, portfolios and trades are not party specific   |         |       |  2:59 |   6.4 |
+| code  | Minor improvements to connection browser              |         |       |  1:17 |   2.8 |
+| code  | Rename currency asset classes                         |         |       |  1:05 |   2.3 |
+| code  | Remove toolbars from detail dialogs                   |         |       |  5:57 |  12.9 |
+| code  | Add portfolio explorer                                |         |       |  5:19 |  11.5 |
 | code  | Add party level currency and country restrictions     |         |       |  0:46 |   1.7 |
-| code  | Remove toolbars from detail dialogs                   |         |       |  5:57 |  13.4 |
+| code  | Analyse ORE trade import mapping requirements         |         |       |  1:08 |   2.4 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -634,136 +631,17 @@ We should avoid the term "asset classes" unless it is used in the usual asset
 class context. Many of the values are not really what one things of asset
 classes.
 
-*** STARTED Analyse caching at dialog level                            :code:
+*** COMPLETED Remove toolbars from detail dialogs                      :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-25 Wed 14:03]--[2026-02-25 Wed 15:03] =>  1:00
+    CLOCK: [2026-02-25 Wed 11:05]--[2026-02-25 Wed 13:05] =>  2:00
+    CLOCK: [2026-02-24 Tue 22:24]--[2026-02-25 Wed 01:21] =>  2:57
+    :END:
 
-We seem to have a lot of caches lying around at the dialog level. It makes more
-sense to have a common core (i.e. non-Qt specific) data-structure that caches
-different types of data which is shared by the different dialogs. This would
-also be reused by different clients such as Wt, shell, etc.
+At present we have toolbars in detail dialogs. These should just have buttons.
+Actions: delete, cancel, save.
 
-Instead of locking we should use immutable data structures. We should also take
-into account notifications coming in for data changes. It should enable you to
-notify all clients, load the data in the background in a way that does not
-affect dialogs.
-
-We could create workspace component which has all of the data needed, stored
-using immer containers:
-
-- it can have a comms aspect, so that the UI does not need to worry about any of
-  that. You just request say currencies page N, workspace then deals with that.
-  It can just give you the current version. If none, it will load via comms. It
-  also knows about subscriptions so it will tell you about pending subscriptions
-  for a collection you are interested in. As you load more pages, we load these
-  into immer containers ordered by page.
-- once we implement workspaces, we should then make all references to foreign
-  keys "clickable". For example, if you are in a business centre and it has a
-  country we should be able to click on it and open the country. At present we
-  can't do this because the data is kept at the main dialog level.
-- ideally we want a way to cache data in Qt format. We don't need to save this
-  data to the local database. However, we don't want to make the
-  =ores.workspace= library depend on Qt. Maybe we just need some kind of
-  "extensions" on each frontend (e.g. Wt etc), sort of a qt.workspace which
-  contains the original workspace plus any Qt specific representations. Or maybe
-  use composition.
-- we should add a UI to visualise the workspace, or at least be able to see size
-  usage etc. Baobab style map.
-
-Notes:
-
-- actually this is not "workspace", its ores.caching.
-- caching seems more like a component-level phenomena rather than having a
-  dedicated component in the entire product. A component like ores.caching would
-  have to depend on every component anyways, and it would not provide a lot of
-  valuable services. Makes more sense to have a =ores.refdata/caching= and so
-  on, with possibly a front-end service which deals with cache misses/hits and
-  can persist data locally into say SQLite. It could also handle the look up
-  data locally first, then do a remote get etc. All of this is transparent from
-  a client perspective. We could also have a feature flag to enable/disable
-  caching (in memory, local storage, etc).
-
-Analysis with Gemini:
-
-#+begin_src markdown
-## User Story: Implement a High-Performance Reactive Caching Service for Reference Data
-
-- **As a** system architect,
-- **I want** a centralized Reference Data Service that manages data via a
-  multi-tiered caching strategy (L1 Memory, L2 Disk) and incremental updates,
-- **So that** my application can access large volumes of lookup data with
-  near-zero latency, maintain thread safety without lock contention, and
-  minimize network overhead.
-
----
-
-### Acceptance Criteria
-
-#### 1. Multi-Tiered "Smart" Loading Logic
-
-- **Cold Start:** On initialization, the service must check the **L2 (SQLite)**
-  cache for an existing "Page" snapshot.
-- **As-Of Load:** If no L2 cache exists, the service must perform a full "As-Of"
-  load from the remote connection for a specific timestamp.
-- **Since (Delta) Load:** If an L2 snapshot exists, the service must only
-  request "Since" updates (changes/deltas) from the remote connection based on
-  the last known timestamp in the L2 store.
-- **L2 Persistence:** All data fetched via "As-Of" or "Since" must be mapped
-  back to its data representation and persisted to **SQLite** to facilitate
-  future warm starts.
-
-#### 2. Immutable L1 Cache (immer)
-
-- **Thread Safety:** The L1 (in-memory) cache must use **immer** persistent data
-  structures (`immer::map`) to provide lock-free read access for concurrent
-  threads.
-- **Structural Sharing:** Updates to the cache via "Since" loads must use
-  immer’s **transient/persistent** pattern to update only changed entities while
-  sharing memory for unchanged data.
-- **Atomic Swaps:** The service must provide an atomic mechanism to swap the
-  "current" version of the page, ensuring readers always see a consistent
-  snapshot.
-
-#### 3. Reactive Subscription & Staleness
-
-- **Notifications:** The service must subscribe to data change notifications.
-- **Stale State Management:** Upon receiving a notification, the service must
-  mark the relevant collection as stale and trigger an automated "Since" load to
-  synchronize the L1 and L2 tiers.
-
-#### 4. Data Mapping
-
-- **Bi-Directional Mapping:** The service must utilize mappers to translate
-  between raw data representations (for SQLite storage) and domain entities (for
-  L1 memory storage).
-
----
-
-### Technical Notes
-
-- **L1:** `immer::map<std::string, std::shared_ptr<const Entity>>`.
-- **L2:** SQLite table indexed by `page_id` and `timestamp` storing serialized
-  blobs.
-- **Performance Goal:** Reading from L1 should require no mutex locking, relying
-  on the immutability of the underlying immer structure.
-#+end_src
-
-Links:
-
-- [[https://github.com/arximboldi/immer][GH: immer]]: "immer is a library of persistent and immutable data structures
-  written in C++. These enable whole new kinds of architectures for interactive
-  and concurrent programs of striking simplicity, correctness, and performance."
-- [[https://learn.microsoft.com/en-us/aspnet/core/performance/caching/memory?view=aspnetcore-10.0][Cache in-memory in ASP.NET Core]]: get ideas for the caching interfaces and
-  requirements.
-
-Merged stories:
-
-*Add workspace as a container*
-
-Core needs to have a container for all of the data stored within a context.
-
-Actually, according to Data Priented Principles, we may not need it. This may be
-a UI concept but not a code concept.
-
-*** STARTED Add portfolio explorer                                     :code:
+*** COMPLETED Add portfolio explorer                                   :code:
     :LOGBOOK:
     CLOCK: [2026-02-25 Wed 15:04]--[2026-02-25 Wed 15:45] =>  0:41
     CLOCK: [2026-02-24 Tue 22:22]--[2026-02-24 Tue 22:55] =>  0:33
@@ -907,6 +785,162 @@ PortfolioBookTreeMdiWindow
 └── Status QLabel
 #+end_example
 
+*** COMPLETED Analyse ORE trade import mapping requirements            :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-25 Wed 19:02]--[2026-02-25 Wed 20:10] =>  1:08
+    :END:
+
+ORE portfolio XML files contain trades with string-based references for
+counterparties (=CounterParty=), netting sets (=NettingSetId=), and portfolio
+labels (=PortfolioIds=). ORES uses UUID foreign keys for books, counterparties,
+and portfolios. ORE has no concept of books at all.
+
+We need to analyse the mapping requirements and design an approach for resolving
+these references during import. Key questions:
+
+- How should users map ORE =CounterParty= strings to ORES counterparty UUIDs?
+  Options: auto-create counterparties, present a mapping dialog, or use a
+  configuration file.
+- How should users assign an ORES book to imported trades? ORE has no book
+  concept, so this must be user-provided.
+- Should ORE =PortfolioIds= be mapped to ORES portfolios, or ignored?
+- Should we support batch import configurations that can be saved and reused?
+
+Acceptance criteria:
+
+- Document the mapping requirements and chosen approach.
+- Create a design for the mapping dialog or configuration mechanism.
+- Identify all fields that need external resolution vs. direct mapping.
+
+*** STARTED Analyse caching at dialog level                            :code:
+
+We seem to have a lot of caches lying around at the dialog level. It makes more
+sense to have a common core (i.e. non-Qt specific) data-structure that caches
+different types of data which is shared by the different dialogs. This would
+also be reused by different clients such as Wt, shell, etc.
+
+Instead of locking we should use immutable data structures. We should also take
+into account notifications coming in for data changes. It should enable you to
+notify all clients, load the data in the background in a way that does not
+affect dialogs.
+
+We could create workspace component which has all of the data needed, stored
+using immer containers:
+
+- it can have a comms aspect, so that the UI does not need to worry about any of
+  that. You just request say currencies page N, workspace then deals with that.
+  It can just give you the current version. If none, it will load via comms. It
+  also knows about subscriptions so it will tell you about pending subscriptions
+  for a collection you are interested in. As you load more pages, we load these
+  into immer containers ordered by page.
+- once we implement workspaces, we should then make all references to foreign
+  keys "clickable". For example, if you are in a business centre and it has a
+  country we should be able to click on it and open the country. At present we
+  can't do this because the data is kept at the main dialog level.
+- ideally we want a way to cache data in Qt format. We don't need to save this
+  data to the local database. However, we don't want to make the
+  =ores.workspace= library depend on Qt. Maybe we just need some kind of
+  "extensions" on each frontend (e.g. Wt etc), sort of a qt.workspace which
+  contains the original workspace plus any Qt specific representations. Or maybe
+  use composition.
+- we should add a UI to visualise the workspace, or at least be able to see size
+  usage etc. Baobab style map.
+
+Notes:
+
+- actually this is not "workspace", its ores.caching.
+- caching seems more like a component-level phenomena rather than having a
+  dedicated component in the entire product. A component like ores.caching would
+  have to depend on every component anyways, and it would not provide a lot of
+  valuable services. Makes more sense to have a =ores.refdata/caching= and so
+  on, with possibly a front-end service which deals with cache misses/hits and
+  can persist data locally into say SQLite. It could also handle the look up
+  data locally first, then do a remote get etc. All of this is transparent from
+  a client perspective. We could also have a feature flag to enable/disable
+  caching (in memory, local storage, etc).
+
+Analysis with Gemini:
+
+#+begin_src markdown
+## User Story: Implement a High-Performance Reactive Caching Service for Reference Data
+
+- **As a** system architect,
+- **I want** a centralized Reference Data Service that manages data via a
+  multi-tiered caching strategy (L1 Memory, L2 Disk) and incremental updates,
+- **So that** my application can access large volumes of lookup data with
+  near-zero latency, maintain thread safety without lock contention, and
+  minimize network overhead.
+
+---
+
+### Acceptance Criteria
+
+#### 1. Multi-Tiered "Smart" Loading Logic
+
+- **Cold Start:** On initialization, the service must check the **L2 (SQLite)**
+  cache for an existing "Page" snapshot.
+- **As-Of Load:** If no L2 cache exists, the service must perform a full "As-Of"
+  load from the remote connection for a specific timestamp.
+- **Since (Delta) Load:** If an L2 snapshot exists, the service must only
+  request "Since" updates (changes/deltas) from the remote connection based on
+  the last known timestamp in the L2 store.
+- **L2 Persistence:** All data fetched via "As-Of" or "Since" must be mapped
+  back to its data representation and persisted to **SQLite** to facilitate
+  future warm starts.
+
+#### 2. Immutable L1 Cache (immer)
+
+- **Thread Safety:** The L1 (in-memory) cache must use **immer** persistent data
+  structures (`immer::map`) to provide lock-free read access for concurrent
+  threads.
+- **Structural Sharing:** Updates to the cache via "Since" loads must use
+  immer’s **transient/persistent** pattern to update only changed entities while
+  sharing memory for unchanged data.
+- **Atomic Swaps:** The service must provide an atomic mechanism to swap the
+  "current" version of the page, ensuring readers always see a consistent
+  snapshot.
+
+#### 3. Reactive Subscription & Staleness
+
+- **Notifications:** The service must subscribe to data change notifications.
+- **Stale State Management:** Upon receiving a notification, the service must
+  mark the relevant collection as stale and trigger an automated "Since" load to
+  synchronize the L1 and L2 tiers.
+
+#### 4. Data Mapping
+
+- **Bi-Directional Mapping:** The service must utilize mappers to translate
+  between raw data representations (for SQLite storage) and domain entities (for
+  L1 memory storage).
+
+---
+
+### Technical Notes
+
+- **L1:** `immer::map<std::string, std::shared_ptr<const Entity>>`.
+- **L2:** SQLite table indexed by `page_id` and `timestamp` storing serialized
+  blobs.
+- **Performance Goal:** Reading from L1 should require no mutex locking, relying
+  on the immutability of the underlying immer structure.
+#+end_src
+
+Links:
+
+- [[https://github.com/arximboldi/immer][GH: immer]]: "immer is a library of persistent and immutable data structures
+  written in C++. These enable whole new kinds of architectures for interactive
+  and concurrent programs of striking simplicity, correctness, and performance."
+- [[https://learn.microsoft.com/en-us/aspnet/core/performance/caching/memory?view=aspnetcore-10.0][Cache in-memory in ASP.NET Core]]: get ideas for the caching interfaces and
+  requirements.
+
+Merged stories:
+
+*Add workspace as a container*
+
+Core needs to have a container for all of the data stored within a context.
+
+Actually, according to Data Priented Principles, we may not need it. This may be
+a UI concept but not a code concept.
+
 *** STARTED Add party level currency and country restrictions          :code:
     :LOGBOOK:
     CLOCK: [2026-02-24 Tue 19:31]--[2026-02-24 Tue 20:17] =>  0:46
@@ -943,15 +977,149 @@ Highlights:
   rules.
 #+end_quote
 
-*** STARTED Remove toolbars from detail dialogs                        :code:
+*** STARTED Add scheduling support                                     :code:
     :LOGBOOK:
-    CLOCK: [2026-02-25 Wed 14:03]--[2026-02-25 Wed 15:03] =>  1:00
-    CLOCK: [2026-02-25 Wed 11:05]--[2026-02-25 Wed 13:05] =>  2:00
-    CLOCK: [2026-02-24 Tue 22:24]--[2026-02-25 Wed 01:21] =>  2:57
+    CLOCK: [2026-02-25 Wed 20:11]--[2026-02-25 Wed 21:30] =>  1:19
     :END:
 
-At present we have toolbars in detail dialogs. These should just have buttons.
-Actions: delete, cancel, save.
+Build a library called =ores.scheduler= that wraps the PostgreSQL =pg_cron=
+extension.
+
+1. Overview
+
+- Use a Quartz.NET-style fluent API. Strictly distinguish between job_definition
+  (the record in cron.job) and job_instance (the execution record in
+  cron.job_run_details).
+- Create a job_definition class with properties: =job_id=, =job_name=, =command=,
+  and schedule_expression.
+- Create a job_instance struct for telemetry: =instance_id=, =status=, and
+  =return_message=.
+- Implement a =job_definition_builder= using the fluent pattern.
+- Implement a =cron_scheduler= class that uses sqlgen to execute the
+  =cron.schedule= and =cron.unschedule= functions.
+- Include a method =get_job_history(job_id)= that returns a vector of
+  =job_instance=.
+
+2. The Core Concept
+
+The library, ores.scheduler, is a fluent C++ wrapper for PostgreSQL's pg_cron
+extension. It follows the Quartz.NET pattern but persists all state in the
+database.
+
+- =job_definition=: The persistent "Plan" (stored in cron.job).
+- =job_instance=: The historical "Execution" (stored in cron.job_run_details).
+- =cron_scheduler=: The coordinator that translates C++ calls into SQL.
+
+3. The Domain Model (Key Classes)
+
+=job_definition=: This class represents the identity and command of a task.
+
+Fields:
+
+- =job_id=: The internal Postgres ID (assigned after scheduling).
+- =job_name=: A unique user-provided string.
+- =command=: The raw SQL to execute.
+- =schedule_expression=: The cron string (e.g., 0 0 * * *).
+- =database_name=: Which DB to run the command against.
+
+=job_instance=: This is a read-only record of a specific trigger event.
+
+- =instance_id=: Unique run ID.
+- =parent_job_id=: Link to the job_definition.
+- =status=: Enum (starting, finished, failed).
+- =return_message=: The stdout or error message from Postgres.
+- =start_time / end_time=: Timestamps of the execution.
+
+=job_definition_builder=: The fluent interface to create definitions.
+
+- =with_name(string)=
+- =with_command(string)=
+- =with_cron_schedule(string)=
+
+4. The Lifecycle Story
+
+Phase 1: Registration
+
+The user uses the job_definition_builder to create a job_definition object. They
+pass this to the cron_scheduler. The scheduler executes:
+
+: SELECT cron.schedule('job_name', 'schedule_expression', 'command');
+
+Phase 2: The Trigger (Database Side)
+
+At the scheduled time, the pg_cron background worker wakes up. It ignores the
+C++ app entirely. It creates a new job_instance in the database, runs the SQL
+command, and updates the job_instance with the result (success or failure).
+
+Phase 3: Observation (C++ Side)
+
+The C++ app can "re-sync" by asking the cron_scheduler for updates.
+
+- =get_all_definitions()=: Returns a list of job_definition objects currently in
+  the DB.
+- =get_recent_instances(job_id)=: Queries the history table to return a list of
+  job_instance objects.
+
+Merged stories:
+
+*Add pg_cron extension for scheduling*
+
+We should install pg_cron extension:
+
+#+begin_quote
+pg_cron is a simple cron-based job scheduler for PostgreSQL (10 or higher) that
+runs inside the database as an extension.
+#+end_quote
+
+Links:
+
+- [[https://github.com/citusdata/pg_cron][GH: pg_cron]]
+
+*** STARTED Add trade import mapping dialog to Qt UI                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-26 Thu 10:40]
+    CLOCK: [2026-02-26 Thu 10:00]--[2026-02-26 Thu 10:39] =>  0:39
+    :END:
+
+Add a mapping dialog to the Qt UI for importing ORE portfolio XML files. The
+dialog should allow users to:
+
+1. Select an ORE portfolio XML file.
+2. Preview the trades that will be imported (count, types, counterparties).
+3. Select the ORES book to import trades into.
+4. Map ORE =CounterParty= names to ORES counterparties (or auto-create).
+5. Review and confirm the import.
+
+This dialog should be accessible from the book list window toolbar when a book
+is selected (similar to the currency import button on the currency list window).
+
+Files to modify:
+
+- =BookMdiWindow.hpp/cpp= - add import toolbar action
+- New =ImportTradeDialog.hpp/cpp= - the mapping and preview dialog
+- =BookController.hpp/cpp= - wire up the import action
+
+Acceptance criteria:
+
+- Import button is visible and enabled when a book is selected.
+- Dialog shows trade preview with counterparty mapping.
+- Successful import creates trades in the selected book.
+- Trades appear in the trade list after import.
+
+*** Notify clients of database connection errors                       :code:
+
+If the server fails to connect to the database, we should show a dialog box or
+some other UI to explain this to the user. Elsewhere we have:
+
+#+begin_quote
+Erro de Ligação à Base de Dados
+
+Problema de Configuração: Não foi possível estabelecer ligação à base de dados.
+Por favor contacte o administrador do sistema imediatamente para resolver este
+problema.
+#+end_quote
+
+We need something similar. Big and red so user sees it.
 
 *** Create named profiles                                              :code:
 

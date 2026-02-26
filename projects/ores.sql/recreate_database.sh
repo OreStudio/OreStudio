@@ -218,5 +218,36 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -v skip_validation="${SKIP_VALIDATION}" \
     -f ./setup_schema.sql
 
+# Phase 3: Populate database metadata (schema version and build info)
+echo ""
+echo "--- Populating database metadata ---"
+
+# Extract schema version from the root CMakeLists.txt
+SCHEMA_VERSION=$(grep -oP 'project\(OreStudio VERSION \K[0-9]+\.[0-9]+\.[0-9]+' \
+    "${SCRIPT_DIR}/../../CMakeLists.txt" 2>/dev/null || echo "0.0.0")
+
+# Determine build environment from env var or default to "local"
+BUILD_ENVIRONMENT="${ORES_BUILD_ENVIRONMENT:-local}"
+
+# Get git info
+GIT_COMMIT=$(git -C "${SCRIPT_DIR}" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+GIT_STATUS=$(git -C "${SCRIPT_DIR}" status --porcelain 2>/dev/null || echo "")
+if [[ -n "${GIT_STATUS}" ]]; then
+    GIT_COMMIT="${GIT_COMMIT}-dirty"
+fi
+GIT_DATE=$(git -C "${SCRIPT_DIR}" log -1 --format='%Y/%m/%d %H:%M:%S' HEAD 2>/dev/null || echo "unknown")
+
+echo "  Schema version:   ${SCHEMA_VERSION}"
+echo "  Build environment: ${BUILD_ENVIRONMENT}"
+echo "  Git commit:        ${GIT_COMMIT}"
+echo "  Git date:          ${GIT_DATE}"
+
+PGPASSWORD="${DDL_PASSWORD}" psql \
+    -h localhost \
+    -U ores_ddl_user \
+    -d "${DB_NAME}" \
+    -c "INSERT INTO ores_database_info_tbl (id, schema_version, build_environment, git_commit, git_date)
+        VALUES (gen_random_uuid(), '${SCHEMA_VERSION}', '${BUILD_ENVIRONMENT}', '${GIT_COMMIT}', '${GIT_DATE}');"
+
 echo ""
 echo "=== Database recreation complete ==="

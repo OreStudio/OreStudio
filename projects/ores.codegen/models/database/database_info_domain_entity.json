@@ -1,0 +1,81 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "database",
+    "has_tenant_id": false,
+    "entity_singular": "database_info",
+    "entity_plural": "database_infos",
+    "entity_title": "Database Info",
+    "brief": "Build and schema metadata recorded when the database was created or recreated.",
+    "description": "Stores the schema version, git commit, and build environment inserted at\ndatabase creation time. Used to correlate service behaviour with the\ndatabase schema in use. Contains exactly one row.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "Fixed UUID identifying the singleton database info record.",
+      "detail": "A well-known UUID inserted by the creation script."
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "schema_version",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Database schema version matching the application version.",
+        "detail": "Set to ORES_VERSION (e.g. '0.0.13') at database creation time.",
+        "generator_expr": "std::string(\"0.0.1\")"
+      },
+      {
+        "name": "build_environment",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Build environment identifier.",
+        "detail": "e.g. 'local', 'production', 'staging'. Prefix from ORES_BUILD_INFO.",
+        "generator_expr": "std::string(\"local\")"
+      },
+      {
+        "name": "git_commit",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Short git commit hash of the code that created this database.",
+        "detail": "e.g. 'c7681ac4' or 'c7681ac4-dirty'. From ORES_BUILD_INFO.",
+        "generator_expr": "std::string(\"abc1234\")"
+      },
+      {
+        "name": "git_date",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Date and time of the git commit that created this database.",
+        "detail": "e.g. '2026/02/25 22:43:31'. From ORES_BUILD_INFO.",
+        "generator_expr": "std::string(\"2026/01/01 00:00:00\")"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_database_info_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "database_info",
+      "entity_plural_short": "database_infos",
+      "entity_singular_words": "database info",
+      "entity_plural_words": "database infos"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "di"
+    }
+  }
+}

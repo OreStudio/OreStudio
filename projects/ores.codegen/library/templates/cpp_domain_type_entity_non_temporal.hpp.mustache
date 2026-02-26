@@ -1,0 +1,47 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_ENTITY_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_ENTITY_HPP
+
+#include <string>
+#include <optional>
+#include <ostream>
+#include "sqlgen/Timestamp.hpp"
+#include "sqlgen/PrimaryKey.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Represents a {{entity_title_lower}} in the database.
+ */
+struct {{entity_singular}}_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "{{sql.tablename}}";
+
+    sqlgen::PrimaryKey<std::string> {{primary_key.column}};
+{{#natural_keys}}
+    std::string {{column}};
+{{/natural_keys}}
+{{#columns}}
+{{#is_optional_uuid}}
+    std::optional<std::string> {{name}};
+{{/is_optional_uuid}}
+{{#is_uuid}}
+    std::string {{name}};
+{{/is_uuid}}
+{{#is_nullable_string}}
+    std::optional<{{{cpp_type}}}> {{name}};
+{{/is_nullable_string}}
+{{#is_simple}}
+    {{{cpp_type}}} {{name}}{{#default_value}} = {{{default_value}}}{{/default_value}};
+{{/is_simple}}
+{{/columns}}
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
+};
+
+std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
+
+}
+
+#endif
+{{/domain_entity}}

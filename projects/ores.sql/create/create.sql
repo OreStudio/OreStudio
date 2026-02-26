@@ -24,12 +24,17 @@
 \ir ./utility/utility_create.sql
 
 -- =============================================================================
--- 2. Data Governance Tables (must be created before operational tables - no external deps)
+-- 2. Database Metadata Tables (no dependencies - records build and schema info)
+-- =============================================================================
+\ir ./database/database_create.sql
+
+-- =============================================================================
+-- 3. Data Governance Tables (must be created before operational tables - no external deps)
 -- =============================================================================
 \ir ./dq/dq_create.sql
 
 -- =============================================================================
--- 3. Operational Tables (depend on data governance tables for FK validation)
+-- 4. Operational Tables (depend on data governance tables for FK validation)
 -- =============================================================================
 \ir ./refdata/refdata_create.sql
 \ir ./trading/trading_create.sql
@@ -41,16 +46,16 @@
 \ir ./scheduler/scheduler_create.sql
 
 -- =============================================================================
--- 4. Row-Level Security Policies (depend on all tables and IAM functions)
+-- 5. Row-Level Security Policies (depend on all tables and IAM functions)
 -- =============================================================================
 \ir ./rls/rls_create.sql
 
 -- =============================================================================
--- 5. Seed Functions (depend on data governance and operational tables)
+-- 6. Seed Functions (depend on data governance and operational tables)
 -- =============================================================================
 \ir ./seed/seed_create.sql
 
 -- =============================================================================
--- 6. Summary Functions (depend on all tables)
+-- 7. Summary Functions (depend on all tables)
 -- =============================================================================
 \ir ./utility/utility_summary_functions_create.sql

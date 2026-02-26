@@ -67,58 +67,7 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
-*** Analyse ORE trade import mapping requirements                       :code:
-
-ORE portfolio XML files contain trades with string-based references for
-counterparties (=CounterParty=), netting sets (=NettingSetId=), and portfolio
-labels (=PortfolioIds=). ORES uses UUID foreign keys for books, counterparties,
-and portfolios. ORE has no concept of books at all.
-
-We need to analyse the mapping requirements and design an approach for resolving
-these references during import. Key questions:
-
-- How should users map ORE =CounterParty= strings to ORES counterparty UUIDs?
-  Options: auto-create counterparties, present a mapping dialog, or use a
-  configuration file.
-- How should users assign an ORES book to imported trades? ORE has no book
-  concept, so this must be user-provided.
-- Should ORE =PortfolioIds= be mapped to ORES portfolios, or ignored?
-- Should we support batch import configurations that can be saved and reused?
-
-Acceptance criteria:
-
-- Document the mapping requirements and chosen approach.
-- Create a design for the mapping dialog or configuration mechanism.
-- Identify all fields that need external resolution vs. direct mapping.
-
-*** Add trade import mapping dialog to Qt UI                            :code:
-
-Add a mapping dialog to the Qt UI for importing ORE portfolio XML files. The
-dialog should allow users to:
-
-1. Select an ORE portfolio XML file.
-2. Preview the trades that will be imported (count, types, counterparties).
-3. Select the ORES book to import trades into.
-4. Map ORE =CounterParty= names to ORES counterparties (or auto-create).
-5. Review and confirm the import.
-
-This dialog should be accessible from the book list window toolbar when a book
-is selected (similar to the currency import button on the currency list window).
-
-Files to modify:
-
-- =BookMdiWindow.hpp/cpp= - add import toolbar action
-- New =ImportTradeDialog.hpp/cpp= - the mapping and preview dialog
-- =BookController.hpp/cpp= - wire up the import action
-
-Acceptance criteria:
-
-- Import button is visible and enabled when a book is selected.
-- Dialog shows trade preview with counterparty mapping.
-- Successful import creates trades in the selected book.
-- Trades appear in the trade list after import.
-
-*** Add trade import support to shell                                   :code:
+*** Add trade import support to shell                                  :code:
 
 Add a shell command for importing ORE portfolio XML files. This should use the
 existing =ores.ore= importer and =trade_mapper= infrastructure to parse the
@@ -136,7 +85,7 @@ Acceptance criteria:
 - Trades are assigned to the specified book.
 - Counterparty mapping is supported.
 
-*** Add trade import support to HTTP API                                :code:
+*** Add trade import support to HTTP API                               :code:
 
 Add an HTTP endpoint for importing ORE portfolio XML files. This should use the
 existing =ores.ore= importer and =trade_mapper= infrastructure.
@@ -152,7 +101,7 @@ Acceptance criteria:
 - HTTP endpoint imports trades from an ORE portfolio XML file.
 - Returns a summary of imported trades (count, any validation errors).
 
-*** Investigate dashql for ideas
+*** Investigate dashql for ideas                                       :code:
 
 #+begin_quote
 A Dash-based wrapper for QuantLib
@@ -756,20 +705,6 @@ Notes:
   for proper technical term). The main table just joins against the last
   signature but we can follow the trail back. The state machine determines how
   many signatures are required to promote from staging to main table.
-
-*** Add pg_cron extension for scheduling                               :code:
-
-We should install pg_cron extension:
-
-#+begin_quote
-pg_cron is a simple cron-based job scheduler for PostgreSQL (10 or higher) that
-runs inside the database as an extension.
-#+end_quote
-
-Links:
-
-- [[https://github.com/citusdata/pg_cron][GH: pg_cron]]
-
 
 *** Support tenant specification in shell account commands             :code:
 

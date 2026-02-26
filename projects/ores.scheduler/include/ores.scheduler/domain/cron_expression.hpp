@@ -44,6 +44,15 @@ namespace ores::scheduler::domain {
 class cron_expression final {
 public:
     /**
+     * @brief Default constructor. Creates an expression that runs every minute.
+     *
+     * Provides a valid default state so that types containing cron_expression
+     * (e.g. job_definition) can be default-constructed for UI purposes.
+     * Equivalent to "* * * * *".
+     */
+    cron_expression();
+
+    /**
      * @brief Parse and validate a cron expression string.
      *
      * Accepts standard 5-field cron syntax (minute hour day month weekday).

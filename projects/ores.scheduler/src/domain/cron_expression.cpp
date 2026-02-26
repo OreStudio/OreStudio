@@ -38,6 +38,9 @@ std::string to_croncpp_expr(std::string_view pg_cron_expr) {
 
 } // anonymous namespace
 
+cron_expression::cron_expression()
+    : expr_("* * * * *") {}
+
 cron_expression::cron_expression(std::string validated_expr)
     : expr_(std::move(validated_expr)) {}
 

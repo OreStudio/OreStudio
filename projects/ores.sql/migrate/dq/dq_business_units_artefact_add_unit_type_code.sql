@@ -17,23 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-create table if not exists "ores_dq_business_units_artefact_tbl" (
-    "dataset_id" uuid not null,
-    "tenant_id" uuid not null,
-    "id" uuid not null,
-    "version" integer not null,
-    "unit_name" text not null,
-    "parent_business_unit_id" uuid null,
-    "unit_code" text null,
-    "business_centre_code" text null,
-    "unit_type_code" text null
-);
 
-create index if not exists ores_dq_business_units_artefact_dataset_idx
-on "ores_dq_business_units_artefact_tbl" (dataset_id);
-
-create index if not exists ores_dq_business_units_artefact_tenant_idx
-on "ores_dq_business_units_artefact_tbl" (tenant_id);
-
-create index if not exists ores_dq_business_units_artefact_id_idx
-on "ores_dq_business_units_artefact_tbl" (id);
+alter table "ores_dq_business_units_artefact_tbl"
+    add column if not exists "unit_type_code" text null;

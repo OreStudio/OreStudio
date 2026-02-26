@@ -66,6 +66,29 @@ begin
         return;
     end if;
 
+    -- Auto-provision canonical business unit types for target tenant (if missing)
+    if not exists (
+        select 1 from ores_refdata_business_unit_types_tbl
+        where tenant_id = p_target_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        insert into ores_refdata_business_unit_types_tbl (
+            id, tenant_id, version, coding_scheme_code, code, name, level, description,
+            modified_by, performed_by, change_reason_code, change_commentary
+        )
+        select gen_random_uuid(), p_target_tenant_id, 0, 'ORES-ORG',
+               code, name, level, description,
+               coalesce(ores_iam_current_actor_fn(), current_user), current_user,
+               'system.external_data_import', 'Provisioned with organisation dataset'
+        from (values
+            ('DIVISION',      'Division',      0, 'Top-level functional grouping within a party.'),
+            ('BRANCH',        'Branch',        0, 'Top-level geographic grouping within a party.'),
+            ('BUSINESS_AREA', 'Business Area', 1, 'Cohesive set of business activities within a division.'),
+            ('DESK',          'Trading Desk',  2, 'Operational trading or risk desk; direct owner of books.'),
+            ('COST_CENTRE',   'Cost Centre',   2, 'Finance/accounting unit, leaf of the hierarchy.')
+        ) as t(code, name, level, description);
+    end if;
+
     -- Resolve root party: explicit param or query tenant's operational root
     v_root_party_id := coalesce(
         (p_params ->> 'party_id')::uuid,
@@ -90,16 +113,17 @@ begin
         depth int not null default 0,
         unit_name text not null,
         unit_code text,
-        business_centre_code text
+        business_centre_code text,
+        unit_type_code text
     ) on commit drop;
 
     -- Seed with root nodes (no parent)
     insert into bu_publish_map (
         artefact_id, parent_artefact_id, depth,
-        unit_name, unit_code, business_centre_code
+        unit_name, unit_code, business_centre_code, unit_type_code
     )
     select id, parent_business_unit_id, 0,
-           unit_name, unit_code, business_centre_code
+           unit_name, unit_code, business_centre_code, unit_type_code
     from ores_dq_business_units_artefact_tbl
     where dataset_id = p_dataset_id
       and parent_business_unit_id is null;
@@ -109,10 +133,10 @@ begin
     loop
         insert into bu_publish_map (
             artefact_id, parent_artefact_id, depth,
-            unit_name, unit_code, business_centre_code
+            unit_name, unit_code, business_centre_code, unit_type_code
         )
         select a.id, a.parent_business_unit_id, v_current_depth + 1,
-               a.unit_name, a.unit_code, a.business_centre_code
+               a.unit_name, a.unit_code, a.business_centre_code, a.unit_type_code
         from ores_dq_business_units_artefact_tbl a
         join bu_publish_map m on m.artefact_id = a.parent_business_unit_id
         where a.dataset_id = p_dataset_id
@@ -130,17 +154,23 @@ begin
         insert into ores_refdata_business_units_tbl (
             tenant_id, id, version, party_id, unit_name,
             parent_business_unit_id, unit_code, business_centre_code,
+            unit_type_id,
             modified_by, performed_by, change_reason_code, change_commentary
         )
         select
             p_target_tenant_id,
             m.new_id, 0, v_root_party_id, m.unit_name,
             parent_m.new_id, m.unit_code, m.business_centre_code,
+            but.id,
             coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
             'Published from organisation dataset'
         from bu_publish_map m
         left join bu_publish_map parent_m
             on parent_m.artefact_id = m.parent_artefact_id
+        left join ores_refdata_business_unit_types_tbl but
+            on but.tenant_id = p_target_tenant_id
+           and but.code = m.unit_type_code
+           and but.valid_to = ores_utility_infinity_timestamp_fn()
         where m.depth = v_current_depth;
 
         get diagnostics v_level_count = row_count;

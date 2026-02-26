@@ -37,9 +37,11 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
+        ores.comms.lib
     PRIVATE
         ores.utility.lib
         ores.logging.lib
+        ores.platform.lib
         croncpp::croncpp
         faker-cxx::faker-cxx)
 

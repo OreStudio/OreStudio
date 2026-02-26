@@ -325,7 +325,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_trades_request for server-side trade scoping. book_id selects trades for
 // a single book; portfolio_id triggers a recursive CTE to include trades from
 // the full portfolio subtree. Breaking change.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 44;
+//
+// Version 45.0 adds scheduler subsystem (0x9000-0x9FFF) for managing pg_cron
+// jobs via the binary protocol. New messages: get_job_definitions_request/response
+// (0x9000/0x9001), schedule_job_request/response (0x9002/0x9003),
+// unschedule_job_request/response (0x9004/0x9005),
+// get_job_history_request/response (0x9006/0x9007). Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 45;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -347,6 +353,8 @@ constexpr std::uint16_t SYNTHETIC_SUBSYSTEM_MIN = 0x7000;
 constexpr std::uint16_t SYNTHETIC_SUBSYSTEM_MAX = 0x7FFF;
 constexpr std::uint16_t TRADE_SUBSYSTEM_MIN = 0x8000;
 constexpr std::uint16_t TRADE_SUBSYSTEM_MAX = 0x8FFF;
+constexpr std::uint16_t SCHEDULER_SUBSYSTEM_MIN = 0x9000;
+constexpr std::uint16_t SCHEDULER_SUBSYSTEM_MAX = 0x9FFF;
 
 }
 

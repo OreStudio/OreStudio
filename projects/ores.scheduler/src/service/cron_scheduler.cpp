@@ -50,19 +50,18 @@ cron_scheduler::schedule(domain::job_definition def,
     // Persist the definition first (sets our UUID, version etc.)
     repo_.save(def, change_reason_code, change_commentary);
 
-    // Call pg_cron via schedule_in_database so that the background worker
-    // (which lives in the postgres database by default) schedules the job
-    // to execute in the current application database. This allows multiple
-    // OreStudio environments to share a single PostgreSQL cluster while each
-    // keeping their jobs isolated to their own database.
-    const std::string sql =
-        "SELECT cron.schedule_in_database($1, $2, $3, current_database())";
+    // Call pg_cron. pg_cron 1.6 requires the extension to be installed in
+    // cron.database_name (postgresql.conf), which must match the application
+    // database. One PostgreSQL cluster therefore supports only one OreStudio
+    // environment at a time via pg_cron. See product backlog story
+    // "Replace pg_cron with native OreStudio scheduler" for the long-term fix.
+    const std::string sql = "SELECT cron.schedule($1, $2, $3)";
     const auto rows = execute_parameterized_string_query(
         ctx_, sql,
         {def.job_name,
          def.schedule_expression.to_string(),
          def.command},
-        lg(), "calling cron.schedule_in_database");
+        lg(), "calling cron.schedule");
 
     if (rows.empty()) {
         BOOST_LOG_SEV(lg(), error) << "cron.schedule returned no rows";

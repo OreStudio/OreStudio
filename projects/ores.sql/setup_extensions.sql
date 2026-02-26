@@ -98,24 +98,25 @@ begin
 end $$;
 
 -- pg_cron: Job scheduler extension (OPTIONAL)
--- Provides cron.schedule_in_database(), cron.unschedule(), cron.job_run_details.
+-- Provides cron.schedule(), cron.unschedule(), cron.job, cron.job_run_details.
 -- Required by ores.scheduler library for background SQL job management.
 -- If not available, ores.scheduler cannot schedule or execute jobs.
 --
--- MULTI-DATABASE SETUP (required for multiple OreStudio environments):
---   ores.scheduler uses cron.schedule_in_database() so that pg_cron's
---   background worker (in the 'postgres' database) can run jobs isolated
---   to each app database. This requires:
+-- PREREQUISITES FOR PG_CRON (pg_cron 1.6+):
+--   pg_cron 1.6 enforces that the extension can only be installed in the
+--   database named by cron.database_name in postgresql.conf. This means only
+--   one OreStudio environment per PostgreSQL cluster can use pg_cron at a time.
+--   (See product backlog: "Replace pg_cron with native OreStudio scheduler".)
 --
---   1. pg_cron installed on the system:
+--   1. Install the package:
 --        Debian/Ubuntu: apt install postgresql-NN-cron
---   2. pg_cron added to shared_preload_libraries in postgresql.conf:
---        shared_preload_libraries = 'pg_cron'        (no cron.database_name needed; defaults to 'postgres')
---   3. PostgreSQL restarted after modifying shared_preload_libraries.
---   4. CREATE EXTENSION pg_cron in the 'postgres' database (background worker):
---        psql -U postgres postgres -c "CREATE EXTENSION IF NOT EXISTS pg_cron"
---   5. CREATE EXTENSION pg_cron in THIS app database (this script does this).
---   Minimum required version: pg_cron 1.4 (for cron.schedule_in_database support)
+--   2. Edit postgresql.conf:
+--        shared_preload_libraries = '...,pg_cron'
+--        cron.database_name = '<this_database_name>'
+--   3. Restart PostgreSQL:
+--        sudo systemctl restart postgresql
+--   4. Run this script to create the extension in the app database.
+--   Minimum required version: pg_cron 1.6
 do $$
 declare
     pgcron_available boolean;
@@ -126,11 +127,10 @@ begin
 
     if pgcron_available then
         create extension if not exists pg_cron;
-        raise notice 'Installed: pg_cron in current database';
-        raise notice 'IMPORTANT: also run: psql -U postgres postgres -c "CREATE EXTENSION IF NOT EXISTS pg_cron"';
+        raise notice 'Installed: pg_cron';
     else
         raise notice 'pg_cron not available - ores.scheduler job scheduling will not function';
-        raise notice '(Install with: apt install postgresql-NN-cron, then add pg_cron to shared_preload_libraries)';
+        raise notice '(Install with: apt install postgresql-NN-cron, then configure postgresql.conf)';
     end if;
 end $$;
 

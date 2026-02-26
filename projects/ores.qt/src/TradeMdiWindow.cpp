@@ -52,7 +52,8 @@ TradeMdiWindow::TradeMdiWindow(
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
-      historyAction_(nullptr) {
+      historyAction_(nullptr),
+      importAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -126,6 +127,16 @@ void TradeMdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &TradeMdiWindow::viewHistorySelected);
+
+    toolbar_->addSeparator();
+
+    importAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ImportOre, IconUtils::DefaultIconColor),
+        tr("Import"));
+    importAction_->setToolTip(tr("Import trades from an ORE portfolio XML file"));
+    connect(importAction_, &QAction::triggered,
+            this, &TradeMdiWindow::importTradesRequested);
 }
 
 void TradeMdiWindow::setupTable() {

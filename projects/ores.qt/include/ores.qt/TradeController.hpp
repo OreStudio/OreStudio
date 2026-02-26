@@ -77,6 +77,7 @@ private slots:
     void onShowDetails(const trading::domain::trade& trade);
     void onAddNewRequested();
     void onShowHistory(const trading::domain::trade& trade);
+    void onImportTradesRequested();
     void onRevertVersion(const trading::domain::trade& trade);
     void onOpenVersion(const trading::domain::trade& trade,
                        int versionNumber);

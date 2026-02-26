@@ -66,7 +66,25 @@ begin
         return;
     end if;
 
-    -- Auto-provision canonical business unit types for target tenant (if missing)
+    -- Resolve root party: explicit param or query tenant's operational root
+    v_root_party_id := coalesce(
+        (p_params ->> 'party_id')::uuid,
+        (select id from ores_refdata_parties_tbl
+         where tenant_id = p_target_tenant_id
+           and parent_party_id is null
+           and party_category <> 'System'
+           and valid_to = ores_utility_infinity_timestamp_fn()
+         limit 1)
+    );
+
+    if v_root_party_id is null then
+        return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    -- Auto-provision canonical business unit types for target tenant (if missing).
+    -- Done after the party check so we only create types for tenants that will
+    -- actually receive business units.
     if not exists (
         select 1 from ores_refdata_business_unit_types_tbl
         where tenant_id = p_target_tenant_id
@@ -87,22 +105,6 @@ begin
             ('DESK',          'Trading Desk',  2, 'Operational trading or risk desk; direct owner of books.'),
             ('COST_CENTRE',   'Cost Centre',   2, 'Finance/accounting unit, leaf of the hierarchy.')
         ) as t(code, name, level, description);
-    end if;
-
-    -- Resolve root party: explicit param or query tenant's operational root
-    v_root_party_id := coalesce(
-        (p_params ->> 'party_id')::uuid,
-        (select id from ores_refdata_parties_tbl
-         where tenant_id = p_target_tenant_id
-           and parent_party_id is null
-           and party_category <> 'System'
-           and valid_to = ores_utility_infinity_timestamp_fn()
-         limit 1)
-    );
-
-    if v_root_party_id is null then
-        return query select 'skipped_no_party'::text, 0::bigint;
-        return;
     end if;
 
     -- Build mapping table: artefact ID -> new UUID, with depth for ordering

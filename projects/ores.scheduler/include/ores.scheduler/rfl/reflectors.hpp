@@ -71,7 +71,7 @@ struct Reflector<ores::scheduler::domain::job_status> {
         case ores::scheduler::domain::job_status::succeeded: return "succeeded";
         case ores::scheduler::domain::job_status::failed:    return "failed";
         }
-        return "unknown";
+        throw std::logic_error("Unhandled ores::scheduler::domain::job_status enum value.");
     }
 };
 

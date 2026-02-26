@@ -45,7 +45,7 @@ std::uint8_t job_status_to_uint8(domain::job_status s) {
     case domain::job_status::succeeded:  return 1;
     case domain::job_status::failed:     return 2;
     }
-    return 0;
+    throw std::logic_error("Unhandled ores::scheduler::domain::job_status for serialization.");
 }
 
 std::expected<domain::job_status, error_code>

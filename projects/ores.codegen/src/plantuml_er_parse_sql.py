@@ -46,8 +46,9 @@ COMPONENT_PREFIXES = {
     'ores_geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
     'ores_dq_fsm_': {'name': 'dq_fsm', 'description': 'FSM (Data Quality)', 'schema': 'public', 'color': '#E8EAF6', 'order': 8},
     'ores_trading_': {'name': 'trading', 'description': 'Trading & Lifecycle', 'schema': 'public', 'color': '#E8F5E9', 'order': 9},
-    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 10},
-    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 11},
+    'ores_scheduler_': {'name': 'scheduler', 'description': 'Job Scheduler (pg_cron)', 'schema': 'public', 'color': '#F1F8E9', 'order': 10},
+    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 11},
+    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 12},
 }
 
 # Valid schema names for pattern matching

@@ -296,7 +296,7 @@ TEST_CASE("subscription_handler handles subscribe request for registered session
 
         // Register the session first
         mgr->register_session("192.168.1.1:12345",
-            [](const std::string&, auto, auto, auto) { return true; });
+            [](const std::string&, auto, auto, auto, auto, auto) { return true; });
 
         // Create and serialize a subscribe request
         subscribe_request req;
@@ -358,7 +358,7 @@ TEST_CASE("subscription_handler handles unsubscribe request", tags) {
 
         // Register and subscribe
         mgr->register_session("192.168.1.1:12345",
-            [](const std::string&, auto, auto, auto) { return true; });
+            [](const std::string&, auto, auto, auto, auto, auto) { return true; });
         mgr->subscribe("192.168.1.1:12345", "test.event");
 
         REQUIRE(mgr->subscriber_count("test.event") == 1);

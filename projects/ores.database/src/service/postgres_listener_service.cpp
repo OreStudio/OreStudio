@@ -17,20 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.eventing/service/postgres_listener_service.hpp"
+#include "ores.database/service/postgres_listener_service.hpp"
 
 #include <chrono>
 #include <thread>
 #include <algorithm>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
-namespace ores::eventing::service {
+namespace ores::database::service {
 
 using namespace ores::logging;
 
 postgres_listener_service::postgres_listener_service(
-    database::context ctx,
+    context ctx,
     notification_callback_t callback)
     : ctx_(std::move(ctx)),
       notification_callback_(std::move(callback)),
@@ -229,19 +227,8 @@ void postgres_listener_service::handle_notification(
     BOOST_LOG_SEV(lg(), debug) << "Received notification on channel: "
                                << notification.channel
                                << " with payload: " << notification.payload;
-    try {
-        auto result = rfl::json::read<domain::entity_change_event>(notification.payload);
-        if (result) {
-            notification_callback_(*result);
-        } else {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to deserialize notification payload: "
-                << notification.payload;
-        }
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to parse notification payload '"
-                                   << notification.payload << "': " << e.what();
-    }
+
+    notification_callback_(notification.channel, notification.payload);
 }
 
 }

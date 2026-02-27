@@ -26,11 +26,15 @@
 #include <memory>
 #include <string>
 #include <chrono>
+#include <cstddef>
+#include <optional>
+#include <vector>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/strand.hpp>
 #include "ores.comms/net/connection.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
+#include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 
 namespace ores::comms::service { class subscription_manager; }
@@ -62,6 +66,8 @@ public:
         std::chrono::system_clock::time_point timestamp;
         std::vector<std::string> entity_ids;
         std::string tenant_id;
+        messaging::payload_type pt{messaging::payload_type::none};
+        std::optional<std::vector<std::byte>> payload;
     };
 
     /**
@@ -113,12 +119,16 @@ public:
      * @param timestamp The timestamp of the event.
      * @param entity_ids Identifiers of entities that changed.
      * @param tenant_id The tenant that owns the changed entities.
+     * @param pt Optional payload encoding (default: none).
+     * @param payload Optional binary payload bytes.
      * @return true if queued successfully, false if session is not active.
      */
     bool queue_notification(const std::string& event_type,
         std::chrono::system_clock::time_point timestamp,
         const std::vector<std::string>& entity_ids,
-        const std::string& tenant_id);
+        const std::string& tenant_id,
+        messaging::payload_type pt = messaging::payload_type::none,
+        const std::optional<std::vector<std::byte>>& payload = std::nullopt);
 
     /**
      * @brief Queue a database status notification to be sent to this client.

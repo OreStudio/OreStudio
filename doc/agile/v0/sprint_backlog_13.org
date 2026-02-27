@@ -861,7 +861,6 @@ Story is BLOCKED pending PR review and testing.
 Pull Request: (pending)
 Branch: =feature/scheduler-binary-protocol=
 
-
 *** STARTED Analyse caching at dialog level                            :code:
 
 We seem to have a lot of caches lying around at the dialog level. It makes more
@@ -1029,6 +1028,7 @@ Highlights:
 
 *** STARTED Add scheduling support                                     :code:
     :LOGBOOK:
+    CLOCK: [2026-02-27 Fri 09:30]--[2026-02-27 Fri 10:12] =>  0:42
     CLOCK: [2026-02-26 Thu 22:10]--[2026-02-27 Fri 01:17] =>  3:07
     CLOCK: [2026-02-26 Thu 14:10]--[2026-02-26 Thu 15:50] =>  1:40
     CLOCK: [2026-02-25 Wed 20:11]--[2026-02-25 Wed 21:30] =>  1:19
@@ -1195,6 +1195,13 @@ Acceptance criteria:
 - Dialog shows trade preview with counterparty mapping.
 - Successful import creates trades in the selected book.
 - Trades appear in the trade list after import.
+
+*** STARTED Add a message queue                                        :code:
+    :LOGBOOK:
+    CLOCK: [2026-02-27 Fri 10:28]
+    :END:
+
+We need basic infrastructure for queuing.
 
 *** Notify clients of database connection errors                       :code:
 

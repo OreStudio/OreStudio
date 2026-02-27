@@ -79,25 +79,16 @@ begin
         );
         raise notice 'Created hypertable with 7-day chunks';
 
+        -- NOTE: Compression (columnstore) is intentionally NOT enabled on this
+        -- table. TimescaleDB 2.16+ columnstore is incompatible with Row Level
+        -- Security, which ores_iam_sessions_tbl requires for tenant isolation.
+        -- Retention policy alone is sufficient for managing data lifecycle.
         declare
             current_license text;
         begin
             select current_setting('timescaledb.license', true) into current_license;
 
             if current_license = 'timescale' then
-                alter table ores_iam_sessions_tbl set (
-                    timescaledb.compress,
-                    timescaledb.compress_segmentby = 'account_id',
-                    timescaledb.compress_orderby = 'start_time desc'
-                );
-
-                perform public.add_compression_policy(
-                    'ores_iam_sessions_tbl',
-                    compress_after => interval '7 days',
-                    if_not_exists => true
-                );
-                raise notice 'Enabled compression policy (7 days)';
-
                 perform public.add_retention_policy(
                     'ores_iam_sessions_tbl',
                     drop_after => interval '1 year',
@@ -105,7 +96,7 @@ begin
                 );
                 raise notice 'Enabled retention policy (1 year)';
             else
-                raise notice 'TimescaleDB Apache license - compression/retention policies skipped';
+                raise notice 'TimescaleDB Apache license - retention policy skipped';
                 raise notice 'Set timescaledb.license = ''timescale'' for full features';
             end if;
         end;

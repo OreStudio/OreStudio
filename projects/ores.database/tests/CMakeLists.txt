@@ -33,6 +33,7 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.testing.lib
+        ores.logging.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         ores.openssl_cleanup
@@ -53,7 +54,8 @@ add_test(NAME ${tests_target_name}
 set_tests_properties(${tests_target_name} PROPERTIES
     PROCESSORS 1
     ENVIRONMENT "${ORES_TEST_ENV}"
-    ATTACHED_FILES_ON_FAIL "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
+    ATTACHED_FILES_ON_FAIL
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/test-results-${tests_target_name}.xml"
 )
 
 set_property(TEST ${tests_target_name} PROPERTY USES_XML_OUTPUT ON)

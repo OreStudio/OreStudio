@@ -67,6 +67,7 @@
 #include "ores.trading/messaging/registrar.hpp"
 #include "ores.trading/eventing/trade_changed_event.hpp"
 #include "ores.scheduler/messaging/registrar.hpp"
+#include "ores.mq/domain/queue_message_event.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -583,6 +584,20 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 refdata::eventing::portfolio_changed_event>;
             subscription_mgr->notify(std::string{traits::name}, e.timestamp,
                                      e.ids, e.tenant_id);
+        });
+
+    // Bridge pgmq queue messages to remote subscribers.
+    // Each message is published under "ores.mq.q.<queue_name>" so clients can
+    // subscribe to individual queues. The raw JSONB body is forwarded as the
+    // binary payload with json encoding.
+    auto mq_msg_sub = event_bus.subscribe<ores::mq::domain::queue_message_event>(
+        [&subscription_mgr](const ores::mq::domain::queue_message_event& e) {
+            const auto event_type = "ores.mq.q." + e.queue_name;
+            const std::vector<std::string> entity_ids = {std::to_string(e.msg_id)};
+            subscription_mgr->notify(
+                event_type, e.timestamp, entity_ids, e.tenant_id,
+                comms::messaging::payload_type::json,
+                std::make_optional(e.payload));
         });
 
     // Create server with subscription manager

@@ -340,6 +340,30 @@ void execute_parameterized_command(context ctx, const std::string& sql,
     const std::vector<std::string>& params, logging::logger_t& lg,
     const std::string& operation_desc);
 
+/**
+ * @brief Executes a parameterized SQL query that returns multiple columns per row.
+ *
+ * Like execute_raw_multi_column_query but with PQexecParams for safe parameter
+ * binding. Each inner vector represents a row, with column values as optional
+ * strings (nullopt for NULL values).
+ *
+ * @param ctx The repository context
+ * @param sql The SQL query with $1, $2, etc. placeholders
+ * @param params Vector of parameter values
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of rows, where each row is a vector of optional<string>
+ *
+ * @example
+ * auto rows = execute_parameterized_multi_column_query(ctx_,
+ *     "SELECT * FROM pgmq.read($1, $2, $3)",
+ *     {queue_name, "30", "1"},
+ *     lg(), "Reading pgmq messages");
+ */
+std::vector<std::vector<std::optional<std::string>>> execute_parameterized_multi_column_query(
+    context ctx, const std::string& sql, const std::vector<std::string>& params,
+    logging::logger_t& lg, const std::string& operation_desc);
+
 }
 
 #endif

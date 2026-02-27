@@ -63,6 +63,21 @@ public:
     static std::chrono::system_clock::time_point parse_time_point(
         const std::string& str,
         const std::string& format = "%Y-%m-%d %H:%M:%S");
+
+    /**
+     * @brief Parses a string into a time point, treating the input as UTC.
+     *
+     * Unlike parse_time_point(), this interprets the input string as a UTC
+     * timestamp rather than local time.
+     *
+     * @param str String to parse.
+     * @param format Format string (e.g., "%Y-%m-%d %H:%M:%S").
+     * @return Parsed time point (UTC).
+     * @throws std::invalid_argument if the string cannot be parsed.
+     */
+    static std::chrono::system_clock::time_point parse_time_point_utc(
+        const std::string& str,
+        const std::string& format = "%Y-%m-%d %H:%M:%S");
 };
 
 }

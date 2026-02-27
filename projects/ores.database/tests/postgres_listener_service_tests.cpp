@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.eventing/service/postgres_listener_service.hpp"
+#include "ores.database/service/postgres_listener_service.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <sqlgen/postgres.hpp>
@@ -25,15 +25,13 @@
 #include <future>
 #include <thread>
 #include <string>
+#include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
-
-#include "ores.eventing/domain/entity_change_event.hpp"
-#include "ores.eventing/generators/entity_change_event_generator.hpp"
 
 namespace {
 
-const std::string test_suite("ores.eventing.service.tests");
-const std::string tags("[service]");
+const std::string test_suite("ores.database.service.tests");
+const std::string tags("[service][postgres_listener]");
 
 /**
  * @brief Sends a NOTIFY on a channel using a separate connection.
@@ -53,16 +51,13 @@ void send_notify(const sqlgen::postgres::Credentials& credentials,
 }
 
 using namespace ores::logging;
-using namespace ores::eventing::domain;
-using namespace ores::eventing::service;
-using namespace ores::eventing::generators;
-
+using namespace ores::database::service;
 using ores::testing::database_helper;
 
 TEST_CASE("postgres_listener_service_lifecycle", tags) {
     auto lg(make_logger(test_suite));
 
-    auto callback = [&](const entity_change_event&) {
+    auto callback = [&](const std::string&, const std::string&) {
         FAIL("Callback invoked during lifecycle test unexpectedly.");
     };
 
@@ -85,20 +80,16 @@ TEST_CASE("postgres_listener_service_notification_reception", tags) {
 
     std::string channel_name = "test_channel_reception_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
-    std::string entity_name = "ores.eventing.test_entity";
-    std::string payload_timestamp_str = "2025-12-05T15:30:00.000Z";
-    std::string test_payload = R"({"entity":")" + entity_name +
-        R"(", "timestamp":")" + payload_timestamp_str +
-        R"(", "entity_ids":[], "tenant_id":"test-tenant"})";
+    std::string test_payload = R"({"entity":"ores.database.test_entity", "data":"hello"})";
 
-    std::promise<entity_change_event> promise;
-    std::future<entity_change_event> future = promise.get_future();
+    std::promise<std::pair<std::string, std::string>> promise;
+    std::future<std::pair<std::string, std::string>> future = promise.get_future();
     bool promise_set = false;
 
-    auto callback = [&](const entity_change_event& e) {
+    auto callback = [&](const std::string& channel, const std::string& payload) {
         if (!promise_set) {
             promise_set = true;
-            promise.set_value(e);
+            promise.set_value({channel, payload});
         }
     };
 
@@ -119,8 +110,9 @@ TEST_CASE("postgres_listener_service_notification_reception", tags) {
     auto status = future.wait_for(std::chrono::seconds(10));
     REQUIRE(status == std::future_status::ready);
 
-    entity_change_event e = future.get();
-    REQUIRE(e.entity == entity_name);
+    auto [recv_channel, recv_payload] = future.get();
+    REQUIRE(recv_channel == channel_name);
+    REQUIRE(recv_payload == test_payload);
 
     listener.stop();
 }
@@ -130,11 +122,10 @@ TEST_CASE("postgres_listener_service_no_notification_without_subscribe", tags) {
 
     std::string channel_name = "test_channel_no_subscribe_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
-    std::string test_payload =
-        R"({"entity":"test_no_subscribe", "timestamp":"2025-12-05T16:00:00.000Z", "entity_ids":[], "tenant_id":"test-tenant"})";
+    std::string test_payload = R"({"entity":"test_no_subscribe"})";
 
     bool callback_invoked = false;
-    auto callback = [&](const entity_change_event&) {
+    auto callback = [&](const std::string&, const std::string&) {
         callback_invoked = true;
     };
 
@@ -164,18 +155,16 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", tags) {
 
     std::string channel_name = "test_channel_pre_subscribe_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
-    std::string entity_name = "ores.eventing.pre_subscribe_entity";
-    std::string test_payload = R"({"entity":")" + entity_name +
-        R"(", "timestamp":"2025-12-05T17:00:00.000Z", "entity_ids":[], "tenant_id":"test-tenant"})";
+    std::string test_payload = R"({"entity":"ores.database.pre_subscribe_entity"})";
 
-    std::promise<entity_change_event> promise;
-    std::future<entity_change_event> future = promise.get_future();
+    std::promise<std::pair<std::string, std::string>> promise;
+    std::future<std::pair<std::string, std::string>> future = promise.get_future();
     bool promise_set = false;
 
-    auto callback = [&](const entity_change_event& e) {
+    auto callback = [&](const std::string& channel, const std::string& payload) {
         if (!promise_set) {
             promise_set = true;
-            promise.set_value(e);
+            promise.set_value({channel, payload});
         }
     };
 
@@ -199,8 +188,9 @@ TEST_CASE("postgres_listener_service_subscribe_before_start", tags) {
     auto status = future.wait_for(std::chrono::seconds(10));
     REQUIRE(status == std::future_status::ready);
 
-    entity_change_event e = future.get();
-    REQUIRE(e.entity == entity_name);
+    auto [recv_channel, recv_payload] = future.get();
+    REQUIRE(recv_channel == channel_name);
+    REQUIRE(recv_payload == test_payload);
 
     listener.stop();
 }
@@ -210,18 +200,16 @@ TEST_CASE("postgres_listener_service_notify_method", tags) {
 
     std::string channel_name = "test_channel_notify_method_" +
         std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
-    std::string entity_name = "ores.eventing.notify_method_entity";
-    std::string test_payload = R"({"entity":")" + entity_name +
-        R"(", "timestamp":"2025-12-05T18:00:00.000Z", "entity_ids":[], "tenant_id":"test-tenant"})";
+    std::string test_payload = R"({"entity":"ores.database.notify_method_entity"})";
 
-    std::promise<entity_change_event> promise;
-    std::future<entity_change_event> future = promise.get_future();
+    std::promise<std::pair<std::string, std::string>> promise;
+    std::future<std::pair<std::string, std::string>> future = promise.get_future();
     bool promise_set = false;
 
-    auto callback = [&](const entity_change_event& e) {
+    auto callback = [&](const std::string& channel, const std::string& payload) {
         if (!promise_set) {
             promise_set = true;
-            promise.set_value(e);
+            promise.set_value({channel, payload});
         }
     };
 
@@ -241,8 +229,9 @@ TEST_CASE("postgres_listener_service_notify_method", tags) {
     auto status = future.wait_for(std::chrono::seconds(10));
     REQUIRE(status == std::future_status::ready);
 
-    entity_change_event e = future.get();
-    REQUIRE(e.entity == entity_name);
+    auto [recv_channel, recv_payload] = future.get();
+    REQUIRE(recv_channel == channel_name);
+    REQUIRE(recv_payload == test_payload);
 
     listener.stop();
 }

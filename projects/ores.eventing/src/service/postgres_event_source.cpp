@@ -19,6 +19,9 @@
  */
 #include "ores.eventing/service/postgres_event_source.hpp"
 
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+
 namespace ores::eventing::service {
 
 using namespace ores::logging;
@@ -27,8 +30,22 @@ postgres_event_source::postgres_event_source(
     database::context ctx, event_bus& bus)
     : bus_(bus),
       listener_(std::move(ctx),
-          [this](const domain::entity_change_event& e) {
-              on_entity_change(e);
+          [this](const std::string& /*channel*/, const std::string& payload) {
+              try {
+                  auto result =
+                      rfl::json::read<domain::entity_change_event>(payload);
+                  if (result) {
+                      on_entity_change(*result);
+                  } else {
+                      BOOST_LOG_SEV(lg(), error)
+                          << "Failed to deserialize notification payload: "
+                          << payload;
+                  }
+              } catch (const std::exception& e) {
+                  BOOST_LOG_SEV(lg(), error)
+                      << "Failed to parse notification payload '"
+                      << payload << "': " << e.what();
+              }
           }) {
     BOOST_LOG_SEV(lg(), debug) << "Postgres event source created.";
 }

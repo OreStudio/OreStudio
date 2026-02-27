@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_EVENTING_SERVICE_POSTGRES_LISTENER_SERVICE_HPP
-#define ORES_EVENTING_SERVICE_POSTGRES_LISTENER_SERVICE_HPP
+#ifndef ORES_DATABASE_SERVICE_POSTGRES_LISTENER_SERVICE_HPP
+#define ORES_DATABASE_SERVICE_POSTGRES_LISTENER_SERVICE_HPP
 
 #include <mutex>
 #include <atomic>
@@ -31,17 +31,15 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.eventing/domain/entity_change_event.hpp"
 
-namespace ores::eventing::service {
+namespace ores::database::service {
 
 /**
  * @brief Manages a dedicated PostgreSQL connection to listen for NOTIFY events.
  *
  * This service runs a separate thread to continuously listen for asynchronous
  * notifications on configured channels. When a notification is received, it
- * parses the payload into a domain::entity_change_event object and dispatches
- * it via a callback.
+ * dispatches the raw channel name and payload string via a callback.
  *
  * The service maintains its own dedicated connection separate from any
  * connection pool, as LISTEN/NOTIFY requires a persistent connection.
@@ -51,7 +49,7 @@ private:
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
         static auto instance = make_logger(
-            "ores.eventing.service.postgres_listener_service");
+            "ores.database.service.postgres_listener_service");
         return instance;
     }
 
@@ -59,11 +57,14 @@ public:
     /**
      * @brief Type alias for the notification callback function.
      *
-     * The callback is invoked with the parsed domain::entity_change_event
-     * object. Note: The callback is invoked from the listener thread, so
-     * implementations should be thread-safe and non-blocking.
+     * The callback receives the raw PostgreSQL channel name and the payload
+     * string exactly as sent by NOTIFY. No parsing is performed.
+     *
+     * Note: The callback is invoked from the listener thread, so implementations
+     * should be thread-safe and non-blocking.
      */
-    using notification_callback_t = std::function<void(const domain::entity_change_event&)>;
+    using notification_callback_t =
+        std::function<void(const std::string& channel, const std::string& payload)>;
 
     /**
      * @brief Constructs a postgres_listener_service.
@@ -73,9 +74,9 @@ public:
      *
      * @param ctx The database context containing connection credentials.
      * @param callback The callback function to be invoked when a notification
-     *        is received.
+     *        is received with the channel name and raw payload.
      */
-    explicit postgres_listener_service(database::context ctx,
+    explicit postgres_listener_service(context ctx,
         notification_callback_t callback);
 
     /**
@@ -160,14 +161,14 @@ private:
     /**
      * @brief Handles a received sqlgen notification.
      *
-     * Parses the payload and invokes the notification callback.
+     * Invokes the notification callback with the raw channel and payload.
      *
      * @param notification The sqlgen Notification object.
      */
     void handle_notification(const sqlgen::postgres::Notification& notification);
 
 private:
-    database::context ctx_;
+    context ctx_;
     notification_callback_t notification_callback_;
 
     mutable std::mutex mutex_;              ///< Protects connection and channels

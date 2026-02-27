@@ -81,6 +81,10 @@ jobs:
           echo "ro_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
           echo "admin_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
 
+      - name: Install PostgreSQL extensions
+        run: |
+          ./build/scripts/setup_postgres_extensions.sh --pg-version 18
+
       - name: Setup postgres
         uses: ikalnytskyi/action-setup-postgres@v8
         with:
@@ -90,6 +94,12 @@ jobs:
           port: 5432
           postgres-version: "18"
         id: postgres
+
+      - name: Configure shared_preload_libraries
+        run: |
+          PGDATA="$RUNNER_TEMP/pgdata"
+          echo "shared_preload_libraries = 'pg_cron,timescaledb'" >> "$PGDATA/postgresql.conf"
+          pg_ctl restart --pgdata="$PGDATA" --wait
 
       - name: Setup Database
         run: |

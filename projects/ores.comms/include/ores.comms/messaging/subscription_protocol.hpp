@@ -24,8 +24,10 @@
 #include <chrono>
 #include <iosfwd>
 #include <vector>
+#include <cstddef>
 #include <cstdint>
 #include <expected>
+#include <optional>
 #include <string>
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.utility/serialization/error_code.hpp"
@@ -146,6 +148,15 @@ struct unsubscribe_response final {
 std::ostream& operator<<(std::ostream& s, const unsubscribe_response& v);
 
 /**
+ * @brief Type of optional binary payload in a notification message.
+ */
+enum class payload_type : std::uint8_t {
+    none = 0, ///< No payload.
+    json = 1, ///< JSON-encoded payload.
+    bson = 2  ///< BSON-encoded payload.
+};
+
+/**
  * @brief Server-initiated notification of an entity change.
  *
  * This is a push message from the server to subscribed clients.
@@ -183,6 +194,18 @@ struct notification_message final {
     std::string tenant_id;
 
     /**
+     * @brief Type of the optional binary payload (default: none).
+     */
+    payload_type pt{payload_type::none};
+
+    /**
+     * @brief Optional binary payload (JSON or BSON-encoded message body).
+     *
+     * Present only when pt != payload_type::none.
+     */
+    std::optional<std::vector<std::byte>> payload;
+
+    /**
      * @brief Serialize notification to bytes.
      *
      * Format:
@@ -195,6 +218,11 @@ struct notification_message final {
      *   - N bytes: entity_id (UTF-8)
      * - 2 bytes: tenant_id length
      * - N bytes: tenant_id (UTF-8)
+     * - [optional] 1 byte: payload_type (0=none, 1=json, 2=bson)
+     * - [optional] 4 bytes: payload length (present when payload_type != none)
+     * - [optional] N bytes: payload bytes (present when payload_type != none)
+     *
+     * Old senders omit the optional fields; deserialize defaults pt to none.
      */
     std::vector<std::byte> serialize() const;
 

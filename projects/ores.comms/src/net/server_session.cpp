@@ -68,7 +68,9 @@ void server_session::stop() {
 bool server_session::queue_notification(const std::string& event_type,
     std::chrono::system_clock::time_point timestamp,
     const std::vector<std::string>& entity_ids,
-    const std::string& tenant_id) {
+    const std::string& tenant_id,
+    messaging::payload_type pt,
+    const std::optional<std::vector<std::byte>>& payload) {
     if (!active_) {
         BOOST_LOG_SEV(lg(), debug)
             << "Cannot queue notification - session not active";
@@ -77,7 +79,7 @@ bool server_session::queue_notification(const std::string& event_type,
 
     {
         std::lock_guard lock(notification_mutex_);
-        pending_notifications_.push({event_type, timestamp, entity_ids, tenant_id});
+        pending_notifications_.push({event_type, timestamp, entity_ids, tenant_id, pt, payload});
     }
 
     // Signal the notification writer. Using expires_after(0) rather than
@@ -431,7 +433,9 @@ boost::asio::awaitable<void> server_session::send_pending_notifications() {
                 .event_type = notification.event_type,
                 .timestamp = notification.timestamp,
                 .entity_ids = notification.entity_ids,
-                .tenant_id = notification.tenant_id
+                .tenant_id = notification.tenant_id,
+                .pt = notification.pt,
+                .payload = notification.payload
             };
 
             auto payload = msg.serialize();
@@ -520,8 +524,11 @@ void server_session::register_with_subscription_manager() {
         [this](const std::string& event_type,
                std::chrono::system_clock::time_point timestamp,
                const std::vector<std::string>& entity_ids,
-               const std::string& tenant_id) {
-            return queue_notification(event_type, timestamp, entity_ids, tenant_id);
+               const std::string& tenant_id,
+               messaging::payload_type pt,
+               const std::optional<std::vector<std::byte>>& payload) {
+            return queue_notification(event_type, timestamp, entity_ids, tenant_id,
+                pt, payload);
         });
 }
 

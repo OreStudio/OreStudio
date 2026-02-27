@@ -25,9 +25,9 @@
 #include <unordered_map>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.eventing/service/event_bus.hpp"
-#include "ores.eventing/service/postgres_listener_service.hpp"
 
 namespace ores::eventing::service {
 
@@ -154,7 +154,7 @@ private:
     void on_entity_change(const domain::entity_change_event& e);
 
     event_bus& bus_;
-    postgres_listener_service listener_;
+    ores::database::service::postgres_listener_service listener_;
     std::unordered_map<std::string, entity_mapping> entity_mappings_;
 };
 

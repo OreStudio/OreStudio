@@ -152,6 +152,15 @@ std::vector<std::byte> notification_message::serialize() const {
     // Serialize tenant_id (for debugging multi-tenancy)
     writer::write_string(buffer, tenant_id);
 
+    // Serialize payload_type (always present in new format)
+    writer::write_uint8(buffer, static_cast<std::uint8_t>(pt));
+
+    // Serialize payload bytes if present
+    if (pt != payload_type::none && payload) {
+        writer::write_uint32(buffer, static_cast<std::uint32_t>(payload->size()));
+        buffer.insert(buffer.end(), payload->begin(), payload->end());
+    }
+
     return buffer;
 }
 
@@ -184,6 +193,26 @@ notification_message::deserialize(std::span<const std::byte> data) {
     if (!tenant_id) return std::unexpected(tenant_id.error());
     msg.tenant_id = *tenant_id;
 
+    // Payload fields are optional (backward compat: old senders don't write them)
+    if (data.empty()) {
+        return msg;
+    }
+
+    auto pt_raw = reader::read_uint8(data);
+    if (!pt_raw) return std::unexpected(pt_raw.error());
+    msg.pt = static_cast<payload_type>(*pt_raw);
+
+    if (msg.pt != payload_type::none && !data.empty()) {
+        auto len = reader::read_uint32(data);
+        if (!len) return std::unexpected(len.error());
+        if (data.size() < *len) {
+            return std::unexpected(
+                ores::utility::serialization::error_code::payload_incomplete);
+        }
+        msg.payload = std::vector<std::byte>(data.data(), data.data() + *len);
+        data = data.subspan(*len);
+    }
+
     return msg;
 }
 
@@ -196,7 +225,9 @@ std::ostream& operator<<(std::ostream& s, const notification_message& v) {
         if (i > 0) s << ", ";
         s << v.entity_ids[i];
     }
-    s << "], tenant_id=" << v.tenant_id << "}";
+    s << "], tenant_id=" << v.tenant_id
+      << ", pt=" << static_cast<int>(v.pt)
+      << ", has_payload=" << v.payload.has_value() << "}";
     return s;
 }
 

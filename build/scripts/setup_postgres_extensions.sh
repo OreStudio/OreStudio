@@ -79,13 +79,25 @@ echo "Setting up PostgreSQL ${pg_major} extensions..."
 echo ""
 
 # ---------------------------------------------------------------------------
-# Prerequisites
+# Prerequisites: base tools needed to add repos
 # ---------------------------------------------------------------------------
-sudo apt-get install -y -q \
-    "postgresql-server-dev-${pg_major}" \
-    gnupg \
-    curl \
-    lsb-release
+sudo apt-get install -y -q gnupg curl lsb-release
+
+# ---------------------------------------------------------------------------
+# PGDG apt repository (needed for postgresql-server-dev-N on CI runners that
+# only have the distro-default PostgreSQL version pre-installed)
+# ---------------------------------------------------------------------------
+if [[ ! -f /etc/apt/sources.list.d/pgdg.list ]]; then
+    echo "Adding PostgreSQL PGDG apt repository for PostgreSQL ${pg_major}..."
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+        | sudo gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] \
+https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+        | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+    sudo apt-get update -q
+fi
+
+sudo apt-get install -y -q "postgresql-server-dev-${pg_major}"
 
 # ---------------------------------------------------------------------------
 # pg_cron: job scheduler (apt package)

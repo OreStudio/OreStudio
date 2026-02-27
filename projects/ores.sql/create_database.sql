@@ -71,10 +71,14 @@ grant connect, temp on database :db_name to ores_rw, ores_ro;
 -- on party-isolated tables independently of the calling session's party context.
 alter role ores_ddl_user bypassrls;
 
+-- Install postgres-database extensions (must run before switching databases)
+-- pg_cron can only be installed in the postgres database (cron.database_name)
+\i setup_extensions_postgres.sql
+
 -- Connect to new database
 \c :db_name
 
--- Install required extensions
+-- Install per-database extensions
 \i setup_extensions.sql
 
 -- Grant schema permissions to appropriate roles

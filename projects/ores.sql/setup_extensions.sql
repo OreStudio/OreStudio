@@ -29,14 +29,24 @@
  * Extensions are per-database in PostgreSQL, so they must be installed in
  * each database that needs them.
  *
+ * NOTE: pg_cron is NOT installed here. It must live in the postgres database
+ * (the cron.database_name). See setup_extensions_postgres.sql.
+ *
  * REQUIRED EXTENSIONS:
  *   - btree_gist: GiST index support for temporal exclusion constraints
  *   - unaccent: Accent-insensitive text search for normalised name generation
  *
  * OPTIONAL EXTENSIONS:
  *   - pgtap: Unit testing framework for pgTAP SQL tests (recommended)
+ *   - pgmq: Lightweight message queue for async workflows (recommended)
+ *     If not available, message-queue-based features will not function.
  *   - timescaledb: Time-series database for session analytics (recommended)
  *     If not available, sessions table will use regular PostgreSQL tables.
+ *
+ * PREREQUISITES FOR PGMQ (optional):
+ *   - pgmq must be installed on the system:
+ *       Debian/Ubuntu: apt install postgresql-NN-pgmq
+ *       (or via PGXN / build from source)
  *
  * PREREQUISITES FOR TIMESCALEDB (optional):
  *   - TimescaleDB must be installed on the system:
@@ -97,44 +107,24 @@ begin
     end if;
 end $$;
 
--- pg_cron: Job scheduler extension (OPTIONAL)
--- Provides cron.schedule_in_database(), cron.unschedule(), cron.job, cron.job_run_details.
--- Required by ores.scheduler library for background SQL job management.
--- If not available, ores.scheduler cannot schedule or execute jobs.
---
--- MULTI-ENVIRONMENT APPROACH (pg_cron 1.4+):
---   ores.scheduler uses cron.schedule_in_database() which keeps pg_cron in
---   the postgres database (the default) while executing jobs in each application
---   database. This allows multiple OreStudio environments on the same PostgreSQL
---   cluster to each maintain independent job schedules.
---
---   Do NOT set cron.database_name in postgresql.conf — leave it at the default
---   (postgres). The extension only needs to be installed here in postgres.
---
--- PREREQUISITES FOR PG_CRON (pg_cron 1.4+):
---   1. Install the package:
---        Debian/Ubuntu: apt install postgresql-NN-cron
---   2. Edit postgresql.conf:
---        shared_preload_libraries = '...,pg_cron'
---        (Leave cron.database_name unset — defaults to 'postgres', which is correct)
---   3. Restart PostgreSQL:
---        sudo systemctl restart postgresql
---   4. Run this script to create the extension here in postgres.
---   Minimum required version: pg_cron 1.4
+-- pgmq: Lightweight message queue extension (OPTIONAL)
+-- Provides pgmq.create(), pgmq.send(), pgmq.read(), pgmq.delete(), etc.
+-- Required for async message-queue-based workflows.
+-- If not available, queue-based features will not function.
 do $$
 declare
-    pgcron_available boolean;
+    pgmq_available boolean;
 begin
     select exists (
-        select 1 from pg_available_extensions where name = 'pg_cron'
-    ) into pgcron_available;
+        select 1 from pg_available_extensions where name = 'pgmq'
+    ) into pgmq_available;
 
-    if pgcron_available then
-        create extension if not exists pg_cron;
-        raise notice 'Installed: pg_cron';
+    if pgmq_available then
+        create extension if not exists pgmq;
+        raise notice 'Installed: pgmq';
     else
-        raise notice 'pg_cron not available - ores.scheduler job scheduling will not function';
-        raise notice '(Install with: apt install postgresql-NN-cron, then configure postgresql.conf)';
+        raise notice 'pgmq not available - message queue features will not function';
+        raise notice '(Install with: apt install postgresql-NN-pgmq)';
     end if;
 end $$;
 
@@ -168,7 +158,7 @@ end $$;
 -- Show what was installed
 \echo 'Installed extensions:'
 select extname, extversion from pg_extension
-where extname in ('btree_gist', 'unaccent', 'pgtap', 'timescaledb', 'pg_cron')
+where extname in ('btree_gist', 'unaccent', 'pgtap', 'pgmq', 'timescaledb')
 order by extname;
 
 \echo ''

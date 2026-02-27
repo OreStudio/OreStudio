@@ -1,0 +1,34 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_MAPPER_HPP
+#define ORES_{{component_upper}}_REPOSITORY_{{entity_singular_upper}}_MAPPER_HPP
+
+#include "ores.{{component}}/domain/{{entity_singular}}.hpp"
+#include "ores.{{component}}/repository/{{entity_singular}}_entity.hpp"
+#include "ores.logging/make_logger.hpp"
+
+namespace ores::{{component}}::repository {
+
+/**
+ * @brief Maps {{entity_singular}} domain entities to data storage layer and vice-versa.
+ */
+class {{entity_singular}}_mapper {
+private:
+    inline static std::string_view logger_name =
+        "ores.{{component}}.repository.{{entity_singular}}_mapper";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+public:
+    static domain::{{entity_singular}} map(const {{entity_singular}}_entity& v);
+    static std::vector<domain::{{entity_singular}}>
+    map(const std::vector<{{entity_singular}}_entity>& v);
+};
+
+}
+
+#endif
+{{/domain_entity}}

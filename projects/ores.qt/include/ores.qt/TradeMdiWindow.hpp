@@ -68,6 +68,7 @@ signals:
     void addNewRequested();
     void tradeDeleted(const QString& code);
     void showTradeHistory(const trading::domain::trade& trade);
+    void importTradesRequested();
 
 public slots:
     void addNew();
@@ -108,6 +109,7 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+    QAction* importAction_;
 };
 
 }

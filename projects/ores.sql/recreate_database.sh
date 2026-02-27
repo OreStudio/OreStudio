@@ -190,7 +190,7 @@ if [[ -z "${ASSUME_YES}" ]]; then
     echo ""
 fi
 
-# Phase 1: Run recreate_database.sql as postgres (teardown + users + create database)
+# Phase 1: Drop database, recreate roles and users (postgres superuser)
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
@@ -208,15 +208,11 @@ PGPASSWORD="${POSTGRES_PASSWORD}" psql \
     -v ro_password="${RO_PASSWORD}" \
     -v db_name="${DB_NAME}"
 
-# Phase 2: Run setup_schema.sql as ores_ddl_user (schema + data + grants)
-echo ""
-echo "--- Setting up schema as ores_ddl_user ---"
-PGPASSWORD="${DDL_PASSWORD}" psql \
-    -h localhost \
-    -U ores_ddl_user \
-    -d "${DB_NAME}" \
-    -v skip_validation="${SKIP_VALIDATION}" \
-    -f ./setup_schema.sql
+# Phases 2–4: Create database, schema, and metadata via shared helper
+SKIP_ARG=""
+[[ "${SKIP_VALIDATION}" == "on" ]] && SKIP_ARG="--skip-validation"
+export ORES_DB_DDL_PASSWORD="${DDL_PASSWORD}"
+"${SCRIPT_DIR}/setup_database.sh" "${DB_NAME}" ${SKIP_ARG}
 
 echo ""
 echo "=== Database recreation complete ==="

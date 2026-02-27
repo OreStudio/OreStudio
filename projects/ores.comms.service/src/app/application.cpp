@@ -74,6 +74,7 @@
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.utility/version/version.hpp"
+#include "ores.database/repository/database_info_repository.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/health_monitor.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -83,6 +84,7 @@
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.dq/service/dataset_bundle_service.hpp"
 #include "ores.comms.service/app/application_exception.hpp"
+#include "ores.comms.service/messaging/system_info_handler.hpp"
 
 namespace ores::comms::service::app {
 using namespace ores::logging;
@@ -147,6 +149,23 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Set system tenant context for bootstrap initialization
     ctx = database::service::tenant_context::with_system_tenant(ctx);
+
+    // Log database build metadata to correlate service and schema versions
+    try {
+        database::repository::database_info_repository db_info_repo;
+        const auto db_infos = db_info_repo.read(ctx);
+        if (!db_infos.empty()) {
+            const auto& di = db_infos.front();
+            BOOST_LOG_SEV(lg(), info) << "Database schema: v" << di.schema_version
+                << " (" << di.build_environment
+                << " " << di.git_commit
+                << " " << di.git_date << ")";
+        } else {
+            BOOST_LOG_SEV(lg(), warn) << "Database info record not found";
+        }
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Could not read database info: " << e.what();
+    }
 
     // Create shared authorization service for RBAC checks
     // (Permissions and roles are seeded via SQL scripts in the database template)
@@ -589,11 +608,20 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::trading::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::scheduler::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
 
+    // Register system info handler for get_system_info_request (no auth required)
+    auto si_handler =
+        std::make_shared<comms::service::messaging::system_info_handler>(ctx);
+    srv->register_handler(
+        {static_cast<std::uint16_t>(comms::messaging::message_type::get_system_info_request),
+         static_cast<std::uint16_t>(comms::messaging::message_type::get_system_info_response)},
+        si_handler);
+
     // Register subscription handler for subscribe/unsubscribe/list_event_channels messages
+    // Range starts at 0x0009 to avoid overlapping with the system_info handler (0x0007-0x0008)
     auto subscription_handler =
         std::make_shared<comms::service::subscription_handler>(subscription_mgr, channel_registry);
     srv->register_handler(
-        {comms::messaging::CORE_SUBSYSTEM_MIN, comms::messaging::CORE_SUBSYSTEM_MAX},
+        {0x0009, comms::messaging::CORE_SUBSYSTEM_MAX},
         subscription_handler);
 
     // Set up database health monitor callback to broadcast status changes to clients

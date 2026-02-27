@@ -19,6 +19,10 @@
  */
 #include "ores.ore/xml/importer.hpp"
 
+#include <fstream>
+#include <chrono>
+#include <algorithm>
+#include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/project_root.hpp"
@@ -174,4 +178,65 @@ TEST_CASE("import_portfolio_all_trades_pass_validation", tags) {
 
     BOOST_LOG_SEV(lg, debug) << "All " << trades.size()
                              << " imported trades pass validation";
+}
+
+TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto root =
+        ores::testing::project_root::resolve("external/ore/examples");
+
+    // Collect all XML files that contain a <Portfolio> element, sorted for
+    // reproducible ordering.
+    std::vector<std::filesystem::path> portfolio_files;
+    for (const auto& entry :
+             std::filesystem::recursive_directory_iterator(root)) {
+        if (!entry.is_regular_file()) continue;
+        if (entry.path().extension() != ".xml") continue;
+
+        std::ifstream ifs(entry.path(), std::ios::binary);
+        std::string buf(4096, '\0');
+        ifs.read(buf.data(), static_cast<std::streamsize>(buf.size()));
+        buf.resize(static_cast<std::size_t>(ifs.gcount()));
+        if (buf.find("<Portfolio>") != std::string::npos)
+            portfolio_files.push_back(entry.path());
+    }
+    std::sort(portfolio_files.begin(), portfolio_files.end());
+
+    BOOST_LOG_SEV(lg, info) << "Found " << portfolio_files.size()
+                            << " portfolio files in ORE examples";
+    REQUIRE(portfolio_files.size() > 300);
+
+    int trade_count = 0;
+    for (const auto& file : portfolio_files) {
+        BOOST_LOG_SEV(lg, info) << "Importing: " << file;
+        const auto t0 = std::chrono::steady_clock::now();
+
+        std::vector<trade> trades;
+        try {
+            trades = importer::import_portfolio(file);
+        } catch (const std::exception& e) {
+            FAIL_CHECK("Exception importing " << file.filename()
+                       << ": " << e.what());
+            continue;
+        }
+
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now() - t0).count();
+
+        trade_count += static_cast<int>(trades.size());
+        BOOST_LOG_SEV(lg, info) << file.filename() << " -> "
+                                << trades.size() << " trades in " << ms << "ms";
+
+        for (const auto& t : trades) {
+            const auto errors = importer::validate_trade(t);
+            INFO("File: " << file.filename()
+                 << "  Trade: " << t.external_id);
+            CHECK(errors.empty());
+        }
+    }
+
+    BOOST_LOG_SEV(lg, info) << "Total trades imported across all "
+                            << portfolio_files.size() << " files: "
+                            << trade_count;
 }

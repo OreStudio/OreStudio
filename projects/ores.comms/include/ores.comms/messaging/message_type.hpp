@@ -41,6 +41,8 @@ enum class message_type : std::uint16_t {
     error_response = 0x0004,
     ping = 0x0005,
     pong = 0x0006,
+    get_system_info_request = 0x0007,
+    get_system_info_response = 0x0008,
     // Subscription/Notification
     subscribe_request = 0x0010,
     subscribe_response = 0x0011,

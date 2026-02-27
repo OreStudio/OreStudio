@@ -19,16 +19,29 @@
  */
 #include "ores.qt/TradeController.hpp"
 
+#include <filesystem>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QComboBox>
+#include <QDialogButtonBox>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/TradeMdiWindow.hpp"
+#include "ores.ore/xml/importer.hpp"
 #include "ores.qt/TradeDetailDialog.hpp"
 #include "ores.qt/TradeHistoryDialog.hpp"
+#include "ores.qt/ImportTradeDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.trading/eventing/trade_changed_event.hpp"
+#include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -76,6 +89,8 @@ void TradeController::showListWindow() {
             this, &TradeController::onAddNewRequested);
     connect(listWindow_, &TradeMdiWindow::showTradeHistory,
             this, &TradeController::onShowHistory);
+    connect(listWindow_, &TradeMdiWindow::importTradesRequested,
+            this, &TradeController::onImportTradesRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -137,6 +152,155 @@ void TradeController::onShowDetails(
 void TradeController::onAddNewRequested() {
     BOOST_LOG_SEV(lg(), info) << "Add new trade requested";
     showAddWindow();
+}
+
+void TradeController::onImportTradesRequested() {
+    BOOST_LOG_SEV(lg(), debug) << "Import trades requested from trade window";
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(mainWindow_, tr("Disconnected"),
+            tr("Cannot import trades while disconnected."));
+        return;
+    }
+
+    // Fetch available books synchronously (fast, small dataset)
+    refdata::messaging::get_books_request booksReq;
+    booksReq.offset = 0;
+    booksReq.limit = 10000;
+    auto booksPayload = booksReq.serialize();
+    comms::messaging::frame booksFrame(
+        comms::messaging::message_type::get_books_request,
+        0, std::move(booksPayload));
+
+    auto booksResult = clientManager_->sendRequest(std::move(booksFrame));
+    if (!booksResult) {
+        MessageBoxHelper::critical(mainWindow_, tr("Error"),
+            tr("Failed to fetch books from server."));
+        return;
+    }
+
+    auto booksDecompressed = booksResult->decompressed_payload();
+    if (!booksDecompressed) {
+        MessageBoxHelper::critical(mainWindow_, tr("Error"),
+            tr("Failed to decompress books response."));
+        return;
+    }
+
+    auto booksResponse = refdata::messaging::get_books_response::deserialize(
+        *booksDecompressed);
+    if (!booksResponse || booksResponse->books.empty()) {
+        MessageBoxHelper::warning(mainWindow_, tr("No Books"),
+            tr("No books found. Please create a book before importing trades."));
+        return;
+    }
+
+    const auto& books = booksResponse->books;
+
+    // Show a book-selection dialog
+    auto* picker = new QDialog(mainWindow_);
+    picker->setWindowTitle(tr("Select Target Book"));
+    picker->setModal(true);
+
+    auto* layout = new QVBoxLayout(picker);
+    layout->addWidget(new QLabel(tr("Import trades into book:"), picker));
+
+    auto* combo = new QComboBox(picker);
+    for (const auto& b : books) {
+        combo->addItem(QString::fromStdString(b.name),
+                       QVariant::fromValue(
+                           static_cast<int>(&b - &books[0])));
+    }
+    layout->addWidget(combo);
+
+    auto* buttons = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, picker);
+    connect(buttons, &QDialogButtonBox::accepted, picker, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, picker, &QDialog::reject);
+    layout->addWidget(buttons);
+
+    if (picker->exec() != QDialog::Accepted) {
+        BOOST_LOG_SEV(lg(), debug) << "Import: book selection cancelled";
+        return;
+    }
+
+    const int bookIdx = combo->currentData().toInt();
+    const auto& selectedBook = books[static_cast<std::size_t>(bookIdx)];
+
+    // Ask for ORE portfolio XML file
+    const QString fileName = QFileDialog::getOpenFileName(
+        mainWindow_,
+        tr("Select ORE Portfolio XML File to Import"),
+        QString(),
+        tr("ORE Portfolio Files (*.xml);;All Files (*)"));
+
+    if (fileName.isEmpty()) {
+        BOOST_LOG_SEV(lg(), debug) << "Import: user cancelled file dialog";
+        return;
+    }
+
+    try {
+        const std::filesystem::path path(fileName.toStdString());
+        const auto items = ore::xml::importer::import_portfolio_with_context(path);
+
+        if (items.empty()) {
+            MessageBoxHelper::information(mainWindow_, tr("No Trades"),
+                tr("The selected file contains no trades."));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Parsed " << items.size()
+                                  << " trades for import into book: "
+                                  << selectedBook.name;
+
+        const QFileInfo fileInfo(fileName);
+        auto* dialog = new ImportTradeDialog(
+            selectedBook, items, fileInfo.fileName(),
+            clientManager_, username_, mainWindow_);
+
+        connect(dialog, &ImportTradeDialog::importCompleted,
+                this, [self = QPointer<TradeController>(this)](
+                    int success_count, int total_count) {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info)
+                << "Import complete: " << success_count
+                << " of " << total_count << " trades imported";
+            self->reloadListWindow();
+            if (success_count > 0) {
+                emit self->statusMessage(
+                    tr("Successfully imported %1 of %2 trades")
+                    .arg(success_count).arg(total_count));
+                if (success_count < total_count) {
+                    MessageBoxHelper::warning(
+                        self->mainWindow_, tr("Partial Import"),
+                        tr("Imported %1 of %2 trades. Check the log for details.")
+                        .arg(success_count).arg(total_count));
+                } else {
+                    MessageBoxHelper::information(
+                        self->mainWindow_, tr("Import Complete"),
+                        tr("Successfully imported %1 trade(s).")
+                        .arg(success_count));
+                }
+            } else {
+                emit self->statusMessage(tr("Import failed - no trades imported"));
+                MessageBoxHelper::warning(
+                    self->mainWindow_, tr("Import Failed"),
+                    tr("Failed to import trades. Check the log for details."));
+            }
+        });
+
+        connect(dialog, &ImportTradeDialog::importCancelled,
+                this, [self = QPointer<TradeController>(this)]() {
+            if (!self) return;
+            emit self->statusMessage(tr("Import cancelled"));
+        });
+
+        dialog->open();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error importing portfolio XML: " << e.what();
+        MessageBoxHelper::critical(mainWindow_, tr("Import Error"),
+            tr("Failed to import portfolio XML file:\n%1").arg(e.what()));
+    }
 }
 
 void TradeController::onShowHistory(

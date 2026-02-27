@@ -74,6 +74,7 @@ public slots:
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+    void importTrades();
 
 private slots:
     void onDataLoaded();
@@ -109,6 +110,7 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+    QAction* importAction_;
 };
 
 }

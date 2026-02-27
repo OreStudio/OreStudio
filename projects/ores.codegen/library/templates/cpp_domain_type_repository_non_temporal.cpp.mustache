@@ -1,0 +1,31 @@
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component}}/repository/{{entity_singular}}_repository.hpp"
+
+#include <sqlgen/postgres.hpp>
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.{{component}}/domain/{{entity_singular}}_json_io.hpp" // IWYU pragma: keep.
+#include "ores.{{component}}/repository/{{entity_singular}}_entity.hpp"
+#include "ores.{{component}}/repository/{{entity_singular}}_mapper.hpp"
+
+namespace ores::{{component}}::repository {
+
+using namespace sqlgen;
+using namespace sqlgen::literals;
+using namespace ores::logging;
+using namespace ores::database::repository;
+
+std::vector<domain::{{entity_singular}}>
+{{entity_singular}}_repository::read(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}}.";
+
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>>;
+
+    return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
+        ctx, query,
+        [](const auto& entities) { return {{entity_singular}}_mapper::map(entities); },
+        lg(), "Reading {{entity_plural_words}}");
+}
+
+}
+{{/domain_entity}}

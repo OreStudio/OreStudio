@@ -30,6 +30,23 @@
 namespace ores::ore::xml {
 
 /**
+ * @brief A trade with its ORE source context for import mapping.
+ *
+ * Pairs a partially-mapped ORES trading domain trade with the raw ORE
+ * CounterParty string from the trade envelope and the path of the file it
+ * came from. The counterparty_id in the trade is left nil; callers must
+ * resolve it via ore_counterparty_name.
+ *
+ * The source_file field enables callers (e.g. batch directory import) to
+ * report per-trade provenance without having to keep a separate index.
+ */
+struct trade_import_item {
+    trading::domain::trade trade;
+    std::string ore_counterparty_name;  ///< ORE CounterParty string, empty if absent
+    std::filesystem::path source_file;  ///< ORE XML file this trade was read from
+};
+
+/**
  * @brief Imports domain objects from their ORE XML representation.
  */
 class importer {
@@ -83,6 +100,20 @@ public:
      */
     static std::vector<trading::domain::trade>
     import_portfolio(const std::filesystem::path& path);
+
+    /**
+     * @brief Imports trades from an ORE portfolio XML file with mapping context.
+     *
+     * Like import_portfolio() but also captures the raw ORE CounterParty
+     * string from each trade envelope so that callers can present a
+     * counterparty mapping dialog before resolving UUIDs.
+     *
+     * @param path Path to the ORE portfolio XML file
+     * @return Vector of trade_import_item, each pairing a partially-mapped
+     *         trade with its ORE counterparty name (empty if not present)
+     */
+    static std::vector<trade_import_item>
+    import_portfolio_with_context(const std::filesystem::path& path);
 };
 
 }

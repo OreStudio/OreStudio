@@ -1904,8 +1904,27 @@ bool MainWindow::initializeConnectionManager() {
 }
 
 void MainWindow::onAboutTriggered() {
-    AboutDialog dialog(this);
-    dialog.exec();
+    if (aboutSubWindow_) {
+        aboutSubWindow_->showNormal();
+        mdiArea_->setActiveSubWindow(aboutSubWindow_);
+        return;
+    }
+
+    auto* aboutWidget = new AboutDialog(clientManager_, this);
+    aboutSubWindow_ = new DetachableMdiSubWindow();
+    aboutSubWindow_->setWidget(aboutWidget);
+    aboutSubWindow_->setWindowTitle(tr("About OreStudio"));
+    aboutSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    aboutSubWindow_->resize(600, 700);
+
+    connect(aboutSubWindow_, &QObject::destroyed, this, [this]() {
+        allDetachableWindows_.removeOne(aboutSubWindow_);
+        aboutSubWindow_ = nullptr;
+    });
+
+    mdiArea_->addSubWindow(aboutSubWindow_);
+    allDetachableWindows_.append(aboutSubWindow_);
+    aboutSubWindow_->show();
 }
 
 void MainWindow::onMyAccountTriggered() {

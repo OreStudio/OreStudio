@@ -33,6 +33,7 @@
 #include <QObject>
 #include <QDateTime>
 #include "ores.comms/net/client.hpp"
+#include "ores.comms/messaging/system_info_protocol.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
@@ -483,6 +484,16 @@ public:
     }
 
     /**
+     * @brief Get the system information entries received from the server after login.
+     *
+     * Returns entries prefixed "server.*" and "database.*".
+     * Empty until login succeeds (or if the server does not support the endpoint).
+     */
+    const std::vector<comms::messaging::system_info_entry>& systemInfoEntries() const {
+        return system_info_entries_;
+    }
+
+    /**
      * @brief Subscribe to server-push notifications for an event type.
      *
      * This method is non-blocking - the subscription request is sent
@@ -723,6 +734,9 @@ private:
     boost::uuids::uuid current_party_id_;
     QString current_party_name_;
     QString current_party_category_;
+
+    // System info entries fetched after login
+    std::vector<comms::messaging::system_info_entry> system_info_entries_;
 };
 
 }

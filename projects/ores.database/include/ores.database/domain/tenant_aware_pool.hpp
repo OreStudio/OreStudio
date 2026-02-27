@@ -85,6 +85,11 @@ public:
             return session_result;
         }
 
+        // Speculatively rollback any aborted transaction left by a previous
+        // failed operation. PostgreSQL accepts ROLLBACK even when no
+        // transaction is active, so this is always safe.
+        (*session_result)->execute("ROLLBACK");
+
         const auto tenant_id_str = tenant_id_.to_string();
         const std::string sql =
             "SELECT set_config('app.current_tenant_id', '" +

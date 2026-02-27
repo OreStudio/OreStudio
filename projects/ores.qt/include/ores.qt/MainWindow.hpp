@@ -695,6 +695,9 @@ private:
 
     /** @brief Master password for encrypting/decrypting saved passwords (session-only) */
     QString masterPassword_;
+
+    /** @brief About dialog MDI subwindow singleton (nullptr when not open) */
+    DetachableMdiSubWindow* aboutSubWindow_{nullptr};
 };
 
 }

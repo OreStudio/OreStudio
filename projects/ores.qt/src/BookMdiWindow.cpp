@@ -22,6 +22,7 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QFileDialog>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
@@ -31,6 +32,8 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.qt/ImportTradeDialog.hpp"
+#include "ores.ore/xml/importer.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
@@ -56,7 +59,8 @@ BookMdiWindow::BookMdiWindow(
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
-      historyAction_(nullptr) {
+      historyAction_(nullptr),
+      importAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -130,6 +134,18 @@ void BookMdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &BookMdiWindow::viewHistorySelected);
+
+    toolbar_->addSeparator();
+
+    importAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ImportOre, IconUtils::DefaultIconColor),
+        tr("Import"));
+    importAction_->setToolTip(
+        tr("Import trades from an ORE portfolio XML file into the selected book"));
+    importAction_->setEnabled(false);
+    connect(importAction_, &QAction::triggered, this,
+            &BookMdiWindow::importTrades);
 }
 
 void BookMdiWindow::setupTable() {
@@ -238,6 +254,7 @@ void BookMdiWindow::updateActionStates() {
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
     historyAction_->setEnabled(hasSelection);
+    importAction_->setEnabled(hasSelection);
 }
 
 void BookMdiWindow::addNew() {
@@ -270,6 +287,110 @@ void BookMdiWindow::viewHistorySelected() {
         BOOST_LOG_SEV(lg(), debug) << "Emitting showBookHistory for code: "
                                    << book->name;
         emit showBookHistory(*book);
+    }
+}
+
+void BookMdiWindow::importTrades() {
+    BOOST_LOG_SEV(lg(), debug) << "Import trades action triggered";
+
+    // Get selected book
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Import trades: no book selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* book = model_->getBook(sourceIndex.row());
+    if (!book) {
+        BOOST_LOG_SEV(lg(), warn) << "Import trades: could not get book";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, tr("Disconnected"),
+            tr("Cannot import trades while disconnected."));
+        return;
+    }
+
+    // Ask the user to select an ORE portfolio XML file
+    const QString fileName = QFileDialog::getOpenFileName(
+        this,
+        tr("Select ORE Portfolio XML File to Import"),
+        QString(),
+        tr("ORE Portfolio Files (*.xml);;All Files (*)"));
+
+    if (fileName.isEmpty()) {
+        BOOST_LOG_SEV(lg(), debug) << "Import trades: user cancelled file dialog";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Selected portfolio file for import: "
+                              << fileName.toStdString();
+
+    try {
+        const std::filesystem::path path(fileName.toStdString());
+        const auto items = ore::xml::importer::import_portfolio_with_context(path);
+
+        if (items.empty()) {
+            emit statusChanged(tr("Import cancelled - no trades found in file"));
+            MessageBoxHelper::information(this, tr("No Trades"),
+                tr("The selected file contains no trades."));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Parsed " << items.size()
+                                  << " trades from portfolio file";
+        emit statusChanged(QString("Found %1 trades - opening import dialog...")
+            .arg(items.size()));
+
+        // Use just the filename as the display label
+        const QFileInfo fileInfo(fileName);
+        auto* dialog = new ImportTradeDialog(
+            *book, items, fileInfo.fileName(),
+            clientManager_, username_, this);
+
+        connect(dialog, &ImportTradeDialog::importCompleted,
+                this, [this](int success_count, int total_count) {
+            BOOST_LOG_SEV(lg(), info)
+                << "Trade import complete: " << success_count
+                << " of " << total_count << " trades imported";
+
+            model_->refresh();
+
+            if (success_count > 0) {
+                emit statusChanged(
+                    tr("Successfully imported %1 of %2 trades")
+                    .arg(success_count).arg(total_count));
+                if (success_count < total_count) {
+                    MessageBoxHelper::warning(this, tr("Partial Import"),
+                        tr("Imported %1 of %2 trades. Check the log for details.")
+                        .arg(success_count).arg(total_count));
+                } else {
+                    MessageBoxHelper::information(this, tr("Import Complete"),
+                        tr("Successfully imported %1 trade(s).")
+                        .arg(success_count));
+                }
+            } else {
+                emit statusChanged(tr("Import failed - no trades imported"));
+                MessageBoxHelper::warning(this, tr("Import Failed"),
+                    tr("Failed to import trades. Check the log for details."));
+            }
+        });
+
+        connect(dialog, &ImportTradeDialog::importCancelled,
+                this, [this]() {
+            BOOST_LOG_SEV(lg(), debug) << "Trade import cancelled by user";
+            emit statusChanged(tr("Import cancelled"));
+        });
+
+        dialog->open();
+
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error importing portfolio XML: " << e.what();
+        MessageBoxHelper::critical(this, tr("Import Error"),
+            tr("Failed to import portfolio XML file:\n%1").arg(e.what()));
+        emit statusChanged(tr("Import failed"));
     }
 }
 

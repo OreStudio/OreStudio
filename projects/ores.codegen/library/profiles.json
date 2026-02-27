@@ -186,6 +186,70 @@
       "model_types": ["domain_entity"],
       "includes": ["sql", "all-cpp"]
     },
+    "non-temporal-sql": {
+      "description": "SQL schema creation for non-temporal (simple, no valid_from/valid_to) tables",
+      "model_types": ["domain_entity"],
+      "templates": [
+        {
+          "template": "sql_schema_non_temporal_create.mustache",
+          "output": "projects/ores.sql/create/{component}/{component}_{entity_plural}_create.sql",
+          "model_types": ["domain_entity"]
+        }
+      ]
+    },
+    "non-temporal-domain": {
+      "description": "Domain class for non-temporal entities (no version/modified_by/recorded_at)",
+      "model_types": ["domain_entity"],
+      "templates": [
+        {
+          "template": "cpp_domain_type_class_non_temporal.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}.hpp"
+        },
+        {
+          "template": "cpp_domain_type_json_io.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/domain/{entity}_json_io.hpp"
+        },
+        {
+          "template": "cpp_domain_type_json_io.cpp.mustache",
+          "output": "projects/ores.{component}/src/domain/{entity}_json_io.cpp"
+        }
+      ]
+    },
+    "non-temporal-repository": {
+      "description": "Read-only repository layer for non-temporal entities (entity, mapper, repository)",
+      "model_types": ["domain_entity"],
+      "templates": [
+        {
+          "template": "cpp_domain_type_entity_non_temporal.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_entity.hpp"
+        },
+        {
+          "template": "cpp_domain_type_entity_non_temporal.cpp.mustache",
+          "output": "projects/ores.{component}/src/repository/{entity}_entity.cpp"
+        },
+        {
+          "template": "cpp_domain_type_mapper_non_temporal.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_mapper.hpp"
+        },
+        {
+          "template": "cpp_domain_type_mapper_non_temporal.cpp.mustache",
+          "output": "projects/ores.{component}/src/repository/{entity}_mapper.cpp"
+        },
+        {
+          "template": "cpp_domain_type_repository_non_temporal.hpp.mustache",
+          "output": "projects/ores.{component}/include/ores.{component}/repository/{entity}_repository.hpp"
+        },
+        {
+          "template": "cpp_domain_type_repository_non_temporal.cpp.mustache",
+          "output": "projects/ores.{component}/src/repository/{entity}_repository.cpp"
+        }
+      ]
+    },
+    "non-temporal": {
+      "description": "All artefacts for non-temporal entities: SQL + domain + read-only repository",
+      "model_types": ["domain_entity"],
+      "includes": ["non-temporal-sql", "non-temporal-domain", "non-temporal-repository"]
+    },
     "plantuml": {
       "description": "PlantUML ER diagrams",
       "model_types": ["schema", "data"],

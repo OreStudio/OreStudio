@@ -265,6 +265,59 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
     logging::logger_t& lg, const std::string& operation_desc);
 
 /**
+ * @brief Executes a parameterized SQL query with explicit credentials, without tenant context.
+ *
+ * Unlike the context-based overload, this connects directly with the provided credentials
+ * and does NOT set any tenant context (app.current_tenant_id). Intended for administrative
+ * operations against databases that don't use RLS, such as calling pg_cron functions in
+ * the postgres database.
+ *
+ * @param creds The PostgreSQL connection credentials
+ * @param sql The SQL query with $1, $2, etc. placeholders
+ * @param params Vector of parameter values
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of strings from the first column of the result
+ *
+ * @example
+ * auto pg_creds = ctx_.credentials();
+ * pg_creds.dbname = "postgres";
+ * auto results = execute_parameterized_string_query(pg_creds,
+ *     "SELECT cron.schedule_in_database($1, $2, $3, $4)",
+ *     {job_name, schedule, command, app_db},
+ *     lg(), "Scheduling job via pg_cron");
+ */
+std::vector<std::string> execute_parameterized_string_query(
+    const sqlgen::postgres::Credentials& creds,
+    const std::string& sql, const std::vector<std::string>& params,
+    logging::logger_t& lg, const std::string& operation_desc);
+
+/**
+ * @brief Executes a raw SQL query with explicit credentials, without tenant context.
+ *
+ * Returns multiple columns per row as optional strings. Like the context-based overload
+ * but connects directly to the specified database without setting tenant context.
+ * Intended for reading from administrative databases such as postgres (e.g. cron.job_run_details).
+ *
+ * @param creds The PostgreSQL connection credentials
+ * @param sql The raw SQL query string
+ * @param lg The logger to use
+ * @param operation_desc Description of the operation for logging
+ * @return A vector of rows, where each row is a vector of optional<string>
+ *
+ * @example
+ * auto pg_creds = ctx_.credentials();
+ * pg_creds.dbname = "postgres";
+ * auto rows = execute_raw_multi_column_query(pg_creds,
+ *     "SELECT runid, jobid, status FROM cron.job_run_details WHERE jobid = 42",
+ *     lg(), "Reading pg_cron job history");
+ */
+std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
+    const sqlgen::postgres::Credentials& creds,
+    const std::string& sql, logging::logger_t& lg,
+    const std::string& operation_desc);
+
+/**
  * @brief Executes a parameterized SQL command that doesn't return results.
  *
  * This helper uses PQexecParams for proper SQL parameter binding, preventing

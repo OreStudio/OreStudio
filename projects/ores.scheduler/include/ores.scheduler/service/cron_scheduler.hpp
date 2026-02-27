@@ -86,7 +86,7 @@ public:
     /**
      * @brief All job definitions visible to the current tenant+party context.
      */
-    [[nodiscard]] std::vector<domain::job_definition> get_all_definitions() const;
+    [[nodiscard]] std::vector<domain::job_definition> get_all_definitions();
 
     /**
      * @brief Execution history for a specific job, newest-first.
@@ -95,7 +95,7 @@ public:
      */
     [[nodiscard]] std::vector<domain::job_instance>
     get_job_history(const boost::uuids::uuid& job_definition_id,
-                    std::size_t limit = 100) const;
+                    std::size_t limit = 100);
 
 private:
     context ctx_;

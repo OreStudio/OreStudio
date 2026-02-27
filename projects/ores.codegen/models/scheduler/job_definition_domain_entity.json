@@ -1,0 +1,164 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "scheduler",
+    "entity_singular": "job_definition",
+    "entity_plural": "job_definitions",
+    "entity_title": "Job Definition",
+    "has_tenant_id": true,
+    "generator_facet_name": "generator",
+    "brief": "Persistent plan for a pg_cron scheduled SQL job.",
+    "description": "Metadata overlay for a pg_cron cron.job entry. Tracks the job name,\ncron expression, SQL command, target database, and active state.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the job definition."
+    },
+
+    "columns": [
+      {
+        "name": "job_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Unique name passed to pg_cron."
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Human-readable label for UI."
+      },
+      {
+        "name": "command",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "SQL command to execute."
+      },
+      {
+        "name": "schedule_expression",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Validated cron expression (stored as string, typed as cron_expression)."
+      },
+      {
+        "name": "database_name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Target PostgreSQL database name."
+      },
+      {
+        "name": "is_active",
+        "type": "boolean",
+        "cpp_type": "bool",
+        "nullable": false,
+        "description": "False = paused (unscheduled from pg_cron)."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_scheduler_job_definitions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "definition",
+      "entity_plural_short": "definitions",
+      "entity_singular_words": "job definition",
+      "entity_plural_words": "job definitions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>"]
+      },
+      "iterator_var": "jd"
+    },
+
+    "qt": {
+      "domain_include": "ores.scheduler/domain/job_definition.hpp",
+      "domain_class": "scheduler::domain::job_definition",
+      "protocol_include": "ores.scheduler/messaging/scheduler_protocol.hpp",
+      "collection_name": "definitions",
+      "item_var": "definition",
+      "key_field": "job_name",
+      "key_widget": "jobNameEdit",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "scheduler::messaging::get_job_definitions_request",
+      "get_response_class": "scheduler::messaging::get_job_definitions_response",
+      "get_message_type": "get_job_definitions_request",
+      "save_request_class": "scheduler::messaging::schedule_job_request",
+      "save_response_class": "scheduler::messaging::schedule_job_response",
+      "save_message_type": "schedule_job_request",
+      "delete_request_class": "scheduler::messaging::unschedule_job_request",
+      "delete_response_class": "scheduler::messaging::unschedule_job_response",
+      "delete_message_type": "unschedule_job_request",
+      "history_request_class": "scheduler::messaging::get_job_history_request",
+      "history_response_class": "scheduler::messaging::get_job_history_response",
+      "history_message_type": "get_job_history_request",
+
+      "detail_fields": [
+        {
+          "field": "job_name",
+          "label": "Job Name",
+          "widget": "jobNameEdit",
+          "type": "line_edit",
+          "is_key": true,
+          "is_required": true,
+          "placeholder": "Enter unique job name"
+        },
+        {
+          "field": "description",
+          "label": "Description",
+          "widget": "descriptionEdit",
+          "type": "text_edit",
+          "placeholder": "Enter a human-readable description"
+        },
+        {
+          "field": "command",
+          "label": "SQL Command",
+          "widget": "commandEdit",
+          "type": "text_edit",
+          "is_required": true,
+          "placeholder": "Enter the SQL command to execute"
+        },
+        {
+          "field": "schedule_expression",
+          "label": "Schedule (cron)",
+          "widget": "scheduleExpressionEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "e.g., 0 * * * * (every hour)"
+        },
+        {
+          "field": "database_name",
+          "label": "Database",
+          "widget": "databaseNameEdit",
+          "type": "line_edit",
+          "is_required": true,
+          "placeholder": "Target PostgreSQL database name"
+        }
+      ],
+
+      "columns": [
+        {"enum_name": "JobName",      "field": "job_name",           "header": "Job Name",    "is_string": true,  "width": 200},
+        {"enum_name": "Description",  "field": "description",        "header": "Description", "is_string": true,  "width": 250},
+        {"enum_name": "Schedule",     "field": "schedule_expression","header": "Schedule",    "is_string": true,  "width": 150},
+        {"enum_name": "DatabaseName", "field": "database_name",      "header": "Database",    "is_string": true,  "width": 150},
+        {"enum_name": "Active",       "field": "is_active",          "header": "Active",      "is_bool": true,    "width": 80},
+        {"enum_name": "Version",      "field": "version",            "header": "Version",     "is_int": true,     "width": 60},
+        {"enum_name": "ModifiedBy",   "field": "modified_by",        "header": "Modified By", "is_string": true,  "width": 120}
+      ],
+
+      "settings_group": "JobDefinitionListWindow",
+      "window_title": "Job Definitions",
+      "icon": "CalendarClock"
+    }
+  }
+}

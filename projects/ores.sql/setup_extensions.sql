@@ -98,18 +98,29 @@ begin
 end $$;
 
 -- pg_cron: Job scheduler extension (OPTIONAL)
--- Provides cron.schedule(), cron.unschedule(), cron.job, cron.job_run_details.
+-- Provides cron.schedule_in_database(), cron.unschedule(), cron.job, cron.job_run_details.
 -- Required by ores.scheduler library for background SQL job management.
 -- If not available, ores.scheduler cannot schedule or execute jobs.
 --
--- PREREQUISITES FOR PG_CRON:
---   - pg_cron must be installed on the system:
---       Debian/Ubuntu: apt install postgresql-NN-cron
---       macOS:         brew install pg_cron
---   - pg_cron must be added to shared_preload_libraries in postgresql.conf:
---       shared_preload_libraries = 'pg_cron'
---   - PostgreSQL must be restarted after modifying shared_preload_libraries
---   - Minimum required version: pg_cron 1.4 (for named job support)
+-- MULTI-ENVIRONMENT APPROACH (pg_cron 1.4+):
+--   ores.scheduler uses cron.schedule_in_database() which keeps pg_cron in
+--   the postgres database (the default) while executing jobs in each application
+--   database. This allows multiple OreStudio environments on the same PostgreSQL
+--   cluster to each maintain independent job schedules.
+--
+--   Do NOT set cron.database_name in postgresql.conf — leave it at the default
+--   (postgres). The extension only needs to be installed here in postgres.
+--
+-- PREREQUISITES FOR PG_CRON (pg_cron 1.4+):
+--   1. Install the package:
+--        Debian/Ubuntu: apt install postgresql-NN-cron
+--   2. Edit postgresql.conf:
+--        shared_preload_libraries = '...,pg_cron'
+--        (Leave cron.database_name unset — defaults to 'postgres', which is correct)
+--   3. Restart PostgreSQL:
+--        sudo systemctl restart postgresql
+--   4. Run this script to create the extension here in postgres.
+--   Minimum required version: pg_cron 1.4
 do $$
 declare
     pgcron_available boolean;
@@ -123,7 +134,7 @@ begin
         raise notice 'Installed: pg_cron';
     else
         raise notice 'pg_cron not available - ores.scheduler job scheduling will not function';
-        raise notice '(Install with: apt install postgresql-NN-cron, then add to shared_preload_libraries)';
+        raise notice '(Install with: apt install postgresql-NN-cron, then configure postgresql.conf)';
     end if;
 end $$;
 

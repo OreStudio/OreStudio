@@ -26,6 +26,9 @@
     <file>icons/fluentui/filled/ic_fluent_building_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_building_bank_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_building_skyscraper_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_calendar_add_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_checkmark_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_classification_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_clipboard_number_123_16_filled.svg</file>
@@ -101,6 +104,9 @@
     <file>icons/fluentui/regular/ic_fluent_building_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_building_bank_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_building_skyscraper_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_calendar_add_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_checkmark_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_classification_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_clipboard_number_123_16_regular.svg</file>
@@ -171,6 +177,9 @@
     <file>icons/solarized/Bold/chart-2.svg</file>
     <file>icons/solarized/Bold/chart-square.svg</file>
     <file>icons/solarized/Bold/chat-round.svg</file>
+    <file>icons/solarized/Bold/alarm-remove.svg</file>
+    <file>icons/solarized/Bold/calendar.svg</file>
+    <file>icons/solarized/Bold/calendar-add.svg</file>
     <file>icons/solarized/Bold/check-circle.svg</file>
     <file>icons/solarized/Bold/clipboard-list.svg</file>
     <file>icons/solarized/Bold/clock-circle.svg</file>
@@ -237,6 +246,9 @@
     <file>icons/solarized/Linear/chart-2.svg</file>
     <file>icons/solarized/Linear/chart-square.svg</file>
     <file>icons/solarized/Linear/chat-round.svg</file>
+    <file>icons/solarized/Linear/alarm-remove.svg</file>
+    <file>icons/solarized/Linear/calendar.svg</file>
+    <file>icons/solarized/Linear/calendar-add.svg</file>
     <file>icons/solarized/Linear/check-circle.svg</file>
     <file>icons/solarized/Linear/clipboard-list.svg</file>
     <file>icons/solarized/Linear/clock-circle.svg</file>

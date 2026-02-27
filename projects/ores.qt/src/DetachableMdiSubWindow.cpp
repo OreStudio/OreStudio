@@ -139,7 +139,7 @@ void DetachableMdiSubWindow::closeEvent(QCloseEvent* event) {
                              << " (detached=" << isDetached_ << ")";
 
     if (auto* dialog = qobject_cast<DetailDialogBase*>(widget())) {
-        if (dialog->hasUnsavedChanges()) {
+        if (dialog->hasUnsavedChanges() && !dialog->isCloseConfirmed()) {
             auto reply = QMessageBox::question(
                 this, tr("Unsaved Changes"),
                 tr("You have unsaved changes. Close anyway?"),

@@ -108,6 +108,8 @@ scheduler_message_handler::handle_schedule_job_request(
 
     auto request = std::move(*request_result);
     request.definition.modified_by = auth->username;
+    request.definition.tenant_id = auth->tenant_id;
+    request.definition.party_id = auth->party_id;
 
     auto ctx = make_request_context(*auth);
     service::cron_scheduler svc(ctx);

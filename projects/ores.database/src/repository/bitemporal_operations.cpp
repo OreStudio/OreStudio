@@ -276,9 +276,13 @@ void execute_raw_command(context ctx, const std::string& sql,
 
     if (PQresultStatus(result_guard.result) != PGRES_COMMAND_OK &&
         PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
-        // Rollback on error
+        // PQresultErrorMessage(nullptr) returns "" when PQexecParams returns
+        // NULL. Fall back to PQerrorMessage(conn) for connection-level errors.
+        // Must capture BEFORE rollback, which clears the connection error state.
+        const std::string err_msg = (result_guard.result != nullptr)
+            ? std::string(PQresultErrorMessage(result_guard.result))
+            : std::string(PQerrorMessage(conn_guard.conn));
         pg_result_guard rollback_guard(PQexec(conn_guard.conn, "ROLLBACK"));
-        const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
         throw std::runtime_error("Command execution failed: " + err_msg);
     }
@@ -315,6 +319,117 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
 
     // Set tenant context for RLS policies
     set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+
+    // Build parameter arrays for PQexecParams
+    std::vector<const char*> param_values;
+    param_values.reserve(params.size());
+    for (const auto& p : params) {
+        param_values.push_back(p.c_str());
+    }
+
+    // Execute the parameterized query
+    pg_result_guard result_guard(PQexecParams(
+        conn_guard.conn,
+        sql.c_str(),
+        static_cast<int>(params.size()),
+        nullptr,  // Let the server infer parameter types
+        param_values.data(),
+        nullptr,  // Parameter lengths (null-terminated strings)
+        nullptr,  // Parameter formats (text)
+        0         // Result format (text)
+    ));
+
+    if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
+        throw std::runtime_error("Query execution failed: " + err_msg);
+    }
+
+    // Extract results
+    const int num_rows = PQntuples(result_guard.result);
+    result.reserve(num_rows);
+
+    for (int i = 0; i < num_rows; ++i) {
+        if (!PQgetisnull(result_guard.result, i, 0)) {
+            result.push_back(PQgetvalue(result_guard.result, i, 0));
+        }
+    }
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total: " << result.size();
+    return result;
+}
+
+std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_query(
+    const sqlgen::postgres::Credentials& creds,
+    const std::string& sql, logging::logger_t& lg,
+    const std::string& operation_desc) {
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql;
+
+    std::vector<std::vector<std::optional<std::string>>> result;
+
+    // Create direct libpq connection using the provided credentials.
+    // No tenant context is set — this is for administrative databases (e.g. postgres).
+    const auto conn_str = build_connection_string(creds);
+    pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
+
+    if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
+        throw std::runtime_error("Database connection failed: " + err_msg);
+    }
+
+    // Execute the query
+    pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
+
+    if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
+        throw std::runtime_error("Query execution failed: " + err_msg);
+    }
+
+    // Extract results
+    const int num_rows = PQntuples(result_guard.result);
+    const int num_cols = PQnfields(result_guard.result);
+    result.reserve(num_rows);
+
+    for (int i = 0; i < num_rows; ++i) {
+        std::vector<std::optional<std::string>> row;
+        row.reserve(num_cols);
+        for (int j = 0; j < num_cols; ++j) {
+            if (PQgetisnull(result_guard.result, i, j)) {
+                row.push_back(std::nullopt);
+            } else {
+                row.push_back(std::string(PQgetvalue(result_guard.result, i, j)));
+            }
+        }
+        result.push_back(std::move(row));
+    }
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total rows: " << result.size();
+    return result;
+}
+
+std::vector<std::string> execute_parameterized_string_query(
+    const sqlgen::postgres::Credentials& creds,
+    const std::string& sql, const std::vector<std::string>& params,
+    logging::logger_t& lg, const std::string& operation_desc) {
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
+                             << " with " << params.size() << " parameters";
+
+    std::vector<std::string> result;
+
+    // Create direct libpq connection using the provided credentials.
+    // No tenant context is set — this is for administrative databases (e.g. postgres).
+    const auto conn_str = build_connection_string(creds);
+    pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
+
+    if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
+        throw std::runtime_error("Database connection failed: " + err_msg);
+    }
 
     // Build parameter arrays for PQexecParams
     std::vector<const char*> param_values;
@@ -404,9 +519,13 @@ void execute_parameterized_command(context ctx, const std::string& sql,
 
     if (PQresultStatus(result_guard.result) != PGRES_COMMAND_OK &&
         PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
-        // Rollback on error
+        // PQresultErrorMessage(nullptr) returns "" when PQexecParams returns
+        // NULL. Fall back to PQerrorMessage(conn) for connection-level errors.
+        // Must capture BEFORE rollback, which clears the connection error state.
+        const std::string err_msg = (result_guard.result != nullptr)
+            ? std::string(PQresultErrorMessage(result_guard.result))
+            : std::string(PQerrorMessage(conn_guard.conn));
         pg_result_guard rollback_guard(PQexec(conn_guard.conn, "ROLLBACK"));
-        const std::string err_msg = PQerrorMessage(conn_guard.conn);
         BOOST_LOG_SEV(lg, error) << "Command failed: " << err_msg;
         throw std::runtime_error("Command execution failed: " + err_msg);
     }

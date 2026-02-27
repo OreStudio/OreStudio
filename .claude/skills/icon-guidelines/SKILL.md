@@ -632,6 +632,36 @@ Activity history, past actions, audit trail.
 **Usage**: History views, recent items, activity logs.
 
 
+### Calendar Clock
+
+Scheduler, scheduled jobs, cron tasks.
+
+-   Regular: `projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svg`
+-   Filled: `projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svg`
+
+**Usage**: Scheduler menu entries, job definition list window title, any UI element representing scheduled/recurring work. Solar fallback: `calendar.svg`.
+
+
+### Calendar Add
+
+Schedule a new job, create a scheduled task.
+
+-   Regular: `projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_add_20_regular.svg`
+-   Filled: `projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_add_20_filled.svg`
+
+**Usage**: "Schedule Job" button in job definition list toolbar. Use instead of generic `Add` when the action specifically creates a scheduled task. Solar fallback: `calendar-add.svg`.
+
+
+### Calendar Cancel
+
+Unschedule a job, deactivate a scheduled task.
+
+-   Regular: `projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svg`
+-   Filled: `projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svg`
+
+**Usage**: "Unschedule" button in job definition list toolbar and detail dialog. Semantically distinct from `Delete` (which implies permanent removal) — unschedule removes from pg_cron while retaining the definition. Solar fallback: `alarm-remove.svg`.
+
+
 ## Text & Formatting
 
 Icons for text manipulation and formatting.
@@ -691,6 +721,9 @@ Text validation, spell check, language processing.
 | Currency            | currency\_dollar\_euro\_20          | Default | Active |
 | Time                | clock\_16                           | Default | Active |
 | History             | history\_20                         | Default | Active |
+| Scheduler/Jobs      | calendar\_clock\_20                 | Default | Active |
+| Schedule Job        | calendar\_add\_20                   | Default | Active |
+| Unschedule Job      | calendar\_cancel\_20                | Default | Active |
 | Import CSV          | arrow\_download\_csv\_20            | Default | Active |
 | Import FPML         | arrow\_download\_fpml\_20           | Default | Active |
 | Import ORE          | arrow\_download\_ore\_20            | Default | Active |

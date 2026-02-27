@@ -22,18 +22,24 @@
 
 #include <vector>
 #include <QList>
+#include <QLabel>
 #include <QAction>
 #include <QToolBar>
 #include <QSplitter>
 #include <QTreeView>
 #include <QWidget>
+#include <QTableView>
 #include <QDateTime>
 #include <QFutureWatcher>
 #include <QItemSelection>
+#include <QSortFilterProxyModel>
+#include <QToolButton>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include "ores.qt/OrgExplorerTreeModel.hpp"
+#include "ores.qt/OrgExplorerTradeModel.hpp"
 #include "ores.refdata/domain/business_unit.hpp"
 #include "ores.refdata/domain/book.hpp"
 
@@ -41,16 +47,14 @@ namespace ores::qt {
 
 class BusinessUnitController;
 class BookController;
+class TradeController;
 
 /**
- * @brief MDI window showing the organisational hierarchy.
+ * @brief MDI window showing the organisational hierarchy with a filtered trade table.
  *
- * Displays the Party → BusinessUnit → Book tree for the session party.
- * The tree uses the organisational hierarchy (owner_unit_id on books) rather
- * than the portfolio hierarchy. Books with no owner_unit_id appear under
- * an "(Unassigned)" node.
- *
- * The stale indicator pulses when business unit or book changes arrive.
+ * Displays the Party → BusinessUnit → Book tree for the session party on the
+ * left. Selecting any node scopes the trade table on the right to that subtree.
+ * The stale indicator pulses when business unit, book, or trade changes arrive.
  */
 class OrgExplorerMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -69,23 +73,25 @@ private:
     static constexpr const char* book_event = "ores.refdata.book_changed";
     static constexpr const char* business_unit_event =
         "ores.refdata.business_unit_changed";
+    static constexpr const char* trade_event = "ores.trading.trade_changed";
 
 public:
     explicit OrgExplorerMdiWindow(
         ClientManager* clientManager,
         BusinessUnitController* businessUnitController,
         BookController* bookController,
+        TradeController* tradeController,
         const QString& username,
         QWidget* parent = nullptr);
     ~OrgExplorerMdiWindow() override = default;
 
-    QSize sizeHint() const override { return QSize(500, 700); }
+    QSize sizeHint() const override { return QSize(1200, 700); }
 
 public slots:
     /**
      * @brief Reload all data from server.
      *
-     * Fires parallel async fetches for business units and books.
+     * Fires parallel async fetches for business units, books, and counterparties.
      */
     void reload() override;
 
@@ -106,17 +112,23 @@ private slots:
                                 const QString& tenantId);
     void onUnitsLoaded();
     void onBooksLoaded();
+    void onCounterpartiesLoaded();
     void onEditSelected();
     void onHistorySelected();
+    void onTradeDoubleClicked(const QModelIndex& index);
     void updateActionStates();
 
 private:
     void setupUi();
     void setupToolbar();
     void setupTree();
+    void setupTradePanel();
     void setupConnections();
     void setupEventSubscriptions();
     void rebuildTree();
+    void updateBreadcrumb(const OrgTreeNode* node);
+    void collectBookUuids(const QModelIndex& parent,
+                          QList<boost::uuids::uuid>& uuids);
 
     // Fetch result types
     struct UnitFetchResult {
@@ -133,12 +145,28 @@ private:
         QString error_details;
     };
 
+    struct CounterpartyFetchResult {
+        bool success;
+        std::unordered_map<std::string, CounterpartyInfo> cpty_map;
+        QString error_message;
+        QString error_details;
+    };
+
+    struct CountResult {
+        boost::uuids::uuid book_id;
+        std::uint32_t count{0};
+        bool success{false};
+        QString error_message;
+        QString error_details;
+    };
+
     ClientManager* clientManager_;
     QString username_;
 
     // Controllers (not owned — lifetime guaranteed by MainWindow)
     BusinessUnitController* businessUnitController_{nullptr};
     BookController* bookController_{nullptr};
+    TradeController* tradeController_{nullptr};
 
     // Layout
     QToolBar* toolbar_{nullptr};
@@ -146,13 +174,24 @@ private:
     QAction* editAction_{nullptr};
     QAction* historyAction_{nullptr};
 
-    // Tree
+    QSplitter* splitter_{nullptr};
+
+    // Left: tree
     QTreeView* treeView_{nullptr};
     OrgExplorerTreeModel* treeModel_{nullptr};
+
+    // Right: trade panel
+    QWidget* breadcrumbBar_{nullptr};
+    QTableView* tradeTableView_{nullptr};
+    OrgExplorerTradeModel* tradeModel_{nullptr};
+    QSortFilterProxyModel* tradeProxyModel_{nullptr};
+    PaginationWidget* paginationWidget_{nullptr};
 
     // Async watchers
     QFutureWatcher<UnitFetchResult>* unitWatcher_{nullptr};
     QFutureWatcher<BookFetchResult>* bookWatcher_{nullptr};
+    QFutureWatcher<CounterpartyFetchResult>* counterpartyWatcher_{nullptr};
+    QList<QFutureWatcher<CountResult>*> countWatchers_;
 
     // Data
     std::vector<refdata::domain::business_unit> units_;

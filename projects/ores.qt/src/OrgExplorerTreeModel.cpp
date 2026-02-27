@@ -19,6 +19,7 @@
  */
 #include "ores.qt/OrgExplorerTreeModel.hpp"
 
+#include <functional>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 
@@ -35,6 +36,7 @@ void OrgExplorerTreeModel::load(
     std::vector<refdata::domain::book> books) {
 
     beginResetModel();
+    trade_counts_.clear();
 
     root_ = std::make_unique<OrgTreeNode>();
     root_->kind = OrgTreeNode::Kind::Party;
@@ -129,6 +131,71 @@ void OrgExplorerTreeModel::build_unit_subtree(
     }
 }
 
+OrgTreeNodeFilter OrgExplorerTreeModel::selected_filter(
+    const QModelIndex& index) const {
+    const auto* node = node_from_index(index);
+    if (!node)
+        return {};
+
+    if (node->kind == OrgTreeNode::Kind::Party)
+        return {.book_id = std::nullopt, .business_unit_id = std::nullopt};
+
+    if (node->kind == OrgTreeNode::Kind::Book)
+        return {.book_id = node->book.id, .business_unit_id = std::nullopt};
+
+    // BusinessUnit
+    return {.book_id = std::nullopt, .business_unit_id = node->unit.id};
+}
+
+std::uint32_t OrgExplorerTreeModel::subtree_count(
+    const OrgTreeNode* node) const {
+    if (!node)
+        return 0;
+    if (node->kind == OrgTreeNode::Kind::Book) {
+        const auto it = trade_counts_.find(
+            boost::uuids::to_string(node->book.id));
+        return it != trade_counts_.end() ? it->second : 0;
+    }
+    std::uint32_t total = 0;
+    for (const auto& child : node->children)
+        total += subtree_count(child.get());
+    return total;
+}
+
+void OrgExplorerTreeModel::set_trade_count(
+    const boost::uuids::uuid& book_id, std::uint32_t count) {
+    trade_counts_[boost::uuids::to_string(book_id)] = count;
+    auto idx = find_book_index(book_id);
+    if (!idx.isValid())
+        return;
+    // Notify the book itself and every ancestor up to (and including) the root
+    while (idx.isValid()) {
+        emit dataChanged(idx, idx, {Qt::DisplayRole});
+        idx = idx.parent();
+    }
+}
+
+QModelIndex OrgExplorerTreeModel::find_book_index(
+    const boost::uuids::uuid& id) const {
+    std::function<QModelIndex(const QModelIndex&)> search =
+        [&](const QModelIndex& parent) -> QModelIndex {
+        for (int r = 0; r < rowCount(parent); ++r) {
+            auto idx = index(r, 0, parent);
+            const auto* node = node_from_index(idx);
+            if (node && node->kind == OrgTreeNode::Kind::Book
+                    && node->book.id == id)
+                return idx;
+            if (node && !node->children.empty()) {
+                auto found = search(idx);
+                if (found.isValid())
+                    return found;
+            }
+        }
+        return {};
+    };
+    return search({});
+}
+
 OrgTreeNode* OrgExplorerTreeModel::node_from_index(
     const QModelIndex& index) const {
     if (!index.isValid())
@@ -184,12 +251,22 @@ QVariant OrgExplorerTreeModel::data(
         return {};
 
     if (role == Qt::DisplayRole) {
+        auto append_count = [](QString name, std::uint32_t n) -> QString {
+            if (n > 0)
+                name += QStringLiteral(" (%1)").arg(n);
+            return name;
+        };
         if (node->kind == OrgTreeNode::Kind::Party)
-            return node->party_name;
+            return append_count(node->party_name, subtree_count(node));
         if (node->kind == OrgTreeNode::Kind::BusinessUnit)
-            return QString::fromStdString(node->unit.unit_name);
-        // Book
-        return QString::fromStdString(node->book.name);
+            return append_count(
+                QString::fromStdString(node->unit.unit_name),
+                subtree_count(node));
+        // Book: look up count directly
+        const auto it = trade_counts_.find(
+            boost::uuids::to_string(node->book.id));
+        const auto n = it != trade_counts_.end() ? it->second : 0;
+        return append_count(QString::fromStdString(node->book.name), n);
     }
 
     if (role == Qt::DecorationRole) {

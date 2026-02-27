@@ -703,6 +703,7 @@ MainWindow::MainWindow(QWidget* parent) :
             clientManager_,
             businessUnitController_.get(),
             bookController_.get(),
+            tradeController_.get(),
             QString::fromStdString(username_),
             this);
 

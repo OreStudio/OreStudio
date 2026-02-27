@@ -20,6 +20,7 @@
 #ifndef ORES_QT_ORG_EXPLORER_TREE_MODEL_HPP
 #define ORES_QT_ORG_EXPLORER_TREE_MODEL_HPP
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include <optional>
@@ -32,6 +33,17 @@
 #include "ores.refdata/domain/book.hpp"
 
 namespace ores::qt {
+
+/**
+ * @brief Filter result from a tree node selection.
+ *
+ * Exactly one of book_id or business_unit_id will be set (or both nullopt
+ * when the party root is selected, meaning "show all").
+ */
+struct OrgTreeNodeFilter {
+    std::optional<boost::uuids::uuid> book_id;
+    std::optional<boost::uuids::uuid> business_unit_id;
+};
 
 /**
  * @brief A single node in the organisational hierarchy tree.
@@ -91,6 +103,23 @@ public:
               std::vector<refdata::domain::book> books);
 
     /**
+     * @brief Returns the filter for the selected index.
+     *
+     * For a book node: sets book_id.
+     * For a BusinessUnit node: sets business_unit_id.
+     * For a party node: returns nullopt pair (show all trades).
+     */
+    OrgTreeNodeFilter selected_filter(const QModelIndex& index) const;
+
+    /**
+     * @brief Update the trade count for a book and refresh its display.
+     *
+     * Called after background count fetches complete. Stores the count and
+     * emits dataChanged so the book label and all ancestor labels update.
+     */
+    void set_trade_count(const boost::uuids::uuid& book_id, std::uint32_t count);
+
+    /**
      * @brief Returns the node for a given index, or nullptr if invalid.
      */
     OrgTreeNode* node_from_index(const QModelIndex& index) const;
@@ -109,7 +138,11 @@ private:
         const std::vector<refdata::domain::book>& books,
         const std::optional<boost::uuids::uuid>& parent_unit_id);
 
+    QModelIndex find_book_index(const boost::uuids::uuid& id) const;
+    std::uint32_t subtree_count(const OrgTreeNode* node) const;
+
     std::unique_ptr<OrgTreeNode> root_;
+    std::unordered_map<std::string, std::uint32_t> trade_counts_;
 };
 
 }

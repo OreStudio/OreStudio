@@ -1,0 +1,336 @@
+:PROPERTIES:
+:ID: 8f3a1c2e-4b7d-4e9f-a1c3-2d5e6f8a0b1c
+:END:
+#+title: ORE Import Wizard Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+A multi-page import wizard that scans a directory tree of ORE XML files and
+imports currencies, portfolios, books, and trades into the database in a single
+guided operation. The wizard eliminates the need to manually import files one at
+a time, and is designed to handle large ORE example directories (300+ portfolio
+files) without becoming unmanageable.
+
+** Goals
+
+- Point at any ORE example directory and import currencies, portfolios, books,
+  and trades with minimal manual input.
+- Derive the portfolio/book hierarchy automatically from the directory structure.
+- Reuse existing importers in =ores.ore= without duplicating parsing logic.
+- Keep all reusable logic outside of Qt so the same pipeline can be driven from
+  the shell in a future story.
+
+** Entry Points
+
+- Main menu: =File → Import ORE Data...=
+- Portfolio explorer toolbar button.
+
+** Success Criteria
+
+- User points at any ORE example directory and the wizard guides them to a fully
+  imported set of currencies, portfolios, books, and trades.
+- If the user cancels before the import page, nothing is sent to the server.
+- The wizard is extensible — future ORE entity types slot in as new pages.
+
+* Prerequisites
+
+** Protocol Refactoring: Batch Save Messages
+
+A non-backwards-compatible sweep of the binary protocol: every =save_*_request=
+is changed from carrying a single entity to =std::vector<entity>=. The response
+changes to =std::vector<save_result>= (one result per item).
+
+This is implemented as a separate story before the wizard work begins.
+
+*** Repository Layer
+
+Each repository gets a bulk write overload:
+
+#+begin_src cpp
+repo_.write(ctx_, std::vector<entity> entities);
+#+end_src
+
+This executes a single multi-row INSERT inside one transaction. The existing
+single-entity =write= delegates to the bulk overload with a one-element vector —
+no duplicated SQL logic.
+
+*** Client-Side Helpers
+
+Each request type provides a static factory to avoid scattered vector
+construction at call sites:
+
+#+begin_src cpp
+// Used by import wizard
+save_currency_request::from(std::vector<currency> currencies);
+
+// Used by all existing single-entity callers (edit dialogs, etc.)
+save_currency_request::from(currency c);  // wraps in one-element vector
+#+end_src
+
+Existing callers change from =save_currency_request{c}= to
+=save_currency_request::from(c)= — a mechanical sweep with no logic change.
+
+*** Protocol Version
+
+Bumped once for the entire sweep.
+
+* Architecture
+
+** Component Responsibilities
+
+#+begin_src
+ores.ore   (pure logic, no Qt, reusable from shell)
+  ore_directory_scanner     -- file tree classification
+  ore_hierarchy_builder     -- directory paths → portfolio/book tree
+  ore_import_planner        -- user choices → ore_import_plan
+
+ores.qt    (presentation only)
+  OreImportWizard           -- QWizard, 7 pages, holds shared state
+  OreImportController       -- wires up menu + explorer entry points
+#+end_src
+
+All planning and data transformation happens in =ores.ore=. The Qt layer
+collects user choices and executes the plan via =ClientManager=. The shell
+command (future story) will collect choices from command-line flags and execute
+the same plan the same way.
+
+** New Classes in =ores.ore=
+
+*** =ore_directory_scanner=
+
+Location: =ores.ore/include/ores.ore/scanner/=
+
+Takes a root path and an exclusion list. Walks the file tree and returns a
+=scan_result= struct:
+
+#+begin_src cpp
+struct scan_result {
+    std::vector<std::filesystem::path> currency_files;   // currencyconfig.xml
+    std::vector<std::filesystem::path> portfolio_files;  // portfolio*.xml
+    std::vector<std::filesystem::path> ignored_files;
+};
+#+end_src
+
+Classification rules:
+- Files named =currencyconfig.xml= → currency.
+- Files matching =portfolio*.xml= → portfolio.
+- Everything else → ignored.
+- Files inside excluded folder names are treated as ignored.
+
+*** =ore_hierarchy_builder=
+
+Location: =ores.ore/include/ores.ore/hierarchy/=
+
+Takes =portfolio_files=, the root path, and the exclusion list. For each file:
+
+1. Compute the path relative to root.
+2. Strip any path components that appear in the exclusion list.
+3. All remaining components except the last become nested portfolios.
+4. The last component becomes a book.
+
+Returns a tree of =import_node= structs:
+
+#+begin_src cpp
+struct import_node {
+    std::string name;
+    enum class node_type { portfolio, book } type;
+    std::optional<std::size_t> parent_index;       // index into flat node list
+    std::vector<std::filesystem::path> source_files; // portfolio XMLs (books only)
+};
+#+end_src
+
+Re-runs synchronously when the exclusion list changes — cheap enough to not
+require async.
+
+*** =ore_import_planner=
+
+Location: =ores.ore/include/ores.ore/planner/=
+
+Takes a =scan_result=, a set of existing ISO codes (fetched from server), and
+user choices:
+
+#+begin_src cpp
+struct import_choices {
+    currency_import_mode currency_mode;  // all | missing_only
+    std::string parent_portfolio_name;   // existing name or new name
+    bool create_parent_portfolio;        // true = create new
+    std::vector<std::string> exclusions; // folder name exclusion list
+    trade_defaults defaults;             // dates, lifecycle event, counterparty
+};
+
+enum class currency_import_mode { all, missing_only };
+#+end_src
+
+Returns an =ore_import_plan=: a pure data structure describing exactly what will
+be created — no server calls, no Qt.
+
+#+begin_src cpp
+struct ore_import_plan {
+    std::vector<refdata::domain::currency> currencies;
+    std::vector<refdata::domain::portfolio> portfolios;
+    std::vector<refdata::domain::book> books;
+    std::vector<ore::xml::trade_import_item> trades;
+};
+#+end_src
+
+** New Classes in =ores.qt=
+
+*** =OreImportWizard=
+
+=QWizard= subclass. Holds all shared wizard state:
+
+- Root path, scan result, exclusion list
+- Hierarchy tree (=std::vector<import_node>=)
+- Currency import mode
+- Trade defaults
+- Import results (counts, failure details)
+
+Seven =QWizardPage= subclasses, one per page (see Wizard Page Flow).
+
+*** =OreImportController=
+
+Wired to the main menu action and the portfolio explorer toolbar signal. Creates
+and shows the wizard. No other responsibilities.
+
+* Wizard Page Flow
+
+#+begin_src
+[1. Welcome] → [2. Directory] → [3. Scan Summary] → [4. Currencies]
+             → [5. Hierarchy] → [6. Trades]       → [7. Done]
+#+end_src
+
+** Page 1 — Welcome
+
+Brief explanation of what the wizard does and what it will create. No inputs.
+
+** Page 2 — Directory Selection
+
+Folder picker. On Next, an async scan runs (progress spinner) using
+=ore_directory_scanner=. Result stored in wizard state. Next is disabled until
+the scan completes.
+
+** Page 3 — Scan Summary
+
+Read-only counts: "Found N currency files, M portfolio files, K files ignored."
+
+Editable exclusion list (default: =[Input]=) — add/remove folder name entries.
+Changing the list re-runs =ore_hierarchy_builder= live to update the hierarchy
+shown on page 5.
+
+Next is disabled until the scan result is available.
+
+** Page 4 — Currency Import
+
+Fetches existing ISO codes from the server asynchronously when the page is shown.
+
+Shows a table of all unique currencies found across all currency files.
+
+Toggle:
+- *Import all* — sends all currencies (temporal DB creates new versions for
+  existing ones).
+- *Import missing only* — skips ISO codes already in the database.
+
+** Page 5 — Portfolio Hierarchy
+
+Parent portfolio selector: dropdown of existing portfolios fetched from server,
+plus a "Create new top-level portfolio…" option that prompts for a name.
+
+Below the selector: a read-only tree view showing exactly which portfolios and
+books will be created, derived by =ore_hierarchy_builder= from the directory
+structure and current exclusion list.
+
+** Page 6 — Trade Import
+
+Global defaults panel:
+- Trade date, effective date, termination date
+- Lifecycle event (New, Amendment, Novation, etc.)
+- Default counterparty
+
+Progress bar and cancel button. Import starts automatically when the page is
+shown:
+
+1. Build the =ore_import_plan= via =ore_import_planner=.
+2. Send =save_currencies_request= (one batch message).
+3. Send =save_portfolios_request= (one batch message).
+4. Send =save_books_request= (one batch message).
+5. Send =save_trades_request= (one batch message — potentially very large).
+
+Each step updates the progress bar. Cancel is available between steps; since
+each step is a single atomic server call, cancelling between steps leaves only
+fully-committed entity types in the DB (currencies only, or currencies +
+portfolios, etc.). A future enhancement could add a rollback call.
+
+** Page 7 — Done
+
+Summary: "Imported N currencies, created M portfolios, K books, P trades. Q
+trades failed."
+
+Expandable "View failures" section showing per-trade error details.
+
+* Data Flow
+
+#+begin_src
+User picks directory
+       ↓
+ore_directory_scanner(root, exclusions)
+       ↓
+scan_result{currency_files, portfolio_files, ignored_files}
+       ↓
+User reviews summary, edits exclusion list
+       ↓
+ore_hierarchy_builder(portfolio_files, root, exclusions)
+       ↓
+std::vector<import_node>  (tree of portfolios + books)
+       ↓
+User selects parent portfolio, currency mode, trade defaults
+       ↓
+ore_import_planner(scan_result, existing_iso_codes, choices)
+       ↓
+ore_import_plan{currencies, portfolios, books, trades}
+       ↓
+ClientManager → save_currencies_request   (one DB transaction)
+             → save_portfolios_request  (one DB transaction)
+             → save_books_request       (one DB transaction)
+             → save_trades_request      (one DB transaction)
+#+end_src
+
+* Testing Strategy
+
+** =ores.ore= Unit Tests (Catch2, no server required)
+
+- =ore_directory_scanner=: given a synthetic in-memory file tree, verify correct
+  classification; verify exclusion list suppresses matching folder names.
+- =ore_hierarchy_builder=: given a set of file paths + exclusion list, verify
+  the correct portfolio/book tree is produced; test edge cases (single-level
+  path, all segments excluded, path with only excluded segments).
+- =ore_import_planner=: given a scan result + choices, verify the
+  =ore_import_plan= contains the expected currencies (all vs missing), correct
+  portfolio/book nesting, and correct trade count.
+
+** Protocol Unit Tests
+
+- =save_*_request::from(single)= and =from(vector)= round-trip serialisation.
+- Verify =from(single)= produces a one-element vector identical to
+  =from(vector_of_one)=.
+
+** Repository Integration Tests
+
+- Bulk =write(ctx_, vector<entity>)= for currencies, portfolios, books, trades.
+- Verify all-or-nothing: if one entity in the vector violates a constraint, none
+  are committed.
+
+** Qt Wizard
+
+No automated tests for the UI pages (consistent with existing wizard pattern).
+Logic is fully covered by the =ores.ore= unit tests above.
+
+* Open Questions
+
+- Should cancelling mid-import (e.g. after currencies but before trades) trigger
+  a compensating delete call? Deferred to a future story.
+- The trade batch may be very large (tens of thousands of rows). If the server
+  imposes a message size limit, the trade batch may need to be chunked. To be
+  investigated during implementation.

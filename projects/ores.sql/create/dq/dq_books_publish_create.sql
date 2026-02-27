@@ -88,15 +88,17 @@ begin
       and valid_to = ores_utility_infinity_timestamp_fn();
 
     -- Build portfolio reference map: artefact portfolio ID -> published portfolio ID
-    -- Joined on name since IDs differ between artefact and published data
+    -- Joined on name since IDs differ between artefact and published data.
+    -- Also carries owner_unit_id from the published portfolio for book FK.
     create temp table portfolio_ref_map (
         artefact_id uuid primary key,
-        published_id uuid not null
+        published_id uuid not null,
+        published_owner_unit_id uuid
     ) on commit drop;
 
     if v_portfolio_dataset_id is not null then
-        insert into portfolio_ref_map (artefact_id, published_id)
-        select a.id, r.id
+        insert into portfolio_ref_map (artefact_id, published_id, published_owner_unit_id)
+        select a.id, r.id, r.owner_unit_id
         from ores_dq_portfolios_artefact_tbl a
         join ores_refdata_portfolios_tbl r
             on r.name = a.name
@@ -109,14 +111,14 @@ begin
     insert into ores_refdata_books_tbl (
         tenant_id, id, version, party_id, name,
         parent_portfolio_id, ledger_ccy, gl_account_ref, cost_center,
-        book_status, is_trading_book,
+        book_status, is_trading_book, owner_unit_id,
         modified_by, performed_by, change_reason_code, change_commentary
     )
     select
         p_target_tenant_id,
         gen_random_uuid(), 0, v_root_party_id, a.name,
         pmap.published_id, a.ledger_ccy, a.gl_account_ref, a.cost_center,
-        a.book_status, a.is_trading_book,
+        a.book_status, a.is_trading_book, pmap.published_owner_unit_id,
         coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
         'Published from organisation dataset'
     from ores_dq_books_artefact_tbl a

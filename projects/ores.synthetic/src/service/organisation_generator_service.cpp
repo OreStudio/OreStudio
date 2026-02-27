@@ -543,13 +543,61 @@ void generate_party_counterparty_links(
 }
 
 // ============================================================================
+// Business unit type generation
+// ============================================================================
+
+std::unordered_map<std::string, boost::uuids::uuid>
+generate_business_unit_types(
+    generation_context& ctx,
+    domain::generated_organisation& result) {
+
+    const auto [tenant_id, modified_by] = get_audit(ctx);
+    std::unordered_map<std::string, boost::uuids::uuid> type_by_code;
+
+    struct type_def {
+        std::string_view code;
+        std::string_view name;
+        std::string_view desc;
+        int level;
+    };
+    constexpr std::array<type_def, 5> types{{
+        {"DIVISION",      "Division",      "Top-level functional grouping within a party.",            0},
+        {"BRANCH",        "Branch",        "Top-level geographic grouping within a party.",             0},
+        {"BUSINESS_AREA", "Business Area", "Cohesive set of business activities within a division.",   1},
+        {"DESK",          "Trading Desk",  "Operational trading or risk desk; direct owner of books.", 2},
+        {"COST_CENTRE",   "Cost Centre",   "Finance/accounting unit, leaf of the hierarchy.",          2},
+    }};
+
+    for (const auto& td : types) {
+        refdata::domain::business_unit_type t;
+        t.version = 1;
+        t.tenant_id = tenant_id;
+        t.id = ctx.generate_uuid();
+        t.coding_scheme_code = "ORES-ORG";
+        t.code = std::string(td.code);
+        t.name = std::string(td.name);
+        t.level = td.level;
+        t.description = std::string(td.desc);
+        t.modified_by = modified_by;
+        t.performed_by = modified_by;
+        t.change_reason_code = "system.new_record";
+        t.change_commentary = "Generated organisation data";
+        t.recorded_at = ctx.past_timepoint();
+        type_by_code[t.code] = t.id;
+        result.business_unit_types.push_back(std::move(t));
+    }
+    return type_by_code;
+}
+
+// ============================================================================
 // Business unit generation
 // ============================================================================
 
 void generate_business_units(
     const domain::organisation_generation_options& options,
     generation_context& ctx,
-    domain::generated_organisation& result) {
+    domain::generated_organisation& result,
+    const std::unordered_map<std::string, boost::uuids::uuid>& type_by_code) {
 
     if (result.parties.empty())
         return;
@@ -582,6 +630,7 @@ void generate_business_units(
             bu.unit_name = "Global Markets";
             bu.unit_code = "GLOB_MKT";
             bu.parent_business_unit_id = std::nullopt;
+            bu.unit_type_id = type_by_code.at("DIVISION");
         } else if (node.depth == 1) {
             const auto region_idx =
                 (node.index - 1) % data::region_names.size();
@@ -601,6 +650,7 @@ void generate_business_units(
                 });
             bu.parent_business_unit_id =
                 result.business_units[*node.parent_index].id;
+            bu.unit_type_id = type_by_code.at("BUSINESS_AREA");
         } else {
             const auto asset_idx = unit_seq % data::asset_classes.size();
             const auto& parent = result.business_units[*node.parent_index];
@@ -619,6 +669,7 @@ void generate_business_units(
                     return std::toupper(c);
                 });
             bu.parent_business_unit_id = parent.id;
+            bu.unit_type_id = type_by_code.at("DESK");
             ++unit_seq;
         }
 
@@ -781,6 +832,7 @@ void generate_books(
             bk.id = ctx.generate_uuid();
             bk.party_id = root_party_id;
             bk.parent_portfolio_id = portfolio.id;
+            bk.owner_unit_id = portfolio.owner_unit_id;
             bk.ledger_ccy = portfolio.aggregation_ccy;
             bk.book_status = "Active";
             bk.is_trading_book = 1;
@@ -856,7 +908,8 @@ organisation_generator_service::generate(
 
     generate_party_counterparty_links(ctx, result);
 
-    generate_business_units(options, ctx, result);
+    auto type_by_code = generate_business_unit_types(ctx, result);
+    generate_business_units(options, ctx, result, type_by_code);
 
     generate_portfolios(options, ctx, result);
     generate_books(options, ctx, result);

@@ -183,6 +183,8 @@ std::vector<std::byte> get_trades_request::serialize() const {
     if (book_id) writer::write_uuid(buffer, *book_id);
     writer::write_bool(buffer, portfolio_id.has_value());
     if (portfolio_id) writer::write_uuid(buffer, *portfolio_id);
+    writer::write_bool(buffer, business_unit_id.has_value());
+    if (business_unit_id) writer::write_uuid(buffer, *business_unit_id);
     return buffer;
 }
 
@@ -214,6 +216,16 @@ get_trades_request::deserialize(std::span<const std::byte> data) {
                 auto pid = reader::read_uuid(data);
                 if (!pid) return std::unexpected(pid.error());
                 request.portfolio_id = *pid;
+            }
+        }
+
+        if (!data.empty()) {
+            auto has_bu = reader::read_bool(data);
+            if (!has_bu) return std::unexpected(has_bu.error());
+            if (*has_bu) {
+                auto buid = reader::read_uuid(data);
+                if (!buid) return std::unexpected(buid.error());
+                request.business_unit_id = *buid;
             }
         }
     }

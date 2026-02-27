@@ -121,6 +121,16 @@ void BusinessUnitController::reloadListWindow() {
     }
 }
 
+void BusinessUnitController::openEdit(
+    const refdata::domain::business_unit& business_unit) {
+    showDetailWindow(business_unit);
+}
+
+void BusinessUnitController::openHistory(
+    const refdata::domain::business_unit& business_unit) {
+    showHistoryWindow(business_unit);
+}
+
 void BusinessUnitController::onShowDetails(
     const refdata::domain::business_unit& business_unit) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: " << business_unit.unit_code;

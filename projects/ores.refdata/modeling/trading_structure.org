@@ -1,0 +1,380 @@
+:PROPERTIES:
+:ID: 7A3F2C91-B4E8-4D12-9F6A-1C8D5E302A74
+:END:
+#+title: Trading Structure: Party, Book, Portfolio, Business Unit, Business Centre
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+ORE Studio organises trading activity around five interlocking entities: parties,
+business centres, business unit types, business units, books, and portfolios.
+These form two orthogonal hierarchies that serve different purposes and different
+audiences.
+
+| Hierarchy      | Entities                                    | Purpose                          | Primary audience        |
+|----------------+---------------------------------------------+----------------------------------+-------------------------|
+| Organisational | Party → Business Unit (→ Business Unit)     | Who owns what, regulatory scope  | Risk, middle office     |
+| Portfolio      | Party → Portfolio (→ Portfolio) → Book      | P&L and risk aggregation         | Traders, front office   |
+
+Both hierarchies are scoped to a party within a tenant. For the relationship
+between tenants and parties see [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]] and
+[[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]].
+
+* Entity Definitions
+
+** Party
+
+A party is a legal entity or organisational unit within a tenant. It is the
+top-level owner of all business data: books, portfolios, counterparty
+relationships, and trades all carry a =party_id= that scopes them to exactly
+one party.
+
+Parties form a tree via =parent_party_id=, allowing a corporate group to be
+modelled as a hierarchy (Group → Subsidiary → Branch). Data visibility follows
+this tree: a user logged in as a parent party can see the data of all its
+descendants.
+
+#+begin_example
+  ACME Corp (tenant root)
+    └─ ACME Europe (operational party)
+         ├─ ACME London
+         └─ ACME Frankfurt
+    └─ ACME Americas
+         └─ ACME New York
+#+end_example
+
+For a full treatment of party types, party-level RLS, and login flow see
+[[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]].
+
+Key fields in =ores_refdata_parties_tbl=:
+
+| Field              | Description                                          |
+|--------------------+------------------------------------------------------|
+| =id=               | UUID surrogate key                                   |
+| =party_id=         | Self-reference for hierarchy (same table)            |
+| =parent_party_id=  | Optional parent — null for the root party            |
+| =name=             | Display name                                         |
+| =party_type=       | =system= or =operational=                            |
+| =party_status=     | Active/inactive lifecycle state                      |
+| =party_category=   | Classification (e.g. broker-dealer, fund, bank)      |
+
+** Business Centre
+
+A business centre is a financial market location defined by FpML and used in
+date arithmetic (holiday calendars) and regulatory attribution. Examples:
+=GBLO= (London), =USNY= (New York), =JPTO= (Tokyo).
+
+Business centres are *tenant-scoped reference data* (shared across all parties
+within a tenant, not owned by any single party). Each business centre maps to
+a city and country, and may carry a flag image for display.
+
+Key fields in =ores_refdata_business_centres_tbl=:
+
+| Field                 | Description                                   |
+|-----------------------+-----------------------------------------------|
+| =code=                | FpML/ORE code, e.g. =GBLO=                    |
+| =city_name=           | City, e.g. =London=                           |
+| =country_alpha2_code= | ISO 3166-1 country code, e.g. =GB=            |
+| =source=              | Coding scheme, e.g. =FpML=                   |
+
+** Business Unit Type
+
+A business unit type is a classification for business units within the
+organisational hierarchy. Types are coded under the =ORES-ORG= coding scheme
+and carry a =level= integer that defines where in the hierarchy they sit
+(lower number = higher in the tree).
+
+The five standard types seeded at initialisation:
+
+| Code            | Name          | Level | Description                                         |
+|-----------------+---------------+-------+-----------------------------------------------------|
+| =DIVISION=      | Division      |     0 | Top-level functional grouping within a party        |
+| =BRANCH=        | Branch        |     0 | Top-level geographic grouping within a party        |
+| =BUSINESS_AREA= | Business Area |     1 | Cohesive set of business activities within division |
+| =DESK=          | Trading Desk  |     2 | Operational trading or risk desk; owns books        |
+| =COST_CENTRE=   | Cost Centre   |     2 | Finance/accounting unit, leaf of hierarchy          |
+
+The level constraint is enforced at insert time: a business unit whose type has
+level =N= may only have a parent unit whose type has level =< N=. This prevents
+nonsensical structures (e.g. a Division as a child of a Desk).
+
+Key fields in =ores_refdata_business_unit_types_tbl=:
+
+| Field                | Description                                     |
+|----------------------+-------------------------------------------------|
+| =code=               | Type code, e.g. =DESK=                          |
+| =name=               | Display name                                    |
+| =level=              | Hierarchy depth (0 = top)                       |
+| =coding_scheme_code= | Always =ORES-ORG= for standard types           |
+
+** Business Unit
+
+A business unit is a concrete node in the organisational hierarchy: a specific
+division, branch, desk, or cost centre within a party. Business units form a
+tree via =parent_business_unit_id=.
+
+Unlike portfolios (which are primarily a reporting overlay), business units
+reflect actual organisational structures: they have a type that defines their
+level, and a business centre code that ties them to a physical location.
+
+Key fields in =ores_refdata_business_units_tbl=:
+
+| Field                      | Description                                          |
+|----------------------------+------------------------------------------------------|
+| =party_id=                 | Owning party                                         |
+| =unit_name=                | Display name, e.g. =FX Rates London=                 |
+| =unit_code=                | Short internal code                                  |
+| =unit_type_id=             | Optional reference to =business_unit_types= (uuid)   |
+| =parent_business_unit_id=  | Optional parent in hierarchy                         |
+| =business_centre_code=     | Location, e.g. =GBLO=                               |
+| =status=                   | Active/inactive                                      |
+
+** Portfolio
+
+A portfolio is a grouping of books (and optionally other portfolios) used to
+aggregate risk and P&L. Portfolios exist in two modes:
+
+| Mode       | =is_virtual= | Contains                    | Owns trades?  |
+|------------+--------------+-----------------------------+---------------|
+| Physical   | =0=          | Books (leaves)              | Via books     |
+| Virtual    | =1=          | Other portfolios or books   | No (overlay)  |
+
+A physical portfolio is the immediate parent of one or more books. Trades are
+booked into books; a physical portfolio owns those books and aggregates their
+risk.
+
+A virtual portfolio is a reporting overlay. It aggregates books from across the
+physical portfolio tree without owning them directly. Virtual portfolios are
+used to construct cross-desk or cross-party views for management reporting
+(e.g. "Global Rates" aggregating London and New York rates books).
+
+Key fields in =ores_refdata_portfolios_tbl=:
+
+| Field                  | Description                                           |
+|------------------------+-------------------------------------------------------|
+| =party_id=             | Owning party                                          |
+| =name=                 | Display name                                          |
+| =parent_portfolio_id=  | Optional parent portfolio in hierarchy                |
+| =owner_unit_id=        | Optional business unit that "owns" this portfolio     |
+| =purpose_type=         | Structural classification (e.g. Trading, Hedging)    |
+| =aggregation_ccy=      | Currency for P&L roll-up                             |
+| =is_virtual=           | =1= if virtual overlay, =0= if physical               |
+| =status=               | Active/inactive                                       |
+
+** Book
+
+A book is the atomic unit of risk attribution. Every trade is booked into
+exactly one book. Books are the leaves of the portfolio hierarchy — a book
+always has a =parent_portfolio_id= pointing to a physical portfolio.
+
+A book also carries an optional =owner_unit_id= identifying which business unit
+(typically a trading desk) owns it. For regulatory purposes (FRTB trading book
+/ banking book boundary), this attribution is mandatory for live trading books.
+
+Key fields in =ores_refdata_books_tbl=:
+
+| Field                  | Description                                           |
+|------------------------+-------------------------------------------------------|
+| =party_id=             | Owning party                                          |
+| =name=                 | Display name, e.g. =FX Rates London=                  |
+| =parent_portfolio_id=  | Physical portfolio this book sits under               |
+| =owner_unit_id=        | Optional desk/business unit that owns this book       |
+| =ledger_ccy=           | Ledger currency for the book                         |
+| =is_trading_book=      | =1= if FRTB trading book, =0= if banking book         |
+| =book_status=          | Active, suspended, closed                             |
+| =cost_center=          | GL cost centre reference                             |
+
+* Hierarchy Diagrams
+
+** Organisational Hierarchy
+
+#+begin_example
+  Party: ACME London
+    │
+    ├─ [DIVISION] Global Markets
+    │    ├─ [BUSINESS_AREA] Rates
+    │    │    ├─ [DESK] FX Rates London      ← business_centre_code = GBLO
+    │    │    └─ [DESK] IR Swaps London       ← business_centre_code = GBLO
+    │    └─ [BUSINESS_AREA] Credit
+    │         └─ [DESK] Credit London
+    │
+    └─ [COST_CENTRE] Operations London
+#+end_example
+
+The organisational hierarchy is typed (each node has a =unit_type_id= defining
+its =level=), geographically anchored (=business_centre_code=), and strictly
+nested (parent level must be strictly less than child level).
+
+** Portfolio Hierarchy
+
+#+begin_example
+  Party: ACME London
+    │
+    └─ [Portfolio, virtual] Global Rates (is_virtual=1)
+         │
+         ├─ [Portfolio, physical] Rates London (is_virtual=0)
+         │    ├─ [Book] FX Rates London Book
+         │    └─ [Book] IR Swaps London Book
+         │
+         └─ [Portfolio, physical] Rates New York  (is_virtual=0, cross-party via ACME NY)
+              └─ [Book] FX Rates New York Book
+#+end_example
+
+The portfolio hierarchy is a pure aggregation structure with no type system.
+Virtual portfolios may freely span desks, business centres, and even parties.
+
+** Cross-Hierarchy Linkage
+
+The two hierarchies are linked at the book level via =owner_unit_id=:
+
+#+begin_example
+  [DESK] FX Rates London  ──owns──▶  [Book] FX Rates London Book
+                                             │
+                               parent_portfolio_id
+                                             │
+                                             ▼
+                                    [Portfolio] Rates London
+#+end_example
+
+A book belongs to exactly one desk (organisational) and exactly one physical
+portfolio (aggregation). These are independent. A physical portfolio may contain
+books from multiple desks; a desk may own books spread across multiple physical
+portfolios (though in practice a desk typically owns all books in a single
+physical portfolio or subtree).
+
+* Use Cases
+
+** End-of-Day Processing by Business Centre
+
+At end-of-day, risk engines and P&L systems need to process all books that
+belong to a given business centre (e.g. "close out London positions at 5pm
+GMT"). This is achieved by traversing the organisational hierarchy:
+
+#+begin_example
+  SELECT b.id, b.name
+  FROM ores_refdata_books_tbl b
+  JOIN ores_refdata_business_units_tbl bu ON b.owner_unit_id = bu.id
+  WHERE bu.business_centre_code = 'GBLO'
+    AND b.party_id = ANY(visible_party_ids)
+    AND b.book_status = 'active';
+#+end_example
+
+The portfolio hierarchy is not used for this query — it is irrelevant which
+virtual portfolios aggregate the London books. Only the desk's business centre
+matters.
+
+** FRTB Desk-Level Attribution
+
+FRTB (Fundamental Review of the Trading Book) requires that every position be
+attributed to a specific, documented trading desk within a legal entity. In
+ORE Studio:
+
+- Each FRTB desk is modelled as a =DESK=-type business unit.
+- The =is_trading_book= flag on the book distinguishes trading from banking
+  book positions.
+- The =owner_unit_id= on the book provides the mandatory desk attribution.
+- The desk's =business_centre_code= ties it to the booking legal entity
+  (parties in different jurisdictions have separate desks).
+
+FRTB sensitivities and P&L attribution queries filter first by desk, then
+aggregate within the desk's book set.
+
+** Cross-Timezone Trading (Follow-the-Sun)
+
+A common pattern in global banks is "follow-the-sun" trading, where a risk
+position is managed in London during European hours and then passed to New York
+for American hours. This might appear to require a single book "moving" between
+cities, but regulatory requirements (particularly FRTB) prevent this.
+
+In ORE Studio the correct implementation uses *separate books per location*:
+
+#+begin_example
+  Organisational:                    Portfolio:
+  [DESK] FX Rates London             [Portfolio] Rates London (physical)
+    └─ owner of ──────────────────▶  [Book] FX Rates London Book
+                                            │
+  [DESK] FX Rates New York           [Portfolio] Rates New York (physical)
+    └─ owner of ──────────────────▶  [Book] FX Rates New York Book
+                                            │
+                                     [Portfolio] Global FX Rates (virtual)
+                                            ├─ Rates London
+                                            └─ Rates New York
+#+end_example
+
+At end-of-day, London positions are transferred to New York via *interbook
+trades* (an offsetting trade in the London book and an equal-and-opposite trade
+in the New York book). The London book is then flat; the New York book carries
+the position through the night.
+
+For management reporting, the virtual portfolio "Global FX Rates" aggregates
+both books, giving a consolidated view regardless of which city currently holds
+the position.
+
+This approach:
+
+- Satisfies FRTB: each desk is in one jurisdiction, each book is on exactly
+  one desk.
+- Satisfies end-of-day processing: querying by =business_centre_code = 'GBLO'=
+  returns only London books.
+- Satisfies management reporting: virtual portfolios aggregate freely across
+  locations.
+- Avoids ambiguity: a book cannot be "in London and New York at the same time".
+
+** Risk Aggregation by Organisational Level
+
+Because business units form a typed hierarchy, risk can be aggregated at any
+level without ambiguity:
+
+#+begin_example
+  DIVISION: Global Markets
+    ├─ BUSINESS_AREA: Rates            ← aggregate Rates books
+    │    ├─ DESK: FX Rates London      ← FX Rates London Book
+    │    └─ DESK: IR Swaps London      ← IR Swaps London Book
+    └─ BUSINESS_AREA: Credit
+         └─ DESK: Credit London        ← Credit London Book
+#+end_example
+
+The level field on =business_unit_type= drives roll-up: to aggregate at
+Division level, walk up from each book's desk until you reach a node whose
+=unit_type.level = 0=.
+
+* Data Quality Considerations
+
+** Book Desk Attribution
+
+While =owner_unit_id= is nullable in the schema (to accommodate system-created
+books and historical data), all user-created live trading books should carry
+desk attribution. The UI enforces this: the Book detail dialog requires an
+=owner_unit_id= for new books. Books without an owner desk appear in an
+"Unassigned" bucket in the organisational navigator, surfacing data quality
+gaps to middle office.
+
+** Business Unit Level Constraint
+
+The insert trigger on =ores_refdata_business_units_tbl= enforces that a
+business unit's type level must be strictly greater than its parent's type
+level. This prevents nonsensical structures and ensures that the organisational
+tree can be traversed top-down by level without ambiguity. The constraint is
+applied only when both parent and child have a =unit_type_id= set; nullable
+types are allowed during initial data entry.
+
+* Related Components
+
+| Component | File                                                                                         | Purpose                               |
+|-----------+----------------------------------------------------------------------------------------------+---------------------------------------|
+| design    | [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]]                        | Party hierarchy and RLS               |
+| design    | [[id:0FF2B4E7-473D-A754-A893-C4C70E636C76][Multi-Tenancy Architecture]]                      | Tenant isolation layer                |
+| design    | [[proj:doc/plans/2026-02-07-party-sql-support-design.org]]                                   | Party SQL schema design               |
+| design    | [[proj:doc/plans/2026-02-09-party-isolation-and-tenant-types-design.org]]                    | Party isolation design                |
+| refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/party.hpp]]                         | Party domain type                     |
+| refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/business_centre.hpp]]               | Business centre domain type           |
+| refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/business_unit_type.hpp]]            | Business unit type domain type        |
+| refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/business_unit.hpp]]                 | Business unit domain type             |
+| refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/portfolio.hpp]]                     | Portfolio domain type                 |
+| refdata   | [[proj:projects/ores.refdata/include/ores.refdata/domain/book.hpp]]                          | Book domain type                      |
+| sql       | [[proj:projects/ores.sql/create/refdata/refdata_business_unit_types_create.sql]]             | Business unit type SQL schema         |
+| sql       | [[proj:projects/ores.sql/create/refdata/refdata_business_units_create.sql]]                  | Business unit SQL schema              |
+| sql       | [[proj:projects/ores.sql/populate/refdata/refdata_business_unit_types_populate.sql]]         | Standard type seed data               |
+| qt        | [[proj:projects/ores.qt/src/PortfolioExplorerTreeModel.cpp]]                                 | Portfolio/book tree model             |

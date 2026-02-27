@@ -88,6 +88,7 @@ class MonetaryNatureController;
 class CurrencyMarketTierController;
 class TradeController;
 class PortfolioExplorerMdiWindow;
+class OrgExplorerMdiWindow;
 class ImageCache;
 class ChangeReasonCache;
 class DataLibrarianWindow;
@@ -682,6 +683,7 @@ private:
     /** @brief Data Librarian MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* dataLibrarianWindow_{nullptr};
     DetachableMdiSubWindow* portfolioExplorerSubWindow_{nullptr};
+    DetachableMdiSubWindow* orgExplorerSubWindow_{nullptr};
 
     /** @brief Shell MDI sub-window (nullptr if not open) */
     DetachableMdiSubWindow* shellWindow_{nullptr};

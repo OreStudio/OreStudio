@@ -3543,6 +3543,23 @@ thinking.
 
 As per instructions in [[id:CB42DFE5-804B-E1C4-E1E3-0A6C4766609C][readme]].
 
+*** Investigate virtual portfolio arbitrary hierarchy construction     :refdata:
+
+The current portfolio explorer and portfolio data model may not correctly
+support arbitrary virtual portfolio hierarchies. Virtual portfolios are
+reporting overlays that can aggregate books from any real portfolio, but
+=parent_portfolio_id= on the portfolio table creates a strict tree which may
+prevent users from constructing the hierarchy they want (e.g. selecting the
+correct parent in the UI when many portfolios exist). Investigate and fix:
+
+- Determine whether =parent_portfolio_id= is sufficient for virtual portfolio
+  membership or whether a separate junction table is needed.
+- Fix any UI issues in =PortfolioExplorerMdiWindow= that prevent users from
+  correctly selecting a parent portfolio when building the hierarchy.
+- Ensure virtual portfolio nodes display correctly in the portfolio tree.
+- Consider whether virtual portfolios should be allowed to cross legal entity
+  boundaries.
+
 
 * Footer
 

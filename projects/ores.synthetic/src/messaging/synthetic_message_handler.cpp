@@ -99,6 +99,7 @@ void stamp_audit_fields(domain::generated_organisation& org,
     stamp(org.counterparty_contacts);
     stamp(org.counterparty_identifiers);
     stamp(org.party_counterparties);
+    stamp(org.business_unit_types);
     stamp(org.business_units);
     stamp(org.portfolios);
     stamp(org.books);
@@ -174,6 +175,7 @@ synthetic_message_handler::handle_generate_organisation_request(
                                   << response.counterparties_count << " counterparties, "
                                   << response.portfolios_count << " portfolios, "
                                   << response.books_count << " books, "
+                                  << response.business_unit_types_count << " business unit types, "
                                   << response.business_units_count << " business units";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Organisation generation failed: " << e.what();

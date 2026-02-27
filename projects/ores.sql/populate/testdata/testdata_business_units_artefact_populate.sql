@@ -68,73 +68,73 @@ begin
 
     insert into ores_dq_business_units_artefact_tbl (
         dataset_id, tenant_id, id, version, unit_name,
-        parent_business_unit_id, unit_code, business_centre_code
+        parent_business_unit_id, unit_code, business_centre_code, unit_type_code
     )
     values
-        -- Top-level: Global Markets
+        -- Top-level: Global Markets (depth 0 → DIVISION)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000001', 0,
-         'Global Markets', null, 'GLOB_MKT', 'GBLO'),
+         'Global Markets', null, 'GLOB_MKT', 'GBLO', 'DIVISION'),
 
-        -- EMEA Trading (under Global Markets)
+        -- EMEA Trading (depth 1 → BUSINESS_AREA)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000002', 0,
-         'EMEA Trading', '10000000-0000-4000-a000-000000000001', 'EMEA_TRD', 'GBLO'),
+         'EMEA Trading', '10000000-0000-4000-a000-000000000001', 'EMEA_TRD', 'GBLO', 'BUSINESS_AREA'),
 
-        -- Rates Trading EMEA (under EMEA Trading)
+        -- Rates Trading EMEA (depth 2 → DESK)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000003', 0,
-         'Rates Trading EMEA', '10000000-0000-4000-a000-000000000002', 'RATES_EMEA', 'GBLO'),
+         'Rates Trading EMEA', '10000000-0000-4000-a000-000000000002', 'RATES_EMEA', 'GBLO', 'DESK'),
 
-        -- Credit Trading EMEA (under EMEA Trading)
+        -- Credit Trading EMEA (depth 2 → DESK)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000004', 0,
-         'Credit Trading EMEA', '10000000-0000-4000-a000-000000000002', 'CREDIT_EMEA', 'GBLO'),
+         'Credit Trading EMEA', '10000000-0000-4000-a000-000000000002', 'CREDIT_EMEA', 'GBLO', 'DESK'),
 
-        -- FX Trading EMEA (under EMEA Trading)
+        -- FX Trading EMEA (depth 2 → DESK)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000005', 0,
-         'FX Trading EMEA', '10000000-0000-4000-a000-000000000002', 'FX_EMEA', 'GBLO'),
+         'FX Trading EMEA', '10000000-0000-4000-a000-000000000002', 'FX_EMEA', 'GBLO', 'DESK'),
 
-        -- Americas Trading (under Global Markets)
+        -- Americas Trading (depth 1 → BUSINESS_AREA)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000006', 0,
-         'Americas Trading', '10000000-0000-4000-a000-000000000001', 'AMER_TRD', 'USNY'),
+         'Americas Trading', '10000000-0000-4000-a000-000000000001', 'AMER_TRD', 'USNY', 'BUSINESS_AREA'),
 
-        -- Rates Trading Americas (under Americas Trading)
+        -- Rates Trading Americas (depth 2 → DESK)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000007', 0,
-         'Rates Trading Americas', '10000000-0000-4000-a000-000000000006', 'RATES_AMER', 'USNY'),
+         'Rates Trading Americas', '10000000-0000-4000-a000-000000000006', 'RATES_AMER', 'USNY', 'DESK'),
 
-        -- Credit Trading Americas (under Americas Trading)
+        -- Credit Trading Americas (depth 2 → DESK)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000008', 0,
-         'Credit Trading Americas', '10000000-0000-4000-a000-000000000006', 'CREDIT_AMER', 'USNY'),
+         'Credit Trading Americas', '10000000-0000-4000-a000-000000000006', 'CREDIT_AMER', 'USNY', 'DESK'),
 
-        -- APAC Trading (under Global Markets)
+        -- APAC Trading (depth 1 → BUSINESS_AREA)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-000000000009', 0,
-         'APAC Trading', '10000000-0000-4000-a000-000000000001', 'APAC_TRD', 'JPTO'),
+         'APAC Trading', '10000000-0000-4000-a000-000000000001', 'APAC_TRD', 'JPTO', 'BUSINESS_AREA'),
 
-        -- Rates Trading APAC (under APAC Trading)
+        -- Rates Trading APAC (depth 2 → DESK)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000a', 0,
-         'Rates Trading APAC', '10000000-0000-4000-a000-000000000009', 'RATES_APAC', 'JPTO'),
+         'Rates Trading APAC', '10000000-0000-4000-a000-000000000009', 'RATES_APAC', 'JPTO', 'DESK'),
 
-        -- FX Trading APAC (under APAC Trading)
+        -- FX Trading APAC (depth 2 → DESK)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000b', 0,
-         'FX Trading APAC', '10000000-0000-4000-a000-000000000009', 'FX_APAC', 'HKHK'),
+         'FX Trading APAC', '10000000-0000-4000-a000-000000000009', 'FX_APAC', 'HKHK', 'DESK'),
 
-        -- Top-level: Risk Management
+        -- Top-level: Risk Management (depth 0 → DIVISION)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000c', 0,
-         'Risk Management', null, 'RISK_MGMT', 'GBLO'),
+         'Risk Management', null, 'RISK_MGMT', 'GBLO', 'DIVISION'),
 
-        -- Counterparty Risk (under Risk Management)
+        -- Counterparty Risk (depth 1 → BUSINESS_AREA)
         (v_dataset_id, ores_iam_system_tenant_id_fn(),
          '10000000-0000-4000-a000-00000000000d', 0,
-         'Counterparty Risk', '10000000-0000-4000-a000-00000000000c', 'CPTY_RISK', 'GBLO');
+         'Counterparty Risk', '10000000-0000-4000-a000-00000000000c', 'CPTY_RISK', 'GBLO', 'BUSINESS_AREA');
 
     get diagnostics v_count = row_count;
     raise notice 'Successfully populated % business units', v_count;

@@ -18,8 +18,11 @@
  *
  */
 #include "ores.synthetic/service/organisation_publisher_service.hpp"
+#include <algorithm>
+#include <unordered_map>
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 #include "ores.refdata/repository/party_mapper.hpp"
 #include "ores.refdata/repository/party_contact_information_mapper.hpp"
@@ -28,6 +31,7 @@
 #include "ores.refdata/repository/counterparty_contact_information_mapper.hpp"
 #include "ores.refdata/repository/counterparty_identifier_mapper.hpp"
 #include "ores.refdata/repository/party_counterparty_mapper.hpp"
+#include "ores.refdata/repository/business_unit_type_mapper.hpp"
 #include "ores.refdata/repository/business_unit_mapper.hpp"
 #include "ores.refdata/repository/portfolio_mapper.hpp"
 #include "ores.refdata/repository/book_mapper.hpp"
@@ -63,9 +67,59 @@ organisation_publisher_service::publish(
             counterparty_identifier_mapper::map(org.counterparty_identifiers);
         auto party_cps =
             party_counterparty_mapper::map(org.party_counterparties);
+        auto bu_types = business_unit_type_mapper::map(org.business_unit_types);
         auto bus_units = business_unit_mapper::map(org.business_units);
         auto portfolios = portfolio_mapper::map(org.portfolios);
         auto books = book_mapper::map(org.books);
+
+        // Deduplicate BU types against what already exists for this tenant.
+        // Multiple publish calls share canonical codes (DIVISION, BRANCH, etc.)
+        // under the same coding scheme; re-inserting them violates the natural-
+        // key unique index.  When a type is skipped, remap its newly-generated
+        // UUID to the existing DB UUID so that business unit foreign keys remain
+        // valid.
+        if (!bu_types.empty()) {
+            const auto& tid = bu_types[0].tenant_id;
+            const auto sql =
+                "SELECT code, id FROM ores_refdata_business_unit_types_tbl "
+                "WHERE tenant_id = '" + tid + "'::uuid "
+                "AND valid_to = ores_utility_infinity_timestamp_fn()";
+            const auto rows = database::repository::execute_raw_multi_column_query(
+                ctx_, sql, lg(), "checking existing BU types");
+
+            // Build code -> existing_id map
+            std::unordered_map<std::string, std::string> existing_id_by_code;
+            for (const auto& row : rows) {
+                if (row.size() >= 2 && row[0] && row[1])
+                    existing_id_by_code[*row[0]] = *row[1];
+            }
+
+            // Separate new types from those already present; record UUID remap
+            std::unordered_map<std::string, std::string> id_remap;
+            std::vector<refdata::repository::business_unit_type_entity> new_bu_types;
+            for (auto& t : bu_types) {
+                const auto it = existing_id_by_code.find(t.code);
+                if (it != existing_id_by_code.end()) {
+                    id_remap[t.id.get()] = it->second;
+                } else {
+                    new_bu_types.push_back(std::move(t));
+                }
+            }
+            bu_types = std::move(new_bu_types);
+
+            // Remap unit_type_id in business units to reference existing UUIDs
+            if (!id_remap.empty()) {
+                for (auto& bu : bus_units) {
+                    if (!bu.unit_type_id.has_value())
+                        continue;
+                    const auto it = id_remap.find(*bu.unit_type_id);
+                    if (it != id_remap.end())
+                        bu.unit_type_id = it->second;
+                }
+            }
+            BOOST_LOG_SEV(lg(), debug) << "BU types to insert after dedup: "
+                                       << bu_types.size();
+        }
 
         BOOST_LOG_SEV(lg(), info) << "Mapped all entities, inserting in a "
                                   << "single transaction";
@@ -82,6 +136,7 @@ organisation_publisher_service::publish(
             .and_then(insert(cp_contacts))
             .and_then(insert(cp_ids))
             .and_then(insert(party_cps))
+            .and_then(insert(bu_types))
             .and_then(insert(bus_units))
             .and_then(insert(portfolios))
             .and_then(insert(books))
@@ -90,6 +145,7 @@ organisation_publisher_service::publish(
 
         BOOST_LOG_SEV(lg(), info) << "Wrote " << parties.size() << " parties, "
             << counterparties.size() << " counterparties, "
+            << bu_types.size() << " business unit types, "
             << bus_units.size() << " business units, "
             << portfolios.size() << " portfolios, "
             << books.size() << " books";
@@ -103,6 +159,8 @@ organisation_publisher_service::publish(
             static_cast<std::uint32_t>(org.portfolios.size());
         response.books_count =
             static_cast<std::uint32_t>(org.books.size());
+        response.business_unit_types_count =
+            static_cast<std::uint32_t>(org.business_unit_types.size());
         response.business_units_count =
             static_cast<std::uint32_t>(org.business_units.size());
         response.contacts_count =

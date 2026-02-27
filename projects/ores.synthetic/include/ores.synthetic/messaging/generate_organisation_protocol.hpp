@@ -77,6 +77,7 @@ struct generate_organisation_response final {
     std::uint32_t counterparties_count = 0;
     std::uint32_t portfolios_count = 0;
     std::uint32_t books_count = 0;
+    std::uint32_t business_unit_types_count = 0;
     std::uint32_t business_units_count = 0;
     std::uint32_t contacts_count = 0;
     std::uint32_t identifiers_count = 0;

@@ -58,13 +58,15 @@ public:
     std::vector<domain::trade>
     list_trades_filtered(std::uint32_t offset, std::uint32_t limit,
         std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id);
+        std::optional<boost::uuids::uuid> portfolio_id,
+        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
 
     std::uint32_t count_trades();
 
     std::uint32_t count_trades_filtered(
         std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id);
+        std::optional<boost::uuids::uuid> portfolio_id,
+        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
 
     std::optional<domain::trade>
     find_trade(const std::string& id);

@@ -43,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.platform.lib
         croncpp::croncpp
-        faker-cxx::faker-cxx)
+        faker-cxx::faker-cxx
+        libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

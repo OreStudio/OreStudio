@@ -19,299 +19,210 @@
  */
 #include "ores.scheduler/repository/job_definition_repository.hpp"
 
-#include <format>
-#include <stdexcept>
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.logging/make_logger.hpp"
+#include <sqlgen/postgres.hpp>
+#include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
+#include "ores.scheduler/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
+#include "ores.scheduler/domain/job_status.hpp"
+#include "ores.scheduler/repository/job_definition_entity.hpp"
+#include "ores.scheduler/repository/job_definition_mapper.hpp"
 
 namespace ores::scheduler::repository {
 
+using namespace sqlgen;
+using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-namespace {
-
-// Column indices for ores_scheduler_job_definitions_tbl SELECT results.
-// Order matches: id, tenant_id, version, party_id, cron_job_id, job_name,
-//                description, command, schedule_expression, database_name,
-//                is_active, modified_by
-constexpr std::size_t col_id               = 0;
-constexpr std::size_t col_tenant_id        = 1;
-constexpr std::size_t col_version          = 2;
-constexpr std::size_t col_party_id         = 3;
-constexpr std::size_t col_cron_job_id      = 4;
-constexpr std::size_t col_job_name         = 5;
-constexpr std::size_t col_description      = 6;
-constexpr std::size_t col_command          = 7;
-constexpr std::size_t col_schedule_expr    = 8;
-constexpr std::size_t col_database_name    = 9;
-constexpr std::size_t col_is_active        = 10;
-constexpr std::size_t col_modified_by      = 11;
-constexpr std::size_t expected_columns     = 12;
-
-// Column indices for cron.job_run_details JOIN query results.
-// Order matches: runid, jobid, status, return_message, start_time, end_time,
-//                job_definition_id (our id)
-constexpr std::size_t ri_run_id            = 0;
-constexpr std::size_t ri_cron_job_id       = 1;
-constexpr std::size_t ri_status           = 2;
-constexpr std::size_t ri_return_message   = 3;
-constexpr std::size_t ri_start_time       = 4;
-constexpr std::size_t ri_end_time         = 5;
-constexpr std::size_t ri_parent_job_id    = 6;
-constexpr std::size_t ri_expected_cols    = 7;
-
-std::optional<domain::job_definition> row_to_job_definition(
-    const std::vector<std::optional<std::string>>& row) {
-    auto sched = domain::cron_expression::from_string(*row[col_schedule_expr]);
-    if (!sched) return std::nullopt;
-
-    const auto tid = utility::uuid::tenant_id::from_string(*row[col_tenant_id]);
-    return domain::job_definition{
-        .id = boost::lexical_cast<boost::uuids::uuid>(*row[col_id]),
-        .tenant_id = tid ? *tid : utility::uuid::tenant_id::system(),
-        .party_id = boost::lexical_cast<boost::uuids::uuid>(*row[col_party_id]),
-        .cron_job_id = row[col_cron_job_id]
-            ? std::optional(std::stoll(*row[col_cron_job_id]))
-            : std::nullopt,
-        .job_name = *row[col_job_name],
-        .description = row[col_description].value_or(""),
-        .command = *row[col_command],
-        .schedule_expression = std::move(*sched),
-        .database_name = *row[col_database_name],
-        .is_active = (std::stoi(*row[col_is_active]) != 0),
-        .version = std::stoi(*row[col_version]),
-        .modified_by = *row[col_modified_by],
-    };
+std::string job_definition_repository::sql() {
+    return generate_create_table_sql<job_definition_entity>(lg());
 }
 
-domain::job_status parse_status(const std::string& s) {
-    if (s == "succeeded") return domain::job_status::succeeded;
-    if (s == "failed")    return domain::job_status::failed;
-    return domain::job_status::starting;
+void job_definition_repository::write(context ctx, const domain::job_definition& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing job definition: " << v.id;
+    execute_write_query(ctx, job_definition_mapper::map(v),
+        lg(), "Writing job definition to database.");
 }
 
-} // anonymous namespace
-
-job_definition_repository::job_definition_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void job_definition_repository::save(
-    const domain::job_definition& def,
-    const std::string& change_reason_code,
-    const std::string& change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Saving job definition: " << def.job_name;
-
-    // NULLIF($4, '')::bigint maps an empty string to SQL NULL so that an
-    // absent cron_job_id (std::nullopt) does not cause a type-cast error.
-    const std::string sql = R"(
-        INSERT INTO ores_scheduler_job_definitions_tbl
-            (id, tenant_id, version, party_id, cron_job_id,
-             job_name, description, command, schedule_expression,
-             database_name, is_active, modified_by,
-             performed_by, change_reason_code, change_commentary,
-             valid_from, valid_to)
-        VALUES
-            ($1::uuid, $2::uuid, 0, $3::uuid, NULLIF($4, '')::bigint,
-             $5, $6, $7, $8,
-             $9, $10, $11,
-             current_user, $12, $13,
-             current_timestamp, 'infinity'::timestamptz)
-    )";
-
-    const std::string cron_job_id_str =
-        def.cron_job_id ? std::to_string(*def.cron_job_id) : "";
-
-    std::vector<std::string> params{
-        boost::uuids::to_string(def.id),
-        def.tenant_id.to_string(),
-        boost::uuids::to_string(def.party_id),
-        cron_job_id_str,
-        def.job_name,
-        def.description,
-        def.command,
-        def.schedule_expression.to_string(),
-        def.database_name,
-        def.is_active ? "1" : "0",
-        def.modified_by,
-        change_reason_code,
-        change_commentary
-    };
-
-    execute_parameterized_command(ctx_, sql, params, lg(),
-        "saving job definition");
-}
-
-std::optional<domain::job_definition>
-job_definition_repository::find_by_id(const boost::uuids::uuid& id) const {
-    const std::string id_str = boost::uuids::to_string(id);
-    const std::string sql = std::format(R"(
-        SELECT id, tenant_id, version, party_id, cron_job_id,
-               job_name, description, command, schedule_expression,
-               database_name, is_active, modified_by
-        FROM ores_scheduler_job_definitions_tbl
-        WHERE id = '{}'::uuid
-          AND valid_to = ores_utility_infinity_timestamp_fn()
-    )", id_str);
-
-    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
-        "finding job definition by id");
-
-    if (rows.empty()) return std::nullopt;
-    const auto& row = rows.front();
-    if (row.size() < expected_columns) return std::nullopt;
-
-    return row_to_job_definition(row);
-}
-
-std::optional<domain::job_definition>
-job_definition_repository::find_by_cron_job_id(std::int64_t cron_job_id) const {
-    const std::string sql = std::format(R"(
-        SELECT id, tenant_id, version, party_id, cron_job_id,
-               job_name, description, command, schedule_expression,
-               database_name, is_active, modified_by
-        FROM ores_scheduler_job_definitions_tbl
-        WHERE cron_job_id = {}
-          AND valid_to = ores_utility_infinity_timestamp_fn()
-    )", cron_job_id);
-
-    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
-        "finding job definition by cron_job_id");
-
-    if (rows.empty()) return std::nullopt;
-    const auto& row = rows.front();
-    if (row.size() < expected_columns) return std::nullopt;
-
-    return row_to_job_definition(row);
+void job_definition_repository::write(
+    context ctx, const std::vector<domain::job_definition>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing job definitions. Count: " << v.size();
+    execute_write_query(ctx, job_definition_mapper::map(v),
+        lg(), "Writing job definitions to database.");
 }
 
 std::vector<domain::job_definition>
-job_definition_repository::get_all() const {
-    constexpr std::string_view sql = R"(
-        SELECT id, tenant_id, version, party_id, cron_job_id,
-               job_name, description, command, schedule_expression,
-               database_name, is_active, modified_by
-        FROM ores_scheduler_job_definitions_tbl
-        WHERE valid_to = ores_utility_infinity_timestamp_fn()
-        ORDER BY job_name
-    )";
+job_definition_repository::read_latest(context ctx) {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
-    const auto rows = execute_raw_multi_column_query(ctx_, std::string(sql), lg(),
-        "getting all job definitions");
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx, query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(), "Reading latest job definitions");
+}
 
-    std::vector<domain::job_definition> result;
-    result.reserve(rows.size());
+std::vector<domain::job_definition>
+job_definition_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest job definition. id: " << id;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    for (const auto& row : rows) {
-        if (row.size() < expected_columns) continue;
-        if (!row[col_id] || !row[col_tenant_id] || !row[col_version] ||
-            !row[col_party_id] || !row[col_job_name] || !row[col_command] ||
-            !row[col_schedule_expr] || !row[col_database_name] ||
-            !row[col_is_active] || !row[col_modified_by])
-            continue;
-        if (auto def = row_to_job_definition(row)) result.push_back(std::move(*def));
-    }
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx, query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(), "Reading latest job definition by id.");
+}
 
-    return result;
+std::vector<domain::job_definition>
+job_definition_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all job definition versions. id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
+        where("tenant_id"_c == tid && "id"_c == id) |
+        order_by("version"_c.desc());
+
+    return execute_read_query<job_definition_entity, domain::job_definition>(
+        ctx, query,
+        [](const auto& entities) { return job_definition_mapper::map(entities); },
+        lg(), "Reading all job definition versions by id.");
+}
+
+void job_definition_repository::remove(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing job definition: " << id;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<job_definition_entity> |
+        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "Removing job definition from database.");
+}
+
+std::optional<domain::job_definition>
+job_definition_repository::find_by_id(context ctx, const boost::uuids::uuid& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding job definition by UUID: " << id;
+    const auto id_str = boost::uuids::to_string(id);
+    auto results = read_latest(ctx, id_str);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
 }
 
 void job_definition_repository::update_cron_job_id(
-    const boost::uuids::uuid& id,
-    std::int64_t cron_job_id,
-    const std::string& modified_by) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating cron_job_id for: "
-                               << id << " -> " << cron_job_id;
+    context ctx, const boost::uuids::uuid& id, std::int64_t cron_job_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating cron_job_id for: " << id
+                               << " -> " << cron_job_id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto id_str = boost::uuids::to_string(id);
+    const auto cron_str = std::to_string(cron_job_id);
 
-    const std::string sql = R"(
-        INSERT INTO ores_scheduler_job_definitions_tbl
-            SELECT gen_random_uuid(), tenant_id, version, party_id, $1::bigint,
-                   job_name, description, command, schedule_expression,
-                   database_name, is_active, $2,
-                   current_user, 'updated', '',
-                   current_timestamp, 'infinity'::timestamptz
-            FROM ores_scheduler_job_definitions_tbl
-            WHERE id = $3::uuid
-              AND valid_to = ores_utility_infinity_timestamp_fn()
-    )";
+    const std::string sql =
+        "UPDATE ores_scheduler_job_definitions_tbl "
+        "SET cron_job_id = $3::bigint "
+        "WHERE tenant_id = $1::uuid AND id = $2::uuid "
+        "AND valid_to = ores_utility_infinity_timestamp_fn()";
 
-    execute_parameterized_command(ctx_, sql,
-        {std::to_string(cron_job_id), modified_by,
-         boost::uuids::to_string(id)},
-        lg(), "updating cron_job_id");
+    execute_parameterized_command(ctx, sql, {tid, id_str, cron_str},
+        lg(), "Updating cron_job_id.");
 }
 
 void job_definition_repository::clear_cron_job_id(
-    const boost::uuids::uuid& id,
-    const std::string& modified_by) {
+    context ctx, const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Clearing cron_job_id for: " << id;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto id_str = boost::uuids::to_string(id);
 
-    const std::string sql = R"(
-        INSERT INTO ores_scheduler_job_definitions_tbl
-            SELECT gen_random_uuid(), tenant_id, version, party_id, NULL,
-                   job_name, description, command, schedule_expression,
-                   database_name, 0, $1,
-                   current_user, 'paused', '',
-                   current_timestamp, 'infinity'::timestamptz
-            FROM ores_scheduler_job_definitions_tbl
-            WHERE id = $2::uuid
-              AND valid_to = ores_utility_infinity_timestamp_fn()
-    )";
+    const std::string sql =
+        "UPDATE ores_scheduler_job_definitions_tbl "
+        "SET cron_job_id = NULL, is_active = 0 "
+        "WHERE tenant_id = $1::uuid AND id = $2::uuid "
+        "AND valid_to = ores_utility_infinity_timestamp_fn()";
 
-    execute_parameterized_command(ctx_, sql,
-        {modified_by, boost::uuids::to_string(id)},
-        lg(), "clearing cron_job_id");
+    execute_parameterized_command(ctx, sql, {tid, id_str},
+        lg(), "Clearing cron_job_id.");
 }
 
 std::vector<domain::job_instance>
 job_definition_repository::get_job_history(
-    const boost::uuids::uuid& job_definition_id,
-    std::size_t limit) const {
-    BOOST_LOG_SEV(lg(), debug) << "Getting job history for: " << job_definition_id;
+    context ctx, const boost::uuids::uuid& id, std::size_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting job history for: " << id
+                               << " limit: " << limit;
 
-    const std::string id_str = boost::uuids::to_string(job_definition_id);
-    const std::string sql = std::format(R"(
-        SELECT r.runid, r.jobid, r.status, r.return_message,
-               r.start_time, r.end_time, d.id
-        FROM cron.job_run_details r
-        JOIN ores_scheduler_job_definitions_tbl d
-          ON d.cron_job_id = r.jobid
-         AND d.valid_to = ores_utility_infinity_timestamp_fn()
-        WHERE d.id = '{}'::uuid
-        ORDER BY r.start_time DESC
-        LIMIT {}
-    )", id_str, limit);
+    // First, find the definition to get its cron_job_id.
+    auto def = find_by_id(ctx, id);
+    if (!def || !def->cron_job_id) {
+        BOOST_LOG_SEV(lg(), debug) << "No active pg_cron job found for: " << id;
+        return {};
+    }
+    const auto cron_job_id = *def->cron_job_id;
+    const auto parent_id_str = boost::uuids::to_string(id);
 
-    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
-        "getting job history");
+    // Query cron.job_run_details in the postgres database.
+    auto pg_creds = ctx.credentials();
+    pg_creds.dbname = "postgres";
+
+    const std::string sql =
+        "SELECT runid::text, jobid::text, status, return_message, "
+        "       start_time::text, end_time::text "
+        "FROM cron.job_run_details "
+        "WHERE jobid = " + std::to_string(cron_job_id) +
+        " ORDER BY runid DESC LIMIT " + std::to_string(limit);
+
+    const auto rows = execute_raw_multi_column_query(
+        pg_creds, sql, lg(), "Reading pg_cron job history.");
 
     std::vector<domain::job_instance> result;
     result.reserve(rows.size());
 
     for (const auto& row : rows) {
-        if (row.size() < ri_expected_cols) continue;
-        if (!row[ri_run_id] || !row[ri_cron_job_id] || !row[ri_status] ||
-            !row[ri_start_time] || !row[ri_parent_job_id])
-            continue;
+        if (row.size() < 6) continue;
 
-        domain::job_instance inst;
-        inst.instance_id = std::stoll(*row[ri_run_id]);
-        inst.cron_job_id = std::stoll(*row[ri_cron_job_id]);
-        inst.status = parse_status(*row[ri_status]);
-        inst.return_message = row[ri_return_message].value_or("");
-        inst.start_time = timestamp_to_timepoint(
-            std::string_view{*row[ri_start_time]});
-        if (row[ri_end_time])
-            inst.end_time = timestamp_to_timepoint(
-                std::string_view{*row[ri_end_time]});
-        inst.parent_job_id =
-            boost::lexical_cast<boost::uuids::uuid>(*row[ri_parent_job_id]);
+        domain::job_instance inst{
+            .instance_id = 0,
+            .cron_job_id = cron_job_id,
+            .parent_job_id = id,
+        };
+
+        if (row[0]) inst.instance_id = std::stoll(*row[0]);
+
+        // Status
+        const auto& status_str = row[2].value_or("starting");
+        if (status_str == "succeeded")
+            inst.status = domain::job_status::succeeded;
+        else if (status_str == "failed")
+            inst.status = domain::job_status::failed;
+        else
+            inst.status = domain::job_status::starting;
+
+        inst.return_message = row[3].value_or("");
+
+        // Timestamps
+        if (row[4]) {
+            try {
+                inst.start_time =
+                    ores::platform::time::datetime::parse_time_point(*row[4]);
+            } catch (...) {}
+        }
+        if (row[5]) {
+            try {
+                inst.end_time =
+                    ores::platform::time::datetime::parse_time_point(*row[5]);
+            } catch (...) {}
+        }
+
         result.push_back(std::move(inst));
     }
 
+    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size()
+                               << " history entries for: " << id;
     return result;
 }
 
-} // namespace ores::scheduler::repository
+}

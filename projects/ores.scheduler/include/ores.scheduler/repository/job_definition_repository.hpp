@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#pragma once
+#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
+#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <vector>
+#include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
@@ -33,13 +34,9 @@
 namespace ores::scheduler::repository {
 
 /**
- * @brief Persistence layer for job_definition and job_instance.
- *
- * job_definition rows are stored in ores_scheduler_job_definitions_tbl.
- * job_instance data is read from cron.job_run_details (pg_cron system table)
- * joined with job definitions to enforce tenant and party isolation.
+ * @brief Reads and writes job definitions to data storage.
  */
-class job_definition_repository final {
+class job_definition_repository {
 private:
     inline static std::string_view logger_name =
         "ores.scheduler.repository.job_definition_repository";
@@ -53,76 +50,45 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit job_definition_repository(context ctx);
+    std::string sql();
 
-    // -------------------------------------------------------------------------
-    // job_definition persistence
-    // -------------------------------------------------------------------------
+    void write(context ctx, const domain::job_definition& v);
+    void write(context ctx, const std::vector<domain::job_definition>& v);
+
+    std::vector<domain::job_definition> read_latest(context ctx);
+    std::vector<domain::job_definition>
+    read_latest(context ctx, const std::string& id);
+    std::vector<domain::job_definition>
+    read_all(context ctx, const std::string& id);
+
+    std::optional<domain::job_definition>
+    find_by_id(context ctx, const boost::uuids::uuid& id);
+
+    void remove(context ctx, const std::string& id);
 
     /**
-     * @brief Insert or update a job_definition.
+     * @brief Sets the cron_job_id on the current active record (raw UPDATE,
+     *        no new bitemporal version).
+     */
+    void update_cron_job_id(context ctx, const boost::uuids::uuid& id,
+                            std::int64_t cron_job_id);
+
+    /**
+     * @brief Clears cron_job_id and sets is_active=0 on the current active
+     *        record (raw UPDATE, no new bitemporal version).
+     */
+    void clear_cron_job_id(context ctx, const boost::uuids::uuid& id);
+
+    /**
+     * @brief Returns pg_cron execution history for the given job definition.
      *
-     * On first write: inserts a new row (version=0, trigger sets version=1).
-     * On update: inserts a new temporal row closing the previous one.
+     * Queries cron.job_run_details in the postgres database via the
+     * cron_job_id stored on the job definition.
      */
-    void save(const domain::job_definition& def,
-              const std::string& change_reason_code = "created",
-              const std::string& change_commentary = "");
-
-    /**
-     * @brief Retrieve a single job_definition by our UUID.
-     *
-     * Returns nullopt if not found or not visible under current RLS context.
-     */
-    [[nodiscard]] std::optional<domain::job_definition>
-    find_by_id(const boost::uuids::uuid& id) const;
-
-    /**
-     * @brief Retrieve a job_definition by its pg_cron job ID.
-     *
-     * Used to re-link a definition after calling cron.schedule().
-     */
-    [[nodiscard]] std::optional<domain::job_definition>
-    find_by_cron_job_id(std::int64_t cron_job_id) const;
-
-    /**
-     * @brief All active job_definitions visible to the current tenant+party.
-     */
-    [[nodiscard]] std::vector<domain::job_definition> get_all() const;
-
-    /**
-     * @brief Update the cron_job_id after pg_cron assigns a job ID.
-     *
-     * Called by cron_scheduler immediately after cron.schedule() succeeds.
-     */
-    void update_cron_job_id(const boost::uuids::uuid& id,
-                            std::int64_t cron_job_id,
-                            const std::string& modified_by);
-
-    /**
-     * @brief Clear the cron_job_id when a job is paused (unscheduled).
-     */
-    void clear_cron_job_id(const boost::uuids::uuid& id,
-                           const std::string& modified_by);
-
-    // -------------------------------------------------------------------------
-    // job_instance queries (read-only, from cron.job_run_details)
-    // -------------------------------------------------------------------------
-
-    /**
-     * @brief Recent execution history for a specific job_definition.
-     *
-     * Queries cron.job_run_details filtered to the cron_job_id of the given
-     * job_definition UUID. Results are ordered newest-first.
-     *
-     * @param limit Maximum number of instances to return (default: 100).
-     */
-    [[nodiscard]] std::vector<domain::job_instance>
-    get_job_history(const boost::uuids::uuid& job_definition_id,
-                    std::size_t limit = 100) const;
-
-private:
-    context ctx_;
+    std::vector<domain::job_instance>
+    get_job_history(context ctx, const boost::uuids::uuid& id, std::size_t limit);
 };
 
-} // namespace ores::scheduler::repository
+}
+
+#endif

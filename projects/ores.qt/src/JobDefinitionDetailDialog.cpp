@@ -71,7 +71,7 @@ void JobDefinitionDetailDialog::setupUi() {
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
 
-    ui_->deleteButton->setIcon(
+    ui_->unscheduleButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::CalendarCancel, IconUtils::DefaultIconColor));
 
     ui_->closeButton->setIcon(
@@ -81,8 +81,8 @@ void JobDefinitionDetailDialog::setupUi() {
 void JobDefinitionDetailDialog::setupConnections() {
     connect(ui_->saveButton, &QPushButton::clicked, this,
             &JobDefinitionDetailDialog::onSaveClicked);
-    connect(ui_->deleteButton, &QPushButton::clicked, this,
-            &JobDefinitionDetailDialog::onDeleteClicked);
+    connect(ui_->unscheduleButton, &QPushButton::clicked, this,
+            &JobDefinitionDetailDialog::onUnscheduleClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this,
             &JobDefinitionDetailDialog::onCloseClicked);
 
@@ -119,7 +119,7 @@ void JobDefinitionDetailDialog::setDefinition(
 void JobDefinitionDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
     ui_->jobNameEdit->setReadOnly(!createMode);
-    ui_->deleteButton->setVisible(!createMode);
+    ui_->unscheduleButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
         definition_.id = boost::uuids::random_generator()();
@@ -136,7 +136,7 @@ void JobDefinitionDetailDialog::setReadOnly(bool readOnly) {
     ui_->scheduleExpressionEdit->setReadOnly(readOnly);
     ui_->databaseNameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
-    ui_->deleteButton->setVisible(!readOnly);
+    ui_->unscheduleButton->setVisible(!readOnly);
 }
 
 void JobDefinitionDetailDialog::updateUiFromDefinition() {
@@ -193,7 +193,12 @@ bool JobDefinitionDetailDialog::validateInput() {
     const QString schedule_expression_val = ui_->scheduleExpressionEdit->text().trimmed();
     const QString database_name_val = ui_->databaseNameEdit->text().trimmed();
 
-    return !job_name_val.isEmpty() && !command_val.isEmpty() && !schedule_expression_val.isEmpty() && !database_name_val.isEmpty();
+    if (job_name_val.isEmpty() || command_val.isEmpty() ||
+        schedule_expression_val.isEmpty() || database_name_val.isEmpty())
+        return false;
+
+    return scheduler::domain::cron_expression::from_string(
+        schedule_expression_val.toStdString()).has_value();
 }
 
 void JobDefinitionDetailDialog::onSaveClicked() {
@@ -306,7 +311,7 @@ void JobDefinitionDetailDialog::onSaveClicked() {
     watcher->setFuture(future);
 }
 
-void JobDefinitionDetailDialog::onDeleteClicked() {
+void JobDefinitionDetailDialog::onUnscheduleClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
             "Cannot delete job definition while disconnected from server.");

@@ -176,9 +176,9 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="deleteButton">
+      <widget class="QPushButton" name="unscheduleButton">
        <property name="text">
-        <string>Delete</string>
+        <string>Unschedule</string>
        </property>
       </widget>
      </item>

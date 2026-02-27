@@ -77,6 +77,15 @@ public:
     /** Returns true if the dialog has unsaved changes. Subclasses override. */
     virtual bool hasUnsavedChanges() const { return false; }
 
+    /**
+     * @brief Returns true if the user has already confirmed closing this dialog.
+     *
+     * Set by onCloseClicked() after the user acknowledges unsaved changes.
+     * Used by DetachableMdiSubWindow::closeEvent() to avoid showing a second
+     * confirmation when the close was initiated via the dialog's Close button.
+     */
+    bool isCloseConfirmed() const { return closeConfirmed_; }
+
 signals:
     /**
      * @brief Emitted when the dialog wants to close its container window.
@@ -162,6 +171,9 @@ protected:
 
     /** @brief Clear all fields in the embedded ProvenanceWidget. */
     void clearProvenance();
+
+private:
+    bool closeConfirmed_ = false;
 };
 
 }

@@ -98,25 +98,29 @@ begin
 end $$;
 
 -- pg_cron: Job scheduler extension (OPTIONAL)
--- Provides cron.schedule(), cron.unschedule(), cron.job, cron.job_run_details.
+-- Provides cron.schedule_in_database(), cron.unschedule(), cron.job, cron.job_run_details.
 -- Required by ores.scheduler library for background SQL job management.
 -- If not available, ores.scheduler cannot schedule or execute jobs.
 --
--- PREREQUISITES FOR PG_CRON (pg_cron 1.6+):
---   pg_cron 1.6 enforces that the extension can only be installed in the
---   database named by cron.database_name in postgresql.conf. This means only
---   one OreStudio environment per PostgreSQL cluster can use pg_cron at a time.
---   (See product backlog: "Replace pg_cron with native OreStudio scheduler".)
+-- MULTI-ENVIRONMENT APPROACH (pg_cron 1.4+):
+--   ores.scheduler uses cron.schedule_in_database() which keeps pg_cron in
+--   the postgres database (the default) while executing jobs in each application
+--   database. This allows multiple OreStudio environments on the same PostgreSQL
+--   cluster to each maintain independent job schedules.
 --
+--   Do NOT set cron.database_name in postgresql.conf — leave it at the default
+--   (postgres). The extension only needs to be installed here in postgres.
+--
+-- PREREQUISITES FOR PG_CRON (pg_cron 1.4+):
 --   1. Install the package:
 --        Debian/Ubuntu: apt install postgresql-NN-cron
 --   2. Edit postgresql.conf:
 --        shared_preload_libraries = '...,pg_cron'
---        cron.database_name = '<this_database_name>'
+--        (Leave cron.database_name unset — defaults to 'postgres', which is correct)
 --   3. Restart PostgreSQL:
 --        sudo systemctl restart postgresql
---   4. Run this script to create the extension in the app database.
---   Minimum required version: pg_cron 1.6
+--   4. Run this script to create the extension here in postgres.
+--   Minimum required version: pg_cron 1.4
 do $$
 declare
     pgcron_available boolean;

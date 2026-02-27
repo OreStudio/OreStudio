@@ -69,6 +69,7 @@ void DetailDialogBase::onCloseClicked() {
         if (reply != QMessageBox::Yes)
             return;
     }
+    closeConfirmed_ = true;
     requestClose();
 }
 

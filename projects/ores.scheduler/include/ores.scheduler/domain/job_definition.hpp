@@ -17,8 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#pragma once
+#ifndef ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
+#define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
 
+#include <chrono>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -29,29 +31,97 @@
 namespace ores::scheduler::domain {
 
 /**
- * @brief The persistent plan for a scheduled SQL job.
+ * @brief Persistent plan for a pg_cron scheduled SQL job.
  *
- * Corresponds to a row in ores_scheduler_job_definitions_tbl, which is the
- * OreStudio metadata overlay for a pg_cron cron.job entry.
- *
- * The cron_job_id is assigned by pg_cron after cron.schedule() is called and
- * links this definition to cron.job.jobid. It is absent when the job has not
- * yet been scheduled or has been paused (unscheduled from pg_cron while the
- * definition is retained in our table).
+ * Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
+ * cron expression, SQL command, target database, and active state.
  */
 struct job_definition final {
-    boost::uuids::uuid id;                        ///< Our UUID primary key.
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system(); ///< Tenant isolation.
-    boost::uuids::uuid party_id;                  ///< Party isolation.
-    std::optional<std::int64_t> cron_job_id;      ///< FK to cron.job.jobid.
-    std::string job_name;                         ///< Unique name passed to pg_cron.
-    std::string description;                      ///< Human-readable label for UI.
-    std::string command;                          ///< SQL to execute.
-    cron_expression schedule_expression;          ///< Validated cron expression.
-    std::string database_name;                    ///< Target PostgreSQL database.
-    bool is_active = true;                        ///< False = paused (unscheduled).
-    int version = 0;                              ///< Optimistic concurrency version.
-    std::string modified_by;                      ///< Audit: who last modified.
+    /**
+     * @brief UUID primary key for the job definition.
+     */
+    boost::uuids::uuid id;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Party that owns this job definition.
+     */
+    boost::uuids::uuid party_id;
+
+    /**
+     * @brief pg_cron job ID linking to cron.job.jobid.
+     *
+     * Null when the job has not yet been scheduled or has been paused.
+     */
+    std::optional<std::int64_t> cron_job_id;
+
+    /**
+     * @brief Unique name passed to pg_cron.
+     */
+    std::string job_name;
+
+    /**
+     * @brief Human-readable label for UI.
+     */
+    std::string description;
+
+    /**
+     * @brief SQL command to execute.
+     */
+    std::string command;
+
+    /**
+     * @brief Validated cron expression.
+     */
+    cron_expression schedule_expression;
+
+    /**
+     * @brief Target PostgreSQL database name.
+     */
+    std::string database_name;
+
+    /**
+     * @brief False = paused (unscheduled from pg_cron).
+     */
+    bool is_active = false;
+
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Username of the person who last modified this job definition.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
 };
 
-} // namespace ores::scheduler::domain
+}
+
+#endif

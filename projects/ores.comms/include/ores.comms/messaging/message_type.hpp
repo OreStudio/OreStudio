@@ -602,6 +602,12 @@ enum class message_type : std::uint16_t {
     unschedule_job_response = 0x9005,
     get_job_history_request = 0x9006,
     get_job_history_response = 0x9007,
+    save_job_definition_request = 0x9008,
+    save_job_definition_response = 0x9009,
+    delete_job_definition_request = 0x900A,
+    delete_job_definition_response = 0x900B,
+    get_job_definition_history_request = 0x900C,
+    get_job_definition_history_response = 0x900D,
     // Sentinel value - must remain after the highest message type value
     last_value,
 };
@@ -1106,6 +1112,12 @@ enum class message_type : std::uint16_t {
     case message_type::unschedule_job_response: return "unschedule_job_response";
     case message_type::get_job_history_request: return "get_job_history_request";
     case message_type::get_job_history_response: return "get_job_history_response";
+    case message_type::save_job_definition_request: return "save_job_definition_request";
+    case message_type::save_job_definition_response: return "save_job_definition_response";
+    case message_type::delete_job_definition_request: return "delete_job_definition_request";
+    case message_type::delete_job_definition_response: return "delete_job_definition_response";
+    case message_type::get_job_definition_history_request: return "get_job_definition_history_request";
+    case message_type::get_job_definition_history_response: return "get_job_definition_history_response";
     default: return {};
     }
 }

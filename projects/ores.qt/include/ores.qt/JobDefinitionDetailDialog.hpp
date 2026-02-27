@@ -70,7 +70,7 @@ signals:
 
 private slots:
     void onSaveClicked();
-    void onDeleteClicked();
+    void onUnscheduleClicked();
     void onCodeChanged(const QString& text);
     void onFieldChanged();
 

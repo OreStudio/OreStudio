@@ -132,6 +132,25 @@ alter role ores_readonly_user set search_path to public;
 alter role ores_test_ddl_user set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 alter role ores_test_dml_user set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
+-- Grant pg_cron permissions to application users (if pg_cron is installed).
+-- ores.scheduler uses cron.schedule_in_database() which is called from the
+-- postgres database, so the application users need access to the cron schema here.
+do $$
+begin
+    if exists (select 1 from pg_extension where extname = 'pg_cron') then
+        grant connect on database postgres to ores_comms_user;
+        grant usage on schema cron to ores_comms_user;
+        grant execute on function
+            cron.schedule_in_database(text, text, text, text, text, boolean)
+            to ores_comms_user;
+        grant execute on function cron.unschedule(text) to ores_comms_user;
+        raise notice 'Granted pg_cron permissions to ores_comms_user';
+    else
+        raise notice 'pg_cron not installed; skipping pg_cron grants';
+        raise notice '(Run setup_extensions.sql after installing pg_cron, then re-run this script)';
+    end if;
+end $$;
+
 \echo ''
 \echo '=========================================='
 \echo 'ORES role-based users created successfully!'

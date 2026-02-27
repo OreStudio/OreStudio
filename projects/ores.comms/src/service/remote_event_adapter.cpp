@@ -35,8 +35,11 @@ remote_event_adapter::remote_event_adapter(std::shared_ptr<net::client> client)
         [this](const std::string& event_type,
                std::chrono::system_clock::time_point timestamp,
                const std::vector<std::string>& entity_ids,
-               const std::string& tenant_id) {
-            on_notification(event_type, timestamp, entity_ids, tenant_id);
+               const std::string& tenant_id,
+               messaging::payload_type pt,
+               const std::optional<std::vector<std::byte>>& payload) {
+            on_notification(event_type, timestamp, entity_ids, tenant_id,
+                pt, payload);
         });
 }
 
@@ -223,7 +226,9 @@ void remote_event_adapter::on_notification(
     const std::string& event_type,
     std::chrono::system_clock::time_point timestamp,
     const std::vector<std::string>& entity_ids,
-    const std::string& tenant_id) {
+    const std::string& tenant_id,
+    messaging::payload_type pt,
+    const std::optional<std::vector<std::byte>>& payload) {
     BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type
                                << " with " << entity_ids.size() << " entity IDs"
                                << ", tenant: " << tenant_id;
@@ -236,7 +241,7 @@ void remote_event_adapter::on_notification(
 
     if (callback) {
         BOOST_LOG_SEV(lg(), trace) << "Forwarding notification to user callback";
-        callback(event_type, timestamp, entity_ids, tenant_id);
+        callback(event_type, timestamp, entity_ids, tenant_id, pt, payload);
     } else {
         BOOST_LOG_SEV(lg(), trace) << "No user callback registered, ignoring notification";
     }

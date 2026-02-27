@@ -404,7 +404,9 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
             [this](const std::string& event_type,
                    std::chrono::system_clock::time_point timestamp,
                    const std::vector<std::string>& entity_ids,
-                   const std::string& tenant_id) {
+                   const std::string& tenant_id,
+                   comms::messaging::payload_type pt,
+                   const std::optional<std::vector<std::byte>>& payload) {
                 BOOST_LOG_SEV(lg(), debug) << "Received notification for " << event_type
                                            << " with " << entity_ids.size() << " entity IDs"
                                            << ", tenant: " << tenant_id;
@@ -419,10 +421,19 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
                     qEntityIds.append(QString::fromStdString(id));
                 }
                 auto qTenantId = QString::fromStdString(tenant_id);
+                int qPayloadType = static_cast<int>(pt);
+                QByteArray qPayload;
+                if (payload) {
+                    qPayload = QByteArray(
+                        reinterpret_cast<const char*>(payload->data()),
+                        static_cast<qsizetype>(payload->size()));
+                }
 
                 QMetaObject::invokeMethod(this,
-                    [this, qEventType, qTimestamp, qEntityIds, qTenantId]() {
-                    emit notificationReceived(qEventType, qTimestamp, qEntityIds, qTenantId);
+                    [this, qEventType, qTimestamp, qEntityIds, qTenantId,
+                     qPayloadType, qPayload]() {
+                    emit notificationReceived(qEventType, qTimestamp, qEntityIds,
+                        qTenantId, qPayloadType, qPayload);
                 }, Qt::QueuedConnection);
             });
 

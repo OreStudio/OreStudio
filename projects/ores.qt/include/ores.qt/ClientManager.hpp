@@ -641,7 +641,8 @@ signals:
      * @param tenantId The tenant that owns the changed entities
      */
     void notificationReceived(const QString& eventType, const QDateTime& timestamp,
-                              const QStringList& entityIds, const QString& tenantId);
+                              const QStringList& entityIds, const QString& tenantId,
+                              int payloadType, const QByteArray& payload);
 
     /**
      * @brief Emitted when session recording starts.

@@ -25,10 +25,12 @@
 #include <thread>
 #include <memory>
 #include <iosfwd>
+#include <cstddef>
 #include <cstdint>
 #include <concepts>
 #include <expected>
 #include <functional>
+#include <optional>
 #include <string_view>
 #include <condition_variable>
 #include <boost/asio/awaitable.hpp>
@@ -44,6 +46,7 @@
 #include "ores.comms/net/pending_request_map.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
+#include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/recording/session_recorder.hpp"
 
 namespace ores::comms::net {
@@ -109,7 +112,9 @@ using notification_callback_t = std::function<void(
     const std::string& event_type,
     std::chrono::system_clock::time_point timestamp,
     const std::vector<std::string>& entity_ids,
-    const std::string& tenant_id)>;
+    const std::string& tenant_id,
+    messaging::payload_type pt,
+    const std::optional<std::vector<std::byte>>& payload)>;
 
 /**
  * @brief ORES protocol client.

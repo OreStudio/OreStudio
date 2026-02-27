@@ -24,11 +24,14 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <cstddef>
 #include <memory>
+#include <optional>
 #include <functional>
 #include <unordered_map>
 #include <unordered_set>
 #include "ores.logging/make_logger.hpp"
+#include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 
 namespace ores::comms::service {
@@ -36,12 +39,15 @@ namespace ores::comms::service {
 /**
  * @brief Callback type for pushing notifications to clients.
  *
- * Takes event_type, timestamp, entity_ids, and tenant_id. Returns true if
- * notification was sent successfully, false otherwise (e.g., connection closed).
+ * Takes event_type, timestamp, entity_ids, tenant_id, payload_type, and
+ * optional payload bytes. Returns true if notification was sent successfully,
+ * false otherwise (e.g., connection closed).
  */
 using notification_callback =
     std::function<bool(const std::string&, std::chrono::system_clock::time_point,
-                       const std::vector<std::string>&, const std::string&)>;
+                       const std::vector<std::string>&, const std::string&,
+                       messaging::payload_type,
+                       const std::optional<std::vector<std::byte>>&)>;
 
 /**
  * @brief Unique identifier for a client session.
@@ -164,12 +170,16 @@ public:
      * @param timestamp The timestamp of the event.
      * @param entity_ids Identifiers of entities that changed.
      * @param tenant_id The tenant that owns the changed entity (required).
+     * @param pt Optional payload encoding (default: none).
+     * @param payload Optional binary payload bytes.
      * @return The number of successful notifications sent.
      */
     std::size_t notify(const std::string& event_type,
                        std::chrono::system_clock::time_point timestamp,
                        const std::vector<std::string>& entity_ids,
-                       const std::string& tenant_id);
+                       const std::string& tenant_id,
+                       messaging::payload_type pt = messaging::payload_type::none,
+                       const std::optional<std::vector<std::byte>>& payload = std::nullopt);
 
     /**
      * @brief Get the number of subscribers for an event type.

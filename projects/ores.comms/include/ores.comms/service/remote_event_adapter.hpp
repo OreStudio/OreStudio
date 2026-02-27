@@ -147,7 +147,9 @@ private:
     void on_notification(const std::string& event_type,
         std::chrono::system_clock::time_point timestamp,
         const std::vector<std::string>& entity_ids,
-        const std::string& tenant_id);
+        const std::string& tenant_id,
+        messaging::payload_type pt,
+        const std::optional<std::vector<std::byte>>& payload);
 
     std::shared_ptr<net::client> client_;
     mutable std::mutex mutex_;

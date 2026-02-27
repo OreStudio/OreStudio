@@ -143,7 +143,14 @@ OrgTreeNodeFilter OrgExplorerTreeModel::selected_filter(
     if (node->kind == OrgTreeNode::Kind::Book)
         return {.book_id = node->book.id, .business_unit_id = std::nullopt};
 
-    // BusinessUnit
+    // BusinessUnit: the synthetic "(Unassigned)" node has a nil UUID because it
+    // has no corresponding database row.  Passing a nil business_unit_id to the
+    // backend produces zero results, which is inconsistent with the trade counts
+    // shown on the node.  Fall back to "no filter" so all trades are visible,
+    // matching the behaviour of clicking the Party root.
+    if (node->unit.id.is_nil())
+        return {.book_id = std::nullopt, .business_unit_id = std::nullopt};
+
     return {.book_id = std::nullopt, .business_unit_id = node->unit.id};
 }
 

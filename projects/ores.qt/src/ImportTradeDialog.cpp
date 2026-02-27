@@ -626,19 +626,21 @@ void ImportTradeDialog::onImportClicked() {
         if (nsItem)
             tti.trade.netting_set_id = nsItem->text().toStdString();
 
-        // Per-row counterparty
+        // Per-row counterparty; fall back to the global default if not overridden
         auto* cpWidget = tradeTable_->cellWidget(i, 3);
         auto* cpCombo = cpWidget ? qobject_cast<QComboBox*>(cpWidget) : nullptr;
-        if (cpCombo && cpCombo->currentIndex() > 0) {
-            const QString uuid_str = cpCombo->currentData().toString();
-            if (!uuid_str.isEmpty()) {
-                try {
-                    tti.trade.counterparty_id =
-                        boost::lexical_cast<boost::uuids::uuid>(
-                            uuid_str.toStdString());
-                } catch (...) {
-                    tti.trade.counterparty_id = std::nullopt;
-                }
+        QString cpUuidStr;
+        if (cpCombo && cpCombo->currentIndex() > 0)
+            cpUuidStr = cpCombo->currentData().toString();
+        else if (defaultCounterpartyCombo_->currentIndex() > 0)
+            cpUuidStr = defaultCounterpartyCombo_->currentData().toString();
+        if (!cpUuidStr.isEmpty()) {
+            try {
+                tti.trade.counterparty_id =
+                    boost::lexical_cast<boost::uuids::uuid>(
+                        cpUuidStr.toStdString());
+            } catch (...) {
+                tti.trade.counterparty_id = std::nullopt;
             }
         } else {
             tti.trade.counterparty_id = std::nullopt;

@@ -342,7 +342,7 @@ void PortfolioExplorerMdiWindow::reload() {
                                 .error_message = "Model destroyed"};
 
                     refdata::messaging::get_counterparties_request req;
-                    req.limit = 100'000;
+                    req.limit = 1000;
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(req));
                     if (!result)

@@ -19,7 +19,7 @@
  */
 #include "ores.synthetic/service/organisation_publisher_service.hpp"
 #include <algorithm>
-#include <unordered_set>
+#include <unordered_map>
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -72,24 +72,51 @@ organisation_publisher_service::publish(
         auto portfolios = portfolio_mapper::map(org.portfolios);
         auto books = book_mapper::map(org.books);
 
-        // Remove BU types that already exist for this tenant (idempotent seed).
-        // Multiple publish calls in the same tenant share canonical type codes
-        // (DIVISION, BRANCH, etc.) under the same coding scheme; re-inserting
-        // them would violate the natural-key unique index.
+        // Deduplicate BU types against what already exists for this tenant.
+        // Multiple publish calls share canonical codes (DIVISION, BRANCH, etc.)
+        // under the same coding scheme; re-inserting them violates the natural-
+        // key unique index.  When a type is skipped, remap its newly-generated
+        // UUID to the existing DB UUID so that business unit foreign keys remain
+        // valid.
         if (!bu_types.empty()) {
             const auto& tid = bu_types[0].tenant_id;
             const auto sql =
-                "SELECT code FROM ores_refdata_business_unit_types_tbl "
+                "SELECT code, id FROM ores_refdata_business_unit_types_tbl "
                 "WHERE tenant_id = '" + tid + "'::uuid "
                 "AND valid_to = ores_utility_infinity_timestamp_fn()";
-            const auto existing = database::repository::execute_raw_string_query(
+            const auto rows = database::repository::execute_raw_multi_column_query(
                 ctx_, sql, lg(), "checking existing BU types");
-            const std::unordered_set<std::string> existing_set(
-                existing.begin(), existing.end());
-            bu_types.erase(
-                std::remove_if(bu_types.begin(), bu_types.end(),
-                    [&](const auto& t) { return existing_set.count(t.code) > 0; }),
-                bu_types.end());
+
+            // Build code -> existing_id map
+            std::unordered_map<std::string, std::string> existing_id_by_code;
+            for (const auto& row : rows) {
+                if (row.size() >= 2 && row[0] && row[1])
+                    existing_id_by_code[*row[0]] = *row[1];
+            }
+
+            // Separate new types from those already present; record UUID remap
+            std::unordered_map<std::string, std::string> id_remap;
+            std::vector<refdata::repository::business_unit_type_entity> new_bu_types;
+            for (auto& t : bu_types) {
+                const auto it = existing_id_by_code.find(t.code);
+                if (it != existing_id_by_code.end()) {
+                    id_remap[t.id.get()] = it->second;
+                } else {
+                    new_bu_types.push_back(std::move(t));
+                }
+            }
+            bu_types = std::move(new_bu_types);
+
+            // Remap unit_type_id in business units to reference existing UUIDs
+            if (!id_remap.empty()) {
+                for (auto& bu : bus_units) {
+                    if (!bu.unit_type_id.has_value())
+                        continue;
+                    const auto it = id_remap.find(*bu.unit_type_id);
+                    if (it != id_remap.end())
+                        bu.unit_type_id = it->second;
+                }
+            }
             BOOST_LOG_SEV(lg(), debug) << "BU types to insert after dedup: "
                                        << bu_types.size();
         }

@@ -34,7 +34,8 @@
  *
  * The domain namespace defines event types, traits, and entity change events.
  * The service namespace provides the event_bus implementation and PostgreSQL
- * integration via postgres_listener_service and postgres_event_source.
+ * integration via postgres_event_source (which uses postgres_listener_service
+ * from ores.database for the low-level LISTEN/NOTIFY transport).
  */
 namespace ores::eventing {}
 

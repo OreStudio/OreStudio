@@ -17,23 +17,17 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include <catch2/catch_test_macros.hpp>
-#include "ores.mq/pgmq/stub.hpp"
-#include "ores.logging/make_logger.hpp"
+#include "ores.mq/pgmq/queue_info_json_io.hpp"
 
-namespace {
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 
-const std::string test_suite("ores.mq.tests");
-const std::string tags("[pgmq]");
+namespace ores::mq::pgmq {
 
+std::ostream& operator<<(std::ostream& s, const queue_info& v) {
+    rfl::json::write(v, s);
+    return s;
 }
 
-using namespace ores::mq::pgmq;
-using namespace ores::logging;
-
-TEST_CASE("pgmq_stub_compiles", tags) {
-    auto lg(make_logger(test_suite));
-    BOOST_LOG_SEV(lg, warn) << stub_function();
-    stub s;
-    CHECK(s.version == 0);
 }

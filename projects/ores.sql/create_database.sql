@@ -85,6 +85,24 @@ alter role ores_ddl_user bypassrls;
 grant usage on schema public to ores_owner, ores_rw, ores_ro;
 grant create on schema public to ores_owner;
 
+-- Grant pgmq schema access if the extension was installed.
+-- pgmq is owned by postgres so all grants must be applied here (superuser phase).
+-- pgmq functions are SECURITY INVOKER, so the calling role needs:
+--   USAGE  – to call functions
+--   CREATE – because pgmq.create() dynamically creates queue tables
+--   Table/sequence access – for pgmq.meta and queue tables created at runtime
+do $$
+begin
+    if exists (select 1 from pg_extension where extname = 'pgmq') then
+        grant usage, create on schema pgmq to ores_owner, ores_rw;
+        grant usage on schema pgmq to ores_ro;
+        grant execute on all functions in schema pgmq to ores_owner, ores_rw;
+        grant all on all tables in schema pgmq to ores_owner, ores_rw;
+        grant all on all sequences in schema pgmq to ores_owner, ores_rw;
+        raise notice 'Granted pgmq schema access to ores roles';
+    end if;
+end $$;
+
 \echo ''
 \echo '=========================================='
 \echo 'Database created successfully!'

@@ -541,4 +541,68 @@ void execute_parameterized_command(context ctx, const std::string& sql,
     BOOST_LOG_SEV(lg, debug) << "Finished " << operation_desc << ".";
 }
 
+std::vector<std::vector<std::optional<std::string>>> execute_parameterized_multi_column_query(
+    context ctx, const std::string& sql, const std::vector<std::string>& params,
+    logging::logger_t& lg, const std::string& operation_desc) {
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". SQL: " << sql
+                             << " with " << params.size() << " parameters";
+
+    std::vector<std::vector<std::optional<std::string>>> result;
+
+    const auto conn_str = build_connection_string(ctx.credentials());
+    pg_connection_guard conn_guard(PQconnectdb(conn_str.c_str()));
+
+    if (PQstatus(conn_guard.conn) != CONNECTION_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Connection failed: " << err_msg;
+        throw std::runtime_error("Database connection failed: " + err_msg);
+    }
+
+    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+
+    std::vector<const char*> param_values;
+    param_values.reserve(params.size());
+    for (const auto& p : params) {
+        param_values.push_back(p.c_str());
+    }
+
+    pg_result_guard result_guard(PQexecParams(
+        conn_guard.conn,
+        sql.c_str(),
+        static_cast<int>(params.size()),
+        nullptr,
+        param_values.data(),
+        nullptr,
+        nullptr,
+        0
+    ));
+
+    if (PQresultStatus(result_guard.result) != PGRES_TUPLES_OK) {
+        const std::string err_msg = PQerrorMessage(conn_guard.conn);
+        BOOST_LOG_SEV(lg, error) << "Query failed: " << err_msg;
+        throw std::runtime_error("Query execution failed: " + err_msg);
+    }
+
+    const int num_rows = PQntuples(result_guard.result);
+    const int num_cols = PQnfields(result_guard.result);
+    result.reserve(num_rows);
+
+    for (int i = 0; i < num_rows; ++i) {
+        std::vector<std::optional<std::string>> row;
+        row.reserve(num_cols);
+        for (int j = 0; j < num_cols; ++j) {
+            if (PQgetisnull(result_guard.result, i, j)) {
+                row.push_back(std::nullopt);
+            } else {
+                row.push_back(std::string(PQgetvalue(result_guard.result, i, j)));
+            }
+        }
+        result.push_back(std::move(row));
+    }
+
+    BOOST_LOG_SEV(lg, debug) << operation_desc << ". Total rows: " << result.size();
+    return result;
+}
+
 }

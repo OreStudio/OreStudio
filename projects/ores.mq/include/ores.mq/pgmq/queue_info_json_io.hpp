@@ -17,21 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_STUB_HPP
-#define ORES_MQ_PGMQ_STUB_HPP
+#ifndef ORES_MQ_PGMQ_QUEUE_INFO_JSON_IO_HPP
+#define ORES_MQ_PGMQ_QUEUE_INFO_JSON_IO_HPP
 
-#include <string>
+#include <iosfwd>
+#include "ores.mq/pgmq/queue_info.hpp"
 
 namespace ores::mq::pgmq {
 
 /**
- * @brief Stub — to be replaced by the low-level pgmq wrapper.
+ * @brief Dumps the queue_info object to a stream in JSON format.
  */
-struct stub final {
-    int version = 0;
-};
-
-std::string stub_function();
+std::ostream& operator<<(std::ostream& s, const queue_info& v);
 
 }
 

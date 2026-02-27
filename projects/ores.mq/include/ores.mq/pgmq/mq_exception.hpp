@@ -17,12 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.mq/pgmq/stub.hpp"
+#ifndef ORES_MQ_PGMQ_MQ_EXCEPTION_HPP
+#define ORES_MQ_PGMQ_MQ_EXCEPTION_HPP
+
+#include <string>
+#include <stdexcept>
 
 namespace ores::mq::pgmq {
 
-std::string stub_function() {
-    return "STUB: ores.mq pgmq wrapper — to be implemented";
-}
+/**
+ * @brief Exception thrown by pgmq client operations.
+ *
+ * Wraps any error returned by the pgmq PostgreSQL extension or encountered
+ * while communicating with the database for queue operations.
+ */
+class mq_exception : public std::runtime_error {
+public:
+    explicit mq_exception(const std::string& message)
+        : std::runtime_error(message) {}
+};
 
 }
+
+#endif

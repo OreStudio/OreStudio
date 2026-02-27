@@ -131,18 +131,32 @@ end $$;
 -- TimescaleDB: Time-series database extension (OPTIONAL)
 -- Provides hypertables, compression, continuous aggregates, and retention policies
 -- If not available, sessions will use regular tables instead.
+--
+-- timescaledb MUST be in shared_preload_libraries before CREATE EXTENSION is
+-- called. If the library is not preloaded, timescaledb's install script
+-- terminates the current backend connection to force a reload, which breaks
+-- the database setup script.  We guard against this by checking a timescaledb
+-- GUC (registered only when timescaledb.so is loaded) before proceeding.
 do $$
 declare
     tsdb_available boolean;
+    tsdb_loaded boolean;
 begin
-    -- Check if TimescaleDB is available in the system
     select exists (
         select 1 from pg_available_extensions where name = 'timescaledb'
     ) into tsdb_available;
 
-    if tsdb_available then
+    -- current_setting(..., missing_ok := true) returns NULL when the GUC does
+    -- not exist, i.e. when timescaledb.so is not loaded via shared_preload_libraries.
+    tsdb_loaded := (current_setting('timescaledb.max_background_workers', true) is not null);
+
+    if tsdb_available and tsdb_loaded then
         create extension if not exists timescaledb;
         raise notice 'Installed: timescaledb';
+    elsif tsdb_available and not tsdb_loaded then
+        raise notice 'timescaledb is installed but not loaded in shared_preload_libraries';
+        raise notice 'Sessions will use regular tables';
+        raise notice '(Add timescaledb to shared_preload_libraries and restart PostgreSQL)';
     else
         raise notice 'TimescaleDB not available - sessions will use regular tables';
         raise notice '(This is fine for development/testing, but production should use TimescaleDB)';

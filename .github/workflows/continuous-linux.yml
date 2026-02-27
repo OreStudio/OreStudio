@@ -128,12 +128,13 @@ jobs:
           database: oresdb
           port: 5432
           postgres-version: "18"
-          postgres-conf: |
-            shared_preload_libraries = 'pg_cron,timescaledb'
-          hba-conf: |
-            local all all trust
-            host all all 0.0.0.0/0 scram-sha-256
         id: postgres
+
+      - name: Configure shared_preload_libraries
+        run: |
+          PGDATA="$RUNNER_TEMP/pgdata"
+          echo "shared_preload_libraries = 'pg_cron,timescaledb'" >> "$PGDATA/postgresql.conf"
+          pg_ctl restart --pgdata="$PGDATA" --wait
 
       - name: Setup Database
         run: |

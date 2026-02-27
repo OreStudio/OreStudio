@@ -125,6 +125,7 @@ void prepare_for_publish(generated_organisation& org,
     stamp(org.counterparty_contacts);
     stamp(org.counterparty_identifiers);
     stamp(org.party_counterparties);
+    stamp(org.business_unit_types);
     stamp(org.business_units);
     stamp(org.portfolios);
     stamp(org.books);

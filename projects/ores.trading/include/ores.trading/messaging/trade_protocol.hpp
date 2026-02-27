@@ -47,12 +47,15 @@ namespace ores::trading::messaging {
  * - 16 bytes: book_id UUID   [only if has_book_id]
  * - 1 byte : has_portfolio_id (bool)
  * - 16 bytes: portfolio_id UUID [only if has_portfolio_id]
+ * - 1 byte : has_business_unit_id (bool)
+ * - 16 bytes: business_unit_id UUID [only if has_business_unit_id]
  */
 struct get_trades_request final {
     std::uint32_t offset = 0;
     std::uint32_t limit = 100;
-    std::optional<boost::uuids::uuid> book_id;       ///< filter by single book
-    std::optional<boost::uuids::uuid> portfolio_id;  ///< filter by portfolio subtree
+    std::optional<boost::uuids::uuid> book_id;           ///< filter by single book
+    std::optional<boost::uuids::uuid> portfolio_id;      ///< filter by portfolio subtree
+    std::optional<boost::uuids::uuid> business_unit_id;  ///< filter by BU subtree
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_trades_request,

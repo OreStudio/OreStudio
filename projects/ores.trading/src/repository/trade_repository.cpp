@@ -179,7 +179,8 @@ std::vector<domain::trade>
 trade_repository::read_latest_filtered(context ctx,
     std::uint32_t offset, std::uint32_t limit,
     std::optional<boost::uuids::uuid> book_id,
-    std::optional<boost::uuids::uuid> portfolio_id) {
+    std::optional<boost::uuids::uuid> portfolio_id,
+    std::optional<boost::uuids::uuid> business_unit_id) {
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
@@ -199,6 +200,28 @@ trade_repository::read_latest_filtered(context ctx,
             ctx, query,
             [](const auto& entities) { return trade_mapper::map(entities); },
             lg(), "Reading trades filtered by book_id");
+    }
+
+    if (business_unit_id.has_value()) {
+        const auto buid = boost::uuids::to_string(*business_unit_id);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Reading trades filtered by business unit subtree: " << buid;
+
+        const std::string sql =
+            "SELECT * FROM ores_trading_read_trades_by_business_unit_fn('"
+            + tid + "'::uuid, '" + buid + "'::uuid, "
+            + std::to_string(offset) + ", " + std::to_string(limit) + ")";
+
+        const auto rows = execute_raw_multi_column_query(
+            ctx, sql, lg(), "Reading trades for business unit subtree");
+
+        std::vector<domain::trade> result;
+        result.reserve(rows.size());
+        for (const auto& row : rows) {
+            if (row.size() >= 21)
+                result.push_back(raw_row_to_trade(row));
+        }
+        return result;
     }
 
     // portfolio_id case: delegate to SQL function with recursive CTE
@@ -226,7 +249,8 @@ trade_repository::read_latest_filtered(context ctx,
 std::uint32_t
 trade_repository::count_latest_filtered(context ctx,
     std::optional<boost::uuids::uuid> book_id,
-    std::optional<boost::uuids::uuid> portfolio_id) {
+    std::optional<boost::uuids::uuid> portfolio_id,
+    std::optional<boost::uuids::uuid> business_unit_id) {
 
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
@@ -246,6 +270,23 @@ trade_repository::count_latest_filtered(context ctx,
         const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
         ensure_success(r, lg());
         return static_cast<std::uint32_t>(r->count);
+    }
+
+    if (business_unit_id.has_value()) {
+        const auto buid = boost::uuids::to_string(*business_unit_id);
+        BOOST_LOG_SEV(lg(), debug)
+            << "Counting trades for business unit subtree: " << buid;
+
+        const std::string sql =
+            "SELECT ores_trading_count_trades_by_business_unit_fn('"
+            + tid + "'::uuid, '" + buid + "'::uuid)";
+
+        const auto rows = execute_raw_multi_column_query(
+            ctx, sql, lg(), "Counting trades for business unit subtree");
+
+        if (rows.empty() || rows[0].empty() || !rows[0][0].has_value())
+            return 0;
+        return static_cast<std::uint32_t>(std::stoll(*rows[0][0]));
     }
 
     // portfolio_id case: delegate to SQL function with recursive CTE

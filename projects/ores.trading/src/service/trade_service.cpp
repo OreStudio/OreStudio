@@ -44,10 +44,12 @@ trade_service::list_trades(std::uint32_t offset, std::uint32_t limit) {
 std::vector<domain::trade>
 trade_service::list_trades_filtered(std::uint32_t offset, std::uint32_t limit,
     std::optional<boost::uuids::uuid> book_id,
-    std::optional<boost::uuids::uuid> portfolio_id) {
+    std::optional<boost::uuids::uuid> portfolio_id,
+    std::optional<boost::uuids::uuid> business_unit_id) {
     BOOST_LOG_SEV(lg(), debug) << "Listing trades (filtered) offset=" << offset
                                << ", limit=" << limit;
-    return repo_.read_latest_filtered(ctx_, offset, limit, book_id, portfolio_id);
+    return repo_.read_latest_filtered(
+        ctx_, offset, limit, book_id, portfolio_id, business_unit_id);
 }
 
 std::uint32_t trade_service::count_trades() {
@@ -57,9 +59,10 @@ std::uint32_t trade_service::count_trades() {
 
 std::uint32_t trade_service::count_trades_filtered(
     std::optional<boost::uuids::uuid> book_id,
-    std::optional<boost::uuids::uuid> portfolio_id) {
+    std::optional<boost::uuids::uuid> portfolio_id,
+    std::optional<boost::uuids::uuid> business_unit_id) {
     BOOST_LOG_SEV(lg(), debug) << "Counting trades (filtered)";
-    return repo_.count_latest_filtered(ctx_, book_id, portfolio_id);
+    return repo_.count_latest_filtered(ctx_, book_id, portfolio_id, business_unit_id);
 }
 
 std::optional<domain::trade>

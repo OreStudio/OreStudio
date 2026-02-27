@@ -733,12 +733,13 @@ trade_message_handler::handle_get_trades_request(
 
     std::vector<domain::trade> trades;
     std::uint32_t total;
-    if (request.book_id.has_value() || request.portfolio_id.has_value()) {
+    if (request.book_id.has_value() || request.portfolio_id.has_value() ||
+            request.business_unit_id.has_value()) {
         trades = svc.list_trades_filtered(
             request.offset, request.limit,
-            request.book_id, request.portfolio_id);
+            request.book_id, request.portfolio_id, request.business_unit_id);
         total = svc.count_trades_filtered(
-            request.book_id, request.portfolio_id);
+            request.book_id, request.portfolio_id, request.business_unit_id);
     } else {
         trades = svc.list_trades(request.offset, request.limit);
         total = svc.count_trades();

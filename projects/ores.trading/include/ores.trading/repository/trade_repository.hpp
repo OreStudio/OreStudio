@@ -67,12 +67,14 @@ public:
         context ctx,
         std::uint32_t offset, std::uint32_t limit,
         std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id);
+        std::optional<boost::uuids::uuid> portfolio_id,
+        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
 
     std::uint32_t count_latest_filtered(
         context ctx,
         std::optional<boost::uuids::uuid> book_id,
-        std::optional<boost::uuids::uuid> portfolio_id);
+        std::optional<boost::uuids::uuid> portfolio_id,
+        std::optional<boost::uuids::uuid> business_unit_id = std::nullopt);
 
     void remove(context ctx, const std::string& id);
 };

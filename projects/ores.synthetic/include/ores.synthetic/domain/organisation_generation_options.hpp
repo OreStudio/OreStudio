@@ -106,8 +106,13 @@ struct organisation_generation_options final {
 
     /**
      * @brief Maximum depth of the business unit hierarchy.
+     *
+     * Capped at 2 to match the three-level BU type scheme:
+     * depth 0 = DIVISION (level 0), depth 1 = BUSINESS_AREA (level 1),
+     * depth 2 = DESK (level 2). Deeper nodes would share DESK's level and
+     * violate the parent-level < child-level constraint on the BU type table.
      */
-    std::size_t business_unit_max_depth = 3;
+    std::size_t business_unit_max_depth = 2;
 
     /**
      * @brief Whether to generate contact information with addresses.

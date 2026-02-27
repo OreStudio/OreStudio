@@ -19,8 +19,8 @@
  */
 #include "ores.mq/pgmq/client.hpp"
 
-#include <sstream>
 #include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::mq::pgmq {
 
@@ -57,13 +57,11 @@ client::parse_pg_timestamp(const std::string& s) {
         }
     }
 
-    std::tm tm{};
-    std::istringstream iss(base);
-    iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    if (iss.fail()) return {};
-
-    // timegm() interprets tm as UTC (unlike std::mktime which uses local time).
-    return std::chrono::system_clock::from_time_t(timegm(&tm));
+    try {
+        return ores::platform::time::datetime::parse_time_point_utc(base);
+    } catch (const std::exception&) {
+        return {};
+    }
 }
 
 /**

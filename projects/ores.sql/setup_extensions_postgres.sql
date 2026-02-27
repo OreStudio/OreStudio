@@ -54,17 +54,33 @@
 \echo ''
 
 -- pg_cron: Job scheduler extension (OPTIONAL)
+--
+-- pg_cron requires two prerequisites beyond having the package installed:
+--   1. pg_cron must be in shared_preload_libraries (so its GUCs are registered)
+--   2. The extension must be created in cron.database_name (defaults to 'postgres')
+--
+-- We check both conditions before calling CREATE EXTENSION to avoid a hard
+-- error from pg_cron's own install script when either prerequisite is missing.
 do $$
 declare
     pgcron_available boolean;
+    pgcron_loaded boolean;
 begin
     select exists (
         select 1 from pg_available_extensions where name = 'pg_cron'
     ) into pgcron_available;
 
-    if pgcron_available then
+    -- current_setting(..., missing_ok := true) returns NULL when the GUC does
+    -- not exist, i.e. when pg_cron.so is not loaded via shared_preload_libraries.
+    pgcron_loaded := (current_setting('cron.database_name', true) is not null);
+
+    if pgcron_available and pgcron_loaded then
         create extension if not exists pg_cron;
         raise notice 'Installed: pg_cron';
+    elsif pgcron_available and not pgcron_loaded then
+        raise notice 'pg_cron is installed but not loaded in shared_preload_libraries';
+        raise notice 'ores.scheduler job scheduling will not function';
+        raise notice '(Add pg_cron to shared_preload_libraries and restart PostgreSQL)';
     else
         raise notice 'pg_cron not available - ores.scheduler job scheduling will not function';
         raise notice '(Install with: apt install postgresql-NN-cron, then configure postgresql.conf)';

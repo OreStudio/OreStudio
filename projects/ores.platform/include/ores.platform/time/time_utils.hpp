@@ -52,6 +52,18 @@ public:
      * @return Pointer to result on success, nullptr on failure.
      */
     static std::tm* localtime_safe(const std::time_t* time, std::tm* result);
+
+    /**
+     * @brief Converts a UTC tm struct to time_t (cross-platform).
+     *
+     * This is a cross-platform wrapper around timegm (POSIX) and
+     * _mkgmtime (Windows). Unlike std::mktime, this interprets the
+     * tm struct as UTC rather than local time.
+     *
+     * @param tm Pointer to tm struct to convert (interpreted as UTC).
+     * @return The corresponding time_t value.
+     */
+    static std::time_t timegm_safe(std::tm* tm);
 };
 
 }

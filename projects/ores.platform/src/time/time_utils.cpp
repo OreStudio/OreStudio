@@ -47,4 +47,12 @@ std::tm* time_utils::localtime_safe(const std::time_t* time, std::tm* result) {
 #endif
 }
 
+std::time_t time_utils::timegm_safe(std::tm* tm) {
+#ifdef _WIN32
+    return _mkgmtime(tm);
+#else
+    return timegm(tm);
+#endif
+}
+
 }

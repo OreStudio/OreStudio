@@ -248,6 +248,37 @@ void skipText(xsdcpp::Position& pos)
         default:
             if (pos.pos[1] == '!')
             {
+                if (strncmp(pos.pos + 2, "[CDATA[", 7) == 0)
+                {
+                    pos.pos += 9; // skip past "<![CDATA["
+                    for (;;)
+                    {
+                        const char* e = strpbrk(pos.pos, "]\r\n");
+                        if (!e)
+                        {
+                            pos.pos += strlen(pos.pos);
+                            throw SyntaxException(pos, "Unexpected end of file in CDATA section");
+                        }
+                        pos.pos = e;
+                        if (*pos.pos == '\r')
+                        {
+                            if (*++pos.pos == '\n') ++pos.pos;
+                            ++pos.line; pos.lineStart = pos.pos;
+                        }
+                        else if (*pos.pos == '\n')
+                        {
+                            ++pos.line; ++pos.pos; pos.lineStart = pos.pos;
+                        }
+                        else if (strncmp(pos.pos, "]]>", 3) == 0)
+                        {
+                            pos.pos += 3;
+                            break;
+                        }
+                        else
+                            ++pos.pos;
+                    }
+                    continue;
+                }
                 skipSpace(pos);
                 continue;
             }
@@ -348,6 +379,16 @@ std::string stripComments(const char* str, size_t len)
         else
             result.append(i, next - i);
         i = next;
+        if (strncmp(i + 1, "![CDATA[", 8) == 0)
+        {
+            i += 9; // skip "<![CDATA["
+            const char* cdataEnd = strstr(i, "]]>");
+            if (!cdataEnd)
+                return result.append(i, end - i); // malformed, include remainder
+            result.append(i, cdataEnd - i);       // extract CDATA content
+            i = cdataEnd + 3;                     // skip "]]>"
+            continue;
+        }
         if (strncmp(i + 1, "!--", 3) != 0)
             return result.append(i, end - i);
         i += 4;
@@ -616,7 +657,7 @@ void parseElement(Context& context, xsdcpp::ElementContext& parentElementContext
                 skipTextAndSubElements(context, elementName);
             else
                 skipText(context.pos);
-            if (context.pos.pos != start)
+            if (context.pos.pos != start && elementContext.info->addText)
             {
                 std::string text = stripComments(start, context.pos.pos - start);
                 elementContext.info->addText(elementContext.element, context.pos, std::move(text));
@@ -3062,7 +3103,15 @@ const char* _settlementType_Values[] = {
     nullptr};
 
 const char* _type_t_Values[] = {
+    "longShort",
+    "index",
+    "event",
+    "number",
     "currency",
+    "optionType",
+    "bool",
+    "barrierType",
+    "dayCounter",
     nullptr};
 
 const char* _momentType_Values[] = {
@@ -3875,7 +3924,7 @@ std::string to_string(settlementType val) { return xsdcpp::to_string((size_t)val
 const xsdcpp::ElementInfo _uint64_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&xsdcpp::set_uint64_t };
 void _set_settlementType(domain::settlementType* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::settlementType)xsdcpp::toNumeric(pos, _settlementType_Values, val); }
 const xsdcpp::ElementInfo _settlementType_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_settlementType };
-std::string to_string(type_t val) { return xsdcpp::to_string((size_t)val, 1, _type_t_Values, "type_t"); }
+std::string to_string(type_t val) { return xsdcpp::to_string((size_t)val, 9, _type_t_Values, "type_t"); }
 void _set_type_t(domain::type_t* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::type_t)xsdcpp::toNumeric(pos, _type_t_Values, val); }
 void _set_stFreeStyleLongShort(domain::stFreeStyleLongShort* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_stFreeStyleIndex(domain::stFreeStyleIndex* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
@@ -5521,6 +5570,7 @@ xsdcpp::ChildElementInfo _trade_Children[] = {
     {nullptr}
 };
 void* _get_trade_id(domain::trade* elem) { return &elem->id; }
+void _any_trade(domain::trade* element, std::string&& name, std::string&& value) { element->other_attributes.emplace_back(xsd::any_attribute{std::move(name), std::move(value)}); }
 xsdcpp::AttributeInfo _trade_Attributes[] = {
     {"id", 1ULL, (xsdcpp::get_field_t)&_get_trade_id, (xsdcpp::set_value_t)&xsdcpp::set_string, true, nullptr},
     {nullptr}
@@ -12565,363 +12615,363 @@ xsdcpp::ChildElementInfo _equityOptionUnderlyingData_Children[] = {
 };
 void* _get_trsUnderlyingData_Derivative_t_Trade_t_TradeType(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->TradeType;}
 void* _get_trsUnderlyingData_Derivative_t_Trade_t_Envelope(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->Envelope = domain::envelope());}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CrossCurrencySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CrossCurrencySwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_InflationSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->InflationSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_SwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->SwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquitySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquitySwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CallableSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CallableSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ArcOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ArcOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_SwaptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->SwaptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_VarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->VarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardRateAgreementData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ForwardRateAgreementData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxForwardData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxAverageForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxAverageForwardData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxDoubleBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxDigitalOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxEuropeanBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxEuropeanBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxKIKOBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxKIKOBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxDigitalBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxTouchOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxDoubleTouchOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CapFloorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CapFloorData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityFutureOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityFutureOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityDoubleBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityForwardData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityEuropeanBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityEuropeanBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityDigitalOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityDoubleTouchOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityTouchOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityCliquetOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityCliquetOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BondData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardBondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ForwardBondData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondFutureData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BondFutureData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CreditDefaultSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CreditDefaultSwapOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityForwardData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalAveragePriceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityDigitalAveragePriceOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityDigitalOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySpreadOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommoditySpreadOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommoditySwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwaptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommoditySwaptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAveragePriceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityAveragePriceOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionStripData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityOptionStripData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityPositionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityAsianOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityAsianOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxAsianOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxAsianOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAsianOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityAsianOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BondOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondRepoData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BondRepoData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondTRSData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BondTRSData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CdoData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CdoData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CreditLinkedSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CreditLinkedSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->IndexCreditDefaultSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->IndexCreditDefaultSwapOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_MultiLegOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->MultiLegOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_AscotData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->AscotData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConvertibleBondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ConvertibleBondData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CallableBondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CallableBondData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_TreasuryLockData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->TreasuryLockData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_RiskParticipationAgreementData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->RiskParticipationAgreementData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CBOData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CBOData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondBasketData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BondBasketData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityPositionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityOptionPositionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_TotalReturnSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->TotalReturnSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ContractForDifferenceData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ContractForDifferenceData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CompositeTradeData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CompositeTradeData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->PairwiseVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityPairwiseVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityPairwiseVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxPairwiseVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxPairwiseVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityOutperformanceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityOutperformanceOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FlexiSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FlexiSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BalanceGuaranteedSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BalanceGuaranteedSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRevenueOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityRevenueOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityBasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxBasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityBasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ExtendedAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ExtendedAccumulatorData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_VarianceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->VarianceOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_VarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->VarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_KIKOVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->KIKOVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CorridorVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_IndexedCorridorVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->IndexedCorridorVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_KIKOCorridorVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->KIKOCorridorVarianceSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CorridorVarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_KOCorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->KOCorridorVarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseGeometricVarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->PairwiseGeometricVarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ConditionalVarianceSwap01Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap02Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ConditionalVarianceSwap02Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_GammaSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->GammaSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BestEntryOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->DualEuroBinaryOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionDoubleKOData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->DualEuroBinaryOptionDoubleKOData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_VolatilityBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->VolatilityBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxTaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxTaRFData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityTaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityTaRFData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityTaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityTaRFData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxAccumulatorData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityAccumulatorData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityAccumulatorData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxWindowBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxWindowBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityWindowBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityWindowBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWindowBarierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityWindowBarierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxGenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxGenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityGenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityGenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityGenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityGenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityRainbowOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxRainbowOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityRainbowOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_Autocallable01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->Autocallable01Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_DoubleDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->DoubleDigitalOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_PerformanceOption01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->PerformanceOption01Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ScriptedTradeData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ScriptedTradeData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_VanillaBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->VanillaBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_AsianBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->AsianBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_AverageStrikeBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->AverageStrikeBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_LookbackCallBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->LookbackCallBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_LookbackPutBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->LookbackPutBasketOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAirbagData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BestOfAirbagData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxWorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxWorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityWorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityWorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityWorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption01Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption02Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption02Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption03Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption03Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption04Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption04Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption05Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption05Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption06Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption06Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption07Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption07Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->BestOfAssetOrCashRainbowOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WorstOfAssetOrCashRainbowOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_MinRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->MinRainbowOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_MaxRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->MaxRainbowOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_WindowBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->WindowBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->Accumulator01Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator02Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->Accumulator02Data;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityBestEntryOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxBestEntryOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityBestEntryOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_TaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->TaRFData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanRainbowCallSpreadOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EuropeanRainbowCallSpreadOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_RainbowCallSpreadBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->RainbowCallSpreadBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_AsianRainbowCallSpreadOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->AsianRainbowCallSpreadOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_AsianIrCapFloorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->AsianIrCapFloorData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardVolatilityAgreementData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ForwardVolatilityAgreementData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CorrelationSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CorrelationSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_AssetLinkedCliquetOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->AssetLinkedCliquetOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConstantMaturityVolatilitySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ConstantMaturityVolatilitySwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CMSCapFloorBarrierData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CMSCapFloorBarrierData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FixedStrikeForwardStartingOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FixedStrikeForwardStartingOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FloatingStrikeForwardStartingOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FloatingStrikeForwardStartingOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardStartingSwaptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->ForwardStartingSwaptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FlooredAverageCPIZCIISData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FlooredAverageCPIZCIISData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_GenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->GenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_MovingMaxYYIISData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->MovingMaxYYIISData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_IrregularYYIISData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->IrregularYYIISData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanOptionBarrierData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EuropeanOptionBarrierData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_LadderLockInOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->LadderLockInOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_LapseHedgeSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->LapseHedgeSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_KnockOutSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->KnockOutSwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_LPISwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->LPISwapData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CashPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CashPositionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_StrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->StrikeResettableOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityStrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->EquityStrikeResettableOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxStrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->FxStrikeResettableOptionData;}
-void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityStrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &parent->CommodityStrikeResettableOptionData;}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CrossCurrencySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CrossCurrencySwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_InflationSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->InflationSwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_SwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->SwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquitySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquitySwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CallableSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CallableSwapData = domain::callableSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ArcOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ArcOptionData = domain::arcOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_SwaptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->SwaptionData = domain::swaptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_VarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->VarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityVarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxVarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityVarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardRateAgreementData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ForwardRateAgreementData = domain::forwardRateAgreementData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxForwardData = domain::fxForwardData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxAverageForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxAverageForwardData = domain::fxAverageForwardData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxOptionData = domain::fxOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxDoubleBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxDigitalOptionData = domain::fxDigitalOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxEuropeanBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxEuropeanBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxKIKOBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxKIKOBarrierOptionData = domain::fxKIKOBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxDigitalBarrierOptionData = domain::fxDigitalBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxTouchOptionData = domain::fxTouchOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxDoubleTouchOptionData = domain::fxTouchOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxSwapData = domain::fxSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CapFloorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CapFloorData = domain::capFloorData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityFutureOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityFutureOptionData = domain::equityFutureOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityOptionData = domain::equityOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityDoubleBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityForwardData = domain::equityForwardData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityEuropeanBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityEuropeanBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityDigitalOptionData = domain::eqDigitalOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityDoubleTouchOptionData = domain::eqTouchOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityTouchOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityTouchOptionData = domain::eqTouchOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityCliquetOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityCliquetOptionData = domain::cliquetOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BondData = domain::bondData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardBondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ForwardBondData = domain::forwardBondData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondFutureData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BondFutureData = domain::bondFutureData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CreditDefaultSwapData = domain::creditDefaultSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CreditDefaultSwapOptionData = domain::creditDefaultSwapOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityForwardData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityForwardData = domain::commodityForwardData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityOptionData = domain::commodityOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalAveragePriceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityDigitalAveragePriceOptionData = domain::commodityDigitalAveragePriceOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityDigitalOptionData = domain::commodityDigitalOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySpreadOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommoditySpreadOptionData = domain::commoditySpreadOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommoditySwapData = domain::commoditySwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwaptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommoditySwaptionData = domain::commoditySwaptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAveragePriceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityAveragePriceOptionData = domain::commodityAveragePriceOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionStripData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityOptionStripData = domain::commodityOptionStripData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityPositionData = domain::commodityPositionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityAsianOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxAsianOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAsianOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BondOptionData = domain::bondOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondRepoData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BondRepoData = domain::bondRepoData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondTRSData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BondTRSData = domain::bondTRSData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CdoData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CdoData = domain::cdoData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CreditLinkedSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CreditLinkedSwapData = domain::creditLinkedSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->IndexCreditDefaultSwapData = domain::indexCreditDefaultSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->IndexCreditDefaultSwapOptionData = domain::indexCreditDefaultSwapOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_MultiLegOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->MultiLegOptionData = domain::multiLegOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_AscotData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->AscotData = domain::ascotData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConvertibleBondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ConvertibleBondData = domain::convertibleBondData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CallableBondData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CallableBondData = domain::callableBondData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_TreasuryLockData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->TreasuryLockData = domain::tlockData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_RiskParticipationAgreementData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->RiskParticipationAgreementData = domain::rpaData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CBOData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CBOData = domain::cbodata());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BondBasketData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BondBasketData = domain::bondBasketData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityPositionData = domain::equityPositionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityOptionPositionData = domain::equityOptionPositionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_TotalReturnSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->TotalReturnSwapData = domain::totalReturnSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ContractForDifferenceData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ContractForDifferenceData = domain::totalReturnSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CompositeTradeData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CompositeTradeData = domain::compositeTradeData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->PairwiseVarianceSwapData = domain::pairwiseVarianceSwapData1());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityPairwiseVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityPairwiseVarianceSwapData = domain::pairwiseVarianceSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxPairwiseVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxPairwiseVarianceSwapData = domain::pairwiseVarianceSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityOutperformanceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityOutperformanceOptionData = domain::eqOutperformanceOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FlexiSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FlexiSwapData = domain::flexiSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BalanceGuaranteedSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BalanceGuaranteedSwapData = domain::bgSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRevenueOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityRevenueOptionData = domain::commodityRevenueOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BasketVarianceSwapData = domain::basketVarianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ExtendedAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ExtendedAccumulatorData = domain::extendedAccumulatorData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_VarianceOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->VarianceOptionData = domain::varianceOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_VarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->VarianceDispersionSwapData = domain::varianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_KIKOVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->KIKOVarianceSwapData = domain::kikoVarianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CorridorVarianceSwapData = domain::corridorVarianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_IndexedCorridorVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->IndexedCorridorVarianceSwapData = domain::indexedCorridorVarianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_KIKOCorridorVarianceSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->KIKOCorridorVarianceSwapData = domain::kikoCorridorVarianceSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CorridorVarianceDispersionSwapData = domain::corridorVarianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_KOCorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->KOCorridorVarianceDispersionSwapData = domain::koCorridorVarianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseGeometricVarianceDispersionSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->PairwiseGeometricVarianceDispersionSwapData = domain::pairwiseGeometricVarianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ConditionalVarianceSwap01Data = domain::conditionalVarianceSwap01Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap02Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ConditionalVarianceSwap02Data = domain::conditionalVarianceSwap02Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_GammaSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->GammaSwapData = domain::gammaSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BestEntryOptionData = domain::bestEntryOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->DualEuroBinaryOptionData = domain::dualEuroBinaryOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionDoubleKOData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->DualEuroBinaryOptionDoubleKOData = domain::dualEuroBinaryOptionDoubleKOData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_VolatilityBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->VolatilityBarrierOptionData = domain::volBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxTaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxTaRFData = domain::tarfData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityTaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityTaRFData = domain::tarfData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityTaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityTaRFData = domain::tarfData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxAccumulatorData = domain::accumulatorData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityAccumulatorData = domain::accumulatorData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAccumulatorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityAccumulatorData = domain::accumulatorData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxWindowBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxWindowBarrierOptionData = domain::windowBarrierOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityWindowBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityWindowBarrierOptionData = domain::windowBarrierOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWindowBarierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityWindowBarierOptionData = domain::windowBarrierOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityBasketOptionData = domain::basketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxBasketOptionData = domain::basketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityBasketOptionData = domain::basketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxGenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityGenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityGenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityRainbowOptionData = domain::rainbowOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxRainbowOptionData = domain::rainbowOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityRainbowOptionData = domain::rainbowOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_Autocallable01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->Autocallable01Data = domain::autocallable01Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_DoubleDigitalOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->DoubleDigitalOptionData = domain::doubleDigitalOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_PerformanceOption01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->PerformanceOption01Data = domain::performanceOption01Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ScriptedTradeData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ScriptedTradeData = domain::scriptedTradeData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_VanillaBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->VanillaBasketOptionData = domain::vanillaBasketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_AsianBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->AsianBasketOptionData = domain::asianBasketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_AverageStrikeBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->AverageStrikeBasketOptionData = domain::averageStrikeBasketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_LookbackCallBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->LookbackCallBasketOptionData = domain::lookbackCallBasketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_LookbackPutBasketOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->LookbackPutBasketOptionData = domain::lookbackPutBasketOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAirbagData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BestOfAirbagData = domain::bestOfAirbagData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstOfBasketSwapData = domain::worstOfBasketSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxWorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityWorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWorstOfBasketSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption01Data = domain::worstPerformanceRainbowOption01Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption02Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption02Data = domain::worstPerformanceRainbowOption02Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption03Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption03Data = domain::worstPerformanceRainbowOption03Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption04Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption04Data = domain::worstPerformanceRainbowOption04Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption05Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption05Data = domain::worstPerformanceRainbowOption05Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption06Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption06Data = domain::worstPerformanceRainbowOption06Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption07Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption07Data = domain::worstPerformanceRainbowOption07Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->BestOfAssetOrCashRainbowOptionData = domain::bestOfAssetOrCashRainbowOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WorstOfAssetOrCashRainbowOptionData = domain::worstOfAssetOrCashRainbowOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_MinRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->MinRainbowOptionData = domain::minRainbowOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_MaxRainbowOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->MaxRainbowOptionData = domain::maxRainbowOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_WindowBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->WindowBarrierOptionData = domain::windowBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator01Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->Accumulator01Data = domain::accumulator01Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator02Data(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->Accumulator02Data = domain::accumulator02Data());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityBestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxBestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBestEntryOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_TaRFData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->TaRFData = domain::tarfData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanRainbowCallSpreadOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EuropeanRainbowCallSpreadOptionData = domain::europeanRainbowCallSpreadOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_RainbowCallSpreadBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->RainbowCallSpreadBarrierOptionData = domain::rainbowCallSpreadBarrierOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_AsianRainbowCallSpreadOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->AsianRainbowCallSpreadOptionData = domain::asianRainbowCallSpreadOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_AsianIrCapFloorData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->AsianIrCapFloorData = domain::asianIrCapFloorData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardVolatilityAgreementData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ForwardVolatilityAgreementData = domain::forwardVolatilityAgreementData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CorrelationSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CorrelationSwapData = domain::correlationSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_AssetLinkedCliquetOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->AssetLinkedCliquetOptionData = domain::assetLinkedCliquetOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ConstantMaturityVolatilitySwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ConstantMaturityVolatilitySwapData = domain::constantMaturityVolatilitySwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CMSCapFloorBarrierData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CMSCapFloorBarrierData = domain::cmsCapFloorBarrierData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FixedStrikeForwardStartingOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FixedStrikeForwardStartingOptionData = domain::fixedStrikeForwardStartingOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FloatingStrikeForwardStartingOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FloatingStrikeForwardStartingOptionData = domain::floatingStrikeForwardStartingOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_ForwardStartingSwaptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->ForwardStartingSwaptionData = domain::forwardStartingSwaptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FlooredAverageCPIZCIISData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FlooredAverageCPIZCIISData = domain::flooredAverageCPIZCIISData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_GenericBarrierOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->GenericBarrierOptionData = domain::genericBarrierOptionDataRaw());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_MovingMaxYYIISData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->MovingMaxYYIISData = domain::movingMaxYYIISData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_IrregularYYIISData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->IrregularYYIISData = domain::irregularYYIISData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanOptionBarrierData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EuropeanOptionBarrierData = domain::europeanOptionBarrierData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_LadderLockInOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->LadderLockInOptionData = domain::ladderLockInOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_LapseHedgeSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->LapseHedgeSwapData = domain::lapseHedgeSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_KnockOutSwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->KnockOutSwapData = domain::knockOutSwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_LPISwapData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->LPISwapData = domain::LPISwapData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CashPositionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CashPositionData = domain::cashPositionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_StrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->StrikeResettableOptionData = domain::strikeResettableOptionData());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_EquityStrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->EquityStrikeResettableOptionData = domain::strikeResettableOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_FxStrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->FxStrikeResettableOptionData = domain::strikeResettableOptionData2());}
+void* _get_trsUnderlyingData_Derivative_t_Trade_t_CommodityStrikeResettableOptionData(domain::trsUnderlyingData_Derivative_t_Trade_t* parent) {return &*(parent->CommodityStrikeResettableOptionData = domain::strikeResettableOptionData2());}
 xsdcpp::ChildElementInfo _trsUnderlyingData_Derivative_t_Trade_t_Children[] = {
     {"TradeType", 0, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_TradeType, &domain::_oreTradeType_Info, 1, 1},
     {"Envelope", 1, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_Envelope, &domain::_envelope_Info, 0, 1},
-    {"CrossCurrencySwapData", 2, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CrossCurrencySwapData, &domain::_swapData_Info, 1, 1},
-    {"InflationSwapData", 3, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_InflationSwapData, &domain::_swapData_Info, 1, 1},
-    {"SwapData", 4, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_SwapData, &domain::_swapData_Info, 1, 1},
-    {"EquitySwapData", 5, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquitySwapData, &domain::_swapData_Info, 1, 1},
-    {"CallableSwapData", 6, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CallableSwapData, &domain::_callableSwapData_Info, 1, 1},
-    {"ArcOptionData", 7, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ArcOptionData, &domain::_arcOptionData_Info, 1, 1},
-    {"SwaptionData", 8, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_SwaptionData, &domain::_swaptionData_Info, 1, 1},
-    {"VarianceSwapData", 9, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"EquityVarianceSwapData", 10, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"FxVarianceSwapData", 11, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"CommodityVarianceSwapData", 12, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"ForwardRateAgreementData", 13, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardRateAgreementData, &domain::_forwardRateAgreementData_Info, 1, 1},
-    {"FxForwardData", 14, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxForwardData, &domain::_fxForwardData_Info, 1, 1},
-    {"FxAverageForwardData", 15, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxAverageForwardData, &domain::_fxAverageForwardData_Info, 1, 1},
-    {"FxOptionData", 16, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxOptionData, &domain::_fxOptionData_Info, 1, 1},
-    {"FxBarrierOptionData", 17, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxDoubleBarrierOptionData", 18, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxDigitalOptionData", 19, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalOptionData, &domain::_fxDigitalOptionData_Info, 1, 1},
-    {"FxEuropeanBarrierOptionData", 20, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxEuropeanBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxKIKOBarrierOptionData", 21, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxKIKOBarrierOptionData, &domain::_fxKIKOBarrierOptionData_Info, 1, 1},
-    {"FxDigitalBarrierOptionData", 22, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalBarrierOptionData, &domain::_fxDigitalBarrierOptionData_Info, 1, 1},
-    {"FxTouchOptionData", 23, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxTouchOptionData, &domain::_fxTouchOptionData_Info, 1, 1},
-    {"FxDoubleTouchOptionData", 24, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleTouchOptionData, &domain::_fxTouchOptionData_Info, 1, 1},
-    {"FxSwapData", 25, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxSwapData, &domain::_fxSwapData_Info, 1, 1},
-    {"CapFloorData", 26, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CapFloorData, &domain::_capFloorData_Info, 1, 1},
-    {"EquityFutureOptionData", 27, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityFutureOptionData, &domain::_equityFutureOptionData_Info, 1, 1},
-    {"EquityOptionData", 28, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionData, &domain::_equityOptionData_Info, 1, 1},
-    {"EquityBarrierOptionData", 29, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityDoubleBarrierOptionData", 30, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityForwardData", 31, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityForwardData, &domain::_equityForwardData_Info, 1, 1},
-    {"EquityEuropeanBarrierOptionData", 32, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityEuropeanBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityDigitalOptionData", 33, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityDigitalOptionData, &domain::_eqDigitalOptionData_Info, 1, 1},
-    {"EquityDoubleTouchOptionData", 34, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleTouchOptionData, &domain::_eqTouchOptionData_Info, 1, 1},
-    {"EquityTouchOptionData", 35, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityTouchOptionData, &domain::_eqTouchOptionData_Info, 1, 1},
-    {"EquityCliquetOptionData", 36, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityCliquetOptionData, &domain::_cliquetOptionData_Info, 1, 1},
-    {"BondData", 37, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondData, &domain::_bondData_Info, 1, 1},
-    {"ForwardBondData", 38, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardBondData, &domain::_forwardBondData_Info, 1, 1},
-    {"BondFutureData", 39, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondFutureData, &domain::_bondFutureData_Info, 1, 1},
-    {"CreditDefaultSwapData", 40, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapData, &domain::_creditDefaultSwapData_Info, 1, 1},
-    {"CreditDefaultSwapOptionData", 41, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapOptionData, &domain::_creditDefaultSwapOptionData_Info, 1, 1},
-    {"CommodityForwardData", 42, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityForwardData, &domain::_commodityForwardData_Info, 1, 1},
-    {"CommodityOptionData", 43, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionData, &domain::_commodityOptionData_Info, 1, 1},
-    {"CommodityDigitalAveragePriceOptionData", 44, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalAveragePriceOptionData, &domain::_commodityDigitalAveragePriceOptionData_Info, 1, 1},
-    {"CommodityDigitalOptionData", 45, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalOptionData, &domain::_commodityDigitalOptionData_Info, 1, 1},
-    {"CommoditySpreadOptionData", 46, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySpreadOptionData, &domain::_commoditySpreadOptionData_Info, 1, 1},
-    {"CommoditySwapData", 47, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwapData, &domain::_commoditySwapData_Info, 1, 1},
-    {"CommoditySwaptionData", 48, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwaptionData, &domain::_commoditySwaptionData_Info, 1, 1},
-    {"CommodityAveragePriceOptionData", 49, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAveragePriceOptionData, &domain::_commodityAveragePriceOptionData_Info, 1, 1},
-    {"CommodityOptionStripData", 50, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionStripData, &domain::_commodityOptionStripData_Info, 1, 1},
-    {"CommodityPositionData", 51, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityPositionData, &domain::_commodityPositionData_Info, 1, 1},
-    {"EquityAsianOptionData", 52, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"FxAsianOptionData", 53, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"CommodityAsianOptionData", 54, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"BondOptionData", 55, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondOptionData, &domain::_bondOptionData_Info, 1, 1},
-    {"BondRepoData", 56, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondRepoData, &domain::_bondRepoData_Info, 1, 1},
-    {"BondTRSData", 57, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondTRSData, &domain::_bondTRSData_Info, 1, 1},
-    {"CdoData", 58, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CdoData, &domain::_cdoData_Info, 1, 1},
-    {"CreditLinkedSwapData", 59, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CreditLinkedSwapData, &domain::_creditLinkedSwapData_Info, 1, 1},
-    {"IndexCreditDefaultSwapData", 60, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapData, &domain::_indexCreditDefaultSwapData_Info, 1, 1},
-    {"IndexCreditDefaultSwapOptionData", 61, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapOptionData, &domain::_indexCreditDefaultSwapOptionData_Info, 1, 1},
-    {"MultiLegOptionData", 62, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MultiLegOptionData, &domain::_multiLegOptionData_Info, 1, 1},
-    {"AscotData", 63, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AscotData, &domain::_ascotData_Info, 1, 1},
-    {"ConvertibleBondData", 64, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConvertibleBondData, &domain::_convertibleBondData_Info, 1, 1},
-    {"CallableBondData", 65, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CallableBondData, &domain::_callableBondData_Info, 1, 1},
-    {"TreasuryLockData", 66, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_TreasuryLockData, &domain::_tlockData_Info, 1, 1},
-    {"RiskParticipationAgreementData", 67, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_RiskParticipationAgreementData, &domain::_rpaData_Info, 1, 1},
-    {"CBOData", 68, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CBOData, &domain::_cbodata_Info, 1, 1},
-    {"BondBasketData", 69, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondBasketData, &domain::_bondBasketData_Info, 1, 1},
-    {"EquityPositionData", 70, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityPositionData, &domain::_equityPositionData_Info, 1, 1},
-    {"EquityOptionPositionData", 71, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionPositionData, &domain::_equityOptionPositionData_Info, 1, 1},
-    {"TotalReturnSwapData", 72, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_TotalReturnSwapData, &domain::_totalReturnSwapData_Info, 1, 1},
-    {"ContractForDifferenceData", 73, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ContractForDifferenceData, &domain::_totalReturnSwapData_Info, 1, 1},
-    {"CompositeTradeData", 74, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CompositeTradeData, &domain::_compositeTradeData_Info, 1, 1},
-    {"PairwiseVarianceSwapData", 75, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData1_Info, 1, 1},
-    {"EquityPairwiseVarianceSwapData", 76, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 1, 1},
-    {"FxPairwiseVarianceSwapData", 77, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 1, 1},
-    {"EquityOutperformanceOptionData", 78, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityOutperformanceOptionData, &domain::_eqOutperformanceOptionData_Info, 1, 1},
-    {"FlexiSwapData", 79, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FlexiSwapData, &domain::_flexiSwapData_Info, 1, 1},
-    {"BalanceGuaranteedSwapData", 80, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BalanceGuaranteedSwapData, &domain::_bgSwapData_Info, 1, 1},
-    {"CommodityRevenueOptionData", 81, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRevenueOptionData, &domain::_commodityRevenueOptionData_Info, 1, 1},
-    {"BasketVarianceSwapData", 82, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BasketVarianceSwapData, &domain::_basketVarianceSwapData_Info, 1, 1},
-    {"EquityBasketVarianceSwapData", 83, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"FxBasketVarianceSwapData", 84, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"CommodityBasketVarianceSwapData", 85, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"ExtendedAccumulatorData", 86, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ExtendedAccumulatorData, &domain::_extendedAccumulatorData_Info, 1, 1},
-    {"VarianceOptionData", 87, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VarianceOptionData, &domain::_varianceOptionData_Info, 1, 1},
-    {"VarianceDispersionSwapData", 88, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VarianceDispersionSwapData, &domain::_varianceDispersionSwapData_Info, 1, 1},
-    {"KIKOVarianceSwapData", 89, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KIKOVarianceSwapData, &domain::_kikoVarianceSwapData_Info, 1, 1},
-    {"CorridorVarianceSwapData", 90, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceSwapData, &domain::_corridorVarianceSwapData_Info, 1, 1},
-    {"IndexedCorridorVarianceSwapData", 91, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IndexedCorridorVarianceSwapData, &domain::_indexedCorridorVarianceSwapData_Info, 1, 1},
-    {"KIKOCorridorVarianceSwapData", 92, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KIKOCorridorVarianceSwapData, &domain::_kikoCorridorVarianceSwapData_Info, 1, 1},
-    {"CorridorVarianceDispersionSwapData", 93, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceDispersionSwapData, &domain::_corridorVarianceDispersionSwapData_Info, 1, 1},
-    {"KOCorridorVarianceDispersionSwapData", 94, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KOCorridorVarianceDispersionSwapData, &domain::_koCorridorVarianceDispersionSwapData_Info, 1, 1},
-    {"PairwiseGeometricVarianceDispersionSwapData", 95, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseGeometricVarianceDispersionSwapData, &domain::_pairwiseGeometricVarianceDispersionSwapData_Info, 1, 1},
-    {"ConditionalVarianceSwap01Data", 96, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap01Data, &domain::_conditionalVarianceSwap01Data_Info, 1, 1},
-    {"ConditionalVarianceSwap02Data", 97, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap02Data, &domain::_conditionalVarianceSwap02Data_Info, 1, 1},
-    {"GammaSwapData", 98, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_GammaSwapData, &domain::_gammaSwapData_Info, 1, 1},
-    {"BestEntryOptionData", 99, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BestEntryOptionData, &domain::_bestEntryOptionData_Info, 1, 1},
-    {"DualEuroBinaryOptionData", 100, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionData, &domain::_dualEuroBinaryOptionData_Info, 1, 1},
-    {"DualEuroBinaryOptionDoubleKOData", 101, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionDoubleKOData, &domain::_dualEuroBinaryOptionDoubleKOData_Info, 1, 1},
-    {"VolatilityBarrierOptionData", 102, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VolatilityBarrierOptionData, &domain::_volBarrierOptionData_Info, 1, 1},
-    {"FxTaRFData", 103, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"EquityTaRFData", 104, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"CommodityTaRFData", 105, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"FxAccumulatorData", 106, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"EquityAccumulatorData", 107, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"CommodityAccumulatorData", 108, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"FxWindowBarrierOptionData", 109, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"EquityWindowBarrierOptionData", 110, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"CommodityWindowBarierOptionData", 111, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWindowBarierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"EquityBasketOptionData", 112, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"FxBasketOptionData", 113, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"CommodityBasketOptionData", 114, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"FxGenericBarrierOptionData", 115, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"EquityGenericBarrierOptionData", 116, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"CommodityGenericBarrierOptionData", 117, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"EquityRainbowOptionData", 118, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"FxRainbowOptionData", 119, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"CommodityRainbowOptionData", 120, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"Autocallable01Data", 121, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_Autocallable01Data, &domain::_autocallable01Data_Info, 1, 1},
-    {"DoubleDigitalOptionData", 122, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_DoubleDigitalOptionData, &domain::_doubleDigitalOptionData_Info, 1, 1},
-    {"PerformanceOption01Data", 123, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_PerformanceOption01Data, &domain::_performanceOption01Data_Info, 1, 1},
-    {"ScriptedTradeData", 124, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ScriptedTradeData, &domain::_scriptedTradeData_Info, 1, 1},
-    {"VanillaBasketOptionData", 125, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VanillaBasketOptionData, &domain::_vanillaBasketOptionData_Info, 1, 1},
-    {"AsianBasketOptionData", 126, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AsianBasketOptionData, &domain::_asianBasketOptionData_Info, 1, 1},
-    {"AverageStrikeBasketOptionData", 127, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AverageStrikeBasketOptionData, &domain::_averageStrikeBasketOptionData_Info, 1, 1},
-    {"LookbackCallBasketOptionData", 128, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LookbackCallBasketOptionData, &domain::_lookbackCallBasketOptionData_Info, 1, 1},
-    {"LookbackPutBasketOptionData", 129, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LookbackPutBasketOptionData, &domain::_lookbackPutBasketOptionData_Info, 1, 1},
-    {"BestOfAirbagData", 130, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAirbagData, &domain::_bestOfAirbagData_Info, 1, 1},
-    {"WorstOfBasketSwapData", 131, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfBasketSwapData, &domain::_worstOfBasketSwapData_Info, 1, 1},
-    {"FxWorstOfBasketSwapData", 132, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"EquityWorstOfBasketSwapData", 133, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"CommodityWorstOfBasketSwapData", 134, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"WorstPerformanceRainbowOption01Data", 135, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption01Data, &domain::_worstPerformanceRainbowOption01Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption02Data", 136, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption02Data, &domain::_worstPerformanceRainbowOption02Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption03Data", 137, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption03Data, &domain::_worstPerformanceRainbowOption03Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption04Data", 138, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption04Data, &domain::_worstPerformanceRainbowOption04Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption05Data", 139, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption05Data, &domain::_worstPerformanceRainbowOption05Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption06Data", 140, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption06Data, &domain::_worstPerformanceRainbowOption06Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption07Data", 141, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption07Data, &domain::_worstPerformanceRainbowOption07Data_Info, 1, 1},
-    {"BestOfAssetOrCashRainbowOptionData", 142, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAssetOrCashRainbowOptionData, &domain::_bestOfAssetOrCashRainbowOptionData_Info, 1, 1},
-    {"WorstOfAssetOrCashRainbowOptionData", 143, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfAssetOrCashRainbowOptionData, &domain::_worstOfAssetOrCashRainbowOptionData_Info, 1, 1},
-    {"MinRainbowOptionData", 144, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MinRainbowOptionData, &domain::_minRainbowOptionData_Info, 1, 1},
-    {"MaxRainbowOptionData", 145, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MaxRainbowOptionData, &domain::_maxRainbowOptionData_Info, 1, 1},
-    {"WindowBarrierOptionData", 146, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WindowBarrierOptionData, &domain::_windowBarrierOptionData_Info, 1, 1},
-    {"Accumulator01Data", 147, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator01Data, &domain::_accumulator01Data_Info, 1, 1},
-    {"Accumulator02Data", 148, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator02Data, &domain::_accumulator02Data_Info, 1, 1},
-    {"EquityBestEntryOptionData", 149, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"FxBestEntryOptionData", 150, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"CommodityBestEntryOptionData", 151, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"TaRFData", 152, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_TaRFData, &domain::_tarfData_Info, 1, 1},
-    {"EuropeanRainbowCallSpreadOptionData", 153, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanRainbowCallSpreadOptionData, &domain::_europeanRainbowCallSpreadOptionData_Info, 1, 1},
-    {"RainbowCallSpreadBarrierOptionData", 154, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_RainbowCallSpreadBarrierOptionData, &domain::_rainbowCallSpreadBarrierOptionData_Info, 1, 1},
-    {"AsianRainbowCallSpreadOptionData", 155, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AsianRainbowCallSpreadOptionData, &domain::_asianRainbowCallSpreadOptionData_Info, 1, 1},
-    {"AsianIrCapFloorData", 156, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AsianIrCapFloorData, &domain::_asianIrCapFloorData_Info, 1, 1},
-    {"ForwardVolatilityAgreementData", 157, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardVolatilityAgreementData, &domain::_forwardVolatilityAgreementData_Info, 1, 1},
-    {"CorrelationSwapData", 158, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CorrelationSwapData, &domain::_correlationSwapData_Info, 1, 1},
-    {"AssetLinkedCliquetOptionData", 159, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AssetLinkedCliquetOptionData, &domain::_assetLinkedCliquetOptionData_Info, 1, 1},
-    {"ConstantMaturityVolatilitySwapData", 160, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConstantMaturityVolatilitySwapData, &domain::_constantMaturityVolatilitySwapData_Info, 1, 1},
-    {"CMSCapFloorBarrierData", 161, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CMSCapFloorBarrierData, &domain::_cmsCapFloorBarrierData_Info, 1, 1},
-    {"FixedStrikeForwardStartingOptionData", 162, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FixedStrikeForwardStartingOptionData, &domain::_fixedStrikeForwardStartingOptionData_Info, 1, 1},
-    {"FloatingStrikeForwardStartingOptionData", 163, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FloatingStrikeForwardStartingOptionData, &domain::_floatingStrikeForwardStartingOptionData_Info, 1, 1},
-    {"ForwardStartingSwaptionData", 164, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardStartingSwaptionData, &domain::_forwardStartingSwaptionData_Info, 1, 1},
-    {"FlooredAverageCPIZCIISData", 165, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FlooredAverageCPIZCIISData, &domain::_flooredAverageCPIZCIISData_Info, 1, 1},
-    {"GenericBarrierOptionData", 166, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_GenericBarrierOptionData, &domain::_genericBarrierOptionDataRaw_Info, 1, 1},
-    {"MovingMaxYYIISData", 167, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MovingMaxYYIISData, &domain::_movingMaxYYIISData_Info, 1, 1},
-    {"IrregularYYIISData", 168, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IrregularYYIISData, &domain::_irregularYYIISData_Info, 1, 1},
-    {"EuropeanOptionBarrierData", 169, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanOptionBarrierData, &domain::_europeanOptionBarrierData_Info, 1, 1},
-    {"LadderLockInOptionData", 170, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LadderLockInOptionData, &domain::_ladderLockInOptionData_Info, 1, 1},
-    {"LapseHedgeSwapData", 171, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LapseHedgeSwapData, &domain::_lapseHedgeSwapData_Info, 1, 1},
-    {"KnockOutSwapData", 172, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KnockOutSwapData, &domain::_knockOutSwapData_Info, 1, 1},
-    {"LPISwapData", 173, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LPISwapData, &domain::_LPISwapData_Info, 1, 1},
-    {"CashPositionData", 174, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CashPositionData, &domain::_cashPositionData_Info, 1, 1},
-    {"StrikeResettableOptionData", 175, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_StrikeResettableOptionData, &domain::_strikeResettableOptionData_Info, 1, 1},
-    {"EquityStrikeResettableOptionData", 176, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
-    {"FxStrikeResettableOptionData", 177, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
-    {"CommodityStrikeResettableOptionData", 178, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
+    {"CrossCurrencySwapData", 2, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CrossCurrencySwapData, &domain::_swapData_Info, 0, 1},
+    {"InflationSwapData", 3, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_InflationSwapData, &domain::_swapData_Info, 0, 1},
+    {"SwapData", 4, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_SwapData, &domain::_swapData_Info, 0, 1},
+    {"EquitySwapData", 5, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquitySwapData, &domain::_swapData_Info, 0, 1},
+    {"CallableSwapData", 6, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CallableSwapData, &domain::_callableSwapData_Info, 0, 1},
+    {"ArcOptionData", 7, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ArcOptionData, &domain::_arcOptionData_Info, 0, 1},
+    {"SwaptionData", 8, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_SwaptionData, &domain::_swaptionData_Info, 0, 1},
+    {"VarianceSwapData", 9, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"EquityVarianceSwapData", 10, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"FxVarianceSwapData", 11, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"CommodityVarianceSwapData", 12, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"ForwardRateAgreementData", 13, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardRateAgreementData, &domain::_forwardRateAgreementData_Info, 0, 1},
+    {"FxForwardData", 14, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxForwardData, &domain::_fxForwardData_Info, 0, 1},
+    {"FxAverageForwardData", 15, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxAverageForwardData, &domain::_fxAverageForwardData_Info, 0, 1},
+    {"FxOptionData", 16, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxOptionData, &domain::_fxOptionData_Info, 0, 1},
+    {"FxBarrierOptionData", 17, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxDoubleBarrierOptionData", 18, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxDigitalOptionData", 19, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalOptionData, &domain::_fxDigitalOptionData_Info, 0, 1},
+    {"FxEuropeanBarrierOptionData", 20, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxEuropeanBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxKIKOBarrierOptionData", 21, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxKIKOBarrierOptionData, &domain::_fxKIKOBarrierOptionData_Info, 0, 1},
+    {"FxDigitalBarrierOptionData", 22, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDigitalBarrierOptionData, &domain::_fxDigitalBarrierOptionData_Info, 0, 1},
+    {"FxTouchOptionData", 23, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxTouchOptionData, &domain::_fxTouchOptionData_Info, 0, 1},
+    {"FxDoubleTouchOptionData", 24, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxDoubleTouchOptionData, &domain::_fxTouchOptionData_Info, 0, 1},
+    {"FxSwapData", 25, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxSwapData, &domain::_fxSwapData_Info, 0, 1},
+    {"CapFloorData", 26, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CapFloorData, &domain::_capFloorData_Info, 0, 1},
+    {"EquityFutureOptionData", 27, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityFutureOptionData, &domain::_equityFutureOptionData_Info, 0, 1},
+    {"EquityOptionData", 28, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionData, &domain::_equityOptionData_Info, 0, 1},
+    {"EquityBarrierOptionData", 29, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityDoubleBarrierOptionData", 30, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityForwardData", 31, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityForwardData, &domain::_equityForwardData_Info, 0, 1},
+    {"EquityEuropeanBarrierOptionData", 32, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityEuropeanBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityDigitalOptionData", 33, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityDigitalOptionData, &domain::_eqDigitalOptionData_Info, 0, 1},
+    {"EquityDoubleTouchOptionData", 34, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityDoubleTouchOptionData, &domain::_eqTouchOptionData_Info, 0, 1},
+    {"EquityTouchOptionData", 35, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityTouchOptionData, &domain::_eqTouchOptionData_Info, 0, 1},
+    {"EquityCliquetOptionData", 36, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityCliquetOptionData, &domain::_cliquetOptionData_Info, 0, 1},
+    {"BondData", 37, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondData, &domain::_bondData_Info, 0, 1},
+    {"ForwardBondData", 38, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardBondData, &domain::_forwardBondData_Info, 0, 1},
+    {"BondFutureData", 39, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondFutureData, &domain::_bondFutureData_Info, 0, 1},
+    {"CreditDefaultSwapData", 40, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapData, &domain::_creditDefaultSwapData_Info, 0, 1},
+    {"CreditDefaultSwapOptionData", 41, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CreditDefaultSwapOptionData, &domain::_creditDefaultSwapOptionData_Info, 0, 1},
+    {"CommodityForwardData", 42, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityForwardData, &domain::_commodityForwardData_Info, 0, 1},
+    {"CommodityOptionData", 43, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionData, &domain::_commodityOptionData_Info, 0, 1},
+    {"CommodityDigitalAveragePriceOptionData", 44, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalAveragePriceOptionData, &domain::_commodityDigitalAveragePriceOptionData_Info, 0, 1},
+    {"CommodityDigitalOptionData", 45, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityDigitalOptionData, &domain::_commodityDigitalOptionData_Info, 0, 1},
+    {"CommoditySpreadOptionData", 46, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySpreadOptionData, &domain::_commoditySpreadOptionData_Info, 0, 1},
+    {"CommoditySwapData", 47, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwapData, &domain::_commoditySwapData_Info, 0, 1},
+    {"CommoditySwaptionData", 48, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommoditySwaptionData, &domain::_commoditySwaptionData_Info, 0, 1},
+    {"CommodityAveragePriceOptionData", 49, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAveragePriceOptionData, &domain::_commodityAveragePriceOptionData_Info, 0, 1},
+    {"CommodityOptionStripData", 50, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityOptionStripData, &domain::_commodityOptionStripData_Info, 0, 1},
+    {"CommodityPositionData", 51, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityPositionData, &domain::_commodityPositionData_Info, 0, 1},
+    {"EquityAsianOptionData", 52, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"FxAsianOptionData", 53, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"CommodityAsianOptionData", 54, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"BondOptionData", 55, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondOptionData, &domain::_bondOptionData_Info, 0, 1},
+    {"BondRepoData", 56, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondRepoData, &domain::_bondRepoData_Info, 0, 1},
+    {"BondTRSData", 57, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondTRSData, &domain::_bondTRSData_Info, 0, 1},
+    {"CdoData", 58, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CdoData, &domain::_cdoData_Info, 0, 1},
+    {"CreditLinkedSwapData", 59, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CreditLinkedSwapData, &domain::_creditLinkedSwapData_Info, 0, 1},
+    {"IndexCreditDefaultSwapData", 60, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapData, &domain::_indexCreditDefaultSwapData_Info, 0, 1},
+    {"IndexCreditDefaultSwapOptionData", 61, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IndexCreditDefaultSwapOptionData, &domain::_indexCreditDefaultSwapOptionData_Info, 0, 1},
+    {"MultiLegOptionData", 62, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MultiLegOptionData, &domain::_multiLegOptionData_Info, 0, 1},
+    {"AscotData", 63, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AscotData, &domain::_ascotData_Info, 0, 1},
+    {"ConvertibleBondData", 64, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConvertibleBondData, &domain::_convertibleBondData_Info, 0, 1},
+    {"CallableBondData", 65, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CallableBondData, &domain::_callableBondData_Info, 0, 1},
+    {"TreasuryLockData", 66, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_TreasuryLockData, &domain::_tlockData_Info, 0, 1},
+    {"RiskParticipationAgreementData", 67, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_RiskParticipationAgreementData, &domain::_rpaData_Info, 0, 1},
+    {"CBOData", 68, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CBOData, &domain::_cbodata_Info, 0, 1},
+    {"BondBasketData", 69, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BondBasketData, &domain::_bondBasketData_Info, 0, 1},
+    {"EquityPositionData", 70, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityPositionData, &domain::_equityPositionData_Info, 0, 1},
+    {"EquityOptionPositionData", 71, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityOptionPositionData, &domain::_equityOptionPositionData_Info, 0, 1},
+    {"TotalReturnSwapData", 72, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_TotalReturnSwapData, &domain::_totalReturnSwapData_Info, 0, 1},
+    {"ContractForDifferenceData", 73, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ContractForDifferenceData, &domain::_totalReturnSwapData_Info, 0, 1},
+    {"CompositeTradeData", 74, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CompositeTradeData, &domain::_compositeTradeData_Info, 0, 1},
+    {"PairwiseVarianceSwapData", 75, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData1_Info, 0, 1},
+    {"EquityPairwiseVarianceSwapData", 76, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 0, 1},
+    {"FxPairwiseVarianceSwapData", 77, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 0, 1},
+    {"EquityOutperformanceOptionData", 78, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityOutperformanceOptionData, &domain::_eqOutperformanceOptionData_Info, 0, 1},
+    {"FlexiSwapData", 79, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FlexiSwapData, &domain::_flexiSwapData_Info, 0, 1},
+    {"BalanceGuaranteedSwapData", 80, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BalanceGuaranteedSwapData, &domain::_bgSwapData_Info, 0, 1},
+    {"CommodityRevenueOptionData", 81, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRevenueOptionData, &domain::_commodityRevenueOptionData_Info, 0, 1},
+    {"BasketVarianceSwapData", 82, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BasketVarianceSwapData, &domain::_basketVarianceSwapData_Info, 0, 1},
+    {"EquityBasketVarianceSwapData", 83, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"FxBasketVarianceSwapData", 84, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"CommodityBasketVarianceSwapData", 85, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"ExtendedAccumulatorData", 86, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ExtendedAccumulatorData, &domain::_extendedAccumulatorData_Info, 0, 1},
+    {"VarianceOptionData", 87, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VarianceOptionData, &domain::_varianceOptionData_Info, 0, 1},
+    {"VarianceDispersionSwapData", 88, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VarianceDispersionSwapData, &domain::_varianceDispersionSwapData_Info, 0, 1},
+    {"KIKOVarianceSwapData", 89, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KIKOVarianceSwapData, &domain::_kikoVarianceSwapData_Info, 0, 1},
+    {"CorridorVarianceSwapData", 90, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceSwapData, &domain::_corridorVarianceSwapData_Info, 0, 1},
+    {"IndexedCorridorVarianceSwapData", 91, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IndexedCorridorVarianceSwapData, &domain::_indexedCorridorVarianceSwapData_Info, 0, 1},
+    {"KIKOCorridorVarianceSwapData", 92, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KIKOCorridorVarianceSwapData, &domain::_kikoCorridorVarianceSwapData_Info, 0, 1},
+    {"CorridorVarianceDispersionSwapData", 93, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CorridorVarianceDispersionSwapData, &domain::_corridorVarianceDispersionSwapData_Info, 0, 1},
+    {"KOCorridorVarianceDispersionSwapData", 94, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KOCorridorVarianceDispersionSwapData, &domain::_koCorridorVarianceDispersionSwapData_Info, 0, 1},
+    {"PairwiseGeometricVarianceDispersionSwapData", 95, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_PairwiseGeometricVarianceDispersionSwapData, &domain::_pairwiseGeometricVarianceDispersionSwapData_Info, 0, 1},
+    {"ConditionalVarianceSwap01Data", 96, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap01Data, &domain::_conditionalVarianceSwap01Data_Info, 0, 1},
+    {"ConditionalVarianceSwap02Data", 97, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConditionalVarianceSwap02Data, &domain::_conditionalVarianceSwap02Data_Info, 0, 1},
+    {"GammaSwapData", 98, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_GammaSwapData, &domain::_gammaSwapData_Info, 0, 1},
+    {"BestEntryOptionData", 99, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BestEntryOptionData, &domain::_bestEntryOptionData_Info, 0, 1},
+    {"DualEuroBinaryOptionData", 100, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionData, &domain::_dualEuroBinaryOptionData_Info, 0, 1},
+    {"DualEuroBinaryOptionDoubleKOData", 101, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_DualEuroBinaryOptionDoubleKOData, &domain::_dualEuroBinaryOptionDoubleKOData_Info, 0, 1},
+    {"VolatilityBarrierOptionData", 102, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VolatilityBarrierOptionData, &domain::_volBarrierOptionData_Info, 0, 1},
+    {"FxTaRFData", 103, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"EquityTaRFData", 104, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"CommodityTaRFData", 105, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"FxAccumulatorData", 106, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"EquityAccumulatorData", 107, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"CommodityAccumulatorData", 108, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"FxWindowBarrierOptionData", 109, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"EquityWindowBarrierOptionData", 110, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"CommodityWindowBarierOptionData", 111, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWindowBarierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"EquityBasketOptionData", 112, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"FxBasketOptionData", 113, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"CommodityBasketOptionData", 114, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"FxGenericBarrierOptionData", 115, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"EquityGenericBarrierOptionData", 116, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"CommodityGenericBarrierOptionData", 117, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"EquityRainbowOptionData", 118, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"FxRainbowOptionData", 119, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"CommodityRainbowOptionData", 120, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"Autocallable01Data", 121, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_Autocallable01Data, &domain::_autocallable01Data_Info, 0, 1},
+    {"DoubleDigitalOptionData", 122, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_DoubleDigitalOptionData, &domain::_doubleDigitalOptionData_Info, 0, 1},
+    {"PerformanceOption01Data", 123, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_PerformanceOption01Data, &domain::_performanceOption01Data_Info, 0, 1},
+    {"ScriptedTradeData", 124, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ScriptedTradeData, &domain::_scriptedTradeData_Info, 0, 1},
+    {"VanillaBasketOptionData", 125, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_VanillaBasketOptionData, &domain::_vanillaBasketOptionData_Info, 0, 1},
+    {"AsianBasketOptionData", 126, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AsianBasketOptionData, &domain::_asianBasketOptionData_Info, 0, 1},
+    {"AverageStrikeBasketOptionData", 127, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AverageStrikeBasketOptionData, &domain::_averageStrikeBasketOptionData_Info, 0, 1},
+    {"LookbackCallBasketOptionData", 128, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LookbackCallBasketOptionData, &domain::_lookbackCallBasketOptionData_Info, 0, 1},
+    {"LookbackPutBasketOptionData", 129, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LookbackPutBasketOptionData, &domain::_lookbackPutBasketOptionData_Info, 0, 1},
+    {"BestOfAirbagData", 130, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAirbagData, &domain::_bestOfAirbagData_Info, 0, 1},
+    {"WorstOfBasketSwapData", 131, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfBasketSwapData, &domain::_worstOfBasketSwapData_Info, 0, 1},
+    {"FxWorstOfBasketSwapData", 132, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"EquityWorstOfBasketSwapData", 133, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"CommodityWorstOfBasketSwapData", 134, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"WorstPerformanceRainbowOption01Data", 135, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption01Data, &domain::_worstPerformanceRainbowOption01Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption02Data", 136, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption02Data, &domain::_worstPerformanceRainbowOption02Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption03Data", 137, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption03Data, &domain::_worstPerformanceRainbowOption03Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption04Data", 138, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption04Data, &domain::_worstPerformanceRainbowOption04Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption05Data", 139, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption05Data, &domain::_worstPerformanceRainbowOption05Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption06Data", 140, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption06Data, &domain::_worstPerformanceRainbowOption06Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption07Data", 141, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstPerformanceRainbowOption07Data, &domain::_worstPerformanceRainbowOption07Data_Info, 0, 1},
+    {"BestOfAssetOrCashRainbowOptionData", 142, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_BestOfAssetOrCashRainbowOptionData, &domain::_bestOfAssetOrCashRainbowOptionData_Info, 0, 1},
+    {"WorstOfAssetOrCashRainbowOptionData", 143, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WorstOfAssetOrCashRainbowOptionData, &domain::_worstOfAssetOrCashRainbowOptionData_Info, 0, 1},
+    {"MinRainbowOptionData", 144, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MinRainbowOptionData, &domain::_minRainbowOptionData_Info, 0, 1},
+    {"MaxRainbowOptionData", 145, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MaxRainbowOptionData, &domain::_maxRainbowOptionData_Info, 0, 1},
+    {"WindowBarrierOptionData", 146, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_WindowBarrierOptionData, &domain::_windowBarrierOptionData_Info, 0, 1},
+    {"Accumulator01Data", 147, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator01Data, &domain::_accumulator01Data_Info, 0, 1},
+    {"Accumulator02Data", 148, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_Accumulator02Data, &domain::_accumulator02Data_Info, 0, 1},
+    {"EquityBestEntryOptionData", 149, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"FxBestEntryOptionData", 150, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"CommodityBestEntryOptionData", 151, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"TaRFData", 152, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_TaRFData, &domain::_tarfData_Info, 0, 1},
+    {"EuropeanRainbowCallSpreadOptionData", 153, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanRainbowCallSpreadOptionData, &domain::_europeanRainbowCallSpreadOptionData_Info, 0, 1},
+    {"RainbowCallSpreadBarrierOptionData", 154, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_RainbowCallSpreadBarrierOptionData, &domain::_rainbowCallSpreadBarrierOptionData_Info, 0, 1},
+    {"AsianRainbowCallSpreadOptionData", 155, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AsianRainbowCallSpreadOptionData, &domain::_asianRainbowCallSpreadOptionData_Info, 0, 1},
+    {"AsianIrCapFloorData", 156, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AsianIrCapFloorData, &domain::_asianIrCapFloorData_Info, 0, 1},
+    {"ForwardVolatilityAgreementData", 157, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardVolatilityAgreementData, &domain::_forwardVolatilityAgreementData_Info, 0, 1},
+    {"CorrelationSwapData", 158, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CorrelationSwapData, &domain::_correlationSwapData_Info, 0, 1},
+    {"AssetLinkedCliquetOptionData", 159, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_AssetLinkedCliquetOptionData, &domain::_assetLinkedCliquetOptionData_Info, 0, 1},
+    {"ConstantMaturityVolatilitySwapData", 160, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ConstantMaturityVolatilitySwapData, &domain::_constantMaturityVolatilitySwapData_Info, 0, 1},
+    {"CMSCapFloorBarrierData", 161, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CMSCapFloorBarrierData, &domain::_cmsCapFloorBarrierData_Info, 0, 1},
+    {"FixedStrikeForwardStartingOptionData", 162, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FixedStrikeForwardStartingOptionData, &domain::_fixedStrikeForwardStartingOptionData_Info, 0, 1},
+    {"FloatingStrikeForwardStartingOptionData", 163, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FloatingStrikeForwardStartingOptionData, &domain::_floatingStrikeForwardStartingOptionData_Info, 0, 1},
+    {"ForwardStartingSwaptionData", 164, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_ForwardStartingSwaptionData, &domain::_forwardStartingSwaptionData_Info, 0, 1},
+    {"FlooredAverageCPIZCIISData", 165, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FlooredAverageCPIZCIISData, &domain::_flooredAverageCPIZCIISData_Info, 0, 1},
+    {"GenericBarrierOptionData", 166, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_GenericBarrierOptionData, &domain::_genericBarrierOptionDataRaw_Info, 0, 1},
+    {"MovingMaxYYIISData", 167, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_MovingMaxYYIISData, &domain::_movingMaxYYIISData_Info, 0, 1},
+    {"IrregularYYIISData", 168, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_IrregularYYIISData, &domain::_irregularYYIISData_Info, 0, 1},
+    {"EuropeanOptionBarrierData", 169, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EuropeanOptionBarrierData, &domain::_europeanOptionBarrierData_Info, 0, 1},
+    {"LadderLockInOptionData", 170, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LadderLockInOptionData, &domain::_ladderLockInOptionData_Info, 0, 1},
+    {"LapseHedgeSwapData", 171, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LapseHedgeSwapData, &domain::_lapseHedgeSwapData_Info, 0, 1},
+    {"KnockOutSwapData", 172, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_KnockOutSwapData, &domain::_knockOutSwapData_Info, 0, 1},
+    {"LPISwapData", 173, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_LPISwapData, &domain::_LPISwapData_Info, 0, 1},
+    {"CashPositionData", 174, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CashPositionData, &domain::_cashPositionData_Info, 0, 1},
+    {"StrikeResettableOptionData", 175, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_StrikeResettableOptionData, &domain::_strikeResettableOptionData_Info, 0, 1},
+    {"EquityStrikeResettableOptionData", 176, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_EquityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
+    {"FxStrikeResettableOptionData", 177, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_FxStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
+    {"CommodityStrikeResettableOptionData", 178, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Derivative_t_Trade_t_CommodityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
     {nullptr}
 };
 void* _get_trsUnderlyingData_Derivative_t_Trade_t_id(domain::trsUnderlyingData_Derivative_t_Trade_t* elem) { return &*(elem->id = xsd::string()); }
@@ -12938,363 +12988,363 @@ xsdcpp::ChildElementInfo _trsUnderlyingData_Derivative_t_Children[] = {
 };
 void* _get_trsUnderlyingData_Trade_t_TradeType(domain::trsUnderlyingData_Trade_t* parent) {return &parent->TradeType;}
 void* _get_trsUnderlyingData_Trade_t_Envelope(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->Envelope = domain::envelope());}
-void* _get_trsUnderlyingData_Trade_t_CrossCurrencySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CrossCurrencySwapData;}
-void* _get_trsUnderlyingData_Trade_t_InflationSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->InflationSwapData;}
-void* _get_trsUnderlyingData_Trade_t_SwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->SwapData;}
-void* _get_trsUnderlyingData_Trade_t_EquitySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquitySwapData;}
-void* _get_trsUnderlyingData_Trade_t_CallableSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CallableSwapData;}
-void* _get_trsUnderlyingData_Trade_t_ArcOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ArcOptionData;}
-void* _get_trsUnderlyingData_Trade_t_SwaptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->SwaptionData;}
-void* _get_trsUnderlyingData_Trade_t_VarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->VarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_EquityVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_FxVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_ForwardRateAgreementData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ForwardRateAgreementData;}
-void* _get_trsUnderlyingData_Trade_t_FxForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxForwardData;}
-void* _get_trsUnderlyingData_Trade_t_FxAverageForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxAverageForwardData;}
-void* _get_trsUnderlyingData_Trade_t_FxOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxDoubleBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxDoubleBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxDigitalOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxEuropeanBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxEuropeanBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxKIKOBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxKIKOBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxDigitalBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxDigitalBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxTouchOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxDoubleTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxDoubleTouchOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CapFloorData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CapFloorData;}
-void* _get_trsUnderlyingData_Trade_t_EquityFutureOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityFutureOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityDoubleBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityDoubleBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityForwardData;}
-void* _get_trsUnderlyingData_Trade_t_EquityEuropeanBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityEuropeanBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityDigitalOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityDoubleTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityDoubleTouchOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityTouchOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityCliquetOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityCliquetOptionData;}
-void* _get_trsUnderlyingData_Trade_t_BondData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BondData;}
-void* _get_trsUnderlyingData_Trade_t_ForwardBondData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ForwardBondData;}
-void* _get_trsUnderlyingData_Trade_t_BondFutureData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BondFutureData;}
-void* _get_trsUnderlyingData_Trade_t_CreditDefaultSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CreditDefaultSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CreditDefaultSwapOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CreditDefaultSwapOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityForwardData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityDigitalAveragePriceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityDigitalAveragePriceOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityDigitalOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommoditySpreadOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommoditySpreadOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommoditySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommoditySwapData;}
-void* _get_trsUnderlyingData_Trade_t_CommoditySwaptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommoditySwaptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityAveragePriceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityAveragePriceOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityOptionStripData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityOptionStripData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityPositionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityAsianOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityAsianOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxAsianOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxAsianOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityAsianOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityAsianOptionData;}
-void* _get_trsUnderlyingData_Trade_t_BondOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BondOptionData;}
-void* _get_trsUnderlyingData_Trade_t_BondRepoData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BondRepoData;}
-void* _get_trsUnderlyingData_Trade_t_BondTRSData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BondTRSData;}
-void* _get_trsUnderlyingData_Trade_t_CdoData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CdoData;}
-void* _get_trsUnderlyingData_Trade_t_CreditLinkedSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CreditLinkedSwapData;}
-void* _get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->IndexCreditDefaultSwapData;}
-void* _get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->IndexCreditDefaultSwapOptionData;}
-void* _get_trsUnderlyingData_Trade_t_MultiLegOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->MultiLegOptionData;}
-void* _get_trsUnderlyingData_Trade_t_AscotData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->AscotData;}
-void* _get_trsUnderlyingData_Trade_t_ConvertibleBondData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ConvertibleBondData;}
-void* _get_trsUnderlyingData_Trade_t_CallableBondData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CallableBondData;}
-void* _get_trsUnderlyingData_Trade_t_TreasuryLockData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->TreasuryLockData;}
-void* _get_trsUnderlyingData_Trade_t_RiskParticipationAgreementData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->RiskParticipationAgreementData;}
-void* _get_trsUnderlyingData_Trade_t_CBOData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CBOData;}
-void* _get_trsUnderlyingData_Trade_t_BondBasketData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BondBasketData;}
-void* _get_trsUnderlyingData_Trade_t_EquityPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityPositionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityOptionPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityOptionPositionData;}
-void* _get_trsUnderlyingData_Trade_t_TotalReturnSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->TotalReturnSwapData;}
-void* _get_trsUnderlyingData_Trade_t_ContractForDifferenceData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ContractForDifferenceData;}
-void* _get_trsUnderlyingData_Trade_t_CompositeTradeData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CompositeTradeData;}
-void* _get_trsUnderlyingData_Trade_t_PairwiseVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->PairwiseVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_EquityPairwiseVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityPairwiseVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_FxPairwiseVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxPairwiseVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_EquityOutperformanceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityOutperformanceOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FlexiSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FlexiSwapData;}
-void* _get_trsUnderlyingData_Trade_t_BalanceGuaranteedSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BalanceGuaranteedSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityRevenueOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityRevenueOptionData;}
-void* _get_trsUnderlyingData_Trade_t_BasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_EquityBasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityBasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_FxBasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxBasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityBasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityBasketVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_ExtendedAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ExtendedAccumulatorData;}
-void* _get_trsUnderlyingData_Trade_t_VarianceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->VarianceOptionData;}
-void* _get_trsUnderlyingData_Trade_t_VarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->VarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Trade_t_KIKOVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->KIKOVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CorridorVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CorridorVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_IndexedCorridorVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->IndexedCorridorVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_KIKOCorridorVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->KIKOCorridorVarianceSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CorridorVarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Trade_t_KOCorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->KOCorridorVarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Trade_t_PairwiseGeometricVarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->PairwiseGeometricVarianceDispersionSwapData;}
-void* _get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap01Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ConditionalVarianceSwap01Data;}
-void* _get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap02Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ConditionalVarianceSwap02Data;}
-void* _get_trsUnderlyingData_Trade_t_GammaSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->GammaSwapData;}
-void* _get_trsUnderlyingData_Trade_t_BestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BestEntryOptionData;}
-void* _get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->DualEuroBinaryOptionData;}
-void* _get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionDoubleKOData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->DualEuroBinaryOptionDoubleKOData;}
-void* _get_trsUnderlyingData_Trade_t_VolatilityBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->VolatilityBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxTaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxTaRFData;}
-void* _get_trsUnderlyingData_Trade_t_EquityTaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityTaRFData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityTaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityTaRFData;}
-void* _get_trsUnderlyingData_Trade_t_FxAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxAccumulatorData;}
-void* _get_trsUnderlyingData_Trade_t_EquityAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityAccumulatorData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityAccumulatorData;}
-void* _get_trsUnderlyingData_Trade_t_FxWindowBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxWindowBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityWindowBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityWindowBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityWindowBarierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityWindowBarierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxGenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxGenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityGenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityGenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityGenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityGenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityRainbowOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxRainbowOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityRainbowOptionData;}
-void* _get_trsUnderlyingData_Trade_t_Autocallable01Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->Autocallable01Data;}
-void* _get_trsUnderlyingData_Trade_t_DoubleDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->DoubleDigitalOptionData;}
-void* _get_trsUnderlyingData_Trade_t_PerformanceOption01Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->PerformanceOption01Data;}
-void* _get_trsUnderlyingData_Trade_t_ScriptedTradeData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ScriptedTradeData;}
-void* _get_trsUnderlyingData_Trade_t_VanillaBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->VanillaBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_AsianBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->AsianBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_AverageStrikeBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->AverageStrikeBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_LookbackCallBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->LookbackCallBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_LookbackPutBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->LookbackPutBasketOptionData;}
-void* _get_trsUnderlyingData_Trade_t_BestOfAirbagData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BestOfAirbagData;}
-void* _get_trsUnderlyingData_Trade_t_WorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Trade_t_FxWorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxWorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Trade_t_EquityWorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityWorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityWorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityWorstOfBasketSwapData;}
-void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption01Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption01Data;}
-void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption02Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption02Data;}
-void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption03Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption03Data;}
-void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption04Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption04Data;}
-void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption05Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption05Data;}
-void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption06Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption06Data;}
-void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption07Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption07Data;}
-void* _get_trsUnderlyingData_Trade_t_BestOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->BestOfAssetOrCashRainbowOptionData;}
-void* _get_trsUnderlyingData_Trade_t_WorstOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WorstOfAssetOrCashRainbowOptionData;}
-void* _get_trsUnderlyingData_Trade_t_MinRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->MinRainbowOptionData;}
-void* _get_trsUnderlyingData_Trade_t_MaxRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->MaxRainbowOptionData;}
-void* _get_trsUnderlyingData_Trade_t_WindowBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->WindowBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_Accumulator01Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->Accumulator01Data;}
-void* _get_trsUnderlyingData_Trade_t_Accumulator02Data(domain::trsUnderlyingData_Trade_t* parent) {return &parent->Accumulator02Data;}
-void* _get_trsUnderlyingData_Trade_t_EquityBestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityBestEntryOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxBestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxBestEntryOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityBestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityBestEntryOptionData;}
-void* _get_trsUnderlyingData_Trade_t_TaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->TaRFData;}
-void* _get_trsUnderlyingData_Trade_t_EuropeanRainbowCallSpreadOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EuropeanRainbowCallSpreadOptionData;}
-void* _get_trsUnderlyingData_Trade_t_RainbowCallSpreadBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->RainbowCallSpreadBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_AsianRainbowCallSpreadOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->AsianRainbowCallSpreadOptionData;}
-void* _get_trsUnderlyingData_Trade_t_AsianIrCapFloorData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->AsianIrCapFloorData;}
-void* _get_trsUnderlyingData_Trade_t_ForwardVolatilityAgreementData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ForwardVolatilityAgreementData;}
-void* _get_trsUnderlyingData_Trade_t_CorrelationSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CorrelationSwapData;}
-void* _get_trsUnderlyingData_Trade_t_AssetLinkedCliquetOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->AssetLinkedCliquetOptionData;}
-void* _get_trsUnderlyingData_Trade_t_ConstantMaturityVolatilitySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ConstantMaturityVolatilitySwapData;}
-void* _get_trsUnderlyingData_Trade_t_CMSCapFloorBarrierData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CMSCapFloorBarrierData;}
-void* _get_trsUnderlyingData_Trade_t_FixedStrikeForwardStartingOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FixedStrikeForwardStartingOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FloatingStrikeForwardStartingOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FloatingStrikeForwardStartingOptionData;}
-void* _get_trsUnderlyingData_Trade_t_ForwardStartingSwaptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->ForwardStartingSwaptionData;}
-void* _get_trsUnderlyingData_Trade_t_FlooredAverageCPIZCIISData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FlooredAverageCPIZCIISData;}
-void* _get_trsUnderlyingData_Trade_t_GenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->GenericBarrierOptionData;}
-void* _get_trsUnderlyingData_Trade_t_MovingMaxYYIISData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->MovingMaxYYIISData;}
-void* _get_trsUnderlyingData_Trade_t_IrregularYYIISData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->IrregularYYIISData;}
-void* _get_trsUnderlyingData_Trade_t_EuropeanOptionBarrierData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EuropeanOptionBarrierData;}
-void* _get_trsUnderlyingData_Trade_t_LadderLockInOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->LadderLockInOptionData;}
-void* _get_trsUnderlyingData_Trade_t_LapseHedgeSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->LapseHedgeSwapData;}
-void* _get_trsUnderlyingData_Trade_t_KnockOutSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->KnockOutSwapData;}
-void* _get_trsUnderlyingData_Trade_t_LPISwapData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->LPISwapData;}
-void* _get_trsUnderlyingData_Trade_t_CashPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CashPositionData;}
-void* _get_trsUnderlyingData_Trade_t_StrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->StrikeResettableOptionData;}
-void* _get_trsUnderlyingData_Trade_t_EquityStrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->EquityStrikeResettableOptionData;}
-void* _get_trsUnderlyingData_Trade_t_FxStrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->FxStrikeResettableOptionData;}
-void* _get_trsUnderlyingData_Trade_t_CommodityStrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &parent->CommodityStrikeResettableOptionData;}
+void* _get_trsUnderlyingData_Trade_t_CrossCurrencySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CrossCurrencySwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Trade_t_InflationSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->InflationSwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Trade_t_SwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->SwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Trade_t_EquitySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquitySwapData = domain::swapData());}
+void* _get_trsUnderlyingData_Trade_t_CallableSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CallableSwapData = domain::callableSwapData());}
+void* _get_trsUnderlyingData_Trade_t_ArcOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ArcOptionData = domain::arcOptionData());}
+void* _get_trsUnderlyingData_Trade_t_SwaptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->SwaptionData = domain::swaptionData());}
+void* _get_trsUnderlyingData_Trade_t_VarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->VarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_EquityVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityVarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_FxVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxVarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityVarianceSwapData = domain::varianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_ForwardRateAgreementData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ForwardRateAgreementData = domain::forwardRateAgreementData());}
+void* _get_trsUnderlyingData_Trade_t_FxForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxForwardData = domain::fxForwardData());}
+void* _get_trsUnderlyingData_Trade_t_FxAverageForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxAverageForwardData = domain::fxAverageForwardData());}
+void* _get_trsUnderlyingData_Trade_t_FxOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxOptionData = domain::fxOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxDoubleBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxDoubleBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxDigitalOptionData = domain::fxDigitalOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxEuropeanBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxEuropeanBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxKIKOBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxKIKOBarrierOptionData = domain::fxKIKOBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxDigitalBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxDigitalBarrierOptionData = domain::fxDigitalBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxTouchOptionData = domain::fxTouchOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxDoubleTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxDoubleTouchOptionData = domain::fxTouchOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxSwapData = domain::fxSwapData());}
+void* _get_trsUnderlyingData_Trade_t_CapFloorData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CapFloorData = domain::capFloorData());}
+void* _get_trsUnderlyingData_Trade_t_EquityFutureOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityFutureOptionData = domain::equityFutureOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityOptionData = domain::equityOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityDoubleBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityDoubleBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityForwardData = domain::equityForwardData());}
+void* _get_trsUnderlyingData_Trade_t_EquityEuropeanBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityEuropeanBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityDigitalOptionData = domain::eqDigitalOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityDoubleTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityDoubleTouchOptionData = domain::eqTouchOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityTouchOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityTouchOptionData = domain::eqTouchOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityCliquetOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityCliquetOptionData = domain::cliquetOptionData());}
+void* _get_trsUnderlyingData_Trade_t_BondData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BondData = domain::bondData());}
+void* _get_trsUnderlyingData_Trade_t_ForwardBondData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ForwardBondData = domain::forwardBondData());}
+void* _get_trsUnderlyingData_Trade_t_BondFutureData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BondFutureData = domain::bondFutureData());}
+void* _get_trsUnderlyingData_Trade_t_CreditDefaultSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CreditDefaultSwapData = domain::creditDefaultSwapData());}
+void* _get_trsUnderlyingData_Trade_t_CreditDefaultSwapOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CreditDefaultSwapOptionData = domain::creditDefaultSwapOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityForwardData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityForwardData = domain::commodityForwardData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityOptionData = domain::commodityOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityDigitalAveragePriceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityDigitalAveragePriceOptionData = domain::commodityDigitalAveragePriceOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityDigitalOptionData = domain::commodityDigitalOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommoditySpreadOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommoditySpreadOptionData = domain::commoditySpreadOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommoditySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommoditySwapData = domain::commoditySwapData());}
+void* _get_trsUnderlyingData_Trade_t_CommoditySwaptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommoditySwaptionData = domain::commoditySwaptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityAveragePriceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityAveragePriceOptionData = domain::commodityAveragePriceOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityOptionStripData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityOptionStripData = domain::commodityOptionStripData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityPositionData = domain::commodityPositionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityAsianOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxAsianOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityAsianOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_trsUnderlyingData_Trade_t_BondOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BondOptionData = domain::bondOptionData());}
+void* _get_trsUnderlyingData_Trade_t_BondRepoData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BondRepoData = domain::bondRepoData());}
+void* _get_trsUnderlyingData_Trade_t_BondTRSData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BondTRSData = domain::bondTRSData());}
+void* _get_trsUnderlyingData_Trade_t_CdoData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CdoData = domain::cdoData());}
+void* _get_trsUnderlyingData_Trade_t_CreditLinkedSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CreditLinkedSwapData = domain::creditLinkedSwapData());}
+void* _get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->IndexCreditDefaultSwapData = domain::indexCreditDefaultSwapData());}
+void* _get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->IndexCreditDefaultSwapOptionData = domain::indexCreditDefaultSwapOptionData());}
+void* _get_trsUnderlyingData_Trade_t_MultiLegOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->MultiLegOptionData = domain::multiLegOptionData());}
+void* _get_trsUnderlyingData_Trade_t_AscotData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->AscotData = domain::ascotData());}
+void* _get_trsUnderlyingData_Trade_t_ConvertibleBondData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ConvertibleBondData = domain::convertibleBondData());}
+void* _get_trsUnderlyingData_Trade_t_CallableBondData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CallableBondData = domain::callableBondData());}
+void* _get_trsUnderlyingData_Trade_t_TreasuryLockData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->TreasuryLockData = domain::tlockData());}
+void* _get_trsUnderlyingData_Trade_t_RiskParticipationAgreementData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->RiskParticipationAgreementData = domain::rpaData());}
+void* _get_trsUnderlyingData_Trade_t_CBOData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CBOData = domain::cbodata());}
+void* _get_trsUnderlyingData_Trade_t_BondBasketData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BondBasketData = domain::bondBasketData());}
+void* _get_trsUnderlyingData_Trade_t_EquityPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityPositionData = domain::equityPositionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityOptionPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityOptionPositionData = domain::equityOptionPositionData());}
+void* _get_trsUnderlyingData_Trade_t_TotalReturnSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->TotalReturnSwapData = domain::totalReturnSwapData());}
+void* _get_trsUnderlyingData_Trade_t_ContractForDifferenceData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ContractForDifferenceData = domain::totalReturnSwapData());}
+void* _get_trsUnderlyingData_Trade_t_CompositeTradeData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CompositeTradeData = domain::compositeTradeData());}
+void* _get_trsUnderlyingData_Trade_t_PairwiseVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->PairwiseVarianceSwapData = domain::pairwiseVarianceSwapData1());}
+void* _get_trsUnderlyingData_Trade_t_EquityPairwiseVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityPairwiseVarianceSwapData = domain::pairwiseVarianceSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_FxPairwiseVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxPairwiseVarianceSwapData = domain::pairwiseVarianceSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_EquityOutperformanceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityOutperformanceOptionData = domain::eqOutperformanceOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FlexiSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FlexiSwapData = domain::flexiSwapData());}
+void* _get_trsUnderlyingData_Trade_t_BalanceGuaranteedSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BalanceGuaranteedSwapData = domain::bgSwapData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityRevenueOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityRevenueOptionData = domain::commodityRevenueOptionData());}
+void* _get_trsUnderlyingData_Trade_t_BasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BasketVarianceSwapData = domain::basketVarianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_EquityBasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_FxBasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_CommodityBasketVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_ExtendedAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ExtendedAccumulatorData = domain::extendedAccumulatorData());}
+void* _get_trsUnderlyingData_Trade_t_VarianceOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->VarianceOptionData = domain::varianceOptionData());}
+void* _get_trsUnderlyingData_Trade_t_VarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->VarianceDispersionSwapData = domain::varianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Trade_t_KIKOVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->KIKOVarianceSwapData = domain::kikoVarianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_CorridorVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CorridorVarianceSwapData = domain::corridorVarianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_IndexedCorridorVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->IndexedCorridorVarianceSwapData = domain::indexedCorridorVarianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_KIKOCorridorVarianceSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->KIKOCorridorVarianceSwapData = domain::kikoCorridorVarianceSwapData());}
+void* _get_trsUnderlyingData_Trade_t_CorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CorridorVarianceDispersionSwapData = domain::corridorVarianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Trade_t_KOCorridorVarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->KOCorridorVarianceDispersionSwapData = domain::koCorridorVarianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Trade_t_PairwiseGeometricVarianceDispersionSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->PairwiseGeometricVarianceDispersionSwapData = domain::pairwiseGeometricVarianceDispersionSwapData());}
+void* _get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap01Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ConditionalVarianceSwap01Data = domain::conditionalVarianceSwap01Data());}
+void* _get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap02Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ConditionalVarianceSwap02Data = domain::conditionalVarianceSwap02Data());}
+void* _get_trsUnderlyingData_Trade_t_GammaSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->GammaSwapData = domain::gammaSwapData());}
+void* _get_trsUnderlyingData_Trade_t_BestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BestEntryOptionData = domain::bestEntryOptionData());}
+void* _get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->DualEuroBinaryOptionData = domain::dualEuroBinaryOptionData());}
+void* _get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionDoubleKOData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->DualEuroBinaryOptionDoubleKOData = domain::dualEuroBinaryOptionDoubleKOData());}
+void* _get_trsUnderlyingData_Trade_t_VolatilityBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->VolatilityBarrierOptionData = domain::volBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxTaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxTaRFData = domain::tarfData2());}
+void* _get_trsUnderlyingData_Trade_t_EquityTaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityTaRFData = domain::tarfData2());}
+void* _get_trsUnderlyingData_Trade_t_CommodityTaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityTaRFData = domain::tarfData2());}
+void* _get_trsUnderlyingData_Trade_t_FxAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxAccumulatorData = domain::accumulatorData());}
+void* _get_trsUnderlyingData_Trade_t_EquityAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityAccumulatorData = domain::accumulatorData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityAccumulatorData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityAccumulatorData = domain::accumulatorData());}
+void* _get_trsUnderlyingData_Trade_t_FxWindowBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxWindowBarrierOptionData = domain::windowBarrierOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_EquityWindowBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityWindowBarrierOptionData = domain::windowBarrierOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_CommodityWindowBarierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityWindowBarierOptionData = domain::windowBarrierOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_EquityBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityBasketOptionData = domain::basketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxBasketOptionData = domain::basketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityBasketOptionData = domain::basketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxGenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityGenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityGenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityRainbowOptionData = domain::rainbowOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FxRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxRainbowOptionData = domain::rainbowOptionData());}
+void* _get_trsUnderlyingData_Trade_t_CommodityRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityRainbowOptionData = domain::rainbowOptionData());}
+void* _get_trsUnderlyingData_Trade_t_Autocallable01Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->Autocallable01Data = domain::autocallable01Data());}
+void* _get_trsUnderlyingData_Trade_t_DoubleDigitalOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->DoubleDigitalOptionData = domain::doubleDigitalOptionData());}
+void* _get_trsUnderlyingData_Trade_t_PerformanceOption01Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->PerformanceOption01Data = domain::performanceOption01Data());}
+void* _get_trsUnderlyingData_Trade_t_ScriptedTradeData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ScriptedTradeData = domain::scriptedTradeData());}
+void* _get_trsUnderlyingData_Trade_t_VanillaBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->VanillaBasketOptionData = domain::vanillaBasketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_AsianBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->AsianBasketOptionData = domain::asianBasketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_AverageStrikeBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->AverageStrikeBasketOptionData = domain::averageStrikeBasketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_LookbackCallBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->LookbackCallBasketOptionData = domain::lookbackCallBasketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_LookbackPutBasketOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->LookbackPutBasketOptionData = domain::lookbackPutBasketOptionData());}
+void* _get_trsUnderlyingData_Trade_t_BestOfAirbagData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BestOfAirbagData = domain::bestOfAirbagData());}
+void* _get_trsUnderlyingData_Trade_t_WorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstOfBasketSwapData = domain::worstOfBasketSwapData());}
+void* _get_trsUnderlyingData_Trade_t_FxWorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_EquityWorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_CommodityWorstOfBasketSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption01Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption01Data = domain::worstPerformanceRainbowOption01Data());}
+void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption02Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption02Data = domain::worstPerformanceRainbowOption02Data());}
+void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption03Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption03Data = domain::worstPerformanceRainbowOption03Data());}
+void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption04Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption04Data = domain::worstPerformanceRainbowOption04Data());}
+void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption05Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption05Data = domain::worstPerformanceRainbowOption05Data());}
+void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption06Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption06Data = domain::worstPerformanceRainbowOption06Data());}
+void* _get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption07Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption07Data = domain::worstPerformanceRainbowOption07Data());}
+void* _get_trsUnderlyingData_Trade_t_BestOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->BestOfAssetOrCashRainbowOptionData = domain::bestOfAssetOrCashRainbowOptionData());}
+void* _get_trsUnderlyingData_Trade_t_WorstOfAssetOrCashRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WorstOfAssetOrCashRainbowOptionData = domain::worstOfAssetOrCashRainbowOptionData());}
+void* _get_trsUnderlyingData_Trade_t_MinRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->MinRainbowOptionData = domain::minRainbowOptionData());}
+void* _get_trsUnderlyingData_Trade_t_MaxRainbowOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->MaxRainbowOptionData = domain::maxRainbowOptionData());}
+void* _get_trsUnderlyingData_Trade_t_WindowBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->WindowBarrierOptionData = domain::windowBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_Accumulator01Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->Accumulator01Data = domain::accumulator01Data());}
+void* _get_trsUnderlyingData_Trade_t_Accumulator02Data(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->Accumulator02Data = domain::accumulator02Data());}
+void* _get_trsUnderlyingData_Trade_t_EquityBestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_FxBestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_CommodityBestEntryOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_TaRFData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->TaRFData = domain::tarfData());}
+void* _get_trsUnderlyingData_Trade_t_EuropeanRainbowCallSpreadOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EuropeanRainbowCallSpreadOptionData = domain::europeanRainbowCallSpreadOptionData());}
+void* _get_trsUnderlyingData_Trade_t_RainbowCallSpreadBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->RainbowCallSpreadBarrierOptionData = domain::rainbowCallSpreadBarrierOptionData());}
+void* _get_trsUnderlyingData_Trade_t_AsianRainbowCallSpreadOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->AsianRainbowCallSpreadOptionData = domain::asianRainbowCallSpreadOptionData());}
+void* _get_trsUnderlyingData_Trade_t_AsianIrCapFloorData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->AsianIrCapFloorData = domain::asianIrCapFloorData());}
+void* _get_trsUnderlyingData_Trade_t_ForwardVolatilityAgreementData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ForwardVolatilityAgreementData = domain::forwardVolatilityAgreementData());}
+void* _get_trsUnderlyingData_Trade_t_CorrelationSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CorrelationSwapData = domain::correlationSwapData());}
+void* _get_trsUnderlyingData_Trade_t_AssetLinkedCliquetOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->AssetLinkedCliquetOptionData = domain::assetLinkedCliquetOptionData());}
+void* _get_trsUnderlyingData_Trade_t_ConstantMaturityVolatilitySwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ConstantMaturityVolatilitySwapData = domain::constantMaturityVolatilitySwapData());}
+void* _get_trsUnderlyingData_Trade_t_CMSCapFloorBarrierData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CMSCapFloorBarrierData = domain::cmsCapFloorBarrierData());}
+void* _get_trsUnderlyingData_Trade_t_FixedStrikeForwardStartingOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FixedStrikeForwardStartingOptionData = domain::fixedStrikeForwardStartingOptionData());}
+void* _get_trsUnderlyingData_Trade_t_FloatingStrikeForwardStartingOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FloatingStrikeForwardStartingOptionData = domain::floatingStrikeForwardStartingOptionData());}
+void* _get_trsUnderlyingData_Trade_t_ForwardStartingSwaptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->ForwardStartingSwaptionData = domain::forwardStartingSwaptionData());}
+void* _get_trsUnderlyingData_Trade_t_FlooredAverageCPIZCIISData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FlooredAverageCPIZCIISData = domain::flooredAverageCPIZCIISData());}
+void* _get_trsUnderlyingData_Trade_t_GenericBarrierOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->GenericBarrierOptionData = domain::genericBarrierOptionDataRaw());}
+void* _get_trsUnderlyingData_Trade_t_MovingMaxYYIISData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->MovingMaxYYIISData = domain::movingMaxYYIISData());}
+void* _get_trsUnderlyingData_Trade_t_IrregularYYIISData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->IrregularYYIISData = domain::irregularYYIISData());}
+void* _get_trsUnderlyingData_Trade_t_EuropeanOptionBarrierData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EuropeanOptionBarrierData = domain::europeanOptionBarrierData());}
+void* _get_trsUnderlyingData_Trade_t_LadderLockInOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->LadderLockInOptionData = domain::ladderLockInOptionData());}
+void* _get_trsUnderlyingData_Trade_t_LapseHedgeSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->LapseHedgeSwapData = domain::lapseHedgeSwapData());}
+void* _get_trsUnderlyingData_Trade_t_KnockOutSwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->KnockOutSwapData = domain::knockOutSwapData());}
+void* _get_trsUnderlyingData_Trade_t_LPISwapData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->LPISwapData = domain::LPISwapData());}
+void* _get_trsUnderlyingData_Trade_t_CashPositionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CashPositionData = domain::cashPositionData());}
+void* _get_trsUnderlyingData_Trade_t_StrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->StrikeResettableOptionData = domain::strikeResettableOptionData());}
+void* _get_trsUnderlyingData_Trade_t_EquityStrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->EquityStrikeResettableOptionData = domain::strikeResettableOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_FxStrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->FxStrikeResettableOptionData = domain::strikeResettableOptionData2());}
+void* _get_trsUnderlyingData_Trade_t_CommodityStrikeResettableOptionData(domain::trsUnderlyingData_Trade_t* parent) {return &*(parent->CommodityStrikeResettableOptionData = domain::strikeResettableOptionData2());}
 xsdcpp::ChildElementInfo _trsUnderlyingData_Trade_t_Children[] = {
     {"TradeType", 0, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_TradeType, &domain::_oreTradeType_Info, 1, 1},
     {"Envelope", 1, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_Envelope, &domain::_envelope_Info, 0, 1},
-    {"CrossCurrencySwapData", 2, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CrossCurrencySwapData, &domain::_swapData_Info, 1, 1},
-    {"InflationSwapData", 3, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_InflationSwapData, &domain::_swapData_Info, 1, 1},
-    {"SwapData", 4, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_SwapData, &domain::_swapData_Info, 1, 1},
-    {"EquitySwapData", 5, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquitySwapData, &domain::_swapData_Info, 1, 1},
-    {"CallableSwapData", 6, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CallableSwapData, &domain::_callableSwapData_Info, 1, 1},
-    {"ArcOptionData", 7, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ArcOptionData, &domain::_arcOptionData_Info, 1, 1},
-    {"SwaptionData", 8, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_SwaptionData, &domain::_swaptionData_Info, 1, 1},
-    {"VarianceSwapData", 9, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"EquityVarianceSwapData", 10, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"FxVarianceSwapData", 11, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"CommodityVarianceSwapData", 12, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"ForwardRateAgreementData", 13, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardRateAgreementData, &domain::_forwardRateAgreementData_Info, 1, 1},
-    {"FxForwardData", 14, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxForwardData, &domain::_fxForwardData_Info, 1, 1},
-    {"FxAverageForwardData", 15, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxAverageForwardData, &domain::_fxAverageForwardData_Info, 1, 1},
-    {"FxOptionData", 16, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxOptionData, &domain::_fxOptionData_Info, 1, 1},
-    {"FxBarrierOptionData", 17, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxDoubleBarrierOptionData", 18, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDoubleBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxDigitalOptionData", 19, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDigitalOptionData, &domain::_fxDigitalOptionData_Info, 1, 1},
-    {"FxEuropeanBarrierOptionData", 20, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxEuropeanBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxKIKOBarrierOptionData", 21, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxKIKOBarrierOptionData, &domain::_fxKIKOBarrierOptionData_Info, 1, 1},
-    {"FxDigitalBarrierOptionData", 22, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDigitalBarrierOptionData, &domain::_fxDigitalBarrierOptionData_Info, 1, 1},
-    {"FxTouchOptionData", 23, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxTouchOptionData, &domain::_fxTouchOptionData_Info, 1, 1},
-    {"FxDoubleTouchOptionData", 24, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDoubleTouchOptionData, &domain::_fxTouchOptionData_Info, 1, 1},
-    {"FxSwapData", 25, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxSwapData, &domain::_fxSwapData_Info, 1, 1},
-    {"CapFloorData", 26, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CapFloorData, &domain::_capFloorData_Info, 1, 1},
-    {"EquityFutureOptionData", 27, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityFutureOptionData, &domain::_equityFutureOptionData_Info, 1, 1},
-    {"EquityOptionData", 28, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityOptionData, &domain::_equityOptionData_Info, 1, 1},
-    {"EquityBarrierOptionData", 29, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityDoubleBarrierOptionData", 30, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityDoubleBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityForwardData", 31, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityForwardData, &domain::_equityForwardData_Info, 1, 1},
-    {"EquityEuropeanBarrierOptionData", 32, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityEuropeanBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityDigitalOptionData", 33, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityDigitalOptionData, &domain::_eqDigitalOptionData_Info, 1, 1},
-    {"EquityDoubleTouchOptionData", 34, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityDoubleTouchOptionData, &domain::_eqTouchOptionData_Info, 1, 1},
-    {"EquityTouchOptionData", 35, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityTouchOptionData, &domain::_eqTouchOptionData_Info, 1, 1},
-    {"EquityCliquetOptionData", 36, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityCliquetOptionData, &domain::_cliquetOptionData_Info, 1, 1},
-    {"BondData", 37, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondData, &domain::_bondData_Info, 1, 1},
-    {"ForwardBondData", 38, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardBondData, &domain::_forwardBondData_Info, 1, 1},
-    {"BondFutureData", 39, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondFutureData, &domain::_bondFutureData_Info, 1, 1},
-    {"CreditDefaultSwapData", 40, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CreditDefaultSwapData, &domain::_creditDefaultSwapData_Info, 1, 1},
-    {"CreditDefaultSwapOptionData", 41, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CreditDefaultSwapOptionData, &domain::_creditDefaultSwapOptionData_Info, 1, 1},
-    {"CommodityForwardData", 42, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityForwardData, &domain::_commodityForwardData_Info, 1, 1},
-    {"CommodityOptionData", 43, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityOptionData, &domain::_commodityOptionData_Info, 1, 1},
-    {"CommodityDigitalAveragePriceOptionData", 44, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityDigitalAveragePriceOptionData, &domain::_commodityDigitalAveragePriceOptionData_Info, 1, 1},
-    {"CommodityDigitalOptionData", 45, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityDigitalOptionData, &domain::_commodityDigitalOptionData_Info, 1, 1},
-    {"CommoditySpreadOptionData", 46, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommoditySpreadOptionData, &domain::_commoditySpreadOptionData_Info, 1, 1},
-    {"CommoditySwapData", 47, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommoditySwapData, &domain::_commoditySwapData_Info, 1, 1},
-    {"CommoditySwaptionData", 48, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommoditySwaptionData, &domain::_commoditySwaptionData_Info, 1, 1},
-    {"CommodityAveragePriceOptionData", 49, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityAveragePriceOptionData, &domain::_commodityAveragePriceOptionData_Info, 1, 1},
-    {"CommodityOptionStripData", 50, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityOptionStripData, &domain::_commodityOptionStripData_Info, 1, 1},
-    {"CommodityPositionData", 51, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityPositionData, &domain::_commodityPositionData_Info, 1, 1},
-    {"EquityAsianOptionData", 52, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"FxAsianOptionData", 53, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"CommodityAsianOptionData", 54, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"BondOptionData", 55, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondOptionData, &domain::_bondOptionData_Info, 1, 1},
-    {"BondRepoData", 56, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondRepoData, &domain::_bondRepoData_Info, 1, 1},
-    {"BondTRSData", 57, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondTRSData, &domain::_bondTRSData_Info, 1, 1},
-    {"CdoData", 58, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CdoData, &domain::_cdoData_Info, 1, 1},
-    {"CreditLinkedSwapData", 59, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CreditLinkedSwapData, &domain::_creditLinkedSwapData_Info, 1, 1},
-    {"IndexCreditDefaultSwapData", 60, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapData, &domain::_indexCreditDefaultSwapData_Info, 1, 1},
-    {"IndexCreditDefaultSwapOptionData", 61, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapOptionData, &domain::_indexCreditDefaultSwapOptionData_Info, 1, 1},
-    {"MultiLegOptionData", 62, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MultiLegOptionData, &domain::_multiLegOptionData_Info, 1, 1},
-    {"AscotData", 63, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AscotData, &domain::_ascotData_Info, 1, 1},
-    {"ConvertibleBondData", 64, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConvertibleBondData, &domain::_convertibleBondData_Info, 1, 1},
-    {"CallableBondData", 65, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CallableBondData, &domain::_callableBondData_Info, 1, 1},
-    {"TreasuryLockData", 66, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_TreasuryLockData, &domain::_tlockData_Info, 1, 1},
-    {"RiskParticipationAgreementData", 67, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_RiskParticipationAgreementData, &domain::_rpaData_Info, 1, 1},
-    {"CBOData", 68, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CBOData, &domain::_cbodata_Info, 1, 1},
-    {"BondBasketData", 69, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondBasketData, &domain::_bondBasketData_Info, 1, 1},
-    {"EquityPositionData", 70, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityPositionData, &domain::_equityPositionData_Info, 1, 1},
-    {"EquityOptionPositionData", 71, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityOptionPositionData, &domain::_equityOptionPositionData_Info, 1, 1},
-    {"TotalReturnSwapData", 72, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_TotalReturnSwapData, &domain::_totalReturnSwapData_Info, 1, 1},
-    {"ContractForDifferenceData", 73, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ContractForDifferenceData, &domain::_totalReturnSwapData_Info, 1, 1},
-    {"CompositeTradeData", 74, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CompositeTradeData, &domain::_compositeTradeData_Info, 1, 1},
-    {"PairwiseVarianceSwapData", 75, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_PairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData1_Info, 1, 1},
-    {"EquityPairwiseVarianceSwapData", 76, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 1, 1},
-    {"FxPairwiseVarianceSwapData", 77, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 1, 1},
-    {"EquityOutperformanceOptionData", 78, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityOutperformanceOptionData, &domain::_eqOutperformanceOptionData_Info, 1, 1},
-    {"FlexiSwapData", 79, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FlexiSwapData, &domain::_flexiSwapData_Info, 1, 1},
-    {"BalanceGuaranteedSwapData", 80, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BalanceGuaranteedSwapData, &domain::_bgSwapData_Info, 1, 1},
-    {"CommodityRevenueOptionData", 81, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityRevenueOptionData, &domain::_commodityRevenueOptionData_Info, 1, 1},
-    {"BasketVarianceSwapData", 82, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BasketVarianceSwapData, &domain::_basketVarianceSwapData_Info, 1, 1},
-    {"EquityBasketVarianceSwapData", 83, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"FxBasketVarianceSwapData", 84, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"CommodityBasketVarianceSwapData", 85, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"ExtendedAccumulatorData", 86, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ExtendedAccumulatorData, &domain::_extendedAccumulatorData_Info, 1, 1},
-    {"VarianceOptionData", 87, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VarianceOptionData, &domain::_varianceOptionData_Info, 1, 1},
-    {"VarianceDispersionSwapData", 88, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VarianceDispersionSwapData, &domain::_varianceDispersionSwapData_Info, 1, 1},
-    {"KIKOVarianceSwapData", 89, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KIKOVarianceSwapData, &domain::_kikoVarianceSwapData_Info, 1, 1},
-    {"CorridorVarianceSwapData", 90, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CorridorVarianceSwapData, &domain::_corridorVarianceSwapData_Info, 1, 1},
-    {"IndexedCorridorVarianceSwapData", 91, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IndexedCorridorVarianceSwapData, &domain::_indexedCorridorVarianceSwapData_Info, 1, 1},
-    {"KIKOCorridorVarianceSwapData", 92, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KIKOCorridorVarianceSwapData, &domain::_kikoCorridorVarianceSwapData_Info, 1, 1},
-    {"CorridorVarianceDispersionSwapData", 93, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CorridorVarianceDispersionSwapData, &domain::_corridorVarianceDispersionSwapData_Info, 1, 1},
-    {"KOCorridorVarianceDispersionSwapData", 94, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KOCorridorVarianceDispersionSwapData, &domain::_koCorridorVarianceDispersionSwapData_Info, 1, 1},
-    {"PairwiseGeometricVarianceDispersionSwapData", 95, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_PairwiseGeometricVarianceDispersionSwapData, &domain::_pairwiseGeometricVarianceDispersionSwapData_Info, 1, 1},
-    {"ConditionalVarianceSwap01Data", 96, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap01Data, &domain::_conditionalVarianceSwap01Data_Info, 1, 1},
-    {"ConditionalVarianceSwap02Data", 97, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap02Data, &domain::_conditionalVarianceSwap02Data_Info, 1, 1},
-    {"GammaSwapData", 98, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_GammaSwapData, &domain::_gammaSwapData_Info, 1, 1},
-    {"BestEntryOptionData", 99, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BestEntryOptionData, &domain::_bestEntryOptionData_Info, 1, 1},
-    {"DualEuroBinaryOptionData", 100, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionData, &domain::_dualEuroBinaryOptionData_Info, 1, 1},
-    {"DualEuroBinaryOptionDoubleKOData", 101, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionDoubleKOData, &domain::_dualEuroBinaryOptionDoubleKOData_Info, 1, 1},
-    {"VolatilityBarrierOptionData", 102, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VolatilityBarrierOptionData, &domain::_volBarrierOptionData_Info, 1, 1},
-    {"FxTaRFData", 103, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"EquityTaRFData", 104, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"CommodityTaRFData", 105, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"FxAccumulatorData", 106, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"EquityAccumulatorData", 107, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"CommodityAccumulatorData", 108, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"FxWindowBarrierOptionData", 109, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"EquityWindowBarrierOptionData", 110, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"CommodityWindowBarierOptionData", 111, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityWindowBarierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"EquityBasketOptionData", 112, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"FxBasketOptionData", 113, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"CommodityBasketOptionData", 114, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"FxGenericBarrierOptionData", 115, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"EquityGenericBarrierOptionData", 116, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"CommodityGenericBarrierOptionData", 117, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"EquityRainbowOptionData", 118, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"FxRainbowOptionData", 119, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"CommodityRainbowOptionData", 120, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"Autocallable01Data", 121, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_Autocallable01Data, &domain::_autocallable01Data_Info, 1, 1},
-    {"DoubleDigitalOptionData", 122, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_DoubleDigitalOptionData, &domain::_doubleDigitalOptionData_Info, 1, 1},
-    {"PerformanceOption01Data", 123, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_PerformanceOption01Data, &domain::_performanceOption01Data_Info, 1, 1},
-    {"ScriptedTradeData", 124, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ScriptedTradeData, &domain::_scriptedTradeData_Info, 1, 1},
-    {"VanillaBasketOptionData", 125, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VanillaBasketOptionData, &domain::_vanillaBasketOptionData_Info, 1, 1},
-    {"AsianBasketOptionData", 126, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AsianBasketOptionData, &domain::_asianBasketOptionData_Info, 1, 1},
-    {"AverageStrikeBasketOptionData", 127, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AverageStrikeBasketOptionData, &domain::_averageStrikeBasketOptionData_Info, 1, 1},
-    {"LookbackCallBasketOptionData", 128, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LookbackCallBasketOptionData, &domain::_lookbackCallBasketOptionData_Info, 1, 1},
-    {"LookbackPutBasketOptionData", 129, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LookbackPutBasketOptionData, &domain::_lookbackPutBasketOptionData_Info, 1, 1},
-    {"BestOfAirbagData", 130, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BestOfAirbagData, &domain::_bestOfAirbagData_Info, 1, 1},
-    {"WorstOfBasketSwapData", 131, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstOfBasketSwapData, &domain::_worstOfBasketSwapData_Info, 1, 1},
-    {"FxWorstOfBasketSwapData", 132, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"EquityWorstOfBasketSwapData", 133, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"CommodityWorstOfBasketSwapData", 134, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"WorstPerformanceRainbowOption01Data", 135, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption01Data, &domain::_worstPerformanceRainbowOption01Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption02Data", 136, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption02Data, &domain::_worstPerformanceRainbowOption02Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption03Data", 137, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption03Data, &domain::_worstPerformanceRainbowOption03Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption04Data", 138, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption04Data, &domain::_worstPerformanceRainbowOption04Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption05Data", 139, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption05Data, &domain::_worstPerformanceRainbowOption05Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption06Data", 140, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption06Data, &domain::_worstPerformanceRainbowOption06Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption07Data", 141, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption07Data, &domain::_worstPerformanceRainbowOption07Data_Info, 1, 1},
-    {"BestOfAssetOrCashRainbowOptionData", 142, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BestOfAssetOrCashRainbowOptionData, &domain::_bestOfAssetOrCashRainbowOptionData_Info, 1, 1},
-    {"WorstOfAssetOrCashRainbowOptionData", 143, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstOfAssetOrCashRainbowOptionData, &domain::_worstOfAssetOrCashRainbowOptionData_Info, 1, 1},
-    {"MinRainbowOptionData", 144, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MinRainbowOptionData, &domain::_minRainbowOptionData_Info, 1, 1},
-    {"MaxRainbowOptionData", 145, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MaxRainbowOptionData, &domain::_maxRainbowOptionData_Info, 1, 1},
-    {"WindowBarrierOptionData", 146, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WindowBarrierOptionData, &domain::_windowBarrierOptionData_Info, 1, 1},
-    {"Accumulator01Data", 147, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_Accumulator01Data, &domain::_accumulator01Data_Info, 1, 1},
-    {"Accumulator02Data", 148, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_Accumulator02Data, &domain::_accumulator02Data_Info, 1, 1},
-    {"EquityBestEntryOptionData", 149, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"FxBestEntryOptionData", 150, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"CommodityBestEntryOptionData", 151, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"TaRFData", 152, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_TaRFData, &domain::_tarfData_Info, 1, 1},
-    {"EuropeanRainbowCallSpreadOptionData", 153, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EuropeanRainbowCallSpreadOptionData, &domain::_europeanRainbowCallSpreadOptionData_Info, 1, 1},
-    {"RainbowCallSpreadBarrierOptionData", 154, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_RainbowCallSpreadBarrierOptionData, &domain::_rainbowCallSpreadBarrierOptionData_Info, 1, 1},
-    {"AsianRainbowCallSpreadOptionData", 155, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AsianRainbowCallSpreadOptionData, &domain::_asianRainbowCallSpreadOptionData_Info, 1, 1},
-    {"AsianIrCapFloorData", 156, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AsianIrCapFloorData, &domain::_asianIrCapFloorData_Info, 1, 1},
-    {"ForwardVolatilityAgreementData", 157, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardVolatilityAgreementData, &domain::_forwardVolatilityAgreementData_Info, 1, 1},
-    {"CorrelationSwapData", 158, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CorrelationSwapData, &domain::_correlationSwapData_Info, 1, 1},
-    {"AssetLinkedCliquetOptionData", 159, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AssetLinkedCliquetOptionData, &domain::_assetLinkedCliquetOptionData_Info, 1, 1},
-    {"ConstantMaturityVolatilitySwapData", 160, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConstantMaturityVolatilitySwapData, &domain::_constantMaturityVolatilitySwapData_Info, 1, 1},
-    {"CMSCapFloorBarrierData", 161, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CMSCapFloorBarrierData, &domain::_cmsCapFloorBarrierData_Info, 1, 1},
-    {"FixedStrikeForwardStartingOptionData", 162, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FixedStrikeForwardStartingOptionData, &domain::_fixedStrikeForwardStartingOptionData_Info, 1, 1},
-    {"FloatingStrikeForwardStartingOptionData", 163, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FloatingStrikeForwardStartingOptionData, &domain::_floatingStrikeForwardStartingOptionData_Info, 1, 1},
-    {"ForwardStartingSwaptionData", 164, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardStartingSwaptionData, &domain::_forwardStartingSwaptionData_Info, 1, 1},
-    {"FlooredAverageCPIZCIISData", 165, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FlooredAverageCPIZCIISData, &domain::_flooredAverageCPIZCIISData_Info, 1, 1},
-    {"GenericBarrierOptionData", 166, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_GenericBarrierOptionData, &domain::_genericBarrierOptionDataRaw_Info, 1, 1},
-    {"MovingMaxYYIISData", 167, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MovingMaxYYIISData, &domain::_movingMaxYYIISData_Info, 1, 1},
-    {"IrregularYYIISData", 168, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IrregularYYIISData, &domain::_irregularYYIISData_Info, 1, 1},
-    {"EuropeanOptionBarrierData", 169, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EuropeanOptionBarrierData, &domain::_europeanOptionBarrierData_Info, 1, 1},
-    {"LadderLockInOptionData", 170, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LadderLockInOptionData, &domain::_ladderLockInOptionData_Info, 1, 1},
-    {"LapseHedgeSwapData", 171, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LapseHedgeSwapData, &domain::_lapseHedgeSwapData_Info, 1, 1},
-    {"KnockOutSwapData", 172, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KnockOutSwapData, &domain::_knockOutSwapData_Info, 1, 1},
-    {"LPISwapData", 173, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LPISwapData, &domain::_LPISwapData_Info, 1, 1},
-    {"CashPositionData", 174, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CashPositionData, &domain::_cashPositionData_Info, 1, 1},
-    {"StrikeResettableOptionData", 175, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_StrikeResettableOptionData, &domain::_strikeResettableOptionData_Info, 1, 1},
-    {"EquityStrikeResettableOptionData", 176, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
-    {"FxStrikeResettableOptionData", 177, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
-    {"CommodityStrikeResettableOptionData", 178, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
+    {"CrossCurrencySwapData", 2, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CrossCurrencySwapData, &domain::_swapData_Info, 0, 1},
+    {"InflationSwapData", 3, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_InflationSwapData, &domain::_swapData_Info, 0, 1},
+    {"SwapData", 4, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_SwapData, &domain::_swapData_Info, 0, 1},
+    {"EquitySwapData", 5, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquitySwapData, &domain::_swapData_Info, 0, 1},
+    {"CallableSwapData", 6, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CallableSwapData, &domain::_callableSwapData_Info, 0, 1},
+    {"ArcOptionData", 7, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ArcOptionData, &domain::_arcOptionData_Info, 0, 1},
+    {"SwaptionData", 8, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_SwaptionData, &domain::_swaptionData_Info, 0, 1},
+    {"VarianceSwapData", 9, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"EquityVarianceSwapData", 10, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"FxVarianceSwapData", 11, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"CommodityVarianceSwapData", 12, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"ForwardRateAgreementData", 13, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardRateAgreementData, &domain::_forwardRateAgreementData_Info, 0, 1},
+    {"FxForwardData", 14, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxForwardData, &domain::_fxForwardData_Info, 0, 1},
+    {"FxAverageForwardData", 15, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxAverageForwardData, &domain::_fxAverageForwardData_Info, 0, 1},
+    {"FxOptionData", 16, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxOptionData, &domain::_fxOptionData_Info, 0, 1},
+    {"FxBarrierOptionData", 17, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxDoubleBarrierOptionData", 18, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDoubleBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxDigitalOptionData", 19, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDigitalOptionData, &domain::_fxDigitalOptionData_Info, 0, 1},
+    {"FxEuropeanBarrierOptionData", 20, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxEuropeanBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxKIKOBarrierOptionData", 21, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxKIKOBarrierOptionData, &domain::_fxKIKOBarrierOptionData_Info, 0, 1},
+    {"FxDigitalBarrierOptionData", 22, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDigitalBarrierOptionData, &domain::_fxDigitalBarrierOptionData_Info, 0, 1},
+    {"FxTouchOptionData", 23, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxTouchOptionData, &domain::_fxTouchOptionData_Info, 0, 1},
+    {"FxDoubleTouchOptionData", 24, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxDoubleTouchOptionData, &domain::_fxTouchOptionData_Info, 0, 1},
+    {"FxSwapData", 25, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxSwapData, &domain::_fxSwapData_Info, 0, 1},
+    {"CapFloorData", 26, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CapFloorData, &domain::_capFloorData_Info, 0, 1},
+    {"EquityFutureOptionData", 27, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityFutureOptionData, &domain::_equityFutureOptionData_Info, 0, 1},
+    {"EquityOptionData", 28, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityOptionData, &domain::_equityOptionData_Info, 0, 1},
+    {"EquityBarrierOptionData", 29, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityDoubleBarrierOptionData", 30, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityDoubleBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityForwardData", 31, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityForwardData, &domain::_equityForwardData_Info, 0, 1},
+    {"EquityEuropeanBarrierOptionData", 32, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityEuropeanBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityDigitalOptionData", 33, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityDigitalOptionData, &domain::_eqDigitalOptionData_Info, 0, 1},
+    {"EquityDoubleTouchOptionData", 34, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityDoubleTouchOptionData, &domain::_eqTouchOptionData_Info, 0, 1},
+    {"EquityTouchOptionData", 35, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityTouchOptionData, &domain::_eqTouchOptionData_Info, 0, 1},
+    {"EquityCliquetOptionData", 36, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityCliquetOptionData, &domain::_cliquetOptionData_Info, 0, 1},
+    {"BondData", 37, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondData, &domain::_bondData_Info, 0, 1},
+    {"ForwardBondData", 38, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardBondData, &domain::_forwardBondData_Info, 0, 1},
+    {"BondFutureData", 39, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondFutureData, &domain::_bondFutureData_Info, 0, 1},
+    {"CreditDefaultSwapData", 40, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CreditDefaultSwapData, &domain::_creditDefaultSwapData_Info, 0, 1},
+    {"CreditDefaultSwapOptionData", 41, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CreditDefaultSwapOptionData, &domain::_creditDefaultSwapOptionData_Info, 0, 1},
+    {"CommodityForwardData", 42, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityForwardData, &domain::_commodityForwardData_Info, 0, 1},
+    {"CommodityOptionData", 43, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityOptionData, &domain::_commodityOptionData_Info, 0, 1},
+    {"CommodityDigitalAveragePriceOptionData", 44, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityDigitalAveragePriceOptionData, &domain::_commodityDigitalAveragePriceOptionData_Info, 0, 1},
+    {"CommodityDigitalOptionData", 45, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityDigitalOptionData, &domain::_commodityDigitalOptionData_Info, 0, 1},
+    {"CommoditySpreadOptionData", 46, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommoditySpreadOptionData, &domain::_commoditySpreadOptionData_Info, 0, 1},
+    {"CommoditySwapData", 47, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommoditySwapData, &domain::_commoditySwapData_Info, 0, 1},
+    {"CommoditySwaptionData", 48, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommoditySwaptionData, &domain::_commoditySwaptionData_Info, 0, 1},
+    {"CommodityAveragePriceOptionData", 49, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityAveragePriceOptionData, &domain::_commodityAveragePriceOptionData_Info, 0, 1},
+    {"CommodityOptionStripData", 50, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityOptionStripData, &domain::_commodityOptionStripData_Info, 0, 1},
+    {"CommodityPositionData", 51, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityPositionData, &domain::_commodityPositionData_Info, 0, 1},
+    {"EquityAsianOptionData", 52, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"FxAsianOptionData", 53, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"CommodityAsianOptionData", 54, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"BondOptionData", 55, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondOptionData, &domain::_bondOptionData_Info, 0, 1},
+    {"BondRepoData", 56, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondRepoData, &domain::_bondRepoData_Info, 0, 1},
+    {"BondTRSData", 57, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondTRSData, &domain::_bondTRSData_Info, 0, 1},
+    {"CdoData", 58, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CdoData, &domain::_cdoData_Info, 0, 1},
+    {"CreditLinkedSwapData", 59, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CreditLinkedSwapData, &domain::_creditLinkedSwapData_Info, 0, 1},
+    {"IndexCreditDefaultSwapData", 60, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapData, &domain::_indexCreditDefaultSwapData_Info, 0, 1},
+    {"IndexCreditDefaultSwapOptionData", 61, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IndexCreditDefaultSwapOptionData, &domain::_indexCreditDefaultSwapOptionData_Info, 0, 1},
+    {"MultiLegOptionData", 62, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MultiLegOptionData, &domain::_multiLegOptionData_Info, 0, 1},
+    {"AscotData", 63, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AscotData, &domain::_ascotData_Info, 0, 1},
+    {"ConvertibleBondData", 64, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConvertibleBondData, &domain::_convertibleBondData_Info, 0, 1},
+    {"CallableBondData", 65, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CallableBondData, &domain::_callableBondData_Info, 0, 1},
+    {"TreasuryLockData", 66, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_TreasuryLockData, &domain::_tlockData_Info, 0, 1},
+    {"RiskParticipationAgreementData", 67, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_RiskParticipationAgreementData, &domain::_rpaData_Info, 0, 1},
+    {"CBOData", 68, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CBOData, &domain::_cbodata_Info, 0, 1},
+    {"BondBasketData", 69, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BondBasketData, &domain::_bondBasketData_Info, 0, 1},
+    {"EquityPositionData", 70, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityPositionData, &domain::_equityPositionData_Info, 0, 1},
+    {"EquityOptionPositionData", 71, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityOptionPositionData, &domain::_equityOptionPositionData_Info, 0, 1},
+    {"TotalReturnSwapData", 72, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_TotalReturnSwapData, &domain::_totalReturnSwapData_Info, 0, 1},
+    {"ContractForDifferenceData", 73, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ContractForDifferenceData, &domain::_totalReturnSwapData_Info, 0, 1},
+    {"CompositeTradeData", 74, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CompositeTradeData, &domain::_compositeTradeData_Info, 0, 1},
+    {"PairwiseVarianceSwapData", 75, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_PairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData1_Info, 0, 1},
+    {"EquityPairwiseVarianceSwapData", 76, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 0, 1},
+    {"FxPairwiseVarianceSwapData", 77, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 0, 1},
+    {"EquityOutperformanceOptionData", 78, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityOutperformanceOptionData, &domain::_eqOutperformanceOptionData_Info, 0, 1},
+    {"FlexiSwapData", 79, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FlexiSwapData, &domain::_flexiSwapData_Info, 0, 1},
+    {"BalanceGuaranteedSwapData", 80, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BalanceGuaranteedSwapData, &domain::_bgSwapData_Info, 0, 1},
+    {"CommodityRevenueOptionData", 81, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityRevenueOptionData, &domain::_commodityRevenueOptionData_Info, 0, 1},
+    {"BasketVarianceSwapData", 82, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BasketVarianceSwapData, &domain::_basketVarianceSwapData_Info, 0, 1},
+    {"EquityBasketVarianceSwapData", 83, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"FxBasketVarianceSwapData", 84, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"CommodityBasketVarianceSwapData", 85, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"ExtendedAccumulatorData", 86, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ExtendedAccumulatorData, &domain::_extendedAccumulatorData_Info, 0, 1},
+    {"VarianceOptionData", 87, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VarianceOptionData, &domain::_varianceOptionData_Info, 0, 1},
+    {"VarianceDispersionSwapData", 88, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VarianceDispersionSwapData, &domain::_varianceDispersionSwapData_Info, 0, 1},
+    {"KIKOVarianceSwapData", 89, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KIKOVarianceSwapData, &domain::_kikoVarianceSwapData_Info, 0, 1},
+    {"CorridorVarianceSwapData", 90, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CorridorVarianceSwapData, &domain::_corridorVarianceSwapData_Info, 0, 1},
+    {"IndexedCorridorVarianceSwapData", 91, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IndexedCorridorVarianceSwapData, &domain::_indexedCorridorVarianceSwapData_Info, 0, 1},
+    {"KIKOCorridorVarianceSwapData", 92, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KIKOCorridorVarianceSwapData, &domain::_kikoCorridorVarianceSwapData_Info, 0, 1},
+    {"CorridorVarianceDispersionSwapData", 93, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CorridorVarianceDispersionSwapData, &domain::_corridorVarianceDispersionSwapData_Info, 0, 1},
+    {"KOCorridorVarianceDispersionSwapData", 94, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KOCorridorVarianceDispersionSwapData, &domain::_koCorridorVarianceDispersionSwapData_Info, 0, 1},
+    {"PairwiseGeometricVarianceDispersionSwapData", 95, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_PairwiseGeometricVarianceDispersionSwapData, &domain::_pairwiseGeometricVarianceDispersionSwapData_Info, 0, 1},
+    {"ConditionalVarianceSwap01Data", 96, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap01Data, &domain::_conditionalVarianceSwap01Data_Info, 0, 1},
+    {"ConditionalVarianceSwap02Data", 97, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConditionalVarianceSwap02Data, &domain::_conditionalVarianceSwap02Data_Info, 0, 1},
+    {"GammaSwapData", 98, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_GammaSwapData, &domain::_gammaSwapData_Info, 0, 1},
+    {"BestEntryOptionData", 99, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BestEntryOptionData, &domain::_bestEntryOptionData_Info, 0, 1},
+    {"DualEuroBinaryOptionData", 100, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionData, &domain::_dualEuroBinaryOptionData_Info, 0, 1},
+    {"DualEuroBinaryOptionDoubleKOData", 101, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_DualEuroBinaryOptionDoubleKOData, &domain::_dualEuroBinaryOptionDoubleKOData_Info, 0, 1},
+    {"VolatilityBarrierOptionData", 102, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VolatilityBarrierOptionData, &domain::_volBarrierOptionData_Info, 0, 1},
+    {"FxTaRFData", 103, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"EquityTaRFData", 104, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"CommodityTaRFData", 105, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"FxAccumulatorData", 106, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"EquityAccumulatorData", 107, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"CommodityAccumulatorData", 108, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"FxWindowBarrierOptionData", 109, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"EquityWindowBarrierOptionData", 110, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"CommodityWindowBarierOptionData", 111, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityWindowBarierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"EquityBasketOptionData", 112, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"FxBasketOptionData", 113, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"CommodityBasketOptionData", 114, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"FxGenericBarrierOptionData", 115, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"EquityGenericBarrierOptionData", 116, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"CommodityGenericBarrierOptionData", 117, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"EquityRainbowOptionData", 118, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"FxRainbowOptionData", 119, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"CommodityRainbowOptionData", 120, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"Autocallable01Data", 121, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_Autocallable01Data, &domain::_autocallable01Data_Info, 0, 1},
+    {"DoubleDigitalOptionData", 122, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_DoubleDigitalOptionData, &domain::_doubleDigitalOptionData_Info, 0, 1},
+    {"PerformanceOption01Data", 123, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_PerformanceOption01Data, &domain::_performanceOption01Data_Info, 0, 1},
+    {"ScriptedTradeData", 124, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ScriptedTradeData, &domain::_scriptedTradeData_Info, 0, 1},
+    {"VanillaBasketOptionData", 125, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_VanillaBasketOptionData, &domain::_vanillaBasketOptionData_Info, 0, 1},
+    {"AsianBasketOptionData", 126, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AsianBasketOptionData, &domain::_asianBasketOptionData_Info, 0, 1},
+    {"AverageStrikeBasketOptionData", 127, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AverageStrikeBasketOptionData, &domain::_averageStrikeBasketOptionData_Info, 0, 1},
+    {"LookbackCallBasketOptionData", 128, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LookbackCallBasketOptionData, &domain::_lookbackCallBasketOptionData_Info, 0, 1},
+    {"LookbackPutBasketOptionData", 129, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LookbackPutBasketOptionData, &domain::_lookbackPutBasketOptionData_Info, 0, 1},
+    {"BestOfAirbagData", 130, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BestOfAirbagData, &domain::_bestOfAirbagData_Info, 0, 1},
+    {"WorstOfBasketSwapData", 131, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstOfBasketSwapData, &domain::_worstOfBasketSwapData_Info, 0, 1},
+    {"FxWorstOfBasketSwapData", 132, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"EquityWorstOfBasketSwapData", 133, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"CommodityWorstOfBasketSwapData", 134, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"WorstPerformanceRainbowOption01Data", 135, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption01Data, &domain::_worstPerformanceRainbowOption01Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption02Data", 136, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption02Data, &domain::_worstPerformanceRainbowOption02Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption03Data", 137, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption03Data, &domain::_worstPerformanceRainbowOption03Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption04Data", 138, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption04Data, &domain::_worstPerformanceRainbowOption04Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption05Data", 139, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption05Data, &domain::_worstPerformanceRainbowOption05Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption06Data", 140, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption06Data, &domain::_worstPerformanceRainbowOption06Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption07Data", 141, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstPerformanceRainbowOption07Data, &domain::_worstPerformanceRainbowOption07Data_Info, 0, 1},
+    {"BestOfAssetOrCashRainbowOptionData", 142, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_BestOfAssetOrCashRainbowOptionData, &domain::_bestOfAssetOrCashRainbowOptionData_Info, 0, 1},
+    {"WorstOfAssetOrCashRainbowOptionData", 143, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WorstOfAssetOrCashRainbowOptionData, &domain::_worstOfAssetOrCashRainbowOptionData_Info, 0, 1},
+    {"MinRainbowOptionData", 144, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MinRainbowOptionData, &domain::_minRainbowOptionData_Info, 0, 1},
+    {"MaxRainbowOptionData", 145, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MaxRainbowOptionData, &domain::_maxRainbowOptionData_Info, 0, 1},
+    {"WindowBarrierOptionData", 146, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_WindowBarrierOptionData, &domain::_windowBarrierOptionData_Info, 0, 1},
+    {"Accumulator01Data", 147, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_Accumulator01Data, &domain::_accumulator01Data_Info, 0, 1},
+    {"Accumulator02Data", 148, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_Accumulator02Data, &domain::_accumulator02Data_Info, 0, 1},
+    {"EquityBestEntryOptionData", 149, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"FxBestEntryOptionData", 150, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"CommodityBestEntryOptionData", 151, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"TaRFData", 152, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_TaRFData, &domain::_tarfData_Info, 0, 1},
+    {"EuropeanRainbowCallSpreadOptionData", 153, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EuropeanRainbowCallSpreadOptionData, &domain::_europeanRainbowCallSpreadOptionData_Info, 0, 1},
+    {"RainbowCallSpreadBarrierOptionData", 154, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_RainbowCallSpreadBarrierOptionData, &domain::_rainbowCallSpreadBarrierOptionData_Info, 0, 1},
+    {"AsianRainbowCallSpreadOptionData", 155, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AsianRainbowCallSpreadOptionData, &domain::_asianRainbowCallSpreadOptionData_Info, 0, 1},
+    {"AsianIrCapFloorData", 156, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AsianIrCapFloorData, &domain::_asianIrCapFloorData_Info, 0, 1},
+    {"ForwardVolatilityAgreementData", 157, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardVolatilityAgreementData, &domain::_forwardVolatilityAgreementData_Info, 0, 1},
+    {"CorrelationSwapData", 158, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CorrelationSwapData, &domain::_correlationSwapData_Info, 0, 1},
+    {"AssetLinkedCliquetOptionData", 159, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_AssetLinkedCliquetOptionData, &domain::_assetLinkedCliquetOptionData_Info, 0, 1},
+    {"ConstantMaturityVolatilitySwapData", 160, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ConstantMaturityVolatilitySwapData, &domain::_constantMaturityVolatilitySwapData_Info, 0, 1},
+    {"CMSCapFloorBarrierData", 161, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CMSCapFloorBarrierData, &domain::_cmsCapFloorBarrierData_Info, 0, 1},
+    {"FixedStrikeForwardStartingOptionData", 162, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FixedStrikeForwardStartingOptionData, &domain::_fixedStrikeForwardStartingOptionData_Info, 0, 1},
+    {"FloatingStrikeForwardStartingOptionData", 163, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FloatingStrikeForwardStartingOptionData, &domain::_floatingStrikeForwardStartingOptionData_Info, 0, 1},
+    {"ForwardStartingSwaptionData", 164, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_ForwardStartingSwaptionData, &domain::_forwardStartingSwaptionData_Info, 0, 1},
+    {"FlooredAverageCPIZCIISData", 165, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FlooredAverageCPIZCIISData, &domain::_flooredAverageCPIZCIISData_Info, 0, 1},
+    {"GenericBarrierOptionData", 166, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_GenericBarrierOptionData, &domain::_genericBarrierOptionDataRaw_Info, 0, 1},
+    {"MovingMaxYYIISData", 167, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_MovingMaxYYIISData, &domain::_movingMaxYYIISData_Info, 0, 1},
+    {"IrregularYYIISData", 168, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_IrregularYYIISData, &domain::_irregularYYIISData_Info, 0, 1},
+    {"EuropeanOptionBarrierData", 169, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EuropeanOptionBarrierData, &domain::_europeanOptionBarrierData_Info, 0, 1},
+    {"LadderLockInOptionData", 170, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LadderLockInOptionData, &domain::_ladderLockInOptionData_Info, 0, 1},
+    {"LapseHedgeSwapData", 171, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LapseHedgeSwapData, &domain::_lapseHedgeSwapData_Info, 0, 1},
+    {"KnockOutSwapData", 172, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_KnockOutSwapData, &domain::_knockOutSwapData_Info, 0, 1},
+    {"LPISwapData", 173, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_LPISwapData, &domain::_LPISwapData_Info, 0, 1},
+    {"CashPositionData", 174, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CashPositionData, &domain::_cashPositionData_Info, 0, 1},
+    {"StrikeResettableOptionData", 175, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_StrikeResettableOptionData, &domain::_strikeResettableOptionData_Info, 0, 1},
+    {"EquityStrikeResettableOptionData", 176, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_EquityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
+    {"FxStrikeResettableOptionData", 177, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_FxStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
+    {"CommodityStrikeResettableOptionData", 178, (xsdcpp::get_field_t)&_get_trsUnderlyingData_Trade_t_CommodityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
     {nullptr}
 };
 void* _get_trsUnderlyingData_Trade_t_id(domain::trsUnderlyingData_Trade_t* elem) { return &*(elem->id = xsd::string()); }
@@ -16338,363 +16388,363 @@ xsdcpp::ChildElementInfo _cbotranche_Children[] = {
 };
 void* _get_compositeTradeComponents_Trade_t_TradeType(domain::compositeTradeComponents_Trade_t* parent) {return &parent->TradeType;}
 void* _get_compositeTradeComponents_Trade_t_Envelope(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->Envelope = domain::envelope());}
-void* _get_compositeTradeComponents_Trade_t_CrossCurrencySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CrossCurrencySwapData;}
-void* _get_compositeTradeComponents_Trade_t_InflationSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->InflationSwapData;}
-void* _get_compositeTradeComponents_Trade_t_SwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->SwapData;}
-void* _get_compositeTradeComponents_Trade_t_EquitySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquitySwapData;}
-void* _get_compositeTradeComponents_Trade_t_CallableSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CallableSwapData;}
-void* _get_compositeTradeComponents_Trade_t_ArcOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ArcOptionData;}
-void* _get_compositeTradeComponents_Trade_t_SwaptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->SwaptionData;}
-void* _get_compositeTradeComponents_Trade_t_VarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->VarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_EquityVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_FxVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_ForwardRateAgreementData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ForwardRateAgreementData;}
-void* _get_compositeTradeComponents_Trade_t_FxForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxForwardData;}
-void* _get_compositeTradeComponents_Trade_t_FxAverageForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxAverageForwardData;}
-void* _get_compositeTradeComponents_Trade_t_FxOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxDoubleBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxDoubleBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxDigitalOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxEuropeanBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxEuropeanBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxKIKOBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxKIKOBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxDigitalBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxDigitalBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxTouchOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxDoubleTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxDoubleTouchOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CapFloorData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CapFloorData;}
-void* _get_compositeTradeComponents_Trade_t_EquityFutureOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityFutureOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityDoubleBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityDoubleBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityForwardData;}
-void* _get_compositeTradeComponents_Trade_t_EquityEuropeanBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityEuropeanBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityDigitalOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityDoubleTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityDoubleTouchOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityTouchOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityCliquetOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityCliquetOptionData;}
-void* _get_compositeTradeComponents_Trade_t_BondData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BondData;}
-void* _get_compositeTradeComponents_Trade_t_ForwardBondData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ForwardBondData;}
-void* _get_compositeTradeComponents_Trade_t_BondFutureData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BondFutureData;}
-void* _get_compositeTradeComponents_Trade_t_CreditDefaultSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CreditDefaultSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CreditDefaultSwapOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CreditDefaultSwapOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityForwardData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityDigitalAveragePriceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityDigitalAveragePriceOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityDigitalOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommoditySpreadOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommoditySpreadOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommoditySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommoditySwapData;}
-void* _get_compositeTradeComponents_Trade_t_CommoditySwaptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommoditySwaptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityAveragePriceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityAveragePriceOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityOptionStripData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityOptionStripData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityPositionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityAsianOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityAsianOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxAsianOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxAsianOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityAsianOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityAsianOptionData;}
-void* _get_compositeTradeComponents_Trade_t_BondOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BondOptionData;}
-void* _get_compositeTradeComponents_Trade_t_BondRepoData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BondRepoData;}
-void* _get_compositeTradeComponents_Trade_t_BondTRSData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BondTRSData;}
-void* _get_compositeTradeComponents_Trade_t_CdoData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CdoData;}
-void* _get_compositeTradeComponents_Trade_t_CreditLinkedSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CreditLinkedSwapData;}
-void* _get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->IndexCreditDefaultSwapData;}
-void* _get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->IndexCreditDefaultSwapOptionData;}
-void* _get_compositeTradeComponents_Trade_t_MultiLegOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->MultiLegOptionData;}
-void* _get_compositeTradeComponents_Trade_t_AscotData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->AscotData;}
-void* _get_compositeTradeComponents_Trade_t_ConvertibleBondData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ConvertibleBondData;}
-void* _get_compositeTradeComponents_Trade_t_CallableBondData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CallableBondData;}
-void* _get_compositeTradeComponents_Trade_t_TreasuryLockData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->TreasuryLockData;}
-void* _get_compositeTradeComponents_Trade_t_RiskParticipationAgreementData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->RiskParticipationAgreementData;}
-void* _get_compositeTradeComponents_Trade_t_CBOData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CBOData;}
-void* _get_compositeTradeComponents_Trade_t_BondBasketData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BondBasketData;}
-void* _get_compositeTradeComponents_Trade_t_EquityPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityPositionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityOptionPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityOptionPositionData;}
-void* _get_compositeTradeComponents_Trade_t_TotalReturnSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->TotalReturnSwapData;}
-void* _get_compositeTradeComponents_Trade_t_ContractForDifferenceData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ContractForDifferenceData;}
-void* _get_compositeTradeComponents_Trade_t_CompositeTradeData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CompositeTradeData;}
-void* _get_compositeTradeComponents_Trade_t_PairwiseVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->PairwiseVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_EquityPairwiseVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityPairwiseVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_FxPairwiseVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxPairwiseVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_EquityOutperformanceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityOutperformanceOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FlexiSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FlexiSwapData;}
-void* _get_compositeTradeComponents_Trade_t_BalanceGuaranteedSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BalanceGuaranteedSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityRevenueOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityRevenueOptionData;}
-void* _get_compositeTradeComponents_Trade_t_BasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BasketVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_EquityBasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityBasketVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_FxBasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxBasketVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityBasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityBasketVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_ExtendedAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ExtendedAccumulatorData;}
-void* _get_compositeTradeComponents_Trade_t_VarianceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->VarianceOptionData;}
-void* _get_compositeTradeComponents_Trade_t_VarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->VarianceDispersionSwapData;}
-void* _get_compositeTradeComponents_Trade_t_KIKOVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->KIKOVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CorridorVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CorridorVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_IndexedCorridorVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->IndexedCorridorVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_KIKOCorridorVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->KIKOCorridorVarianceSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CorridorVarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CorridorVarianceDispersionSwapData;}
-void* _get_compositeTradeComponents_Trade_t_KOCorridorVarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->KOCorridorVarianceDispersionSwapData;}
-void* _get_compositeTradeComponents_Trade_t_PairwiseGeometricVarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->PairwiseGeometricVarianceDispersionSwapData;}
-void* _get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap01Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ConditionalVarianceSwap01Data;}
-void* _get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap02Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ConditionalVarianceSwap02Data;}
-void* _get_compositeTradeComponents_Trade_t_GammaSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->GammaSwapData;}
-void* _get_compositeTradeComponents_Trade_t_BestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BestEntryOptionData;}
-void* _get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->DualEuroBinaryOptionData;}
-void* _get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionDoubleKOData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->DualEuroBinaryOptionDoubleKOData;}
-void* _get_compositeTradeComponents_Trade_t_VolatilityBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->VolatilityBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxTaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxTaRFData;}
-void* _get_compositeTradeComponents_Trade_t_EquityTaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityTaRFData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityTaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityTaRFData;}
-void* _get_compositeTradeComponents_Trade_t_FxAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxAccumulatorData;}
-void* _get_compositeTradeComponents_Trade_t_EquityAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityAccumulatorData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityAccumulatorData;}
-void* _get_compositeTradeComponents_Trade_t_FxWindowBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxWindowBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityWindowBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityWindowBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityWindowBarierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityWindowBarierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxGenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxGenericBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityGenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityGenericBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityGenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityGenericBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityRainbowOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxRainbowOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityRainbowOptionData;}
-void* _get_compositeTradeComponents_Trade_t_Autocallable01Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->Autocallable01Data;}
-void* _get_compositeTradeComponents_Trade_t_DoubleDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->DoubleDigitalOptionData;}
-void* _get_compositeTradeComponents_Trade_t_PerformanceOption01Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->PerformanceOption01Data;}
-void* _get_compositeTradeComponents_Trade_t_ScriptedTradeData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ScriptedTradeData;}
-void* _get_compositeTradeComponents_Trade_t_VanillaBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->VanillaBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_AsianBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->AsianBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_AverageStrikeBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->AverageStrikeBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_LookbackCallBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->LookbackCallBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_LookbackPutBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->LookbackPutBasketOptionData;}
-void* _get_compositeTradeComponents_Trade_t_BestOfAirbagData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BestOfAirbagData;}
-void* _get_compositeTradeComponents_Trade_t_WorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstOfBasketSwapData;}
-void* _get_compositeTradeComponents_Trade_t_FxWorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxWorstOfBasketSwapData;}
-void* _get_compositeTradeComponents_Trade_t_EquityWorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityWorstOfBasketSwapData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityWorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityWorstOfBasketSwapData;}
-void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption01Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption01Data;}
-void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption02Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption02Data;}
-void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption03Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption03Data;}
-void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption04Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption04Data;}
-void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption05Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption05Data;}
-void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption06Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption06Data;}
-void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption07Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstPerformanceRainbowOption07Data;}
-void* _get_compositeTradeComponents_Trade_t_BestOfAssetOrCashRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->BestOfAssetOrCashRainbowOptionData;}
-void* _get_compositeTradeComponents_Trade_t_WorstOfAssetOrCashRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WorstOfAssetOrCashRainbowOptionData;}
-void* _get_compositeTradeComponents_Trade_t_MinRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->MinRainbowOptionData;}
-void* _get_compositeTradeComponents_Trade_t_MaxRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->MaxRainbowOptionData;}
-void* _get_compositeTradeComponents_Trade_t_WindowBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->WindowBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_Accumulator01Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->Accumulator01Data;}
-void* _get_compositeTradeComponents_Trade_t_Accumulator02Data(domain::compositeTradeComponents_Trade_t* parent) {return &parent->Accumulator02Data;}
-void* _get_compositeTradeComponents_Trade_t_EquityBestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityBestEntryOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxBestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxBestEntryOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityBestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityBestEntryOptionData;}
-void* _get_compositeTradeComponents_Trade_t_TaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->TaRFData;}
-void* _get_compositeTradeComponents_Trade_t_EuropeanRainbowCallSpreadOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EuropeanRainbowCallSpreadOptionData;}
-void* _get_compositeTradeComponents_Trade_t_RainbowCallSpreadBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->RainbowCallSpreadBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_AsianRainbowCallSpreadOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->AsianRainbowCallSpreadOptionData;}
-void* _get_compositeTradeComponents_Trade_t_AsianIrCapFloorData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->AsianIrCapFloorData;}
-void* _get_compositeTradeComponents_Trade_t_ForwardVolatilityAgreementData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ForwardVolatilityAgreementData;}
-void* _get_compositeTradeComponents_Trade_t_CorrelationSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CorrelationSwapData;}
-void* _get_compositeTradeComponents_Trade_t_AssetLinkedCliquetOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->AssetLinkedCliquetOptionData;}
-void* _get_compositeTradeComponents_Trade_t_ConstantMaturityVolatilitySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ConstantMaturityVolatilitySwapData;}
-void* _get_compositeTradeComponents_Trade_t_CMSCapFloorBarrierData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CMSCapFloorBarrierData;}
-void* _get_compositeTradeComponents_Trade_t_FixedStrikeForwardStartingOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FixedStrikeForwardStartingOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FloatingStrikeForwardStartingOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FloatingStrikeForwardStartingOptionData;}
-void* _get_compositeTradeComponents_Trade_t_ForwardStartingSwaptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->ForwardStartingSwaptionData;}
-void* _get_compositeTradeComponents_Trade_t_FlooredAverageCPIZCIISData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FlooredAverageCPIZCIISData;}
-void* _get_compositeTradeComponents_Trade_t_GenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->GenericBarrierOptionData;}
-void* _get_compositeTradeComponents_Trade_t_MovingMaxYYIISData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->MovingMaxYYIISData;}
-void* _get_compositeTradeComponents_Trade_t_IrregularYYIISData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->IrregularYYIISData;}
-void* _get_compositeTradeComponents_Trade_t_EuropeanOptionBarrierData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EuropeanOptionBarrierData;}
-void* _get_compositeTradeComponents_Trade_t_LadderLockInOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->LadderLockInOptionData;}
-void* _get_compositeTradeComponents_Trade_t_LapseHedgeSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->LapseHedgeSwapData;}
-void* _get_compositeTradeComponents_Trade_t_KnockOutSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->KnockOutSwapData;}
-void* _get_compositeTradeComponents_Trade_t_LPISwapData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->LPISwapData;}
-void* _get_compositeTradeComponents_Trade_t_CashPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CashPositionData;}
-void* _get_compositeTradeComponents_Trade_t_StrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->StrikeResettableOptionData;}
-void* _get_compositeTradeComponents_Trade_t_EquityStrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->EquityStrikeResettableOptionData;}
-void* _get_compositeTradeComponents_Trade_t_FxStrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->FxStrikeResettableOptionData;}
-void* _get_compositeTradeComponents_Trade_t_CommodityStrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &parent->CommodityStrikeResettableOptionData;}
+void* _get_compositeTradeComponents_Trade_t_CrossCurrencySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CrossCurrencySwapData = domain::swapData());}
+void* _get_compositeTradeComponents_Trade_t_InflationSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->InflationSwapData = domain::swapData());}
+void* _get_compositeTradeComponents_Trade_t_SwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->SwapData = domain::swapData());}
+void* _get_compositeTradeComponents_Trade_t_EquitySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquitySwapData = domain::swapData());}
+void* _get_compositeTradeComponents_Trade_t_CallableSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CallableSwapData = domain::callableSwapData());}
+void* _get_compositeTradeComponents_Trade_t_ArcOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ArcOptionData = domain::arcOptionData());}
+void* _get_compositeTradeComponents_Trade_t_SwaptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->SwaptionData = domain::swaptionData());}
+void* _get_compositeTradeComponents_Trade_t_VarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->VarianceSwapData = domain::varianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_EquityVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityVarianceSwapData = domain::varianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_FxVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxVarianceSwapData = domain::varianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityVarianceSwapData = domain::varianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_ForwardRateAgreementData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ForwardRateAgreementData = domain::forwardRateAgreementData());}
+void* _get_compositeTradeComponents_Trade_t_FxForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxForwardData = domain::fxForwardData());}
+void* _get_compositeTradeComponents_Trade_t_FxAverageForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxAverageForwardData = domain::fxAverageForwardData());}
+void* _get_compositeTradeComponents_Trade_t_FxOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxOptionData = domain::fxOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxDoubleBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxDoubleBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxDigitalOptionData = domain::fxDigitalOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxEuropeanBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxEuropeanBarrierOptionData = domain::fxBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxKIKOBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxKIKOBarrierOptionData = domain::fxKIKOBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxDigitalBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxDigitalBarrierOptionData = domain::fxDigitalBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxTouchOptionData = domain::fxTouchOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxDoubleTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxDoubleTouchOptionData = domain::fxTouchOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxSwapData = domain::fxSwapData());}
+void* _get_compositeTradeComponents_Trade_t_CapFloorData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CapFloorData = domain::capFloorData());}
+void* _get_compositeTradeComponents_Trade_t_EquityFutureOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityFutureOptionData = domain::equityFutureOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityOptionData = domain::equityOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityDoubleBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityDoubleBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityForwardData = domain::equityForwardData());}
+void* _get_compositeTradeComponents_Trade_t_EquityEuropeanBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityEuropeanBarrierOptionData = domain::eqBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityDigitalOptionData = domain::eqDigitalOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityDoubleTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityDoubleTouchOptionData = domain::eqTouchOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityTouchOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityTouchOptionData = domain::eqTouchOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityCliquetOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityCliquetOptionData = domain::cliquetOptionData());}
+void* _get_compositeTradeComponents_Trade_t_BondData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BondData = domain::bondData());}
+void* _get_compositeTradeComponents_Trade_t_ForwardBondData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ForwardBondData = domain::forwardBondData());}
+void* _get_compositeTradeComponents_Trade_t_BondFutureData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BondFutureData = domain::bondFutureData());}
+void* _get_compositeTradeComponents_Trade_t_CreditDefaultSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CreditDefaultSwapData = domain::creditDefaultSwapData());}
+void* _get_compositeTradeComponents_Trade_t_CreditDefaultSwapOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CreditDefaultSwapOptionData = domain::creditDefaultSwapOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityForwardData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityForwardData = domain::commodityForwardData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityOptionData = domain::commodityOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityDigitalAveragePriceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityDigitalAveragePriceOptionData = domain::commodityDigitalAveragePriceOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityDigitalOptionData = domain::commodityDigitalOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommoditySpreadOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommoditySpreadOptionData = domain::commoditySpreadOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommoditySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommoditySwapData = domain::commoditySwapData());}
+void* _get_compositeTradeComponents_Trade_t_CommoditySwaptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommoditySwaptionData = domain::commoditySwaptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityAveragePriceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityAveragePriceOptionData = domain::commodityAveragePriceOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityOptionStripData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityOptionStripData = domain::commodityOptionStripData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityPositionData = domain::commodityPositionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityAsianOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxAsianOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityAsianOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityAsianOptionData = domain::singleUnderlyingAsianOptionData());}
+void* _get_compositeTradeComponents_Trade_t_BondOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BondOptionData = domain::bondOptionData());}
+void* _get_compositeTradeComponents_Trade_t_BondRepoData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BondRepoData = domain::bondRepoData());}
+void* _get_compositeTradeComponents_Trade_t_BondTRSData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BondTRSData = domain::bondTRSData());}
+void* _get_compositeTradeComponents_Trade_t_CdoData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CdoData = domain::cdoData());}
+void* _get_compositeTradeComponents_Trade_t_CreditLinkedSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CreditLinkedSwapData = domain::creditLinkedSwapData());}
+void* _get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->IndexCreditDefaultSwapData = domain::indexCreditDefaultSwapData());}
+void* _get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->IndexCreditDefaultSwapOptionData = domain::indexCreditDefaultSwapOptionData());}
+void* _get_compositeTradeComponents_Trade_t_MultiLegOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->MultiLegOptionData = domain::multiLegOptionData());}
+void* _get_compositeTradeComponents_Trade_t_AscotData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->AscotData = domain::ascotData());}
+void* _get_compositeTradeComponents_Trade_t_ConvertibleBondData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ConvertibleBondData = domain::convertibleBondData());}
+void* _get_compositeTradeComponents_Trade_t_CallableBondData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CallableBondData = domain::callableBondData());}
+void* _get_compositeTradeComponents_Trade_t_TreasuryLockData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->TreasuryLockData = domain::tlockData());}
+void* _get_compositeTradeComponents_Trade_t_RiskParticipationAgreementData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->RiskParticipationAgreementData = domain::rpaData());}
+void* _get_compositeTradeComponents_Trade_t_CBOData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CBOData = domain::cbodata());}
+void* _get_compositeTradeComponents_Trade_t_BondBasketData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BondBasketData = domain::bondBasketData());}
+void* _get_compositeTradeComponents_Trade_t_EquityPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityPositionData = domain::equityPositionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityOptionPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityOptionPositionData = domain::equityOptionPositionData());}
+void* _get_compositeTradeComponents_Trade_t_TotalReturnSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->TotalReturnSwapData = domain::totalReturnSwapData());}
+void* _get_compositeTradeComponents_Trade_t_ContractForDifferenceData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ContractForDifferenceData = domain::totalReturnSwapData());}
+void* _get_compositeTradeComponents_Trade_t_CompositeTradeData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CompositeTradeData = domain::compositeTradeData());}
+void* _get_compositeTradeComponents_Trade_t_PairwiseVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->PairwiseVarianceSwapData = domain::pairwiseVarianceSwapData1());}
+void* _get_compositeTradeComponents_Trade_t_EquityPairwiseVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityPairwiseVarianceSwapData = domain::pairwiseVarianceSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_FxPairwiseVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxPairwiseVarianceSwapData = domain::pairwiseVarianceSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_EquityOutperformanceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityOutperformanceOptionData = domain::eqOutperformanceOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FlexiSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FlexiSwapData = domain::flexiSwapData());}
+void* _get_compositeTradeComponents_Trade_t_BalanceGuaranteedSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BalanceGuaranteedSwapData = domain::bgSwapData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityRevenueOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityRevenueOptionData = domain::commodityRevenueOptionData());}
+void* _get_compositeTradeComponents_Trade_t_BasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BasketVarianceSwapData = domain::basketVarianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_EquityBasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_FxBasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_CommodityBasketVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityBasketVarianceSwapData = domain::basketVarianceSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_ExtendedAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ExtendedAccumulatorData = domain::extendedAccumulatorData());}
+void* _get_compositeTradeComponents_Trade_t_VarianceOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->VarianceOptionData = domain::varianceOptionData());}
+void* _get_compositeTradeComponents_Trade_t_VarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->VarianceDispersionSwapData = domain::varianceDispersionSwapData());}
+void* _get_compositeTradeComponents_Trade_t_KIKOVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->KIKOVarianceSwapData = domain::kikoVarianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_CorridorVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CorridorVarianceSwapData = domain::corridorVarianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_IndexedCorridorVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->IndexedCorridorVarianceSwapData = domain::indexedCorridorVarianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_KIKOCorridorVarianceSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->KIKOCorridorVarianceSwapData = domain::kikoCorridorVarianceSwapData());}
+void* _get_compositeTradeComponents_Trade_t_CorridorVarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CorridorVarianceDispersionSwapData = domain::corridorVarianceDispersionSwapData());}
+void* _get_compositeTradeComponents_Trade_t_KOCorridorVarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->KOCorridorVarianceDispersionSwapData = domain::koCorridorVarianceDispersionSwapData());}
+void* _get_compositeTradeComponents_Trade_t_PairwiseGeometricVarianceDispersionSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->PairwiseGeometricVarianceDispersionSwapData = domain::pairwiseGeometricVarianceDispersionSwapData());}
+void* _get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap01Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ConditionalVarianceSwap01Data = domain::conditionalVarianceSwap01Data());}
+void* _get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap02Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ConditionalVarianceSwap02Data = domain::conditionalVarianceSwap02Data());}
+void* _get_compositeTradeComponents_Trade_t_GammaSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->GammaSwapData = domain::gammaSwapData());}
+void* _get_compositeTradeComponents_Trade_t_BestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BestEntryOptionData = domain::bestEntryOptionData());}
+void* _get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->DualEuroBinaryOptionData = domain::dualEuroBinaryOptionData());}
+void* _get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionDoubleKOData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->DualEuroBinaryOptionDoubleKOData = domain::dualEuroBinaryOptionDoubleKOData());}
+void* _get_compositeTradeComponents_Trade_t_VolatilityBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->VolatilityBarrierOptionData = domain::volBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxTaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxTaRFData = domain::tarfData2());}
+void* _get_compositeTradeComponents_Trade_t_EquityTaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityTaRFData = domain::tarfData2());}
+void* _get_compositeTradeComponents_Trade_t_CommodityTaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityTaRFData = domain::tarfData2());}
+void* _get_compositeTradeComponents_Trade_t_FxAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxAccumulatorData = domain::accumulatorData());}
+void* _get_compositeTradeComponents_Trade_t_EquityAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityAccumulatorData = domain::accumulatorData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityAccumulatorData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityAccumulatorData = domain::accumulatorData());}
+void* _get_compositeTradeComponents_Trade_t_FxWindowBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxWindowBarrierOptionData = domain::windowBarrierOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_EquityWindowBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityWindowBarrierOptionData = domain::windowBarrierOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_CommodityWindowBarierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityWindowBarierOptionData = domain::windowBarrierOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_EquityBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityBasketOptionData = domain::basketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxBasketOptionData = domain::basketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityBasketOptionData = domain::basketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxGenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityGenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityGenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityGenericBarrierOptionData = domain::genericBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityRainbowOptionData = domain::rainbowOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FxRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxRainbowOptionData = domain::rainbowOptionData());}
+void* _get_compositeTradeComponents_Trade_t_CommodityRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityRainbowOptionData = domain::rainbowOptionData());}
+void* _get_compositeTradeComponents_Trade_t_Autocallable01Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->Autocallable01Data = domain::autocallable01Data());}
+void* _get_compositeTradeComponents_Trade_t_DoubleDigitalOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->DoubleDigitalOptionData = domain::doubleDigitalOptionData());}
+void* _get_compositeTradeComponents_Trade_t_PerformanceOption01Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->PerformanceOption01Data = domain::performanceOption01Data());}
+void* _get_compositeTradeComponents_Trade_t_ScriptedTradeData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ScriptedTradeData = domain::scriptedTradeData());}
+void* _get_compositeTradeComponents_Trade_t_VanillaBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->VanillaBasketOptionData = domain::vanillaBasketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_AsianBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->AsianBasketOptionData = domain::asianBasketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_AverageStrikeBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->AverageStrikeBasketOptionData = domain::averageStrikeBasketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_LookbackCallBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->LookbackCallBasketOptionData = domain::lookbackCallBasketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_LookbackPutBasketOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->LookbackPutBasketOptionData = domain::lookbackPutBasketOptionData());}
+void* _get_compositeTradeComponents_Trade_t_BestOfAirbagData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BestOfAirbagData = domain::bestOfAirbagData());}
+void* _get_compositeTradeComponents_Trade_t_WorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstOfBasketSwapData = domain::worstOfBasketSwapData());}
+void* _get_compositeTradeComponents_Trade_t_FxWorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_EquityWorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_CommodityWorstOfBasketSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityWorstOfBasketSwapData = domain::worstOfBasketSwapData2());}
+void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption01Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption01Data = domain::worstPerformanceRainbowOption01Data());}
+void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption02Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption02Data = domain::worstPerformanceRainbowOption02Data());}
+void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption03Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption03Data = domain::worstPerformanceRainbowOption03Data());}
+void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption04Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption04Data = domain::worstPerformanceRainbowOption04Data());}
+void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption05Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption05Data = domain::worstPerformanceRainbowOption05Data());}
+void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption06Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption06Data = domain::worstPerformanceRainbowOption06Data());}
+void* _get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption07Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstPerformanceRainbowOption07Data = domain::worstPerformanceRainbowOption07Data());}
+void* _get_compositeTradeComponents_Trade_t_BestOfAssetOrCashRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->BestOfAssetOrCashRainbowOptionData = domain::bestOfAssetOrCashRainbowOptionData());}
+void* _get_compositeTradeComponents_Trade_t_WorstOfAssetOrCashRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WorstOfAssetOrCashRainbowOptionData = domain::worstOfAssetOrCashRainbowOptionData());}
+void* _get_compositeTradeComponents_Trade_t_MinRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->MinRainbowOptionData = domain::minRainbowOptionData());}
+void* _get_compositeTradeComponents_Trade_t_MaxRainbowOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->MaxRainbowOptionData = domain::maxRainbowOptionData());}
+void* _get_compositeTradeComponents_Trade_t_WindowBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->WindowBarrierOptionData = domain::windowBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_Accumulator01Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->Accumulator01Data = domain::accumulator01Data());}
+void* _get_compositeTradeComponents_Trade_t_Accumulator02Data(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->Accumulator02Data = domain::accumulator02Data());}
+void* _get_compositeTradeComponents_Trade_t_EquityBestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_FxBestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_CommodityBestEntryOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityBestEntryOptionData = domain::bestEntryOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_TaRFData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->TaRFData = domain::tarfData());}
+void* _get_compositeTradeComponents_Trade_t_EuropeanRainbowCallSpreadOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EuropeanRainbowCallSpreadOptionData = domain::europeanRainbowCallSpreadOptionData());}
+void* _get_compositeTradeComponents_Trade_t_RainbowCallSpreadBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->RainbowCallSpreadBarrierOptionData = domain::rainbowCallSpreadBarrierOptionData());}
+void* _get_compositeTradeComponents_Trade_t_AsianRainbowCallSpreadOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->AsianRainbowCallSpreadOptionData = domain::asianRainbowCallSpreadOptionData());}
+void* _get_compositeTradeComponents_Trade_t_AsianIrCapFloorData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->AsianIrCapFloorData = domain::asianIrCapFloorData());}
+void* _get_compositeTradeComponents_Trade_t_ForwardVolatilityAgreementData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ForwardVolatilityAgreementData = domain::forwardVolatilityAgreementData());}
+void* _get_compositeTradeComponents_Trade_t_CorrelationSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CorrelationSwapData = domain::correlationSwapData());}
+void* _get_compositeTradeComponents_Trade_t_AssetLinkedCliquetOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->AssetLinkedCliquetOptionData = domain::assetLinkedCliquetOptionData());}
+void* _get_compositeTradeComponents_Trade_t_ConstantMaturityVolatilitySwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ConstantMaturityVolatilitySwapData = domain::constantMaturityVolatilitySwapData());}
+void* _get_compositeTradeComponents_Trade_t_CMSCapFloorBarrierData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CMSCapFloorBarrierData = domain::cmsCapFloorBarrierData());}
+void* _get_compositeTradeComponents_Trade_t_FixedStrikeForwardStartingOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FixedStrikeForwardStartingOptionData = domain::fixedStrikeForwardStartingOptionData());}
+void* _get_compositeTradeComponents_Trade_t_FloatingStrikeForwardStartingOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FloatingStrikeForwardStartingOptionData = domain::floatingStrikeForwardStartingOptionData());}
+void* _get_compositeTradeComponents_Trade_t_ForwardStartingSwaptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->ForwardStartingSwaptionData = domain::forwardStartingSwaptionData());}
+void* _get_compositeTradeComponents_Trade_t_FlooredAverageCPIZCIISData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FlooredAverageCPIZCIISData = domain::flooredAverageCPIZCIISData());}
+void* _get_compositeTradeComponents_Trade_t_GenericBarrierOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->GenericBarrierOptionData = domain::genericBarrierOptionDataRaw());}
+void* _get_compositeTradeComponents_Trade_t_MovingMaxYYIISData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->MovingMaxYYIISData = domain::movingMaxYYIISData());}
+void* _get_compositeTradeComponents_Trade_t_IrregularYYIISData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->IrregularYYIISData = domain::irregularYYIISData());}
+void* _get_compositeTradeComponents_Trade_t_EuropeanOptionBarrierData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EuropeanOptionBarrierData = domain::europeanOptionBarrierData());}
+void* _get_compositeTradeComponents_Trade_t_LadderLockInOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->LadderLockInOptionData = domain::ladderLockInOptionData());}
+void* _get_compositeTradeComponents_Trade_t_LapseHedgeSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->LapseHedgeSwapData = domain::lapseHedgeSwapData());}
+void* _get_compositeTradeComponents_Trade_t_KnockOutSwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->KnockOutSwapData = domain::knockOutSwapData());}
+void* _get_compositeTradeComponents_Trade_t_LPISwapData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->LPISwapData = domain::LPISwapData());}
+void* _get_compositeTradeComponents_Trade_t_CashPositionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CashPositionData = domain::cashPositionData());}
+void* _get_compositeTradeComponents_Trade_t_StrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->StrikeResettableOptionData = domain::strikeResettableOptionData());}
+void* _get_compositeTradeComponents_Trade_t_EquityStrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->EquityStrikeResettableOptionData = domain::strikeResettableOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_FxStrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->FxStrikeResettableOptionData = domain::strikeResettableOptionData2());}
+void* _get_compositeTradeComponents_Trade_t_CommodityStrikeResettableOptionData(domain::compositeTradeComponents_Trade_t* parent) {return &*(parent->CommodityStrikeResettableOptionData = domain::strikeResettableOptionData2());}
 xsdcpp::ChildElementInfo _compositeTradeComponents_Trade_t_Children[] = {
     {"TradeType", 0, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_TradeType, &domain::_oreTradeType_Info, 1, 1},
     {"Envelope", 1, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_Envelope, &domain::_envelope_Info, 0, 1},
-    {"CrossCurrencySwapData", 2, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CrossCurrencySwapData, &domain::_swapData_Info, 1, 1},
-    {"InflationSwapData", 3, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_InflationSwapData, &domain::_swapData_Info, 1, 1},
-    {"SwapData", 4, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_SwapData, &domain::_swapData_Info, 1, 1},
-    {"EquitySwapData", 5, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquitySwapData, &domain::_swapData_Info, 1, 1},
-    {"CallableSwapData", 6, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CallableSwapData, &domain::_callableSwapData_Info, 1, 1},
-    {"ArcOptionData", 7, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ArcOptionData, &domain::_arcOptionData_Info, 1, 1},
-    {"SwaptionData", 8, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_SwaptionData, &domain::_swaptionData_Info, 1, 1},
-    {"VarianceSwapData", 9, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"EquityVarianceSwapData", 10, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"FxVarianceSwapData", 11, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"CommodityVarianceSwapData", 12, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityVarianceSwapData, &domain::_varianceSwapData_Info, 1, 1},
-    {"ForwardRateAgreementData", 13, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardRateAgreementData, &domain::_forwardRateAgreementData_Info, 1, 1},
-    {"FxForwardData", 14, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxForwardData, &domain::_fxForwardData_Info, 1, 1},
-    {"FxAverageForwardData", 15, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxAverageForwardData, &domain::_fxAverageForwardData_Info, 1, 1},
-    {"FxOptionData", 16, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxOptionData, &domain::_fxOptionData_Info, 1, 1},
-    {"FxBarrierOptionData", 17, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxDoubleBarrierOptionData", 18, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDoubleBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxDigitalOptionData", 19, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDigitalOptionData, &domain::_fxDigitalOptionData_Info, 1, 1},
-    {"FxEuropeanBarrierOptionData", 20, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxEuropeanBarrierOptionData, &domain::_fxBarrierOptionData_Info, 1, 1},
-    {"FxKIKOBarrierOptionData", 21, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxKIKOBarrierOptionData, &domain::_fxKIKOBarrierOptionData_Info, 1, 1},
-    {"FxDigitalBarrierOptionData", 22, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDigitalBarrierOptionData, &domain::_fxDigitalBarrierOptionData_Info, 1, 1},
-    {"FxTouchOptionData", 23, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxTouchOptionData, &domain::_fxTouchOptionData_Info, 1, 1},
-    {"FxDoubleTouchOptionData", 24, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDoubleTouchOptionData, &domain::_fxTouchOptionData_Info, 1, 1},
-    {"FxSwapData", 25, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxSwapData, &domain::_fxSwapData_Info, 1, 1},
-    {"CapFloorData", 26, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CapFloorData, &domain::_capFloorData_Info, 1, 1},
-    {"EquityFutureOptionData", 27, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityFutureOptionData, &domain::_equityFutureOptionData_Info, 1, 1},
-    {"EquityOptionData", 28, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityOptionData, &domain::_equityOptionData_Info, 1, 1},
-    {"EquityBarrierOptionData", 29, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityDoubleBarrierOptionData", 30, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityDoubleBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityForwardData", 31, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityForwardData, &domain::_equityForwardData_Info, 1, 1},
-    {"EquityEuropeanBarrierOptionData", 32, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityEuropeanBarrierOptionData, &domain::_eqBarrierOptionData_Info, 1, 1},
-    {"EquityDigitalOptionData", 33, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityDigitalOptionData, &domain::_eqDigitalOptionData_Info, 1, 1},
-    {"EquityDoubleTouchOptionData", 34, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityDoubleTouchOptionData, &domain::_eqTouchOptionData_Info, 1, 1},
-    {"EquityTouchOptionData", 35, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityTouchOptionData, &domain::_eqTouchOptionData_Info, 1, 1},
-    {"EquityCliquetOptionData", 36, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityCliquetOptionData, &domain::_cliquetOptionData_Info, 1, 1},
-    {"BondData", 37, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondData, &domain::_bondData_Info, 1, 1},
-    {"ForwardBondData", 38, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardBondData, &domain::_forwardBondData_Info, 1, 1},
-    {"BondFutureData", 39, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondFutureData, &domain::_bondFutureData_Info, 1, 1},
-    {"CreditDefaultSwapData", 40, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CreditDefaultSwapData, &domain::_creditDefaultSwapData_Info, 1, 1},
-    {"CreditDefaultSwapOptionData", 41, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CreditDefaultSwapOptionData, &domain::_creditDefaultSwapOptionData_Info, 1, 1},
-    {"CommodityForwardData", 42, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityForwardData, &domain::_commodityForwardData_Info, 1, 1},
-    {"CommodityOptionData", 43, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityOptionData, &domain::_commodityOptionData_Info, 1, 1},
-    {"CommodityDigitalAveragePriceOptionData", 44, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityDigitalAveragePriceOptionData, &domain::_commodityDigitalAveragePriceOptionData_Info, 1, 1},
-    {"CommodityDigitalOptionData", 45, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityDigitalOptionData, &domain::_commodityDigitalOptionData_Info, 1, 1},
-    {"CommoditySpreadOptionData", 46, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommoditySpreadOptionData, &domain::_commoditySpreadOptionData_Info, 1, 1},
-    {"CommoditySwapData", 47, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommoditySwapData, &domain::_commoditySwapData_Info, 1, 1},
-    {"CommoditySwaptionData", 48, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommoditySwaptionData, &domain::_commoditySwaptionData_Info, 1, 1},
-    {"CommodityAveragePriceOptionData", 49, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityAveragePriceOptionData, &domain::_commodityAveragePriceOptionData_Info, 1, 1},
-    {"CommodityOptionStripData", 50, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityOptionStripData, &domain::_commodityOptionStripData_Info, 1, 1},
-    {"CommodityPositionData", 51, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityPositionData, &domain::_commodityPositionData_Info, 1, 1},
-    {"EquityAsianOptionData", 52, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"FxAsianOptionData", 53, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"CommodityAsianOptionData", 54, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 1, 1},
-    {"BondOptionData", 55, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondOptionData, &domain::_bondOptionData_Info, 1, 1},
-    {"BondRepoData", 56, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondRepoData, &domain::_bondRepoData_Info, 1, 1},
-    {"BondTRSData", 57, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondTRSData, &domain::_bondTRSData_Info, 1, 1},
-    {"CdoData", 58, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CdoData, &domain::_cdoData_Info, 1, 1},
-    {"CreditLinkedSwapData", 59, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CreditLinkedSwapData, &domain::_creditLinkedSwapData_Info, 1, 1},
-    {"IndexCreditDefaultSwapData", 60, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapData, &domain::_indexCreditDefaultSwapData_Info, 1, 1},
-    {"IndexCreditDefaultSwapOptionData", 61, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapOptionData, &domain::_indexCreditDefaultSwapOptionData_Info, 1, 1},
-    {"MultiLegOptionData", 62, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MultiLegOptionData, &domain::_multiLegOptionData_Info, 1, 1},
-    {"AscotData", 63, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AscotData, &domain::_ascotData_Info, 1, 1},
-    {"ConvertibleBondData", 64, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConvertibleBondData, &domain::_convertibleBondData_Info, 1, 1},
-    {"CallableBondData", 65, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CallableBondData, &domain::_callableBondData_Info, 1, 1},
-    {"TreasuryLockData", 66, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_TreasuryLockData, &domain::_tlockData_Info, 1, 1},
-    {"RiskParticipationAgreementData", 67, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_RiskParticipationAgreementData, &domain::_rpaData_Info, 1, 1},
-    {"CBOData", 68, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CBOData, &domain::_cbodata_Info, 1, 1},
-    {"BondBasketData", 69, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondBasketData, &domain::_bondBasketData_Info, 1, 1},
-    {"EquityPositionData", 70, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityPositionData, &domain::_equityPositionData_Info, 1, 1},
-    {"EquityOptionPositionData", 71, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityOptionPositionData, &domain::_equityOptionPositionData_Info, 1, 1},
-    {"TotalReturnSwapData", 72, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_TotalReturnSwapData, &domain::_totalReturnSwapData_Info, 1, 1},
-    {"ContractForDifferenceData", 73, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ContractForDifferenceData, &domain::_totalReturnSwapData_Info, 1, 1},
-    {"CompositeTradeData", 74, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CompositeTradeData, &domain::_compositeTradeData_Info, 1, 1},
-    {"PairwiseVarianceSwapData", 75, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_PairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData1_Info, 1, 1},
-    {"EquityPairwiseVarianceSwapData", 76, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 1, 1},
-    {"FxPairwiseVarianceSwapData", 77, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 1, 1},
-    {"EquityOutperformanceOptionData", 78, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityOutperformanceOptionData, &domain::_eqOutperformanceOptionData_Info, 1, 1},
-    {"FlexiSwapData", 79, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FlexiSwapData, &domain::_flexiSwapData_Info, 1, 1},
-    {"BalanceGuaranteedSwapData", 80, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BalanceGuaranteedSwapData, &domain::_bgSwapData_Info, 1, 1},
-    {"CommodityRevenueOptionData", 81, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityRevenueOptionData, &domain::_commodityRevenueOptionData_Info, 1, 1},
-    {"BasketVarianceSwapData", 82, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BasketVarianceSwapData, &domain::_basketVarianceSwapData_Info, 1, 1},
-    {"EquityBasketVarianceSwapData", 83, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"FxBasketVarianceSwapData", 84, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"CommodityBasketVarianceSwapData", 85, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 1, 1},
-    {"ExtendedAccumulatorData", 86, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ExtendedAccumulatorData, &domain::_extendedAccumulatorData_Info, 1, 1},
-    {"VarianceOptionData", 87, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VarianceOptionData, &domain::_varianceOptionData_Info, 1, 1},
-    {"VarianceDispersionSwapData", 88, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VarianceDispersionSwapData, &domain::_varianceDispersionSwapData_Info, 1, 1},
-    {"KIKOVarianceSwapData", 89, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KIKOVarianceSwapData, &domain::_kikoVarianceSwapData_Info, 1, 1},
-    {"CorridorVarianceSwapData", 90, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CorridorVarianceSwapData, &domain::_corridorVarianceSwapData_Info, 1, 1},
-    {"IndexedCorridorVarianceSwapData", 91, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IndexedCorridorVarianceSwapData, &domain::_indexedCorridorVarianceSwapData_Info, 1, 1},
-    {"KIKOCorridorVarianceSwapData", 92, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KIKOCorridorVarianceSwapData, &domain::_kikoCorridorVarianceSwapData_Info, 1, 1},
-    {"CorridorVarianceDispersionSwapData", 93, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CorridorVarianceDispersionSwapData, &domain::_corridorVarianceDispersionSwapData_Info, 1, 1},
-    {"KOCorridorVarianceDispersionSwapData", 94, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KOCorridorVarianceDispersionSwapData, &domain::_koCorridorVarianceDispersionSwapData_Info, 1, 1},
-    {"PairwiseGeometricVarianceDispersionSwapData", 95, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_PairwiseGeometricVarianceDispersionSwapData, &domain::_pairwiseGeometricVarianceDispersionSwapData_Info, 1, 1},
-    {"ConditionalVarianceSwap01Data", 96, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap01Data, &domain::_conditionalVarianceSwap01Data_Info, 1, 1},
-    {"ConditionalVarianceSwap02Data", 97, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap02Data, &domain::_conditionalVarianceSwap02Data_Info, 1, 1},
-    {"GammaSwapData", 98, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_GammaSwapData, &domain::_gammaSwapData_Info, 1, 1},
-    {"BestEntryOptionData", 99, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BestEntryOptionData, &domain::_bestEntryOptionData_Info, 1, 1},
-    {"DualEuroBinaryOptionData", 100, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionData, &domain::_dualEuroBinaryOptionData_Info, 1, 1},
-    {"DualEuroBinaryOptionDoubleKOData", 101, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionDoubleKOData, &domain::_dualEuroBinaryOptionDoubleKOData_Info, 1, 1},
-    {"VolatilityBarrierOptionData", 102, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VolatilityBarrierOptionData, &domain::_volBarrierOptionData_Info, 1, 1},
-    {"FxTaRFData", 103, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"EquityTaRFData", 104, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"CommodityTaRFData", 105, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityTaRFData, &domain::_tarfData2_Info, 1, 1},
-    {"FxAccumulatorData", 106, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"EquityAccumulatorData", 107, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"CommodityAccumulatorData", 108, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityAccumulatorData, &domain::_accumulatorData_Info, 1, 1},
-    {"FxWindowBarrierOptionData", 109, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"EquityWindowBarrierOptionData", 110, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"CommodityWindowBarierOptionData", 111, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityWindowBarierOptionData, &domain::_windowBarrierOptionData2_Info, 1, 1},
-    {"EquityBasketOptionData", 112, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"FxBasketOptionData", 113, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"CommodityBasketOptionData", 114, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityBasketOptionData, &domain::_basketOptionData_Info, 1, 1},
-    {"FxGenericBarrierOptionData", 115, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"EquityGenericBarrierOptionData", 116, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"CommodityGenericBarrierOptionData", 117, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 1, 1},
-    {"EquityRainbowOptionData", 118, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"FxRainbowOptionData", 119, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"CommodityRainbowOptionData", 120, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityRainbowOptionData, &domain::_rainbowOptionData_Info, 1, 1},
-    {"Autocallable01Data", 121, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_Autocallable01Data, &domain::_autocallable01Data_Info, 1, 1},
-    {"DoubleDigitalOptionData", 122, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_DoubleDigitalOptionData, &domain::_doubleDigitalOptionData_Info, 1, 1},
-    {"PerformanceOption01Data", 123, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_PerformanceOption01Data, &domain::_performanceOption01Data_Info, 1, 1},
-    {"ScriptedTradeData", 124, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ScriptedTradeData, &domain::_scriptedTradeData_Info, 1, 1},
-    {"VanillaBasketOptionData", 125, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VanillaBasketOptionData, &domain::_vanillaBasketOptionData_Info, 1, 1},
-    {"AsianBasketOptionData", 126, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AsianBasketOptionData, &domain::_asianBasketOptionData_Info, 1, 1},
-    {"AverageStrikeBasketOptionData", 127, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AverageStrikeBasketOptionData, &domain::_averageStrikeBasketOptionData_Info, 1, 1},
-    {"LookbackCallBasketOptionData", 128, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LookbackCallBasketOptionData, &domain::_lookbackCallBasketOptionData_Info, 1, 1},
-    {"LookbackPutBasketOptionData", 129, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LookbackPutBasketOptionData, &domain::_lookbackPutBasketOptionData_Info, 1, 1},
-    {"BestOfAirbagData", 130, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BestOfAirbagData, &domain::_bestOfAirbagData_Info, 1, 1},
-    {"WorstOfBasketSwapData", 131, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstOfBasketSwapData, &domain::_worstOfBasketSwapData_Info, 1, 1},
-    {"FxWorstOfBasketSwapData", 132, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"EquityWorstOfBasketSwapData", 133, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"CommodityWorstOfBasketSwapData", 134, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 1, 1},
-    {"WorstPerformanceRainbowOption01Data", 135, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption01Data, &domain::_worstPerformanceRainbowOption01Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption02Data", 136, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption02Data, &domain::_worstPerformanceRainbowOption02Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption03Data", 137, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption03Data, &domain::_worstPerformanceRainbowOption03Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption04Data", 138, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption04Data, &domain::_worstPerformanceRainbowOption04Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption05Data", 139, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption05Data, &domain::_worstPerformanceRainbowOption05Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption06Data", 140, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption06Data, &domain::_worstPerformanceRainbowOption06Data_Info, 1, 1},
-    {"WorstPerformanceRainbowOption07Data", 141, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption07Data, &domain::_worstPerformanceRainbowOption07Data_Info, 1, 1},
-    {"BestOfAssetOrCashRainbowOptionData", 142, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BestOfAssetOrCashRainbowOptionData, &domain::_bestOfAssetOrCashRainbowOptionData_Info, 1, 1},
-    {"WorstOfAssetOrCashRainbowOptionData", 143, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstOfAssetOrCashRainbowOptionData, &domain::_worstOfAssetOrCashRainbowOptionData_Info, 1, 1},
-    {"MinRainbowOptionData", 144, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MinRainbowOptionData, &domain::_minRainbowOptionData_Info, 1, 1},
-    {"MaxRainbowOptionData", 145, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MaxRainbowOptionData, &domain::_maxRainbowOptionData_Info, 1, 1},
-    {"WindowBarrierOptionData", 146, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WindowBarrierOptionData, &domain::_windowBarrierOptionData_Info, 1, 1},
-    {"Accumulator01Data", 147, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_Accumulator01Data, &domain::_accumulator01Data_Info, 1, 1},
-    {"Accumulator02Data", 148, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_Accumulator02Data, &domain::_accumulator02Data_Info, 1, 1},
-    {"EquityBestEntryOptionData", 149, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"FxBestEntryOptionData", 150, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"CommodityBestEntryOptionData", 151, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 1, 1},
-    {"TaRFData", 152, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_TaRFData, &domain::_tarfData_Info, 1, 1},
-    {"EuropeanRainbowCallSpreadOptionData", 153, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EuropeanRainbowCallSpreadOptionData, &domain::_europeanRainbowCallSpreadOptionData_Info, 1, 1},
-    {"RainbowCallSpreadBarrierOptionData", 154, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_RainbowCallSpreadBarrierOptionData, &domain::_rainbowCallSpreadBarrierOptionData_Info, 1, 1},
-    {"AsianRainbowCallSpreadOptionData", 155, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AsianRainbowCallSpreadOptionData, &domain::_asianRainbowCallSpreadOptionData_Info, 1, 1},
-    {"AsianIrCapFloorData", 156, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AsianIrCapFloorData, &domain::_asianIrCapFloorData_Info, 1, 1},
-    {"ForwardVolatilityAgreementData", 157, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardVolatilityAgreementData, &domain::_forwardVolatilityAgreementData_Info, 1, 1},
-    {"CorrelationSwapData", 158, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CorrelationSwapData, &domain::_correlationSwapData_Info, 1, 1},
-    {"AssetLinkedCliquetOptionData", 159, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AssetLinkedCliquetOptionData, &domain::_assetLinkedCliquetOptionData_Info, 1, 1},
-    {"ConstantMaturityVolatilitySwapData", 160, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConstantMaturityVolatilitySwapData, &domain::_constantMaturityVolatilitySwapData_Info, 1, 1},
-    {"CMSCapFloorBarrierData", 161, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CMSCapFloorBarrierData, &domain::_cmsCapFloorBarrierData_Info, 1, 1},
-    {"FixedStrikeForwardStartingOptionData", 162, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FixedStrikeForwardStartingOptionData, &domain::_fixedStrikeForwardStartingOptionData_Info, 1, 1},
-    {"FloatingStrikeForwardStartingOptionData", 163, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FloatingStrikeForwardStartingOptionData, &domain::_floatingStrikeForwardStartingOptionData_Info, 1, 1},
-    {"ForwardStartingSwaptionData", 164, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardStartingSwaptionData, &domain::_forwardStartingSwaptionData_Info, 1, 1},
-    {"FlooredAverageCPIZCIISData", 165, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FlooredAverageCPIZCIISData, &domain::_flooredAverageCPIZCIISData_Info, 1, 1},
-    {"GenericBarrierOptionData", 166, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_GenericBarrierOptionData, &domain::_genericBarrierOptionDataRaw_Info, 1, 1},
-    {"MovingMaxYYIISData", 167, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MovingMaxYYIISData, &domain::_movingMaxYYIISData_Info, 1, 1},
-    {"IrregularYYIISData", 168, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IrregularYYIISData, &domain::_irregularYYIISData_Info, 1, 1},
-    {"EuropeanOptionBarrierData", 169, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EuropeanOptionBarrierData, &domain::_europeanOptionBarrierData_Info, 1, 1},
-    {"LadderLockInOptionData", 170, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LadderLockInOptionData, &domain::_ladderLockInOptionData_Info, 1, 1},
-    {"LapseHedgeSwapData", 171, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LapseHedgeSwapData, &domain::_lapseHedgeSwapData_Info, 1, 1},
-    {"KnockOutSwapData", 172, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KnockOutSwapData, &domain::_knockOutSwapData_Info, 1, 1},
-    {"LPISwapData", 173, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LPISwapData, &domain::_LPISwapData_Info, 1, 1},
-    {"CashPositionData", 174, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CashPositionData, &domain::_cashPositionData_Info, 1, 1},
-    {"StrikeResettableOptionData", 175, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_StrikeResettableOptionData, &domain::_strikeResettableOptionData_Info, 1, 1},
-    {"EquityStrikeResettableOptionData", 176, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
-    {"FxStrikeResettableOptionData", 177, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
-    {"CommodityStrikeResettableOptionData", 178, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 1, 1},
+    {"CrossCurrencySwapData", 2, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CrossCurrencySwapData, &domain::_swapData_Info, 0, 1},
+    {"InflationSwapData", 3, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_InflationSwapData, &domain::_swapData_Info, 0, 1},
+    {"SwapData", 4, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_SwapData, &domain::_swapData_Info, 0, 1},
+    {"EquitySwapData", 5, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquitySwapData, &domain::_swapData_Info, 0, 1},
+    {"CallableSwapData", 6, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CallableSwapData, &domain::_callableSwapData_Info, 0, 1},
+    {"ArcOptionData", 7, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ArcOptionData, &domain::_arcOptionData_Info, 0, 1},
+    {"SwaptionData", 8, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_SwaptionData, &domain::_swaptionData_Info, 0, 1},
+    {"VarianceSwapData", 9, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"EquityVarianceSwapData", 10, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"FxVarianceSwapData", 11, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"CommodityVarianceSwapData", 12, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityVarianceSwapData, &domain::_varianceSwapData_Info, 0, 1},
+    {"ForwardRateAgreementData", 13, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardRateAgreementData, &domain::_forwardRateAgreementData_Info, 0, 1},
+    {"FxForwardData", 14, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxForwardData, &domain::_fxForwardData_Info, 0, 1},
+    {"FxAverageForwardData", 15, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxAverageForwardData, &domain::_fxAverageForwardData_Info, 0, 1},
+    {"FxOptionData", 16, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxOptionData, &domain::_fxOptionData_Info, 0, 1},
+    {"FxBarrierOptionData", 17, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxDoubleBarrierOptionData", 18, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDoubleBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxDigitalOptionData", 19, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDigitalOptionData, &domain::_fxDigitalOptionData_Info, 0, 1},
+    {"FxEuropeanBarrierOptionData", 20, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxEuropeanBarrierOptionData, &domain::_fxBarrierOptionData_Info, 0, 1},
+    {"FxKIKOBarrierOptionData", 21, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxKIKOBarrierOptionData, &domain::_fxKIKOBarrierOptionData_Info, 0, 1},
+    {"FxDigitalBarrierOptionData", 22, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDigitalBarrierOptionData, &domain::_fxDigitalBarrierOptionData_Info, 0, 1},
+    {"FxTouchOptionData", 23, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxTouchOptionData, &domain::_fxTouchOptionData_Info, 0, 1},
+    {"FxDoubleTouchOptionData", 24, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxDoubleTouchOptionData, &domain::_fxTouchOptionData_Info, 0, 1},
+    {"FxSwapData", 25, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxSwapData, &domain::_fxSwapData_Info, 0, 1},
+    {"CapFloorData", 26, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CapFloorData, &domain::_capFloorData_Info, 0, 1},
+    {"EquityFutureOptionData", 27, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityFutureOptionData, &domain::_equityFutureOptionData_Info, 0, 1},
+    {"EquityOptionData", 28, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityOptionData, &domain::_equityOptionData_Info, 0, 1},
+    {"EquityBarrierOptionData", 29, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityDoubleBarrierOptionData", 30, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityDoubleBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityForwardData", 31, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityForwardData, &domain::_equityForwardData_Info, 0, 1},
+    {"EquityEuropeanBarrierOptionData", 32, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityEuropeanBarrierOptionData, &domain::_eqBarrierOptionData_Info, 0, 1},
+    {"EquityDigitalOptionData", 33, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityDigitalOptionData, &domain::_eqDigitalOptionData_Info, 0, 1},
+    {"EquityDoubleTouchOptionData", 34, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityDoubleTouchOptionData, &domain::_eqTouchOptionData_Info, 0, 1},
+    {"EquityTouchOptionData", 35, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityTouchOptionData, &domain::_eqTouchOptionData_Info, 0, 1},
+    {"EquityCliquetOptionData", 36, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityCliquetOptionData, &domain::_cliquetOptionData_Info, 0, 1},
+    {"BondData", 37, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondData, &domain::_bondData_Info, 0, 1},
+    {"ForwardBondData", 38, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardBondData, &domain::_forwardBondData_Info, 0, 1},
+    {"BondFutureData", 39, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondFutureData, &domain::_bondFutureData_Info, 0, 1},
+    {"CreditDefaultSwapData", 40, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CreditDefaultSwapData, &domain::_creditDefaultSwapData_Info, 0, 1},
+    {"CreditDefaultSwapOptionData", 41, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CreditDefaultSwapOptionData, &domain::_creditDefaultSwapOptionData_Info, 0, 1},
+    {"CommodityForwardData", 42, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityForwardData, &domain::_commodityForwardData_Info, 0, 1},
+    {"CommodityOptionData", 43, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityOptionData, &domain::_commodityOptionData_Info, 0, 1},
+    {"CommodityDigitalAveragePriceOptionData", 44, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityDigitalAveragePriceOptionData, &domain::_commodityDigitalAveragePriceOptionData_Info, 0, 1},
+    {"CommodityDigitalOptionData", 45, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityDigitalOptionData, &domain::_commodityDigitalOptionData_Info, 0, 1},
+    {"CommoditySpreadOptionData", 46, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommoditySpreadOptionData, &domain::_commoditySpreadOptionData_Info, 0, 1},
+    {"CommoditySwapData", 47, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommoditySwapData, &domain::_commoditySwapData_Info, 0, 1},
+    {"CommoditySwaptionData", 48, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommoditySwaptionData, &domain::_commoditySwaptionData_Info, 0, 1},
+    {"CommodityAveragePriceOptionData", 49, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityAveragePriceOptionData, &domain::_commodityAveragePriceOptionData_Info, 0, 1},
+    {"CommodityOptionStripData", 50, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityOptionStripData, &domain::_commodityOptionStripData_Info, 0, 1},
+    {"CommodityPositionData", 51, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityPositionData, &domain::_commodityPositionData_Info, 0, 1},
+    {"EquityAsianOptionData", 52, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"FxAsianOptionData", 53, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"CommodityAsianOptionData", 54, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityAsianOptionData, &domain::_singleUnderlyingAsianOptionData_Info, 0, 1},
+    {"BondOptionData", 55, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondOptionData, &domain::_bondOptionData_Info, 0, 1},
+    {"BondRepoData", 56, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondRepoData, &domain::_bondRepoData_Info, 0, 1},
+    {"BondTRSData", 57, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondTRSData, &domain::_bondTRSData_Info, 0, 1},
+    {"CdoData", 58, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CdoData, &domain::_cdoData_Info, 0, 1},
+    {"CreditLinkedSwapData", 59, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CreditLinkedSwapData, &domain::_creditLinkedSwapData_Info, 0, 1},
+    {"IndexCreditDefaultSwapData", 60, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapData, &domain::_indexCreditDefaultSwapData_Info, 0, 1},
+    {"IndexCreditDefaultSwapOptionData", 61, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IndexCreditDefaultSwapOptionData, &domain::_indexCreditDefaultSwapOptionData_Info, 0, 1},
+    {"MultiLegOptionData", 62, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MultiLegOptionData, &domain::_multiLegOptionData_Info, 0, 1},
+    {"AscotData", 63, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AscotData, &domain::_ascotData_Info, 0, 1},
+    {"ConvertibleBondData", 64, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConvertibleBondData, &domain::_convertibleBondData_Info, 0, 1},
+    {"CallableBondData", 65, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CallableBondData, &domain::_callableBondData_Info, 0, 1},
+    {"TreasuryLockData", 66, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_TreasuryLockData, &domain::_tlockData_Info, 0, 1},
+    {"RiskParticipationAgreementData", 67, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_RiskParticipationAgreementData, &domain::_rpaData_Info, 0, 1},
+    {"CBOData", 68, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CBOData, &domain::_cbodata_Info, 0, 1},
+    {"BondBasketData", 69, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BondBasketData, &domain::_bondBasketData_Info, 0, 1},
+    {"EquityPositionData", 70, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityPositionData, &domain::_equityPositionData_Info, 0, 1},
+    {"EquityOptionPositionData", 71, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityOptionPositionData, &domain::_equityOptionPositionData_Info, 0, 1},
+    {"TotalReturnSwapData", 72, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_TotalReturnSwapData, &domain::_totalReturnSwapData_Info, 0, 1},
+    {"ContractForDifferenceData", 73, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ContractForDifferenceData, &domain::_totalReturnSwapData_Info, 0, 1},
+    {"CompositeTradeData", 74, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CompositeTradeData, &domain::_compositeTradeData_Info, 0, 1},
+    {"PairwiseVarianceSwapData", 75, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_PairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData1_Info, 0, 1},
+    {"EquityPairwiseVarianceSwapData", 76, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 0, 1},
+    {"FxPairwiseVarianceSwapData", 77, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxPairwiseVarianceSwapData, &domain::_pairwiseVarianceSwapData2_Info, 0, 1},
+    {"EquityOutperformanceOptionData", 78, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityOutperformanceOptionData, &domain::_eqOutperformanceOptionData_Info, 0, 1},
+    {"FlexiSwapData", 79, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FlexiSwapData, &domain::_flexiSwapData_Info, 0, 1},
+    {"BalanceGuaranteedSwapData", 80, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BalanceGuaranteedSwapData, &domain::_bgSwapData_Info, 0, 1},
+    {"CommodityRevenueOptionData", 81, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityRevenueOptionData, &domain::_commodityRevenueOptionData_Info, 0, 1},
+    {"BasketVarianceSwapData", 82, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BasketVarianceSwapData, &domain::_basketVarianceSwapData_Info, 0, 1},
+    {"EquityBasketVarianceSwapData", 83, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"FxBasketVarianceSwapData", 84, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"CommodityBasketVarianceSwapData", 85, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityBasketVarianceSwapData, &domain::_basketVarianceSwapData2_Info, 0, 1},
+    {"ExtendedAccumulatorData", 86, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ExtendedAccumulatorData, &domain::_extendedAccumulatorData_Info, 0, 1},
+    {"VarianceOptionData", 87, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VarianceOptionData, &domain::_varianceOptionData_Info, 0, 1},
+    {"VarianceDispersionSwapData", 88, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VarianceDispersionSwapData, &domain::_varianceDispersionSwapData_Info, 0, 1},
+    {"KIKOVarianceSwapData", 89, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KIKOVarianceSwapData, &domain::_kikoVarianceSwapData_Info, 0, 1},
+    {"CorridorVarianceSwapData", 90, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CorridorVarianceSwapData, &domain::_corridorVarianceSwapData_Info, 0, 1},
+    {"IndexedCorridorVarianceSwapData", 91, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IndexedCorridorVarianceSwapData, &domain::_indexedCorridorVarianceSwapData_Info, 0, 1},
+    {"KIKOCorridorVarianceSwapData", 92, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KIKOCorridorVarianceSwapData, &domain::_kikoCorridorVarianceSwapData_Info, 0, 1},
+    {"CorridorVarianceDispersionSwapData", 93, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CorridorVarianceDispersionSwapData, &domain::_corridorVarianceDispersionSwapData_Info, 0, 1},
+    {"KOCorridorVarianceDispersionSwapData", 94, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KOCorridorVarianceDispersionSwapData, &domain::_koCorridorVarianceDispersionSwapData_Info, 0, 1},
+    {"PairwiseGeometricVarianceDispersionSwapData", 95, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_PairwiseGeometricVarianceDispersionSwapData, &domain::_pairwiseGeometricVarianceDispersionSwapData_Info, 0, 1},
+    {"ConditionalVarianceSwap01Data", 96, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap01Data, &domain::_conditionalVarianceSwap01Data_Info, 0, 1},
+    {"ConditionalVarianceSwap02Data", 97, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConditionalVarianceSwap02Data, &domain::_conditionalVarianceSwap02Data_Info, 0, 1},
+    {"GammaSwapData", 98, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_GammaSwapData, &domain::_gammaSwapData_Info, 0, 1},
+    {"BestEntryOptionData", 99, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BestEntryOptionData, &domain::_bestEntryOptionData_Info, 0, 1},
+    {"DualEuroBinaryOptionData", 100, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionData, &domain::_dualEuroBinaryOptionData_Info, 0, 1},
+    {"DualEuroBinaryOptionDoubleKOData", 101, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_DualEuroBinaryOptionDoubleKOData, &domain::_dualEuroBinaryOptionDoubleKOData_Info, 0, 1},
+    {"VolatilityBarrierOptionData", 102, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VolatilityBarrierOptionData, &domain::_volBarrierOptionData_Info, 0, 1},
+    {"FxTaRFData", 103, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"EquityTaRFData", 104, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"CommodityTaRFData", 105, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityTaRFData, &domain::_tarfData2_Info, 0, 1},
+    {"FxAccumulatorData", 106, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"EquityAccumulatorData", 107, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"CommodityAccumulatorData", 108, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityAccumulatorData, &domain::_accumulatorData_Info, 0, 1},
+    {"FxWindowBarrierOptionData", 109, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"EquityWindowBarrierOptionData", 110, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityWindowBarrierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"CommodityWindowBarierOptionData", 111, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityWindowBarierOptionData, &domain::_windowBarrierOptionData2_Info, 0, 1},
+    {"EquityBasketOptionData", 112, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"FxBasketOptionData", 113, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"CommodityBasketOptionData", 114, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityBasketOptionData, &domain::_basketOptionData_Info, 0, 1},
+    {"FxGenericBarrierOptionData", 115, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"EquityGenericBarrierOptionData", 116, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"CommodityGenericBarrierOptionData", 117, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityGenericBarrierOptionData, &domain::_genericBarrierOptionData_Info, 0, 1},
+    {"EquityRainbowOptionData", 118, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"FxRainbowOptionData", 119, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"CommodityRainbowOptionData", 120, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityRainbowOptionData, &domain::_rainbowOptionData_Info, 0, 1},
+    {"Autocallable01Data", 121, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_Autocallable01Data, &domain::_autocallable01Data_Info, 0, 1},
+    {"DoubleDigitalOptionData", 122, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_DoubleDigitalOptionData, &domain::_doubleDigitalOptionData_Info, 0, 1},
+    {"PerformanceOption01Data", 123, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_PerformanceOption01Data, &domain::_performanceOption01Data_Info, 0, 1},
+    {"ScriptedTradeData", 124, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ScriptedTradeData, &domain::_scriptedTradeData_Info, 0, 1},
+    {"VanillaBasketOptionData", 125, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_VanillaBasketOptionData, &domain::_vanillaBasketOptionData_Info, 0, 1},
+    {"AsianBasketOptionData", 126, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AsianBasketOptionData, &domain::_asianBasketOptionData_Info, 0, 1},
+    {"AverageStrikeBasketOptionData", 127, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AverageStrikeBasketOptionData, &domain::_averageStrikeBasketOptionData_Info, 0, 1},
+    {"LookbackCallBasketOptionData", 128, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LookbackCallBasketOptionData, &domain::_lookbackCallBasketOptionData_Info, 0, 1},
+    {"LookbackPutBasketOptionData", 129, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LookbackPutBasketOptionData, &domain::_lookbackPutBasketOptionData_Info, 0, 1},
+    {"BestOfAirbagData", 130, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BestOfAirbagData, &domain::_bestOfAirbagData_Info, 0, 1},
+    {"WorstOfBasketSwapData", 131, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstOfBasketSwapData, &domain::_worstOfBasketSwapData_Info, 0, 1},
+    {"FxWorstOfBasketSwapData", 132, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"EquityWorstOfBasketSwapData", 133, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"CommodityWorstOfBasketSwapData", 134, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityWorstOfBasketSwapData, &domain::_worstOfBasketSwapData2_Info, 0, 1},
+    {"WorstPerformanceRainbowOption01Data", 135, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption01Data, &domain::_worstPerformanceRainbowOption01Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption02Data", 136, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption02Data, &domain::_worstPerformanceRainbowOption02Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption03Data", 137, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption03Data, &domain::_worstPerformanceRainbowOption03Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption04Data", 138, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption04Data, &domain::_worstPerformanceRainbowOption04Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption05Data", 139, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption05Data, &domain::_worstPerformanceRainbowOption05Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption06Data", 140, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption06Data, &domain::_worstPerformanceRainbowOption06Data_Info, 0, 1},
+    {"WorstPerformanceRainbowOption07Data", 141, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstPerformanceRainbowOption07Data, &domain::_worstPerformanceRainbowOption07Data_Info, 0, 1},
+    {"BestOfAssetOrCashRainbowOptionData", 142, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_BestOfAssetOrCashRainbowOptionData, &domain::_bestOfAssetOrCashRainbowOptionData_Info, 0, 1},
+    {"WorstOfAssetOrCashRainbowOptionData", 143, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WorstOfAssetOrCashRainbowOptionData, &domain::_worstOfAssetOrCashRainbowOptionData_Info, 0, 1},
+    {"MinRainbowOptionData", 144, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MinRainbowOptionData, &domain::_minRainbowOptionData_Info, 0, 1},
+    {"MaxRainbowOptionData", 145, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MaxRainbowOptionData, &domain::_maxRainbowOptionData_Info, 0, 1},
+    {"WindowBarrierOptionData", 146, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_WindowBarrierOptionData, &domain::_windowBarrierOptionData_Info, 0, 1},
+    {"Accumulator01Data", 147, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_Accumulator01Data, &domain::_accumulator01Data_Info, 0, 1},
+    {"Accumulator02Data", 148, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_Accumulator02Data, &domain::_accumulator02Data_Info, 0, 1},
+    {"EquityBestEntryOptionData", 149, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"FxBestEntryOptionData", 150, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"CommodityBestEntryOptionData", 151, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityBestEntryOptionData, &domain::_bestEntryOptionData2_Info, 0, 1},
+    {"TaRFData", 152, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_TaRFData, &domain::_tarfData_Info, 0, 1},
+    {"EuropeanRainbowCallSpreadOptionData", 153, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EuropeanRainbowCallSpreadOptionData, &domain::_europeanRainbowCallSpreadOptionData_Info, 0, 1},
+    {"RainbowCallSpreadBarrierOptionData", 154, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_RainbowCallSpreadBarrierOptionData, &domain::_rainbowCallSpreadBarrierOptionData_Info, 0, 1},
+    {"AsianRainbowCallSpreadOptionData", 155, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AsianRainbowCallSpreadOptionData, &domain::_asianRainbowCallSpreadOptionData_Info, 0, 1},
+    {"AsianIrCapFloorData", 156, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AsianIrCapFloorData, &domain::_asianIrCapFloorData_Info, 0, 1},
+    {"ForwardVolatilityAgreementData", 157, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardVolatilityAgreementData, &domain::_forwardVolatilityAgreementData_Info, 0, 1},
+    {"CorrelationSwapData", 158, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CorrelationSwapData, &domain::_correlationSwapData_Info, 0, 1},
+    {"AssetLinkedCliquetOptionData", 159, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_AssetLinkedCliquetOptionData, &domain::_assetLinkedCliquetOptionData_Info, 0, 1},
+    {"ConstantMaturityVolatilitySwapData", 160, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ConstantMaturityVolatilitySwapData, &domain::_constantMaturityVolatilitySwapData_Info, 0, 1},
+    {"CMSCapFloorBarrierData", 161, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CMSCapFloorBarrierData, &domain::_cmsCapFloorBarrierData_Info, 0, 1},
+    {"FixedStrikeForwardStartingOptionData", 162, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FixedStrikeForwardStartingOptionData, &domain::_fixedStrikeForwardStartingOptionData_Info, 0, 1},
+    {"FloatingStrikeForwardStartingOptionData", 163, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FloatingStrikeForwardStartingOptionData, &domain::_floatingStrikeForwardStartingOptionData_Info, 0, 1},
+    {"ForwardStartingSwaptionData", 164, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_ForwardStartingSwaptionData, &domain::_forwardStartingSwaptionData_Info, 0, 1},
+    {"FlooredAverageCPIZCIISData", 165, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FlooredAverageCPIZCIISData, &domain::_flooredAverageCPIZCIISData_Info, 0, 1},
+    {"GenericBarrierOptionData", 166, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_GenericBarrierOptionData, &domain::_genericBarrierOptionDataRaw_Info, 0, 1},
+    {"MovingMaxYYIISData", 167, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_MovingMaxYYIISData, &domain::_movingMaxYYIISData_Info, 0, 1},
+    {"IrregularYYIISData", 168, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_IrregularYYIISData, &domain::_irregularYYIISData_Info, 0, 1},
+    {"EuropeanOptionBarrierData", 169, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EuropeanOptionBarrierData, &domain::_europeanOptionBarrierData_Info, 0, 1},
+    {"LadderLockInOptionData", 170, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LadderLockInOptionData, &domain::_ladderLockInOptionData_Info, 0, 1},
+    {"LapseHedgeSwapData", 171, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LapseHedgeSwapData, &domain::_lapseHedgeSwapData_Info, 0, 1},
+    {"KnockOutSwapData", 172, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_KnockOutSwapData, &domain::_knockOutSwapData_Info, 0, 1},
+    {"LPISwapData", 173, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_LPISwapData, &domain::_LPISwapData_Info, 0, 1},
+    {"CashPositionData", 174, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CashPositionData, &domain::_cashPositionData_Info, 0, 1},
+    {"StrikeResettableOptionData", 175, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_StrikeResettableOptionData, &domain::_strikeResettableOptionData_Info, 0, 1},
+    {"EquityStrikeResettableOptionData", 176, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_EquityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
+    {"FxStrikeResettableOptionData", 177, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_FxStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
+    {"CommodityStrikeResettableOptionData", 178, (xsdcpp::get_field_t)&_get_compositeTradeComponents_Trade_t_CommodityStrikeResettableOptionData, &domain::_strikeResettableOptionData2_Info, 0, 1},
     {nullptr}
 };
 void* _get_compositeTradeComponents_Trade_t_id(domain::compositeTradeComponents_Trade_t* elem) { return &*(elem->id = xsd::string()); }
@@ -26690,183 +26740,183 @@ XSDCPP_MAYBE_UNUSED void _serialize_compositeTradeComponents_Trade_t(xsdcpp::Xml
     if ((&v)->id) w.writeAttribute("id", *(&v)->id);
     _serialize_oreTradeType(w, "TradeType", v.TradeType);
     if (v.Envelope) _serialize_envelope(w, "Envelope", *v.Envelope);
-    _serialize_swapData(w, "CrossCurrencySwapData", v.CrossCurrencySwapData);
-    _serialize_swapData(w, "InflationSwapData", v.InflationSwapData);
-    _serialize_swapData(w, "SwapData", v.SwapData);
-    _serialize_swapData(w, "EquitySwapData", v.EquitySwapData);
-    _serialize_callableSwapData(w, "CallableSwapData", v.CallableSwapData);
-    _serialize_arcOptionData(w, "ArcOptionData", v.ArcOptionData);
-    _serialize_swaptionData(w, "SwaptionData", v.SwaptionData);
-    _serialize_varianceSwapData(w, "VarianceSwapData", v.VarianceSwapData);
-    _serialize_varianceSwapData(w, "EquityVarianceSwapData", v.EquityVarianceSwapData);
-    _serialize_varianceSwapData(w, "FxVarianceSwapData", v.FxVarianceSwapData);
-    _serialize_varianceSwapData(w, "CommodityVarianceSwapData", v.CommodityVarianceSwapData);
-    _serialize_forwardRateAgreementData(w, "ForwardRateAgreementData", v.ForwardRateAgreementData);
-    _serialize_fxForwardData(w, "FxForwardData", v.FxForwardData);
-    _serialize_fxAverageForwardData(w, "FxAverageForwardData", v.FxAverageForwardData);
-    _serialize_fxOptionData(w, "FxOptionData", v.FxOptionData);
-    _serialize_fxBarrierOptionData(w, "FxBarrierOptionData", v.FxBarrierOptionData);
-    _serialize_fxBarrierOptionData(w, "FxDoubleBarrierOptionData", v.FxDoubleBarrierOptionData);
-    _serialize_fxDigitalOptionData(w, "FxDigitalOptionData", v.FxDigitalOptionData);
-    _serialize_fxBarrierOptionData(w, "FxEuropeanBarrierOptionData", v.FxEuropeanBarrierOptionData);
-    _serialize_fxKIKOBarrierOptionData(w, "FxKIKOBarrierOptionData", v.FxKIKOBarrierOptionData);
-    _serialize_fxDigitalBarrierOptionData(w, "FxDigitalBarrierOptionData", v.FxDigitalBarrierOptionData);
-    _serialize_fxTouchOptionData(w, "FxTouchOptionData", v.FxTouchOptionData);
-    _serialize_fxTouchOptionData(w, "FxDoubleTouchOptionData", v.FxDoubleTouchOptionData);
-    _serialize_fxSwapData(w, "FxSwapData", v.FxSwapData);
-    _serialize_capFloorData(w, "CapFloorData", v.CapFloorData);
-    _serialize_equityFutureOptionData(w, "EquityFutureOptionData", v.EquityFutureOptionData);
-    _serialize_equityOptionData(w, "EquityOptionData", v.EquityOptionData);
-    _serialize_eqBarrierOptionData(w, "EquityBarrierOptionData", v.EquityBarrierOptionData);
-    _serialize_eqBarrierOptionData(w, "EquityDoubleBarrierOptionData", v.EquityDoubleBarrierOptionData);
-    _serialize_equityForwardData(w, "EquityForwardData", v.EquityForwardData);
-    _serialize_eqBarrierOptionData(w, "EquityEuropeanBarrierOptionData", v.EquityEuropeanBarrierOptionData);
-    _serialize_eqDigitalOptionData(w, "EquityDigitalOptionData", v.EquityDigitalOptionData);
-    _serialize_eqTouchOptionData(w, "EquityDoubleTouchOptionData", v.EquityDoubleTouchOptionData);
-    _serialize_eqTouchOptionData(w, "EquityTouchOptionData", v.EquityTouchOptionData);
-    _serialize_cliquetOptionData(w, "EquityCliquetOptionData", v.EquityCliquetOptionData);
-    _serialize_bondData(w, "BondData", v.BondData);
-    _serialize_forwardBondData(w, "ForwardBondData", v.ForwardBondData);
-    _serialize_bondFutureData(w, "BondFutureData", v.BondFutureData);
-    _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", v.CreditDefaultSwapData);
-    _serialize_creditDefaultSwapOptionData(w, "CreditDefaultSwapOptionData", v.CreditDefaultSwapOptionData);
-    _serialize_commodityForwardData(w, "CommodityForwardData", v.CommodityForwardData);
-    _serialize_commodityOptionData(w, "CommodityOptionData", v.CommodityOptionData);
-    _serialize_commodityDigitalAveragePriceOptionData(w, "CommodityDigitalAveragePriceOptionData", v.CommodityDigitalAveragePriceOptionData);
-    _serialize_commodityDigitalOptionData(w, "CommodityDigitalOptionData", v.CommodityDigitalOptionData);
-    _serialize_commoditySpreadOptionData(w, "CommoditySpreadOptionData", v.CommoditySpreadOptionData);
-    _serialize_commoditySwapData(w, "CommoditySwapData", v.CommoditySwapData);
-    _serialize_commoditySwaptionData(w, "CommoditySwaptionData", v.CommoditySwaptionData);
-    _serialize_commodityAveragePriceOptionData(w, "CommodityAveragePriceOptionData", v.CommodityAveragePriceOptionData);
-    _serialize_commodityOptionStripData(w, "CommodityOptionStripData", v.CommodityOptionStripData);
-    _serialize_commodityPositionData(w, "CommodityPositionData", v.CommodityPositionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "EquityAsianOptionData", v.EquityAsianOptionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "FxAsianOptionData", v.FxAsianOptionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "CommodityAsianOptionData", v.CommodityAsianOptionData);
-    _serialize_bondOptionData(w, "BondOptionData", v.BondOptionData);
-    _serialize_bondRepoData(w, "BondRepoData", v.BondRepoData);
-    _serialize_bondTRSData(w, "BondTRSData", v.BondTRSData);
-    _serialize_cdoData(w, "CdoData", v.CdoData);
-    _serialize_creditLinkedSwapData(w, "CreditLinkedSwapData", v.CreditLinkedSwapData);
-    _serialize_indexCreditDefaultSwapData(w, "IndexCreditDefaultSwapData", v.IndexCreditDefaultSwapData);
-    _serialize_indexCreditDefaultSwapOptionData(w, "IndexCreditDefaultSwapOptionData", v.IndexCreditDefaultSwapOptionData);
-    _serialize_multiLegOptionData(w, "MultiLegOptionData", v.MultiLegOptionData);
-    _serialize_ascotData(w, "AscotData", v.AscotData);
-    _serialize_convertibleBondData(w, "ConvertibleBondData", v.ConvertibleBondData);
-    _serialize_callableBondData(w, "CallableBondData", v.CallableBondData);
-    _serialize_tlockData(w, "TreasuryLockData", v.TreasuryLockData);
-    _serialize_rpaData(w, "RiskParticipationAgreementData", v.RiskParticipationAgreementData);
-    _serialize_cbodata(w, "CBOData", v.CBOData);
-    _serialize_bondBasketData(w, "BondBasketData", v.BondBasketData);
-    _serialize_equityPositionData(w, "EquityPositionData", v.EquityPositionData);
-    _serialize_equityOptionPositionData(w, "EquityOptionPositionData", v.EquityOptionPositionData);
-    _serialize_totalReturnSwapData(w, "TotalReturnSwapData", v.TotalReturnSwapData);
-    _serialize_totalReturnSwapData(w, "ContractForDifferenceData", v.ContractForDifferenceData);
-    _serialize_compositeTradeData(w, "CompositeTradeData", v.CompositeTradeData);
-    _serialize_pairwiseVarianceSwapData1(w, "PairwiseVarianceSwapData", v.PairwiseVarianceSwapData);
-    _serialize_pairwiseVarianceSwapData2(w, "EquityPairwiseVarianceSwapData", v.EquityPairwiseVarianceSwapData);
-    _serialize_pairwiseVarianceSwapData2(w, "FxPairwiseVarianceSwapData", v.FxPairwiseVarianceSwapData);
-    _serialize_eqOutperformanceOptionData(w, "EquityOutperformanceOptionData", v.EquityOutperformanceOptionData);
-    _serialize_flexiSwapData(w, "FlexiSwapData", v.FlexiSwapData);
-    _serialize_bgSwapData(w, "BalanceGuaranteedSwapData", v.BalanceGuaranteedSwapData);
-    _serialize_commodityRevenueOptionData(w, "CommodityRevenueOptionData", v.CommodityRevenueOptionData);
-    _serialize_basketVarianceSwapData(w, "BasketVarianceSwapData", v.BasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "EquityBasketVarianceSwapData", v.EquityBasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "FxBasketVarianceSwapData", v.FxBasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "CommodityBasketVarianceSwapData", v.CommodityBasketVarianceSwapData);
-    _serialize_extendedAccumulatorData(w, "ExtendedAccumulatorData", v.ExtendedAccumulatorData);
-    _serialize_varianceOptionData(w, "VarianceOptionData", v.VarianceOptionData);
-    _serialize_varianceDispersionSwapData(w, "VarianceDispersionSwapData", v.VarianceDispersionSwapData);
-    _serialize_kikoVarianceSwapData(w, "KIKOVarianceSwapData", v.KIKOVarianceSwapData);
-    _serialize_corridorVarianceSwapData(w, "CorridorVarianceSwapData", v.CorridorVarianceSwapData);
-    _serialize_indexedCorridorVarianceSwapData(w, "IndexedCorridorVarianceSwapData", v.IndexedCorridorVarianceSwapData);
-    _serialize_kikoCorridorVarianceSwapData(w, "KIKOCorridorVarianceSwapData", v.KIKOCorridorVarianceSwapData);
-    _serialize_corridorVarianceDispersionSwapData(w, "CorridorVarianceDispersionSwapData", v.CorridorVarianceDispersionSwapData);
-    _serialize_koCorridorVarianceDispersionSwapData(w, "KOCorridorVarianceDispersionSwapData", v.KOCorridorVarianceDispersionSwapData);
-    _serialize_pairwiseGeometricVarianceDispersionSwapData(w, "PairwiseGeometricVarianceDispersionSwapData", v.PairwiseGeometricVarianceDispersionSwapData);
-    _serialize_conditionalVarianceSwap01Data(w, "ConditionalVarianceSwap01Data", v.ConditionalVarianceSwap01Data);
-    _serialize_conditionalVarianceSwap02Data(w, "ConditionalVarianceSwap02Data", v.ConditionalVarianceSwap02Data);
-    _serialize_gammaSwapData(w, "GammaSwapData", v.GammaSwapData);
-    _serialize_bestEntryOptionData(w, "BestEntryOptionData", v.BestEntryOptionData);
-    _serialize_dualEuroBinaryOptionData(w, "DualEuroBinaryOptionData", v.DualEuroBinaryOptionData);
-    _serialize_dualEuroBinaryOptionDoubleKOData(w, "DualEuroBinaryOptionDoubleKOData", v.DualEuroBinaryOptionDoubleKOData);
-    _serialize_volBarrierOptionData(w, "VolatilityBarrierOptionData", v.VolatilityBarrierOptionData);
-    _serialize_tarfData2(w, "FxTaRFData", v.FxTaRFData);
-    _serialize_tarfData2(w, "EquityTaRFData", v.EquityTaRFData);
-    _serialize_tarfData2(w, "CommodityTaRFData", v.CommodityTaRFData);
-    _serialize_accumulatorData(w, "FxAccumulatorData", v.FxAccumulatorData);
-    _serialize_accumulatorData(w, "EquityAccumulatorData", v.EquityAccumulatorData);
-    _serialize_accumulatorData(w, "CommodityAccumulatorData", v.CommodityAccumulatorData);
-    _serialize_windowBarrierOptionData2(w, "FxWindowBarrierOptionData", v.FxWindowBarrierOptionData);
-    _serialize_windowBarrierOptionData2(w, "EquityWindowBarrierOptionData", v.EquityWindowBarrierOptionData);
-    _serialize_windowBarrierOptionData2(w, "CommodityWindowBarierOptionData", v.CommodityWindowBarierOptionData);
-    _serialize_basketOptionData(w, "EquityBasketOptionData", v.EquityBasketOptionData);
-    _serialize_basketOptionData(w, "FxBasketOptionData", v.FxBasketOptionData);
-    _serialize_basketOptionData(w, "CommodityBasketOptionData", v.CommodityBasketOptionData);
-    _serialize_genericBarrierOptionData(w, "FxGenericBarrierOptionData", v.FxGenericBarrierOptionData);
-    _serialize_genericBarrierOptionData(w, "EquityGenericBarrierOptionData", v.EquityGenericBarrierOptionData);
-    _serialize_genericBarrierOptionData(w, "CommodityGenericBarrierOptionData", v.CommodityGenericBarrierOptionData);
-    _serialize_rainbowOptionData(w, "EquityRainbowOptionData", v.EquityRainbowOptionData);
-    _serialize_rainbowOptionData(w, "FxRainbowOptionData", v.FxRainbowOptionData);
-    _serialize_rainbowOptionData(w, "CommodityRainbowOptionData", v.CommodityRainbowOptionData);
-    _serialize_autocallable01Data(w, "Autocallable01Data", v.Autocallable01Data);
-    _serialize_doubleDigitalOptionData(w, "DoubleDigitalOptionData", v.DoubleDigitalOptionData);
-    _serialize_performanceOption01Data(w, "PerformanceOption01Data", v.PerformanceOption01Data);
-    _serialize_scriptedTradeData(w, "ScriptedTradeData", v.ScriptedTradeData);
-    _serialize_vanillaBasketOptionData(w, "VanillaBasketOptionData", v.VanillaBasketOptionData);
-    _serialize_asianBasketOptionData(w, "AsianBasketOptionData", v.AsianBasketOptionData);
-    _serialize_averageStrikeBasketOptionData(w, "AverageStrikeBasketOptionData", v.AverageStrikeBasketOptionData);
-    _serialize_lookbackCallBasketOptionData(w, "LookbackCallBasketOptionData", v.LookbackCallBasketOptionData);
-    _serialize_lookbackPutBasketOptionData(w, "LookbackPutBasketOptionData", v.LookbackPutBasketOptionData);
-    _serialize_bestOfAirbagData(w, "BestOfAirbagData", v.BestOfAirbagData);
-    _serialize_worstOfBasketSwapData(w, "WorstOfBasketSwapData", v.WorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "FxWorstOfBasketSwapData", v.FxWorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "EquityWorstOfBasketSwapData", v.EquityWorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "CommodityWorstOfBasketSwapData", v.CommodityWorstOfBasketSwapData);
-    _serialize_worstPerformanceRainbowOption01Data(w, "WorstPerformanceRainbowOption01Data", v.WorstPerformanceRainbowOption01Data);
-    _serialize_worstPerformanceRainbowOption02Data(w, "WorstPerformanceRainbowOption02Data", v.WorstPerformanceRainbowOption02Data);
-    _serialize_worstPerformanceRainbowOption03Data(w, "WorstPerformanceRainbowOption03Data", v.WorstPerformanceRainbowOption03Data);
-    _serialize_worstPerformanceRainbowOption04Data(w, "WorstPerformanceRainbowOption04Data", v.WorstPerformanceRainbowOption04Data);
-    _serialize_worstPerformanceRainbowOption05Data(w, "WorstPerformanceRainbowOption05Data", v.WorstPerformanceRainbowOption05Data);
-    _serialize_worstPerformanceRainbowOption06Data(w, "WorstPerformanceRainbowOption06Data", v.WorstPerformanceRainbowOption06Data);
-    _serialize_worstPerformanceRainbowOption07Data(w, "WorstPerformanceRainbowOption07Data", v.WorstPerformanceRainbowOption07Data);
-    _serialize_bestOfAssetOrCashRainbowOptionData(w, "BestOfAssetOrCashRainbowOptionData", v.BestOfAssetOrCashRainbowOptionData);
-    _serialize_worstOfAssetOrCashRainbowOptionData(w, "WorstOfAssetOrCashRainbowOptionData", v.WorstOfAssetOrCashRainbowOptionData);
-    _serialize_minRainbowOptionData(w, "MinRainbowOptionData", v.MinRainbowOptionData);
-    _serialize_maxRainbowOptionData(w, "MaxRainbowOptionData", v.MaxRainbowOptionData);
-    _serialize_windowBarrierOptionData(w, "WindowBarrierOptionData", v.WindowBarrierOptionData);
-    _serialize_accumulator01Data(w, "Accumulator01Data", v.Accumulator01Data);
-    _serialize_accumulator02Data(w, "Accumulator02Data", v.Accumulator02Data);
-    _serialize_bestEntryOptionData2(w, "EquityBestEntryOptionData", v.EquityBestEntryOptionData);
-    _serialize_bestEntryOptionData2(w, "FxBestEntryOptionData", v.FxBestEntryOptionData);
-    _serialize_bestEntryOptionData2(w, "CommodityBestEntryOptionData", v.CommodityBestEntryOptionData);
-    _serialize_tarfData(w, "TaRFData", v.TaRFData);
-    _serialize_europeanRainbowCallSpreadOptionData(w, "EuropeanRainbowCallSpreadOptionData", v.EuropeanRainbowCallSpreadOptionData);
-    _serialize_rainbowCallSpreadBarrierOptionData(w, "RainbowCallSpreadBarrierOptionData", v.RainbowCallSpreadBarrierOptionData);
-    _serialize_asianRainbowCallSpreadOptionData(w, "AsianRainbowCallSpreadOptionData", v.AsianRainbowCallSpreadOptionData);
-    _serialize_asianIrCapFloorData(w, "AsianIrCapFloorData", v.AsianIrCapFloorData);
-    _serialize_forwardVolatilityAgreementData(w, "ForwardVolatilityAgreementData", v.ForwardVolatilityAgreementData);
-    _serialize_correlationSwapData(w, "CorrelationSwapData", v.CorrelationSwapData);
-    _serialize_assetLinkedCliquetOptionData(w, "AssetLinkedCliquetOptionData", v.AssetLinkedCliquetOptionData);
-    _serialize_constantMaturityVolatilitySwapData(w, "ConstantMaturityVolatilitySwapData", v.ConstantMaturityVolatilitySwapData);
-    _serialize_cmsCapFloorBarrierData(w, "CMSCapFloorBarrierData", v.CMSCapFloorBarrierData);
-    _serialize_fixedStrikeForwardStartingOptionData(w, "FixedStrikeForwardStartingOptionData", v.FixedStrikeForwardStartingOptionData);
-    _serialize_floatingStrikeForwardStartingOptionData(w, "FloatingStrikeForwardStartingOptionData", v.FloatingStrikeForwardStartingOptionData);
-    _serialize_forwardStartingSwaptionData(w, "ForwardStartingSwaptionData", v.ForwardStartingSwaptionData);
-    _serialize_flooredAverageCPIZCIISData(w, "FlooredAverageCPIZCIISData", v.FlooredAverageCPIZCIISData);
-    _serialize_genericBarrierOptionDataRaw(w, "GenericBarrierOptionData", v.GenericBarrierOptionData);
-    _serialize_movingMaxYYIISData(w, "MovingMaxYYIISData", v.MovingMaxYYIISData);
-    _serialize_irregularYYIISData(w, "IrregularYYIISData", v.IrregularYYIISData);
-    _serialize_europeanOptionBarrierData(w, "EuropeanOptionBarrierData", v.EuropeanOptionBarrierData);
-    _serialize_ladderLockInOptionData(w, "LadderLockInOptionData", v.LadderLockInOptionData);
-    _serialize_lapseHedgeSwapData(w, "LapseHedgeSwapData", v.LapseHedgeSwapData);
-    _serialize_knockOutSwapData(w, "KnockOutSwapData", v.KnockOutSwapData);
-    _serialize_LPISwapData(w, "LPISwapData", v.LPISwapData);
-    _serialize_cashPositionData(w, "CashPositionData", v.CashPositionData);
-    _serialize_strikeResettableOptionData(w, "StrikeResettableOptionData", v.StrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "EquityStrikeResettableOptionData", v.EquityStrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "FxStrikeResettableOptionData", v.FxStrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "CommodityStrikeResettableOptionData", v.CommodityStrikeResettableOptionData);
+    if (v.CrossCurrencySwapData) _serialize_swapData(w, "CrossCurrencySwapData", *v.CrossCurrencySwapData);
+    if (v.InflationSwapData) _serialize_swapData(w, "InflationSwapData", *v.InflationSwapData);
+    if (v.SwapData) _serialize_swapData(w, "SwapData", *v.SwapData);
+    if (v.EquitySwapData) _serialize_swapData(w, "EquitySwapData", *v.EquitySwapData);
+    if (v.CallableSwapData) _serialize_callableSwapData(w, "CallableSwapData", *v.CallableSwapData);
+    if (v.ArcOptionData) _serialize_arcOptionData(w, "ArcOptionData", *v.ArcOptionData);
+    if (v.SwaptionData) _serialize_swaptionData(w, "SwaptionData", *v.SwaptionData);
+    if (v.VarianceSwapData) _serialize_varianceSwapData(w, "VarianceSwapData", *v.VarianceSwapData);
+    if (v.EquityVarianceSwapData) _serialize_varianceSwapData(w, "EquityVarianceSwapData", *v.EquityVarianceSwapData);
+    if (v.FxVarianceSwapData) _serialize_varianceSwapData(w, "FxVarianceSwapData", *v.FxVarianceSwapData);
+    if (v.CommodityVarianceSwapData) _serialize_varianceSwapData(w, "CommodityVarianceSwapData", *v.CommodityVarianceSwapData);
+    if (v.ForwardRateAgreementData) _serialize_forwardRateAgreementData(w, "ForwardRateAgreementData", *v.ForwardRateAgreementData);
+    if (v.FxForwardData) _serialize_fxForwardData(w, "FxForwardData", *v.FxForwardData);
+    if (v.FxAverageForwardData) _serialize_fxAverageForwardData(w, "FxAverageForwardData", *v.FxAverageForwardData);
+    if (v.FxOptionData) _serialize_fxOptionData(w, "FxOptionData", *v.FxOptionData);
+    if (v.FxBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxBarrierOptionData", *v.FxBarrierOptionData);
+    if (v.FxDoubleBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxDoubleBarrierOptionData", *v.FxDoubleBarrierOptionData);
+    if (v.FxDigitalOptionData) _serialize_fxDigitalOptionData(w, "FxDigitalOptionData", *v.FxDigitalOptionData);
+    if (v.FxEuropeanBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxEuropeanBarrierOptionData", *v.FxEuropeanBarrierOptionData);
+    if (v.FxKIKOBarrierOptionData) _serialize_fxKIKOBarrierOptionData(w, "FxKIKOBarrierOptionData", *v.FxKIKOBarrierOptionData);
+    if (v.FxDigitalBarrierOptionData) _serialize_fxDigitalBarrierOptionData(w, "FxDigitalBarrierOptionData", *v.FxDigitalBarrierOptionData);
+    if (v.FxTouchOptionData) _serialize_fxTouchOptionData(w, "FxTouchOptionData", *v.FxTouchOptionData);
+    if (v.FxDoubleTouchOptionData) _serialize_fxTouchOptionData(w, "FxDoubleTouchOptionData", *v.FxDoubleTouchOptionData);
+    if (v.FxSwapData) _serialize_fxSwapData(w, "FxSwapData", *v.FxSwapData);
+    if (v.CapFloorData) _serialize_capFloorData(w, "CapFloorData", *v.CapFloorData);
+    if (v.EquityFutureOptionData) _serialize_equityFutureOptionData(w, "EquityFutureOptionData", *v.EquityFutureOptionData);
+    if (v.EquityOptionData) _serialize_equityOptionData(w, "EquityOptionData", *v.EquityOptionData);
+    if (v.EquityBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityBarrierOptionData", *v.EquityBarrierOptionData);
+    if (v.EquityDoubleBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityDoubleBarrierOptionData", *v.EquityDoubleBarrierOptionData);
+    if (v.EquityForwardData) _serialize_equityForwardData(w, "EquityForwardData", *v.EquityForwardData);
+    if (v.EquityEuropeanBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityEuropeanBarrierOptionData", *v.EquityEuropeanBarrierOptionData);
+    if (v.EquityDigitalOptionData) _serialize_eqDigitalOptionData(w, "EquityDigitalOptionData", *v.EquityDigitalOptionData);
+    if (v.EquityDoubleTouchOptionData) _serialize_eqTouchOptionData(w, "EquityDoubleTouchOptionData", *v.EquityDoubleTouchOptionData);
+    if (v.EquityTouchOptionData) _serialize_eqTouchOptionData(w, "EquityTouchOptionData", *v.EquityTouchOptionData);
+    if (v.EquityCliquetOptionData) _serialize_cliquetOptionData(w, "EquityCliquetOptionData", *v.EquityCliquetOptionData);
+    if (v.BondData) _serialize_bondData(w, "BondData", *v.BondData);
+    if (v.ForwardBondData) _serialize_forwardBondData(w, "ForwardBondData", *v.ForwardBondData);
+    if (v.BondFutureData) _serialize_bondFutureData(w, "BondFutureData", *v.BondFutureData);
+    if (v.CreditDefaultSwapData) _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", *v.CreditDefaultSwapData);
+    if (v.CreditDefaultSwapOptionData) _serialize_creditDefaultSwapOptionData(w, "CreditDefaultSwapOptionData", *v.CreditDefaultSwapOptionData);
+    if (v.CommodityForwardData) _serialize_commodityForwardData(w, "CommodityForwardData", *v.CommodityForwardData);
+    if (v.CommodityOptionData) _serialize_commodityOptionData(w, "CommodityOptionData", *v.CommodityOptionData);
+    if (v.CommodityDigitalAveragePriceOptionData) _serialize_commodityDigitalAveragePriceOptionData(w, "CommodityDigitalAveragePriceOptionData", *v.CommodityDigitalAveragePriceOptionData);
+    if (v.CommodityDigitalOptionData) _serialize_commodityDigitalOptionData(w, "CommodityDigitalOptionData", *v.CommodityDigitalOptionData);
+    if (v.CommoditySpreadOptionData) _serialize_commoditySpreadOptionData(w, "CommoditySpreadOptionData", *v.CommoditySpreadOptionData);
+    if (v.CommoditySwapData) _serialize_commoditySwapData(w, "CommoditySwapData", *v.CommoditySwapData);
+    if (v.CommoditySwaptionData) _serialize_commoditySwaptionData(w, "CommoditySwaptionData", *v.CommoditySwaptionData);
+    if (v.CommodityAveragePriceOptionData) _serialize_commodityAveragePriceOptionData(w, "CommodityAveragePriceOptionData", *v.CommodityAveragePriceOptionData);
+    if (v.CommodityOptionStripData) _serialize_commodityOptionStripData(w, "CommodityOptionStripData", *v.CommodityOptionStripData);
+    if (v.CommodityPositionData) _serialize_commodityPositionData(w, "CommodityPositionData", *v.CommodityPositionData);
+    if (v.EquityAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "EquityAsianOptionData", *v.EquityAsianOptionData);
+    if (v.FxAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "FxAsianOptionData", *v.FxAsianOptionData);
+    if (v.CommodityAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "CommodityAsianOptionData", *v.CommodityAsianOptionData);
+    if (v.BondOptionData) _serialize_bondOptionData(w, "BondOptionData", *v.BondOptionData);
+    if (v.BondRepoData) _serialize_bondRepoData(w, "BondRepoData", *v.BondRepoData);
+    if (v.BondTRSData) _serialize_bondTRSData(w, "BondTRSData", *v.BondTRSData);
+    if (v.CdoData) _serialize_cdoData(w, "CdoData", *v.CdoData);
+    if (v.CreditLinkedSwapData) _serialize_creditLinkedSwapData(w, "CreditLinkedSwapData", *v.CreditLinkedSwapData);
+    if (v.IndexCreditDefaultSwapData) _serialize_indexCreditDefaultSwapData(w, "IndexCreditDefaultSwapData", *v.IndexCreditDefaultSwapData);
+    if (v.IndexCreditDefaultSwapOptionData) _serialize_indexCreditDefaultSwapOptionData(w, "IndexCreditDefaultSwapOptionData", *v.IndexCreditDefaultSwapOptionData);
+    if (v.MultiLegOptionData) _serialize_multiLegOptionData(w, "MultiLegOptionData", *v.MultiLegOptionData);
+    if (v.AscotData) _serialize_ascotData(w, "AscotData", *v.AscotData);
+    if (v.ConvertibleBondData) _serialize_convertibleBondData(w, "ConvertibleBondData", *v.ConvertibleBondData);
+    if (v.CallableBondData) _serialize_callableBondData(w, "CallableBondData", *v.CallableBondData);
+    if (v.TreasuryLockData) _serialize_tlockData(w, "TreasuryLockData", *v.TreasuryLockData);
+    if (v.RiskParticipationAgreementData) _serialize_rpaData(w, "RiskParticipationAgreementData", *v.RiskParticipationAgreementData);
+    if (v.CBOData) _serialize_cbodata(w, "CBOData", *v.CBOData);
+    if (v.BondBasketData) _serialize_bondBasketData(w, "BondBasketData", *v.BondBasketData);
+    if (v.EquityPositionData) _serialize_equityPositionData(w, "EquityPositionData", *v.EquityPositionData);
+    if (v.EquityOptionPositionData) _serialize_equityOptionPositionData(w, "EquityOptionPositionData", *v.EquityOptionPositionData);
+    if (v.TotalReturnSwapData) _serialize_totalReturnSwapData(w, "TotalReturnSwapData", *v.TotalReturnSwapData);
+    if (v.ContractForDifferenceData) _serialize_totalReturnSwapData(w, "ContractForDifferenceData", *v.ContractForDifferenceData);
+    if (v.CompositeTradeData) _serialize_compositeTradeData(w, "CompositeTradeData", *v.CompositeTradeData);
+    if (v.PairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData1(w, "PairwiseVarianceSwapData", *v.PairwiseVarianceSwapData);
+    if (v.EquityPairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData2(w, "EquityPairwiseVarianceSwapData", *v.EquityPairwiseVarianceSwapData);
+    if (v.FxPairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData2(w, "FxPairwiseVarianceSwapData", *v.FxPairwiseVarianceSwapData);
+    if (v.EquityOutperformanceOptionData) _serialize_eqOutperformanceOptionData(w, "EquityOutperformanceOptionData", *v.EquityOutperformanceOptionData);
+    if (v.FlexiSwapData) _serialize_flexiSwapData(w, "FlexiSwapData", *v.FlexiSwapData);
+    if (v.BalanceGuaranteedSwapData) _serialize_bgSwapData(w, "BalanceGuaranteedSwapData", *v.BalanceGuaranteedSwapData);
+    if (v.CommodityRevenueOptionData) _serialize_commodityRevenueOptionData(w, "CommodityRevenueOptionData", *v.CommodityRevenueOptionData);
+    if (v.BasketVarianceSwapData) _serialize_basketVarianceSwapData(w, "BasketVarianceSwapData", *v.BasketVarianceSwapData);
+    if (v.EquityBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "EquityBasketVarianceSwapData", *v.EquityBasketVarianceSwapData);
+    if (v.FxBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "FxBasketVarianceSwapData", *v.FxBasketVarianceSwapData);
+    if (v.CommodityBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "CommodityBasketVarianceSwapData", *v.CommodityBasketVarianceSwapData);
+    if (v.ExtendedAccumulatorData) _serialize_extendedAccumulatorData(w, "ExtendedAccumulatorData", *v.ExtendedAccumulatorData);
+    if (v.VarianceOptionData) _serialize_varianceOptionData(w, "VarianceOptionData", *v.VarianceOptionData);
+    if (v.VarianceDispersionSwapData) _serialize_varianceDispersionSwapData(w, "VarianceDispersionSwapData", *v.VarianceDispersionSwapData);
+    if (v.KIKOVarianceSwapData) _serialize_kikoVarianceSwapData(w, "KIKOVarianceSwapData", *v.KIKOVarianceSwapData);
+    if (v.CorridorVarianceSwapData) _serialize_corridorVarianceSwapData(w, "CorridorVarianceSwapData", *v.CorridorVarianceSwapData);
+    if (v.IndexedCorridorVarianceSwapData) _serialize_indexedCorridorVarianceSwapData(w, "IndexedCorridorVarianceSwapData", *v.IndexedCorridorVarianceSwapData);
+    if (v.KIKOCorridorVarianceSwapData) _serialize_kikoCorridorVarianceSwapData(w, "KIKOCorridorVarianceSwapData", *v.KIKOCorridorVarianceSwapData);
+    if (v.CorridorVarianceDispersionSwapData) _serialize_corridorVarianceDispersionSwapData(w, "CorridorVarianceDispersionSwapData", *v.CorridorVarianceDispersionSwapData);
+    if (v.KOCorridorVarianceDispersionSwapData) _serialize_koCorridorVarianceDispersionSwapData(w, "KOCorridorVarianceDispersionSwapData", *v.KOCorridorVarianceDispersionSwapData);
+    if (v.PairwiseGeometricVarianceDispersionSwapData) _serialize_pairwiseGeometricVarianceDispersionSwapData(w, "PairwiseGeometricVarianceDispersionSwapData", *v.PairwiseGeometricVarianceDispersionSwapData);
+    if (v.ConditionalVarianceSwap01Data) _serialize_conditionalVarianceSwap01Data(w, "ConditionalVarianceSwap01Data", *v.ConditionalVarianceSwap01Data);
+    if (v.ConditionalVarianceSwap02Data) _serialize_conditionalVarianceSwap02Data(w, "ConditionalVarianceSwap02Data", *v.ConditionalVarianceSwap02Data);
+    if (v.GammaSwapData) _serialize_gammaSwapData(w, "GammaSwapData", *v.GammaSwapData);
+    if (v.BestEntryOptionData) _serialize_bestEntryOptionData(w, "BestEntryOptionData", *v.BestEntryOptionData);
+    if (v.DualEuroBinaryOptionData) _serialize_dualEuroBinaryOptionData(w, "DualEuroBinaryOptionData", *v.DualEuroBinaryOptionData);
+    if (v.DualEuroBinaryOptionDoubleKOData) _serialize_dualEuroBinaryOptionDoubleKOData(w, "DualEuroBinaryOptionDoubleKOData", *v.DualEuroBinaryOptionDoubleKOData);
+    if (v.VolatilityBarrierOptionData) _serialize_volBarrierOptionData(w, "VolatilityBarrierOptionData", *v.VolatilityBarrierOptionData);
+    if (v.FxTaRFData) _serialize_tarfData2(w, "FxTaRFData", *v.FxTaRFData);
+    if (v.EquityTaRFData) _serialize_tarfData2(w, "EquityTaRFData", *v.EquityTaRFData);
+    if (v.CommodityTaRFData) _serialize_tarfData2(w, "CommodityTaRFData", *v.CommodityTaRFData);
+    if (v.FxAccumulatorData) _serialize_accumulatorData(w, "FxAccumulatorData", *v.FxAccumulatorData);
+    if (v.EquityAccumulatorData) _serialize_accumulatorData(w, "EquityAccumulatorData", *v.EquityAccumulatorData);
+    if (v.CommodityAccumulatorData) _serialize_accumulatorData(w, "CommodityAccumulatorData", *v.CommodityAccumulatorData);
+    if (v.FxWindowBarrierOptionData) _serialize_windowBarrierOptionData2(w, "FxWindowBarrierOptionData", *v.FxWindowBarrierOptionData);
+    if (v.EquityWindowBarrierOptionData) _serialize_windowBarrierOptionData2(w, "EquityWindowBarrierOptionData", *v.EquityWindowBarrierOptionData);
+    if (v.CommodityWindowBarierOptionData) _serialize_windowBarrierOptionData2(w, "CommodityWindowBarierOptionData", *v.CommodityWindowBarierOptionData);
+    if (v.EquityBasketOptionData) _serialize_basketOptionData(w, "EquityBasketOptionData", *v.EquityBasketOptionData);
+    if (v.FxBasketOptionData) _serialize_basketOptionData(w, "FxBasketOptionData", *v.FxBasketOptionData);
+    if (v.CommodityBasketOptionData) _serialize_basketOptionData(w, "CommodityBasketOptionData", *v.CommodityBasketOptionData);
+    if (v.FxGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "FxGenericBarrierOptionData", *v.FxGenericBarrierOptionData);
+    if (v.EquityGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "EquityGenericBarrierOptionData", *v.EquityGenericBarrierOptionData);
+    if (v.CommodityGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "CommodityGenericBarrierOptionData", *v.CommodityGenericBarrierOptionData);
+    if (v.EquityRainbowOptionData) _serialize_rainbowOptionData(w, "EquityRainbowOptionData", *v.EquityRainbowOptionData);
+    if (v.FxRainbowOptionData) _serialize_rainbowOptionData(w, "FxRainbowOptionData", *v.FxRainbowOptionData);
+    if (v.CommodityRainbowOptionData) _serialize_rainbowOptionData(w, "CommodityRainbowOptionData", *v.CommodityRainbowOptionData);
+    if (v.Autocallable01Data) _serialize_autocallable01Data(w, "Autocallable01Data", *v.Autocallable01Data);
+    if (v.DoubleDigitalOptionData) _serialize_doubleDigitalOptionData(w, "DoubleDigitalOptionData", *v.DoubleDigitalOptionData);
+    if (v.PerformanceOption01Data) _serialize_performanceOption01Data(w, "PerformanceOption01Data", *v.PerformanceOption01Data);
+    if (v.ScriptedTradeData) _serialize_scriptedTradeData(w, "ScriptedTradeData", *v.ScriptedTradeData);
+    if (v.VanillaBasketOptionData) _serialize_vanillaBasketOptionData(w, "VanillaBasketOptionData", *v.VanillaBasketOptionData);
+    if (v.AsianBasketOptionData) _serialize_asianBasketOptionData(w, "AsianBasketOptionData", *v.AsianBasketOptionData);
+    if (v.AverageStrikeBasketOptionData) _serialize_averageStrikeBasketOptionData(w, "AverageStrikeBasketOptionData", *v.AverageStrikeBasketOptionData);
+    if (v.LookbackCallBasketOptionData) _serialize_lookbackCallBasketOptionData(w, "LookbackCallBasketOptionData", *v.LookbackCallBasketOptionData);
+    if (v.LookbackPutBasketOptionData) _serialize_lookbackPutBasketOptionData(w, "LookbackPutBasketOptionData", *v.LookbackPutBasketOptionData);
+    if (v.BestOfAirbagData) _serialize_bestOfAirbagData(w, "BestOfAirbagData", *v.BestOfAirbagData);
+    if (v.WorstOfBasketSwapData) _serialize_worstOfBasketSwapData(w, "WorstOfBasketSwapData", *v.WorstOfBasketSwapData);
+    if (v.FxWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "FxWorstOfBasketSwapData", *v.FxWorstOfBasketSwapData);
+    if (v.EquityWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "EquityWorstOfBasketSwapData", *v.EquityWorstOfBasketSwapData);
+    if (v.CommodityWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "CommodityWorstOfBasketSwapData", *v.CommodityWorstOfBasketSwapData);
+    if (v.WorstPerformanceRainbowOption01Data) _serialize_worstPerformanceRainbowOption01Data(w, "WorstPerformanceRainbowOption01Data", *v.WorstPerformanceRainbowOption01Data);
+    if (v.WorstPerformanceRainbowOption02Data) _serialize_worstPerformanceRainbowOption02Data(w, "WorstPerformanceRainbowOption02Data", *v.WorstPerformanceRainbowOption02Data);
+    if (v.WorstPerformanceRainbowOption03Data) _serialize_worstPerformanceRainbowOption03Data(w, "WorstPerformanceRainbowOption03Data", *v.WorstPerformanceRainbowOption03Data);
+    if (v.WorstPerformanceRainbowOption04Data) _serialize_worstPerformanceRainbowOption04Data(w, "WorstPerformanceRainbowOption04Data", *v.WorstPerformanceRainbowOption04Data);
+    if (v.WorstPerformanceRainbowOption05Data) _serialize_worstPerformanceRainbowOption05Data(w, "WorstPerformanceRainbowOption05Data", *v.WorstPerformanceRainbowOption05Data);
+    if (v.WorstPerformanceRainbowOption06Data) _serialize_worstPerformanceRainbowOption06Data(w, "WorstPerformanceRainbowOption06Data", *v.WorstPerformanceRainbowOption06Data);
+    if (v.WorstPerformanceRainbowOption07Data) _serialize_worstPerformanceRainbowOption07Data(w, "WorstPerformanceRainbowOption07Data", *v.WorstPerformanceRainbowOption07Data);
+    if (v.BestOfAssetOrCashRainbowOptionData) _serialize_bestOfAssetOrCashRainbowOptionData(w, "BestOfAssetOrCashRainbowOptionData", *v.BestOfAssetOrCashRainbowOptionData);
+    if (v.WorstOfAssetOrCashRainbowOptionData) _serialize_worstOfAssetOrCashRainbowOptionData(w, "WorstOfAssetOrCashRainbowOptionData", *v.WorstOfAssetOrCashRainbowOptionData);
+    if (v.MinRainbowOptionData) _serialize_minRainbowOptionData(w, "MinRainbowOptionData", *v.MinRainbowOptionData);
+    if (v.MaxRainbowOptionData) _serialize_maxRainbowOptionData(w, "MaxRainbowOptionData", *v.MaxRainbowOptionData);
+    if (v.WindowBarrierOptionData) _serialize_windowBarrierOptionData(w, "WindowBarrierOptionData", *v.WindowBarrierOptionData);
+    if (v.Accumulator01Data) _serialize_accumulator01Data(w, "Accumulator01Data", *v.Accumulator01Data);
+    if (v.Accumulator02Data) _serialize_accumulator02Data(w, "Accumulator02Data", *v.Accumulator02Data);
+    if (v.EquityBestEntryOptionData) _serialize_bestEntryOptionData2(w, "EquityBestEntryOptionData", *v.EquityBestEntryOptionData);
+    if (v.FxBestEntryOptionData) _serialize_bestEntryOptionData2(w, "FxBestEntryOptionData", *v.FxBestEntryOptionData);
+    if (v.CommodityBestEntryOptionData) _serialize_bestEntryOptionData2(w, "CommodityBestEntryOptionData", *v.CommodityBestEntryOptionData);
+    if (v.TaRFData) _serialize_tarfData(w, "TaRFData", *v.TaRFData);
+    if (v.EuropeanRainbowCallSpreadOptionData) _serialize_europeanRainbowCallSpreadOptionData(w, "EuropeanRainbowCallSpreadOptionData", *v.EuropeanRainbowCallSpreadOptionData);
+    if (v.RainbowCallSpreadBarrierOptionData) _serialize_rainbowCallSpreadBarrierOptionData(w, "RainbowCallSpreadBarrierOptionData", *v.RainbowCallSpreadBarrierOptionData);
+    if (v.AsianRainbowCallSpreadOptionData) _serialize_asianRainbowCallSpreadOptionData(w, "AsianRainbowCallSpreadOptionData", *v.AsianRainbowCallSpreadOptionData);
+    if (v.AsianIrCapFloorData) _serialize_asianIrCapFloorData(w, "AsianIrCapFloorData", *v.AsianIrCapFloorData);
+    if (v.ForwardVolatilityAgreementData) _serialize_forwardVolatilityAgreementData(w, "ForwardVolatilityAgreementData", *v.ForwardVolatilityAgreementData);
+    if (v.CorrelationSwapData) _serialize_correlationSwapData(w, "CorrelationSwapData", *v.CorrelationSwapData);
+    if (v.AssetLinkedCliquetOptionData) _serialize_assetLinkedCliquetOptionData(w, "AssetLinkedCliquetOptionData", *v.AssetLinkedCliquetOptionData);
+    if (v.ConstantMaturityVolatilitySwapData) _serialize_constantMaturityVolatilitySwapData(w, "ConstantMaturityVolatilitySwapData", *v.ConstantMaturityVolatilitySwapData);
+    if (v.CMSCapFloorBarrierData) _serialize_cmsCapFloorBarrierData(w, "CMSCapFloorBarrierData", *v.CMSCapFloorBarrierData);
+    if (v.FixedStrikeForwardStartingOptionData) _serialize_fixedStrikeForwardStartingOptionData(w, "FixedStrikeForwardStartingOptionData", *v.FixedStrikeForwardStartingOptionData);
+    if (v.FloatingStrikeForwardStartingOptionData) _serialize_floatingStrikeForwardStartingOptionData(w, "FloatingStrikeForwardStartingOptionData", *v.FloatingStrikeForwardStartingOptionData);
+    if (v.ForwardStartingSwaptionData) _serialize_forwardStartingSwaptionData(w, "ForwardStartingSwaptionData", *v.ForwardStartingSwaptionData);
+    if (v.FlooredAverageCPIZCIISData) _serialize_flooredAverageCPIZCIISData(w, "FlooredAverageCPIZCIISData", *v.FlooredAverageCPIZCIISData);
+    if (v.GenericBarrierOptionData) _serialize_genericBarrierOptionDataRaw(w, "GenericBarrierOptionData", *v.GenericBarrierOptionData);
+    if (v.MovingMaxYYIISData) _serialize_movingMaxYYIISData(w, "MovingMaxYYIISData", *v.MovingMaxYYIISData);
+    if (v.IrregularYYIISData) _serialize_irregularYYIISData(w, "IrregularYYIISData", *v.IrregularYYIISData);
+    if (v.EuropeanOptionBarrierData) _serialize_europeanOptionBarrierData(w, "EuropeanOptionBarrierData", *v.EuropeanOptionBarrierData);
+    if (v.LadderLockInOptionData) _serialize_ladderLockInOptionData(w, "LadderLockInOptionData", *v.LadderLockInOptionData);
+    if (v.LapseHedgeSwapData) _serialize_lapseHedgeSwapData(w, "LapseHedgeSwapData", *v.LapseHedgeSwapData);
+    if (v.KnockOutSwapData) _serialize_knockOutSwapData(w, "KnockOutSwapData", *v.KnockOutSwapData);
+    if (v.LPISwapData) _serialize_LPISwapData(w, "LPISwapData", *v.LPISwapData);
+    if (v.CashPositionData) _serialize_cashPositionData(w, "CashPositionData", *v.CashPositionData);
+    if (v.StrikeResettableOptionData) _serialize_strikeResettableOptionData(w, "StrikeResettableOptionData", *v.StrikeResettableOptionData);
+    if (v.EquityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "EquityStrikeResettableOptionData", *v.EquityStrikeResettableOptionData);
+    if (v.FxStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "FxStrikeResettableOptionData", *v.FxStrikeResettableOptionData);
+    if (v.CommodityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "CommodityStrikeResettableOptionData", *v.CommodityStrikeResettableOptionData);
     w.endElement(name);
 }
 
@@ -26893,183 +26943,183 @@ XSDCPP_MAYBE_UNUSED void _serialize_trsUnderlyingData_Derivative_t_Trade_t(xsdcp
     if ((&v)->id) w.writeAttribute("id", *(&v)->id);
     _serialize_oreTradeType(w, "TradeType", v.TradeType);
     if (v.Envelope) _serialize_envelope(w, "Envelope", *v.Envelope);
-    _serialize_swapData(w, "CrossCurrencySwapData", v.CrossCurrencySwapData);
-    _serialize_swapData(w, "InflationSwapData", v.InflationSwapData);
-    _serialize_swapData(w, "SwapData", v.SwapData);
-    _serialize_swapData(w, "EquitySwapData", v.EquitySwapData);
-    _serialize_callableSwapData(w, "CallableSwapData", v.CallableSwapData);
-    _serialize_arcOptionData(w, "ArcOptionData", v.ArcOptionData);
-    _serialize_swaptionData(w, "SwaptionData", v.SwaptionData);
-    _serialize_varianceSwapData(w, "VarianceSwapData", v.VarianceSwapData);
-    _serialize_varianceSwapData(w, "EquityVarianceSwapData", v.EquityVarianceSwapData);
-    _serialize_varianceSwapData(w, "FxVarianceSwapData", v.FxVarianceSwapData);
-    _serialize_varianceSwapData(w, "CommodityVarianceSwapData", v.CommodityVarianceSwapData);
-    _serialize_forwardRateAgreementData(w, "ForwardRateAgreementData", v.ForwardRateAgreementData);
-    _serialize_fxForwardData(w, "FxForwardData", v.FxForwardData);
-    _serialize_fxAverageForwardData(w, "FxAverageForwardData", v.FxAverageForwardData);
-    _serialize_fxOptionData(w, "FxOptionData", v.FxOptionData);
-    _serialize_fxBarrierOptionData(w, "FxBarrierOptionData", v.FxBarrierOptionData);
-    _serialize_fxBarrierOptionData(w, "FxDoubleBarrierOptionData", v.FxDoubleBarrierOptionData);
-    _serialize_fxDigitalOptionData(w, "FxDigitalOptionData", v.FxDigitalOptionData);
-    _serialize_fxBarrierOptionData(w, "FxEuropeanBarrierOptionData", v.FxEuropeanBarrierOptionData);
-    _serialize_fxKIKOBarrierOptionData(w, "FxKIKOBarrierOptionData", v.FxKIKOBarrierOptionData);
-    _serialize_fxDigitalBarrierOptionData(w, "FxDigitalBarrierOptionData", v.FxDigitalBarrierOptionData);
-    _serialize_fxTouchOptionData(w, "FxTouchOptionData", v.FxTouchOptionData);
-    _serialize_fxTouchOptionData(w, "FxDoubleTouchOptionData", v.FxDoubleTouchOptionData);
-    _serialize_fxSwapData(w, "FxSwapData", v.FxSwapData);
-    _serialize_capFloorData(w, "CapFloorData", v.CapFloorData);
-    _serialize_equityFutureOptionData(w, "EquityFutureOptionData", v.EquityFutureOptionData);
-    _serialize_equityOptionData(w, "EquityOptionData", v.EquityOptionData);
-    _serialize_eqBarrierOptionData(w, "EquityBarrierOptionData", v.EquityBarrierOptionData);
-    _serialize_eqBarrierOptionData(w, "EquityDoubleBarrierOptionData", v.EquityDoubleBarrierOptionData);
-    _serialize_equityForwardData(w, "EquityForwardData", v.EquityForwardData);
-    _serialize_eqBarrierOptionData(w, "EquityEuropeanBarrierOptionData", v.EquityEuropeanBarrierOptionData);
-    _serialize_eqDigitalOptionData(w, "EquityDigitalOptionData", v.EquityDigitalOptionData);
-    _serialize_eqTouchOptionData(w, "EquityDoubleTouchOptionData", v.EquityDoubleTouchOptionData);
-    _serialize_eqTouchOptionData(w, "EquityTouchOptionData", v.EquityTouchOptionData);
-    _serialize_cliquetOptionData(w, "EquityCliquetOptionData", v.EquityCliquetOptionData);
-    _serialize_bondData(w, "BondData", v.BondData);
-    _serialize_forwardBondData(w, "ForwardBondData", v.ForwardBondData);
-    _serialize_bondFutureData(w, "BondFutureData", v.BondFutureData);
-    _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", v.CreditDefaultSwapData);
-    _serialize_creditDefaultSwapOptionData(w, "CreditDefaultSwapOptionData", v.CreditDefaultSwapOptionData);
-    _serialize_commodityForwardData(w, "CommodityForwardData", v.CommodityForwardData);
-    _serialize_commodityOptionData(w, "CommodityOptionData", v.CommodityOptionData);
-    _serialize_commodityDigitalAveragePriceOptionData(w, "CommodityDigitalAveragePriceOptionData", v.CommodityDigitalAveragePriceOptionData);
-    _serialize_commodityDigitalOptionData(w, "CommodityDigitalOptionData", v.CommodityDigitalOptionData);
-    _serialize_commoditySpreadOptionData(w, "CommoditySpreadOptionData", v.CommoditySpreadOptionData);
-    _serialize_commoditySwapData(w, "CommoditySwapData", v.CommoditySwapData);
-    _serialize_commoditySwaptionData(w, "CommoditySwaptionData", v.CommoditySwaptionData);
-    _serialize_commodityAveragePriceOptionData(w, "CommodityAveragePriceOptionData", v.CommodityAveragePriceOptionData);
-    _serialize_commodityOptionStripData(w, "CommodityOptionStripData", v.CommodityOptionStripData);
-    _serialize_commodityPositionData(w, "CommodityPositionData", v.CommodityPositionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "EquityAsianOptionData", v.EquityAsianOptionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "FxAsianOptionData", v.FxAsianOptionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "CommodityAsianOptionData", v.CommodityAsianOptionData);
-    _serialize_bondOptionData(w, "BondOptionData", v.BondOptionData);
-    _serialize_bondRepoData(w, "BondRepoData", v.BondRepoData);
-    _serialize_bondTRSData(w, "BondTRSData", v.BondTRSData);
-    _serialize_cdoData(w, "CdoData", v.CdoData);
-    _serialize_creditLinkedSwapData(w, "CreditLinkedSwapData", v.CreditLinkedSwapData);
-    _serialize_indexCreditDefaultSwapData(w, "IndexCreditDefaultSwapData", v.IndexCreditDefaultSwapData);
-    _serialize_indexCreditDefaultSwapOptionData(w, "IndexCreditDefaultSwapOptionData", v.IndexCreditDefaultSwapOptionData);
-    _serialize_multiLegOptionData(w, "MultiLegOptionData", v.MultiLegOptionData);
-    _serialize_ascotData(w, "AscotData", v.AscotData);
-    _serialize_convertibleBondData(w, "ConvertibleBondData", v.ConvertibleBondData);
-    _serialize_callableBondData(w, "CallableBondData", v.CallableBondData);
-    _serialize_tlockData(w, "TreasuryLockData", v.TreasuryLockData);
-    _serialize_rpaData(w, "RiskParticipationAgreementData", v.RiskParticipationAgreementData);
-    _serialize_cbodata(w, "CBOData", v.CBOData);
-    _serialize_bondBasketData(w, "BondBasketData", v.BondBasketData);
-    _serialize_equityPositionData(w, "EquityPositionData", v.EquityPositionData);
-    _serialize_equityOptionPositionData(w, "EquityOptionPositionData", v.EquityOptionPositionData);
-    _serialize_totalReturnSwapData(w, "TotalReturnSwapData", v.TotalReturnSwapData);
-    _serialize_totalReturnSwapData(w, "ContractForDifferenceData", v.ContractForDifferenceData);
-    _serialize_compositeTradeData(w, "CompositeTradeData", v.CompositeTradeData);
-    _serialize_pairwiseVarianceSwapData1(w, "PairwiseVarianceSwapData", v.PairwiseVarianceSwapData);
-    _serialize_pairwiseVarianceSwapData2(w, "EquityPairwiseVarianceSwapData", v.EquityPairwiseVarianceSwapData);
-    _serialize_pairwiseVarianceSwapData2(w, "FxPairwiseVarianceSwapData", v.FxPairwiseVarianceSwapData);
-    _serialize_eqOutperformanceOptionData(w, "EquityOutperformanceOptionData", v.EquityOutperformanceOptionData);
-    _serialize_flexiSwapData(w, "FlexiSwapData", v.FlexiSwapData);
-    _serialize_bgSwapData(w, "BalanceGuaranteedSwapData", v.BalanceGuaranteedSwapData);
-    _serialize_commodityRevenueOptionData(w, "CommodityRevenueOptionData", v.CommodityRevenueOptionData);
-    _serialize_basketVarianceSwapData(w, "BasketVarianceSwapData", v.BasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "EquityBasketVarianceSwapData", v.EquityBasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "FxBasketVarianceSwapData", v.FxBasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "CommodityBasketVarianceSwapData", v.CommodityBasketVarianceSwapData);
-    _serialize_extendedAccumulatorData(w, "ExtendedAccumulatorData", v.ExtendedAccumulatorData);
-    _serialize_varianceOptionData(w, "VarianceOptionData", v.VarianceOptionData);
-    _serialize_varianceDispersionSwapData(w, "VarianceDispersionSwapData", v.VarianceDispersionSwapData);
-    _serialize_kikoVarianceSwapData(w, "KIKOVarianceSwapData", v.KIKOVarianceSwapData);
-    _serialize_corridorVarianceSwapData(w, "CorridorVarianceSwapData", v.CorridorVarianceSwapData);
-    _serialize_indexedCorridorVarianceSwapData(w, "IndexedCorridorVarianceSwapData", v.IndexedCorridorVarianceSwapData);
-    _serialize_kikoCorridorVarianceSwapData(w, "KIKOCorridorVarianceSwapData", v.KIKOCorridorVarianceSwapData);
-    _serialize_corridorVarianceDispersionSwapData(w, "CorridorVarianceDispersionSwapData", v.CorridorVarianceDispersionSwapData);
-    _serialize_koCorridorVarianceDispersionSwapData(w, "KOCorridorVarianceDispersionSwapData", v.KOCorridorVarianceDispersionSwapData);
-    _serialize_pairwiseGeometricVarianceDispersionSwapData(w, "PairwiseGeometricVarianceDispersionSwapData", v.PairwiseGeometricVarianceDispersionSwapData);
-    _serialize_conditionalVarianceSwap01Data(w, "ConditionalVarianceSwap01Data", v.ConditionalVarianceSwap01Data);
-    _serialize_conditionalVarianceSwap02Data(w, "ConditionalVarianceSwap02Data", v.ConditionalVarianceSwap02Data);
-    _serialize_gammaSwapData(w, "GammaSwapData", v.GammaSwapData);
-    _serialize_bestEntryOptionData(w, "BestEntryOptionData", v.BestEntryOptionData);
-    _serialize_dualEuroBinaryOptionData(w, "DualEuroBinaryOptionData", v.DualEuroBinaryOptionData);
-    _serialize_dualEuroBinaryOptionDoubleKOData(w, "DualEuroBinaryOptionDoubleKOData", v.DualEuroBinaryOptionDoubleKOData);
-    _serialize_volBarrierOptionData(w, "VolatilityBarrierOptionData", v.VolatilityBarrierOptionData);
-    _serialize_tarfData2(w, "FxTaRFData", v.FxTaRFData);
-    _serialize_tarfData2(w, "EquityTaRFData", v.EquityTaRFData);
-    _serialize_tarfData2(w, "CommodityTaRFData", v.CommodityTaRFData);
-    _serialize_accumulatorData(w, "FxAccumulatorData", v.FxAccumulatorData);
-    _serialize_accumulatorData(w, "EquityAccumulatorData", v.EquityAccumulatorData);
-    _serialize_accumulatorData(w, "CommodityAccumulatorData", v.CommodityAccumulatorData);
-    _serialize_windowBarrierOptionData2(w, "FxWindowBarrierOptionData", v.FxWindowBarrierOptionData);
-    _serialize_windowBarrierOptionData2(w, "EquityWindowBarrierOptionData", v.EquityWindowBarrierOptionData);
-    _serialize_windowBarrierOptionData2(w, "CommodityWindowBarierOptionData", v.CommodityWindowBarierOptionData);
-    _serialize_basketOptionData(w, "EquityBasketOptionData", v.EquityBasketOptionData);
-    _serialize_basketOptionData(w, "FxBasketOptionData", v.FxBasketOptionData);
-    _serialize_basketOptionData(w, "CommodityBasketOptionData", v.CommodityBasketOptionData);
-    _serialize_genericBarrierOptionData(w, "FxGenericBarrierOptionData", v.FxGenericBarrierOptionData);
-    _serialize_genericBarrierOptionData(w, "EquityGenericBarrierOptionData", v.EquityGenericBarrierOptionData);
-    _serialize_genericBarrierOptionData(w, "CommodityGenericBarrierOptionData", v.CommodityGenericBarrierOptionData);
-    _serialize_rainbowOptionData(w, "EquityRainbowOptionData", v.EquityRainbowOptionData);
-    _serialize_rainbowOptionData(w, "FxRainbowOptionData", v.FxRainbowOptionData);
-    _serialize_rainbowOptionData(w, "CommodityRainbowOptionData", v.CommodityRainbowOptionData);
-    _serialize_autocallable01Data(w, "Autocallable01Data", v.Autocallable01Data);
-    _serialize_doubleDigitalOptionData(w, "DoubleDigitalOptionData", v.DoubleDigitalOptionData);
-    _serialize_performanceOption01Data(w, "PerformanceOption01Data", v.PerformanceOption01Data);
-    _serialize_scriptedTradeData(w, "ScriptedTradeData", v.ScriptedTradeData);
-    _serialize_vanillaBasketOptionData(w, "VanillaBasketOptionData", v.VanillaBasketOptionData);
-    _serialize_asianBasketOptionData(w, "AsianBasketOptionData", v.AsianBasketOptionData);
-    _serialize_averageStrikeBasketOptionData(w, "AverageStrikeBasketOptionData", v.AverageStrikeBasketOptionData);
-    _serialize_lookbackCallBasketOptionData(w, "LookbackCallBasketOptionData", v.LookbackCallBasketOptionData);
-    _serialize_lookbackPutBasketOptionData(w, "LookbackPutBasketOptionData", v.LookbackPutBasketOptionData);
-    _serialize_bestOfAirbagData(w, "BestOfAirbagData", v.BestOfAirbagData);
-    _serialize_worstOfBasketSwapData(w, "WorstOfBasketSwapData", v.WorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "FxWorstOfBasketSwapData", v.FxWorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "EquityWorstOfBasketSwapData", v.EquityWorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "CommodityWorstOfBasketSwapData", v.CommodityWorstOfBasketSwapData);
-    _serialize_worstPerformanceRainbowOption01Data(w, "WorstPerformanceRainbowOption01Data", v.WorstPerformanceRainbowOption01Data);
-    _serialize_worstPerformanceRainbowOption02Data(w, "WorstPerformanceRainbowOption02Data", v.WorstPerformanceRainbowOption02Data);
-    _serialize_worstPerformanceRainbowOption03Data(w, "WorstPerformanceRainbowOption03Data", v.WorstPerformanceRainbowOption03Data);
-    _serialize_worstPerformanceRainbowOption04Data(w, "WorstPerformanceRainbowOption04Data", v.WorstPerformanceRainbowOption04Data);
-    _serialize_worstPerformanceRainbowOption05Data(w, "WorstPerformanceRainbowOption05Data", v.WorstPerformanceRainbowOption05Data);
-    _serialize_worstPerformanceRainbowOption06Data(w, "WorstPerformanceRainbowOption06Data", v.WorstPerformanceRainbowOption06Data);
-    _serialize_worstPerformanceRainbowOption07Data(w, "WorstPerformanceRainbowOption07Data", v.WorstPerformanceRainbowOption07Data);
-    _serialize_bestOfAssetOrCashRainbowOptionData(w, "BestOfAssetOrCashRainbowOptionData", v.BestOfAssetOrCashRainbowOptionData);
-    _serialize_worstOfAssetOrCashRainbowOptionData(w, "WorstOfAssetOrCashRainbowOptionData", v.WorstOfAssetOrCashRainbowOptionData);
-    _serialize_minRainbowOptionData(w, "MinRainbowOptionData", v.MinRainbowOptionData);
-    _serialize_maxRainbowOptionData(w, "MaxRainbowOptionData", v.MaxRainbowOptionData);
-    _serialize_windowBarrierOptionData(w, "WindowBarrierOptionData", v.WindowBarrierOptionData);
-    _serialize_accumulator01Data(w, "Accumulator01Data", v.Accumulator01Data);
-    _serialize_accumulator02Data(w, "Accumulator02Data", v.Accumulator02Data);
-    _serialize_bestEntryOptionData2(w, "EquityBestEntryOptionData", v.EquityBestEntryOptionData);
-    _serialize_bestEntryOptionData2(w, "FxBestEntryOptionData", v.FxBestEntryOptionData);
-    _serialize_bestEntryOptionData2(w, "CommodityBestEntryOptionData", v.CommodityBestEntryOptionData);
-    _serialize_tarfData(w, "TaRFData", v.TaRFData);
-    _serialize_europeanRainbowCallSpreadOptionData(w, "EuropeanRainbowCallSpreadOptionData", v.EuropeanRainbowCallSpreadOptionData);
-    _serialize_rainbowCallSpreadBarrierOptionData(w, "RainbowCallSpreadBarrierOptionData", v.RainbowCallSpreadBarrierOptionData);
-    _serialize_asianRainbowCallSpreadOptionData(w, "AsianRainbowCallSpreadOptionData", v.AsianRainbowCallSpreadOptionData);
-    _serialize_asianIrCapFloorData(w, "AsianIrCapFloorData", v.AsianIrCapFloorData);
-    _serialize_forwardVolatilityAgreementData(w, "ForwardVolatilityAgreementData", v.ForwardVolatilityAgreementData);
-    _serialize_correlationSwapData(w, "CorrelationSwapData", v.CorrelationSwapData);
-    _serialize_assetLinkedCliquetOptionData(w, "AssetLinkedCliquetOptionData", v.AssetLinkedCliquetOptionData);
-    _serialize_constantMaturityVolatilitySwapData(w, "ConstantMaturityVolatilitySwapData", v.ConstantMaturityVolatilitySwapData);
-    _serialize_cmsCapFloorBarrierData(w, "CMSCapFloorBarrierData", v.CMSCapFloorBarrierData);
-    _serialize_fixedStrikeForwardStartingOptionData(w, "FixedStrikeForwardStartingOptionData", v.FixedStrikeForwardStartingOptionData);
-    _serialize_floatingStrikeForwardStartingOptionData(w, "FloatingStrikeForwardStartingOptionData", v.FloatingStrikeForwardStartingOptionData);
-    _serialize_forwardStartingSwaptionData(w, "ForwardStartingSwaptionData", v.ForwardStartingSwaptionData);
-    _serialize_flooredAverageCPIZCIISData(w, "FlooredAverageCPIZCIISData", v.FlooredAverageCPIZCIISData);
-    _serialize_genericBarrierOptionDataRaw(w, "GenericBarrierOptionData", v.GenericBarrierOptionData);
-    _serialize_movingMaxYYIISData(w, "MovingMaxYYIISData", v.MovingMaxYYIISData);
-    _serialize_irregularYYIISData(w, "IrregularYYIISData", v.IrregularYYIISData);
-    _serialize_europeanOptionBarrierData(w, "EuropeanOptionBarrierData", v.EuropeanOptionBarrierData);
-    _serialize_ladderLockInOptionData(w, "LadderLockInOptionData", v.LadderLockInOptionData);
-    _serialize_lapseHedgeSwapData(w, "LapseHedgeSwapData", v.LapseHedgeSwapData);
-    _serialize_knockOutSwapData(w, "KnockOutSwapData", v.KnockOutSwapData);
-    _serialize_LPISwapData(w, "LPISwapData", v.LPISwapData);
-    _serialize_cashPositionData(w, "CashPositionData", v.CashPositionData);
-    _serialize_strikeResettableOptionData(w, "StrikeResettableOptionData", v.StrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "EquityStrikeResettableOptionData", v.EquityStrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "FxStrikeResettableOptionData", v.FxStrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "CommodityStrikeResettableOptionData", v.CommodityStrikeResettableOptionData);
+    if (v.CrossCurrencySwapData) _serialize_swapData(w, "CrossCurrencySwapData", *v.CrossCurrencySwapData);
+    if (v.InflationSwapData) _serialize_swapData(w, "InflationSwapData", *v.InflationSwapData);
+    if (v.SwapData) _serialize_swapData(w, "SwapData", *v.SwapData);
+    if (v.EquitySwapData) _serialize_swapData(w, "EquitySwapData", *v.EquitySwapData);
+    if (v.CallableSwapData) _serialize_callableSwapData(w, "CallableSwapData", *v.CallableSwapData);
+    if (v.ArcOptionData) _serialize_arcOptionData(w, "ArcOptionData", *v.ArcOptionData);
+    if (v.SwaptionData) _serialize_swaptionData(w, "SwaptionData", *v.SwaptionData);
+    if (v.VarianceSwapData) _serialize_varianceSwapData(w, "VarianceSwapData", *v.VarianceSwapData);
+    if (v.EquityVarianceSwapData) _serialize_varianceSwapData(w, "EquityVarianceSwapData", *v.EquityVarianceSwapData);
+    if (v.FxVarianceSwapData) _serialize_varianceSwapData(w, "FxVarianceSwapData", *v.FxVarianceSwapData);
+    if (v.CommodityVarianceSwapData) _serialize_varianceSwapData(w, "CommodityVarianceSwapData", *v.CommodityVarianceSwapData);
+    if (v.ForwardRateAgreementData) _serialize_forwardRateAgreementData(w, "ForwardRateAgreementData", *v.ForwardRateAgreementData);
+    if (v.FxForwardData) _serialize_fxForwardData(w, "FxForwardData", *v.FxForwardData);
+    if (v.FxAverageForwardData) _serialize_fxAverageForwardData(w, "FxAverageForwardData", *v.FxAverageForwardData);
+    if (v.FxOptionData) _serialize_fxOptionData(w, "FxOptionData", *v.FxOptionData);
+    if (v.FxBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxBarrierOptionData", *v.FxBarrierOptionData);
+    if (v.FxDoubleBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxDoubleBarrierOptionData", *v.FxDoubleBarrierOptionData);
+    if (v.FxDigitalOptionData) _serialize_fxDigitalOptionData(w, "FxDigitalOptionData", *v.FxDigitalOptionData);
+    if (v.FxEuropeanBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxEuropeanBarrierOptionData", *v.FxEuropeanBarrierOptionData);
+    if (v.FxKIKOBarrierOptionData) _serialize_fxKIKOBarrierOptionData(w, "FxKIKOBarrierOptionData", *v.FxKIKOBarrierOptionData);
+    if (v.FxDigitalBarrierOptionData) _serialize_fxDigitalBarrierOptionData(w, "FxDigitalBarrierOptionData", *v.FxDigitalBarrierOptionData);
+    if (v.FxTouchOptionData) _serialize_fxTouchOptionData(w, "FxTouchOptionData", *v.FxTouchOptionData);
+    if (v.FxDoubleTouchOptionData) _serialize_fxTouchOptionData(w, "FxDoubleTouchOptionData", *v.FxDoubleTouchOptionData);
+    if (v.FxSwapData) _serialize_fxSwapData(w, "FxSwapData", *v.FxSwapData);
+    if (v.CapFloorData) _serialize_capFloorData(w, "CapFloorData", *v.CapFloorData);
+    if (v.EquityFutureOptionData) _serialize_equityFutureOptionData(w, "EquityFutureOptionData", *v.EquityFutureOptionData);
+    if (v.EquityOptionData) _serialize_equityOptionData(w, "EquityOptionData", *v.EquityOptionData);
+    if (v.EquityBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityBarrierOptionData", *v.EquityBarrierOptionData);
+    if (v.EquityDoubleBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityDoubleBarrierOptionData", *v.EquityDoubleBarrierOptionData);
+    if (v.EquityForwardData) _serialize_equityForwardData(w, "EquityForwardData", *v.EquityForwardData);
+    if (v.EquityEuropeanBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityEuropeanBarrierOptionData", *v.EquityEuropeanBarrierOptionData);
+    if (v.EquityDigitalOptionData) _serialize_eqDigitalOptionData(w, "EquityDigitalOptionData", *v.EquityDigitalOptionData);
+    if (v.EquityDoubleTouchOptionData) _serialize_eqTouchOptionData(w, "EquityDoubleTouchOptionData", *v.EquityDoubleTouchOptionData);
+    if (v.EquityTouchOptionData) _serialize_eqTouchOptionData(w, "EquityTouchOptionData", *v.EquityTouchOptionData);
+    if (v.EquityCliquetOptionData) _serialize_cliquetOptionData(w, "EquityCliquetOptionData", *v.EquityCliquetOptionData);
+    if (v.BondData) _serialize_bondData(w, "BondData", *v.BondData);
+    if (v.ForwardBondData) _serialize_forwardBondData(w, "ForwardBondData", *v.ForwardBondData);
+    if (v.BondFutureData) _serialize_bondFutureData(w, "BondFutureData", *v.BondFutureData);
+    if (v.CreditDefaultSwapData) _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", *v.CreditDefaultSwapData);
+    if (v.CreditDefaultSwapOptionData) _serialize_creditDefaultSwapOptionData(w, "CreditDefaultSwapOptionData", *v.CreditDefaultSwapOptionData);
+    if (v.CommodityForwardData) _serialize_commodityForwardData(w, "CommodityForwardData", *v.CommodityForwardData);
+    if (v.CommodityOptionData) _serialize_commodityOptionData(w, "CommodityOptionData", *v.CommodityOptionData);
+    if (v.CommodityDigitalAveragePriceOptionData) _serialize_commodityDigitalAveragePriceOptionData(w, "CommodityDigitalAveragePriceOptionData", *v.CommodityDigitalAveragePriceOptionData);
+    if (v.CommodityDigitalOptionData) _serialize_commodityDigitalOptionData(w, "CommodityDigitalOptionData", *v.CommodityDigitalOptionData);
+    if (v.CommoditySpreadOptionData) _serialize_commoditySpreadOptionData(w, "CommoditySpreadOptionData", *v.CommoditySpreadOptionData);
+    if (v.CommoditySwapData) _serialize_commoditySwapData(w, "CommoditySwapData", *v.CommoditySwapData);
+    if (v.CommoditySwaptionData) _serialize_commoditySwaptionData(w, "CommoditySwaptionData", *v.CommoditySwaptionData);
+    if (v.CommodityAveragePriceOptionData) _serialize_commodityAveragePriceOptionData(w, "CommodityAveragePriceOptionData", *v.CommodityAveragePriceOptionData);
+    if (v.CommodityOptionStripData) _serialize_commodityOptionStripData(w, "CommodityOptionStripData", *v.CommodityOptionStripData);
+    if (v.CommodityPositionData) _serialize_commodityPositionData(w, "CommodityPositionData", *v.CommodityPositionData);
+    if (v.EquityAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "EquityAsianOptionData", *v.EquityAsianOptionData);
+    if (v.FxAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "FxAsianOptionData", *v.FxAsianOptionData);
+    if (v.CommodityAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "CommodityAsianOptionData", *v.CommodityAsianOptionData);
+    if (v.BondOptionData) _serialize_bondOptionData(w, "BondOptionData", *v.BondOptionData);
+    if (v.BondRepoData) _serialize_bondRepoData(w, "BondRepoData", *v.BondRepoData);
+    if (v.BondTRSData) _serialize_bondTRSData(w, "BondTRSData", *v.BondTRSData);
+    if (v.CdoData) _serialize_cdoData(w, "CdoData", *v.CdoData);
+    if (v.CreditLinkedSwapData) _serialize_creditLinkedSwapData(w, "CreditLinkedSwapData", *v.CreditLinkedSwapData);
+    if (v.IndexCreditDefaultSwapData) _serialize_indexCreditDefaultSwapData(w, "IndexCreditDefaultSwapData", *v.IndexCreditDefaultSwapData);
+    if (v.IndexCreditDefaultSwapOptionData) _serialize_indexCreditDefaultSwapOptionData(w, "IndexCreditDefaultSwapOptionData", *v.IndexCreditDefaultSwapOptionData);
+    if (v.MultiLegOptionData) _serialize_multiLegOptionData(w, "MultiLegOptionData", *v.MultiLegOptionData);
+    if (v.AscotData) _serialize_ascotData(w, "AscotData", *v.AscotData);
+    if (v.ConvertibleBondData) _serialize_convertibleBondData(w, "ConvertibleBondData", *v.ConvertibleBondData);
+    if (v.CallableBondData) _serialize_callableBondData(w, "CallableBondData", *v.CallableBondData);
+    if (v.TreasuryLockData) _serialize_tlockData(w, "TreasuryLockData", *v.TreasuryLockData);
+    if (v.RiskParticipationAgreementData) _serialize_rpaData(w, "RiskParticipationAgreementData", *v.RiskParticipationAgreementData);
+    if (v.CBOData) _serialize_cbodata(w, "CBOData", *v.CBOData);
+    if (v.BondBasketData) _serialize_bondBasketData(w, "BondBasketData", *v.BondBasketData);
+    if (v.EquityPositionData) _serialize_equityPositionData(w, "EquityPositionData", *v.EquityPositionData);
+    if (v.EquityOptionPositionData) _serialize_equityOptionPositionData(w, "EquityOptionPositionData", *v.EquityOptionPositionData);
+    if (v.TotalReturnSwapData) _serialize_totalReturnSwapData(w, "TotalReturnSwapData", *v.TotalReturnSwapData);
+    if (v.ContractForDifferenceData) _serialize_totalReturnSwapData(w, "ContractForDifferenceData", *v.ContractForDifferenceData);
+    if (v.CompositeTradeData) _serialize_compositeTradeData(w, "CompositeTradeData", *v.CompositeTradeData);
+    if (v.PairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData1(w, "PairwiseVarianceSwapData", *v.PairwiseVarianceSwapData);
+    if (v.EquityPairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData2(w, "EquityPairwiseVarianceSwapData", *v.EquityPairwiseVarianceSwapData);
+    if (v.FxPairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData2(w, "FxPairwiseVarianceSwapData", *v.FxPairwiseVarianceSwapData);
+    if (v.EquityOutperformanceOptionData) _serialize_eqOutperformanceOptionData(w, "EquityOutperformanceOptionData", *v.EquityOutperformanceOptionData);
+    if (v.FlexiSwapData) _serialize_flexiSwapData(w, "FlexiSwapData", *v.FlexiSwapData);
+    if (v.BalanceGuaranteedSwapData) _serialize_bgSwapData(w, "BalanceGuaranteedSwapData", *v.BalanceGuaranteedSwapData);
+    if (v.CommodityRevenueOptionData) _serialize_commodityRevenueOptionData(w, "CommodityRevenueOptionData", *v.CommodityRevenueOptionData);
+    if (v.BasketVarianceSwapData) _serialize_basketVarianceSwapData(w, "BasketVarianceSwapData", *v.BasketVarianceSwapData);
+    if (v.EquityBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "EquityBasketVarianceSwapData", *v.EquityBasketVarianceSwapData);
+    if (v.FxBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "FxBasketVarianceSwapData", *v.FxBasketVarianceSwapData);
+    if (v.CommodityBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "CommodityBasketVarianceSwapData", *v.CommodityBasketVarianceSwapData);
+    if (v.ExtendedAccumulatorData) _serialize_extendedAccumulatorData(w, "ExtendedAccumulatorData", *v.ExtendedAccumulatorData);
+    if (v.VarianceOptionData) _serialize_varianceOptionData(w, "VarianceOptionData", *v.VarianceOptionData);
+    if (v.VarianceDispersionSwapData) _serialize_varianceDispersionSwapData(w, "VarianceDispersionSwapData", *v.VarianceDispersionSwapData);
+    if (v.KIKOVarianceSwapData) _serialize_kikoVarianceSwapData(w, "KIKOVarianceSwapData", *v.KIKOVarianceSwapData);
+    if (v.CorridorVarianceSwapData) _serialize_corridorVarianceSwapData(w, "CorridorVarianceSwapData", *v.CorridorVarianceSwapData);
+    if (v.IndexedCorridorVarianceSwapData) _serialize_indexedCorridorVarianceSwapData(w, "IndexedCorridorVarianceSwapData", *v.IndexedCorridorVarianceSwapData);
+    if (v.KIKOCorridorVarianceSwapData) _serialize_kikoCorridorVarianceSwapData(w, "KIKOCorridorVarianceSwapData", *v.KIKOCorridorVarianceSwapData);
+    if (v.CorridorVarianceDispersionSwapData) _serialize_corridorVarianceDispersionSwapData(w, "CorridorVarianceDispersionSwapData", *v.CorridorVarianceDispersionSwapData);
+    if (v.KOCorridorVarianceDispersionSwapData) _serialize_koCorridorVarianceDispersionSwapData(w, "KOCorridorVarianceDispersionSwapData", *v.KOCorridorVarianceDispersionSwapData);
+    if (v.PairwiseGeometricVarianceDispersionSwapData) _serialize_pairwiseGeometricVarianceDispersionSwapData(w, "PairwiseGeometricVarianceDispersionSwapData", *v.PairwiseGeometricVarianceDispersionSwapData);
+    if (v.ConditionalVarianceSwap01Data) _serialize_conditionalVarianceSwap01Data(w, "ConditionalVarianceSwap01Data", *v.ConditionalVarianceSwap01Data);
+    if (v.ConditionalVarianceSwap02Data) _serialize_conditionalVarianceSwap02Data(w, "ConditionalVarianceSwap02Data", *v.ConditionalVarianceSwap02Data);
+    if (v.GammaSwapData) _serialize_gammaSwapData(w, "GammaSwapData", *v.GammaSwapData);
+    if (v.BestEntryOptionData) _serialize_bestEntryOptionData(w, "BestEntryOptionData", *v.BestEntryOptionData);
+    if (v.DualEuroBinaryOptionData) _serialize_dualEuroBinaryOptionData(w, "DualEuroBinaryOptionData", *v.DualEuroBinaryOptionData);
+    if (v.DualEuroBinaryOptionDoubleKOData) _serialize_dualEuroBinaryOptionDoubleKOData(w, "DualEuroBinaryOptionDoubleKOData", *v.DualEuroBinaryOptionDoubleKOData);
+    if (v.VolatilityBarrierOptionData) _serialize_volBarrierOptionData(w, "VolatilityBarrierOptionData", *v.VolatilityBarrierOptionData);
+    if (v.FxTaRFData) _serialize_tarfData2(w, "FxTaRFData", *v.FxTaRFData);
+    if (v.EquityTaRFData) _serialize_tarfData2(w, "EquityTaRFData", *v.EquityTaRFData);
+    if (v.CommodityTaRFData) _serialize_tarfData2(w, "CommodityTaRFData", *v.CommodityTaRFData);
+    if (v.FxAccumulatorData) _serialize_accumulatorData(w, "FxAccumulatorData", *v.FxAccumulatorData);
+    if (v.EquityAccumulatorData) _serialize_accumulatorData(w, "EquityAccumulatorData", *v.EquityAccumulatorData);
+    if (v.CommodityAccumulatorData) _serialize_accumulatorData(w, "CommodityAccumulatorData", *v.CommodityAccumulatorData);
+    if (v.FxWindowBarrierOptionData) _serialize_windowBarrierOptionData2(w, "FxWindowBarrierOptionData", *v.FxWindowBarrierOptionData);
+    if (v.EquityWindowBarrierOptionData) _serialize_windowBarrierOptionData2(w, "EquityWindowBarrierOptionData", *v.EquityWindowBarrierOptionData);
+    if (v.CommodityWindowBarierOptionData) _serialize_windowBarrierOptionData2(w, "CommodityWindowBarierOptionData", *v.CommodityWindowBarierOptionData);
+    if (v.EquityBasketOptionData) _serialize_basketOptionData(w, "EquityBasketOptionData", *v.EquityBasketOptionData);
+    if (v.FxBasketOptionData) _serialize_basketOptionData(w, "FxBasketOptionData", *v.FxBasketOptionData);
+    if (v.CommodityBasketOptionData) _serialize_basketOptionData(w, "CommodityBasketOptionData", *v.CommodityBasketOptionData);
+    if (v.FxGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "FxGenericBarrierOptionData", *v.FxGenericBarrierOptionData);
+    if (v.EquityGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "EquityGenericBarrierOptionData", *v.EquityGenericBarrierOptionData);
+    if (v.CommodityGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "CommodityGenericBarrierOptionData", *v.CommodityGenericBarrierOptionData);
+    if (v.EquityRainbowOptionData) _serialize_rainbowOptionData(w, "EquityRainbowOptionData", *v.EquityRainbowOptionData);
+    if (v.FxRainbowOptionData) _serialize_rainbowOptionData(w, "FxRainbowOptionData", *v.FxRainbowOptionData);
+    if (v.CommodityRainbowOptionData) _serialize_rainbowOptionData(w, "CommodityRainbowOptionData", *v.CommodityRainbowOptionData);
+    if (v.Autocallable01Data) _serialize_autocallable01Data(w, "Autocallable01Data", *v.Autocallable01Data);
+    if (v.DoubleDigitalOptionData) _serialize_doubleDigitalOptionData(w, "DoubleDigitalOptionData", *v.DoubleDigitalOptionData);
+    if (v.PerformanceOption01Data) _serialize_performanceOption01Data(w, "PerformanceOption01Data", *v.PerformanceOption01Data);
+    if (v.ScriptedTradeData) _serialize_scriptedTradeData(w, "ScriptedTradeData", *v.ScriptedTradeData);
+    if (v.VanillaBasketOptionData) _serialize_vanillaBasketOptionData(w, "VanillaBasketOptionData", *v.VanillaBasketOptionData);
+    if (v.AsianBasketOptionData) _serialize_asianBasketOptionData(w, "AsianBasketOptionData", *v.AsianBasketOptionData);
+    if (v.AverageStrikeBasketOptionData) _serialize_averageStrikeBasketOptionData(w, "AverageStrikeBasketOptionData", *v.AverageStrikeBasketOptionData);
+    if (v.LookbackCallBasketOptionData) _serialize_lookbackCallBasketOptionData(w, "LookbackCallBasketOptionData", *v.LookbackCallBasketOptionData);
+    if (v.LookbackPutBasketOptionData) _serialize_lookbackPutBasketOptionData(w, "LookbackPutBasketOptionData", *v.LookbackPutBasketOptionData);
+    if (v.BestOfAirbagData) _serialize_bestOfAirbagData(w, "BestOfAirbagData", *v.BestOfAirbagData);
+    if (v.WorstOfBasketSwapData) _serialize_worstOfBasketSwapData(w, "WorstOfBasketSwapData", *v.WorstOfBasketSwapData);
+    if (v.FxWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "FxWorstOfBasketSwapData", *v.FxWorstOfBasketSwapData);
+    if (v.EquityWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "EquityWorstOfBasketSwapData", *v.EquityWorstOfBasketSwapData);
+    if (v.CommodityWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "CommodityWorstOfBasketSwapData", *v.CommodityWorstOfBasketSwapData);
+    if (v.WorstPerformanceRainbowOption01Data) _serialize_worstPerformanceRainbowOption01Data(w, "WorstPerformanceRainbowOption01Data", *v.WorstPerformanceRainbowOption01Data);
+    if (v.WorstPerformanceRainbowOption02Data) _serialize_worstPerformanceRainbowOption02Data(w, "WorstPerformanceRainbowOption02Data", *v.WorstPerformanceRainbowOption02Data);
+    if (v.WorstPerformanceRainbowOption03Data) _serialize_worstPerformanceRainbowOption03Data(w, "WorstPerformanceRainbowOption03Data", *v.WorstPerformanceRainbowOption03Data);
+    if (v.WorstPerformanceRainbowOption04Data) _serialize_worstPerformanceRainbowOption04Data(w, "WorstPerformanceRainbowOption04Data", *v.WorstPerformanceRainbowOption04Data);
+    if (v.WorstPerformanceRainbowOption05Data) _serialize_worstPerformanceRainbowOption05Data(w, "WorstPerformanceRainbowOption05Data", *v.WorstPerformanceRainbowOption05Data);
+    if (v.WorstPerformanceRainbowOption06Data) _serialize_worstPerformanceRainbowOption06Data(w, "WorstPerformanceRainbowOption06Data", *v.WorstPerformanceRainbowOption06Data);
+    if (v.WorstPerformanceRainbowOption07Data) _serialize_worstPerformanceRainbowOption07Data(w, "WorstPerformanceRainbowOption07Data", *v.WorstPerformanceRainbowOption07Data);
+    if (v.BestOfAssetOrCashRainbowOptionData) _serialize_bestOfAssetOrCashRainbowOptionData(w, "BestOfAssetOrCashRainbowOptionData", *v.BestOfAssetOrCashRainbowOptionData);
+    if (v.WorstOfAssetOrCashRainbowOptionData) _serialize_worstOfAssetOrCashRainbowOptionData(w, "WorstOfAssetOrCashRainbowOptionData", *v.WorstOfAssetOrCashRainbowOptionData);
+    if (v.MinRainbowOptionData) _serialize_minRainbowOptionData(w, "MinRainbowOptionData", *v.MinRainbowOptionData);
+    if (v.MaxRainbowOptionData) _serialize_maxRainbowOptionData(w, "MaxRainbowOptionData", *v.MaxRainbowOptionData);
+    if (v.WindowBarrierOptionData) _serialize_windowBarrierOptionData(w, "WindowBarrierOptionData", *v.WindowBarrierOptionData);
+    if (v.Accumulator01Data) _serialize_accumulator01Data(w, "Accumulator01Data", *v.Accumulator01Data);
+    if (v.Accumulator02Data) _serialize_accumulator02Data(w, "Accumulator02Data", *v.Accumulator02Data);
+    if (v.EquityBestEntryOptionData) _serialize_bestEntryOptionData2(w, "EquityBestEntryOptionData", *v.EquityBestEntryOptionData);
+    if (v.FxBestEntryOptionData) _serialize_bestEntryOptionData2(w, "FxBestEntryOptionData", *v.FxBestEntryOptionData);
+    if (v.CommodityBestEntryOptionData) _serialize_bestEntryOptionData2(w, "CommodityBestEntryOptionData", *v.CommodityBestEntryOptionData);
+    if (v.TaRFData) _serialize_tarfData(w, "TaRFData", *v.TaRFData);
+    if (v.EuropeanRainbowCallSpreadOptionData) _serialize_europeanRainbowCallSpreadOptionData(w, "EuropeanRainbowCallSpreadOptionData", *v.EuropeanRainbowCallSpreadOptionData);
+    if (v.RainbowCallSpreadBarrierOptionData) _serialize_rainbowCallSpreadBarrierOptionData(w, "RainbowCallSpreadBarrierOptionData", *v.RainbowCallSpreadBarrierOptionData);
+    if (v.AsianRainbowCallSpreadOptionData) _serialize_asianRainbowCallSpreadOptionData(w, "AsianRainbowCallSpreadOptionData", *v.AsianRainbowCallSpreadOptionData);
+    if (v.AsianIrCapFloorData) _serialize_asianIrCapFloorData(w, "AsianIrCapFloorData", *v.AsianIrCapFloorData);
+    if (v.ForwardVolatilityAgreementData) _serialize_forwardVolatilityAgreementData(w, "ForwardVolatilityAgreementData", *v.ForwardVolatilityAgreementData);
+    if (v.CorrelationSwapData) _serialize_correlationSwapData(w, "CorrelationSwapData", *v.CorrelationSwapData);
+    if (v.AssetLinkedCliquetOptionData) _serialize_assetLinkedCliquetOptionData(w, "AssetLinkedCliquetOptionData", *v.AssetLinkedCliquetOptionData);
+    if (v.ConstantMaturityVolatilitySwapData) _serialize_constantMaturityVolatilitySwapData(w, "ConstantMaturityVolatilitySwapData", *v.ConstantMaturityVolatilitySwapData);
+    if (v.CMSCapFloorBarrierData) _serialize_cmsCapFloorBarrierData(w, "CMSCapFloorBarrierData", *v.CMSCapFloorBarrierData);
+    if (v.FixedStrikeForwardStartingOptionData) _serialize_fixedStrikeForwardStartingOptionData(w, "FixedStrikeForwardStartingOptionData", *v.FixedStrikeForwardStartingOptionData);
+    if (v.FloatingStrikeForwardStartingOptionData) _serialize_floatingStrikeForwardStartingOptionData(w, "FloatingStrikeForwardStartingOptionData", *v.FloatingStrikeForwardStartingOptionData);
+    if (v.ForwardStartingSwaptionData) _serialize_forwardStartingSwaptionData(w, "ForwardStartingSwaptionData", *v.ForwardStartingSwaptionData);
+    if (v.FlooredAverageCPIZCIISData) _serialize_flooredAverageCPIZCIISData(w, "FlooredAverageCPIZCIISData", *v.FlooredAverageCPIZCIISData);
+    if (v.GenericBarrierOptionData) _serialize_genericBarrierOptionDataRaw(w, "GenericBarrierOptionData", *v.GenericBarrierOptionData);
+    if (v.MovingMaxYYIISData) _serialize_movingMaxYYIISData(w, "MovingMaxYYIISData", *v.MovingMaxYYIISData);
+    if (v.IrregularYYIISData) _serialize_irregularYYIISData(w, "IrregularYYIISData", *v.IrregularYYIISData);
+    if (v.EuropeanOptionBarrierData) _serialize_europeanOptionBarrierData(w, "EuropeanOptionBarrierData", *v.EuropeanOptionBarrierData);
+    if (v.LadderLockInOptionData) _serialize_ladderLockInOptionData(w, "LadderLockInOptionData", *v.LadderLockInOptionData);
+    if (v.LapseHedgeSwapData) _serialize_lapseHedgeSwapData(w, "LapseHedgeSwapData", *v.LapseHedgeSwapData);
+    if (v.KnockOutSwapData) _serialize_knockOutSwapData(w, "KnockOutSwapData", *v.KnockOutSwapData);
+    if (v.LPISwapData) _serialize_LPISwapData(w, "LPISwapData", *v.LPISwapData);
+    if (v.CashPositionData) _serialize_cashPositionData(w, "CashPositionData", *v.CashPositionData);
+    if (v.StrikeResettableOptionData) _serialize_strikeResettableOptionData(w, "StrikeResettableOptionData", *v.StrikeResettableOptionData);
+    if (v.EquityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "EquityStrikeResettableOptionData", *v.EquityStrikeResettableOptionData);
+    if (v.FxStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "FxStrikeResettableOptionData", *v.FxStrikeResettableOptionData);
+    if (v.CommodityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "CommodityStrikeResettableOptionData", *v.CommodityStrikeResettableOptionData);
     w.endElement(name);
 }
 
@@ -27085,183 +27135,183 @@ XSDCPP_MAYBE_UNUSED void _serialize_trsUnderlyingData_Trade_t(xsdcpp::XmlWriter&
     if ((&v)->id) w.writeAttribute("id", *(&v)->id);
     _serialize_oreTradeType(w, "TradeType", v.TradeType);
     if (v.Envelope) _serialize_envelope(w, "Envelope", *v.Envelope);
-    _serialize_swapData(w, "CrossCurrencySwapData", v.CrossCurrencySwapData);
-    _serialize_swapData(w, "InflationSwapData", v.InflationSwapData);
-    _serialize_swapData(w, "SwapData", v.SwapData);
-    _serialize_swapData(w, "EquitySwapData", v.EquitySwapData);
-    _serialize_callableSwapData(w, "CallableSwapData", v.CallableSwapData);
-    _serialize_arcOptionData(w, "ArcOptionData", v.ArcOptionData);
-    _serialize_swaptionData(w, "SwaptionData", v.SwaptionData);
-    _serialize_varianceSwapData(w, "VarianceSwapData", v.VarianceSwapData);
-    _serialize_varianceSwapData(w, "EquityVarianceSwapData", v.EquityVarianceSwapData);
-    _serialize_varianceSwapData(w, "FxVarianceSwapData", v.FxVarianceSwapData);
-    _serialize_varianceSwapData(w, "CommodityVarianceSwapData", v.CommodityVarianceSwapData);
-    _serialize_forwardRateAgreementData(w, "ForwardRateAgreementData", v.ForwardRateAgreementData);
-    _serialize_fxForwardData(w, "FxForwardData", v.FxForwardData);
-    _serialize_fxAverageForwardData(w, "FxAverageForwardData", v.FxAverageForwardData);
-    _serialize_fxOptionData(w, "FxOptionData", v.FxOptionData);
-    _serialize_fxBarrierOptionData(w, "FxBarrierOptionData", v.FxBarrierOptionData);
-    _serialize_fxBarrierOptionData(w, "FxDoubleBarrierOptionData", v.FxDoubleBarrierOptionData);
-    _serialize_fxDigitalOptionData(w, "FxDigitalOptionData", v.FxDigitalOptionData);
-    _serialize_fxBarrierOptionData(w, "FxEuropeanBarrierOptionData", v.FxEuropeanBarrierOptionData);
-    _serialize_fxKIKOBarrierOptionData(w, "FxKIKOBarrierOptionData", v.FxKIKOBarrierOptionData);
-    _serialize_fxDigitalBarrierOptionData(w, "FxDigitalBarrierOptionData", v.FxDigitalBarrierOptionData);
-    _serialize_fxTouchOptionData(w, "FxTouchOptionData", v.FxTouchOptionData);
-    _serialize_fxTouchOptionData(w, "FxDoubleTouchOptionData", v.FxDoubleTouchOptionData);
-    _serialize_fxSwapData(w, "FxSwapData", v.FxSwapData);
-    _serialize_capFloorData(w, "CapFloorData", v.CapFloorData);
-    _serialize_equityFutureOptionData(w, "EquityFutureOptionData", v.EquityFutureOptionData);
-    _serialize_equityOptionData(w, "EquityOptionData", v.EquityOptionData);
-    _serialize_eqBarrierOptionData(w, "EquityBarrierOptionData", v.EquityBarrierOptionData);
-    _serialize_eqBarrierOptionData(w, "EquityDoubleBarrierOptionData", v.EquityDoubleBarrierOptionData);
-    _serialize_equityForwardData(w, "EquityForwardData", v.EquityForwardData);
-    _serialize_eqBarrierOptionData(w, "EquityEuropeanBarrierOptionData", v.EquityEuropeanBarrierOptionData);
-    _serialize_eqDigitalOptionData(w, "EquityDigitalOptionData", v.EquityDigitalOptionData);
-    _serialize_eqTouchOptionData(w, "EquityDoubleTouchOptionData", v.EquityDoubleTouchOptionData);
-    _serialize_eqTouchOptionData(w, "EquityTouchOptionData", v.EquityTouchOptionData);
-    _serialize_cliquetOptionData(w, "EquityCliquetOptionData", v.EquityCliquetOptionData);
-    _serialize_bondData(w, "BondData", v.BondData);
-    _serialize_forwardBondData(w, "ForwardBondData", v.ForwardBondData);
-    _serialize_bondFutureData(w, "BondFutureData", v.BondFutureData);
-    _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", v.CreditDefaultSwapData);
-    _serialize_creditDefaultSwapOptionData(w, "CreditDefaultSwapOptionData", v.CreditDefaultSwapOptionData);
-    _serialize_commodityForwardData(w, "CommodityForwardData", v.CommodityForwardData);
-    _serialize_commodityOptionData(w, "CommodityOptionData", v.CommodityOptionData);
-    _serialize_commodityDigitalAveragePriceOptionData(w, "CommodityDigitalAveragePriceOptionData", v.CommodityDigitalAveragePriceOptionData);
-    _serialize_commodityDigitalOptionData(w, "CommodityDigitalOptionData", v.CommodityDigitalOptionData);
-    _serialize_commoditySpreadOptionData(w, "CommoditySpreadOptionData", v.CommoditySpreadOptionData);
-    _serialize_commoditySwapData(w, "CommoditySwapData", v.CommoditySwapData);
-    _serialize_commoditySwaptionData(w, "CommoditySwaptionData", v.CommoditySwaptionData);
-    _serialize_commodityAveragePriceOptionData(w, "CommodityAveragePriceOptionData", v.CommodityAveragePriceOptionData);
-    _serialize_commodityOptionStripData(w, "CommodityOptionStripData", v.CommodityOptionStripData);
-    _serialize_commodityPositionData(w, "CommodityPositionData", v.CommodityPositionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "EquityAsianOptionData", v.EquityAsianOptionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "FxAsianOptionData", v.FxAsianOptionData);
-    _serialize_singleUnderlyingAsianOptionData(w, "CommodityAsianOptionData", v.CommodityAsianOptionData);
-    _serialize_bondOptionData(w, "BondOptionData", v.BondOptionData);
-    _serialize_bondRepoData(w, "BondRepoData", v.BondRepoData);
-    _serialize_bondTRSData(w, "BondTRSData", v.BondTRSData);
-    _serialize_cdoData(w, "CdoData", v.CdoData);
-    _serialize_creditLinkedSwapData(w, "CreditLinkedSwapData", v.CreditLinkedSwapData);
-    _serialize_indexCreditDefaultSwapData(w, "IndexCreditDefaultSwapData", v.IndexCreditDefaultSwapData);
-    _serialize_indexCreditDefaultSwapOptionData(w, "IndexCreditDefaultSwapOptionData", v.IndexCreditDefaultSwapOptionData);
-    _serialize_multiLegOptionData(w, "MultiLegOptionData", v.MultiLegOptionData);
-    _serialize_ascotData(w, "AscotData", v.AscotData);
-    _serialize_convertibleBondData(w, "ConvertibleBondData", v.ConvertibleBondData);
-    _serialize_callableBondData(w, "CallableBondData", v.CallableBondData);
-    _serialize_tlockData(w, "TreasuryLockData", v.TreasuryLockData);
-    _serialize_rpaData(w, "RiskParticipationAgreementData", v.RiskParticipationAgreementData);
-    _serialize_cbodata(w, "CBOData", v.CBOData);
-    _serialize_bondBasketData(w, "BondBasketData", v.BondBasketData);
-    _serialize_equityPositionData(w, "EquityPositionData", v.EquityPositionData);
-    _serialize_equityOptionPositionData(w, "EquityOptionPositionData", v.EquityOptionPositionData);
-    _serialize_totalReturnSwapData(w, "TotalReturnSwapData", v.TotalReturnSwapData);
-    _serialize_totalReturnSwapData(w, "ContractForDifferenceData", v.ContractForDifferenceData);
-    _serialize_compositeTradeData(w, "CompositeTradeData", v.CompositeTradeData);
-    _serialize_pairwiseVarianceSwapData1(w, "PairwiseVarianceSwapData", v.PairwiseVarianceSwapData);
-    _serialize_pairwiseVarianceSwapData2(w, "EquityPairwiseVarianceSwapData", v.EquityPairwiseVarianceSwapData);
-    _serialize_pairwiseVarianceSwapData2(w, "FxPairwiseVarianceSwapData", v.FxPairwiseVarianceSwapData);
-    _serialize_eqOutperformanceOptionData(w, "EquityOutperformanceOptionData", v.EquityOutperformanceOptionData);
-    _serialize_flexiSwapData(w, "FlexiSwapData", v.FlexiSwapData);
-    _serialize_bgSwapData(w, "BalanceGuaranteedSwapData", v.BalanceGuaranteedSwapData);
-    _serialize_commodityRevenueOptionData(w, "CommodityRevenueOptionData", v.CommodityRevenueOptionData);
-    _serialize_basketVarianceSwapData(w, "BasketVarianceSwapData", v.BasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "EquityBasketVarianceSwapData", v.EquityBasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "FxBasketVarianceSwapData", v.FxBasketVarianceSwapData);
-    _serialize_basketVarianceSwapData2(w, "CommodityBasketVarianceSwapData", v.CommodityBasketVarianceSwapData);
-    _serialize_extendedAccumulatorData(w, "ExtendedAccumulatorData", v.ExtendedAccumulatorData);
-    _serialize_varianceOptionData(w, "VarianceOptionData", v.VarianceOptionData);
-    _serialize_varianceDispersionSwapData(w, "VarianceDispersionSwapData", v.VarianceDispersionSwapData);
-    _serialize_kikoVarianceSwapData(w, "KIKOVarianceSwapData", v.KIKOVarianceSwapData);
-    _serialize_corridorVarianceSwapData(w, "CorridorVarianceSwapData", v.CorridorVarianceSwapData);
-    _serialize_indexedCorridorVarianceSwapData(w, "IndexedCorridorVarianceSwapData", v.IndexedCorridorVarianceSwapData);
-    _serialize_kikoCorridorVarianceSwapData(w, "KIKOCorridorVarianceSwapData", v.KIKOCorridorVarianceSwapData);
-    _serialize_corridorVarianceDispersionSwapData(w, "CorridorVarianceDispersionSwapData", v.CorridorVarianceDispersionSwapData);
-    _serialize_koCorridorVarianceDispersionSwapData(w, "KOCorridorVarianceDispersionSwapData", v.KOCorridorVarianceDispersionSwapData);
-    _serialize_pairwiseGeometricVarianceDispersionSwapData(w, "PairwiseGeometricVarianceDispersionSwapData", v.PairwiseGeometricVarianceDispersionSwapData);
-    _serialize_conditionalVarianceSwap01Data(w, "ConditionalVarianceSwap01Data", v.ConditionalVarianceSwap01Data);
-    _serialize_conditionalVarianceSwap02Data(w, "ConditionalVarianceSwap02Data", v.ConditionalVarianceSwap02Data);
-    _serialize_gammaSwapData(w, "GammaSwapData", v.GammaSwapData);
-    _serialize_bestEntryOptionData(w, "BestEntryOptionData", v.BestEntryOptionData);
-    _serialize_dualEuroBinaryOptionData(w, "DualEuroBinaryOptionData", v.DualEuroBinaryOptionData);
-    _serialize_dualEuroBinaryOptionDoubleKOData(w, "DualEuroBinaryOptionDoubleKOData", v.DualEuroBinaryOptionDoubleKOData);
-    _serialize_volBarrierOptionData(w, "VolatilityBarrierOptionData", v.VolatilityBarrierOptionData);
-    _serialize_tarfData2(w, "FxTaRFData", v.FxTaRFData);
-    _serialize_tarfData2(w, "EquityTaRFData", v.EquityTaRFData);
-    _serialize_tarfData2(w, "CommodityTaRFData", v.CommodityTaRFData);
-    _serialize_accumulatorData(w, "FxAccumulatorData", v.FxAccumulatorData);
-    _serialize_accumulatorData(w, "EquityAccumulatorData", v.EquityAccumulatorData);
-    _serialize_accumulatorData(w, "CommodityAccumulatorData", v.CommodityAccumulatorData);
-    _serialize_windowBarrierOptionData2(w, "FxWindowBarrierOptionData", v.FxWindowBarrierOptionData);
-    _serialize_windowBarrierOptionData2(w, "EquityWindowBarrierOptionData", v.EquityWindowBarrierOptionData);
-    _serialize_windowBarrierOptionData2(w, "CommodityWindowBarierOptionData", v.CommodityWindowBarierOptionData);
-    _serialize_basketOptionData(w, "EquityBasketOptionData", v.EquityBasketOptionData);
-    _serialize_basketOptionData(w, "FxBasketOptionData", v.FxBasketOptionData);
-    _serialize_basketOptionData(w, "CommodityBasketOptionData", v.CommodityBasketOptionData);
-    _serialize_genericBarrierOptionData(w, "FxGenericBarrierOptionData", v.FxGenericBarrierOptionData);
-    _serialize_genericBarrierOptionData(w, "EquityGenericBarrierOptionData", v.EquityGenericBarrierOptionData);
-    _serialize_genericBarrierOptionData(w, "CommodityGenericBarrierOptionData", v.CommodityGenericBarrierOptionData);
-    _serialize_rainbowOptionData(w, "EquityRainbowOptionData", v.EquityRainbowOptionData);
-    _serialize_rainbowOptionData(w, "FxRainbowOptionData", v.FxRainbowOptionData);
-    _serialize_rainbowOptionData(w, "CommodityRainbowOptionData", v.CommodityRainbowOptionData);
-    _serialize_autocallable01Data(w, "Autocallable01Data", v.Autocallable01Data);
-    _serialize_doubleDigitalOptionData(w, "DoubleDigitalOptionData", v.DoubleDigitalOptionData);
-    _serialize_performanceOption01Data(w, "PerformanceOption01Data", v.PerformanceOption01Data);
-    _serialize_scriptedTradeData(w, "ScriptedTradeData", v.ScriptedTradeData);
-    _serialize_vanillaBasketOptionData(w, "VanillaBasketOptionData", v.VanillaBasketOptionData);
-    _serialize_asianBasketOptionData(w, "AsianBasketOptionData", v.AsianBasketOptionData);
-    _serialize_averageStrikeBasketOptionData(w, "AverageStrikeBasketOptionData", v.AverageStrikeBasketOptionData);
-    _serialize_lookbackCallBasketOptionData(w, "LookbackCallBasketOptionData", v.LookbackCallBasketOptionData);
-    _serialize_lookbackPutBasketOptionData(w, "LookbackPutBasketOptionData", v.LookbackPutBasketOptionData);
-    _serialize_bestOfAirbagData(w, "BestOfAirbagData", v.BestOfAirbagData);
-    _serialize_worstOfBasketSwapData(w, "WorstOfBasketSwapData", v.WorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "FxWorstOfBasketSwapData", v.FxWorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "EquityWorstOfBasketSwapData", v.EquityWorstOfBasketSwapData);
-    _serialize_worstOfBasketSwapData2(w, "CommodityWorstOfBasketSwapData", v.CommodityWorstOfBasketSwapData);
-    _serialize_worstPerformanceRainbowOption01Data(w, "WorstPerformanceRainbowOption01Data", v.WorstPerformanceRainbowOption01Data);
-    _serialize_worstPerformanceRainbowOption02Data(w, "WorstPerformanceRainbowOption02Data", v.WorstPerformanceRainbowOption02Data);
-    _serialize_worstPerformanceRainbowOption03Data(w, "WorstPerformanceRainbowOption03Data", v.WorstPerformanceRainbowOption03Data);
-    _serialize_worstPerformanceRainbowOption04Data(w, "WorstPerformanceRainbowOption04Data", v.WorstPerformanceRainbowOption04Data);
-    _serialize_worstPerformanceRainbowOption05Data(w, "WorstPerformanceRainbowOption05Data", v.WorstPerformanceRainbowOption05Data);
-    _serialize_worstPerformanceRainbowOption06Data(w, "WorstPerformanceRainbowOption06Data", v.WorstPerformanceRainbowOption06Data);
-    _serialize_worstPerformanceRainbowOption07Data(w, "WorstPerformanceRainbowOption07Data", v.WorstPerformanceRainbowOption07Data);
-    _serialize_bestOfAssetOrCashRainbowOptionData(w, "BestOfAssetOrCashRainbowOptionData", v.BestOfAssetOrCashRainbowOptionData);
-    _serialize_worstOfAssetOrCashRainbowOptionData(w, "WorstOfAssetOrCashRainbowOptionData", v.WorstOfAssetOrCashRainbowOptionData);
-    _serialize_minRainbowOptionData(w, "MinRainbowOptionData", v.MinRainbowOptionData);
-    _serialize_maxRainbowOptionData(w, "MaxRainbowOptionData", v.MaxRainbowOptionData);
-    _serialize_windowBarrierOptionData(w, "WindowBarrierOptionData", v.WindowBarrierOptionData);
-    _serialize_accumulator01Data(w, "Accumulator01Data", v.Accumulator01Data);
-    _serialize_accumulator02Data(w, "Accumulator02Data", v.Accumulator02Data);
-    _serialize_bestEntryOptionData2(w, "EquityBestEntryOptionData", v.EquityBestEntryOptionData);
-    _serialize_bestEntryOptionData2(w, "FxBestEntryOptionData", v.FxBestEntryOptionData);
-    _serialize_bestEntryOptionData2(w, "CommodityBestEntryOptionData", v.CommodityBestEntryOptionData);
-    _serialize_tarfData(w, "TaRFData", v.TaRFData);
-    _serialize_europeanRainbowCallSpreadOptionData(w, "EuropeanRainbowCallSpreadOptionData", v.EuropeanRainbowCallSpreadOptionData);
-    _serialize_rainbowCallSpreadBarrierOptionData(w, "RainbowCallSpreadBarrierOptionData", v.RainbowCallSpreadBarrierOptionData);
-    _serialize_asianRainbowCallSpreadOptionData(w, "AsianRainbowCallSpreadOptionData", v.AsianRainbowCallSpreadOptionData);
-    _serialize_asianIrCapFloorData(w, "AsianIrCapFloorData", v.AsianIrCapFloorData);
-    _serialize_forwardVolatilityAgreementData(w, "ForwardVolatilityAgreementData", v.ForwardVolatilityAgreementData);
-    _serialize_correlationSwapData(w, "CorrelationSwapData", v.CorrelationSwapData);
-    _serialize_assetLinkedCliquetOptionData(w, "AssetLinkedCliquetOptionData", v.AssetLinkedCliquetOptionData);
-    _serialize_constantMaturityVolatilitySwapData(w, "ConstantMaturityVolatilitySwapData", v.ConstantMaturityVolatilitySwapData);
-    _serialize_cmsCapFloorBarrierData(w, "CMSCapFloorBarrierData", v.CMSCapFloorBarrierData);
-    _serialize_fixedStrikeForwardStartingOptionData(w, "FixedStrikeForwardStartingOptionData", v.FixedStrikeForwardStartingOptionData);
-    _serialize_floatingStrikeForwardStartingOptionData(w, "FloatingStrikeForwardStartingOptionData", v.FloatingStrikeForwardStartingOptionData);
-    _serialize_forwardStartingSwaptionData(w, "ForwardStartingSwaptionData", v.ForwardStartingSwaptionData);
-    _serialize_flooredAverageCPIZCIISData(w, "FlooredAverageCPIZCIISData", v.FlooredAverageCPIZCIISData);
-    _serialize_genericBarrierOptionDataRaw(w, "GenericBarrierOptionData", v.GenericBarrierOptionData);
-    _serialize_movingMaxYYIISData(w, "MovingMaxYYIISData", v.MovingMaxYYIISData);
-    _serialize_irregularYYIISData(w, "IrregularYYIISData", v.IrregularYYIISData);
-    _serialize_europeanOptionBarrierData(w, "EuropeanOptionBarrierData", v.EuropeanOptionBarrierData);
-    _serialize_ladderLockInOptionData(w, "LadderLockInOptionData", v.LadderLockInOptionData);
-    _serialize_lapseHedgeSwapData(w, "LapseHedgeSwapData", v.LapseHedgeSwapData);
-    _serialize_knockOutSwapData(w, "KnockOutSwapData", v.KnockOutSwapData);
-    _serialize_LPISwapData(w, "LPISwapData", v.LPISwapData);
-    _serialize_cashPositionData(w, "CashPositionData", v.CashPositionData);
-    _serialize_strikeResettableOptionData(w, "StrikeResettableOptionData", v.StrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "EquityStrikeResettableOptionData", v.EquityStrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "FxStrikeResettableOptionData", v.FxStrikeResettableOptionData);
-    _serialize_strikeResettableOptionData2(w, "CommodityStrikeResettableOptionData", v.CommodityStrikeResettableOptionData);
+    if (v.CrossCurrencySwapData) _serialize_swapData(w, "CrossCurrencySwapData", *v.CrossCurrencySwapData);
+    if (v.InflationSwapData) _serialize_swapData(w, "InflationSwapData", *v.InflationSwapData);
+    if (v.SwapData) _serialize_swapData(w, "SwapData", *v.SwapData);
+    if (v.EquitySwapData) _serialize_swapData(w, "EquitySwapData", *v.EquitySwapData);
+    if (v.CallableSwapData) _serialize_callableSwapData(w, "CallableSwapData", *v.CallableSwapData);
+    if (v.ArcOptionData) _serialize_arcOptionData(w, "ArcOptionData", *v.ArcOptionData);
+    if (v.SwaptionData) _serialize_swaptionData(w, "SwaptionData", *v.SwaptionData);
+    if (v.VarianceSwapData) _serialize_varianceSwapData(w, "VarianceSwapData", *v.VarianceSwapData);
+    if (v.EquityVarianceSwapData) _serialize_varianceSwapData(w, "EquityVarianceSwapData", *v.EquityVarianceSwapData);
+    if (v.FxVarianceSwapData) _serialize_varianceSwapData(w, "FxVarianceSwapData", *v.FxVarianceSwapData);
+    if (v.CommodityVarianceSwapData) _serialize_varianceSwapData(w, "CommodityVarianceSwapData", *v.CommodityVarianceSwapData);
+    if (v.ForwardRateAgreementData) _serialize_forwardRateAgreementData(w, "ForwardRateAgreementData", *v.ForwardRateAgreementData);
+    if (v.FxForwardData) _serialize_fxForwardData(w, "FxForwardData", *v.FxForwardData);
+    if (v.FxAverageForwardData) _serialize_fxAverageForwardData(w, "FxAverageForwardData", *v.FxAverageForwardData);
+    if (v.FxOptionData) _serialize_fxOptionData(w, "FxOptionData", *v.FxOptionData);
+    if (v.FxBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxBarrierOptionData", *v.FxBarrierOptionData);
+    if (v.FxDoubleBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxDoubleBarrierOptionData", *v.FxDoubleBarrierOptionData);
+    if (v.FxDigitalOptionData) _serialize_fxDigitalOptionData(w, "FxDigitalOptionData", *v.FxDigitalOptionData);
+    if (v.FxEuropeanBarrierOptionData) _serialize_fxBarrierOptionData(w, "FxEuropeanBarrierOptionData", *v.FxEuropeanBarrierOptionData);
+    if (v.FxKIKOBarrierOptionData) _serialize_fxKIKOBarrierOptionData(w, "FxKIKOBarrierOptionData", *v.FxKIKOBarrierOptionData);
+    if (v.FxDigitalBarrierOptionData) _serialize_fxDigitalBarrierOptionData(w, "FxDigitalBarrierOptionData", *v.FxDigitalBarrierOptionData);
+    if (v.FxTouchOptionData) _serialize_fxTouchOptionData(w, "FxTouchOptionData", *v.FxTouchOptionData);
+    if (v.FxDoubleTouchOptionData) _serialize_fxTouchOptionData(w, "FxDoubleTouchOptionData", *v.FxDoubleTouchOptionData);
+    if (v.FxSwapData) _serialize_fxSwapData(w, "FxSwapData", *v.FxSwapData);
+    if (v.CapFloorData) _serialize_capFloorData(w, "CapFloorData", *v.CapFloorData);
+    if (v.EquityFutureOptionData) _serialize_equityFutureOptionData(w, "EquityFutureOptionData", *v.EquityFutureOptionData);
+    if (v.EquityOptionData) _serialize_equityOptionData(w, "EquityOptionData", *v.EquityOptionData);
+    if (v.EquityBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityBarrierOptionData", *v.EquityBarrierOptionData);
+    if (v.EquityDoubleBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityDoubleBarrierOptionData", *v.EquityDoubleBarrierOptionData);
+    if (v.EquityForwardData) _serialize_equityForwardData(w, "EquityForwardData", *v.EquityForwardData);
+    if (v.EquityEuropeanBarrierOptionData) _serialize_eqBarrierOptionData(w, "EquityEuropeanBarrierOptionData", *v.EquityEuropeanBarrierOptionData);
+    if (v.EquityDigitalOptionData) _serialize_eqDigitalOptionData(w, "EquityDigitalOptionData", *v.EquityDigitalOptionData);
+    if (v.EquityDoubleTouchOptionData) _serialize_eqTouchOptionData(w, "EquityDoubleTouchOptionData", *v.EquityDoubleTouchOptionData);
+    if (v.EquityTouchOptionData) _serialize_eqTouchOptionData(w, "EquityTouchOptionData", *v.EquityTouchOptionData);
+    if (v.EquityCliquetOptionData) _serialize_cliquetOptionData(w, "EquityCliquetOptionData", *v.EquityCliquetOptionData);
+    if (v.BondData) _serialize_bondData(w, "BondData", *v.BondData);
+    if (v.ForwardBondData) _serialize_forwardBondData(w, "ForwardBondData", *v.ForwardBondData);
+    if (v.BondFutureData) _serialize_bondFutureData(w, "BondFutureData", *v.BondFutureData);
+    if (v.CreditDefaultSwapData) _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", *v.CreditDefaultSwapData);
+    if (v.CreditDefaultSwapOptionData) _serialize_creditDefaultSwapOptionData(w, "CreditDefaultSwapOptionData", *v.CreditDefaultSwapOptionData);
+    if (v.CommodityForwardData) _serialize_commodityForwardData(w, "CommodityForwardData", *v.CommodityForwardData);
+    if (v.CommodityOptionData) _serialize_commodityOptionData(w, "CommodityOptionData", *v.CommodityOptionData);
+    if (v.CommodityDigitalAveragePriceOptionData) _serialize_commodityDigitalAveragePriceOptionData(w, "CommodityDigitalAveragePriceOptionData", *v.CommodityDigitalAveragePriceOptionData);
+    if (v.CommodityDigitalOptionData) _serialize_commodityDigitalOptionData(w, "CommodityDigitalOptionData", *v.CommodityDigitalOptionData);
+    if (v.CommoditySpreadOptionData) _serialize_commoditySpreadOptionData(w, "CommoditySpreadOptionData", *v.CommoditySpreadOptionData);
+    if (v.CommoditySwapData) _serialize_commoditySwapData(w, "CommoditySwapData", *v.CommoditySwapData);
+    if (v.CommoditySwaptionData) _serialize_commoditySwaptionData(w, "CommoditySwaptionData", *v.CommoditySwaptionData);
+    if (v.CommodityAveragePriceOptionData) _serialize_commodityAveragePriceOptionData(w, "CommodityAveragePriceOptionData", *v.CommodityAveragePriceOptionData);
+    if (v.CommodityOptionStripData) _serialize_commodityOptionStripData(w, "CommodityOptionStripData", *v.CommodityOptionStripData);
+    if (v.CommodityPositionData) _serialize_commodityPositionData(w, "CommodityPositionData", *v.CommodityPositionData);
+    if (v.EquityAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "EquityAsianOptionData", *v.EquityAsianOptionData);
+    if (v.FxAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "FxAsianOptionData", *v.FxAsianOptionData);
+    if (v.CommodityAsianOptionData) _serialize_singleUnderlyingAsianOptionData(w, "CommodityAsianOptionData", *v.CommodityAsianOptionData);
+    if (v.BondOptionData) _serialize_bondOptionData(w, "BondOptionData", *v.BondOptionData);
+    if (v.BondRepoData) _serialize_bondRepoData(w, "BondRepoData", *v.BondRepoData);
+    if (v.BondTRSData) _serialize_bondTRSData(w, "BondTRSData", *v.BondTRSData);
+    if (v.CdoData) _serialize_cdoData(w, "CdoData", *v.CdoData);
+    if (v.CreditLinkedSwapData) _serialize_creditLinkedSwapData(w, "CreditLinkedSwapData", *v.CreditLinkedSwapData);
+    if (v.IndexCreditDefaultSwapData) _serialize_indexCreditDefaultSwapData(w, "IndexCreditDefaultSwapData", *v.IndexCreditDefaultSwapData);
+    if (v.IndexCreditDefaultSwapOptionData) _serialize_indexCreditDefaultSwapOptionData(w, "IndexCreditDefaultSwapOptionData", *v.IndexCreditDefaultSwapOptionData);
+    if (v.MultiLegOptionData) _serialize_multiLegOptionData(w, "MultiLegOptionData", *v.MultiLegOptionData);
+    if (v.AscotData) _serialize_ascotData(w, "AscotData", *v.AscotData);
+    if (v.ConvertibleBondData) _serialize_convertibleBondData(w, "ConvertibleBondData", *v.ConvertibleBondData);
+    if (v.CallableBondData) _serialize_callableBondData(w, "CallableBondData", *v.CallableBondData);
+    if (v.TreasuryLockData) _serialize_tlockData(w, "TreasuryLockData", *v.TreasuryLockData);
+    if (v.RiskParticipationAgreementData) _serialize_rpaData(w, "RiskParticipationAgreementData", *v.RiskParticipationAgreementData);
+    if (v.CBOData) _serialize_cbodata(w, "CBOData", *v.CBOData);
+    if (v.BondBasketData) _serialize_bondBasketData(w, "BondBasketData", *v.BondBasketData);
+    if (v.EquityPositionData) _serialize_equityPositionData(w, "EquityPositionData", *v.EquityPositionData);
+    if (v.EquityOptionPositionData) _serialize_equityOptionPositionData(w, "EquityOptionPositionData", *v.EquityOptionPositionData);
+    if (v.TotalReturnSwapData) _serialize_totalReturnSwapData(w, "TotalReturnSwapData", *v.TotalReturnSwapData);
+    if (v.ContractForDifferenceData) _serialize_totalReturnSwapData(w, "ContractForDifferenceData", *v.ContractForDifferenceData);
+    if (v.CompositeTradeData) _serialize_compositeTradeData(w, "CompositeTradeData", *v.CompositeTradeData);
+    if (v.PairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData1(w, "PairwiseVarianceSwapData", *v.PairwiseVarianceSwapData);
+    if (v.EquityPairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData2(w, "EquityPairwiseVarianceSwapData", *v.EquityPairwiseVarianceSwapData);
+    if (v.FxPairwiseVarianceSwapData) _serialize_pairwiseVarianceSwapData2(w, "FxPairwiseVarianceSwapData", *v.FxPairwiseVarianceSwapData);
+    if (v.EquityOutperformanceOptionData) _serialize_eqOutperformanceOptionData(w, "EquityOutperformanceOptionData", *v.EquityOutperformanceOptionData);
+    if (v.FlexiSwapData) _serialize_flexiSwapData(w, "FlexiSwapData", *v.FlexiSwapData);
+    if (v.BalanceGuaranteedSwapData) _serialize_bgSwapData(w, "BalanceGuaranteedSwapData", *v.BalanceGuaranteedSwapData);
+    if (v.CommodityRevenueOptionData) _serialize_commodityRevenueOptionData(w, "CommodityRevenueOptionData", *v.CommodityRevenueOptionData);
+    if (v.BasketVarianceSwapData) _serialize_basketVarianceSwapData(w, "BasketVarianceSwapData", *v.BasketVarianceSwapData);
+    if (v.EquityBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "EquityBasketVarianceSwapData", *v.EquityBasketVarianceSwapData);
+    if (v.FxBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "FxBasketVarianceSwapData", *v.FxBasketVarianceSwapData);
+    if (v.CommodityBasketVarianceSwapData) _serialize_basketVarianceSwapData2(w, "CommodityBasketVarianceSwapData", *v.CommodityBasketVarianceSwapData);
+    if (v.ExtendedAccumulatorData) _serialize_extendedAccumulatorData(w, "ExtendedAccumulatorData", *v.ExtendedAccumulatorData);
+    if (v.VarianceOptionData) _serialize_varianceOptionData(w, "VarianceOptionData", *v.VarianceOptionData);
+    if (v.VarianceDispersionSwapData) _serialize_varianceDispersionSwapData(w, "VarianceDispersionSwapData", *v.VarianceDispersionSwapData);
+    if (v.KIKOVarianceSwapData) _serialize_kikoVarianceSwapData(w, "KIKOVarianceSwapData", *v.KIKOVarianceSwapData);
+    if (v.CorridorVarianceSwapData) _serialize_corridorVarianceSwapData(w, "CorridorVarianceSwapData", *v.CorridorVarianceSwapData);
+    if (v.IndexedCorridorVarianceSwapData) _serialize_indexedCorridorVarianceSwapData(w, "IndexedCorridorVarianceSwapData", *v.IndexedCorridorVarianceSwapData);
+    if (v.KIKOCorridorVarianceSwapData) _serialize_kikoCorridorVarianceSwapData(w, "KIKOCorridorVarianceSwapData", *v.KIKOCorridorVarianceSwapData);
+    if (v.CorridorVarianceDispersionSwapData) _serialize_corridorVarianceDispersionSwapData(w, "CorridorVarianceDispersionSwapData", *v.CorridorVarianceDispersionSwapData);
+    if (v.KOCorridorVarianceDispersionSwapData) _serialize_koCorridorVarianceDispersionSwapData(w, "KOCorridorVarianceDispersionSwapData", *v.KOCorridorVarianceDispersionSwapData);
+    if (v.PairwiseGeometricVarianceDispersionSwapData) _serialize_pairwiseGeometricVarianceDispersionSwapData(w, "PairwiseGeometricVarianceDispersionSwapData", *v.PairwiseGeometricVarianceDispersionSwapData);
+    if (v.ConditionalVarianceSwap01Data) _serialize_conditionalVarianceSwap01Data(w, "ConditionalVarianceSwap01Data", *v.ConditionalVarianceSwap01Data);
+    if (v.ConditionalVarianceSwap02Data) _serialize_conditionalVarianceSwap02Data(w, "ConditionalVarianceSwap02Data", *v.ConditionalVarianceSwap02Data);
+    if (v.GammaSwapData) _serialize_gammaSwapData(w, "GammaSwapData", *v.GammaSwapData);
+    if (v.BestEntryOptionData) _serialize_bestEntryOptionData(w, "BestEntryOptionData", *v.BestEntryOptionData);
+    if (v.DualEuroBinaryOptionData) _serialize_dualEuroBinaryOptionData(w, "DualEuroBinaryOptionData", *v.DualEuroBinaryOptionData);
+    if (v.DualEuroBinaryOptionDoubleKOData) _serialize_dualEuroBinaryOptionDoubleKOData(w, "DualEuroBinaryOptionDoubleKOData", *v.DualEuroBinaryOptionDoubleKOData);
+    if (v.VolatilityBarrierOptionData) _serialize_volBarrierOptionData(w, "VolatilityBarrierOptionData", *v.VolatilityBarrierOptionData);
+    if (v.FxTaRFData) _serialize_tarfData2(w, "FxTaRFData", *v.FxTaRFData);
+    if (v.EquityTaRFData) _serialize_tarfData2(w, "EquityTaRFData", *v.EquityTaRFData);
+    if (v.CommodityTaRFData) _serialize_tarfData2(w, "CommodityTaRFData", *v.CommodityTaRFData);
+    if (v.FxAccumulatorData) _serialize_accumulatorData(w, "FxAccumulatorData", *v.FxAccumulatorData);
+    if (v.EquityAccumulatorData) _serialize_accumulatorData(w, "EquityAccumulatorData", *v.EquityAccumulatorData);
+    if (v.CommodityAccumulatorData) _serialize_accumulatorData(w, "CommodityAccumulatorData", *v.CommodityAccumulatorData);
+    if (v.FxWindowBarrierOptionData) _serialize_windowBarrierOptionData2(w, "FxWindowBarrierOptionData", *v.FxWindowBarrierOptionData);
+    if (v.EquityWindowBarrierOptionData) _serialize_windowBarrierOptionData2(w, "EquityWindowBarrierOptionData", *v.EquityWindowBarrierOptionData);
+    if (v.CommodityWindowBarierOptionData) _serialize_windowBarrierOptionData2(w, "CommodityWindowBarierOptionData", *v.CommodityWindowBarierOptionData);
+    if (v.EquityBasketOptionData) _serialize_basketOptionData(w, "EquityBasketOptionData", *v.EquityBasketOptionData);
+    if (v.FxBasketOptionData) _serialize_basketOptionData(w, "FxBasketOptionData", *v.FxBasketOptionData);
+    if (v.CommodityBasketOptionData) _serialize_basketOptionData(w, "CommodityBasketOptionData", *v.CommodityBasketOptionData);
+    if (v.FxGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "FxGenericBarrierOptionData", *v.FxGenericBarrierOptionData);
+    if (v.EquityGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "EquityGenericBarrierOptionData", *v.EquityGenericBarrierOptionData);
+    if (v.CommodityGenericBarrierOptionData) _serialize_genericBarrierOptionData(w, "CommodityGenericBarrierOptionData", *v.CommodityGenericBarrierOptionData);
+    if (v.EquityRainbowOptionData) _serialize_rainbowOptionData(w, "EquityRainbowOptionData", *v.EquityRainbowOptionData);
+    if (v.FxRainbowOptionData) _serialize_rainbowOptionData(w, "FxRainbowOptionData", *v.FxRainbowOptionData);
+    if (v.CommodityRainbowOptionData) _serialize_rainbowOptionData(w, "CommodityRainbowOptionData", *v.CommodityRainbowOptionData);
+    if (v.Autocallable01Data) _serialize_autocallable01Data(w, "Autocallable01Data", *v.Autocallable01Data);
+    if (v.DoubleDigitalOptionData) _serialize_doubleDigitalOptionData(w, "DoubleDigitalOptionData", *v.DoubleDigitalOptionData);
+    if (v.PerformanceOption01Data) _serialize_performanceOption01Data(w, "PerformanceOption01Data", *v.PerformanceOption01Data);
+    if (v.ScriptedTradeData) _serialize_scriptedTradeData(w, "ScriptedTradeData", *v.ScriptedTradeData);
+    if (v.VanillaBasketOptionData) _serialize_vanillaBasketOptionData(w, "VanillaBasketOptionData", *v.VanillaBasketOptionData);
+    if (v.AsianBasketOptionData) _serialize_asianBasketOptionData(w, "AsianBasketOptionData", *v.AsianBasketOptionData);
+    if (v.AverageStrikeBasketOptionData) _serialize_averageStrikeBasketOptionData(w, "AverageStrikeBasketOptionData", *v.AverageStrikeBasketOptionData);
+    if (v.LookbackCallBasketOptionData) _serialize_lookbackCallBasketOptionData(w, "LookbackCallBasketOptionData", *v.LookbackCallBasketOptionData);
+    if (v.LookbackPutBasketOptionData) _serialize_lookbackPutBasketOptionData(w, "LookbackPutBasketOptionData", *v.LookbackPutBasketOptionData);
+    if (v.BestOfAirbagData) _serialize_bestOfAirbagData(w, "BestOfAirbagData", *v.BestOfAirbagData);
+    if (v.WorstOfBasketSwapData) _serialize_worstOfBasketSwapData(w, "WorstOfBasketSwapData", *v.WorstOfBasketSwapData);
+    if (v.FxWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "FxWorstOfBasketSwapData", *v.FxWorstOfBasketSwapData);
+    if (v.EquityWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "EquityWorstOfBasketSwapData", *v.EquityWorstOfBasketSwapData);
+    if (v.CommodityWorstOfBasketSwapData) _serialize_worstOfBasketSwapData2(w, "CommodityWorstOfBasketSwapData", *v.CommodityWorstOfBasketSwapData);
+    if (v.WorstPerformanceRainbowOption01Data) _serialize_worstPerformanceRainbowOption01Data(w, "WorstPerformanceRainbowOption01Data", *v.WorstPerformanceRainbowOption01Data);
+    if (v.WorstPerformanceRainbowOption02Data) _serialize_worstPerformanceRainbowOption02Data(w, "WorstPerformanceRainbowOption02Data", *v.WorstPerformanceRainbowOption02Data);
+    if (v.WorstPerformanceRainbowOption03Data) _serialize_worstPerformanceRainbowOption03Data(w, "WorstPerformanceRainbowOption03Data", *v.WorstPerformanceRainbowOption03Data);
+    if (v.WorstPerformanceRainbowOption04Data) _serialize_worstPerformanceRainbowOption04Data(w, "WorstPerformanceRainbowOption04Data", *v.WorstPerformanceRainbowOption04Data);
+    if (v.WorstPerformanceRainbowOption05Data) _serialize_worstPerformanceRainbowOption05Data(w, "WorstPerformanceRainbowOption05Data", *v.WorstPerformanceRainbowOption05Data);
+    if (v.WorstPerformanceRainbowOption06Data) _serialize_worstPerformanceRainbowOption06Data(w, "WorstPerformanceRainbowOption06Data", *v.WorstPerformanceRainbowOption06Data);
+    if (v.WorstPerformanceRainbowOption07Data) _serialize_worstPerformanceRainbowOption07Data(w, "WorstPerformanceRainbowOption07Data", *v.WorstPerformanceRainbowOption07Data);
+    if (v.BestOfAssetOrCashRainbowOptionData) _serialize_bestOfAssetOrCashRainbowOptionData(w, "BestOfAssetOrCashRainbowOptionData", *v.BestOfAssetOrCashRainbowOptionData);
+    if (v.WorstOfAssetOrCashRainbowOptionData) _serialize_worstOfAssetOrCashRainbowOptionData(w, "WorstOfAssetOrCashRainbowOptionData", *v.WorstOfAssetOrCashRainbowOptionData);
+    if (v.MinRainbowOptionData) _serialize_minRainbowOptionData(w, "MinRainbowOptionData", *v.MinRainbowOptionData);
+    if (v.MaxRainbowOptionData) _serialize_maxRainbowOptionData(w, "MaxRainbowOptionData", *v.MaxRainbowOptionData);
+    if (v.WindowBarrierOptionData) _serialize_windowBarrierOptionData(w, "WindowBarrierOptionData", *v.WindowBarrierOptionData);
+    if (v.Accumulator01Data) _serialize_accumulator01Data(w, "Accumulator01Data", *v.Accumulator01Data);
+    if (v.Accumulator02Data) _serialize_accumulator02Data(w, "Accumulator02Data", *v.Accumulator02Data);
+    if (v.EquityBestEntryOptionData) _serialize_bestEntryOptionData2(w, "EquityBestEntryOptionData", *v.EquityBestEntryOptionData);
+    if (v.FxBestEntryOptionData) _serialize_bestEntryOptionData2(w, "FxBestEntryOptionData", *v.FxBestEntryOptionData);
+    if (v.CommodityBestEntryOptionData) _serialize_bestEntryOptionData2(w, "CommodityBestEntryOptionData", *v.CommodityBestEntryOptionData);
+    if (v.TaRFData) _serialize_tarfData(w, "TaRFData", *v.TaRFData);
+    if (v.EuropeanRainbowCallSpreadOptionData) _serialize_europeanRainbowCallSpreadOptionData(w, "EuropeanRainbowCallSpreadOptionData", *v.EuropeanRainbowCallSpreadOptionData);
+    if (v.RainbowCallSpreadBarrierOptionData) _serialize_rainbowCallSpreadBarrierOptionData(w, "RainbowCallSpreadBarrierOptionData", *v.RainbowCallSpreadBarrierOptionData);
+    if (v.AsianRainbowCallSpreadOptionData) _serialize_asianRainbowCallSpreadOptionData(w, "AsianRainbowCallSpreadOptionData", *v.AsianRainbowCallSpreadOptionData);
+    if (v.AsianIrCapFloorData) _serialize_asianIrCapFloorData(w, "AsianIrCapFloorData", *v.AsianIrCapFloorData);
+    if (v.ForwardVolatilityAgreementData) _serialize_forwardVolatilityAgreementData(w, "ForwardVolatilityAgreementData", *v.ForwardVolatilityAgreementData);
+    if (v.CorrelationSwapData) _serialize_correlationSwapData(w, "CorrelationSwapData", *v.CorrelationSwapData);
+    if (v.AssetLinkedCliquetOptionData) _serialize_assetLinkedCliquetOptionData(w, "AssetLinkedCliquetOptionData", *v.AssetLinkedCliquetOptionData);
+    if (v.ConstantMaturityVolatilitySwapData) _serialize_constantMaturityVolatilitySwapData(w, "ConstantMaturityVolatilitySwapData", *v.ConstantMaturityVolatilitySwapData);
+    if (v.CMSCapFloorBarrierData) _serialize_cmsCapFloorBarrierData(w, "CMSCapFloorBarrierData", *v.CMSCapFloorBarrierData);
+    if (v.FixedStrikeForwardStartingOptionData) _serialize_fixedStrikeForwardStartingOptionData(w, "FixedStrikeForwardStartingOptionData", *v.FixedStrikeForwardStartingOptionData);
+    if (v.FloatingStrikeForwardStartingOptionData) _serialize_floatingStrikeForwardStartingOptionData(w, "FloatingStrikeForwardStartingOptionData", *v.FloatingStrikeForwardStartingOptionData);
+    if (v.ForwardStartingSwaptionData) _serialize_forwardStartingSwaptionData(w, "ForwardStartingSwaptionData", *v.ForwardStartingSwaptionData);
+    if (v.FlooredAverageCPIZCIISData) _serialize_flooredAverageCPIZCIISData(w, "FlooredAverageCPIZCIISData", *v.FlooredAverageCPIZCIISData);
+    if (v.GenericBarrierOptionData) _serialize_genericBarrierOptionDataRaw(w, "GenericBarrierOptionData", *v.GenericBarrierOptionData);
+    if (v.MovingMaxYYIISData) _serialize_movingMaxYYIISData(w, "MovingMaxYYIISData", *v.MovingMaxYYIISData);
+    if (v.IrregularYYIISData) _serialize_irregularYYIISData(w, "IrregularYYIISData", *v.IrregularYYIISData);
+    if (v.EuropeanOptionBarrierData) _serialize_europeanOptionBarrierData(w, "EuropeanOptionBarrierData", *v.EuropeanOptionBarrierData);
+    if (v.LadderLockInOptionData) _serialize_ladderLockInOptionData(w, "LadderLockInOptionData", *v.LadderLockInOptionData);
+    if (v.LapseHedgeSwapData) _serialize_lapseHedgeSwapData(w, "LapseHedgeSwapData", *v.LapseHedgeSwapData);
+    if (v.KnockOutSwapData) _serialize_knockOutSwapData(w, "KnockOutSwapData", *v.KnockOutSwapData);
+    if (v.LPISwapData) _serialize_LPISwapData(w, "LPISwapData", *v.LPISwapData);
+    if (v.CashPositionData) _serialize_cashPositionData(w, "CashPositionData", *v.CashPositionData);
+    if (v.StrikeResettableOptionData) _serialize_strikeResettableOptionData(w, "StrikeResettableOptionData", *v.StrikeResettableOptionData);
+    if (v.EquityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "EquityStrikeResettableOptionData", *v.EquityStrikeResettableOptionData);
+    if (v.FxStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "FxStrikeResettableOptionData", *v.FxStrikeResettableOptionData);
+    if (v.CommodityStrikeResettableOptionData) _serialize_strikeResettableOptionData2(w, "CommodityStrikeResettableOptionData", *v.CommodityStrikeResettableOptionData);
     w.endElement(name);
 }
 
@@ -27355,6 +27405,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_totalReturnSwapData(xsdcpp::XmlWriter& w, co
 XSDCPP_MAYBE_UNUSED void _serialize_trade(xsdcpp::XmlWriter& w, const char* name, const domain::trade& v) {
     w.startElement(name);
     w.writeAttribute("id", (&v)->id);
+    for (const auto& attr : (&v)->other_attributes) w.writeAttribute(attr.name.c_str(), attr.value);
     _serialize_oreTradeType(w, "TradeType", v.TradeType);
     if (v.Envelope) _serialize_envelope(w, "Envelope", *v.Envelope);
     if (v.TradeActions) _serialize_tradeActions(w, "TradeActions", *v.TradeActions);
@@ -35981,7 +36032,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_counterpartyInformation(xsdcpp::XmlWriter& w
 namespace domain {
 
 const xsdcpp::ElementInfo _portfolio_Info = { xsdcpp::ElementInfo::EntryPointFlag, nullptr, _portfolio_Children, 1, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _trade_Info = { xsdcpp::ElementInfo::EntryPointFlag|xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _trade_Children, 180, _trade_Attributes, 1ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _trade_Info = { xsdcpp::ElementInfo::EntryPointFlag|xsdcpp::ElementInfo::AnyAttributeFlag|xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _trade_Children, 180, _trade_Attributes, 1ULL, nullptr, (xsdcpp::set_any_attribute_t)&_any_trade };
 const xsdcpp::ElementInfo _simulation_Info = { xsdcpp::ElementInfo::EntryPointFlag, nullptr, _simulation_Children, 3, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _crossAssetModel_Currencies_t_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _crossAssetModel_Currencies_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _crossAssetModel_InterestRateModels_t_Info = { 0, nullptr, _crossAssetModel_InterestRateModels_t_Children, 2, nullptr, 0ULL, nullptr, nullptr };
@@ -36451,7 +36502,7 @@ const xsdcpp::ElementInfo _counterparties_Info = { 0, nullptr, _counterparties_C
 const xsdcpp::ElementInfo _counterPartyCorrelations_Info = { 0, nullptr, _counterPartyCorrelations_Children, 1, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _envelope_CounterParty_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_envelope_CounterParty_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _envelope_PortfolioIds_t_Info = { 0, nullptr, _envelope_PortfolioIds_t_Children, 1, nullptr, 0ULL, nullptr, nullptr };
-const xsdcpp::ElementInfo _envelope_AdditionalFields_t_Info = { 0, nullptr, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
+const xsdcpp::ElementInfo _envelope_AdditionalFields_t_Info = { xsdcpp::ElementInfo::ReadTextFlag|xsdcpp::ElementInfo::SkipProcessingFlag, nullptr, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo __NettingSetId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set__NettingSetId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _nettingSetDetails_NettingSetId_t_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_nettingSetDetails_NettingSetId_t, nullptr, 0, nullptr, 0ULL, nullptr, nullptr };
 const xsdcpp::ElementInfo _nettingSetDetails_Info = { xsdcpp::ElementInfo::CheckChildrenFlag, nullptr, _nettingSetDetails_Children, 5, nullptr, 0ULL, nullptr, nullptr };

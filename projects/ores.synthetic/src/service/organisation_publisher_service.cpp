@@ -18,8 +18,11 @@
  *
  */
 #include "ores.synthetic/service/organisation_publisher_service.hpp"
+#include <algorithm>
+#include <unordered_set>
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 #include "ores.refdata/repository/party_mapper.hpp"
 #include "ores.refdata/repository/party_contact_information_mapper.hpp"
@@ -68,6 +71,28 @@ organisation_publisher_service::publish(
         auto bus_units = business_unit_mapper::map(org.business_units);
         auto portfolios = portfolio_mapper::map(org.portfolios);
         auto books = book_mapper::map(org.books);
+
+        // Remove BU types that already exist for this tenant (idempotent seed).
+        // Multiple publish calls in the same tenant share canonical type codes
+        // (DIVISION, BRANCH, etc.) under the same coding scheme; re-inserting
+        // them would violate the natural-key unique index.
+        if (!bu_types.empty()) {
+            const auto& tid = bu_types[0].tenant_id;
+            const auto sql =
+                "SELECT code FROM ores_refdata_business_unit_types_tbl "
+                "WHERE tenant_id = '" + tid + "'::uuid "
+                "AND valid_to = ores_utility_infinity_timestamp_fn()";
+            const auto existing = database::repository::execute_raw_string_query(
+                ctx_, sql, lg(), "checking existing BU types");
+            const std::unordered_set<std::string> existing_set(
+                existing.begin(), existing.end());
+            bu_types.erase(
+                std::remove_if(bu_types.begin(), bu_types.end(),
+                    [&](const auto& t) { return existing_set.count(t.code) > 0; }),
+                bu_types.end());
+            BOOST_LOG_SEV(lg(), debug) << "BU types to insert after dedup: "
+                                       << bu_types.size();
+        }
 
         BOOST_LOG_SEV(lg(), info) << "Mapped all entities, inserting in a "
                                   << "single transaction";

@@ -19,8 +19,7 @@
  */
 #include "ores.comms.service/messaging/system_info_handler.hpp"
 
-#include <array>
-#include <chrono>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.comms/messaging/protocol.hpp"
 #include "ores.database/repository/database_info_repository.hpp"
@@ -55,13 +54,10 @@ void system_info_handler::populate_entries() {
             cached_entries_.push_back({"database.git_commit", di.git_commit});
             cached_entries_.push_back({"database.git_date", di.git_date});
 
-            // Format created_at as an ISO-8601-like string
-            auto t = std::chrono::system_clock::to_time_t(di.created_at);
-            std::tm tm_buf{};
-            gmtime_r(&t, &tm_buf);
-            std::array<char, 32> ts_buf{};
-            std::strftime(ts_buf.data(), ts_buf.size(), "%Y-%m-%dT%H:%M:%SZ", &tm_buf);
-            cached_entries_.push_back({"database.created_at", ts_buf.data()});
+            // Format created_at as an ISO-8601-like string (cross-platform)
+            cached_entries_.push_back({"database.created_at",
+                ores::platform::time::datetime::format_time_point_utc(
+                    di.created_at, "%Y-%m-%dT%H:%M:%SZ")});
         } else {
             BOOST_LOG_SEV(lg(), warn) << "database_info table has no rows";
         }

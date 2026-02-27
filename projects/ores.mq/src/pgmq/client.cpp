@@ -62,7 +62,8 @@ client::parse_pg_timestamp(const std::string& s) {
     iss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
     if (iss.fail()) return {};
 
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    // timegm() interprets tm as UTC (unlike std::mktime which uses local time).
+    return std::chrono::system_clock::from_time_t(timegm(&tm));
 }
 
 /**

@@ -112,10 +112,9 @@ void queue_listener::on_notify(const std::string& channel,
 
         // Store the raw JSONB body as bytes. Consumers parse tenant_id
         // and other fields from the payload themselves.
-        ev.payload.reserve(msg->body.size());
-        for (const char c : msg->body) {
-            ev.payload.push_back(static_cast<std::byte>(c));
-        }
+        ev.payload.assign(
+            reinterpret_cast<const std::byte*>(msg->body.data()),
+            reinterpret_cast<const std::byte*>(msg->body.data() + msg->body.size()));
 
         BOOST_LOG_SEV(lg(), debug) << "Publishing queue_message_event: queue="
                                    << queue_name_ << " msg_id=" << ev.msg_id

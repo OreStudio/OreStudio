@@ -151,9 +151,20 @@ if [[ $configure -eq 1 ]]; then
         echo "Warning: Could not find postgresql.conf — skipping shared_preload_libraries config."
     else
         echo "Configuring shared_preload_libraries in ${pg_conf}..."
+        required_libs=("pg_cron" "timescaledb")
         if grep -q "^shared_preload_libraries" "$pg_conf"; then
+            # Read the existing value and append only missing libraries
+            current=$(grep "^shared_preload_libraries" "$pg_conf" \
+                | sed "s/shared_preload_libraries[[:space:]]*=[[:space:]]*//;s/'//g;s/\"//g" \
+                | tr ',' '\n' | tr -d ' ')
+            new_val="$current"
+            for lib in "${required_libs[@]}"; do
+                if ! echo "$current" | grep -qx "$lib"; then
+                    new_val="${new_val:+${new_val},}${lib}"
+                fi
+            done
             sudo sed -i \
-                "s|^shared_preload_libraries.*|shared_preload_libraries = 'pg_cron,timescaledb'|" \
+                "s|^shared_preload_libraries.*|shared_preload_libraries = '${new_val}'|" \
                 "$pg_conf"
         else
             echo "shared_preload_libraries = 'pg_cron,timescaledb'" | sudo tee -a "$pg_conf" > /dev/null

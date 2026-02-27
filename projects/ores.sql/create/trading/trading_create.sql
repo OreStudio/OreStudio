@@ -55,3 +55,4 @@
 
 -- Trade query functions (depend on trades table + refdata tables)
 \ir ./trading_trades_functions_create.sql
+\ir ./trading_trades_bu_functions_create.sql

@@ -21,14 +21,14 @@
 #define ORES_QT_IMPORT_TRADE_DIALOG_HPP
 
 #include <atomic>
-#include <map>
 #include <vector>
-#include <optional>
 #include <QString>
 #include <QDialog>
 #include <QLabel>
 #include <QWidget>
 #include <QCheckBox>
+#include <QDateEdit>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QComboBox>
 #include <QTableWidget>
@@ -44,15 +44,15 @@
 namespace ores::qt {
 
 /**
- * @brief Dialog for mapping and importing ORE portfolio trades into a book.
+ * @brief Dialog for reviewing defaults and importing ORE portfolio trades.
  *
- * Shows a two-section UI:
- * - Trade preview table with checkboxes for selection
- * - Counterparty mapping section (ORE string names → ORES counterparty UUIDs)
+ * Shows an "Import Defaults" section for setting trade dates, lifecycle event,
+ * default netting set, and default counterparty. A trade preview table shows
+ * each trade with a per-row counterparty combo box and editable netting set
+ * field, allowing individual overrides before import.
  *
- * ORES counterparties are fetched from the server asynchronously when the
- * dialog opens. Trades can be imported with or without counterparty mappings;
- * unmapped counterparties simply leave counterparty_id as nullopt.
+ * ORES counterparties are fetched asynchronously when the dialog opens.
+ * Trades can be imported without counterparty assignments if none are mapped.
  */
 class ImportTradeDialog final : public QDialog {
     Q_OBJECT
@@ -72,12 +72,8 @@ public:
      * @brief Constructs the import dialog.
      *
      * @param book The ORES book trades will be imported into
-     * @param items Trades to import (may come from one file or many in a
-     *              batch/directory scenario — each item carries its own
-     *              source_file for per-trade attribution)
+     * @param items Trades to import (each item carries its own source_file)
      * @param source_label Human-readable label shown at the top of the dialog
-     *                     (e.g. file name for single-file import, directory
-     *                     name for batch import)
      * @param clientManager Client manager for server communication
      * @param username Current logged-in username
      * @param parent Parent widget
@@ -110,23 +106,16 @@ private slots:
     void onCancelClicked();
     void onSelectAllChanged(Qt::CheckState state);
     void onTradeCheckChanged();
+    void onApplyNettingSetToAll();
+    void onApplyCounterpartyToAll();
 
 private:
     void setupUI();
     void populateTradeTable();
-    void buildUniqueCpNames();
-    void populateMappingTable();
+    void populateCounterpartyCombos();
     void loadCounterparties();
     void updateImportButtonState();
     void updateSelectionCount();
-
-    /**
-     * @brief Resolves an ORE counterparty name to an ORES UUID from the mapping table.
-     * @param ore_name ORE CounterParty string
-     * @return ORES counterparty UUID if mapped, nullopt if unmapped or name is empty
-     */
-    [[nodiscard]] std::optional<boost::uuids::uuid>
-    resolveCounterpartyId(const std::string& ore_name) const;
 
 private:
     refdata::domain::book book_;
@@ -137,21 +126,23 @@ private:
     ClientManager* clientManager_;
     QString username_;
 
-    // Unique ORE counterparty names found across all trades
-    std::vector<std::string> unique_cp_names_;
+    // Import defaults
+    QDateEdit* tradeDateEdit_;
+    QDateEdit* effectiveDateEdit_;
+    QDateEdit* terminationDateEdit_;
+    QComboBox* lifecycleEventCombo_;
+    QLineEdit* defaultNettingSetEdit_;
+    QComboBox* defaultCounterpartyCombo_;
+    QLabel* counterpartyStatusLabel_;
 
-    // Maps ORE counterparty name → combo box widget in the mapping table
-    std::map<std::string, QComboBox*> mapping_combos_;
-
-    // UI components
+    // Trade table and controls
     QLabel* fileLabel_;
     QLabel* bookLabel_;
     QCheckBox* selectAllCheckbox_;
     QLabel* selectionCountLabel_;
     QTableWidget* tradeTable_;
-    QWidget* mappingSection_;
-    QLabel* mappingStatusLabel_;
-    QTableWidget* mappingTable_;
+
+    // Progress and status
     QProgressBar* progressBar_;
     QLabel* statusLabel_;
     QPushButton* importButton_;

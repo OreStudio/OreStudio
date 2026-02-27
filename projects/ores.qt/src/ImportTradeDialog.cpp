@@ -19,12 +19,12 @@
  */
 #include "ores.qt/ImportTradeDialog.hpp"
 
-#include <set>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
 #include <QGroupBox>
 #include <QHeaderView>
-#include <QComboBox>
+#include <QDateTime>
 #include <QPointer>
 #include <QtConcurrent/QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
@@ -53,9 +53,22 @@ ImportTradeDialog::ImportTradeDialog(
       source_label_(source_label),
       clientManager_(clientManager),
       username_(username),
-      mappingSection_(nullptr),
-      mappingStatusLabel_(nullptr),
-      mappingTable_(nullptr),
+      tradeDateEdit_(nullptr),
+      effectiveDateEdit_(nullptr),
+      terminationDateEdit_(nullptr),
+      lifecycleEventCombo_(nullptr),
+      defaultNettingSetEdit_(nullptr),
+      defaultCounterpartyCombo_(nullptr),
+      counterpartyStatusLabel_(nullptr),
+      fileLabel_(nullptr),
+      bookLabel_(nullptr),
+      selectAllCheckbox_(nullptr),
+      selectionCountLabel_(nullptr),
+      tradeTable_(nullptr),
+      progressBar_(nullptr),
+      statusLabel_(nullptr),
+      importButton_(nullptr),
+      cancelButton_(nullptr),
       importInProgress_(false),
       cancelRequested_(false) {
 
@@ -64,19 +77,16 @@ ImportTradeDialog::ImportTradeDialog(
                                << " trades from: "
                                << source_label.toStdString();
 
-    // Validate all trades
     validation_errors_.reserve(items.size());
     for (const auto& item : items) {
         validation_errors_.push_back(
             ore::xml::importer::validate_trade(item.trade));
     }
 
-    buildUniqueCpNames();
     setupUI();
     populateTradeTable();
     updateSelectionCount();
 
-    // Fetch counterparties asynchronously
     loadCounterparties();
     setAttribute(Qt::WA_DeleteOnClose);
 }
@@ -85,40 +95,95 @@ ImportTradeDialog::~ImportTradeDialog() {
     BOOST_LOG_SEV(lg(), debug) << "Destroying import trade dialog";
 }
 
-void ImportTradeDialog::buildUniqueCpNames() {
-    std::set<std::string> seen;
-    for (const auto& item : items_) {
-        if (!item.ore_counterparty_name.empty()) {
-            seen.insert(item.ore_counterparty_name);
-        }
-    }
-    unique_cp_names_.assign(seen.begin(), seen.end());
-    BOOST_LOG_SEV(lg(), debug) << "Found " << unique_cp_names_.size()
-                               << " unique ORE counterparty names";
-}
-
 void ImportTradeDialog::setupUI() {
     setWindowTitle("Import ORE Portfolio Trades");
     setModal(true);
-    resize(900, 650);
+    resize(980, 760);
 
     auto* mainLayout = new QVBoxLayout(this);
 
-    // Source info (file or directory, depending on how the dialog was opened)
     fileLabel_ = new QLabel(QString("Source: %1").arg(source_label_));
     mainLayout->addWidget(fileLabel_);
 
-    // Book info
     const QString bookStr = QString("Book: %1")
         .arg(QString::fromStdString(book_.name));
     bookLabel_ = new QLabel(bookStr);
     mainLayout->addWidget(bookLabel_);
 
+    // Import defaults group
+    auto* defaultsGroup = new QGroupBox(tr("Import Defaults"), this);
+    auto* defaultsGrid = new QGridLayout(defaultsGroup);
+
+    // Row 0: dates
+    tradeDateEdit_ = new QDateEdit(QDate::currentDate());
+    tradeDateEdit_->setCalendarPopup(true);
+    tradeDateEdit_->setDisplayFormat("yyyy-MM-dd");
+
+    effectiveDateEdit_ = new QDateEdit(QDate::currentDate());
+    effectiveDateEdit_->setCalendarPopup(true);
+    effectiveDateEdit_->setDisplayFormat("yyyy-MM-dd");
+
+    terminationDateEdit_ = new QDateEdit(QDate::currentDate().addYears(1));
+    terminationDateEdit_->setCalendarPopup(true);
+    terminationDateEdit_->setDisplayFormat("yyyy-MM-dd");
+
+    defaultsGrid->addWidget(new QLabel(tr("Trade Date:")), 0, 0);
+    defaultsGrid->addWidget(tradeDateEdit_, 0, 1);
+    defaultsGrid->addWidget(new QLabel(tr("Effective Date:")), 0, 2);
+    defaultsGrid->addWidget(effectiveDateEdit_, 0, 3);
+    defaultsGrid->addWidget(new QLabel(tr("Termination Date:")), 0, 4);
+    defaultsGrid->addWidget(terminationDateEdit_, 0, 5);
+
+    // Row 1: lifecycle event
+    lifecycleEventCombo_ = new QComboBox();
+    lifecycleEventCombo_->addItems({
+        "New", "Amendment", "Novation",
+        "Full Termination", "Partial Termination",
+        "Exercise", "Maturity", "Withdrawal"
+    });
+    defaultsGrid->addWidget(new QLabel(tr("Lifecycle Event:")), 1, 0);
+    defaultsGrid->addWidget(lifecycleEventCombo_, 1, 1);
+
+    // Row 2: default netting set
+    defaultNettingSetEdit_ = new QLineEdit();
+    defaultNettingSetEdit_->setPlaceholderText(tr("e.g. NS_CPTY_A"));
+    auto* applyNsBtn = new QPushButton(tr("Apply to All"));
+    connect(applyNsBtn, &QPushButton::clicked,
+            this, &ImportTradeDialog::onApplyNettingSetToAll);
+    auto* nsRowWidget = new QWidget();
+    auto* nsRowLayout = new QHBoxLayout(nsRowWidget);
+    nsRowLayout->setContentsMargins(0, 0, 0, 0);
+    nsRowLayout->addWidget(defaultNettingSetEdit_);
+    nsRowLayout->addWidget(applyNsBtn);
+    nsRowLayout->addStretch();
+    defaultsGrid->addWidget(new QLabel(tr("Default Netting Set:")), 2, 0);
+    defaultsGrid->addWidget(nsRowWidget, 2, 1, 1, 5);
+
+    // Row 3: default counterparty
+    defaultCounterpartyCombo_ = new QComboBox();
+    defaultCounterpartyCombo_->addItem(tr("-- None --"), QString());
+    defaultCounterpartyCombo_->setMinimumWidth(220);
+    auto* applyCpBtn = new QPushButton(tr("Apply to All"));
+    connect(applyCpBtn, &QPushButton::clicked,
+            this, &ImportTradeDialog::onApplyCounterpartyToAll);
+    counterpartyStatusLabel_ = new QLabel(tr("Loading..."));
+    counterpartyStatusLabel_->setStyleSheet("color: gray; font-style: italic;");
+    auto* cpRowWidget = new QWidget();
+    auto* cpRowLayout = new QHBoxLayout(cpRowWidget);
+    cpRowLayout->setContentsMargins(0, 0, 0, 0);
+    cpRowLayout->addWidget(defaultCounterpartyCombo_);
+    cpRowLayout->addWidget(applyCpBtn);
+    cpRowLayout->addWidget(counterpartyStatusLabel_);
+    cpRowLayout->addStretch();
+    defaultsGrid->addWidget(new QLabel(tr("Default Counterparty:")), 3, 0);
+    defaultsGrid->addWidget(cpRowWidget, 3, 1, 1, 5);
+
+    mainLayout->addWidget(defaultsGroup);
+
     // Trades section
     auto* tradesGroup = new QGroupBox(tr("Trades to Import"), this);
     auto* tradesLayout = new QVBoxLayout(tradesGroup);
 
-    // Select all + count row
     auto* selectionLayout = new QHBoxLayout();
     selectAllCheckbox_ = new QCheckBox(tr("Select All"));
     selectAllCheckbox_->setChecked(true);
@@ -131,53 +196,24 @@ void ImportTradeDialog::setupUI() {
     selectionLayout->addStretch();
     tradesLayout->addLayout(selectionLayout);
 
-    // Trade preview table
     tradeTable_ = new QTableWidget(this);
     tradeTable_->setColumnCount(5);
     tradeTable_->setHorizontalHeaderLabels({
-        "", "External ID", "Trade Type", "ORE Counterparty", "Netting Set ID"
+        "", "External ID", "Trade Type", "Counterparty", "Netting Set ID"
     });
     tradeTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tradeTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    tradeTable_->horizontalHeader()->setStretchLastSection(true);
-    tradeTable_->horizontalHeader()->setSectionResizeMode(
-        QHeaderView::ResizeToContents);
-    tradeTable_->horizontalHeader()->setSectionResizeMode(
-        4, QHeaderView::Stretch);
+    tradeTable_->setEditTriggers(
+        QAbstractItemView::DoubleClicked | QAbstractItemView::AnyKeyPressed);
+    tradeTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Fixed);
+    tradeTable_->setColumnWidth(0, 30);
+    tradeTable_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    tradeTable_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    tradeTable_->horizontalHeader()->setSectionResizeMode(3, QHeaderView::Stretch);
+    tradeTable_->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);
     tradeTable_->verticalHeader()->setVisible(false);
     tradesLayout->addWidget(tradeTable_);
 
     mainLayout->addWidget(tradesGroup);
-
-    // Counterparty mapping section (only if there are ORE counterparties)
-    if (!unique_cp_names_.empty()) {
-        mappingSection_ = new QGroupBox(tr("Counterparty Mapping"), this);
-        auto* mappingLayout = new QVBoxLayout(mappingSection_);
-
-        mappingStatusLabel_ = new QLabel(tr("Loading ORES counterparties..."));
-        mappingLayout->addWidget(mappingStatusLabel_);
-
-        mappingTable_ = new QTableWidget(this);
-        mappingTable_->setColumnCount(2);
-        mappingTable_->setHorizontalHeaderLabels({
-            "ORE CounterParty", "ORES Counterparty"
-        });
-        mappingTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        mappingTable_->horizontalHeader()->setStretchLastSection(true);
-        mappingTable_->horizontalHeader()->setSectionResizeMode(
-            0, QHeaderView::ResizeToContents);
-        mappingTable_->verticalHeader()->setVisible(false);
-        mappingTable_->setVisible(false);
-        mappingLayout->addWidget(mappingTable_);
-
-        auto* noteLabel = new QLabel(
-            tr("Note: Unmapped counterparties will be imported without a "
-               "counterparty reference."));
-        noteLabel->setWordWrap(true);
-        mappingLayout->addWidget(noteLabel);
-
-        mainLayout->addWidget(mappingSection_);
-    }
 
     // Progress bar
     progressBar_ = new QProgressBar(this);
@@ -220,15 +256,16 @@ void ImportTradeDialog::populateTradeTable() {
         const auto& item = items_[i];
         const auto& validation_error = validation_errors_[i];
         const bool is_valid = validation_error.empty();
+        const int row = static_cast<int>(i);
 
-        // Checkbox column
+        // Column 0: checkbox
         auto* checkBoxWidget = new QWidget();
         auto* checkBoxLayout = new QHBoxLayout(checkBoxWidget);
         checkBoxLayout->setContentsMargins(0, 0, 0, 0);
         checkBoxLayout->setAlignment(Qt::AlignCenter);
 
         auto* checkBox = new QCheckBox();
-        checkBox->setProperty("row", static_cast<int>(i));
+        checkBox->setProperty("row", row);
         connect(checkBox, &QCheckBox::toggled,
                 this, [this](bool) { onTradeCheckChanged(); });
 
@@ -245,90 +282,119 @@ void ImportTradeDialog::populateTradeTable() {
         }
 
         checkBoxLayout->addWidget(checkBox);
-        tradeTable_->setCellWidget(static_cast<int>(i), 0, checkBoxWidget);
+        tradeTable_->setCellWidget(row, 0, checkBoxWidget);
 
-        // Data columns
+        // Columns 1–2: read-only text items
         const QString source_tooltip =
             QString("Source: %1")
             .arg(QString::fromStdString(item.source_file.generic_string()));
 
         auto makeItem = [&](const std::string& text) {
             auto* it = new QTableWidgetItem(QString::fromStdString(text));
-            it->setToolTip(source_tooltip);
             if (!is_valid) {
                 it->setBackground(QBrush(QColor(255, 200, 200)));
-                it->setToolTip(QString("Source: %1\nValidation errors:\n%2")
+                it->setToolTip(
+                    QString("Source: %1\nValidation errors:\n%2")
                     .arg(QString::fromStdString(
-                         item.source_file.generic_string()))
+                             item.source_file.generic_string()))
                     .arg(QString::fromStdString(validation_error)));
+            } else {
+                it->setToolTip(source_tooltip);
             }
             return it;
         };
 
-        tradeTable_->setItem(static_cast<int>(i), 1,
-            makeItem(item.trade.external_id));
-        tradeTable_->setItem(static_cast<int>(i), 2,
-            makeItem(item.trade.trade_type));
-        tradeTable_->setItem(static_cast<int>(i), 3,
-            makeItem(item.ore_counterparty_name));
-        tradeTable_->setItem(static_cast<int>(i), 4,
-            makeItem(item.trade.netting_set_id));
+        tradeTable_->setItem(row, 1, makeItem(item.trade.external_id));
+        tradeTable_->setItem(row, 2, makeItem(item.trade.trade_type));
+
+        // Column 3: per-row counterparty combo (populated after load)
+        auto* cpCombo = new QComboBox();
+        cpCombo->addItem(tr("-- None --"), QString());
+        cpCombo->setProperty("ore_name",
+            QString::fromStdString(item.ore_counterparty_name));
+        if (!is_valid) cpCombo->setEnabled(false);
+        tradeTable_->setCellWidget(row, 3, cpCombo);
+
+        // Column 4: per-row editable netting set item
+        auto* nsItem = new QTableWidgetItem(
+            QString::fromStdString(item.trade.netting_set_id));
+        if (is_valid) {
+            nsItem->setFlags(nsItem->flags() | Qt::ItemIsEditable);
+        } else {
+            nsItem->setFlags(nsItem->flags() & ~Qt::ItemIsEditable);
+            nsItem->setBackground(QBrush(QColor(255, 200, 200)));
+        }
+        tradeTable_->setItem(row, 4, nsItem);
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Trade table populated: " << valid_count
                                << " valid, " << invalid_count << " invalid";
 }
 
-void ImportTradeDialog::populateMappingTable() {
-    if (!mappingTable_) return;
+void ImportTradeDialog::populateCounterpartyCombos() {
+    const auto count = counterparties_.size();
+    BOOST_LOG_SEV(lg(), debug) << "Populating counterparty combos with "
+                               << count << " counterparties";
+    if (count == 0) {
+        counterpartyStatusLabel_->setText(tr("(no counterparties found)"));
+    } else {
+        counterpartyStatusLabel_->setText(
+            tr("(%1 loaded)").arg(static_cast<int>(count)));
+    }
 
-    BOOST_LOG_SEV(lg(), debug) << "Populating mapping table with "
-                               << unique_cp_names_.size() << " counterparty names";
-
-    mappingTable_->setRowCount(static_cast<int>(unique_cp_names_.size()));
-    mapping_combos_.clear();
-
-    for (size_t i = 0; i < unique_cp_names_.size(); ++i) {
-        const auto& ore_name = unique_cp_names_[i];
-
-        // ORE name column (read-only)
-        auto* nameItem = new QTableWidgetItem(QString::fromStdString(ore_name));
-        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
-        mappingTable_->setItem(static_cast<int>(i), 0, nameItem);
-
-        // ORES counterparty combo box
-        auto* combo = new QComboBox();
-        combo->addItem(tr("-- None --"), QString());
-        for (const auto& cp : counterparties_) {
-            const QString name = QString::fromStdString(cp.full_name);
-            const QString id = QString::fromStdString(
-                boost::uuids::to_string(cp.id));
-            combo->addItem(name, id);
-        }
-
-        // Try to auto-match by name (case-insensitive)
-        const QString oreLower = QString::fromStdString(ore_name).toLower();
-        for (int j = 1; j < combo->count(); ++j) {
-            if (combo->itemText(j).toLower() == oreLower) {
-                combo->setCurrentIndex(j);
+    // Repopulate the default counterparty combo
+    const QString prevDefaultData =
+        defaultCounterpartyCombo_->currentData().toString();
+    defaultCounterpartyCombo_->clear();
+    defaultCounterpartyCombo_->addItem(tr("-- None --"), QString());
+    for (const auto& cp : counterparties_) {
+        defaultCounterpartyCombo_->addItem(
+            QString::fromStdString(cp.full_name),
+            QString::fromStdString(boost::uuids::to_string(cp.id)));
+    }
+    if (!prevDefaultData.isEmpty()) {
+        for (int j = 1; j < defaultCounterpartyCombo_->count(); ++j) {
+            if (defaultCounterpartyCombo_->itemData(j).toString() ==
+                    prevDefaultData) {
+                defaultCounterpartyCombo_->setCurrentIndex(j);
                 break;
             }
         }
-
-        mappingTable_->setCellWidget(static_cast<int>(i), 1, combo);
-        mapping_combos_[ore_name] = combo;
     }
 
-    mappingTable_->setVisible(true);
-    mappingStatusLabel_->setVisible(false);
+    // Repopulate per-row combos and try auto-match by ORE name
+    for (int row = 0; row < tradeTable_->rowCount(); ++row) {
+        auto* cpWidget = tradeTable_->cellWidget(row, 3);
+        auto* cpCombo = cpWidget ? qobject_cast<QComboBox*>(cpWidget) : nullptr;
+        if (!cpCombo || !cpCombo->isEnabled()) continue;
+
+        const QString oreName = cpCombo->property("ore_name").toString();
+        cpCombo->clear();
+        cpCombo->addItem(tr("-- None --"), QString());
+        for (const auto& cp : counterparties_) {
+            cpCombo->addItem(
+                QString::fromStdString(cp.full_name),
+                QString::fromStdString(boost::uuids::to_string(cp.id)));
+        }
+
+        // Auto-match by ORE counterparty name (case-insensitive)
+        if (!oreName.isEmpty()) {
+            const QString oreLower = oreName.toLower();
+            for (int j = 1; j < cpCombo->count(); ++j) {
+                if (cpCombo->itemText(j).toLower() == oreLower) {
+                    cpCombo->setCurrentIndex(j);
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void ImportTradeDialog::loadCounterparties() {
     if (!clientManager_ || !clientManager_->isConnected()) {
-        if (mappingStatusLabel_) {
-            mappingStatusLabel_->setText(
-                tr("Not connected - counterparty mapping unavailable"));
-        }
+        BOOST_LOG_SEV(lg(), warn)
+            << "Skipping counterparty load: not connected";
+        counterpartyStatusLabel_->setText(tr("(not connected)"));
         return;
     }
 
@@ -347,7 +413,7 @@ void ImportTradeDialog::loadCounterparties() {
 
         refdata::messaging::get_counterparties_request request;
         request.offset = 0;
-        request.limit = 10000;
+        request.limit = 1000; // server maximum
         auto payload = request.serialize();
 
         comms::messaging::frame req_frame(
@@ -375,18 +441,15 @@ void ImportTradeDialog::loadCounterparties() {
         watcher->deleteLater();
 
         if (!result.success) {
-            if (mappingStatusLabel_) {
-                mappingStatusLabel_->setText(
-                    tr("Failed to load counterparties"));
-            }
             BOOST_LOG_SEV(lg(), warn) << "Failed to load counterparties";
+            counterpartyStatusLabel_->setText(tr("(failed to load)"));
             return;
         }
 
         counterparties_ = std::move(result.counterparties);
         BOOST_LOG_SEV(lg(), debug) << "Loaded " << counterparties_.size()
                                    << " counterparties";
-        populateMappingTable();
+        populateCounterpartyCombos();
     });
 
     watcher->setFuture(future);
@@ -398,9 +461,8 @@ void ImportTradeDialog::updateSelectionCount() {
         auto* cellWidget = tradeTable_->cellWidget(i, 0);
         if (cellWidget) {
             auto* checkBox = cellWidget->findChild<QCheckBox*>();
-            if (checkBox && checkBox->isChecked()) {
+            if (checkBox && checkBox->isChecked())
                 selectedCount++;
-            }
         }
     }
 
@@ -418,32 +480,11 @@ void ImportTradeDialog::updateImportButtonState() {
         auto* cellWidget = tradeTable_->cellWidget(i, 0);
         if (cellWidget) {
             auto* checkBox = cellWidget->findChild<QCheckBox*>();
-            if (checkBox && checkBox->isChecked()) {
+            if (checkBox && checkBox->isChecked())
                 selectedCount++;
-            }
         }
     }
     importButton_->setEnabled(selectedCount > 0 && !importInProgress_);
-}
-
-std::optional<boost::uuids::uuid>
-ImportTradeDialog::resolveCounterpartyId(const std::string& ore_name) const {
-    if (ore_name.empty()) return std::nullopt;
-
-    auto it = mapping_combos_.find(ore_name);
-    if (it == mapping_combos_.end()) return std::nullopt;
-
-    const QComboBox* combo = it->second;
-    if (!combo || combo->currentIndex() <= 0) return std::nullopt;
-
-    const QString uuid_str = combo->currentData().toString();
-    if (uuid_str.isEmpty()) return std::nullopt;
-
-    try {
-        return boost::lexical_cast<boost::uuids::uuid>(uuid_str.toStdString());
-    } catch (...) {
-        return std::nullopt;
-    }
 }
 
 void ImportTradeDialog::onSelectAllChanged(Qt::CheckState state) {
@@ -455,9 +496,8 @@ void ImportTradeDialog::onSelectAllChanged(Qt::CheckState state) {
         auto* cellWidget = tradeTable_->cellWidget(i, 0);
         if (cellWidget) {
             auto* checkBox = cellWidget->findChild<QCheckBox*>();
-            if (checkBox && checkBox->isEnabled()) {
+            if (checkBox && checkBox->isEnabled())
                 checkBox->setChecked(checked);
-            }
         }
     }
     updateSelectionCount();
@@ -466,7 +506,6 @@ void ImportTradeDialog::onSelectAllChanged(Qt::CheckState state) {
 void ImportTradeDialog::onTradeCheckChanged() {
     updateSelectionCount();
 
-    // Sync the Select All checkbox
     int checkedCount = 0;
     int enabledCount = 0;
     for (int i = 0; i < tradeTable_->rowCount(); ++i) {
@@ -475,9 +514,8 @@ void ImportTradeDialog::onTradeCheckChanged() {
             auto* checkBox = cellWidget->findChild<QCheckBox*>();
             if (checkBox && checkBox->isEnabled()) {
                 enabledCount++;
-                if (checkBox->isChecked()) {
+                if (checkBox->isChecked())
                     checkedCount++;
-                }
             }
         }
     }
@@ -491,6 +529,35 @@ void ImportTradeDialog::onTradeCheckChanged() {
         selectAllCheckbox_->setCheckState(Qt::PartiallyChecked);
     }
     selectAllCheckbox_->blockSignals(false);
+}
+
+void ImportTradeDialog::onApplyNettingSetToAll() {
+    const QString value = defaultNettingSetEdit_->text();
+    BOOST_LOG_SEV(lg(), debug) << "Applying netting set to all rows: "
+                               << value.toStdString();
+    for (int row = 0; row < tradeTable_->rowCount(); ++row) {
+        auto* nsItem = tradeTable_->item(row, 4);
+        if (nsItem && (nsItem->flags() & Qt::ItemIsEditable))
+            nsItem->setText(value);
+    }
+}
+
+void ImportTradeDialog::onApplyCounterpartyToAll() {
+    const QString defaultData =
+        defaultCounterpartyCombo_->currentData().toString();
+    BOOST_LOG_SEV(lg(), debug) << "Applying counterparty to all rows: "
+                               << defaultData.toStdString();
+    for (int row = 0; row < tradeTable_->rowCount(); ++row) {
+        auto* cpWidget = tradeTable_->cellWidget(row, 3);
+        auto* cpCombo = cpWidget ? qobject_cast<QComboBox*>(cpWidget) : nullptr;
+        if (!cpCombo || !cpCombo->isEnabled()) continue;
+        for (int j = 0; j < cpCombo->count(); ++j) {
+            if (cpCombo->itemData(j).toString() == defaultData) {
+                cpCombo->setCurrentIndex(j);
+                break;
+            }
+        }
+    }
 }
 
 void ImportTradeDialog::onImportClicked() {
@@ -507,12 +574,24 @@ void ImportTradeDialog::onImportClicked() {
     importButton_->setEnabled(false);
     selectAllCheckbox_->setEnabled(false);
     tradeTable_->setEnabled(false);
-    if (mappingSection_) mappingSection_->setEnabled(false);
 
     progressBar_->setVisible(true);
     statusLabel_->setVisible(true);
 
-    // Collect selected trades with resolved mappings
+    // Read global defaults from UI (on main thread before spawning worker)
+    const std::string tradeDate =
+        tradeDateEdit_->date().toString("yyyy-MM-dd").toStdString();
+    const std::string effectiveDate =
+        effectiveDateEdit_->date().toString("yyyy-MM-dd").toStdString();
+    const std::string terminationDate =
+        terminationDateEdit_->date().toString("yyyy-MM-dd").toStdString();
+    const std::string lifecycleEvent =
+        lifecycleEventCombo_->currentText().toStdString();
+    const std::string executionTimestamp =
+        QDateTime::currentDateTimeUtc()
+        .toString("yyyy-MM-ddThh:mm:ss").toStdString();
+
+    // Collect selected trades with per-row widget values
     struct TradeToImport {
         trading::domain::trade trade;
     };
@@ -529,20 +608,41 @@ void ImportTradeDialog::onImportClicked() {
         TradeToImport tti;
         tti.trade = item.trade;
 
-        // Assign UUID for the new trade
         tti.trade.id = boost::uuids::random_generator()();
-
-        // Set book, portfolio, and party from the selected book
         tti.trade.book_id = book_.id;
         tti.trade.portfolio_id = book_.parent_portfolio_id;
         tti.trade.party_id = book_.party_id;
-
-        // Resolve counterparty
-        tti.trade.counterparty_id =
-            resolveCounterpartyId(item.ore_counterparty_name);
-
-        // Set the username as the modifier
         tti.trade.modified_by = username_.toStdString();
+
+        // Apply global date/lifecycle defaults
+        tti.trade.trade_date = tradeDate;
+        tti.trade.effective_date = effectiveDate;
+        tti.trade.termination_date = terminationDate;
+        tti.trade.lifecycle_event = lifecycleEvent;
+        tti.trade.execution_timestamp = executionTimestamp;
+
+        // Per-row netting set
+        auto* nsItem = tradeTable_->item(i, 4);
+        if (nsItem)
+            tti.trade.netting_set_id = nsItem->text().toStdString();
+
+        // Per-row counterparty
+        auto* cpWidget = tradeTable_->cellWidget(i, 3);
+        auto* cpCombo = cpWidget ? qobject_cast<QComboBox*>(cpWidget) : nullptr;
+        if (cpCombo && cpCombo->currentIndex() > 0) {
+            const QString uuid_str = cpCombo->currentData().toString();
+            if (!uuid_str.isEmpty()) {
+                try {
+                    tti.trade.counterparty_id =
+                        boost::lexical_cast<boost::uuids::uuid>(
+                            uuid_str.toStdString());
+                } catch (...) {
+                    tti.trade.counterparty_id = std::nullopt;
+                }
+            }
+        } else {
+            tti.trade.counterparty_id = std::nullopt;
+        }
 
         selected.push_back(std::move(tti));
     }

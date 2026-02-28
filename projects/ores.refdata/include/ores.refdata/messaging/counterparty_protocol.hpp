@@ -27,6 +27,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/counterparty.hpp"
@@ -68,10 +69,13 @@ struct get_counterparties_response final {
 std::ostream& operator<<(std::ostream& s, const get_counterparties_response& v);
 
 /**
- * @brief Request to save a counterparty (create or update).
+ * @brief Request to save one or more counterparties (create or update).
  */
 struct save_counterparty_request final {
-    domain::counterparty counterparty;
+    std::vector<domain::counterparty> counterparties;
+
+    static save_counterparty_request from(domain::counterparty counterparty);
+    static save_counterparty_request from(std::vector<domain::counterparty> counterparties);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_counterparty_request,
@@ -82,10 +86,10 @@ struct save_counterparty_request final {
 std::ostream& operator<<(std::ostream& s, const save_counterparty_request& v);
 
 /**
- * @brief Response confirming counterparty save operation.
+ * @brief Response confirming counterparty save operation(s).
  */
 struct save_counterparty_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -95,17 +99,6 @@ struct save_counterparty_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_counterparty_response& v);
-
-/**
- * @brief Result for a single counterparty deletion.
- */
-struct delete_counterparty_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_counterparty_result& v);
 
 /**
  * @brief Request to delete one or more counterparties.
@@ -125,7 +118,8 @@ std::ostream& operator<<(std::ostream& s, const delete_counterparty_request& v);
  * @brief Response confirming counterparty deletion(s).
  */
 struct delete_counterparty_response final {
-    std::vector<delete_counterparty_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_counterparty_response,

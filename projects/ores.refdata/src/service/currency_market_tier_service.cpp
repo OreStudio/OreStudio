@@ -49,6 +49,16 @@ void currency_market_tier_service::save_type(const domain::currency_market_tier&
     BOOST_LOG_SEV(lg(), info) << "Saved currency market tier: " << v.code;
 }
 
+void currency_market_tier_service::save_types(
+    const std::vector<domain::currency_market_tier>& types) {
+    for (const auto& t : types) {
+        if (t.code.empty())
+            throw std::invalid_argument("Currency Market Tier code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " currency market tiers";
+    repo_.write(ctx_, types);
+}
+
 void currency_market_tier_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier: " << code;
     repo_.remove(ctx_, code);

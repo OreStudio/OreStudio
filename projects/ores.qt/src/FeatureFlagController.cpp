@@ -461,7 +461,7 @@ void FeatureFlagController::onRevertFeatureFlag(
 
     // Save the flag (which creates a new version with the old data)
     variability::messaging::save_feature_flag_request request;
-    request.flag = flag;
+    request.flags.push_back(flag);
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -510,9 +510,10 @@ void FeatureFlagController::onRevertFeatureFlag(
             listWindow_->markAsStale();
         }
     } else {
-        BOOST_LOG_SEV(lg(), error) << "Revert failed: " << response->error_message;
+        const std::string msg = response->message;
+        BOOST_LOG_SEV(lg(), error) << "Revert failed: " << msg;
         emit errorMessage(QString("Failed to revert feature flag: %1")
-            .arg(QString::fromStdString(response->error_message)));
+            .arg(QString::fromStdString(msg)));
     }
 }
 

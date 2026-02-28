@@ -78,6 +78,18 @@ void change_management_service::save_category(
                               << category.code;
 }
 
+void change_management_service::save_categories(
+    const std::vector<domain::change_reason_category>& categories) {
+    for (const auto& c : categories) {
+        if (c.code.empty()) {
+            throw std::invalid_argument("Category code cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << categories.size()
+                               << " change reason categories.";
+    category_repo_.write(categories);
+}
+
 void change_management_service::remove_category(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removing change reason category: " << code;
 
@@ -149,6 +161,18 @@ void change_management_service::save_reason(
     BOOST_LOG_SEV(lg(), debug) << "Saving change reason: " << reason.code;
     reason_repo_.write(reason);
     BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << reason.code;
+}
+
+void change_management_service::save_reasons(
+    const std::vector<domain::change_reason>& reasons) {
+    for (const auto& r : reasons) {
+        if (r.code.empty()) {
+            throw std::invalid_argument("Reason code cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << reasons.size()
+                               << " change reasons.";
+    reason_repo_.write(reasons);
 }
 
 void change_management_service::remove_reason(const std::string& code) {

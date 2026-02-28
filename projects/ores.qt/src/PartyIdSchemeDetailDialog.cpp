@@ -196,7 +196,7 @@ void PartyIdSchemeDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_party_id_scheme_request request;
-        request.scheme = scheme;
+        request.schemes.push_back(scheme);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -282,7 +282,7 @@ void PartyIdSchemeDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_party_id_scheme_request request;
-        request.codes = {code};
+        request.codes.push_back({code});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -305,11 +305,11 @@ void PartyIdSchemeDetailDialog::onDeleteClicked() {
         auto response = refdata::messaging::delete_party_id_scheme_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

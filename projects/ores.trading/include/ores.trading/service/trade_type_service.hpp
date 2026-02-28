@@ -56,6 +56,8 @@ public:
 
     void save_type(const domain::trade_type& v);
 
+    void save_types(const std::vector<domain::trade_type>& types);
+
     void remove_type(const std::string& code);
 
     std::vector<domain::trade_type>

@@ -163,7 +163,7 @@ void NatureDimensionDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_nature_dimension_request request;
-        request.dimension = dimension;
+        request.dimensions.push_back(dimension);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -224,7 +224,7 @@ void NatureDimensionDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::delete_nature_dimension_request request;
-        request.codes = {code};
+        request.codes.push_back({code});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -237,9 +237,9 @@ void NatureDimensionDetailDialog::onDeleteClicked() {
         if (!payload_result) return {false, "Failed to decompress response"};
 
         auto response = dq::messaging::delete_nature_dimension_response::deserialize(*payload_result);
-        if (!response || response->results.empty()) return {false, "Invalid server response"};
+        if (!response) return {false, "Invalid server response"};
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

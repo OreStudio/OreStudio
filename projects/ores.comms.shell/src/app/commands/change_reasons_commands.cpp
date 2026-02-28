@@ -100,21 +100,19 @@ process_add_change_reason(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<save_change_reason_request,
                                                         save_change_reason_response,
                                                         message_type::save_change_reason_request>
-        (save_change_reason_request{
-            .reason = dq::domain::change_reason{
-                .version = 0,
-                .code = std::move(code),
-                .description = std::move(description),
-                .category_code = std::move(category_code),
-                .applies_to_amend = true,
-                .applies_to_delete = true,
-                .requires_commentary = false,
-                .display_order = 0,
-                .modified_by = modified_by,
-                .change_commentary = std::move(change_commentary),
-                .recorded_at = std::chrono::system_clock::now()
-            }
-        });
+        (save_change_reason_request::from(dq::domain::change_reason{
+            .version = 0,
+            .code = std::move(code),
+            .description = std::move(description),
+            .category_code = std::move(category_code),
+            .applies_to_amend = true,
+            .applies_to_delete = true,
+            .requires_commentary = false,
+            .display_order = 0,
+            .modified_by = modified_by,
+            .change_commentary = std::move(change_commentary),
+            .recorded_at = std::chrono::system_clock::now()
+        }));
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -126,10 +124,9 @@ process_add_change_reason(std::ostream& out, client_session& session,
         BOOST_LOG_SEV(lg(), info) << "Successfully added change reason.";
         out << "✓ Change reason added successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add change reason: "
-                                  << response.message;
-        out << "✗ Failed to add change reason: " << response.message
-            << std::endl;
+        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add change reason: " << msg;
+        out << "✗ Failed to add change reason: " << msg << std::endl;
     }
 }
 
@@ -150,7 +147,7 @@ process_delete_change_reason(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<delete_change_reason_request,
                                                         delete_change_reason_response,
                                                         message_type::delete_change_reason_request>
-        (delete_change_reason_request{.codes = {std::move(code)}});
+        (delete_change_reason_request{.codes = {code}});
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -158,22 +155,12 @@ process_delete_change_reason(std::ostream& out, client_session& session,
     }
 
     const auto& response = *result;
-    if (response.results.empty()) {
-        out << "✗ No results returned from server." << std::endl;
-        return;
-    }
-
-    const auto& delete_result = response.results[0];
-    if (delete_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted change reason: "
-                                  << delete_result.code;
-        out << "✓ Change reason " << delete_result.code
-            << " deleted successfully!" << std::endl;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted change reason: " << code;
+        out << "✓ Change reason " << code << " deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete change reason: "
-                                  << delete_result.message;
-        out << "✗ Failed to delete change reason: " << delete_result.message
-            << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete change reason: " << response.message;
+        out << "✗ Failed to delete change reason: " << response.message << std::endl;
     }
 }
 

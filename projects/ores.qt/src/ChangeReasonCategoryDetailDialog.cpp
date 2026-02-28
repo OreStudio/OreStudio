@@ -374,7 +374,7 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
                                        << categoryToSave.code;
 
             dq::messaging::save_change_reason_category_request request;
-            request.category = categoryToSave;
+            request.categories.push_back(categoryToSave);
 
             auto payload = request.serialize();
             frame request_frame(message_type::save_change_reason_category_request,
@@ -468,7 +468,7 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
                                        << code;
 
             dq::messaging::delete_change_reason_category_request request;
-            request.codes = {code};
+            request.codes.push_back({code});
 
             auto payload = request.serialize();
             frame request_frame(message_type::delete_change_reason_category_request,
@@ -493,12 +493,7 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
                 return {false, "Invalid server response"};
             }
 
-            // Check if all deletions succeeded
-            if (response->results.empty()) {
-                return {false, "No results in response"};
-            }
-            const auto& result = response->results.front();
-            return {result.success, result.message};
+            return {response->success, response->message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);

@@ -63,6 +63,16 @@ void business_unit_service::save_business_unit(const domain::business_unit& busi
     BOOST_LOG_SEV(lg(), info) << "Saved business unit: " << business_unit.id;
 }
 
+void business_unit_service::save_business_units(
+    const std::vector<domain::business_unit>& business_units) {
+    for (const auto& bu : business_units) {
+        if (bu.id.is_nil())
+            throw std::invalid_argument("Business Unit ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << business_units.size() << " business units";
+    repo_.write(business_units);
+}
+
 void business_unit_service::remove_business_unit(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business unit: " << id;
     repo_.remove(id);

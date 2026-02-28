@@ -336,7 +336,7 @@ void CountryDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending save country request for: "
                                        << country.alpha2_code;
 
-            refdata::messaging::save_country_request request{country};
+            auto request = refdata::messaging::save_country_request::from(country);
             auto payload = request.serialize();
             frame request_frame = frame(message_type::save_country_request,
                 0, std::move(payload));
@@ -473,12 +473,7 @@ void CountryDetailDialog::onDeleteClicked() {
                 return {false, "Invalid server response"};
             }
 
-            if (response->results.empty()) {
-                BOOST_LOG_SEV(lg(), error) << "Empty results in response";
-                return {false, "Empty results in response"};
-            }
-
-            return {response->results[0].success, response->results[0].message};
+            return {response->success, response->message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);

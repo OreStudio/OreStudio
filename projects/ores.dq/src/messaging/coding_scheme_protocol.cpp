@@ -274,20 +274,36 @@ std::ostream& operator<<(std::ostream& s, const get_coding_schemes_by_authority_
     return s;
 }
 
+save_coding_scheme_request
+save_coding_scheme_request::from(domain::coding_scheme scheme) {
+    return save_coding_scheme_request{
+        std::vector<domain::coding_scheme>{std::move(scheme)}};
+}
+
+save_coding_scheme_request
+save_coding_scheme_request::from(std::vector<domain::coding_scheme> schemes) {
+    return save_coding_scheme_request{std::move(schemes)};
+}
+
 std::vector<std::byte> save_coding_scheme_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_coding_scheme(buffer, scheme);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(schemes.size()));
+    for (const auto& e : schemes)
+        write_coding_scheme(buffer, e);
     return buffer;
 }
 
 std::expected<save_coding_scheme_request, error_code>
 save_coding_scheme_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_coding_scheme_request request;
-
-    auto scheme_result = read_coding_scheme(data);
-    if (!scheme_result) return std::unexpected(scheme_result.error());
-    request.scheme = std::move(*scheme_result);
-
+    request.schemes.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_coding_scheme(data);
+        if (!e) return std::unexpected(e.error());
+        request.schemes.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -323,10 +339,6 @@ std::ostream& operator<<(std::ostream& s, const save_coding_scheme_response& v) 
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_coding_scheme_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -362,12 +374,8 @@ std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_request& v)
 
 std::vector<std::byte> delete_coding_scheme_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -375,28 +383,13 @@ std::expected<delete_coding_scheme_response, error_code>
 delete_coding_scheme_response::deserialize(std::span<const std::byte> data) {
     delete_coding_scheme_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_coding_scheme_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
@@ -523,20 +516,38 @@ std::ostream& operator<<(std::ostream& s, const get_coding_scheme_authority_type
     return s;
 }
 
+save_coding_scheme_authority_type_request
+save_coding_scheme_authority_type_request::from(
+    domain::coding_scheme_authority_type authority_type) {
+    return save_coding_scheme_authority_type_request{
+        std::vector<domain::coding_scheme_authority_type>{std::move(authority_type)}};
+}
+
+save_coding_scheme_authority_type_request
+save_coding_scheme_authority_type_request::from(
+    std::vector<domain::coding_scheme_authority_type> authority_types) {
+    return save_coding_scheme_authority_type_request{std::move(authority_types)};
+}
+
 std::vector<std::byte> save_coding_scheme_authority_type_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_coding_scheme_authority_type(buffer, authority_type);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(authority_types.size()));
+    for (const auto& e : authority_types)
+        write_coding_scheme_authority_type(buffer, e);
     return buffer;
 }
 
 std::expected<save_coding_scheme_authority_type_request, error_code>
 save_coding_scheme_authority_type_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_coding_scheme_authority_type_request request;
-
-    auto at_result = read_coding_scheme_authority_type(data);
-    if (!at_result) return std::unexpected(at_result.error());
-    request.authority_type = std::move(*at_result);
-
+    request.authority_types.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_coding_scheme_authority_type(data);
+        if (!e) return std::unexpected(e.error());
+        request.authority_types.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -572,10 +583,6 @@ std::ostream& operator<<(std::ostream& s, const save_coding_scheme_authority_typ
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_authority_type_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_coding_scheme_authority_type_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -611,12 +618,8 @@ std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_authority_t
 
 std::vector<std::byte> delete_coding_scheme_authority_type_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -624,28 +627,13 @@ std::expected<delete_coding_scheme_authority_type_response, error_code>
 delete_coding_scheme_authority_type_response::deserialize(std::span<const std::byte> data) {
     delete_coding_scheme_authority_type_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_coding_scheme_authority_type_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

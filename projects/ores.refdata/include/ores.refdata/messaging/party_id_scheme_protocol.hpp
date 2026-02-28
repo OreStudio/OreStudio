@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/party_id_scheme.hpp"
@@ -62,10 +63,13 @@ struct get_party_id_schemes_response final {
 std::ostream& operator<<(std::ostream& s, const get_party_id_schemes_response& v);
 
 /**
- * @brief Request to save a party ID scheme (create or update).
+ * @brief Request to save one or more party ID schemes (create or update).
  */
 struct save_party_id_scheme_request final {
-    domain::party_id_scheme scheme;
+    std::vector<domain::party_id_scheme> schemes;
+
+    static save_party_id_scheme_request from(domain::party_id_scheme scheme);
+    static save_party_id_scheme_request from(std::vector<domain::party_id_scheme> schemes);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_party_id_scheme_request,
@@ -76,10 +80,10 @@ struct save_party_id_scheme_request final {
 std::ostream& operator<<(std::ostream& s, const save_party_id_scheme_request& v);
 
 /**
- * @brief Response confirming party ID scheme save operation.
+ * @brief Response confirming party ID scheme save operation(s).
  */
 struct save_party_id_scheme_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_party_id_scheme_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_party_id_scheme_response& v);
-
-/**
- * @brief Result for a single party ID scheme deletion.
- */
-struct delete_party_id_scheme_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_party_id_scheme_result& v);
 
 /**
  * @brief Request to delete one or more party ID schemes.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_party_id_scheme_request& 
  * @brief Response confirming party ID scheme deletion(s).
  */
 struct delete_party_id_scheme_response final {
-    std::vector<delete_party_id_scheme_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_party_id_scheme_response,

@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/book_status.hpp"
@@ -62,10 +63,13 @@ struct get_book_statuses_response final {
 std::ostream& operator<<(std::ostream& s, const get_book_statuses_response& v);
 
 /**
- * @brief Request to save a book status (create or update).
+ * @brief Request to save one or more book statuses (create or update).
  */
 struct save_book_status_request final {
-    domain::book_status status;
+    std::vector<domain::book_status> statuses;
+
+    static save_book_status_request from(domain::book_status status);
+    static save_book_status_request from(std::vector<domain::book_status> statuses);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_book_status_request,
@@ -76,10 +80,10 @@ struct save_book_status_request final {
 std::ostream& operator<<(std::ostream& s, const save_book_status_request& v);
 
 /**
- * @brief Response confirming book status save operation.
+ * @brief Response confirming book status save operation(s).
  */
 struct save_book_status_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_book_status_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_book_status_response& v);
-
-/**
- * @brief Result for a single book status deletion.
- */
-struct delete_book_status_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_book_status_result& v);
 
 /**
  * @brief Request to delete one or more book statuses.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_book_status_request& v);
  * @brief Response confirming book status deletion(s).
  */
 struct delete_book_status_response final {
-    std::vector<delete_book_status_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_book_status_response,

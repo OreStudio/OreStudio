@@ -71,6 +71,17 @@ void counterparty_contact_information_service::save_counterparty_contact_informa
     BOOST_LOG_SEV(lg(), info) << "Saved counterparty contact information: " << counterparty_contact_information.id;
 }
 
+void counterparty_contact_information_service::save_counterparty_contact_informations(
+    const std::vector<domain::counterparty_contact_information>& counterparty_contact_informations) {
+    for (const auto& cci : counterparty_contact_informations) {
+        if (cci.id.is_nil())
+            throw std::invalid_argument("Counterparty Contact Information ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_contact_informations.size()
+                               << " counterparty contact informations";
+    repo_.write(counterparty_contact_informations);
+}
+
 void counterparty_contact_information_service::remove_counterparty_contact_information(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty contact information: " << id;
     repo_.remove(id);

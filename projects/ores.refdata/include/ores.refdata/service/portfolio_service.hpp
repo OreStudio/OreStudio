@@ -83,6 +83,13 @@ public:
     void save_portfolio(const domain::portfolio& portfolio);
 
     /**
+     * @brief Saves multiple portfolios (creates or updates).
+     *
+     * @param portfolios The portfolios to save
+     */
+    void save_portfolios(const std::vector<domain::portfolio>& portfolios);
+
+    /**
      * @brief Removes a portfolio.
      *
      * @param id The ID of the portfolio to remove

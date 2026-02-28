@@ -243,7 +243,7 @@ void FeatureFlagDetailDialog::onSaveClicked() {
                                        << flagToSave.name;
 
             variability::messaging::save_feature_flag_request request;
-            request.flag = flagToSave;
+            request.flags.push_back(flagToSave);
 
             auto payload = request.serialize();
             frame request_frame(message_type::save_feature_flag_request,
@@ -268,7 +268,7 @@ void FeatureFlagDetailDialog::onSaveClicked() {
                 return {false, "Invalid server response"};
             }
 
-            return {response->success, response->error_message};
+            return {response->success, response->message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);

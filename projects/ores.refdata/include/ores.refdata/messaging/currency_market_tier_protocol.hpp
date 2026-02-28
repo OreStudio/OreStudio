@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/currency_market_tier.hpp"
@@ -62,10 +63,13 @@ struct get_currency_market_tiers_response final {
 std::ostream& operator<<(std::ostream& s, const get_currency_market_tiers_response& v);
 
 /**
- * @brief Request to save a currency market tier (create or update).
+ * @brief Request to save one or more currency market tiers (create or update).
  */
 struct save_currency_market_tier_request final {
-    domain::currency_market_tier type;
+    std::vector<domain::currency_market_tier> types;
+
+    static save_currency_market_tier_request from(domain::currency_market_tier type);
+    static save_currency_market_tier_request from(std::vector<domain::currency_market_tier> types);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_currency_market_tier_request,
@@ -76,10 +80,10 @@ struct save_currency_market_tier_request final {
 std::ostream& operator<<(std::ostream& s, const save_currency_market_tier_request& v);
 
 /**
- * @brief Response confirming currency market tier save operation.
+ * @brief Response confirming currency market tier save operation(s).
  */
 struct save_currency_market_tier_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_currency_market_tier_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_currency_market_tier_response& v);
-
-/**
- * @brief Result for a single currency market tier deletion.
- */
-struct delete_currency_market_tier_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_currency_market_tier_result& v);
 
 /**
  * @brief Request to delete one or more currency market tiers.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_currency_market_tier_requ
  * @brief Response confirming currency market tier deletion(s).
  */
 struct delete_currency_market_tier_response final {
-    std::vector<delete_currency_market_tier_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_currency_market_tier_response,

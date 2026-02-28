@@ -160,20 +160,38 @@ std::ostream& operator<<(std::ostream& s, const get_monetary_natures_response& v
     return s;
 }
 
+save_monetary_nature_request
+save_monetary_nature_request::from(domain::monetary_nature type) {
+    return save_monetary_nature_request{std::vector<domain::monetary_nature>{std::move(type)}};
+}
+
+save_monetary_nature_request
+save_monetary_nature_request::from(std::vector<domain::monetary_nature> types) {
+    return save_monetary_nature_request{std::move(types)};
+}
+
 std::vector<std::byte> save_monetary_nature_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_monetary_nature(buffer, type);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(types.size()));
+    for (const auto& e : types)
+        write_monetary_nature(buffer, e);
     return buffer;
 }
 
 std::expected<save_monetary_nature_request, error_code>
 save_monetary_nature_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result)
+        return std::unexpected(count_result.error());
+
     save_monetary_nature_request request;
-
-    auto result = read_monetary_nature(data);
-    if (!result) return std::unexpected(result.error());
-    request.type = std::move(*result);
-
+    request.types.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_monetary_nature(data);
+        if (!e)
+            return std::unexpected(e.error());
+        request.types.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -209,10 +227,6 @@ std::ostream& operator<<(std::ostream& s, const save_monetary_nature_response& v
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_monetary_nature_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_monetary_nature_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -248,12 +262,8 @@ std::ostream& operator<<(std::ostream& s, const delete_monetary_nature_request& 
 
 std::vector<std::byte> delete_monetary_nature_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -261,28 +271,13 @@ std::expected<delete_monetary_nature_response, error_code>
 delete_monetary_nature_response::deserialize(std::span<const std::byte> data) {
     delete_monetary_nature_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_monetary_nature_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

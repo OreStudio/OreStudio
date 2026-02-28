@@ -145,7 +145,7 @@ void MethodologyDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_methodology_request request;
-        request.methodology = methodology;
+        request.methodologies.push_back(methodology);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -197,7 +197,7 @@ void MethodologyDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_methodology_request request;
-        request.ids = {methodologyId};
+        request.ids.push_back({methodologyId});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -211,7 +211,7 @@ void MethodologyDetailDialog::onDeleteClicked() {
         if (!payload_result) return false;
 
         auto response = dq::messaging::delete_methodology_response::deserialize(*payload_result);
-        return response && !response->results.empty() && response->results[0].success;
+        return response && response->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

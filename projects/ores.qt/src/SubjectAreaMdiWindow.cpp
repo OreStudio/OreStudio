@@ -214,7 +214,7 @@ void SubjectAreaMdiWindow::onDeleteClicked() {
         if (!payload_result) return false;
 
         auto response = dq::messaging::delete_subject_area_response::deserialize(*payload_result);
-        return response && !response->results.empty() && response->results[0].success;
+        return response && response->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

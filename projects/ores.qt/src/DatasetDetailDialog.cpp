@@ -559,7 +559,7 @@ void DatasetDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_dataset_request request;
-        request.dataset = dataset;
+        request.datasets.push_back(dataset);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -611,7 +611,7 @@ void DatasetDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_dataset_request request;
-        request.ids = {datasetId};
+        request.ids.push_back({datasetId});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -625,7 +625,7 @@ void DatasetDetailDialog::onDeleteClicked() {
         if (!payload_result) return false;
 
         auto response = dq::messaging::delete_dataset_response::deserialize(*payload_result);
-        return response && !response->results.empty() && response->results[0].success;
+        return response && response->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

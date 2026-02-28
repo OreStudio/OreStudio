@@ -206,19 +206,39 @@ std::ostream& operator<<(std::ostream& s, const get_business_centres_response& v
 
 // save_business_centre_request
 
+save_business_centre_request
+save_business_centre_request::from(domain::business_centre business_centre) {
+    return save_business_centre_request{std::vector<domain::business_centre>{std::move(business_centre)}};
+}
+
+save_business_centre_request
+save_business_centre_request::from(std::vector<domain::business_centre> business_centres) {
+    return save_business_centre_request{std::move(business_centres)};
+}
+
 std::vector<std::byte> save_business_centre_request::serialize() const {
     std::vector<std::byte> buffer;
-    serialize_business_centre(buffer, business_centre);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(business_centres.size()));
+    for (const auto& e : business_centres)
+        serialize_business_centre(buffer, e);
     return buffer;
 }
 
 std::expected<save_business_centre_request, ores::utility::serialization::error_code>
 save_business_centre_request::deserialize(std::span<const std::byte> data) {
-    auto bc_result = deserialize_business_centre(data);
-    if (!bc_result) {
-        return std::unexpected(bc_result.error());
+    auto count_result = reader::read_uint32(data);
+    if (!count_result)
+        return std::unexpected(count_result.error());
+
+    save_business_centre_request request;
+    request.business_centres.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = deserialize_business_centre(data);
+        if (!e)
+            return std::unexpected(e.error());
+        request.business_centres.push_back(std::move(*e));
     }
-    return save_business_centre_request{*bc_result};
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const save_business_centre_request& v) {
@@ -240,15 +260,11 @@ save_business_centre_response::deserialize(std::span<const std::byte> data) {
     save_business_centre_response response;
 
     auto success_result = reader::read_bool(data);
-    if (!success_result) {
-        return std::unexpected(success_result.error());
-    }
+    if (!success_result) return std::unexpected(success_result.error());
     response.success = *success_result;
 
     auto message_result = reader::read_string(data);
-    if (!message_result) {
-        return std::unexpected(message_result.error());
-    }
+    if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
     return response;
@@ -300,66 +316,33 @@ std::ostream& operator<<(std::ostream& s, const delete_business_centre_request& 
     return s;
 }
 
-// delete_business_centre_result
 
-std::ostream& operator<<(std::ostream& s, const delete_business_centre_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 // delete_business_centre_response
 
 std::vector<std::byte> delete_business_centre_response::serialize() const {
     std::vector<std::byte> buffer;
-
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-
-    for (const auto& result : results) {
-        writer::write_string(buffer, result.code);
-        writer::write_bool(buffer, result.success);
-        writer::write_string(buffer, result.message);
-    }
-
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
+
 
 std::expected<delete_business_centre_response, ores::utility::serialization::error_code>
 delete_business_centre_response::deserialize(std::span<const std::byte> data) {
     delete_business_centre_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) {
-        return std::unexpected(count_result.error());
-    }
-    const auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_business_centre_result result;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) {
-            return std::unexpected(code_result.error());
-        }
-        result.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) {
-            return std::unexpected(success_result.error());
-        }
-        result.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) {
-            return std::unexpected(message_result.error());
-        }
-        result.message = *message_result;
-
-        response.results.push_back(std::move(result));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
+
 
 std::ostream& operator<<(std::ostream& s, const delete_business_centre_response& v) {
     rfl::json::write(v, s);

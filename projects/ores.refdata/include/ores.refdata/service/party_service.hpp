@@ -101,6 +101,13 @@ public:
     void save_party(const domain::party& party);
 
     /**
+     * @brief Saves multiple parties (creates or updates).
+     *
+     * @param parties The parties to save
+     */
+    void save_parties(const std::vector<domain::party>& parties);
+
+    /**
      * @brief Removes a party.
      *
      * @param id The ID of the party to remove

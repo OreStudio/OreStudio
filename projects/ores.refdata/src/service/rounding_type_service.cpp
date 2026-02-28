@@ -49,6 +49,16 @@ void rounding_type_service::save_type(const domain::rounding_type& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved rounding type: " << v.code;
 }
 
+void rounding_type_service::save_types(
+    const std::vector<domain::rounding_type>& types) {
+    for (const auto& t : types) {
+        if (t.code.empty())
+            throw std::invalid_argument("Rounding Type code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " rounding types";
+    repo_.write(ctx_, types);
+}
+
 void rounding_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing rounding type: " << code;
     repo_.remove(ctx_, code);

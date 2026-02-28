@@ -56,6 +56,8 @@ public:
 
     void save_identifier(const domain::trade_identifier& v);
 
+    void save_identifiers(const std::vector<domain::trade_identifier>& identifiers);
+
     void remove_identifier(const std::string& id);
 
     std::vector<domain::trade_identifier>

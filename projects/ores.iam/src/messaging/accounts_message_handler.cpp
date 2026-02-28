@@ -44,6 +44,8 @@
 #include "ores.iam/service/session_converter.hpp"
 #include "ores.iam/service/tenant_type_service.hpp"
 #include "ores.iam/service/tenant_status_service.hpp"
+#include "ores.iam/repository/tenant_type_repository.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 
 namespace ores::iam::messaging {
 
@@ -2497,55 +2499,39 @@ handle_save_account_party_request(std::span<const std::byte> payload,
         BOOST_LOG_SEV(lg(), error) << "Failed to deserialize save_account_party_request";
         co_return std::unexpected(request_result.error());
     }
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
 
     auto session = sessions_->get_session(remote_address);
     if (!session) {
         BOOST_LOG_SEV(lg(), warn) << "save_account_party_request denied: not authenticated "
                                   << remote_address;
-        save_account_party_response response{
-            .success = false, .message = "Authentication required"};
+        save_account_party_response response;
+        response.success = false;
+        response.message = "Authentication required";
         co_return response.serialize();
     }
 
-    if (request.account_party.account_id.is_nil()) {
-        BOOST_LOG_SEV(lg(), warn) << "save_account_party_request: account_id is nil";
-        save_account_party_response response{
-            .success = false, .message = "account_id is required"};
-        co_return response.serialize();
-    }
-
-    if (request.account_party.party_id.is_nil()) {
-        BOOST_LOG_SEV(lg(), warn) << "save_account_party_request: party_id is nil";
-        save_account_party_response response{
-            .success = false, .message = "party_id is required"};
-        co_return response.serialize();
-    }
-
-    try {
-        auto ap = request.account_party;
+    for (auto& ap : request.account_parties) {
         ap.tenant_id = session->tenant_id.to_string();
         ap.modified_by = session->username;
+    }
 
-        auto ctx = make_request_context(*session);
-        service::account_party_service ap_svc(ctx);
-        ap_svc.save_account_party(ap);
+    auto ctx = make_request_context(*session);
+    repository::account_party_repository ap_repo(ctx);
 
-        BOOST_LOG_SEV(lg(), info)
-            << "Saved account_party: account="
-            << boost::uuids::to_string(ap.account_id)
-            << " party=" << boost::uuids::to_string(ap.party_id);
-
-        save_account_party_response response{.success = true, .message = ""};
-        co_return response.serialize();
-
+    save_account_party_response response;
+    try {
+        ap_repo.write(request.account_parties);
+        response.success = true;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Saved " << request.account_parties.size()
+                                  << " account_party record(s)";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to save account_party: " << e.what();
-        save_account_party_response response{
-            .success = false,
-            .message = std::string("Failed to save account party: ") + e.what()};
-        co_return response.serialize();
+        response.success = false;
+        response.message = std::string("Failed to save account party: ") + e.what();
     }
+    co_return response.serialize();
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
@@ -2573,32 +2559,25 @@ handle_delete_account_party_request(std::span<const std::byte> payload,
 
     auto ctx = make_request_context(*session);
     repository::account_party_repository ap_repo(ctx);
-    std::vector<delete_account_party_result> results;
 
-    for (const auto& key : request.keys) {
-        try {
+    delete_account_party_response response;
+    try {
+        for (const auto& key : request.keys) {
             ap_repo.remove(key.account_id, key.party_id);
             BOOST_LOG_SEV(lg(), info)
                 << "Deleted account_party: account="
                 << boost::uuids::to_string(key.account_id)
                 << " party=" << boost::uuids::to_string(key.party_id);
-            results.push_back({
-                .account_id = key.account_id,
-                .party_id   = key.party_id,
-                .success    = true,
-                .message    = ""});
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to delete account_party: " << e.what();
-            results.push_back({
-                .account_id = key.account_id,
-                .party_id   = key.party_id,
-                .success    = false,
-                .message    = e.what()});
         }
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.keys.size() << " account party(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete account party: ") + e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete account_party: " << e.what();
     }
-
-    delete_account_party_response response{.results = std::move(results)};
     co_return response.serialize();
 }
 
@@ -2672,32 +2651,26 @@ handle_save_tenant_request(std::span<const std::byte> payload,
         co_return std::unexpected(auth_result.error());
     }
 
-    const auto& request = *request_result;
-    auto tenant = request.tenant;
-    // modified_by comes from the request; if empty, the database trigger sets it
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.tenants.size() << " tenant(s)";
 
     // Create per-request context with session's tenant
     auto ctx = make_request_context(*auth_result);
     repository::tenant_repository tenant_repo(ctx);
 
+    save_tenant_response response;
     try {
-        tenant_repo.write(tenant);
-        BOOST_LOG_SEV(lg(), info) << "Saved tenant: " << tenant.name
-                                  << " (code: " << tenant.code << ")";
-
-        save_tenant_response response{
-            .success = true,
-            .message = "Tenant saved successfully"
-        };
-        co_return response.serialize();
+        tenant_repo.write(request.tenants);
+        response.success = true;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.tenants.size()
+                                  << " tenant(s)";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save tenant: " << e.what();
-        save_tenant_response response{
-            .success = false,
-            .message = std::string("Failed to save tenant: ") + e.what()
-        };
-        co_return response.serialize();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save tenant(s): " << e.what();
+        response.success = false;
+        response.message = std::string("Failed to save tenant: ") + e.what();
     }
+    co_return response.serialize();
 }
 
 accounts_message_handler::handler_result accounts_message_handler::
@@ -2724,55 +2697,31 @@ handle_delete_tenant_request(std::span<const std::byte> payload,
     auto ctx = make_request_context(*auth_result);
     repository::tenant_repository tenant_repo(ctx);
 
-    std::vector<delete_tenant_result> results;
-    results.reserve(request.ids.size());
-
-    for (const auto& id : request.ids) {
-        try {
+    delete_tenant_response response;
+    try {
+        for (const auto& id : request.ids) {
             // Check if tenant exists
             auto existing = tenant_repo.read_latest(id);
-            if (existing.empty()) {
-                results.push_back({
-                    .id = id,
-                    .success = false,
-                    .message = "Tenant not found"
-                });
-                continue;
-            }
+            if (existing.empty())
+                throw std::runtime_error("Tenant not found: " + boost::uuids::to_string(id));
 
             // Prevent deletion of system tenant
             static const auto system_tenant_id = boost::uuids::uuid{};
-            if (id == system_tenant_id) {
-                results.push_back({
-                    .id = id,
-                    .success = false,
-                    .message = "Cannot delete the system tenant"
-                });
-                continue;
-            }
+            if (id == system_tenant_id)
+                throw std::runtime_error("Cannot delete the system tenant");
 
             tenant_repo.remove(id);
             BOOST_LOG_SEV(lg(), info) << "Deleted tenant: " << id;
-
-            results.push_back({
-                .id = id,
-                .success = true,
-                .message = "Tenant deleted successfully"
-            });
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete tenant " << id
-                                       << ": " << e.what();
-            results.push_back({
-                .id = id,
-                .success = false,
-                .message = std::string("Failed to delete tenant: ") + e.what()
-            });
         }
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " tenant(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete tenant: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
-    delete_tenant_response response{
-        .results = std::move(results)
-    };
     co_return response.serialize();
 }
 
@@ -2874,23 +2823,24 @@ handle_save_tenant_type_request(std::span<const std::byte> payload,
     service::tenant_type_service svc(ctx);
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving tenant type: " << request.type.type;
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " tenant type(s)";
+    for (auto& t : request.types) {
+        t.modified_by = auth_result->username;
+        t.performed_by.clear();
+    }
 
-    request.type.modified_by = auth_result->username;
-    request.type.performed_by.clear();
-
+    repository::tenant_type_repository type_repo;
     save_tenant_type_response response;
     try {
-        svc.save_type(request.type);
+        type_repo.write(ctx, request.types);
         response.success = true;
-        response.message = "Tenant type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved tenant type: "
-                                  << request.type.type << " by " << auth_result->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.types.size()
+                                  << " tenant type(s) by " << auth_result->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save tenant type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving tenant type "
-                                   << request.type.type << ": " << e.what();
+        response.message = std::string("Failed to save tenant types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving tenant types: " << e.what();
     }
 
     co_return response.serialize();
@@ -2922,26 +2872,19 @@ handle_delete_tenant_type_request(std::span<const std::byte> payload,
                               << " tenant type(s)";
 
     delete_tenant_type_response response;
-    for (const auto& type : request.types) {
-        delete_tenant_type_result result;
-        result.type = type;
-
-        try {
+    try {
+        for (const auto& type : request.types) {
             svc.remove_type(type);
-            result.success = true;
-            result.message = "Tenant type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant type: "
-                                      << type;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete tenant type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting tenant type "
-                                       << type << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.types.size() << " tenant type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete tenant type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -3053,25 +2996,24 @@ handle_save_tenant_status_request(std::span<const std::byte> payload,
     service::tenant_status_service svc(ctx);
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving tenant status: "
-                              << request.status.status;
-
-    request.status.modified_by = auth_result->username;
-    request.status.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.statuses.size() << " tenant status(es)";
+    for (auto& s : request.statuses) {
+        s.modified_by = auth_result->username;
+        s.performed_by.clear();
+    }
 
     save_tenant_status_response response;
     try {
-        svc.save_status(request.status);
+        for (const auto& s : request.statuses)
+            svc.save_status(s);
         response.success = true;
-        response.message = "Tenant status saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved tenant status: "
-                                  << request.status.status << " by "
-                                  << auth_result->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.statuses.size()
+                                  << " tenant status(es) by " << auth_result->username;
     } catch (const std::exception& e) {
         response.success = false;
         response.message = std::string("Failed to save tenant status: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving tenant status "
-                                   << request.status.status << ": " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving tenant statuses: " << e.what();
     }
 
     co_return response.serialize();
@@ -3103,26 +3045,19 @@ handle_delete_tenant_status_request(std::span<const std::byte> payload,
                               << " tenant status(es)";
 
     delete_tenant_status_response response;
-    for (const auto& status : request.statuses) {
-        delete_tenant_status_result result;
-        result.status = status;
-
-        try {
+    try {
+        for (const auto& status : request.statuses) {
             svc.remove_status(status);
-            result.success = true;
-            result.message = "Tenant status deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant status: "
-                                      << status;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete tenant status: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting tenant status "
-                                       << status << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.statuses.size() << " tenant status(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete tenant status: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 

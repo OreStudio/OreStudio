@@ -28,6 +28,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.refdata/domain/business_centre.hpp"
@@ -65,10 +66,13 @@ struct get_business_centres_response final {
 std::ostream& operator<<(std::ostream& s, const get_business_centres_response& v);
 
 /**
- * @brief Request to save a business centre (create or update).
+ * @brief Request to save one or more business centres (create or update).
  */
 struct save_business_centre_request final {
-    domain::business_centre business_centre;
+    std::vector<domain::business_centre> business_centres;
+
+    static save_business_centre_request from(domain::business_centre business_centre);
+    static save_business_centre_request from(std::vector<domain::business_centre> business_centres);
 
     std::vector<std::byte> serialize() const;
 
@@ -79,10 +83,10 @@ struct save_business_centre_request final {
 std::ostream& operator<<(std::ostream& s, const save_business_centre_request& v);
 
 /**
- * @brief Response confirming business centre save operation.
+ * @brief Response confirming business centre save operation(s).
  */
 struct save_business_centre_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -108,21 +112,11 @@ struct delete_business_centre_request final {
 std::ostream& operator<<(std::ostream& s, const delete_business_centre_request& v);
 
 /**
- * @brief Result for a single business centre deletion.
- */
-struct delete_business_centre_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_business_centre_result& v);
-
-/**
  * @brief Response confirming business centre deletion(s).
  */
 struct delete_business_centre_response final {
-    std::vector<delete_business_centre_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
 

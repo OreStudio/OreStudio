@@ -86,6 +86,14 @@ public:
     void save_country(const domain::country& country);
 
     /**
+     * @brief Saves a batch of countries.
+     *
+     * @param countries The countries to save.
+     * @throws std::exception on failure.
+     */
+    void save_countries(const std::vector<domain::country>& countries);
+
+    /**
      * @brief Deletes a country by its alpha-2 code.
      *
      * @param alpha2_code The alpha-2 code of the country to delete.

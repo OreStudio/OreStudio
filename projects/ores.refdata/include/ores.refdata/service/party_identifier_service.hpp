@@ -89,6 +89,13 @@ public:
     void save_party_identifier(const domain::party_identifier& party_identifier);
 
     /**
+     * @brief Saves multiple party identifiers (creates or updates).
+     *
+     * @param party_identifiers The party identifiers to save
+     */
+    void save_party_identifiers(const std::vector<domain::party_identifier>& party_identifiers);
+
+    /**
      * @brief Removes a party identifier.
      *
      * @param id The ID of the party identifier to remove

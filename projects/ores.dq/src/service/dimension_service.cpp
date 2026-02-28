@@ -56,6 +56,17 @@ void dimension_service::save_nature_dimension(const domain::nature_dimension& di
     BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: " << dimension.code;
 }
 
+void dimension_service::save_nature_dimensions(
+    const std::vector<domain::nature_dimension>& dimensions) {
+    for (const auto& d : dimensions) {
+        if (d.code.empty()) {
+            throw std::invalid_argument("Nature dimension code cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " nature dimensions";
+    nature_repo_.write(dimensions);
+}
+
 void dimension_service::remove_nature_dimension(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing nature dimension: " << code;
     nature_repo_.remove(code);
@@ -96,6 +107,17 @@ void dimension_service::save_origin_dimension(const domain::origin_dimension& di
     BOOST_LOG_SEV(lg(), info) << "Saved origin dimension: " << dimension.code;
 }
 
+void dimension_service::save_origin_dimensions(
+    const std::vector<domain::origin_dimension>& dimensions) {
+    for (const auto& d : dimensions) {
+        if (d.code.empty()) {
+            throw std::invalid_argument("Origin dimension code cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " origin dimensions";
+    origin_repo_.write(dimensions);
+}
+
 void dimension_service::remove_origin_dimension(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing origin dimension: " << code;
     origin_repo_.remove(code);
@@ -134,6 +156,17 @@ void dimension_service::save_treatment_dimension(const domain::treatment_dimensi
     BOOST_LOG_SEV(lg(), debug) << "Saving treatment dimension: " << dimension.code;
     treatment_repo_.write(dimension);
     BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension: " << dimension.code;
+}
+
+void dimension_service::save_treatment_dimensions(
+    const std::vector<domain::treatment_dimension>& dimensions) {
+    for (const auto& d : dimensions) {
+        if (d.code.empty()) {
+            throw std::invalid_argument("Treatment dimension code cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << dimensions.size() << " treatment dimensions";
+    treatment_repo_.write(dimensions);
 }
 
 void dimension_service::remove_treatment_dimension(const std::string& code) {

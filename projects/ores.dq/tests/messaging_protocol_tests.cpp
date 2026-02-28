@@ -64,14 +64,14 @@ TEST_CASE("get_catalogs_request_serialize_deserialize", tags) {
 TEST_CASE("save_catalog_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_catalog_request e;
-    e.catalog.version = 1;
-    e.catalog.name = "ISO Standards";
-    e.catalog.description = "International standards catalogs";
-    e.catalog.owner = "Standards Body";
-    e.catalog.modified_by = "admin";
-    e.catalog.change_commentary = "Initial creation";
-    e.catalog.recorded_at = std::chrono::system_clock::now();
+    save_catalog_request e; e.catalogs.emplace_back();
+    e.catalogs[0].version = 1;
+    e.catalogs[0].name = "ISO Standards";
+    e.catalogs[0].description = "International standards catalogs";
+    e.catalogs[0].owner = "Standards Body";
+    e.catalogs[0].modified_by = "admin";
+    e.catalogs[0].change_commentary = "Initial creation";
+    e.catalogs[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -81,10 +81,10 @@ TEST_CASE("save_catalog_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.catalog.version == e.catalog.version);
-    CHECK(a.catalog.name == e.catalog.name);
-    CHECK(a.catalog.description == e.catalog.description);
-    CHECK(a.catalog.owner == e.catalog.owner);
+    CHECK(a.catalogs[0].version == e.catalogs[0].version);
+    CHECK(a.catalogs[0].name == e.catalogs[0].name);
+    CHECK(a.catalogs[0].description == e.catalogs[0].description);
+    CHECK(a.catalogs[0].owner == e.catalogs[0].owner);
 }
 
 TEST_CASE("get_data_domains_request_serialize_deserialize", tags) {
@@ -103,13 +103,13 @@ TEST_CASE("get_data_domains_request_serialize_deserialize", tags) {
 TEST_CASE("save_data_domain_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_data_domain_request e;
-    e.domain.version = 1;
-    e.domain.name = "Reference Data";
-    e.domain.description = "Static reference data";
-    e.domain.modified_by = "admin";
-    e.domain.change_commentary = "Initial creation";
-    e.domain.recorded_at = std::chrono::system_clock::now();
+    save_data_domain_request e; e.domains.emplace_back();
+    e.domains[0].version = 1;
+    e.domains[0].name = "Reference Data";
+    e.domains[0].description = "Static reference data";
+    e.domains[0].modified_by = "admin";
+    e.domains[0].change_commentary = "Initial creation";
+    e.domains[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -119,9 +119,9 @@ TEST_CASE("save_data_domain_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.domain.version == e.domain.version);
-    CHECK(a.domain.name == e.domain.name);
-    CHECK(a.domain.description == e.domain.description);
+    CHECK(a.domains[0].version == e.domains[0].version);
+    CHECK(a.domains[0].name == e.domains[0].name);
+    CHECK(a.domains[0].description == e.domains[0].description);
 }
 
 TEST_CASE("get_subject_areas_request_serialize_deserialize", tags) {
@@ -157,14 +157,14 @@ TEST_CASE("get_subject_areas_by_domain_request_serialize_deserialize", tags) {
 TEST_CASE("save_subject_area_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_subject_area_request e;
-    e.subject_area.version = 1;
-    e.subject_area.name = "Currencies";
-    e.subject_area.domain_name = "Reference Data";
-    e.subject_area.description = "Currency reference data";
-    e.subject_area.modified_by = "admin";
-    e.subject_area.change_commentary = "Initial creation";
-    e.subject_area.recorded_at = std::chrono::system_clock::now();
+    save_subject_area_request e; e.subject_areas.emplace_back();
+    e.subject_areas[0].version = 1;
+    e.subject_areas[0].name = "Currencies";
+    e.subject_areas[0].domain_name = "Reference Data";
+    e.subject_areas[0].description = "Currency reference data";
+    e.subject_areas[0].modified_by = "admin";
+    e.subject_areas[0].change_commentary = "Initial creation";
+    e.subject_areas[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -174,9 +174,9 @@ TEST_CASE("save_subject_area_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.subject_area.version == e.subject_area.version);
-    CHECK(a.subject_area.name == e.subject_area.name);
-    CHECK(a.subject_area.domain_name == e.subject_area.domain_name);
+    CHECK(a.subject_areas[0].version == e.subject_areas[0].version);
+    CHECK(a.subject_areas[0].name == e.subject_areas[0].name);
+    CHECK(a.subject_areas[0].domain_name == e.subject_areas[0].domain_name);
 }
 
 // ============================================================================
@@ -199,29 +199,29 @@ TEST_CASE("get_datasets_request_serialize_deserialize", tags) {
 TEST_CASE("save_dataset_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_dataset_request e;
-    e.dataset.version = 1;
-    e.dataset.id = boost::uuids::random_generator()();
-    e.dataset.catalog_name = "ISO Standards";
-    e.dataset.subject_area_name = "Currencies";
-    e.dataset.domain_name = "Reference Data";
-    e.dataset.coding_scheme_code = "ISO_4217";
-    e.dataset.origin_code = "Source";
-    e.dataset.nature_code = "Actual";
-    e.dataset.treatment_code = "Raw";
-    e.dataset.methodology_id = boost::uuids::random_generator()();
-    e.dataset.name = "Currency List";
-    e.dataset.description = "List of all ISO 4217 currencies";
-    e.dataset.source_system_id = "ISO_FEED";
-    e.dataset.business_context = "Reference data for FX trading";
-    e.dataset.upstream_derivation_id = std::nullopt;
-    e.dataset.lineage_depth = 0;
-    e.dataset.as_of_date = std::chrono::system_clock::now();
-    e.dataset.ingestion_timestamp = std::chrono::system_clock::now();
-    e.dataset.license_info = "Public domain";
-    e.dataset.modified_by = "admin";
-    e.dataset.change_commentary = "Initial creation";
-    e.dataset.recorded_at = std::chrono::system_clock::now();
+    save_dataset_request e; e.datasets.emplace_back();
+    e.datasets[0].version = 1;
+    e.datasets[0].id = boost::uuids::random_generator()();
+    e.datasets[0].catalog_name = "ISO Standards";
+    e.datasets[0].subject_area_name = "Currencies";
+    e.datasets[0].domain_name = "Reference Data";
+    e.datasets[0].coding_scheme_code = "ISO_4217";
+    e.datasets[0].origin_code = "Source";
+    e.datasets[0].nature_code = "Actual";
+    e.datasets[0].treatment_code = "Raw";
+    e.datasets[0].methodology_id = boost::uuids::random_generator()();
+    e.datasets[0].name = "Currency List";
+    e.datasets[0].description = "List of all ISO 4217 currencies";
+    e.datasets[0].source_system_id = "ISO_FEED";
+    e.datasets[0].business_context = "Reference data for FX trading";
+    e.datasets[0].upstream_derivation_id = std::nullopt;
+    e.datasets[0].lineage_depth = 0;
+    e.datasets[0].as_of_date = std::chrono::system_clock::now();
+    e.datasets[0].ingestion_timestamp = std::chrono::system_clock::now();
+    e.datasets[0].license_info = "Public domain";
+    e.datasets[0].modified_by = "admin";
+    e.datasets[0].change_commentary = "Initial creation";
+    e.datasets[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -231,10 +231,10 @@ TEST_CASE("save_dataset_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.dataset.version == e.dataset.version);
-    CHECK(a.dataset.id == e.dataset.id);
-    CHECK(a.dataset.catalog_name == e.dataset.catalog_name);
-    CHECK(a.dataset.name == e.dataset.name);
+    CHECK(a.datasets[0].version == e.datasets[0].version);
+    CHECK(a.datasets[0].id == e.datasets[0].id);
+    CHECK(a.datasets[0].catalog_name == e.datasets[0].catalog_name);
+    CHECK(a.datasets[0].name == e.datasets[0].name);
 }
 
 TEST_CASE("get_methodologies_request_serialize_deserialize", tags) {
@@ -253,16 +253,16 @@ TEST_CASE("get_methodologies_request_serialize_deserialize", tags) {
 TEST_CASE("save_methodology_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_methodology_request e;
-    e.methodology.version = 1;
-    e.methodology.id = boost::uuids::random_generator()();
-    e.methodology.name = "Standard ETL";
-    e.methodology.description = "Standard extract-transform-load process";
-    e.methodology.logic_reference = "https://docs.example.com/etl";
-    e.methodology.implementation_details = "Python script using pandas";
-    e.methodology.modified_by = "admin";
-    e.methodology.change_commentary = "Initial creation";
-    e.methodology.recorded_at = std::chrono::system_clock::now();
+    save_methodology_request e; e.methodologies.emplace_back();
+    e.methodologies[0].version = 1;
+    e.methodologies[0].id = boost::uuids::random_generator()();
+    e.methodologies[0].name = "Standard ETL";
+    e.methodologies[0].description = "Standard extract-transform-load process";
+    e.methodologies[0].logic_reference = "https://docs.example.com/etl";
+    e.methodologies[0].implementation_details = "Python script using pandas";
+    e.methodologies[0].modified_by = "admin";
+    e.methodologies[0].change_commentary = "Initial creation";
+    e.methodologies[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -272,9 +272,9 @@ TEST_CASE("save_methodology_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.methodology.version == e.methodology.version);
-    CHECK(a.methodology.id == e.methodology.id);
-    CHECK(a.methodology.name == e.methodology.name);
+    CHECK(a.methodologies[0].version == e.methodologies[0].version);
+    CHECK(a.methodologies[0].id == e.methodologies[0].id);
+    CHECK(a.methodologies[0].name == e.methodologies[0].name);
 }
 
 // ============================================================================
@@ -297,18 +297,18 @@ TEST_CASE("get_coding_schemes_request_serialize_deserialize", tags) {
 TEST_CASE("save_coding_scheme_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_coding_scheme_request e;
-    e.scheme.version = 1;
-    e.scheme.code = "ISO_4217";
-    e.scheme.name = "ISO 4217 Currency Codes";
-    e.scheme.authority_type = "official";
-    e.scheme.subject_area_name = "Currencies";
-    e.scheme.domain_name = "Reference Data";
-    e.scheme.uri = "https://www.iso.org/iso-4217-currency-codes.html";
-    e.scheme.description = "Standard currency codes";
-    e.scheme.modified_by = "admin";
-    e.scheme.change_commentary = "Initial creation";
-    e.scheme.recorded_at = std::chrono::system_clock::now();
+    save_coding_scheme_request e; e.schemes.emplace_back();
+    e.schemes[0].version = 1;
+    e.schemes[0].code = "ISO_4217";
+    e.schemes[0].name = "ISO 4217 Currency Codes";
+    e.schemes[0].authority_type = "official";
+    e.schemes[0].subject_area_name = "Currencies";
+    e.schemes[0].domain_name = "Reference Data";
+    e.schemes[0].uri = "https://www.iso.org/iso-4217-currency-codes.html";
+    e.schemes[0].description = "Standard currency codes";
+    e.schemes[0].modified_by = "admin";
+    e.schemes[0].change_commentary = "Initial creation";
+    e.schemes[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -318,9 +318,9 @@ TEST_CASE("save_coding_scheme_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.scheme.version == e.scheme.version);
-    CHECK(a.scheme.code == e.scheme.code);
-    CHECK(a.scheme.name == e.scheme.name);
+    CHECK(a.schemes[0].version == e.schemes[0].version);
+    CHECK(a.schemes[0].code == e.schemes[0].code);
+    CHECK(a.schemes[0].name == e.schemes[0].name);
 }
 
 TEST_CASE("get_coding_scheme_authority_types_request_serialize_deserialize", tags) {
@@ -339,14 +339,14 @@ TEST_CASE("get_coding_scheme_authority_types_request_serialize_deserialize", tag
 TEST_CASE("save_coding_scheme_authority_type_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_coding_scheme_authority_type_request e;
-    e.authority_type.version = 1;
-    e.authority_type.code = "official";
-    e.authority_type.name = "Official Standards";
-    e.authority_type.description = "Standards from official bodies like ISO";
-    e.authority_type.modified_by = "admin";
-    e.authority_type.change_commentary = "Initial creation";
-    e.authority_type.recorded_at = std::chrono::system_clock::now();
+    save_coding_scheme_authority_type_request e; e.authority_types.emplace_back();
+    e.authority_types[0].version = 1;
+    e.authority_types[0].code = "official";
+    e.authority_types[0].name = "Official Standards";
+    e.authority_types[0].description = "Standards from official bodies like ISO";
+    e.authority_types[0].modified_by = "admin";
+    e.authority_types[0].change_commentary = "Initial creation";
+    e.authority_types[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -356,9 +356,9 @@ TEST_CASE("save_coding_scheme_authority_type_request_serialize_deserialize", tag
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.authority_type.version == e.authority_type.version);
-    CHECK(a.authority_type.code == e.authority_type.code);
-    CHECK(a.authority_type.name == e.authority_type.name);
+    CHECK(a.authority_types[0].version == e.authority_types[0].version);
+    CHECK(a.authority_types[0].code == e.authority_types[0].code);
+    CHECK(a.authority_types[0].name == e.authority_types[0].name);
 }
 
 // ============================================================================
@@ -381,14 +381,14 @@ TEST_CASE("get_nature_dimensions_request_serialize_deserialize", tags) {
 TEST_CASE("save_nature_dimension_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_nature_dimension_request e;
-    e.dimension.version = 1;
-    e.dimension.code = "Actual";
-    e.dimension.name = "Actual Data";
-    e.dimension.description = "Real production data from live systems";
-    e.dimension.modified_by = "admin";
-    e.dimension.change_commentary = "Initial creation";
-    e.dimension.recorded_at = std::chrono::system_clock::now();
+    save_nature_dimension_request e; e.dimensions.emplace_back();
+    e.dimensions[0].version = 1;
+    e.dimensions[0].code = "Actual";
+    e.dimensions[0].name = "Actual Data";
+    e.dimensions[0].description = "Real production data from live systems";
+    e.dimensions[0].modified_by = "admin";
+    e.dimensions[0].change_commentary = "Initial creation";
+    e.dimensions[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -398,9 +398,9 @@ TEST_CASE("save_nature_dimension_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.dimension.version == e.dimension.version);
-    CHECK(a.dimension.code == e.dimension.code);
-    CHECK(a.dimension.name == e.dimension.name);
+    CHECK(a.dimensions[0].version == e.dimensions[0].version);
+    CHECK(a.dimensions[0].code == e.dimensions[0].code);
+    CHECK(a.dimensions[0].name == e.dimensions[0].name);
 }
 
 TEST_CASE("get_origin_dimensions_request_serialize_deserialize", tags) {
@@ -419,14 +419,14 @@ TEST_CASE("get_origin_dimensions_request_serialize_deserialize", tags) {
 TEST_CASE("save_origin_dimension_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_origin_dimension_request e;
-    e.dimension.version = 1;
-    e.dimension.code = "Source";
-    e.dimension.name = "Source Data";
-    e.dimension.description = "Primary/authoritative source data";
-    e.dimension.modified_by = "admin";
-    e.dimension.change_commentary = "Initial creation";
-    e.dimension.recorded_at = std::chrono::system_clock::now();
+    save_origin_dimension_request e; e.dimensions.emplace_back();
+    e.dimensions[0].version = 1;
+    e.dimensions[0].code = "Source";
+    e.dimensions[0].name = "Source Data";
+    e.dimensions[0].description = "Primary/authoritative source data";
+    e.dimensions[0].modified_by = "admin";
+    e.dimensions[0].change_commentary = "Initial creation";
+    e.dimensions[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -436,9 +436,9 @@ TEST_CASE("save_origin_dimension_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.dimension.version == e.dimension.version);
-    CHECK(a.dimension.code == e.dimension.code);
-    CHECK(a.dimension.name == e.dimension.name);
+    CHECK(a.dimensions[0].version == e.dimensions[0].version);
+    CHECK(a.dimensions[0].code == e.dimensions[0].code);
+    CHECK(a.dimensions[0].name == e.dimensions[0].name);
 }
 
 TEST_CASE("get_treatment_dimensions_request_serialize_deserialize", tags) {
@@ -457,14 +457,14 @@ TEST_CASE("get_treatment_dimensions_request_serialize_deserialize", tags) {
 TEST_CASE("save_treatment_dimension_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_treatment_dimension_request e;
-    e.dimension.version = 1;
-    e.dimension.code = "Raw";
-    e.dimension.name = "Raw Data";
-    e.dimension.description = "Unprocessed data as received from source";
-    e.dimension.modified_by = "admin";
-    e.dimension.change_commentary = "Initial creation";
-    e.dimension.recorded_at = std::chrono::system_clock::now();
+    save_treatment_dimension_request e; e.dimensions.emplace_back();
+    e.dimensions[0].version = 1;
+    e.dimensions[0].code = "Raw";
+    e.dimensions[0].name = "Raw Data";
+    e.dimensions[0].description = "Unprocessed data as received from source";
+    e.dimensions[0].modified_by = "admin";
+    e.dimensions[0].change_commentary = "Initial creation";
+    e.dimensions[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -474,9 +474,9 @@ TEST_CASE("save_treatment_dimension_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.dimension.version == e.dimension.version);
-    CHECK(a.dimension.code == e.dimension.code);
-    CHECK(a.dimension.name == e.dimension.name);
+    CHECK(a.dimensions[0].version == e.dimensions[0].version);
+    CHECK(a.dimensions[0].code == e.dimensions[0].code);
+    CHECK(a.dimensions[0].name == e.dimensions[0].name);
 }
 
 // ============================================================================
@@ -504,11 +504,8 @@ TEST_CASE("delete_catalog_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_catalog_response e;
-    delete_catalog_result dr;
-    dr.name = "ISO Standards";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -517,11 +514,8 @@ TEST_CASE("delete_catalog_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].name == dr.name);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_catalog_history_request_serialize_deserialize", tags) {
@@ -582,11 +576,8 @@ TEST_CASE("delete_data_domain_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_data_domain_response e;
-    delete_data_domain_result dr;
-    dr.name = "Reference Data";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -595,11 +586,8 @@ TEST_CASE("delete_data_domain_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].name == dr.name);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_data_domain_history_request_serialize_deserialize", tags) {
@@ -665,12 +653,8 @@ TEST_CASE("delete_subject_area_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_subject_area_response e;
-    delete_subject_area_result dr;
-    dr.key.name = "Currencies";
-    dr.key.domain_name = "Reference Data";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -679,12 +663,8 @@ TEST_CASE("delete_subject_area_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].key.name == dr.key.name);
-    CHECK(a.results[0].key.domain_name == dr.key.domain_name);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_subject_area_history_request_serialize_deserialize", tags) {
@@ -751,11 +731,8 @@ TEST_CASE("delete_dataset_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_dataset_response e;
-    delete_dataset_result dr;
-    dr.id = boost::uuids::random_generator()();
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -764,11 +741,8 @@ TEST_CASE("delete_dataset_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].id == dr.id);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_dataset_history_request_serialize_deserialize", tags) {
@@ -829,11 +803,8 @@ TEST_CASE("delete_methodology_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_methodology_response e;
-    delete_methodology_result dr;
-    dr.id = boost::uuids::random_generator()();
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -842,11 +813,8 @@ TEST_CASE("delete_methodology_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].id == dr.id);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_methodology_history_request_serialize_deserialize", tags) {
@@ -911,11 +879,8 @@ TEST_CASE("delete_coding_scheme_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_coding_scheme_response e;
-    delete_coding_scheme_result dr;
-    dr.code = "ISO_4217";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -924,11 +889,8 @@ TEST_CASE("delete_coding_scheme_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].code == dr.code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_coding_scheme_history_request_serialize_deserialize", tags) {
@@ -989,11 +951,8 @@ TEST_CASE("delete_coding_scheme_authority_type_response_serialize_deserialize", 
     auto lg(make_logger(test_suite));
 
     delete_coding_scheme_authority_type_response e;
-    delete_coding_scheme_authority_type_result dr;
-    dr.code = "official";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1002,11 +961,8 @@ TEST_CASE("delete_coding_scheme_authority_type_response_serialize_deserialize", 
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].code == dr.code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_coding_scheme_authority_type_history_request_serialize_deserialize", tags) {
@@ -1071,11 +1027,8 @@ TEST_CASE("delete_nature_dimension_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_nature_dimension_response e;
-    delete_nature_dimension_result dr;
-    dr.code = "Actual";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1084,11 +1037,8 @@ TEST_CASE("delete_nature_dimension_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].code == dr.code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_nature_dimension_history_request_serialize_deserialize", tags) {
@@ -1149,11 +1099,8 @@ TEST_CASE("delete_origin_dimension_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_origin_dimension_response e;
-    delete_origin_dimension_result dr;
-    dr.code = "Source";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1162,11 +1109,8 @@ TEST_CASE("delete_origin_dimension_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].code == dr.code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_origin_dimension_history_request_serialize_deserialize", tags) {
@@ -1227,11 +1171,8 @@ TEST_CASE("delete_treatment_dimension_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_treatment_dimension_response e;
-    delete_treatment_dimension_result dr;
-    dr.code = "Raw";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1240,11 +1181,8 @@ TEST_CASE("delete_treatment_dimension_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].code == dr.code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_treatment_dimension_history_request_serialize_deserialize", tags) {
@@ -1320,18 +1258,18 @@ TEST_CASE("get_change_reasons_response_serialize_deserialize", tags) {
 TEST_CASE("save_change_reason_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_change_reason_request e;
-    e.reason.version = 1;
-    e.reason.code = "static_data.front_office_error";
-    e.reason.description = "Correcting front office mistake";
-    e.reason.category_code = "static_data";
-    e.reason.applies_to_amend = true;
-    e.reason.applies_to_delete = false;
-    e.reason.requires_commentary = true;
-    e.reason.display_order = 10;
-    e.reason.modified_by = "admin";
-    e.reason.change_commentary = "Initial creation";
-    e.reason.recorded_at = std::chrono::system_clock::now();
+    save_change_reason_request e; e.reasons.emplace_back();
+    e.reasons[0].version = 1;
+    e.reasons[0].code = "static_data.front_office_error";
+    e.reasons[0].description = "Correcting front office mistake";
+    e.reasons[0].category_code = "static_data";
+    e.reasons[0].applies_to_amend = true;
+    e.reasons[0].applies_to_delete = false;
+    e.reasons[0].requires_commentary = true;
+    e.reasons[0].display_order = 10;
+    e.reasons[0].modified_by = "admin";
+    e.reasons[0].change_commentary = "Initial creation";
+    e.reasons[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1341,10 +1279,10 @@ TEST_CASE("save_change_reason_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.reason.version == e.reason.version);
-    CHECK(a.reason.code == e.reason.code);
-    CHECK(a.reason.description == e.reason.description);
-    CHECK(a.reason.category_code == e.reason.category_code);
+    CHECK(a.reasons[0].version == e.reasons[0].version);
+    CHECK(a.reasons[0].code == e.reasons[0].code);
+    CHECK(a.reasons[0].description == e.reasons[0].description);
+    CHECK(a.reasons[0].category_code == e.reasons[0].category_code);
 }
 
 TEST_CASE("save_change_reason_response_serialize_deserialize", tags) {
@@ -1363,6 +1301,7 @@ TEST_CASE("save_change_reason_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.success == e.success);
+
     CHECK(a.message == e.message);
 }
 
@@ -1387,11 +1326,8 @@ TEST_CASE("delete_change_reason_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_change_reason_response e;
-    delete_change_reason_result dr;
-    dr.code = "static_data.front_office_error";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1400,11 +1336,8 @@ TEST_CASE("delete_change_reason_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].code == dr.code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_change_reason_history_request_serialize_deserialize", tags) {
@@ -1509,13 +1442,13 @@ TEST_CASE("get_change_reason_categories_response_serialize_deserialize", tags) {
 TEST_CASE("save_change_reason_category_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_change_reason_category_request e;
-    e.category.version = 1;
-    e.category.code = "static_data";
-    e.category.description = "Static reference data changes";
-    e.category.modified_by = "admin";
-    e.category.change_commentary = "Initial creation";
-    e.category.recorded_at = std::chrono::system_clock::now();
+    save_change_reason_category_request e; e.categories.emplace_back();
+    e.categories[0].version = 1;
+    e.categories[0].code = "static_data";
+    e.categories[0].description = "Static reference data changes";
+    e.categories[0].modified_by = "admin";
+    e.categories[0].change_commentary = "Initial creation";
+    e.categories[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1525,9 +1458,9 @@ TEST_CASE("save_change_reason_category_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.category.version == e.category.version);
-    CHECK(a.category.code == e.category.code);
-    CHECK(a.category.description == e.category.description);
+    CHECK(a.categories[0].version == e.categories[0].version);
+    CHECK(a.categories[0].code == e.categories[0].code);
+    CHECK(a.categories[0].description == e.categories[0].description);
 }
 
 TEST_CASE("save_change_reason_category_response_serialize_deserialize", tags) {
@@ -1546,6 +1479,7 @@ TEST_CASE("save_change_reason_category_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.success == e.success);
+
     CHECK(a.message == e.message);
 }
 
@@ -1570,11 +1504,8 @@ TEST_CASE("delete_change_reason_category_response_serialize_deserialize", tags) 
     auto lg(make_logger(test_suite));
 
     delete_change_reason_category_response e;
-    delete_change_reason_category_result dr;
-    dr.code = "static_data";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1583,11 +1514,8 @@ TEST_CASE("delete_change_reason_category_response_serialize_deserialize", tags) 
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].code == dr.code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_change_reason_category_history_request_serialize_deserialize", tags) {
@@ -1663,15 +1591,15 @@ TEST_CASE("get_dataset_bundles_response_serialize_deserialize", tags) {
 TEST_CASE("save_dataset_bundle_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_dataset_bundle_request e;
-    e.bundle.version = 1;
-    e.bundle.id = boost::uuids::random_generator()();
-    e.bundle.code = "slovaris";
-    e.bundle.name = "Slovaris Bundle";
-    e.bundle.description = "Synthetic reference data for testing";
-    e.bundle.modified_by = "admin";
-    e.bundle.change_commentary = "Initial creation";
-    e.bundle.recorded_at = std::chrono::system_clock::now();
+    save_dataset_bundle_request e; e.bundles.emplace_back();
+    e.bundles[0].version = 1;
+    e.bundles[0].id = boost::uuids::random_generator()();
+    e.bundles[0].code = "slovaris";
+    e.bundles[0].name = "Slovaris Bundle";
+    e.bundles[0].description = "Synthetic reference data for testing";
+    e.bundles[0].modified_by = "admin";
+    e.bundles[0].change_commentary = "Initial creation";
+    e.bundles[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1681,10 +1609,10 @@ TEST_CASE("save_dataset_bundle_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.bundle.version == e.bundle.version);
-    CHECK(a.bundle.id == e.bundle.id);
-    CHECK(a.bundle.code == e.bundle.code);
-    CHECK(a.bundle.name == e.bundle.name);
+    CHECK(a.bundles[0].version == e.bundles[0].version);
+    CHECK(a.bundles[0].id == e.bundles[0].id);
+    CHECK(a.bundles[0].code == e.bundles[0].code);
+    CHECK(a.bundles[0].name == e.bundles[0].name);
 }
 
 TEST_CASE("save_dataset_bundle_response_serialize_deserialize", tags) {
@@ -1703,6 +1631,7 @@ TEST_CASE("save_dataset_bundle_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.success == e.success);
+
     CHECK(a.message == e.message);
 }
 
@@ -1727,11 +1656,8 @@ TEST_CASE("delete_dataset_bundle_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_dataset_bundle_response e;
-    delete_dataset_bundle_result dr;
-    dr.id = boost::uuids::random_generator()();
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1740,11 +1666,8 @@ TEST_CASE("delete_dataset_bundle_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].id == dr.id);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_dataset_bundle_history_request_serialize_deserialize", tags) {
@@ -1934,12 +1857,8 @@ TEST_CASE("delete_dataset_bundle_member_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_dataset_bundle_member_response e;
-    delete_dataset_bundle_member_result dr;
-    dr.bundle_code = "slovaris";
-    dr.dataset_code = "slovaris.countries";
-    dr.success = true;
-    dr.message = "Deleted successfully";
-    e.results.push_back(dr);
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1948,12 +1867,8 @@ TEST_CASE("delete_dataset_bundle_member_response_serialize_deserialize", tags) {
     REQUIRE(r.has_value());
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
-
-    REQUIRE(a.results.size() == 1);
-    CHECK(a.results[0].bundle_code == dr.bundle_code);
-    CHECK(a.results[0].dataset_code == dr.dataset_code);
-    CHECK(a.results[0].success == dr.success);
-    CHECK(a.results[0].message == dr.message);
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 // ============================================================================

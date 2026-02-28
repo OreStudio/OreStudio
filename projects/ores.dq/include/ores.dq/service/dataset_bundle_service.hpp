@@ -83,6 +83,13 @@ public:
     void save_bundle(const domain::dataset_bundle& bundle);
 
     /**
+     * @brief Saves multiple dataset bundles (creates or updates).
+     *
+     * @param bundles The dataset bundles to save
+     */
+    void save_bundles(const std::vector<domain::dataset_bundle>& bundles);
+
+    /**
      * @brief Removes a dataset bundle.
      *
      * @param id The ID of the dataset bundle to remove

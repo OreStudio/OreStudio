@@ -77,6 +77,13 @@ public:
     void save_member(const domain::dataset_bundle_member& member);
 
     /**
+     * @brief Saves multiple dataset bundle members (creates or updates).
+     *
+     * @param members The dataset bundle members to save
+     */
+    void save_members(const std::vector<domain::dataset_bundle_member>& members);
+
+    /**
      * @brief Removes a dataset bundle member.
      *
      * @param bundle_code The bundle

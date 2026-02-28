@@ -53,6 +53,16 @@ void currency_service::save_currency(const domain::currency& currency) {
     repo_.write(ctx_, currency);
 }
 
+void currency_service::save_currencies(
+    const std::vector<domain::currency>& currencies) {
+    for (const auto& c : currencies) {
+        if (c.iso_code.empty())
+            throw std::invalid_argument("Currency ISO code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << currencies.size() << " currencies";
+    repo_.write(ctx_, currencies);
+}
+
 void currency_service::delete_currency(const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Deleting currency: " << iso_code;
     repo_.remove(ctx_, iso_code);

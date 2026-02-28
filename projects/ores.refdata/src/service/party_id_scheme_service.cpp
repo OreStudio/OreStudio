@@ -54,6 +54,16 @@ void party_id_scheme_service::save_scheme(
     BOOST_LOG_SEV(lg(), info) << "Saved party ID scheme: " << scheme.code;
 }
 
+void party_id_scheme_service::save_schemes(
+    const std::vector<domain::party_id_scheme>& schemes) {
+    for (const auto& s : schemes) {
+        if (s.code.empty())
+            throw std::invalid_argument("Party ID scheme code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " party ID schemes";
+    repo_.write(ctx_, schemes);
+}
+
 void party_id_scheme_service::remove_scheme(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party ID scheme: " << code;
     repo_.remove(ctx_, code);

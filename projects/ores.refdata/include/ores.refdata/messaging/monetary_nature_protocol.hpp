@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/monetary_nature.hpp"
@@ -62,10 +63,13 @@ struct get_monetary_natures_response final {
 std::ostream& operator<<(std::ostream& s, const get_monetary_natures_response& v);
 
 /**
- * @brief Request to save a currency asset class (create or update).
+ * @brief Request to save one or more monetary natures (create or update).
  */
 struct save_monetary_nature_request final {
-    domain::monetary_nature type;
+    std::vector<domain::monetary_nature> types;
+
+    static save_monetary_nature_request from(domain::monetary_nature type);
+    static save_monetary_nature_request from(std::vector<domain::monetary_nature> types);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_monetary_nature_request,
@@ -76,10 +80,10 @@ struct save_monetary_nature_request final {
 std::ostream& operator<<(std::ostream& s, const save_monetary_nature_request& v);
 
 /**
- * @brief Response confirming currency asset class save operation.
+ * @brief Response confirming monetary nature save operation(s).
  */
 struct save_monetary_nature_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_monetary_nature_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_monetary_nature_response& v);
-
-/**
- * @brief Result for a single currency asset class deletion.
- */
-struct delete_monetary_nature_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_monetary_nature_result& v);
 
 /**
  * @brief Request to delete one or more currency asset classes.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_monetary_nature_request& 
  * @brief Response confirming currency asset class deletion(s).
  */
 struct delete_monetary_nature_response final {
-    std::vector<delete_monetary_nature_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_monetary_nature_response,

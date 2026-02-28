@@ -49,6 +49,16 @@ void monetary_nature_service::save_type(const domain::monetary_nature& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved currency asset class: " << v.code;
 }
 
+void monetary_nature_service::save_types(
+    const std::vector<domain::monetary_nature>& types) {
+    for (const auto& t : types) {
+        if (t.code.empty())
+            throw std::invalid_argument("Currency Asset Class code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " monetary natures";
+    repo_.write(ctx_, types);
+}
+
 void monetary_nature_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency asset class: " << code;
     repo_.remove(ctx_, code);

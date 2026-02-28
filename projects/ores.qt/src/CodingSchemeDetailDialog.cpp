@@ -286,7 +286,7 @@ void CodingSchemeDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_coding_scheme_request request;
-        request.scheme = scheme;
+        request.schemes.push_back(scheme);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -338,7 +338,7 @@ void CodingSchemeDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_coding_scheme_request request;
-        request.codes = {code.toStdString()};
+        request.codes.push_back({code.toStdString()});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -352,7 +352,7 @@ void CodingSchemeDetailDialog::onDeleteClicked() {
         if (!payload_result) return false;
 
         auto response = dq::messaging::delete_coding_scheme_response::deserialize(*payload_result);
-        return response && !response->results.empty() && response->results[0].success;
+        return response && response->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

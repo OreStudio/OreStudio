@@ -312,25 +312,27 @@ handle_save_currency_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving currency: " << request.currency.iso_code;
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.currencies.size()
+                              << " currency(ies)";
 
     // Override modified_by with authenticated username
-    request.currency.modified_by = auth->username;
-    request.currency.performed_by.clear();
+    for (auto& c : request.currencies) {
+        c.modified_by = auth->username;
+        c.performed_by.clear();
+    }
 
     save_currency_response response;
     try {
-        currency_service.save_currency(request.currency);
+        currency_service.save_currencies(request.currencies);
         response.success = true;
-        response.message = "Currency saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved currency: "
-                                  << request.currency.iso_code
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.currencies.size()
+                                  << " currency(ies) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save currency: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving currency "
-                                   << request.currency.iso_code << ": " << e.what();
+        response.message = std::string("Failed to save currencies: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving currencies: " << e.what();
     }
 
     co_return response.serialize();
@@ -427,30 +429,19 @@ handle_delete_currency_request(std::span<const std::byte> payload,
                               << " currency/currencies";
 
     delete_currency_response response;
-
-    // Process each currency in the batch
-    for (const auto& iso_code : request.iso_codes) {
-        delete_currency_result result;
-        result.iso_code = iso_code;
-
-        try {
+    try {
+        for (const auto& iso_code : request.iso_codes) {
             currency_service.delete_currency(iso_code);
-            result.success = true;
-            result.message = "Currency deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: " << iso_code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete currency: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting currency "
-                                       << iso_code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.iso_codes.size() << " currency(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete currency: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
-    BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
-                              << response.results.size() << " results";
-
     co_return response.serialize();
 }
 
@@ -580,24 +571,25 @@ handle_save_business_centre_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving business centre: " << request.business_centre.code;
-
-    request.business_centre.modified_by = auth->username;
-    request.business_centre.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.business_centres.size()
+                              << " business centre(s)";
+    for (auto& e : request.business_centres) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_business_centre_response response;
     try {
-        svc.save_business_centre(request.business_centre);
+        svc.save_business_centres(request.business_centres);
         response.success = true;
-        response.message = "Business centre saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved business centre: "
-                                  << request.business_centre.code
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.business_centres.size()
+                                  << " business centre(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save business centre: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving business centre "
-                                   << request.business_centre.code << ": " << e.what();
+        response.message = std::string("Failed to save business centres: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving business centres: " << e.what();
     }
 
     co_return response.serialize();
@@ -629,29 +621,19 @@ handle_delete_business_centre_request(std::span<const std::byte> payload,
                               << " business centre(s)";
 
     delete_business_centre_response response;
-
-    for (const auto& code : request.codes) {
-        delete_business_centre_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.delete_business_centre(code);
-            result.success = true;
-            result.message = "Business centre deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted business centre: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete business centre: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting business centre "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " business centre(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete business centre: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
-    BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
-                              << response.results.size() << " results";
-
     co_return response.serialize();
 }
 
@@ -788,25 +770,26 @@ handle_save_country_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving country: " << request.country.alpha2_code;
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.countries.size() << " country(ies)";
 
     // Override modified_by with authenticated username
-    request.country.modified_by = auth->username;
-    request.country.performed_by.clear();
+    for (auto& e : request.countries) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_country_response response;
     try {
-        country_service.save_country(request.country);
+        country_service.save_countries(request.countries);
         response.success = true;
-        response.message = "Country saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved country: "
-                                  << request.country.alpha2_code
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.countries.size()
+                                  << " country(ies) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save country: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving country "
-                                   << request.country.alpha2_code << ": " << e.what();
+        response.message = std::string("Failed to save countries: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving countries: " << e.what();
     }
 
     co_return response.serialize();
@@ -843,30 +826,19 @@ handle_delete_country_request(std::span<const std::byte> payload,
                               << " country/countries";
 
     delete_country_response response;
-
-    // Process each country in the batch
-    for (const auto& alpha2_code : request.alpha2_codes) {
-        delete_country_result result;
-        result.alpha2_code = alpha2_code;
-
-        try {
+    try {
+        for (const auto& alpha2_code : request.alpha2_codes) {
             country_service.delete_country(alpha2_code);
-            result.success = true;
-            result.message = "Country deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted country: " << alpha2_code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete country: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting country "
-                                       << alpha2_code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.alpha2_codes.size() << " country(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete country: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
-    BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
-                              << response.results.size() << " results";
-
     co_return response.serialize();
 }
 
@@ -980,23 +952,24 @@ handle_save_party_type_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving party type: " << request.type.code;
-
-    request.type.modified_by = auth->username;
-    request.type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " party type(s)";
+    for (auto& e : request.types) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_party_type_response response;
     try {
-        svc.save_type(request.type);
+        svc.save_types(request.types);
         response.success = true;
-        response.message = "Party type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved party type: "
-                                  << request.type.code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.types.size()
+                                  << " party type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save party type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving party type "
-                                   << request.type.code << ": " << e.what();
+        response.message = std::string("Failed to save party types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party types: " << e.what();
     }
 
     co_return response.serialize();
@@ -1027,25 +1000,19 @@ handle_delete_party_type_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " party type(s)";
 
     delete_party_type_response response;
-    for (const auto& code : request.codes) {
-        delete_party_type_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_type(code);
-            result.success = true;
-            result.message = "Party type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party type: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete party type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting party type "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " party type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete party type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1154,23 +1121,24 @@ handle_save_party_status_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving party status: " << request.status.code;
-
-    request.status.modified_by = auth->username;
-    request.status.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.statuses.size() << " party status(es)";
+    for (auto& e : request.statuses) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_party_status_response response;
     try {
-        svc.save_status(request.status);
+        svc.save_statuses(request.statuses);
         response.success = true;
-        response.message = "Party status saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved party status: "
-                                  << request.status.code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.statuses.size()
+                                  << " party status(es) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save party status: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving party status "
-                                   << request.status.code << ": " << e.what();
+        response.message = std::string("Failed to save party statuses: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party statuses: " << e.what();
     }
 
     co_return response.serialize();
@@ -1201,25 +1169,19 @@ handle_delete_party_status_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " party status(es)";
 
     delete_party_status_response response;
-    for (const auto& code : request.codes) {
-        delete_party_status_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_status(code);
-            result.success = true;
-            result.message = "Party status deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party status: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete party status: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting party status "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " party status(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete party status: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1328,23 +1290,24 @@ handle_save_party_id_scheme_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving party ID scheme: " << request.scheme.code;
-
-    request.scheme.modified_by = auth->username;
-    request.scheme.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.schemes.size() << " party ID scheme(s)";
+    for (auto& e : request.schemes) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_party_id_scheme_response response;
     try {
-        svc.save_scheme(request.scheme);
+        svc.save_schemes(request.schemes);
         response.success = true;
-        response.message = "Party ID scheme saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved party ID scheme: "
-                                  << request.scheme.code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.schemes.size()
+                                  << " party ID scheme(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save party ID scheme: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving party ID scheme "
-                                   << request.scheme.code << ": " << e.what();
+        response.message = std::string("Failed to save party ID schemes: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party ID schemes: " << e.what();
     }
 
     co_return response.serialize();
@@ -1375,25 +1338,19 @@ handle_delete_party_id_scheme_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " party ID scheme(s)";
 
     delete_party_id_scheme_response response;
-    for (const auto& code : request.codes) {
-        delete_party_id_scheme_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_scheme(code);
-            result.success = true;
-            result.message = "Party ID scheme deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party ID scheme: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete party ID scheme: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting party ID scheme "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " party id scheme(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete party id scheme: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1502,23 +1459,24 @@ handle_save_contact_type_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving contact type: " << request.type.code;
-
-    request.type.modified_by = auth->username;
-    request.type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " contact type(s)";
+    for (auto& e : request.types) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_contact_type_response response;
     try {
-        svc.save_type(request.type);
+        svc.save_types(request.types);
         response.success = true;
-        response.message = "Contact type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved contact type: "
-                                  << request.type.code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.types.size()
+                                  << " contact type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save contact type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving contact type "
-                                   << request.type.code << ": " << e.what();
+        response.message = std::string("Failed to save contact types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving contact types: " << e.what();
     }
 
     co_return response.serialize();
@@ -1549,25 +1507,19 @@ handle_delete_contact_type_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " contact type(s)";
 
     delete_contact_type_response response;
-    for (const auto& code : request.codes) {
-        delete_contact_type_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_type(code);
-            result.success = true;
-            result.message = "Contact type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted contact type: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete contact type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting contact type "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " contact type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete contact type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1693,24 +1645,25 @@ handle_save_party_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving party: " << request.party.short_code;
-
-    request.party.tenant_id = auth->tenant_id.to_string();
-    request.party.modified_by = auth->username;
-    request.party.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.parties.size() << " party(ies)";
+    for (auto& e : request.parties) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_party_response response;
     try {
-        svc.save_party(request.party);
+        svc.save_parties(request.parties);
         response.success = true;
-        response.message = "Party saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved party: "
-                                  << request.party.short_code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.parties.size()
+                                  << " party(ies) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save party: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving party "
-                                   << request.party.short_code << ": " << e.what();
+        response.message = std::string("Failed to save parties: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving parties: " << e.what();
     }
 
     co_return response.serialize();
@@ -1741,25 +1694,19 @@ handle_delete_party_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size() << " party/parties";
 
     delete_party_response response;
-    for (const auto& id : request.ids) {
-        delete_party_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_party(id);
-            result.success = true;
-            result.message = "Party deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete party: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting party "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " party(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete party: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1885,25 +1832,25 @@ handle_save_counterparty_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving counterparty: " << request.counterparty.short_code;
-
-    request.counterparty.tenant_id = auth->tenant_id.to_string();
-    request.counterparty.modified_by = auth->username;
-    request.counterparty.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.counterparties.size() << " counterparty(ies)";
+    for (auto& e : request.counterparties) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_counterparty_response response;
     try {
-        svc.save_counterparty(request.counterparty);
+        svc.save_counterparties(request.counterparties);
         response.success = true;
-        response.message = "Counterparty saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved counterparty: "
-                                  << request.counterparty.short_code
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.counterparties.size()
+                                  << " counterparty(ies) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save counterparty: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving counterparty "
-                                   << request.counterparty.short_code << ": " << e.what();
+        response.message = std::string("Failed to save counterparties: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving counterparties: " << e.what();
     }
 
     co_return response.serialize();
@@ -1935,25 +1882,19 @@ handle_delete_counterparty_request(std::span<const std::byte> payload,
                               << " counterparty/counterparties";
 
     delete_counterparty_response response;
-    for (const auto& id : request.ids) {
-        delete_counterparty_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_counterparty(id);
-            result.success = true;
-            result.message = "Counterparty deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted counterparty: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete counterparty: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting counterparty "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " counterparty(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete counterparty: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2066,24 +2007,24 @@ handle_save_business_unit_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving business unit: " << request.business_unit.id;
-
-    request.business_unit.modified_by = auth->username;
-    request.business_unit.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.business_units.size() << " business unit(s)";
+    for (auto& e : request.business_units) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_business_unit_response response;
     try {
-        svc.save_business_unit(request.business_unit);
+        svc.save_business_units(request.business_units);
         response.success = true;
-        response.message = "Business unit saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved business unit: "
-                                  << request.business_unit.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.business_units.size()
+                                  << " business unit(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save business unit: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving business unit "
-                                   << request.business_unit.id << ": " << e.what();
+        response.message = std::string("Failed to save business units: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving business units: " << e.what();
     }
 
     co_return response.serialize();
@@ -2115,25 +2056,19 @@ handle_delete_business_unit_request(std::span<const std::byte> payload,
                               << " business unit(s)";
 
     delete_business_unit_response response;
-    for (const auto& id : request.ids) {
-        delete_business_unit_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_business_unit(id);
-            result.success = true;
-            result.message = "Business unit deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted business unit: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete business unit: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting business unit "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " business unit(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete business unit: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2245,24 +2180,26 @@ handle_save_business_unit_type_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving business unit type: " << request.type.id;
-
-    request.type.modified_by = auth->username;
-    request.type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " business unit type(s)";
+    for (auto& e : request.types) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_business_unit_type_response response;
     try {
-        repo.write(request.type);
+        for (const auto& e : request.types) {
+            repo.write(e);
+        }
         response.success = true;
-        response.message = "Business unit type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved business unit type: "
-                                  << request.type.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.types.size()
+                                  << " business unit type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save business unit type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving business unit type "
-                                   << request.type.id << ": " << e.what();
+        response.message = std::string("Failed to save business unit types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving business unit types: " << e.what();
     }
 
     co_return response.serialize();
@@ -2294,25 +2231,19 @@ handle_delete_business_unit_type_request(std::span<const std::byte> payload,
                               << " business unit type(s)";
 
     delete_business_unit_type_response response;
-    for (const auto& id : request.ids) {
-        delete_business_unit_type_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             repo.remove(id);
-            result.success = true;
-            result.message = "Business unit type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted business unit type: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete business unit type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting business unit type "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " business unit type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete business unit type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2426,26 +2357,26 @@ handle_save_portfolio_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving portfolio: " << request.portfolio.id;
-
-    request.portfolio.tenant_id = auth->tenant_id.to_string();
-    request.portfolio.modified_by = auth->username;
-    request.portfolio.performed_by.clear();
-    request.portfolio.party_id = auth->party_id;
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.portfolios.size() << " portfolio(s)";
+    for (auto& e : request.portfolios) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+        e.party_id = auth->party_id;
+    }
 
     save_portfolio_response response;
     try {
-        svc.save_portfolio(request.portfolio);
+        svc.save_portfolios(request.portfolios);
         response.success = true;
-        response.message = "Portfolio saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved portfolio: "
-                                  << request.portfolio.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.portfolios.size()
+                                  << " portfolio(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save portfolio: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving portfolio "
-                                   << request.portfolio.id << ": " << e.what();
+        response.message = std::string("Failed to save portfolios: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving portfolios: " << e.what();
     }
 
     co_return response.serialize();
@@ -2477,25 +2408,19 @@ handle_delete_portfolio_request(std::span<const std::byte> payload,
                               << " portfolio(s)";
 
     delete_portfolio_response response;
-    for (const auto& id : request.ids) {
-        delete_portfolio_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_portfolio(id);
-            result.success = true;
-            result.message = "Portfolio deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted portfolio: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete portfolio: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting portfolio "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " portfolio(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete portfolio: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2608,26 +2533,26 @@ handle_save_book_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving book: " << request.book.id;
-
-    request.book.tenant_id = auth->tenant_id.to_string();
-    request.book.party_id = auth->party_id;
-    request.book.modified_by = auth->username;
-    request.book.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.books.size() << " book(s)";
+    for (auto& e : request.books) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.party_id = auth->party_id;
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_book_response response;
     try {
-        svc.save_book(request.book);
+        svc.save_books(request.books);
         response.success = true;
-        response.message = "Book saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved book: "
-                                  << request.book.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.books.size()
+                                  << " book(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save book: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving book "
-                                   << request.book.id << ": " << e.what();
+        response.message = std::string("Failed to save books: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving books: " << e.what();
     }
 
     co_return response.serialize();
@@ -2658,25 +2583,19 @@ handle_delete_book_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.ids.size() << " book(s)";
 
     delete_book_response response;
-    for (const auto& id : request.ids) {
-        delete_book_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_book(id);
-            result.success = true;
-            result.message = "Book deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted book: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete book: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting book "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " book(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete book: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2797,26 +2716,26 @@ handle_save_counterparty_identifier_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving counterparty identifier: "
-                              << request.counterparty_identifier.id;
-
-    request.counterparty_identifier.tenant_id = auth->tenant_id.to_string();
-    request.counterparty_identifier.modified_by = auth->username;
-    request.counterparty_identifier.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.counterparty_identifiers.size()
+                              << " counterparty identifier(s)";
+    for (auto& e : request.counterparty_identifiers) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_counterparty_identifier_response response;
     try {
-        svc.save_counterparty_identifier(request.counterparty_identifier);
+        svc.save_counterparty_identifiers(request.counterparty_identifiers);
         response.success = true;
-        response.message = "Counterparty identifier saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved counterparty identifier: "
-                                  << request.counterparty_identifier.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.counterparty_identifiers.size()
+                                  << " counterparty identifier(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save counterparty identifier: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving counterparty identifier "
-                                   << request.counterparty_identifier.id << ": " << e.what();
+        response.message = std::string("Failed to save counterparty identifiers: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving counterparty identifiers: " << e.what();
     }
 
     co_return response.serialize();
@@ -2848,25 +2767,19 @@ handle_delete_counterparty_identifier_request(std::span<const std::byte> payload
                               << " counterparty identifier(s)";
 
     delete_counterparty_identifier_response response;
-    for (const auto& id : request.ids) {
-        delete_counterparty_identifier_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_counterparty_identifier(id);
-            result.success = true;
-            result.message = "Counterparty identifier deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted counterparty identifier: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete counterparty identifier: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting counterparty identifier "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " counterparty identifier(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete counterparty identifier: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2979,26 +2892,26 @@ handle_save_counterparty_contact_information_request(std::span<const std::byte> 
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving counterparty contact information: "
-                              << request.counterparty_contact_information.id;
-
-    request.counterparty_contact_information.tenant_id = auth->tenant_id.to_string();
-    request.counterparty_contact_information.modified_by = auth->username;
-    request.counterparty_contact_information.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.counterparty_contact_informations.size()
+                              << " counterparty contact information(s)";
+    for (auto& e : request.counterparty_contact_informations) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_counterparty_contact_information_response response;
     try {
-        svc.save_counterparty_contact_information(request.counterparty_contact_information);
+        svc.save_counterparty_contact_informations(request.counterparty_contact_informations);
         response.success = true;
-        response.message = "Counterparty contact information saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved counterparty contact information: "
-                                  << request.counterparty_contact_information.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.counterparty_contact_informations.size()
+                                  << " counterparty contact information(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save counterparty contact information: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving counterparty contact information "
-                                   << request.counterparty_contact_information.id << ": " << e.what();
+        response.message = std::string("Failed to save counterparty contact informations: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving counterparty contact informations: " << e.what();
     }
 
     co_return response.serialize();
@@ -3030,25 +2943,19 @@ handle_delete_counterparty_contact_information_request(std::span<const std::byte
                               << " counterparty contact information(s)";
 
     delete_counterparty_contact_information_response response;
-    for (const auto& id : request.ids) {
-        delete_counterparty_contact_information_result result;
-        result.id = id;
-
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_counterparty_contact_information(id);
-            result.success = true;
-            result.message = "Counterparty contact information deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted counterparty contact information: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete counterparty contact information: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting counterparty contact information "
-                                       << id << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " counterparty contact information(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete counterparty contact information: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -3161,26 +3068,26 @@ handle_save_party_identifier_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving party identifier: "
-                              << request.party_identifier.id;
-
-    request.party_identifier.tenant_id = auth->tenant_id.to_string();
-    request.party_identifier.modified_by = auth->username;
-    request.party_identifier.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.party_identifiers.size()
+                              << " party identifier(s)";
+    for (auto& e : request.party_identifiers) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_party_identifier_response response;
     try {
-        svc.save_party_identifier(request.party_identifier);
+        svc.save_party_identifiers(request.party_identifiers);
         response.success = true;
-        response.message = "Party identifier saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved party identifier: "
-                                  << request.party_identifier.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.party_identifiers.size()
+                                  << " party identifier(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save party identifier: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving party identifier "
-                                   << request.party_identifier.id << ": " << e.what();
+        response.message = std::string("Failed to save party identifiers: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party identifiers: " << e.what();
     }
 
     co_return response.serialize();
@@ -3212,24 +3119,19 @@ handle_delete_party_identifier_request(std::span<const std::byte> payload,
                               << " party identifier(s)";
 
     delete_party_identifier_response response;
-    for (const auto& id : request.ids) {
-        delete_party_identifier_result result;
-        result.id = id;
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_party_identifier(id);
-            result.success = true;
-            result.message = "Party identifier deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party identifier: "
-                                      << id << " by " << auth->username;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete party identifier: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting party identifier "
-                                       << id << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " party identifier(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete party identifier: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -3342,26 +3244,26 @@ handle_save_party_contact_information_request(std::span<const std::byte> payload
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving party contact information: "
-                              << request.party_contact_information.id;
-
-    request.party_contact_information.tenant_id = auth->tenant_id.to_string();
-    request.party_contact_information.modified_by = auth->username;
-    request.party_contact_information.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.party_contact_informations.size()
+                              << " party contact information(s)";
+    for (auto& e : request.party_contact_informations) {
+        e.tenant_id = auth->tenant_id.to_string();
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_party_contact_information_response response;
     try {
-        svc.save_party_contact_information(request.party_contact_information);
+        svc.save_party_contact_informations(request.party_contact_informations);
         response.success = true;
-        response.message = "Party contact information saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved party contact information: "
-                                  << request.party_contact_information.id
-                                  << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.party_contact_informations.size()
+                                  << " party contact information(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save party contact information: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving party contact information "
-                                   << request.party_contact_information.id << ": " << e.what();
+        response.message = std::string("Failed to save party contact informations: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party contact informations: " << e.what();
     }
 
     co_return response.serialize();
@@ -3393,24 +3295,19 @@ handle_delete_party_contact_information_request(std::span<const std::byte> paylo
                               << " party contact information(s)";
 
     delete_party_contact_information_response response;
-    for (const auto& id : request.ids) {
-        delete_party_contact_information_result result;
-        result.id = id;
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_party_contact_information(id);
-            result.success = true;
-            result.message = "Party contact information deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted party contact information: "
-                                      << id << " by " << auth->username;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete party contact information: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting party contact information "
-                                       << id << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " party contact information(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete party contact information: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -3512,23 +3409,20 @@ handle_save_book_status_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving book status: " << request.status.code;
-
-    request.status.modified_by = auth->username;
-    request.status.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.statuses.size() << " book status(es)";
 
     save_book_status_response response;
     try {
-        svc.save_status(request.status);
+        svc.save_statuses(request.statuses);
         response.success = true;
-        response.message = "Book status saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved book status: "
-                                  << request.status.code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.statuses.size()
+                                  << " book status(es) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save book status: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving book status "
-                                   << request.status.code << ": " << e.what();
+        response.message = std::string("Failed to save book statuses: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving book statuses: " << e.what();
     }
 
     co_return response.serialize();
@@ -3559,25 +3453,19 @@ handle_delete_book_status_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " book status(es)";
 
     delete_book_status_response response;
-    for (const auto& code : request.codes) {
-        delete_book_status_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_status(code);
-            result.success = true;
-            result.message = "Book status deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted book status: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete book status: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting book status "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " book status(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete book status: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -3686,23 +3574,24 @@ handle_save_purpose_type_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving purpose type: " << request.type.code;
-
-    request.type.modified_by = auth->username;
-    request.type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " purpose type(s)";
+    for (auto& e : request.types) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_purpose_type_response response;
     try {
-        svc.save_type(request.type);
+        svc.save_types(request.types);
         response.success = true;
-        response.message = "Purpose type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved purpose type: "
-                                  << request.type.code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.types.size()
+                                  << " purpose type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save purpose type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving purpose type "
-                                   << request.type.code << ": " << e.what();
+        response.message = std::string("Failed to save purpose types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving purpose types: " << e.what();
     }
 
     co_return response.serialize();
@@ -3733,25 +3622,19 @@ handle_delete_purpose_type_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " purpose type(s)";
 
     delete_purpose_type_response response;
-    for (const auto& code : request.codes) {
-        delete_purpose_type_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_type(code);
-            result.success = true;
-            result.message = "Purpose type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted purpose type: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete purpose type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting purpose type "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " purpose type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete purpose type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -3858,23 +3741,24 @@ handle_save_rounding_type_request(std::span<const std::byte> payload,
     }
 
     auto request = std::move(*request_result);
-    BOOST_LOG_SEV(lg(), info) << "Saving rounding type: " << request.type.code;
-
-    request.type.modified_by = auth->username;
-    request.type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " rounding type(s)";
+    for (auto& e : request.types) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_rounding_type_response response;
     try {
-        svc.save_type(request.type);
+        svc.save_types(request.types);
         response.success = true;
-        response.message = "Rounding type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved rounding type: "
-                                  << request.type.code << " by " << auth->username;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.types.size()
+                                  << " rounding type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save rounding type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving rounding type "
-                                   << request.type.code << ": " << e.what();
+        response.message = std::string("Failed to save rounding types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving rounding types: " << e.what();
     }
 
     co_return response.serialize();
@@ -3905,25 +3789,19 @@ handle_delete_rounding_type_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " rounding type(s)";
 
     delete_rounding_type_response response;
-    for (const auto& code : request.codes) {
-        delete_rounding_type_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_type(code);
-            result.success = true;
-            result.message = "Rounding type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted rounding type: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete rounding type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting rounding type "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " rounding type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete rounding type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -4033,17 +3911,21 @@ handle_save_monetary_nature_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " monetary nature(s)";
+
     save_monetary_nature_response response;
     try {
-        svc.save_type(request.type);
+        svc.save_types(request.types);
         response.success = true;
-        response.message = "Monetary nature saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved monetary nature: " << request.type.code;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.types.size()
+                                  << " monetary nature(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save monetary nature: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving monetary nature: " << e.what();
+        response.message = std::string("Failed to save monetary natures: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving monetary natures: " << e.what();
     }
 
     co_return response.serialize();
@@ -4074,25 +3956,19 @@ handle_delete_monetary_nature_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " monetary nature(s)";
 
     delete_monetary_nature_response response;
-    for (const auto& code : request.codes) {
-        delete_monetary_nature_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_type(code);
-            result.success = true;
-            result.message = "Monetary nature deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted monetary nature: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete monetary nature: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting monetary nature "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " monetary nature(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete monetary nature: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -4202,17 +4078,22 @@ handle_save_currency_market_tier_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size()
+                              << " currency market tier(s)";
+
     save_currency_market_tier_response response;
     try {
-        svc.save_type(request.type);
+        svc.save_types(request.types);
         response.success = true;
-        response.message = "Currency market tier saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Successfully saved currency market tier: " << request.type.code;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved "
+                                  << request.types.size()
+                                  << " currency market tier(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save currency market tier: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving currency market tier: " << e.what();
+        response.message = std::string("Failed to save currency market tiers: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving currency market tiers: " << e.what();
     }
 
     co_return response.serialize();
@@ -4243,25 +4124,19 @@ handle_delete_currency_market_tier_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Deleting " << request.codes.size() << " currency market tier(s)";
 
     delete_currency_market_tier_response response;
-    for (const auto& code : request.codes) {
-        delete_currency_market_tier_result result;
-        result.code = code;
-
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_type(code);
-            result.success = true;
-            result.message = "Currency market tier deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency market tier: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete currency market tier: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting currency market tier "
-                                       << code << ": " << e.what();
         }
-
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " currency market tier(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete currency market tier: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 

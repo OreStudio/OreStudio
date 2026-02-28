@@ -56,6 +56,8 @@ public:
 
     void save_type(const domain::party_type& type);
 
+    void save_types(const std::vector<domain::party_type>& types);
+
     void remove_type(const std::string& code);
 
     std::vector<domain::party_type>

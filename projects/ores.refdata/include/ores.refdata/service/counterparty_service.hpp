@@ -90,6 +90,13 @@ public:
     void save_counterparty(const domain::counterparty& counterparty);
 
     /**
+     * @brief Saves multiple counterparties (creates or updates).
+     *
+     * @param counterparties The counterparties to save
+     */
+    void save_counterparties(const std::vector<domain::counterparty>& counterparties);
+
+    /**
      * @brief Removes a counterparty.
      *
      * @param id The ID of the counterparty to remove

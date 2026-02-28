@@ -78,6 +78,15 @@ void trade_service::save_trade(const domain::trade& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved trade: " << v.id;
 }
 
+void trade_service::save_trades(const std::vector<domain::trade>& trades) {
+    for (const auto& t : trades) {
+        if (t.id.is_nil())
+            throw std::invalid_argument("Trade id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
+    repo_.write(ctx_, trades);
+}
+
 void trade_service::remove_trade(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade: " << id;
     repo_.remove(ctx_, id);

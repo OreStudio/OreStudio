@@ -56,6 +56,8 @@ public:
 
     void save_status(const domain::book_status& status);
 
+    void save_statuses(const std::vector<domain::book_status>& statuses);
+
     void remove_status(const std::string& code);
 
     std::vector<domain::book_status>

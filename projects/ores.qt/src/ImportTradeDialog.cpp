@@ -689,7 +689,8 @@ void ImportTradeDialog::onImportClicked() {
                 if (!self) break;
 
                 try {
-                    save_trade_request request{tti.trade};
+                    save_trade_request request;
+                    request.trades.push_back(tti.trade);
                     auto payload = request.serialize();
                     comms::messaging::frame request_frame(
                         comms::messaging::message_type::save_trade_request,
@@ -723,8 +724,7 @@ void ImportTradeDialog::onImportClicked() {
                             << "Successfully imported trade: "
                             << tti.trade.external_id;
                     } else {
-                        const std::string msg = response
-                            ? response->message : "Unknown error";
+                        const std::string msg = response ? response->message : "Unknown error";
                         BOOST_LOG_SEV(lg(), warn)
                             << "Server rejected trade: "
                             << tti.trade.external_id << " - " << msg;

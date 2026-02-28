@@ -160,20 +160,38 @@ std::ostream& operator<<(std::ostream& s, const get_rounding_types_response& v) 
     return s;
 }
 
+save_rounding_type_request
+save_rounding_type_request::from(domain::rounding_type type) {
+    return save_rounding_type_request{std::vector<domain::rounding_type>{std::move(type)}};
+}
+
+save_rounding_type_request
+save_rounding_type_request::from(std::vector<domain::rounding_type> types) {
+    return save_rounding_type_request{std::move(types)};
+}
+
 std::vector<std::byte> save_rounding_type_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_rounding_type(buffer, type);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(types.size()));
+    for (const auto& e : types)
+        write_rounding_type(buffer, e);
     return buffer;
 }
 
 std::expected<save_rounding_type_request, error_code>
 save_rounding_type_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result)
+        return std::unexpected(count_result.error());
+
     save_rounding_type_request request;
-
-    auto result = read_rounding_type(data);
-    if (!result) return std::unexpected(result.error());
-    request.type = std::move(*result);
-
+    request.types.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_rounding_type(data);
+        if (!e)
+            return std::unexpected(e.error());
+        request.types.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -209,10 +227,6 @@ std::ostream& operator<<(std::ostream& s, const save_rounding_type_response& v) 
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_rounding_type_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_rounding_type_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -248,12 +262,8 @@ std::ostream& operator<<(std::ostream& s, const delete_rounding_type_request& v)
 
 std::vector<std::byte> delete_rounding_type_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -261,28 +271,13 @@ std::expected<delete_rounding_type_response, error_code>
 delete_rounding_type_response::deserialize(std::span<const std::byte> data) {
     delete_rounding_type_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_rounding_type_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

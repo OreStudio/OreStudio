@@ -205,20 +205,37 @@ std::ostream& operator<<(std::ostream& s, const get_dataset_bundle_members_by_bu
     return s;
 }
 
+save_dataset_bundle_member_request
+save_dataset_bundle_member_request::from(domain::dataset_bundle_member member) {
+    return save_dataset_bundle_member_request{
+        std::vector<domain::dataset_bundle_member>{std::move(member)}};
+}
+
+save_dataset_bundle_member_request
+save_dataset_bundle_member_request::from(
+    std::vector<domain::dataset_bundle_member> members) {
+    return save_dataset_bundle_member_request{std::move(members)};
+}
+
 std::vector<std::byte> save_dataset_bundle_member_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_dataset_bundle_member(buffer, member);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(members.size()));
+    for (const auto& e : members)
+        write_dataset_bundle_member(buffer, e);
     return buffer;
 }
 
 std::expected<save_dataset_bundle_member_request, error_code>
 save_dataset_bundle_member_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_dataset_bundle_member_request request;
-
-    auto result = read_dataset_bundle_member(data);
-    if (!result) return std::unexpected(result.error());
-    request.member = std::move(*result);
-
+    request.members.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_dataset_bundle_member(data);
+        if (!e) return std::unexpected(e.error());
+        request.members.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -254,10 +271,6 @@ std::ostream& operator<<(std::ostream& s, const save_dataset_bundle_member_respo
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_dataset_bundle_member_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::ostream& operator<<(std::ostream& s, const dataset_bundle_member_key& v) {
     rfl::json::write(v, s);
@@ -307,13 +320,8 @@ std::ostream& operator<<(std::ostream& s, const delete_dataset_bundle_member_req
 
 std::vector<std::byte> delete_dataset_bundle_member_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.bundle_code);
-        writer::write_string(buffer, r.dataset_code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -321,32 +329,13 @@ std::expected<delete_dataset_bundle_member_response, error_code>
 delete_dataset_bundle_member_response::deserialize(std::span<const std::byte> data) {
     delete_dataset_bundle_member_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_dataset_bundle_member_result r;
-
-        auto bundle_code_result = reader::read_string(data);
-        if (!bundle_code_result) return std::unexpected(bundle_code_result.error());
-        r.bundle_code = *bundle_code_result;
-
-        auto dataset_code_result = reader::read_string(data);
-        if (!dataset_code_result) return std::unexpected(dataset_code_result.error());
-        r.dataset_code = *dataset_code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

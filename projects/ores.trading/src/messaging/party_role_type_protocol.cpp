@@ -150,20 +150,35 @@ std::ostream& operator<<(std::ostream& s, const get_party_role_types_response& v
     return s;
 }
 
+save_party_role_type_request
+save_party_role_type_request::from(domain::party_role_type role_type) {
+    return save_party_role_type_request{std::vector<domain::party_role_type>{std::move(role_type)}};
+}
+
+save_party_role_type_request
+save_party_role_type_request::from(std::vector<domain::party_role_type> role_types) {
+    return save_party_role_type_request{std::move(role_types)};
+}
+
 std::vector<std::byte> save_party_role_type_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_party_role_type(buffer, role_type);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(role_types.size()));
+    for (const auto& e : role_types)
+        write_party_role_type(buffer, e);
     return buffer;
 }
 
 std::expected<save_party_role_type_request, error_code>
 save_party_role_type_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_party_role_type_request request;
-
-    auto result = read_party_role_type(data);
-    if (!result) return std::unexpected(result.error());
-    request.role_type = std::move(*result);
-
+    request.role_types.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_party_role_type(data);
+        if (!e) return std::unexpected(e.error());
+        request.role_types.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -199,10 +214,6 @@ std::ostream& operator<<(std::ostream& s, const save_party_role_type_response& v
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_party_role_type_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_party_role_type_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -238,12 +249,8 @@ std::ostream& operator<<(std::ostream& s, const delete_party_role_type_request& 
 
 std::vector<std::byte> delete_party_role_type_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -251,28 +258,13 @@ std::expected<delete_party_role_type_response, error_code>
 delete_party_role_type_response::deserialize(std::span<const std::byte> data) {
     delete_party_role_type_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_party_role_type_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

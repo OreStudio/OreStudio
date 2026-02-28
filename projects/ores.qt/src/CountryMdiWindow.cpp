@@ -441,9 +441,9 @@ void CountryMdiWindow::deleteSelected() {
             return results;
         }
 
-        for (const auto& result : response->results) {
-            results.push_back({result.alpha2_code,
-                {result.success, result.message}});
+        for (const auto& alpha2_code : alpha2_codes) {
+            results.push_back({alpha2_code,
+                {response->success, response->message}});
         }
 
         return results;

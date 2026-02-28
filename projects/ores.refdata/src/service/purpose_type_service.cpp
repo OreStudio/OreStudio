@@ -52,6 +52,16 @@ void purpose_type_service::save_type(const domain::purpose_type& pt) {
     BOOST_LOG_SEV(lg(), info) << "Saved purpose type: " << pt.code;
 }
 
+void purpose_type_service::save_types(
+    const std::vector<domain::purpose_type>& types) {
+    for (const auto& t : types) {
+        if (t.code.empty())
+            throw std::invalid_argument("Purpose type code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " purpose types";
+    repo_.write(ctx_, types);
+}
+
 void purpose_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing purpose type: " << code;
     repo_.remove(ctx_, code);

@@ -21,6 +21,7 @@
 #include "ores.trading/messaging/trade_message_handler.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.trading/messaging/trade_type_protocol.hpp"
 #include "ores.trading/messaging/lifecycle_event_protocol.hpp"
 #include "ores.trading/messaging/party_role_type_protocol.hpp"
@@ -171,19 +172,23 @@ trade_message_handler::handle_save_trade_type_request(
     }
 
     auto request = std::move(*request_result);
-    request.type.modified_by = auth->username;
-    request.type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " trade type(s)";
+    for (auto& t : request.types) {
+        t.modified_by = auth->username;
+        t.performed_by.clear();
+    }
 
     save_trade_type_response response;
     try {
-        svc.save_type(request.type);
+        svc.save_types(request.types);
         response.success = true;
-        response.message = "Trade type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Saved trade type: " << request.type.code;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.types.size()
+                                  << " trade type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save trade type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving trade type: " << e.what();
+        response.message = std::string("Failed to save trade types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving trade types: " << e.what();
     }
 
     co_return response.serialize();
@@ -209,24 +214,19 @@ trade_message_handler::handle_delete_trade_type_request(
 
     const auto& request = *request_result;
     delete_trade_type_response response;
-
-    for (const auto& code : request.codes) {
-        delete_trade_type_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_type(code);
-            result.success = true;
-            result.message = "Trade type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Deleted trade type: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete trade type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting trade type " << code
-                                       << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " trade type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete trade type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -317,19 +317,23 @@ trade_message_handler::handle_save_lifecycle_event_request(
     }
 
     auto request = std::move(*request_result);
-    request.event.modified_by = auth->username;
-    request.event.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.events.size() << " lifecycle event(s)";
+    for (auto& e : request.events) {
+        e.modified_by = auth->username;
+        e.performed_by.clear();
+    }
 
     save_lifecycle_event_response response;
     try {
-        svc.save_event(request.event);
+        svc.save_events(request.events);
         response.success = true;
-        response.message = "Lifecycle event saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Saved lifecycle event: " << request.event.code;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.events.size()
+                                  << " lifecycle event(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save lifecycle event: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving lifecycle event: " << e.what();
+        response.message = std::string("Failed to save lifecycle events: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving lifecycle events: " << e.what();
     }
 
     co_return response.serialize();
@@ -355,24 +359,19 @@ trade_message_handler::handle_delete_lifecycle_event_request(
 
     const auto& request = *request_result;
     delete_lifecycle_event_response response;
-
-    for (const auto& code : request.codes) {
-        delete_lifecycle_event_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_event(code);
-            result.success = true;
-            result.message = "Lifecycle event deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Deleted lifecycle event: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete lifecycle event: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting lifecycle event " << code
-                                       << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " lifecycle event(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete lifecycle event: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -463,19 +462,23 @@ trade_message_handler::handle_save_party_role_type_request(
     }
 
     auto request = std::move(*request_result);
-    request.role_type.modified_by = auth->username;
-    request.role_type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.role_types.size() << " party role type(s)";
+    for (auto& rt : request.role_types) {
+        rt.modified_by = auth->username;
+        rt.performed_by.clear();
+    }
 
     save_party_role_type_response response;
     try {
-        svc.save_role_type(request.role_type);
+        svc.save_role_types(request.role_types);
         response.success = true;
-        response.message = "Party role type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Saved party role type: " << request.role_type.code;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.role_types.size()
+                                  << " party role type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save party role type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving party role type: " << e.what();
+        response.message = std::string("Failed to save party role types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving party role types: " << e.what();
     }
 
     co_return response.serialize();
@@ -501,24 +504,19 @@ trade_message_handler::handle_delete_party_role_type_request(
 
     const auto& request = *request_result;
     delete_party_role_type_response response;
-
-    for (const auto& code : request.codes) {
-        delete_party_role_type_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_role_type(code);
-            result.success = true;
-            result.message = "Party role type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Deleted party role type: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete party role type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting party role type " << code
-                                       << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " party role type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete party role type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -609,19 +607,23 @@ trade_message_handler::handle_save_trade_id_type_request(
     }
 
     auto request = std::move(*request_result);
-    request.id_type.modified_by = auth->username;
-    request.id_type.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.id_types.size() << " trade ID type(s)";
+    for (auto& t : request.id_types) {
+        t.modified_by = auth->username;
+        t.performed_by.clear();
+    }
 
     save_trade_id_type_response response;
     try {
-        svc.save_id_type(request.id_type);
+        svc.save_id_types(request.id_types);
         response.success = true;
-        response.message = "Trade ID type saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Saved trade ID type: " << request.id_type.code;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.id_types.size()
+                                  << " trade ID type(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save trade ID type: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving trade ID type: " << e.what();
+        response.message = std::string("Failed to save trade ID types: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving trade ID types: " << e.what();
     }
 
     co_return response.serialize();
@@ -647,24 +649,19 @@ trade_message_handler::handle_delete_trade_id_type_request(
 
     const auto& request = *request_result;
     delete_trade_id_type_response response;
-
-    for (const auto& code : request.codes) {
-        delete_trade_id_type_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_id_type(code);
-            result.success = true;
-            result.message = "Trade ID type deleted successfully";
-            BOOST_LOG_SEV(lg(), info) << "Deleted trade ID type: " << code;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete trade ID type: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting trade ID type " << code
-                                       << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " trade id type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete trade id type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -773,19 +770,23 @@ trade_message_handler::handle_save_trade_request(
     }
 
     auto request = std::move(*request_result);
-    request.trade.modified_by = auth->username;
-    request.trade.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.trades.size() << " trade(s)";
+    for (auto& t : request.trades) {
+        t.modified_by = auth->username;
+        t.performed_by.clear();
+    }
 
     save_trade_response response;
     try {
-        svc.save_trade(request.trade);
+        svc.save_trades(request.trades);
         response.success = true;
-        response.message = "Trade saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Saved trade: " << request.trade.id;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.trades.size()
+                                  << " trade(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save trade: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving trade: " << e.what();
+        response.message = std::string("Failed to save trades: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving trades: " << e.what();
     }
 
     co_return response.serialize();
@@ -812,20 +813,19 @@ trade_message_handler::handle_delete_trade_request(
     const auto& request = *request_result;
     delete_trade_response response;
 
-    for (const auto& id : request.ids) {
-        delete_trade_result result;
-        result.id = id;
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_trade(boost::uuids::to_string(id));
-            result.success = true;
-            result.message = "Trade deleted successfully";
             BOOST_LOG_SEV(lg(), info) << "Deleted trade: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete trade: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting trade " << id << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+                                  << request.ids.size() << " trade(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete trade: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
 
     co_return response.serialize();
@@ -918,19 +918,23 @@ trade_message_handler::handle_save_trade_identifier_request(
     }
 
     auto request = std::move(*request_result);
-    request.identifier.modified_by = auth->username;
-    request.identifier.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.identifiers.size() << " trade identifier(s)";
+    for (auto& i : request.identifiers) {
+        i.modified_by = auth->username;
+        i.performed_by.clear();
+    }
 
     save_trade_identifier_response response;
     try {
-        svc.save_identifier(request.identifier);
+        svc.save_identifiers(request.identifiers);
         response.success = true;
-        response.message = "Trade identifier saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Saved trade identifier: " << request.identifier.id;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.identifiers.size()
+                                  << " trade identifier(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save trade identifier: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving trade identifier: " << e.what();
+        response.message = std::string("Failed to save trade identifiers: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving trade identifiers: " << e.what();
     }
 
     co_return response.serialize();
@@ -957,21 +961,19 @@ trade_message_handler::handle_delete_trade_identifier_request(
     const auto& request = *request_result;
     delete_trade_identifier_response response;
 
-    for (const auto& id : request.ids) {
-        delete_trade_identifier_result result;
-        result.id = id;
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_identifier(boost::uuids::to_string(id));
-            result.success = true;
-            result.message = "Trade identifier deleted successfully";
             BOOST_LOG_SEV(lg(), info) << "Deleted trade identifier: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete trade identifier: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting trade identifier " << id
-                                       << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+                                  << request.ids.size() << " trade identifier(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete trade identifier: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
 
     co_return response.serialize();
@@ -1064,19 +1066,23 @@ trade_message_handler::handle_save_trade_party_role_request(
     }
 
     auto request = std::move(*request_result);
-    request.role.modified_by = auth->username;
-    request.role.performed_by.clear();
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.roles.size() << " trade party role(s)";
+    for (auto& r : request.roles) {
+        r.modified_by = auth->username;
+        r.performed_by.clear();
+    }
 
     save_trade_party_role_response response;
     try {
-        svc.save_role(request.role);
+        svc.save_roles(request.roles);
         response.success = true;
-        response.message = "Trade party role saved successfully";
-        BOOST_LOG_SEV(lg(), info) << "Saved trade party role: " << request.role.id;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.roles.size()
+                                  << " trade party role(s) by " << auth->username;
     } catch (const std::exception& e) {
         response.success = false;
-        response.message = std::string("Failed to save trade party role: ") + e.what();
-        BOOST_LOG_SEV(lg(), error) << "Error saving trade party role: " << e.what();
+        response.message = std::string("Failed to save trade party roles: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error saving trade party roles: " << e.what();
     }
 
     co_return response.serialize();
@@ -1103,21 +1109,19 @@ trade_message_handler::handle_delete_trade_party_role_request(
     const auto& request = *request_result;
     delete_trade_party_role_response response;
 
-    for (const auto& id : request.ids) {
-        delete_trade_party_role_result result;
-        result.id = id;
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_role(boost::uuids::to_string(id));
-            result.success = true;
-            result.message = "Trade party role deleted successfully";
             BOOST_LOG_SEV(lg(), info) << "Deleted trade party role: " << id;
-        } catch (const std::exception& e) {
-            result.success = false;
-            result.message = std::string("Failed to delete trade party role: ") + e.what();
-            BOOST_LOG_SEV(lg(), error) << "Error deleting trade party role " << id
-                                       << ": " << e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+                                  << request.ids.size() << " trade party role(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete trade party role: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
 
     co_return response.serialize();

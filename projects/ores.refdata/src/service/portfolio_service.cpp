@@ -63,6 +63,16 @@ void portfolio_service::save_portfolio(const domain::portfolio& portfolio) {
     BOOST_LOG_SEV(lg(), info) << "Saved portfolio: " << portfolio.id;
 }
 
+void portfolio_service::save_portfolios(
+    const std::vector<domain::portfolio>& portfolios) {
+    for (const auto& p : portfolios) {
+        if (p.id.is_nil())
+            throw std::invalid_argument("Portfolio ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << portfolios.size() << " portfolios";
+    repo_.write(portfolios);
+}
+
 void portfolio_service::remove_portfolio(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing portfolio: " << id;
     repo_.remove(id);

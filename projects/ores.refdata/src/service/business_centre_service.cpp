@@ -49,6 +49,16 @@ void business_centre_service::save_business_centre(
     repo_.write(ctx_, bc);
 }
 
+void business_centre_service::save_business_centres(
+    const std::vector<domain::business_centre>& business_centres) {
+    for (const auto& bc : business_centres) {
+        if (bc.code.empty())
+            throw std::invalid_argument("Business centre code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << business_centres.size() << " business centres";
+    repo_.write(ctx_, business_centres);
+}
+
 void business_centre_service::delete_business_centre(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Deleting business centre: " << code;
     repo_.remove(ctx_, code);

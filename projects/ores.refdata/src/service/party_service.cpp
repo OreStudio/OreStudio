@@ -75,6 +75,15 @@ void party_service::save_party(const domain::party& party) {
     BOOST_LOG_SEV(lg(), info) << "Saved party: " << party.id;
 }
 
+void party_service::save_parties(const std::vector<domain::party>& parties) {
+    for (const auto& p : parties) {
+        if (p.id.is_nil())
+            throw std::invalid_argument("Party ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << parties.size() << " parties";
+    repo_.write(parties);
+}
+
 void party_service::remove_party(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party: " << id;
     repo_.remove(id);

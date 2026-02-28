@@ -177,20 +177,35 @@ std::ostream& operator<<(std::ostream& s, const get_trade_identifiers_response& 
     return s;
 }
 
+save_trade_identifier_request
+save_trade_identifier_request::from(domain::trade_identifier identifier) {
+    return save_trade_identifier_request{std::vector<domain::trade_identifier>{std::move(identifier)}};
+}
+
+save_trade_identifier_request
+save_trade_identifier_request::from(std::vector<domain::trade_identifier> identifiers) {
+    return save_trade_identifier_request{std::move(identifiers)};
+}
+
 std::vector<std::byte> save_trade_identifier_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_trade_identifier(buffer, identifier);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(identifiers.size()));
+    for (const auto& e : identifiers)
+        write_trade_identifier(buffer, e);
     return buffer;
 }
 
 std::expected<save_trade_identifier_request, error_code>
 save_trade_identifier_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_trade_identifier_request request;
-
-    auto result = read_trade_identifier(data);
-    if (!result) return std::unexpected(result.error());
-    request.identifier = std::move(*result);
-
+    request.identifiers.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_trade_identifier(data);
+        if (!e) return std::unexpected(e.error());
+        request.identifiers.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -226,10 +241,6 @@ std::ostream& operator<<(std::ostream& s, const save_trade_identifier_response& 
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_trade_identifier_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_trade_identifier_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -265,12 +276,8 @@ std::ostream& operator<<(std::ostream& s, const delete_trade_identifier_request&
 
 std::vector<std::byte> delete_trade_identifier_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_uuid(buffer, r.id);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -278,28 +285,13 @@ std::expected<delete_trade_identifier_response, error_code>
 delete_trade_identifier_response::deserialize(std::span<const std::byte> data) {
     delete_trade_identifier_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_trade_identifier_result r;
-
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        r.id = *id_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

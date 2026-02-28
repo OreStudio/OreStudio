@@ -49,6 +49,16 @@ void lifecycle_event_service::save_event(const domain::lifecycle_event& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved lifecycle event: " << v.code;
 }
 
+void lifecycle_event_service::save_events(
+    const std::vector<domain::lifecycle_event>& events) {
+    for (const auto& e : events) {
+        if (e.code.empty())
+            throw std::invalid_argument("Lifecycle Event code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << events.size() << " lifecycle events";
+    repo_.write(ctx_, events);
+}
+
 void lifecycle_event_service::remove_event(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing lifecycle event: " << code;
     repo_.remove(ctx_, code);

@@ -133,21 +133,19 @@ process_add_country(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<save_country_request,
                                                         save_country_response,
                                                         message_type::save_country_request>
-        (save_country_request{
-            .country = refdata::domain::country{
-                .version = 0,
-                .alpha2_code = std::move(alpha2_code),
-                .alpha3_code = std::move(alpha3_code),
-                .numeric_code = std::move(numeric_code),
-                .name = std::move(name),
-                .official_name = std::move(official_name),
-                .image_id = std::nullopt,
-                .modified_by = modified_by,
-                .change_reason_code = std::move(change_reason_code),
-                .change_commentary = std::move(change_commentary),
-                .recorded_at = std::chrono::system_clock::now()
-            }
-        });
+        (save_country_request::from(refdata::domain::country{
+            .version = 0,
+            .alpha2_code = std::move(alpha2_code),
+            .alpha3_code = std::move(alpha3_code),
+            .numeric_code = std::move(numeric_code),
+            .name = std::move(name),
+            .official_name = std::move(official_name),
+            .image_id = std::nullopt,
+            .modified_by = modified_by,
+            .change_reason_code = std::move(change_reason_code),
+            .change_commentary = std::move(change_commentary),
+            .recorded_at = std::chrono::system_clock::now()
+        }));
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -159,9 +157,9 @@ process_add_country(std::ostream& out, client_session& session,
         BOOST_LOG_SEV(lg(), info) << "Successfully added country.";
         out << "✓ Country added successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add country: "
-                                  << response.message;
-        out << "✗ Failed to add country: " << response.message << std::endl;
+        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add country: " << msg;
+        out << "✗ Failed to add country: " << msg << std::endl;
     }
 }
 
@@ -182,7 +180,7 @@ process_delete_country(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<delete_country_request,
                                                         delete_country_response,
                                                         message_type::delete_country_request>
-        (delete_country_request{.alpha2_codes = {std::move(alpha2_code)}});
+        (delete_country_request{.alpha2_codes = {alpha2_code}});
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -190,22 +188,12 @@ process_delete_country(std::ostream& out, client_session& session,
     }
 
     const auto& response = *result;
-    if (response.results.empty()) {
-        out << "✗ No results returned from server." << std::endl;
-        return;
-    }
-
-    const auto& delete_result = response.results[0];
-    if (delete_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted country: "
-                                  << delete_result.alpha2_code;
-        out << "✓ Country " << delete_result.alpha2_code
-            << " deleted successfully!" << std::endl;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted country: " << alpha2_code;
+        out << "✓ Country " << alpha2_code << " deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete country: "
-                                  << delete_result.message;
-        out << "✗ Failed to delete country: " << delete_result.message
-            << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete country: " << response.message;
+        out << "✗ Failed to delete country: " << response.message << std::endl;
     }
 }
 

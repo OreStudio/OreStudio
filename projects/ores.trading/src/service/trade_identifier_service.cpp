@@ -49,6 +49,16 @@ void trade_identifier_service::save_identifier(const domain::trade_identifier& v
     BOOST_LOG_SEV(lg(), info) << "Saved trade identifier: " << v.id;
 }
 
+void trade_identifier_service::save_identifiers(
+    const std::vector<domain::trade_identifier>& identifiers) {
+    for (const auto& i : identifiers) {
+        if (i.id.is_nil())
+            throw std::invalid_argument("Trade Identifier id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << identifiers.size() << " trade identifiers";
+    repo_.write(ctx_, identifiers);
+}
+
 void trade_identifier_service::remove_identifier(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier: " << id;
     repo_.remove(ctx_, id);

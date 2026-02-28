@@ -103,18 +103,16 @@ process_add_feature_flag(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<save_feature_flag_request,
                                                         save_feature_flag_response,
                                                         message_type::save_feature_flag_request>
-        (save_feature_flag_request{
-            .flag = variability::domain::feature_flags{
-                .version = 0,
-                .enabled = is_enabled,
-                .name = std::move(name),
-                .description = std::move(description),
-                .modified_by = modified_by,
-                .change_reason_code = std::move(change_reason_code),
-                .change_commentary = std::move(change_commentary),
-                .recorded_at = std::chrono::system_clock::now()
-            }
-        });
+        (save_feature_flag_request::from(variability::domain::feature_flags{
+            .version = 0,
+            .enabled = is_enabled,
+            .name = std::move(name),
+            .description = std::move(description),
+            .modified_by = modified_by,
+            .change_reason_code = std::move(change_reason_code),
+            .change_commentary = std::move(change_commentary),
+            .recorded_at = std::chrono::system_clock::now()
+        }));
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -126,10 +124,9 @@ process_add_feature_flag(std::ostream& out, client_session& session,
         BOOST_LOG_SEV(lg(), info) << "Successfully added feature flag.";
         out << "✓ Feature flag added successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add feature flag: "
-                                  << response.error_message;
-        out << "✗ Failed to add feature flag: " << response.error_message
-            << std::endl;
+        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add feature flag: " << msg;
+        out << "✗ Failed to add feature flag: " << msg << std::endl;
     }
 }
 

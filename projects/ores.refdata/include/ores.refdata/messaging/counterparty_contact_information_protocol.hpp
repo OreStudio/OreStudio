@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/counterparty_contact_information.hpp"
@@ -65,10 +66,13 @@ struct get_counterparty_contact_informations_response final {
 std::ostream& operator<<(std::ostream& s, const get_counterparty_contact_informations_response& v);
 
 /**
- * @brief Request to save a counterparty contact information (create or update).
+ * @brief Request to save one or more counterparty contact informations (create or update).
  */
 struct save_counterparty_contact_information_request final {
-    domain::counterparty_contact_information counterparty_contact_information;
+    std::vector<domain::counterparty_contact_information> counterparty_contact_informations;
+
+    static save_counterparty_contact_information_request from(domain::counterparty_contact_information counterparty_contact_information);
+    static save_counterparty_contact_information_request from(std::vector<domain::counterparty_contact_information> counterparty_contact_informations);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_counterparty_contact_information_request,
@@ -79,10 +83,10 @@ struct save_counterparty_contact_information_request final {
 std::ostream& operator<<(std::ostream& s, const save_counterparty_contact_information_request& v);
 
 /**
- * @brief Response confirming counterparty contact information save operation.
+ * @brief Response confirming counterparty contact information save operation(s).
  */
 struct save_counterparty_contact_information_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -92,17 +96,6 @@ struct save_counterparty_contact_information_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_counterparty_contact_information_response& v);
-
-/**
- * @brief Result for a single counterparty contact information deletion.
- */
-struct delete_counterparty_contact_information_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_counterparty_contact_information_result& v);
 
 /**
  * @brief Request to delete one or more counterparty contact informations.
@@ -122,7 +115,8 @@ std::ostream& operator<<(std::ostream& s, const delete_counterparty_contact_info
  * @brief Response confirming counterparty contact information deletion(s).
  */
 struct delete_counterparty_contact_information_response final {
-    std::vector<delete_counterparty_contact_information_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_counterparty_contact_information_response,

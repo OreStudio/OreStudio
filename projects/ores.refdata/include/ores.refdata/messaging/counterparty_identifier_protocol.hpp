@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/counterparty_identifier.hpp"
@@ -65,10 +66,13 @@ struct get_counterparty_identifiers_response final {
 std::ostream& operator<<(std::ostream& s, const get_counterparty_identifiers_response& v);
 
 /**
- * @brief Request to save a counterparty identifier (create or update).
+ * @brief Request to save one or more counterparty identifiers (create or update).
  */
 struct save_counterparty_identifier_request final {
-    domain::counterparty_identifier counterparty_identifier;
+    std::vector<domain::counterparty_identifier> counterparty_identifiers;
+
+    static save_counterparty_identifier_request from(domain::counterparty_identifier counterparty_identifier);
+    static save_counterparty_identifier_request from(std::vector<domain::counterparty_identifier> counterparty_identifiers);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_counterparty_identifier_request,
@@ -79,10 +83,10 @@ struct save_counterparty_identifier_request final {
 std::ostream& operator<<(std::ostream& s, const save_counterparty_identifier_request& v);
 
 /**
- * @brief Response confirming counterparty identifier save operation.
+ * @brief Response confirming counterparty identifier save operation(s).
  */
 struct save_counterparty_identifier_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -92,17 +96,6 @@ struct save_counterparty_identifier_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_counterparty_identifier_response& v);
-
-/**
- * @brief Result for a single counterparty identifier deletion.
- */
-struct delete_counterparty_identifier_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_counterparty_identifier_result& v);
 
 /**
  * @brief Request to delete one or more counterparty identifiers.
@@ -122,7 +115,8 @@ std::ostream& operator<<(std::ostream& s, const delete_counterparty_identifier_r
  * @brief Response confirming counterparty identifier deletion(s).
  */
 struct delete_counterparty_identifier_response final {
-    std::vector<delete_counterparty_identifier_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_counterparty_identifier_response,

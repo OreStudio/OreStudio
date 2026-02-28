@@ -83,6 +83,13 @@ public:
     void save_business_unit(const domain::business_unit& business_unit);
 
     /**
+     * @brief Saves multiple business units (creates or updates).
+     *
+     * @param business_units The business units to save
+     */
+    void save_business_units(const std::vector<domain::business_unit>& business_units);
+
+    /**
      * @brief Removes a business unit.
      *
      * @param id The ID of the business unit to remove

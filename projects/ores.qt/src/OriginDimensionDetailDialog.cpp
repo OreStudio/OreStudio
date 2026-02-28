@@ -189,7 +189,7 @@ void OriginDimensionDetailDialog::onSaveClicked() {
         }
 
         dq::messaging::save_origin_dimension_request request;
-        request.dimension = dimension;
+        request.dimensions.push_back(dimension);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -275,7 +275,7 @@ void OriginDimensionDetailDialog::onDeleteClicked() {
         }
 
         dq::messaging::delete_origin_dimension_request request;
-        request.codes = {code};
+        request.codes.push_back({code});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -298,11 +298,11 @@ void OriginDimensionDetailDialog::onDeleteClicked() {
         auto response = dq::messaging::delete_origin_dimension_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

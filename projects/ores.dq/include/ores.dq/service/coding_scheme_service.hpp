@@ -100,6 +100,13 @@ public:
     void save_coding_scheme(const domain::coding_scheme& scheme);
 
     /**
+     * @brief Saves multiple coding schemes (creates or updates).
+     *
+     * @param schemes The coding schemes to save
+     */
+    void save_coding_schemes(const std::vector<domain::coding_scheme>& schemes);
+
+    /**
      * @brief Removes a coding scheme.
      *
      * @param code The code of the coding scheme to remove
@@ -137,6 +144,14 @@ public:
      */
     void save_authority_type(
         const domain::coding_scheme_authority_type& authority_type);
+
+    /**
+     * @brief Saves multiple coding scheme authority types (creates or updates).
+     *
+     * @param authority_types The authority types to save
+     */
+    void save_authority_types(
+        const std::vector<domain::coding_scheme_authority_type>& authority_types);
 
     /**
      * @brief Removes a coding scheme authority type.

@@ -56,6 +56,8 @@ public:
 
     void save_type(const domain::purpose_type& pt);
 
+    void save_types(const std::vector<domain::purpose_type>& types);
+
     void remove_type(const std::string& code);
 
     std::vector<domain::purpose_type>

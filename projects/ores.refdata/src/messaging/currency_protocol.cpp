@@ -196,66 +196,30 @@ std::ostream& operator<<(std::ostream& s, const delete_currency_request& v) {
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_currency_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_currency_response::serialize() const {
     std::vector<std::byte> buffer;
-
-    // Write count of results
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-
-    // Write each result
-    for (const auto& result : results) {
-        writer::write_string(buffer, result.iso_code);
-        writer::write_bool(buffer, result.success);
-        writer::write_string(buffer, result.message);
-    }
-
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
+
 
 std::expected<delete_currency_response, ores::utility::serialization::error_code>
 delete_currency_response::deserialize(std::span<const std::byte> data) {
     delete_currency_response response;
 
-    // Read count
-    auto count_result = reader::read_count(data);
-    if (!count_result) {
-        return std::unexpected(count_result.error());
-    }
-    const auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    // Read each result
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_currency_result result;
-
-        auto iso_code_result = reader::read_string(data);
-        if (!iso_code_result) {
-            return std::unexpected(iso_code_result.error());
-        }
-        result.iso_code = *iso_code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) {
-            return std::unexpected(success_result.error());
-        }
-        result.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) {
-            return std::unexpected(message_result.error());
-        }
-        result.message = *message_result;
-
-        response.results.push_back(std::move(result));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
+
 
 std::ostream& operator<<(std::ostream& s, const delete_currency_response& v) {
     rfl::json::write(v, s);
@@ -344,19 +308,39 @@ std::ostream& operator<<(std::ostream& s, const get_currencies_response& v)
     return s;
 }
 
+save_currency_request
+save_currency_request::from(domain::currency currency) {
+    return save_currency_request{std::vector<domain::currency>{std::move(currency)}};
+}
+
+save_currency_request
+save_currency_request::from(std::vector<domain::currency> currencies) {
+    return save_currency_request{std::move(currencies)};
+}
+
 std::vector<std::byte> save_currency_request::serialize() const {
     std::vector<std::byte> buffer;
-    serialize_currency(buffer, currency);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(currencies.size()));
+    for (const auto& c : currencies)
+        serialize_currency(buffer, c);
     return buffer;
 }
 
 std::expected<save_currency_request, ores::utility::serialization::error_code>
 save_currency_request::deserialize(std::span<const std::byte> data) {
-    auto currency_result = deserialize_currency(data);
-    if (!currency_result) {
-        return std::unexpected(currency_result.error());
+    auto count_result = reader::read_uint32(data);
+    if (!count_result)
+        return std::unexpected(count_result.error());
+
+    save_currency_request request;
+    request.currencies.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto c = deserialize_currency(data);
+        if (!c)
+            return std::unexpected(c.error());
+        request.currencies.push_back(std::move(*c));
     }
-    return save_currency_request{*currency_result};
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const save_currency_request& v) {
@@ -376,15 +360,11 @@ save_currency_response::deserialize(std::span<const std::byte> data) {
     save_currency_response response;
 
     auto success_result = reader::read_bool(data);
-    if (!success_result) {
-        return std::unexpected(success_result.error());
-    }
+    if (!success_result) return std::unexpected(success_result.error());
     response.success = *success_result;
 
     auto message_result = reader::read_string(data);
-    if (!message_result) {
-        return std::unexpected(message_result.error());
-    }
+    if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
     return response;

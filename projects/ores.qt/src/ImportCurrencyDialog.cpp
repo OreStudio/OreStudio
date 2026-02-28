@@ -388,7 +388,7 @@ void ImportCurrencyDialog::onImportClicked() {
                     auto currency_to_import = currency;
                     currency_to_import.modified_by = self->username_.toStdString();
 
-                    save_currency_request request{currency_to_import};
+                    auto request = save_currency_request::from(currency_to_import);
                     auto payload = request.serialize();
                     comms::messaging::frame request_frame(
                         comms::messaging::message_type::save_currency_request,

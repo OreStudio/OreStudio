@@ -25,6 +25,7 @@
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/currency_history_protocol.hpp"
 #include "ores.refdata/service/currency_service.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 
 namespace ores::http_server::routes {
 
@@ -131,10 +132,12 @@ asio::awaitable<http_response> risk_routes::handle_save_currency(const http_requ
         }
 
         refdata::service::currency_service service(ctx_);
-        service.save_currency(save_req->currency);
+        if (!save_req->currencies.empty())
+            service.save_currencies(save_req->currencies);
 
         refdata::messaging::save_currency_response resp;
         resp.success = true;
+        resp.message = "Saved successfully";
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -153,20 +156,18 @@ asio::awaitable<http_response> risk_routes::handle_delete_currencies(const http_
         }
 
         refdata::service::currency_service service(ctx_);
-        std::vector<refdata::messaging::delete_currency_result> results;
-
-        for (const auto& code : delete_req->iso_codes) {
-            try {
-                service.delete_currency(code);
-                results.push_back({code, true, "Currency deleted successfully"});
-            } catch (const std::exception& e) {
-                results.push_back({code, false,
-                    std::string("Failed to delete currency: ") + e.what()});
-            }
-        }
-
         refdata::messaging::delete_currency_response resp;
-        resp.results = results;
+
+        try {
+            for (const auto& code : delete_req->iso_codes) {
+                service.delete_currency(code);
+            }
+            resp.success = true;
+            resp.message = "Deleted successfully";
+        } catch (const std::exception& e) {
+            resp.success = false;
+            resp.message = std::string("Failed to delete currency: ") + e.what();
+        }
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {

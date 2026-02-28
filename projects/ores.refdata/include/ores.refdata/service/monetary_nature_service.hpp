@@ -56,6 +56,8 @@ public:
 
     void save_type(const domain::monetary_nature& v);
 
+    void save_types(const std::vector<domain::monetary_nature>& types);
+
     void remove_type(const std::string& code);
 
     std::vector<domain::monetary_nature>

@@ -27,6 +27,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/dataset.hpp"
 #include "ores.dq/domain/methodology.hpp"
@@ -83,10 +84,13 @@ struct get_datasets_response final {
 std::ostream& operator<<(std::ostream& s, const get_datasets_response& v);
 
 /**
- * @brief Request to save a dataset (create or update).
+ * @brief Request to save one or more datasets (create or update).
  */
 struct save_dataset_request final {
-    domain::dataset dataset;
+    std::vector<domain::dataset> datasets;
+
+    static save_dataset_request from(domain::dataset dataset);
+    static save_dataset_request from(std::vector<domain::dataset> datasets);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_dataset_request,
@@ -97,10 +101,10 @@ struct save_dataset_request final {
 std::ostream& operator<<(std::ostream& s, const save_dataset_request& v);
 
 /**
- * @brief Response confirming dataset save operation.
+ * @brief Response confirming dataset save operation(s).
  */
 struct save_dataset_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -110,17 +114,6 @@ struct save_dataset_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_dataset_response& v);
-
-/**
- * @brief Result for a single dataset deletion.
- */
-struct delete_dataset_result final {
-    boost::uuids::uuid id;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_dataset_result& v);
 
 /**
  * @brief Request to delete one or more datasets.
@@ -140,7 +133,8 @@ std::ostream& operator<<(std::ostream& s, const delete_dataset_request& v);
  * @brief Response confirming dataset deletion(s).
  */
 struct delete_dataset_response final {
-    std::vector<delete_dataset_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_dataset_response,
@@ -211,10 +205,13 @@ struct get_methodologies_response final {
 std::ostream& operator<<(std::ostream& s, const get_methodologies_response& v);
 
 /**
- * @brief Request to save a methodology (create or update).
+ * @brief Request to save one or more methodologies (create or update).
  */
 struct save_methodology_request final {
-    domain::methodology methodology;
+    std::vector<domain::methodology> methodologies;
+
+    static save_methodology_request from(domain::methodology methodology);
+    static save_methodology_request from(std::vector<domain::methodology> methodologies);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_methodology_request,
@@ -225,10 +222,10 @@ struct save_methodology_request final {
 std::ostream& operator<<(std::ostream& s, const save_methodology_request& v);
 
 /**
- * @brief Response confirming methodology save operation.
+ * @brief Response confirming methodology save operation(s).
  */
 struct save_methodology_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -238,17 +235,6 @@ struct save_methodology_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_methodology_response& v);
-
-/**
- * @brief Result for a single methodology deletion.
- */
-struct delete_methodology_result final {
-    boost::uuids::uuid id;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_methodology_result& v);
 
 /**
  * @brief Request to delete one or more methodologies.
@@ -268,7 +254,8 @@ std::ostream& operator<<(std::ostream& s, const delete_methodology_request& v);
  * @brief Response confirming methodology deletion(s).
  */
 struct delete_methodology_response final {
-    std::vector<delete_methodology_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_methodology_response,

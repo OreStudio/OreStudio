@@ -72,6 +72,12 @@ public:
     void save_business_centre(const domain::business_centre& bc);
 
     /**
+     * @brief Saves a batch of business centres.
+     */
+    void save_business_centres(
+        const std::vector<domain::business_centre>& business_centres);
+
+    /**
      * @brief Deletes a business centre by its code.
      */
     void delete_business_centre(const std::string& code);

@@ -21,6 +21,7 @@
 
 #include <algorithm>
 
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
 
@@ -123,26 +124,26 @@ handle_save_feature_flag_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    save_feature_flag_response response;
-    try {
-        // Override tenant_id from server-side context (don't trust client)
-        auto flag = request_result->flag;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.flags.size() << " feature flag(s)";
+    for (auto& flag : request.flags) {
         flag.tenant_id = ctx.tenant_id().to_string();
         flag.modified_by = auth->username;
         flag.performed_by.clear();
+    }
 
-        // Save the feature flag
-        repo.write(ctx, flag);
-
-        BOOST_LOG_SEV(lg(), info) << "Saved feature flag: " << flag.name
-                                  << " by " << auth->username;
-
+    save_feature_flag_response response;
+    try {
+        repo.write(ctx, request.flags);
         response.success = true;
+        response.message = "Saved successfully";
+        BOOST_LOG_SEV(lg(), info) << "Successfully saved " << request.flags.size()
+                                  << " feature flag(s) by " << auth->username;
         co_return response.serialize();
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Database error saving feature flag: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Database error saving feature flags: " << e.what();
         response.success = false;
-        response.error_message = e.what();
+        response.message = std::string("Failed to save feature flags: ") + e.what();
         co_return response.serialize();
     }
 }

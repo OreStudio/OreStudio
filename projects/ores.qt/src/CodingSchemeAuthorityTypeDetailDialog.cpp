@@ -132,7 +132,7 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_coding_scheme_authority_type_request request;
-        request.authority_type = at;
+        request.authority_types.push_back(at);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -184,7 +184,7 @@ void CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_coding_scheme_authority_type_request request;
-        request.codes = {code.toStdString()};
+        request.codes.push_back({code.toStdString()});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -198,7 +198,7 @@ void CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked() {
         if (!payload_result) return false;
 
         auto response = dq::messaging::delete_coding_scheme_authority_type_response::deserialize(*payload_result);
-        return response && !response->results.empty() && response->results[0].success;
+        return response && response->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

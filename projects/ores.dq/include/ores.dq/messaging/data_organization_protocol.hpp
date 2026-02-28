@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/catalog.hpp"
@@ -64,10 +65,13 @@ struct get_catalogs_response final {
 std::ostream& operator<<(std::ostream& s, const get_catalogs_response& v);
 
 /**
- * @brief Request to save a catalog (create or update).
+ * @brief Request to save one or more catalogs (create or update).
  */
 struct save_catalog_request final {
-    domain::catalog catalog;
+    std::vector<domain::catalog> catalogs;
+
+    static save_catalog_request from(domain::catalog catalog);
+    static save_catalog_request from(std::vector<domain::catalog> catalogs);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_catalog_request,
@@ -78,10 +82,10 @@ struct save_catalog_request final {
 std::ostream& operator<<(std::ostream& s, const save_catalog_request& v);
 
 /**
- * @brief Response confirming catalog save operation.
+ * @brief Response confirming catalog save operation(s).
  */
 struct save_catalog_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -91,17 +95,6 @@ struct save_catalog_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_catalog_response& v);
-
-/**
- * @brief Result for a single catalog deletion.
- */
-struct delete_catalog_result final {
-    std::string name;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_catalog_result& v);
 
 /**
  * @brief Request to delete one or more catalogs.
@@ -121,7 +114,8 @@ std::ostream& operator<<(std::ostream& s, const delete_catalog_request& v);
  * @brief Response confirming catalog deletion(s).
  */
 struct delete_catalog_response final {
-    std::vector<delete_catalog_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_catalog_response,
@@ -192,10 +186,13 @@ struct get_data_domains_response final {
 std::ostream& operator<<(std::ostream& s, const get_data_domains_response& v);
 
 /**
- * @brief Request to save a data domain (create or update).
+ * @brief Request to save one or more data domains (create or update).
  */
 struct save_data_domain_request final {
-    domain::data_domain domain;
+    std::vector<domain::data_domain> domains;
+
+    static save_data_domain_request from(domain::data_domain domain);
+    static save_data_domain_request from(std::vector<domain::data_domain> domains);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_data_domain_request,
@@ -206,10 +203,10 @@ struct save_data_domain_request final {
 std::ostream& operator<<(std::ostream& s, const save_data_domain_request& v);
 
 /**
- * @brief Response confirming data domain save operation.
+ * @brief Response confirming data domain save operation(s).
  */
 struct save_data_domain_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -219,17 +216,6 @@ struct save_data_domain_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_data_domain_response& v);
-
-/**
- * @brief Result for a single data domain deletion.
- */
-struct delete_data_domain_result final {
-    std::string name;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_data_domain_result& v);
 
 /**
  * @brief Request to delete one or more data domains.
@@ -249,7 +235,8 @@ std::ostream& operator<<(std::ostream& s, const delete_data_domain_request& v);
  * @brief Response confirming data domain deletion(s).
  */
 struct delete_data_domain_response final {
-    std::vector<delete_data_domain_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_data_domain_response,
@@ -348,10 +335,13 @@ struct get_subject_areas_by_domain_response final {
 std::ostream& operator<<(std::ostream& s, const get_subject_areas_by_domain_response& v);
 
 /**
- * @brief Request to save a subject area (create or update).
+ * @brief Request to save one or more subject areas (create or update).
  */
 struct save_subject_area_request final {
-    domain::subject_area subject_area;
+    std::vector<domain::subject_area> subject_areas;
+
+    static save_subject_area_request from(domain::subject_area subject_area);
+    static save_subject_area_request from(std::vector<domain::subject_area> subject_areas);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_subject_area_request,
@@ -362,10 +352,10 @@ struct save_subject_area_request final {
 std::ostream& operator<<(std::ostream& s, const save_subject_area_request& v);
 
 /**
- * @brief Response confirming subject area save operation.
+ * @brief Response confirming subject area save operation(s).
  */
 struct save_subject_area_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -387,17 +377,6 @@ struct subject_area_key final {
 std::ostream& operator<<(std::ostream& s, const subject_area_key& v);
 
 /**
- * @brief Result for a single subject area deletion.
- */
-struct delete_subject_area_result final {
-    subject_area_key key;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_subject_area_result& v);
-
-/**
  * @brief Request to delete one or more subject areas.
  */
 struct delete_subject_area_request final {
@@ -415,7 +394,8 @@ std::ostream& operator<<(std::ostream& s, const delete_subject_area_request& v);
  * @brief Response confirming subject area deletion(s).
  */
 struct delete_subject_area_response final {
-    std::vector<delete_subject_area_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_subject_area_response,

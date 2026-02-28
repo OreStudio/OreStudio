@@ -209,19 +209,39 @@ std::ostream& operator<<(std::ostream& s, const get_countries_response& v) {
 
 // save_country_request
 
+save_country_request
+save_country_request::from(domain::country country) {
+    return save_country_request{std::vector<domain::country>{std::move(country)}};
+}
+
+save_country_request
+save_country_request::from(std::vector<domain::country> countries) {
+    return save_country_request{std::move(countries)};
+}
+
 std::vector<std::byte> save_country_request::serialize() const {
     std::vector<std::byte> buffer;
-    serialize_country(buffer, country);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(countries.size()));
+    for (const auto& c : countries)
+        serialize_country(buffer, c);
     return buffer;
 }
 
 std::expected<save_country_request, ores::utility::serialization::error_code>
 save_country_request::deserialize(std::span<const std::byte> data) {
-    auto country_result = deserialize_country(data);
-    if (!country_result) {
-        return std::unexpected(country_result.error());
+    auto count_result = reader::read_uint32(data);
+    if (!count_result)
+        return std::unexpected(count_result.error());
+
+    save_country_request request;
+    request.countries.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto c = deserialize_country(data);
+        if (!c)
+            return std::unexpected(c.error());
+        request.countries.push_back(std::move(*c));
     }
-    return save_country_request{*country_result};
+    return request;
 }
 
 std::ostream& operator<<(std::ostream& s, const save_country_request& v) {
@@ -243,15 +263,11 @@ save_country_response::deserialize(std::span<const std::byte> data) {
     save_country_response response;
 
     auto success_result = reader::read_bool(data);
-    if (!success_result) {
-        return std::unexpected(success_result.error());
-    }
+    if (!success_result) return std::unexpected(success_result.error());
     response.success = *success_result;
 
     auto message_result = reader::read_string(data);
-    if (!message_result) {
-        return std::unexpected(message_result.error());
-    }
+    if (!message_result) return std::unexpected(message_result.error());
     response.message = *message_result;
 
     return response;
@@ -307,70 +323,33 @@ std::ostream& operator<<(std::ostream& s, const delete_country_request& v) {
     return s;
 }
 
-// delete_country_result
 
-std::ostream& operator<<(std::ostream& s, const delete_country_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 // delete_country_response
 
 std::vector<std::byte> delete_country_response::serialize() const {
     std::vector<std::byte> buffer;
-
-    // Write count of results
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-
-    // Write each result
-    for (const auto& result : results) {
-        writer::write_string(buffer, result.alpha2_code);
-        writer::write_bool(buffer, result.success);
-        writer::write_string(buffer, result.message);
-    }
-
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
+
 
 std::expected<delete_country_response, ores::utility::serialization::error_code>
 delete_country_response::deserialize(std::span<const std::byte> data) {
     delete_country_response response;
 
-    // Read count
-    auto count_result = reader::read_count(data);
-    if (!count_result) {
-        return std::unexpected(count_result.error());
-    }
-    const auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    // Read each result
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_country_result result;
-
-        auto alpha2_code_result = reader::read_string(data);
-        if (!alpha2_code_result) {
-            return std::unexpected(alpha2_code_result.error());
-        }
-        result.alpha2_code = *alpha2_code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) {
-            return std::unexpected(success_result.error());
-        }
-        result.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) {
-            return std::unexpected(message_result.error());
-        }
-        result.message = *message_result;
-
-        response.results.push_back(std::move(result));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
+
 
 std::ostream& operator<<(std::ostream& s, const delete_country_response& v) {
     rfl::json::write(v, s);

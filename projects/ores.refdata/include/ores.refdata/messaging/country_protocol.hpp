@@ -28,6 +28,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.refdata/domain/country.hpp"
@@ -106,14 +107,25 @@ struct get_countries_response final {
 std::ostream& operator<<(std::ostream& s, const get_countries_response& v);
 
 /**
- * @brief Request to save a country (create or update).
+ * @brief Request to save one or more countries (create or update).
  *
  * Due to bitemporal storage, both create and update operations
  * result in writing a new record. Database triggers handle temporal
- * versioning automatically.
+ * versioning automatically. All entities in the batch are saved in a
+ * single DB transaction — all succeed or all fail.
  */
 struct save_country_request final {
-    domain::country country;
+    std::vector<domain::country> countries;
+
+    /**
+     * @brief Factory for single-entity saves (existing callers).
+     */
+    static save_country_request from(domain::country country);
+
+    /**
+     * @brief Factory for batch saves.
+     */
+    static save_country_request from(std::vector<domain::country> countries);
 
     /**
      * @brief Serialize request to bytes.
@@ -130,10 +142,10 @@ struct save_country_request final {
 std::ostream& operator<<(std::ostream& s, const save_country_request& v);
 
 /**
- * @brief Response confirming country save operation.
+ * @brief Response confirming country save operation(s).
  */
 struct save_country_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     /**
@@ -180,24 +192,14 @@ struct delete_country_request final {
 std::ostream& operator<<(std::ostream& s, const delete_country_request& v);
 
 /**
- * @brief Result for a single country deletion.
- */
-struct delete_country_result final {
-    std::string alpha2_code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_country_result& v);
-
-/**
  * @brief Response confirming country deletion(s).
  *
  * Contains one result per requested country, indicating individual
  * success or failure. Supports partial success in batch operations.
  */
 struct delete_country_response final {
-    std::vector<delete_country_result> results;
+    bool success = false;
+    std::string message;
 
     /**
      * @brief Serialize response to bytes.

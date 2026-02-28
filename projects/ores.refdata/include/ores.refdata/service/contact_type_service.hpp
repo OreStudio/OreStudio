@@ -56,6 +56,8 @@ public:
 
     void save_type(const domain::contact_type& type);
 
+    void save_types(const std::vector<domain::contact_type>& types);
+
     void remove_type(const std::string& code);
 
     std::vector<domain::contact_type>

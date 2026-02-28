@@ -912,18 +912,18 @@ TEST_CASE("get_tenants_response_serialize_deserialize", tags) {
 TEST_CASE("save_tenant_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_tenant_request e;
-    e.tenant.version = 1;
-    e.tenant.id = boost::uuids::random_generator()();
-    e.tenant.name = "Test Tenant";
-    e.tenant.code = "TEST";
-    e.tenant.hostname = "test.example.com";
-    e.tenant.description = "A test tenant";
-    e.tenant.status = "active";
-    e.tenant.type = "standard";
-    e.tenant.modified_by = "admin";
-    e.tenant.change_commentary = "Initial creation";
-    e.tenant.recorded_at = std::chrono::system_clock::now();
+    save_tenant_request e; e.tenants.emplace_back();
+    e.tenants[0].version = 1;
+    e.tenants[0].id = boost::uuids::random_generator()();
+    e.tenants[0].name = "Test Tenant";
+    e.tenants[0].code = "TEST";
+    e.tenants[0].hostname = "test.example.com";
+    e.tenants[0].description = "A test tenant";
+    e.tenants[0].status = "active";
+    e.tenants[0].type = "standard";
+    e.tenants[0].modified_by = "admin";
+    e.tenants[0].change_commentary = "Initial creation";
+    e.tenants[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -933,15 +933,15 @@ TEST_CASE("save_tenant_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.tenant.version == e.tenant.version);
-    CHECK(a.tenant.id == e.tenant.id);
-    CHECK(a.tenant.name == e.tenant.name);
-    CHECK(a.tenant.code == e.tenant.code);
-    CHECK(a.tenant.hostname == e.tenant.hostname);
-    CHECK(a.tenant.description == e.tenant.description);
-    CHECK(a.tenant.status == e.tenant.status);
-    CHECK(a.tenant.type == e.tenant.type);
-    CHECK(a.tenant.change_commentary == e.tenant.change_commentary);
+    CHECK(a.tenants[0].version == e.tenants[0].version);
+    CHECK(a.tenants[0].id == e.tenants[0].id);
+    CHECK(a.tenants[0].name == e.tenants[0].name);
+    CHECK(a.tenants[0].code == e.tenants[0].code);
+    CHECK(a.tenants[0].hostname == e.tenants[0].hostname);
+    CHECK(a.tenants[0].description == e.tenants[0].description);
+    CHECK(a.tenants[0].status == e.tenants[0].status);
+    CHECK(a.tenants[0].type == e.tenants[0].type);
+    CHECK(a.tenants[0].change_commentary == e.tenants[0].change_commentary);
 }
 
 TEST_CASE("save_tenant_response_serialize_deserialize", tags) {
@@ -949,7 +949,7 @@ TEST_CASE("save_tenant_response_serialize_deserialize", tags) {
 
     save_tenant_response e;
     e.success = true;
-    e.message = "Tenant saved successfully";
+    e.message = "Saved successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -960,6 +960,7 @@ TEST_CASE("save_tenant_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.success == e.success);
+
     CHECK(a.message == e.message);
 }
 
@@ -988,8 +989,8 @@ TEST_CASE("delete_tenant_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_tenant_response e;
-    e.results.push_back({boost::uuids::random_generator()(), true, ""});
-    e.results.push_back({boost::uuids::random_generator()(), false, "Tenant not found"});
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -999,12 +1000,8 @@ TEST_CASE("delete_tenant_response_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    REQUIRE(a.results.size() == e.results.size());
-    for (size_t i = 0; i < e.results.size(); ++i) {
-        CHECK(a.results[i].id == e.results[i].id);
-        CHECK(a.results[i].success == e.results[i].success);
-        CHECK(a.results[i].message == e.results[i].message);
-    }
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_tenant_history_request_serialize_deserialize", tags) {
@@ -1133,14 +1130,14 @@ TEST_CASE("get_tenant_types_response_serialize_deserialize", tags) {
 TEST_CASE("save_tenant_type_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_tenant_type_request e;
-    e.type.version = 1;
-    e.type.type = "standard";
-    e.type.name = "Standard";
-    e.type.description = "Standard tenant";
-    e.type.modified_by = "admin";
-    e.type.change_commentary = "test";
-    e.type.recorded_at = std::chrono::system_clock::now();
+    save_tenant_type_request e; e.types.emplace_back();
+    e.types[0].version = 1;
+    e.types[0].type = "standard";
+    e.types[0].name = "Standard";
+    e.types[0].description = "Standard tenant";
+    e.types[0].modified_by = "admin";
+    e.types[0].change_commentary = "test";
+    e.types[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1150,11 +1147,11 @@ TEST_CASE("save_tenant_type_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.type.version == e.type.version);
-    CHECK(a.type.type == e.type.type);
-    CHECK(a.type.name == e.type.name);
-    CHECK(a.type.description == e.type.description);
-    CHECK(a.type.change_commentary == e.type.change_commentary);
+    CHECK(a.types[0].version == e.types[0].version);
+    CHECK(a.types[0].type == e.types[0].type);
+    CHECK(a.types[0].name == e.types[0].name);
+    CHECK(a.types[0].description == e.types[0].description);
+    CHECK(a.types[0].change_commentary == e.types[0].change_commentary);
 }
 
 TEST_CASE("save_tenant_type_response_serialize_deserialize", tags) {
@@ -1162,7 +1159,7 @@ TEST_CASE("save_tenant_type_response_serialize_deserialize", tags) {
 
     save_tenant_type_response e;
     e.success = true;
-    e.message = "Tenant type saved";
+    e.message = "Saved successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1173,6 +1170,7 @@ TEST_CASE("save_tenant_type_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.success == e.success);
+
     CHECK(a.message == e.message);
 }
 
@@ -1201,8 +1199,8 @@ TEST_CASE("delete_tenant_type_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_tenant_type_response e;
-    e.results.push_back({"standard", true, ""});
-    e.results.push_back({"sandbox", false, "Type in use"});
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1212,12 +1210,8 @@ TEST_CASE("delete_tenant_type_response_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    REQUIRE(a.results.size() == e.results.size());
-    for (size_t i = 0; i < e.results.size(); ++i) {
-        CHECK(a.results[i].type == e.results[i].type);
-        CHECK(a.results[i].success == e.results[i].success);
-        CHECK(a.results[i].message == e.results[i].message);
-    }
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_tenant_type_history_request_serialize_deserialize", tags) {
@@ -1294,14 +1288,14 @@ TEST_CASE("get_tenant_statuses_response_serialize_deserialize", tags) {
 TEST_CASE("save_tenant_status_request_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    save_tenant_status_request e;
-    e.status.version = 1;
-    e.status.status = "active";
-    e.status.name = "Active";
-    e.status.description = "Active tenant";
-    e.status.modified_by = "admin";
-    e.status.change_commentary = "test";
-    e.status.recorded_at = std::chrono::system_clock::now();
+    save_tenant_status_request e; e.statuses.emplace_back();
+    e.statuses[0].version = 1;
+    e.statuses[0].status = "active";
+    e.statuses[0].name = "Active";
+    e.statuses[0].description = "Active tenant";
+    e.statuses[0].modified_by = "admin";
+    e.statuses[0].change_commentary = "test";
+    e.statuses[0].recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1311,11 +1305,11 @@ TEST_CASE("save_tenant_status_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.status.version == e.status.version);
-    CHECK(a.status.status == e.status.status);
-    CHECK(a.status.name == e.status.name);
-    CHECK(a.status.description == e.status.description);
-    CHECK(a.status.change_commentary == e.status.change_commentary);
+    CHECK(a.statuses[0].version == e.statuses[0].version);
+    CHECK(a.statuses[0].status == e.statuses[0].status);
+    CHECK(a.statuses[0].name == e.statuses[0].name);
+    CHECK(a.statuses[0].description == e.statuses[0].description);
+    CHECK(a.statuses[0].change_commentary == e.statuses[0].change_commentary);
 }
 
 TEST_CASE("save_tenant_status_response_serialize_deserialize", tags) {
@@ -1323,7 +1317,7 @@ TEST_CASE("save_tenant_status_response_serialize_deserialize", tags) {
 
     save_tenant_status_response e;
     e.success = true;
-    e.message = "Tenant status saved";
+    e.message = "Saved successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1334,6 +1328,7 @@ TEST_CASE("save_tenant_status_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.success == e.success);
+
     CHECK(a.message == e.message);
 }
 
@@ -1362,8 +1357,8 @@ TEST_CASE("delete_tenant_status_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_tenant_status_response e;
-    e.results.push_back({"active", true, ""});
-    e.results.push_back({"suspended", false, "Status in use"});
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1373,12 +1368,8 @@ TEST_CASE("delete_tenant_status_response_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    REQUIRE(a.results.size() == e.results.size());
-    for (size_t i = 0; i < e.results.size(); ++i) {
-        CHECK(a.results[i].status == e.results[i].status);
-        CHECK(a.results[i].success == e.results[i].success);
-        CHECK(a.results[i].message == e.results[i].message);
-    }
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 TEST_CASE("get_tenant_status_history_request_serialize_deserialize", tags) {
@@ -1490,7 +1481,7 @@ TEST_CASE("save_account_party_request_serialize_deserialize", tags) {
 
     ores::utility::generation::generation_context ctx;
     save_account_party_request e;
-    e.account_party = ores::iam::generators::generate_synthetic_account_party(ctx);
+    e.account_parties.push_back(ores::iam::generators::generate_synthetic_account_party(ctx));
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1500,9 +1491,9 @@ TEST_CASE("save_account_party_request_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    CHECK(a.account_party.version == e.account_party.version);
-    CHECK(a.account_party.account_id == e.account_party.account_id);
-    CHECK(a.account_party.party_id == e.account_party.party_id);
+    CHECK(a.account_parties[0].version == e.account_parties[0].version);
+    CHECK(a.account_parties[0].account_id == e.account_parties[0].account_id);
+    CHECK(a.account_parties[0].party_id == e.account_parties[0].party_id);
 }
 
 TEST_CASE("save_account_party_response_serialize_deserialize", tags) {
@@ -1510,7 +1501,7 @@ TEST_CASE("save_account_party_response_serialize_deserialize", tags) {
 
     save_account_party_response e;
     e.success = true;
-    e.message = "Account party saved";
+    e.message = "Saved successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1521,6 +1512,7 @@ TEST_CASE("save_account_party_response_serialize_deserialize", tags) {
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
     CHECK(a.success == e.success);
+
     CHECK(a.message == e.message);
 }
 
@@ -1556,10 +1548,8 @@ TEST_CASE("delete_account_party_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_account_party_response e;
-    e.results.push_back({boost::uuids::random_generator()(),
-        boost::uuids::random_generator()(), true, ""});
-    e.results.push_back({boost::uuids::random_generator()(),
-        boost::uuids::random_generator()(), false, "Not found"});
+    e.success = true;
+    e.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, info) << "Expected: " << e;
 
     const auto serialized = e.serialize();
@@ -1569,13 +1559,8 @@ TEST_CASE("delete_account_party_response_serialize_deserialize", tags) {
     const auto& a = r.value();
     BOOST_LOG_SEV(lg, info) << "Actual: " << a;
 
-    REQUIRE(a.results.size() == e.results.size());
-    for (size_t i = 0; i < e.results.size(); ++i) {
-        CHECK(a.results[i].account_id == e.results[i].account_id);
-        CHECK(a.results[i].party_id == e.results[i].party_id);
-        CHECK(a.results[i].success == e.results[i].success);
-        CHECK(a.results[i].message == e.results[i].message);
-    }
+    CHECK(a.success == e.success);
+    CHECK(a.message == e.message);
 }
 
 // ============================================================================

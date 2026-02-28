@@ -503,20 +503,36 @@ read_change_reason_category(std::span<const std::byte>& data) {
 
 // save_change_reason_request
 
+save_change_reason_request
+save_change_reason_request::from(domain::change_reason reason) {
+    return save_change_reason_request{
+        std::vector<domain::change_reason>{std::move(reason)}};
+}
+
+save_change_reason_request
+save_change_reason_request::from(std::vector<domain::change_reason> reasons) {
+    return save_change_reason_request{std::move(reasons)};
+}
+
 std::vector<std::byte> save_change_reason_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_change_reason(buffer, reason);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(reasons.size()));
+    for (const auto& e : reasons)
+        write_change_reason(buffer, e);
     return buffer;
 }
 
 std::expected<save_change_reason_request, error_code>
 save_change_reason_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_change_reason_request request;
-
-    auto reason_result = read_change_reason(data);
-    if (!reason_result) return std::unexpected(reason_result.error());
-    request.reason = std::move(*reason_result);
-
+    request.reasons.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_change_reason(data);
+        if (!e) return std::unexpected(e.error());
+        request.reasons.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -554,12 +570,7 @@ std::ostream& operator<<(std::ostream& s, const save_change_reason_response& v) 
     return s;
 }
 
-// delete_change_reason_result
 
-std::ostream& operator<<(std::ostream& s, const delete_change_reason_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 // delete_change_reason_request
 
@@ -599,12 +610,8 @@ std::ostream& operator<<(std::ostream& s, const delete_change_reason_request& v)
 
 std::vector<std::byte> delete_change_reason_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -612,28 +619,13 @@ std::expected<delete_change_reason_response, error_code>
 delete_change_reason_response::deserialize(std::span<const std::byte> data) {
     delete_change_reason_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_change_reason_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
@@ -719,20 +711,37 @@ std::ostream& operator<<(std::ostream& s,
 
 // save_change_reason_category_request
 
+save_change_reason_category_request
+save_change_reason_category_request::from(domain::change_reason_category category) {
+    return save_change_reason_category_request{
+        std::vector<domain::change_reason_category>{std::move(category)}};
+}
+
+save_change_reason_category_request
+save_change_reason_category_request::from(
+    std::vector<domain::change_reason_category> categories) {
+    return save_change_reason_category_request{std::move(categories)};
+}
+
 std::vector<std::byte> save_change_reason_category_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_change_reason_category(buffer, category);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(categories.size()));
+    for (const auto& e : categories)
+        write_change_reason_category(buffer, e);
     return buffer;
 }
 
 std::expected<save_change_reason_category_request, error_code>
 save_change_reason_category_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_change_reason_category_request request;
-
-    auto category_result = read_change_reason_category(data);
-    if (!category_result) return std::unexpected(category_result.error());
-    request.category = std::move(*category_result);
-
+    request.categories.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_change_reason_category(data);
+        if (!e) return std::unexpected(e.error());
+        request.categories.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -772,13 +781,7 @@ std::ostream& operator<<(std::ostream& s,
     return s;
 }
 
-// delete_change_reason_category_result
 
-std::ostream& operator<<(std::ostream& s,
-    const delete_change_reason_category_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 // delete_change_reason_category_request
 
@@ -819,12 +822,8 @@ std::ostream& operator<<(std::ostream& s,
 
 std::vector<std::byte> delete_change_reason_category_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -832,28 +831,13 @@ std::expected<delete_change_reason_category_response, error_code>
 delete_change_reason_category_response::deserialize(std::span<const std::byte> data) {
     delete_change_reason_category_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_change_reason_category_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

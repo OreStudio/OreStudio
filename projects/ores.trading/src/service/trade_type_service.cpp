@@ -49,6 +49,15 @@ void trade_type_service::save_type(const domain::trade_type& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved trade type: " << v.code;
 }
 
+void trade_type_service::save_types(const std::vector<domain::trade_type>& types) {
+    for (const auto& t : types) {
+        if (t.code.empty())
+            throw std::invalid_argument("Trade Type code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " trade types";
+    repo_.write(ctx_, types);
+}
+
 void trade_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade type: " << code;
     repo_.remove(ctx_, code);

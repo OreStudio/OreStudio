@@ -59,7 +59,7 @@ void role_permission_repository::write(
 }
 
 std::vector<domain::role_permission> role_permission_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<role_permission_entity>> |
         where("valid_to"_c == max.value());
 
@@ -73,7 +73,7 @@ std::vector<domain::role_permission>
 role_permission_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading permissions for role: " << role_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto query = sqlgen::read<std::vector<role_permission_entity>> |
         where("role_id"_c == role_id_str && "valid_to"_c == max.value());
@@ -89,7 +89,7 @@ role_permission_repository::read_latest_by_permission(
     const boost::uuids::uuid& permission_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading roles for permission: " << permission_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto permission_id_str = boost::lexical_cast<std::string>(permission_id);
     const auto query = sqlgen::read<std::vector<role_permission_entity>> |
         where("permission_id"_c == permission_id_str && "valid_to"_c == max.value());

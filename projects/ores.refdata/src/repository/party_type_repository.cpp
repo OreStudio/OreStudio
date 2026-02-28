@@ -55,7 +55,7 @@ write(context ctx, const std::vector<domain::party_type>& types) {
 
 std::vector<domain::party_type>
 party_type_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_type_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -71,7 +71,7 @@ std::vector<domain::party_type>
 party_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party type. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
@@ -101,7 +101,7 @@ party_type_repository::read_all(context ctx, const std::string& code) {
 void party_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party type from database: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_type_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());

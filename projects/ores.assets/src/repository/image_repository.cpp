@@ -56,7 +56,7 @@ void image_repository::write(context ctx, const std::vector<domain::image>& imag
 }
 
 std::vector<domain::image> image_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -70,7 +70,7 @@ std::vector<domain::image>
 image_repository::read_latest_by_id(context ctx, const std::string& image_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images by ID: " << image_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
         where("image_id"_c == image_id && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -154,7 +154,7 @@ std::vector<domain::image>
 image_repository::read_latest_by_key(context ctx, const std::string& key) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images by key: " << key;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
         where("key"_c == key && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -170,7 +170,7 @@ image_repository::read_latest(context ctx, std::uint32_t offset,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest images with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -194,7 +194,7 @@ image_repository::read_latest_since(context ctx,
                                << timestamp_str;
 
     // Use sqlgen query with timestamp comparison
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto since_ts = make_timestamp(timestamp_str, lg());
 
     const auto query = sqlgen::read<std::vector<image_entity>> |
@@ -209,7 +209,7 @@ image_repository::read_latest_since(context ctx,
 std::uint32_t image_repository::get_total_image_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active image count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

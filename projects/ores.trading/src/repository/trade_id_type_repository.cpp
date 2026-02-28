@@ -52,7 +52,7 @@ void trade_id_type_repository::write(
 
 std::vector<domain::trade_id_type>
 trade_id_type_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_id_type_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -67,7 +67,7 @@ trade_id_type_repository::read_latest(context ctx) {
 std::vector<domain::trade_id_type>
 trade_id_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade ID type. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_id_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
@@ -94,7 +94,7 @@ trade_id_type_repository::read_all(context ctx, const std::string& code) {
 
 void trade_id_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade ID type: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<trade_id_type_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
@@ -104,7 +104,7 @@ void trade_id_type_repository::remove(context ctx, const std::string& code) {
 
 void trade_id_type_repository::remove(
     context ctx, const std::vector<std::string>& codes) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<trade_id_type_entity> |
         where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());

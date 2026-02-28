@@ -59,7 +59,7 @@ void account_role_repository::write(
 }
 
 std::vector<domain::account_role> account_role_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_role_entity>> |
         where("valid_to"_c == max.value());
 
@@ -73,7 +73,7 @@ std::vector<domain::account_role>
 account_role_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading roles for account: " << account_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto query = sqlgen::read<std::vector<account_role_entity>> |
         where("account_id"_c == account_id_str && "valid_to"_c == max.value());
@@ -88,7 +88,7 @@ std::vector<domain::account_role>
 account_role_repository::read_latest_by_role(const boost::uuids::uuid& role_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading accounts for role: " << role_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto query = sqlgen::read<std::vector<account_role_entity>> |
         where("role_id"_c == role_id_str && "valid_to"_c == max.value());
@@ -105,7 +105,7 @@ bool account_role_repository::exists(
     BOOST_LOG_SEV(lg(), debug) << "Checking if role " << role_id
                                << " is assigned to account " << account_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto account_id_str = boost::lexical_cast<std::string>(account_id);
     const auto role_id_str = boost::lexical_cast<std::string>(role_id);
     const auto query = sqlgen::read<std::vector<account_role_entity>> |

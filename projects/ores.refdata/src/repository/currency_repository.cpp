@@ -59,7 +59,7 @@ write(context ctx, const std::vector<domain::currency>& currencies) {
 
 
 std::vector<domain::currency> currency_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -77,7 +77,7 @@ currency_repository::read_latest(context ctx, const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies. ISO code: "
                              << iso_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("iso_code"_c == iso_code && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -93,7 +93,7 @@ currency_repository::read_latest(context ctx, std::uint32_t offset,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currencies with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<currency_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -108,7 +108,7 @@ currency_repository::read_latest(context ctx, std::uint32_t offset,
 std::uint32_t currency_repository::get_total_currency_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active currency count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -179,7 +179,7 @@ void currency_repository::remove(context ctx, const std::string& iso_code) {
 
     // Delete only the current record - the database trigger will close the
     // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<currency_entity> |
         where("iso_code"_c == iso_code && "valid_to"_c == max.value());
 

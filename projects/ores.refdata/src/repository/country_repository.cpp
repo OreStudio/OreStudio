@@ -59,7 +59,7 @@ write(context ctx, const std::vector<domain::country>& countries) {
 
 
 std::vector<domain::country> country_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<country_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -77,7 +77,7 @@ country_repository::read_latest(context ctx, const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest countries. Alpha-2 code: "
                              << alpha2_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<country_entity>> |
         where("alpha2_code"_c == alpha2_code && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -93,7 +93,7 @@ country_repository::read_latest(context ctx, std::uint32_t offset,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest countries with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<country_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -108,7 +108,7 @@ country_repository::read_latest(context ctx, std::uint32_t offset,
 std::uint32_t country_repository::get_total_country_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active country count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -179,7 +179,7 @@ void country_repository::remove(context ctx, const std::string& alpha2_code) {
 
     // Delete only the current record - the database trigger will close the
     // temporal record instead of actually deleting it (sets valid_to = current_timestamp)
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<country_entity> |
         where("alpha2_code"_c == alpha2_code && "valid_to"_c == max.value());
 

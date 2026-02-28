@@ -58,7 +58,7 @@ void dataset_bundle_member_repository::write(
 
 std::vector<domain::dataset_bundle_member>
 dataset_bundle_member_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("bundle_code"_c, "display_order"_c);
@@ -74,7 +74,7 @@ dataset_bundle_member_repository::read_latest_by_bundle(const std::string& bundl
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Bundle: "
                                << bundle_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
         where("bundle_code"_c == bundle_code && "valid_to"_c == max.value()) |
         order_by("display_order"_c);
@@ -90,7 +90,7 @@ dataset_bundle_member_repository::read_latest_by_dataset(const std::string& data
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset bundle members. Dataset: "
                                << dataset_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_bundle_member_entity>> |
         where("dataset_code"_c == dataset_code && "valid_to"_c == max.value()) |
         order_by("bundle_code"_c);

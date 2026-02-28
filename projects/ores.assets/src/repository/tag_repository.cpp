@@ -53,7 +53,7 @@ void tag_repository::write(context ctx, const std::vector<domain::tag>& tags) {
 }
 
 std::vector<domain::tag> tag_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tag_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -67,7 +67,7 @@ std::vector<domain::tag>
 tag_repository::read_latest_by_id(context ctx, const std::string& tag_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tags by ID: " << tag_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tag_entity>> |
         where("tag_id"_c == tag_id && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -81,7 +81,7 @@ std::vector<domain::tag>
 tag_repository::read_latest_by_name(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tags by name: " << name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tag_entity>> |
         where("name"_c == name && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -97,7 +97,7 @@ tag_repository::read_latest(context ctx, std::uint32_t offset,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tags with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tag_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -112,7 +112,7 @@ tag_repository::read_latest(context ctx, std::uint32_t offset,
 std::uint32_t tag_repository::get_total_tag_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tag count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

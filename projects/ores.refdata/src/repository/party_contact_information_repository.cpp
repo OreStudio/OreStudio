@@ -58,7 +58,7 @@ void party_contact_information_repository::write(
 
 std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("contact_type"_c);
@@ -73,7 +73,7 @@ std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information. Id: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value());
@@ -88,7 +88,7 @@ std::vector<domain::party_contact_information>
 party_contact_information_repository::read_latest_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact information. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
         where("contact_type"_c == code && "valid_to"_c == max.value());
 
@@ -104,7 +104,7 @@ party_contact_information_repository::read_latest_by_party_id(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party contact informations. Party ID: "
                                << party_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::read<std::vector<party_contact_information_entity>> |
         where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |

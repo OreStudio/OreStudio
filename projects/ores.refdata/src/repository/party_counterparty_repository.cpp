@@ -60,7 +60,7 @@ void party_counterparty_repository::write(
 
 std::vector<domain::party_counterparty>
 party_counterparty_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("party_id"_c, "counterparty_id"_c);
@@ -77,7 +77,7 @@ party_counterparty_repository::read_latest_by_party(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Party: "
                                << party_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
         where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
@@ -95,7 +95,7 @@ party_counterparty_repository::read_latest_by_counterparty(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party counterparties. Counterparty: "
                                << counterparty_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto counterparty_id_str = boost::uuids::to_string(counterparty_id);
     const auto query = sqlgen::read<std::vector<party_counterparty_entity>> |
         where("counterparty_id"_c == counterparty_id_str && "valid_to"_c == max.value()) |

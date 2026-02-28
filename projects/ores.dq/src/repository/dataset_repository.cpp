@@ -58,7 +58,7 @@ void dataset_repository::write(
 
 std::vector<domain::dataset>
 dataset_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -73,7 +73,7 @@ std::vector<domain::dataset>
 dataset_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dataset. Id: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value());
@@ -89,7 +89,7 @@ dataset_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c) |
@@ -107,7 +107,7 @@ dataset_repository::read_latest_by_catalog(const std::string& catalog_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by catalog: "
                                << catalog_name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
         where("catalog_name"_c == catalog_name && "valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -125,7 +125,7 @@ dataset_repository::read_latest_by_subject_area(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by subject_area: "
                                << subject_area_name << "/" << domain_name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
         where("subject_area_name"_c == subject_area_name &&
               "domain_name"_c == domain_name &&
@@ -143,7 +143,7 @@ dataset_repository::read_latest_by_origin(const std::string& origin_code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest datasets by origin: "
                                << origin_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_entity>> |
         where("origin_code"_c == origin_code && "valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -157,7 +157,7 @@ dataset_repository::read_latest_by_origin(const std::string& origin_code) {
 std::uint32_t dataset_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active dataset count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

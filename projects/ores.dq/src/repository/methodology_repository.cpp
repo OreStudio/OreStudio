@@ -58,7 +58,7 @@ void methodology_repository::write(
 
 std::vector<domain::methodology>
 methodology_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<methodology_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -73,7 +73,7 @@ std::vector<domain::methodology>
 methodology_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodology. Id: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<methodology_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value());
@@ -89,7 +89,7 @@ methodology_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest methodologies with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<methodology_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c) |
@@ -105,7 +105,7 @@ methodology_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
 std::uint32_t methodology_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active methodology count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

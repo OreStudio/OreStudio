@@ -58,7 +58,7 @@ void counterparty_repository::write(
 
 std::vector<domain::counterparty>
 counterparty_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("full_name"_c);
@@ -75,7 +75,7 @@ counterparty_repository::read_latest(std::uint32_t offset,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparties with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("full_name"_c) |
@@ -91,7 +91,7 @@ counterparty_repository::read_latest(std::uint32_t offset,
 std::uint32_t counterparty_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active counterparty count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -114,7 +114,7 @@ std::vector<domain::counterparty>
 counterparty_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty. Id: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value());
@@ -129,7 +129,7 @@ std::vector<domain::counterparty>
 counterparty_repository::read_latest_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest counterparty. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<counterparty_entity>> |
         where("short_code"_c == code && "valid_to"_c == max.value());
 

@@ -57,7 +57,7 @@ void treatment_dimension_repository::write(
 
 std::vector<domain::treatment_dimension>
 treatment_dimension_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<treatment_dimension_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -72,7 +72,7 @@ std::vector<domain::treatment_dimension>
 treatment_dimension_repository::read_latest(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest treatment_dimension. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<treatment_dimension_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -87,7 +87,7 @@ treatment_dimension_repository::read_latest(std::uint32_t offset, std::uint32_t 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest treatment_dimensions with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<treatment_dimension_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c) |
@@ -103,7 +103,7 @@ treatment_dimension_repository::read_latest(std::uint32_t offset, std::uint32_t 
 std::uint32_t treatment_dimension_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active treatment_dimension count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

@@ -55,7 +55,7 @@ void job_definition_repository::write(
 
 std::vector<domain::job_definition>
 job_definition_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<job_definition_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -70,7 +70,7 @@ job_definition_repository::read_latest(context ctx) {
 std::vector<domain::job_definition>
 job_definition_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest job definition. id: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<job_definition_entity>> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
@@ -97,7 +97,7 @@ job_definition_repository::read_all(context ctx, const std::string& id) {
 
 void job_definition_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing job definition: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<job_definition_entity> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());

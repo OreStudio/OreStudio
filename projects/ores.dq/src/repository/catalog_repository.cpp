@@ -59,7 +59,7 @@ void catalog_repository::write(
 
 std::vector<domain::catalog>
 catalog_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -74,7 +74,7 @@ std::vector<domain::catalog>
 catalog_repository::read_latest(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest catalog. Name: " << name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
         where("name"_c == name && "valid_to"_c == max.value());
 
@@ -89,7 +89,7 @@ catalog_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest catalogs with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<catalog_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c) |
@@ -105,7 +105,7 @@ catalog_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
 std::uint32_t catalog_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active catalog count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

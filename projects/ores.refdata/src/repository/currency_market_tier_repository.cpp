@@ -52,7 +52,7 @@ void currency_market_tier_repository::write(
 
 std::vector<domain::currency_market_tier>
 currency_market_tier_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<currency_market_tier_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -66,7 +66,7 @@ currency_market_tier_repository::read_latest(context ctx) {
 std::vector<domain::currency_market_tier>
 currency_market_tier_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency market tier. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<currency_market_tier_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -91,7 +91,7 @@ currency_market_tier_repository::read_all(context ctx, const std::string& code) 
 
 void currency_market_tier_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency market tier: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<currency_market_tier_entity> |
         where("code"_c == code && "valid_to"_c == max.value());
 

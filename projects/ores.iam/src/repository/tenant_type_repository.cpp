@@ -61,7 +61,7 @@ write(context ctx, const std::vector<domain::tenant_type>& types) {
 
 std::vector<domain::tenant_type>
 tenant_type_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_type_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -76,7 +76,7 @@ std::vector<domain::tenant_type>
 tenant_type_repository::read_latest(context ctx, const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant type. Type: " << type;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_type_entity>> |
         where("type"_c == type && "valid_to"_c == max.value());
 
@@ -105,7 +105,7 @@ void tenant_type_repository::remove(context ctx, const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenant type from database: "
                                << type;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<tenant_type_entity> |
         where("type"_c == type && "valid_to"_c == max.value());
 
@@ -115,7 +115,7 @@ void tenant_type_repository::remove(context ctx, const std::string& type) {
 
 void tenant_type_repository::
 remove(context ctx, const std::vector<std::string>& types) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<tenant_type_entity> |
         where("type"_c.in(types) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "batch removing tenant_types");

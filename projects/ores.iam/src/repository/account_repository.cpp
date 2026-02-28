@@ -60,7 +60,7 @@ write(const std::vector<domain::account>& accounts) {
 }
 
 std::vector<domain::account> account_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -74,7 +74,7 @@ std::vector<domain::account>
 account_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts. ID: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value()) |
@@ -90,7 +90,7 @@ account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest accounts with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -105,7 +105,7 @@ account_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
 std::uint32_t account_repository::get_total_account_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active account count.";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -149,7 +149,7 @@ std::vector<domain::account>
 account_repository::read_latest_by_username(const std::string& username) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by username: " << username;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("username"_c == username && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -166,7 +166,7 @@ std::vector<domain::account>
 account_repository::read_latest_by_email(const std::string& email) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account by email: " << email;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<account_entity>> |
         where("email"_c == email && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());

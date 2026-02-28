@@ -59,7 +59,7 @@ void change_reason_repository::write(
 
 std::vector<domain::change_reason>
 change_reason_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("display_order"_c, "code"_c);
@@ -74,7 +74,7 @@ std::vector<domain::change_reason>
 change_reason_repository::read_latest(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -89,7 +89,7 @@ change_reason_repository::read_latest(std::uint32_t offset, std::uint32_t limit)
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reasons with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("display_order"_c, "code"_c) |
@@ -107,7 +107,7 @@ change_reason_repository::read_latest_by_category(const std::string& category_co
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reasons by category: "
                                << category_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_entity>> |
         where("category_code"_c == category_code && "valid_to"_c == max.value()) |
         order_by("display_order"_c, "code"_c);
@@ -121,7 +121,7 @@ change_reason_repository::read_latest_by_category(const std::string& category_co
 std::uint32_t change_reason_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change_reason count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

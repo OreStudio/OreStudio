@@ -52,7 +52,7 @@ void trade_party_role_repository::write(
 
 std::vector<domain::trade_party_role>
 trade_party_role_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_party_role_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -67,7 +67,7 @@ trade_party_role_repository::read_latest(context ctx) {
 std::vector<domain::trade_party_role>
 trade_party_role_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade party role. id: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_party_role_entity>> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
@@ -94,7 +94,7 @@ trade_party_role_repository::read_all(context ctx, const std::string& id) {
 
 void trade_party_role_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade party role: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<trade_party_role_entity> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());

@@ -103,6 +103,11 @@ public:
     void delete_currency(const std::string& iso_code);
 
     /**
+     * @brief Deletes currencies by their ISO codes.
+     */
+    void delete_currencies(const std::vector<std::string>& iso_codes);
+
+    /**
      * @brief Retrieves a single currency by its ISO code.
      *
      * @param iso_code The ISO code of the currency.

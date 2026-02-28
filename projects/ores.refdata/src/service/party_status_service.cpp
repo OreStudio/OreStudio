@@ -68,6 +68,11 @@ void party_status_service::remove_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed party status: " << code;
 }
 
+void party_status_service::remove_statuses(
+    const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::party_status>
 party_status_service::get_status_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party status: " << code;

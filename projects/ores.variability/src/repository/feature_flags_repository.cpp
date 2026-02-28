@@ -53,7 +53,7 @@ write(context ctx, const std::vector<domain::feature_flags>& flags) {
 }
 
 std::vector<domain::feature_flags> feature_flags_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<feature_flags_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -67,7 +67,7 @@ std::vector<domain::feature_flags>
 feature_flags_repository::read_latest(context ctx, const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest feature flag by name: " << name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<feature_flags_entity>> |
         where("name"_c == name && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -82,7 +82,7 @@ feature_flags_repository::read_latest(context ctx, std::uint32_t offset, std::ui
     BOOST_LOG_SEV(lg(), debug) << "Reading latest feature flags with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<feature_flags_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -97,7 +97,7 @@ feature_flags_repository::read_latest(context ctx, std::uint32_t offset, std::ui
 std::uint32_t feature_flags_repository::get_total_feature_flags_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active feature flags count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

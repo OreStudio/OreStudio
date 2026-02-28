@@ -58,7 +58,7 @@ void role_repository::write(const std::vector<domain::role>& roles) {
 }
 
 std::vector<domain::role> role_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<role_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -72,7 +72,7 @@ std::vector<domain::role>
 role_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role. ID: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<role_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value());
@@ -87,7 +87,7 @@ role_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest roles with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<role_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c) |
@@ -102,7 +102,7 @@ role_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
 std::uint32_t role_repository::get_total_role_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active role count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -125,7 +125,7 @@ std::vector<domain::role>
 role_repository::read_latest_by_name(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest role by name: " << name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<role_entity>> |
         where("name"_c == name && "valid_to"_c == max.value());
 

@@ -52,7 +52,7 @@ void lifecycle_event_repository::write(
 
 std::vector<domain::lifecycle_event>
 lifecycle_event_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<lifecycle_event_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -67,7 +67,7 @@ lifecycle_event_repository::read_latest(context ctx) {
 std::vector<domain::lifecycle_event>
 lifecycle_event_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest lifecycle event. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<lifecycle_event_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
@@ -94,12 +94,22 @@ lifecycle_event_repository::read_all(context ctx, const std::string& code) {
 
 void lifecycle_event_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing lifecycle event: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<lifecycle_event_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing lifecycle event from database.");
+}
+
+void lifecycle_event_repository::remove(
+    context ctx, const std::vector<std::string>& codes) {
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<lifecycle_event_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "batch removing lifecycle_events");
 }
 
 }

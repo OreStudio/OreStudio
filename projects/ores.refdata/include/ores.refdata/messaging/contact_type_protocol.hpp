@@ -25,7 +25,6 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/contact_type.hpp"

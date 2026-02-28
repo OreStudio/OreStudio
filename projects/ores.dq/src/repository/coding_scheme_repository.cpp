@@ -57,7 +57,7 @@ void coding_scheme_repository::write(
 
 std::vector<domain::coding_scheme>
 coding_scheme_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -72,7 +72,7 @@ std::vector<domain::coding_scheme>
 coding_scheme_repository::read_latest(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_scheme. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -87,7 +87,7 @@ coding_scheme_repository::read_latest(std::uint32_t offset, std::uint32_t limit)
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_schemes with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c) |
@@ -105,7 +105,7 @@ coding_scheme_repository::read_latest_by_authority_type(const std::string& autho
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_schemes by authority_type: "
                                << authority_type;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
         where("authority_type"_c == authority_type && "valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -123,7 +123,7 @@ coding_scheme_repository::read_latest_by_subject_area(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_schemes by subject_area: "
                                << subject_area_name << "/" << domain_name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_entity>> |
         where("subject_area_name"_c == subject_area_name &&
               "domain_name"_c == domain_name &&
@@ -139,7 +139,7 @@ coding_scheme_repository::read_latest_by_subject_area(
 std::uint32_t coding_scheme_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding_scheme count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -179,6 +179,12 @@ void coding_scheme_repository::remove(const std::string& code) {
         where("code"_c == code);
 
     execute_delete_query(ctx_, query, lg(), "removing coding_scheme from database");
+}
+
+void coding_scheme_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<coding_scheme_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing coding_schemes");
 }
 
 }

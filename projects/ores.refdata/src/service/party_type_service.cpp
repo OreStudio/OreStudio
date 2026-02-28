@@ -67,6 +67,10 @@ void party_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed party type: " << code;
 }
 
+void party_type_service::remove_types(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::party_type>
 party_type_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party type: " << code;

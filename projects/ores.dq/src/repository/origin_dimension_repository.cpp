@@ -57,7 +57,7 @@ void origin_dimension_repository::write(
 
 std::vector<domain::origin_dimension>
 origin_dimension_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<origin_dimension_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -72,7 +72,7 @@ std::vector<domain::origin_dimension>
 origin_dimension_repository::read_latest(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest origin_dimension. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<origin_dimension_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -87,7 +87,7 @@ origin_dimension_repository::read_latest(std::uint32_t offset, std::uint32_t lim
     BOOST_LOG_SEV(lg(), debug) << "Reading latest origin_dimensions with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<origin_dimension_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c) |
@@ -103,7 +103,7 @@ origin_dimension_repository::read_latest(std::uint32_t offset, std::uint32_t lim
 std::uint32_t origin_dimension_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active origin_dimension count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -143,6 +143,12 @@ void origin_dimension_repository::remove(const std::string& code) {
         where("code"_c == code);
 
     execute_delete_query(ctx_, query, lg(), "removing origin_dimension from database");
+}
+
+void origin_dimension_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<origin_dimension_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing origin_dimensions");
 }
 
 }

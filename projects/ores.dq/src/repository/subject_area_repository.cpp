@@ -59,7 +59,7 @@ void subject_area_repository::write(
 
 std::vector<domain::subject_area>
 subject_area_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<subject_area_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("domain_name"_c, "name"_c);
@@ -76,7 +76,7 @@ subject_area_repository::read_latest(const std::string& name,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject_area. Name: " << name
                                << ", Domain: " << domain_name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<subject_area_entity>> |
         where("name"_c == name && "domain_name"_c == domain_name &&
               "valid_to"_c == max.value());
@@ -92,7 +92,7 @@ subject_area_repository::read_latest_by_domain(const std::string& domain_name) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject_areas by domain: "
                                << domain_name;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<subject_area_entity>> |
         where("domain_name"_c == domain_name && "valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -108,7 +108,7 @@ subject_area_repository::read_latest(std::uint32_t offset, std::uint32_t limit) 
     BOOST_LOG_SEV(lg(), debug) << "Reading latest subject_areas with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<subject_area_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("domain_name"_c, "name"_c) |
@@ -124,7 +124,7 @@ subject_area_repository::read_latest(std::uint32_t offset, std::uint32_t limit) 
 std::uint32_t subject_area_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active subject_area count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;

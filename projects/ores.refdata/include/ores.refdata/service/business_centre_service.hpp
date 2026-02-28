@@ -83,6 +83,11 @@ public:
     void delete_business_centre(const std::string& code);
 
     /**
+     * @brief Deletes business centres by their codes.
+     */
+    void delete_business_centres(const std::vector<std::string>& codes);
+
+    /**
      * @brief Retrieves a single business centre by its code.
      */
     std::optional<domain::business_centre>

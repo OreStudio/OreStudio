@@ -57,6 +57,7 @@ public:
     void save_status(const domain::tenant_status& status);
 
     void remove_status(const std::string& status);
+    void remove_statuses(const std::vector<std::string>& statuses);
 
     std::vector<domain::tenant_status>
     get_status_history(const std::string& status);

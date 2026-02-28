@@ -59,7 +59,7 @@ void permission_repository::write(const std::vector<domain::permission>& permiss
 }
 
 std::vector<domain::permission> permission_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<permission_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -73,7 +73,7 @@ std::vector<domain::permission>
 permission_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest permission. ID: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<permission_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value());
@@ -88,7 +88,7 @@ permission_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest permissions with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<permission_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c) |
@@ -103,7 +103,7 @@ permission_repository::read_latest(std::uint32_t offset, std::uint32_t limit) {
 std::uint32_t permission_repository::get_total_permission_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active permission count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -126,7 +126,7 @@ std::vector<domain::permission>
 permission_repository::read_latest_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest permission by code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<permission_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 

@@ -109,6 +109,11 @@ public:
     void remove_category(const std::string& code);
 
     /**
+     * @brief Removes multiple change reason categories.
+     */
+    void remove_categories(const std::vector<std::string>& codes);
+
+    /**
      * @brief Gets the version history for a category.
      *
      * @param code The category code
@@ -168,6 +173,11 @@ public:
      * @param code The code of the reason to remove
      */
     void remove_reason(const std::string& code);
+
+    /**
+     * @brief Removes multiple change reasons.
+     */
+    void remove_reasons(const std::vector<std::string>& codes);
 
     /**
      * @brief Gets the version history for a reason.

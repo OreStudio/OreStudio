@@ -52,7 +52,7 @@ void party_role_type_repository::write(
 
 std::vector<domain::party_role_type>
 party_role_type_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_role_type_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -67,7 +67,7 @@ party_role_type_repository::read_latest(context ctx) {
 std::vector<domain::party_role_type>
 party_role_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party role type. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<party_role_type_entity>> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
@@ -94,12 +94,22 @@ party_role_type_repository::read_all(context ctx, const std::string& code) {
 
 void party_role_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party role type: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<party_role_type_entity> |
         where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing party role type from database.");
+}
+
+void party_role_type_repository::remove(
+    context ctx, const std::vector<std::string>& codes) {
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<party_role_type_entity> |
+        where("tenant_id"_c == tid && "code"_c.in(codes) && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "batch removing party_role_types");
 }
 
 }

@@ -38,7 +38,7 @@ dataset_dependency_repository::dataset_dependency_repository(context ctx)
 
 std::vector<domain::dataset_dependency>
 dataset_dependency_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_dependency_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("dataset_code"_c, "dependency_code"_c);
@@ -54,7 +54,7 @@ dataset_dependency_repository::read_latest_by_dataset(const std::string& dataset
     BOOST_LOG_SEV(lg(), debug) << "Reading latest dependencies for dataset: "
                                << dataset_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<dataset_dependency_entity>> |
         where("dataset_code"_c == dataset_code && "valid_to"_c == max.value()) |
         order_by("dependency_code"_c);

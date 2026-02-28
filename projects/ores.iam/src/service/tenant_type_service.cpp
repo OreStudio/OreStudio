@@ -58,6 +58,10 @@ void tenant_type_service::remove_type(const std::string& type) {
     BOOST_LOG_SEV(lg(), info) << "Removed tenant type: " << type;
 }
 
+void tenant_type_service::remove_types(const std::vector<std::string>& types) {
+    repo_.remove(ctx_, types);
+}
+
 std::vector<domain::tenant_type>
 tenant_type_service::get_type_history(const std::string& type) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant type: " << type;

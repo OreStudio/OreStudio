@@ -102,6 +102,11 @@ public:
     void delete_country(const std::string& alpha2_code);
 
     /**
+     * @brief Deletes countries by their alpha-2 codes.
+     */
+    void delete_countries(const std::vector<std::string>& alpha2_codes);
+
+    /**
      * @brief Retrieves a single country by its alpha-2 code.
      *
      * @param alpha2_code The alpha-2 code of the country.

@@ -60,7 +60,7 @@ void tenant_repository::write(const std::vector<domain::tenant>& tenants) {
 }
 
 std::vector<domain::tenant> tenant_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -113,7 +113,7 @@ std::vector<domain::tenant>
 tenant_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant. ID: " << id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto id_str = boost::lexical_cast<std::string>(id);
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
         where("id"_c == id_str && "valid_to"_c == max.value());
@@ -127,7 +127,7 @@ std::vector<domain::tenant>
 tenant_repository::read_latest_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant by code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -140,7 +140,7 @@ std::vector<domain::tenant>
 tenant_repository::read_latest_by_hostname(const std::string& hostname) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant by hostname: " << hostname;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
         where("hostname"_c == hostname && "valid_to"_c == max.value());
 

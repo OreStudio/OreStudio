@@ -55,7 +55,7 @@ void image_tag_repository::write(context ctx, const std::vector<domain::image_ta
 }
 
 std::vector<domain::image_tag> image_tag_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_tag_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("assigned_at"_c.desc());
@@ -69,7 +69,7 @@ std::vector<domain::image_tag>
 image_tag_repository::read_latest_by_image(context ctx, const std::string& image_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image-tags by image: " << image_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_tag_entity>> |
         where("image_id"_c == image_id && "valid_to"_c == max.value()) |
         order_by("assigned_at"_c.desc());
@@ -83,7 +83,7 @@ std::vector<domain::image_tag>
 image_tag_repository::read_latest_by_tag(context ctx, const std::string& tag_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest image-tags by tag: " << tag_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<image_tag_entity>> |
         where("tag_id"_c == tag_id && "valid_to"_c == max.value()) |
         order_by("assigned_at"_c.desc());

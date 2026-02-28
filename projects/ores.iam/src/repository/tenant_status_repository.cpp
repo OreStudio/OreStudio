@@ -61,7 +61,7 @@ write(context ctx, const std::vector<domain::tenant_status>& statuses) {
 
 std::vector<domain::tenant_status>
 tenant_status_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_status_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("name"_c);
@@ -77,7 +77,7 @@ tenant_status_repository::read_latest(context ctx, const std::string& status) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant status. Status: "
                                << status;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<tenant_status_entity>> |
         where("status"_c == status && "valid_to"_c == max.value());
 
@@ -106,12 +106,20 @@ void tenant_status_repository::remove(context ctx, const std::string& status) {
     BOOST_LOG_SEV(lg(), debug) << "Removing tenant status from database: "
                                << status;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<tenant_status_entity> |
         where("status"_c == status && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(),
         "Removing tenant status from database.");
+}
+
+void tenant_status_repository::
+remove(context ctx, const std::vector<std::string>& statuses) {
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<tenant_status_entity> |
+        where("status"_c.in(statuses) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "batch removing tenant_statuses");
 }
 
 }

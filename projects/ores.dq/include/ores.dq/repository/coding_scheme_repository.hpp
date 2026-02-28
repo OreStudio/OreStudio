@@ -74,6 +74,7 @@ public:
     std::uint32_t get_total_count();
     std::vector<domain::coding_scheme> read_all(const std::string& code);
     void remove(const std::string& code);
+    void remove(const std::vector<std::string>& codes);
 
 private:
     context ctx_;

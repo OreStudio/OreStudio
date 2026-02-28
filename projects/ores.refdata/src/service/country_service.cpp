@@ -67,6 +67,11 @@ void country_service::delete_country(const std::string& alpha2_code) {
     repo_.remove(ctx_, alpha2_code);
 }
 
+void country_service::delete_countries(
+    const std::vector<std::string>& alpha2_codes) {
+    repo_.remove(ctx_, alpha2_codes);
+}
+
 std::optional<domain::country> country_service::get_country(
     const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting country: " << alpha2_code;

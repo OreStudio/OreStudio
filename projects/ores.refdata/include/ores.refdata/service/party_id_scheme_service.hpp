@@ -60,6 +60,8 @@ public:
 
     void remove_scheme(const std::string& code);
 
+    void remove_schemes(const std::vector<std::string>& codes);
+
     std::vector<domain::party_id_scheme>
     get_scheme_history(const std::string& code);
 

@@ -114,6 +114,11 @@ public:
     void remove_coding_scheme(const std::string& code);
 
     /**
+     * @brief Removes multiple coding schemes.
+     */
+    void remove_coding_schemes(const std::vector<std::string>& codes);
+
+    /**
      * @brief Gets the version history for a coding scheme.
      *
      * @param code The coding scheme code
@@ -159,6 +164,11 @@ public:
      * @param code The code of the authority type to remove
      */
     void remove_authority_type(const std::string& code);
+
+    /**
+     * @brief Removes multiple coding scheme authority types.
+     */
+    void remove_authority_types(const std::vector<std::string>& codes);
 
     /**
      * @brief Gets the version history for a coding scheme authority type.

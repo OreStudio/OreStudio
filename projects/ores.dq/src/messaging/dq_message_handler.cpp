@@ -440,9 +440,7 @@ handle_delete_change_reason_request(std::span<const std::byte> payload,
 
     delete_change_reason_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_reason(code);
-        }
+        svc.remove_reasons(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -564,9 +562,7 @@ handle_delete_change_reason_category_request(std::span<const std::byte> payload,
 
     delete_change_reason_category_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_category(code);
-        }
+        svc.remove_categories(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -1622,9 +1618,7 @@ handle_delete_coding_scheme_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     delete_coding_scheme_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_coding_scheme(code);
-        }
+        svc.remove_coding_schemes(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -1782,9 +1776,7 @@ handle_delete_coding_scheme_authority_type_request(std::span<const std::byte> pa
     const auto& request = *request_result;
     delete_coding_scheme_authority_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_authority_type(code);
-        }
+        svc.remove_authority_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -1939,9 +1931,7 @@ handle_delete_nature_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     delete_nature_dimension_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_nature_dimension(code);
-        }
+        svc.remove_nature_dimensions(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -2096,9 +2086,7 @@ handle_delete_origin_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     delete_origin_dimension_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_origin_dimension(code);
-        }
+        svc.remove_origin_dimensions(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -2253,9 +2241,7 @@ handle_delete_treatment_dimension_request(std::span<const std::byte> payload,
     const auto& request = *request_result;
     delete_treatment_dimension_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_treatment_dimension(code);
-        }
+        svc.remove_treatment_dimensions(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "

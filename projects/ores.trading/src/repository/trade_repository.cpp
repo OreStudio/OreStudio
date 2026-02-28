@@ -94,7 +94,7 @@ void trade_repository::write(
 
 std::vector<domain::trade>
 trade_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -111,7 +111,7 @@ trade_repository::read_latest(context ctx, std::uint32_t offset,
     std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trades with offset: "
                                << offset << " and limit: " << limit;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
@@ -127,7 +127,7 @@ trade_repository::read_latest(context ctx, std::uint32_t offset,
 
 std::uint32_t trade_repository::count_latest(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Counting latest trades";
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
 
     struct count_result {
@@ -150,7 +150,7 @@ std::uint32_t trade_repository::count_latest(context ctx) {
 std::vector<domain::trade>
 trade_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest trade. id: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<trade_entity>> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
@@ -182,7 +182,7 @@ trade_repository::read_latest_filtered(context ctx,
     std::optional<boost::uuids::uuid> portfolio_id,
     std::optional<boost::uuids::uuid> business_unit_id) {
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
 
     if (book_id.has_value()) {
@@ -252,7 +252,7 @@ trade_repository::count_latest_filtered(context ctx,
     std::optional<boost::uuids::uuid> portfolio_id,
     std::optional<boost::uuids::uuid> business_unit_id) {
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
 
     if (book_id.has_value()) {
@@ -308,7 +308,7 @@ trade_repository::count_latest_filtered(context ctx,
 
 void trade_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<trade_entity> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());

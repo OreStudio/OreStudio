@@ -60,7 +60,7 @@ void coding_scheme_authority_type_repository::write(
 
 std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_authority_type_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -76,7 +76,7 @@ std::vector<domain::coding_scheme_authority_type>
 coding_scheme_authority_type_repository::read_latest(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_scheme_authority_type. Code: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_authority_type_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -92,7 +92,7 @@ coding_scheme_authority_type_repository::read_latest(std::uint32_t offset, std::
     BOOST_LOG_SEV(lg(), debug) << "Reading latest coding_scheme_authority_types with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<coding_scheme_authority_type_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c) |
@@ -109,7 +109,7 @@ coding_scheme_authority_type_repository::read_latest(std::uint32_t offset, std::
 std::uint32_t coding_scheme_authority_type_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active coding_scheme_authority_type count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -151,6 +151,12 @@ void coding_scheme_authority_type_repository::remove(const std::string& code) {
         where("code"_c == code);
 
     execute_delete_query(ctx_, query, lg(), "removing coding_scheme_authority_type from database");
+}
+
+void coding_scheme_authority_type_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<coding_scheme_authority_type_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing coding_scheme_authority_types");
 }
 
 }

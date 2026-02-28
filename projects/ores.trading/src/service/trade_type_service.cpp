@@ -64,6 +64,10 @@ void trade_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed trade type: " << code;
 }
 
+void trade_type_service::remove_types(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::trade_type>
 trade_type_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for trade type: " << code;

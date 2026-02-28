@@ -45,7 +45,6 @@
 #include "ores.iam/service/tenant_type_service.hpp"
 #include "ores.iam/service/tenant_status_service.hpp"
 #include "ores.iam/repository/tenant_type_repository.hpp"
-#include "ores.comms/messaging/save_result.hpp"
 
 namespace ores::iam::messaging {
 
@@ -2873,9 +2872,7 @@ handle_delete_tenant_type_request(std::span<const std::byte> payload,
 
     delete_tenant_type_response response;
     try {
-        for (const auto& type : request.types) {
-            svc.remove_type(type);
-        }
+        svc.remove_types(request.types);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -3046,9 +3043,7 @@ handle_delete_tenant_status_request(std::span<const std::byte> payload,
 
     delete_tenant_status_response response;
     try {
-        for (const auto& status : request.statuses) {
-            svc.remove_status(status);
-        }
+        svc.remove_statuses(request.statuses);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "

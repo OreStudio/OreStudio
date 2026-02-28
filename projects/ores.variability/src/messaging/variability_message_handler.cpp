@@ -21,7 +21,6 @@
 
 #include <algorithm>
 
-#include "ores.comms/messaging/save_result.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.variability/repository/feature_flags_repository.hpp"
 

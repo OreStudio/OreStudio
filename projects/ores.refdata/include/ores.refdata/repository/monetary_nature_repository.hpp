@@ -58,6 +58,11 @@ public:
     read_all(context ctx, const std::string& code);
 
     void remove(context ctx, const std::string& code);
+
+    /**
+     * @brief Deletes monetary natures by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& codes);
 };
 
 }

@@ -60,6 +60,11 @@ public:
 
     void remove_role_type(const std::string& code);
 
+    /**
+     * @brief Removes multiple party role types.
+     */
+    void remove_role_types(const std::vector<std::string>& codes);
+
     std::vector<domain::party_role_type>
     get_role_type_history(const std::string& code);
 

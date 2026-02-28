@@ -60,6 +60,11 @@ public:
 
     void remove_type(const std::string& code);
 
+    /**
+     * @brief Removes multiple trade types.
+     */
+    void remove_types(const std::vector<std::string>& codes);
+
     std::vector<domain::trade_type>
     get_type_history(const std::string& code);
 

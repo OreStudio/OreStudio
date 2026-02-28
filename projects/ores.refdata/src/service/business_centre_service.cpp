@@ -64,6 +64,11 @@ void business_centre_service::delete_business_centre(const std::string& code) {
     repo_.remove(ctx_, code);
 }
 
+void business_centre_service::delete_business_centres(
+    const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::optional<domain::business_centre> business_centre_service::get_business_centre(
     const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting business centre: " << code;

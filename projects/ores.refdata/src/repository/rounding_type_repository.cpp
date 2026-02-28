@@ -52,7 +52,7 @@ void rounding_type_repository::write(
 
 std::vector<domain::rounding_type>
 rounding_type_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<rounding_type_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -66,7 +66,7 @@ rounding_type_repository::read_latest(context ctx) {
 std::vector<domain::rounding_type>
 rounding_type_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest rounding type. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<rounding_type_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -91,11 +91,18 @@ rounding_type_repository::read_all(context ctx, const std::string& code) {
 
 void rounding_type_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing rounding type: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<rounding_type_entity> |
         where("code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing rounding type from database.");
+}
+
+void rounding_type_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<rounding_type_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing rounding_types");
 }
 
 }

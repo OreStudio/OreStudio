@@ -93,6 +93,10 @@ void coding_scheme_service::remove_coding_scheme(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed coding scheme: " << code;
 }
 
+void coding_scheme_service::remove_coding_schemes(const std::vector<std::string>& codes) {
+    coding_scheme_repo_.remove(codes);
+}
+
 std::vector<domain::coding_scheme>
 coding_scheme_service::get_coding_scheme_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for coding scheme: " << code;
@@ -147,6 +151,10 @@ void coding_scheme_service::remove_authority_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme authority type: " << code;
     authority_type_repo_.remove(code);
     BOOST_LOG_SEV(lg(), info) << "Removed coding scheme authority type: " << code;
+}
+
+void coding_scheme_service::remove_authority_types(const std::vector<std::string>& codes) {
+    authority_type_repo_.remove(codes);
 }
 
 std::vector<domain::coding_scheme_authority_type>

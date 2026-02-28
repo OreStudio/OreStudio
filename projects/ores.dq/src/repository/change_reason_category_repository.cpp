@@ -60,7 +60,7 @@ void change_reason_category_repository::write(
 
 std::vector<domain::change_reason_category>
 change_reason_category_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -78,7 +78,7 @@ change_reason_category_repository::read_latest(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason_category. Code: "
                                << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -96,7 +96,7 @@ change_reason_category_repository::read_latest(std::uint32_t offset,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest change_reason_categories with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<change_reason_category_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c) |
@@ -114,7 +114,7 @@ change_reason_category_repository::read_latest(std::uint32_t offset,
 std::uint32_t change_reason_category_repository::get_total_count() {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active change_reason_category count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -161,6 +161,12 @@ void change_reason_category_repository::remove(const std::string& code) {
 
     execute_delete_query(ctx_, query, lg(),
         "removing change_reason_category from database");
+}
+
+void change_reason_category_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<change_reason_category_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing change_reason_categories");
 }
 
 }

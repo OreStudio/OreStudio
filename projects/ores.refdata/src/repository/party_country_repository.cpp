@@ -60,7 +60,7 @@ void party_country_repository::write(
 
 std::vector<domain::party_country>
 party_country_repository::read_latest() {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_country_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("party_id"_c, "country_alpha2_code"_c);
@@ -77,7 +77,7 @@ party_country_repository::read_latest_by_party(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Party: "
                                << party_id;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
     const auto query = sqlgen::read<std::vector<party_country_entity>> |
         where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
@@ -95,7 +95,7 @@ party_country_repository::read_latest_by_country(
     BOOST_LOG_SEV(lg(), debug) << "Reading latest party countries. Country: "
                                << alpha2_code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<party_country_entity>> |
         where("country_alpha2_code"_c == alpha2_code && "valid_to"_c == max.value()) |
         order_by("party_id"_c);

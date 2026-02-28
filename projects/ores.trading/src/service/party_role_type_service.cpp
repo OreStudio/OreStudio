@@ -65,6 +65,10 @@ void party_role_type_service::remove_role_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed party role type: " << code;
 }
 
+void party_role_type_service::remove_role_types(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::party_role_type>
 party_role_type_service::get_role_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party role type: " << code;

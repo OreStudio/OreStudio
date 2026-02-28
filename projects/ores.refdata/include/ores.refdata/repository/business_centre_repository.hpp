@@ -105,6 +105,11 @@ public:
      * @brief Deletes a business centre by closing its temporal validity.
      */
     void remove(context ctx, const std::string& code);
+
+    /**
+     * @brief Deletes business centres by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& codes);
 };
 
 }

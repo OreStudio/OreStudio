@@ -52,7 +52,7 @@ void monetary_nature_repository::write(
 
 std::vector<domain::monetary_nature>
 monetary_nature_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<monetary_nature_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("code"_c);
@@ -66,7 +66,7 @@ monetary_nature_repository::read_latest(context ctx) {
 std::vector<domain::monetary_nature>
 monetary_nature_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest currency asset class. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<monetary_nature_entity>> |
         where("code"_c == code && "valid_to"_c == max.value());
 
@@ -91,11 +91,18 @@ monetary_nature_repository::read_all(context ctx, const std::string& code) {
 
 void monetary_nature_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing currency asset class: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<monetary_nature_entity> |
         where("code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing currency asset class from database.");
+}
+
+void monetary_nature_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<monetary_nature_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing monetary_natures");
 }
 
 }

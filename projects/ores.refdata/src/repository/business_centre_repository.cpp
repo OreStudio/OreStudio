@@ -59,7 +59,7 @@ write(context ctx, const std::vector<domain::business_centre>& bcs) {
 
 
 std::vector<domain::business_centre> business_centre_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<business_centre_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -77,7 +77,7 @@ business_centre_repository::read_latest(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business centres. Code: "
                              << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<business_centre_entity>> |
         where("code"_c == code && "valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc());
@@ -93,7 +93,7 @@ business_centre_repository::read_latest(context ctx, std::uint32_t offset,
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business centres with offset: "
                                << offset << " and limit: " << limit;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::read<std::vector<business_centre_entity>> |
         where("valid_to"_c == max.value()) |
         order_by("valid_from"_c.desc()) |
@@ -108,7 +108,7 @@ business_centre_repository::read_latest(context ctx, std::uint32_t offset,
 std::uint32_t business_centre_repository::get_total_business_centre_count(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Retrieving total active business centre count";
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
     struct count_result {
         long long count;
@@ -177,11 +177,18 @@ business_centre_repository::read_all(context ctx, const std::string& code) {
 void business_centre_repository::remove(context ctx, const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business centre from database: " << code;
 
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto query = sqlgen::delete_from<business_centre_entity> |
         where("code"_c == code && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing business centre from database.");
+}
+
+void business_centre_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<business_centre_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing business_centres");
 }
 
 }

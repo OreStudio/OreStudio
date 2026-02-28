@@ -50,7 +50,7 @@
  *
  * PREREQUISITES FOR TIMESCALEDB (optional):
  *   - TimescaleDB must be installed on the system:
- *       Debian/Ubuntu: apt install timescaledb-2-postgresql-16
+ *       Debian/Ubuntu: apt install timescaledb-2-postgresql-18
  *       macOS:         brew install timescaledb
  *   - TimescaleDB must be added to shared_preload_libraries in postgresql.conf:
  *       shared_preload_libraries = 'timescaledb'

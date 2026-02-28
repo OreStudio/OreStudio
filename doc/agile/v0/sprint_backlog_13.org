@@ -1138,6 +1138,70 @@ Acceptance criteria:
 - Successful import creates trades in the selected book.
 - Trades appear in the trade list after import.
 
+* AI Generated Sprint Summary
+
+#+begin_src markdown
+# **ORE Studio Sprint 13 – Release Notes**
+*February 2026*
+
+Sprint 13 delivered the foundational **trade and scheduling infrastructure** while simultaneously maturing the platform's security model, UI, and reference data layer. The sprint's centrepiece was the introduction of **account-party management**, tying IAM accounts to specific parties and establishing the groundwork for party-scoped access control across the entire system. On the trading side, we completed the full **scheduler subsystem** — binary protocol, scheduling engine, and message queue — and conducted the critical analysis required to map ORE trade data into the platform's model. The **Qt UI underwent a comprehensive overhaul**: all detail dialogs are now tabbed, toolbars have been removed for a cleaner aesthetic, and a new **portfolio explorer** provides a hierarchical view of books and trades. Named environments were added to the connection manager, significantly improving the developer workflow. This sprint marks a turning point from reference data foundations toward an operational trading platform, with the first scheduling and messaging primitives now in place and trade import firmly on the critical path for Sprint 14.
+
+---
+
+## ✅ **Highlights**
+
+- Completed full **account-party management and login support** (13h 43m), enabling party-scoped authentication.
+- Delivered **scheduling infrastructure**: scheduler binary protocol, scheduling support, and a message queue.
+- Overhauled the **Qt UI**: all detail dialogs are now tabbed, toolbars removed, and a portfolio explorer added.
+- Added **named environments** to the connection manager for one-click host/port selection.
+- Completed **ORE trade import mapping analysis** as groundwork for the upcoming import dialog.
+
+## 🛠️ **Key Improvements**
+
+### **Trading & Scheduling**
+- Analysed ORE trade import mapping requirements.
+- Added scheduler binary protocol and scheduling support.
+- Added a message queue for async processing.
+- Added batch support for saves and deletes (in progress at sprint close).
+
+### **Security & IAM**
+- Added account-party management with login support.
+- Fixed provenance: `performed_by` and `modified_by` stamping across all write paths.
+
+### **Qt UI & UX**
+- All detail dialogs converted to tabbed layout.
+- Toolbars removed from detail dialogs.
+- Added portfolio explorer with breadcrumb scope and book/trade hierarchy.
+- Added named environments to connection manager.
+- Minor connection browser improvements.
+
+### **Reference Data**
+- Added rounding type entity.
+- Enhanced currency taxonomy and renamed currency asset classes.
+- Books, portfolios, and trades are now party-specific.
+
+### **Architecture**
+- Merged FSM into DQ component.
+- Added session data plotting.
+
+## ⚠️ **Known Issues & Postponed**
+
+- **Add party level currency and country restrictions** – Deferred to Sprint 14; some analysis work completed.
+- **Add trade import mapping dialog to Qt UI** – Deferred to Sprint 14; 6h 07m of implementation started.
+
+## 📊 **Time Summary**
+
+- **Total effort**: 72h 13m
+- **Code**: 97.6% | **Infra**: 1.8% | **Agile**: 0.6%
+- Top tasks: Account-party management (13h 43m), Scheduling support (6h 48m), Trade import dialog (6h 07m), Remove toolbars (5h 57m), Batch saves/deletes (5h 32m), Portfolio explorer (5h 19m)
+
+---
+
+*Next sprint: Continue trade import UI, party-level restrictions, and begin further trading domain features.*
+
+---
+#+end_src
+
 * Footer
 
 | Previous: [[id:1B387E8C-8EC1-4C2A-A321-1593C35A9A77][Sprint Backlog 12]] |

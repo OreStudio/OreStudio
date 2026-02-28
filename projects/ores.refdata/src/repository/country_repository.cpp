@@ -186,4 +186,11 @@ void country_repository::remove(context ctx, const std::string& alpha2_code) {
     execute_delete_query(ctx, query, lg(), "Removing country from database.");
 }
 
+void country_repository::remove(context ctx,
+    const std::vector<std::string>& alpha2_codes) {
+    const auto query = sqlgen::delete_from<country_entity> |
+        where("alpha2_code"_c.in(alpha2_codes));
+    execute_delete_query(ctx, query, lg(), "batch removing countries");
+}
+
 }

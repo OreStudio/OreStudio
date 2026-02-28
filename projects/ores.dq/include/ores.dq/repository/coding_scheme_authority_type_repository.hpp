@@ -90,6 +90,11 @@ public:
      */
     void remove(const std::string& code);
 
+    /**
+     * @brief Deletes coding_scheme_authority_types by closing their temporal validity.
+     */
+    void remove(const std::vector<std::string>& codes);
+
 private:
     context ctx_;
 };

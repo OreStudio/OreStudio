@@ -68,6 +68,11 @@ void currency_service::delete_currency(const std::string& iso_code) {
     repo_.remove(ctx_, iso_code);
 }
 
+void currency_service::delete_currencies(
+    const std::vector<std::string>& iso_codes) {
+    repo_.remove(ctx_, iso_codes);
+}
+
 std::optional<domain::currency> currency_service::get_currency(
     const std::string& iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting currency: " << iso_code;

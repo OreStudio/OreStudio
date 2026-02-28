@@ -65,6 +65,11 @@ void monetary_nature_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed currency asset class: " << code;
 }
 
+void monetary_nature_service::remove_types(
+    const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::monetary_nature>
 monetary_nature_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for currency asset class: " << code;

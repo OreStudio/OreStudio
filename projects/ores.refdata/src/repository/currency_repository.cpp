@@ -186,4 +186,11 @@ void currency_repository::remove(context ctx, const std::string& iso_code) {
     execute_delete_query(ctx, query, lg(), "Removing currency from database.");
 }
 
+void currency_repository::remove(context ctx,
+    const std::vector<std::string>& iso_codes) {
+    const auto query = sqlgen::delete_from<currency_entity> |
+        where("iso_code"_c.in(iso_codes));
+    execute_delete_query(ctx, query, lg(), "batch removing currencies");
+}
+
 }

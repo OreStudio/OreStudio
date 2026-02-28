@@ -106,6 +106,10 @@ void change_management_service::remove_category(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed change reason category: " << code;
 }
 
+void change_management_service::remove_categories(const std::vector<std::string>& codes) {
+    category_repo_.remove(codes);
+}
+
 std::vector<domain::change_reason_category>
 change_management_service::get_category_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting category history for: " << code;
@@ -181,6 +185,10 @@ void change_management_service::remove_reason(const std::string& code) {
     reason_repo_.remove(code);
 
     BOOST_LOG_SEV(lg(), info) << "Removed change reason: " << code;
+}
+
+void change_management_service::remove_reasons(const std::vector<std::string>& codes) {
+    reason_repo_.remove(codes);
 }
 
 std::vector<domain::change_reason>

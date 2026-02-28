@@ -57,6 +57,7 @@ public:
     void save_type(const domain::tenant_type& type);
 
     void remove_type(const std::string& type);
+    void remove_types(const std::vector<std::string>& types);
 
     std::vector<domain::tenant_type>
     get_type_history(const std::string& type);

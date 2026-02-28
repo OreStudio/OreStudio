@@ -184,4 +184,11 @@ void business_centre_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing business centre from database.");
 }
 
+void business_centre_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<business_centre_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing business_centres");
+}
+
 }

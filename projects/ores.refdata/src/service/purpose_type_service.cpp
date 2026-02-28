@@ -68,6 +68,10 @@ void purpose_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed purpose type: " << code;
 }
 
+void purpose_type_service::remove_types(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::purpose_type>
 purpose_type_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for purpose type: " << code;

@@ -59,6 +59,7 @@ public:
     read_all(context ctx, const std::string& type);
 
     void remove(context ctx, const std::string& type);
+    void remove(context ctx, const std::vector<std::string>& types);
 };
 
 }

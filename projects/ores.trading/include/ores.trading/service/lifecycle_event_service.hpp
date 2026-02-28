@@ -60,6 +60,11 @@ public:
 
     void remove_event(const std::string& code);
 
+    /**
+     * @brief Removes multiple lifecycle events.
+     */
+    void remove_events(const std::vector<std::string>& codes);
+
     std::vector<domain::lifecycle_event>
     get_event_history(const std::string& code);
 

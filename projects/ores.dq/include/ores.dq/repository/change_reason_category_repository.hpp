@@ -96,6 +96,11 @@ public:
      */
     void remove(const std::string& code);
 
+    /**
+     * @brief Deletes change_reason_categories by closing their temporal validity.
+     */
+    void remove(const std::vector<std::string>& codes);
+
 private:
     context ctx_;
 };

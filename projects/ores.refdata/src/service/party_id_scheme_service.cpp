@@ -70,6 +70,11 @@ void party_id_scheme_service::remove_scheme(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed party ID scheme: " << code;
 }
 
+void party_id_scheme_service::remove_schemes(
+    const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::party_id_scheme>
 party_id_scheme_service::get_scheme_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for party ID scheme: "

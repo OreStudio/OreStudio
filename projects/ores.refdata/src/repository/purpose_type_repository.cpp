@@ -111,4 +111,11 @@ void purpose_type_repository::remove(context ctx, const std::string& code) {
         "Removing purpose type from database.");
 }
 
+void purpose_type_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<purpose_type_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing purpose_types");
+}
+
 }

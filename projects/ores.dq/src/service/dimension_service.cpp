@@ -73,6 +73,10 @@ void dimension_service::remove_nature_dimension(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed nature dimension: " << code;
 }
 
+void dimension_service::remove_nature_dimensions(const std::vector<std::string>& codes) {
+    nature_repo_.remove(codes);
+}
+
 std::vector<domain::nature_dimension>
 dimension_service::get_nature_dimension_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for nature dimension: " << code;
@@ -124,6 +128,10 @@ void dimension_service::remove_origin_dimension(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed origin dimension: " << code;
 }
 
+void dimension_service::remove_origin_dimensions(const std::vector<std::string>& codes) {
+    origin_repo_.remove(codes);
+}
+
 std::vector<domain::origin_dimension>
 dimension_service::get_origin_dimension_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for origin dimension: " << code;
@@ -173,6 +181,10 @@ void dimension_service::remove_treatment_dimension(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing treatment dimension: " << code;
     treatment_repo_.remove(code);
     BOOST_LOG_SEV(lg(), info) << "Removed treatment dimension: " << code;
+}
+
+void dimension_service::remove_treatment_dimensions(const std::vector<std::string>& codes) {
+    treatment_repo_.remove(codes);
 }
 
 std::vector<domain::treatment_dimension>

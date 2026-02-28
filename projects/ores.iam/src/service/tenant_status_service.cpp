@@ -58,6 +58,10 @@ void tenant_status_service::remove_status(const std::string& status) {
     BOOST_LOG_SEV(lg(), info) << "Removed tenant status: " << status;
 }
 
+void tenant_status_service::remove_statuses(const std::vector<std::string>& statuses) {
+    repo_.remove(ctx_, statuses);
+}
+
 std::vector<domain::tenant_status>
 tenant_status_service::get_status_history(const std::string& status) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for tenant status: "

@@ -145,4 +145,10 @@ void treatment_dimension_repository::remove(const std::string& code) {
     execute_delete_query(ctx_, query, lg(), "removing treatment_dimension from database");
 }
 
+void treatment_dimension_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<treatment_dimension_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing treatment_dimensions");
+}
+
 }

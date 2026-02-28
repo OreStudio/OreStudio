@@ -25,7 +25,6 @@
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/currency_history_protocol.hpp"
 #include "ores.refdata/service/currency_service.hpp"
-#include "ores.comms/messaging/save_result.hpp"
 
 namespace ores::http_server::routes {
 

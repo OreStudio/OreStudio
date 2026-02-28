@@ -113,4 +113,12 @@ void tenant_type_repository::remove(context ctx, const std::string& type) {
         "Removing tenant type from database.");
 }
 
+void tenant_type_repository::
+remove(context ctx, const std::vector<std::string>& types) {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<tenant_type_entity> |
+        where("type"_c.in(types) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "batch removing tenant_types");
+}
+
 }

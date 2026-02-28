@@ -145,4 +145,10 @@ void nature_dimension_repository::remove(const std::string& code) {
     execute_delete_query(ctx_, query, lg(), "removing nature_dimension from database");
 }
 
+void nature_dimension_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<nature_dimension_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing nature_dimensions");
+}
+
 }

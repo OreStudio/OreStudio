@@ -100,6 +100,11 @@ public:
     void remove_nature_dimension(const std::string& code);
 
     /**
+     * @brief Removes multiple nature dimensions.
+     */
+    void remove_nature_dimensions(const std::vector<std::string>& codes);
+
+    /**
      * @brief Gets the version history for a nature dimension.
      *
      * @param code The dimension code
@@ -145,6 +150,11 @@ public:
     void remove_origin_dimension(const std::string& code);
 
     /**
+     * @brief Removes multiple origin dimensions.
+     */
+    void remove_origin_dimensions(const std::vector<std::string>& codes);
+
+    /**
      * @brief Gets the version history for an origin dimension.
      *
      * @param code The dimension code
@@ -188,6 +198,11 @@ public:
      * @param code The code of the dimension to remove
      */
     void remove_treatment_dimension(const std::string& code);
+
+    /**
+     * @brief Removes multiple treatment dimensions.
+     */
+    void remove_treatment_dimensions(const std::vector<std::string>& codes);
 
     /**
      * @brief Gets the version history for a treatment dimension.

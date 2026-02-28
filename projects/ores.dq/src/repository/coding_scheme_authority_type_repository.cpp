@@ -153,4 +153,10 @@ void coding_scheme_authority_type_repository::remove(const std::string& code) {
     execute_delete_query(ctx_, query, lg(), "removing coding_scheme_authority_type from database");
 }
 
+void coding_scheme_authority_type_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<coding_scheme_authority_type_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing coding_scheme_authority_types");
+}
+
 }

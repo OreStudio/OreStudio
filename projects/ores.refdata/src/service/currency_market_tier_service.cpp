@@ -65,6 +65,11 @@ void currency_market_tier_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed currency market tier: " << code;
 }
 
+void currency_market_tier_service::remove_types(
+    const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::currency_market_tier>
 currency_market_tier_service::get_type_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for currency market tier: " << code;

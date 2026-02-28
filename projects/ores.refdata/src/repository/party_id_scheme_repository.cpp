@@ -118,4 +118,11 @@ void party_id_scheme_repository::remove(context ctx, const std::string& code) {
         "Removing party ID scheme from database.");
 }
 
+void party_id_scheme_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<party_id_scheme_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing party_id_schemes");
+}
+
 }

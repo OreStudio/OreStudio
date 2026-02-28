@@ -60,6 +60,8 @@ public:
 
     void remove_type(const std::string& code);
 
+    void remove_types(const std::vector<std::string>& codes);
+
     std::vector<domain::currency_market_tier>
     get_type_history(const std::string& code);
 

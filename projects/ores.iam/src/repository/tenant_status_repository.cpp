@@ -114,4 +114,12 @@ void tenant_status_repository::remove(context ctx, const std::string& status) {
         "Removing tenant status from database.");
 }
 
+void tenant_status_repository::
+remove(context ctx, const std::vector<std::string>& statuses) {
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::delete_from<tenant_status_entity> |
+        where("status"_c.in(statuses) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "batch removing tenant_statuses");
+}
+
 }

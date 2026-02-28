@@ -115,6 +115,11 @@ public:
      * from the current point in time onwards while preserving history.
      */
     void remove(context ctx, const std::string& alpha2_code);
+
+    /**
+     * @brief Deletes countries by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& alpha2_codes);
 };
 
 }

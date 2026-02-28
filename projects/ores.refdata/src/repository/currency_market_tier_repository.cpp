@@ -98,4 +98,11 @@ void currency_market_tier_repository::remove(context ctx, const std::string& cod
     execute_delete_query(ctx, query, lg(), "Removing currency market tier from database.");
 }
 
+void currency_market_tier_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<currency_market_tier_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing currency_market_tiers");
+}
+
 }

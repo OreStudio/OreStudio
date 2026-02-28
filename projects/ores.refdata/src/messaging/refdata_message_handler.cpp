@@ -430,9 +430,7 @@ handle_delete_currency_request(std::span<const std::byte> payload,
 
     delete_currency_response response;
     try {
-        for (const auto& iso_code : request.iso_codes) {
-            currency_service.delete_currency(iso_code);
-        }
+        currency_service.delete_currencies(request.iso_codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -622,9 +620,7 @@ handle_delete_business_centre_request(std::span<const std::byte> payload,
 
     delete_business_centre_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.delete_business_centre(code);
-        }
+        svc.delete_business_centres(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -827,9 +823,7 @@ handle_delete_country_request(std::span<const std::byte> payload,
 
     delete_country_response response;
     try {
-        for (const auto& alpha2_code : request.alpha2_codes) {
-            country_service.delete_country(alpha2_code);
-        }
+        country_service.delete_countries(request.alpha2_codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -1001,9 +995,7 @@ handle_delete_party_type_request(std::span<const std::byte> payload,
 
     delete_party_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_type(code);
-        }
+        svc.remove_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -1170,9 +1162,7 @@ handle_delete_party_status_request(std::span<const std::byte> payload,
 
     delete_party_status_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_status(code);
-        }
+        svc.remove_statuses(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -1339,9 +1329,7 @@ handle_delete_party_id_scheme_request(std::span<const std::byte> payload,
 
     delete_party_id_scheme_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_scheme(code);
-        }
+        svc.remove_schemes(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -1508,9 +1496,7 @@ handle_delete_contact_type_request(std::span<const std::byte> payload,
 
     delete_contact_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_type(code);
-        }
+        svc.remove_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -3454,9 +3440,7 @@ handle_delete_book_status_request(std::span<const std::byte> payload,
 
     delete_book_status_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_status(code);
-        }
+        svc.remove_statuses(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -3623,9 +3607,7 @@ handle_delete_purpose_type_request(std::span<const std::byte> payload,
 
     delete_purpose_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_type(code);
-        }
+        svc.remove_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -3790,9 +3772,7 @@ handle_delete_rounding_type_request(std::span<const std::byte> payload,
 
     delete_rounding_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_type(code);
-        }
+        svc.remove_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -3957,9 +3937,7 @@ handle_delete_monetary_nature_request(std::span<const std::byte> payload,
 
     delete_monetary_nature_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_type(code);
-        }
+        svc.remove_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -4125,9 +4103,7 @@ handle_delete_currency_market_tier_request(std::span<const std::byte> payload,
 
     delete_currency_market_tier_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_type(code);
-        }
+        svc.remove_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "

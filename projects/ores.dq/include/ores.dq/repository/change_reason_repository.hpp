@@ -102,6 +102,11 @@ public:
      */
     void remove(const std::string& code);
 
+    /**
+     * @brief Deletes change_reasons by closing their temporal validity.
+     */
+    void remove(const std::vector<std::string>& codes);
+
 private:
     context ctx_;
 };

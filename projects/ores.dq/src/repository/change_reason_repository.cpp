@@ -166,4 +166,10 @@ void change_reason_repository::remove(const std::string& code) {
     execute_delete_query(ctx_, query, lg(), "removing change_reason from database");
 }
 
+void change_reason_repository::remove(const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<change_reason_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx_, query, lg(), "batch removing change_reasons");
+}
+
 }

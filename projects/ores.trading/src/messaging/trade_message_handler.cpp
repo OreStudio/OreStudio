@@ -21,7 +21,6 @@
 #include "ores.trading/messaging/trade_message_handler.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.comms/messaging/save_result.hpp"
 #include "ores.trading/messaging/trade_type_protocol.hpp"
 #include "ores.trading/messaging/lifecycle_event_protocol.hpp"
 #include "ores.trading/messaging/party_role_type_protocol.hpp"
@@ -215,9 +214,7 @@ trade_message_handler::handle_delete_trade_type_request(
     const auto& request = *request_result;
     delete_trade_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_type(code);
-        }
+        svc.remove_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -360,9 +357,7 @@ trade_message_handler::handle_delete_lifecycle_event_request(
     const auto& request = *request_result;
     delete_lifecycle_event_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_event(code);
-        }
+        svc.remove_events(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -505,9 +500,7 @@ trade_message_handler::handle_delete_party_role_type_request(
     const auto& request = *request_result;
     delete_party_role_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_role_type(code);
-        }
+        svc.remove_role_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
@@ -650,9 +643,7 @@ trade_message_handler::handle_delete_trade_id_type_request(
     const auto& request = *request_result;
     delete_trade_id_type_response response;
     try {
-        for (const auto& code : request.codes) {
-            svc.remove_id_type(code);
-        }
+        svc.remove_id_types(request.codes);
         response.success = true;
         response.message = "Deleted successfully";
         BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "

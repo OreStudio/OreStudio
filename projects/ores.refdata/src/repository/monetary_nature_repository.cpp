@@ -98,4 +98,11 @@ void monetary_nature_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing currency asset class from database.");
 }
 
+void monetary_nature_repository::remove(context ctx,
+    const std::vector<std::string>& codes) {
+    const auto query = sqlgen::delete_from<monetary_nature_entity> |
+        where("code"_c.in(codes));
+    execute_delete_query(ctx, query, lg(), "batch removing monetary_natures");
+}
+
 }

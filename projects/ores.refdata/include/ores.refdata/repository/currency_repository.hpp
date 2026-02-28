@@ -115,6 +115,11 @@ public:
      * from the current point in time onwards while preserving history.
      */
     void remove(context ctx, const std::string& iso_code);
+
+    /**
+     * @brief Deletes currencies by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& iso_codes);
 };
 
 }

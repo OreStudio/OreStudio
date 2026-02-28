@@ -65,6 +65,10 @@ void lifecycle_event_service::remove_event(const std::string& code) {
     BOOST_LOG_SEV(lg(), info) << "Removed lifecycle event: " << code;
 }
 
+void lifecycle_event_service::remove_events(const std::vector<std::string>& codes) {
+    repo_.remove(ctx_, codes);
+}
+
 std::vector<domain::lifecycle_event>
 lifecycle_event_service::get_event_history(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for lifecycle event: " << code;

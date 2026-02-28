@@ -60,6 +60,8 @@ public:
 
     void remove_status(const std::string& code);
 
+    void remove_statuses(const std::vector<std::string>& codes);
+
     std::vector<domain::party_status>
     get_status_history(const std::string& code);
 

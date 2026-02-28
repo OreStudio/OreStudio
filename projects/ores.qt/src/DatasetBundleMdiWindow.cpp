@@ -354,11 +354,9 @@ void DatasetBundleMdiWindow::deleteSelected() {
             return results;
         }
 
-        // Match results with codes for display purposes
-        for (std::size_t i = 0; i < response->results.size(); ++i) {
-            const auto& result = response->results[i];
+        for (std::size_t i = 0; i < ids.size(); ++i) {
             std::string code = (i < codes.size()) ? codes[i] : "";
-            results.push_back({result.id, code, result.success, result.message});
+            results.push_back({ids[i], code, response->success, response->message});
         }
 
         return results;

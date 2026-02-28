@@ -70,6 +70,16 @@ void counterparty_service::save_counterparty(const domain::counterparty& counter
     BOOST_LOG_SEV(lg(), info) << "Saved counterparty: " << counterparty.id;
 }
 
+void counterparty_service::save_counterparties(
+    const std::vector<domain::counterparty>& counterparties) {
+    for (const auto& c : counterparties) {
+        if (c.id.is_nil())
+            throw std::invalid_argument("Counterparty ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparties.size() << " counterparties";
+    repo_.write(counterparties);
+}
+
 void counterparty_service::remove_counterparty(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing counterparty: " << id;
     repo_.remove(id);

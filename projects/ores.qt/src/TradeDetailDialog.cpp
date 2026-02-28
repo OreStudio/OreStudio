@@ -417,7 +417,7 @@ void TradeDetailDialog::onSaveClicked() {
         }
 
         trading::messaging::save_trade_request request;
-        request.trade = trade;
+        request.trades.push_back(trade);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -503,7 +503,7 @@ void TradeDetailDialog::onDeleteClicked() {
         }
 
         trading::messaging::delete_trade_request request;
-        request.ids = {id};
+        request.ids.push_back({id});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -526,11 +526,11 @@ void TradeDetailDialog::onDeleteClicked() {
         auto response = trading::messaging::delete_trade_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

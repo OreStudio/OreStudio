@@ -27,6 +27,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.trading/domain/trade.hpp"
@@ -81,10 +82,13 @@ struct get_trades_response final {
 std::ostream& operator<<(std::ostream& s, const get_trades_response& v);
 
 /**
- * @brief Request to save a trade (create or update).
+ * @brief Request to save one or more trades (create or update).
  */
 struct save_trade_request final {
-    domain::trade trade;
+    std::vector<domain::trade> trades;
+
+    static save_trade_request from(domain::trade trade);
+    static save_trade_request from(std::vector<domain::trade> trades);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_trade_request,
@@ -95,10 +99,10 @@ struct save_trade_request final {
 std::ostream& operator<<(std::ostream& s, const save_trade_request& v);
 
 /**
- * @brief Response confirming trade save operation.
+ * @brief Response confirming trade save operation(s).
  */
 struct save_trade_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -108,17 +112,6 @@ struct save_trade_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_trade_response& v);
-
-/**
- * @brief Result for a single trade deletion.
- */
-struct delete_trade_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_trade_result& v);
 
 /**
  * @brief Request to delete one or more trades.
@@ -138,7 +131,8 @@ std::ostream& operator<<(std::ostream& s, const delete_trade_request& v);
  * @brief Response confirming trade deletion(s).
  */
 struct delete_trade_response final {
-    std::vector<delete_trade_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_trade_response,

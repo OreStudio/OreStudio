@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/portfolio.hpp"
@@ -70,10 +71,13 @@ struct get_portfolios_response final {
 std::ostream& operator<<(std::ostream& s, const get_portfolios_response& v);
 
 /**
- * @brief Request to save a portfolio (create or update).
+ * @brief Request to save one or more portfolios (create or update).
  */
 struct save_portfolio_request final {
-    domain::portfolio portfolio;
+    std::vector<domain::portfolio> portfolios;
+
+    static save_portfolio_request from(domain::portfolio portfolio);
+    static save_portfolio_request from(std::vector<domain::portfolio> portfolios);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_portfolio_request,
@@ -84,10 +88,10 @@ struct save_portfolio_request final {
 std::ostream& operator<<(std::ostream& s, const save_portfolio_request& v);
 
 /**
- * @brief Response confirming portfolio save operation.
+ * @brief Response confirming portfolio save operation(s).
  */
 struct save_portfolio_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -97,17 +101,6 @@ struct save_portfolio_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_portfolio_response& v);
-
-/**
- * @brief Result for a single portfolio deletion.
- */
-struct delete_portfolio_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_portfolio_result& v);
 
 /**
  * @brief Request to delete one or more portfolios.
@@ -127,7 +120,8 @@ std::ostream& operator<<(std::ostream& s, const delete_portfolio_request& v);
  * @brief Response confirming portfolio deletion(s).
  */
 struct delete_portfolio_response final {
-    std::vector<delete_portfolio_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_portfolio_response,

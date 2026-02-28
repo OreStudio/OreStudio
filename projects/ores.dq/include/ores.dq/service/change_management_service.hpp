@@ -95,6 +95,13 @@ public:
     void save_category(const domain::change_reason_category& category);
 
     /**
+     * @brief Saves multiple change reason categories (creates or updates).
+     *
+     * @param categories The categories to save
+     */
+    void save_categories(const std::vector<domain::change_reason_category>& categories);
+
+    /**
      * @brief Removes a change reason category.
      *
      * @param code The code of the category to remove
@@ -147,6 +154,13 @@ public:
      * @param reason The reason to save
      */
     void save_reason(const domain::change_reason& reason);
+
+    /**
+     * @brief Saves multiple change reasons (creates or updates).
+     *
+     * @param reasons The reasons to save
+     */
+    void save_reasons(const std::vector<domain::change_reason>& reasons);
 
     /**
      * @brief Removes a change reason.

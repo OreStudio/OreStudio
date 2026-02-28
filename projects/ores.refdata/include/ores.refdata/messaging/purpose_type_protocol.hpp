@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/purpose_type.hpp"
@@ -62,10 +63,13 @@ struct get_purpose_types_response final {
 std::ostream& operator<<(std::ostream& s, const get_purpose_types_response& v);
 
 /**
- * @brief Request to save a purpose type (create or update).
+ * @brief Request to save one or more purpose types (create or update).
  */
 struct save_purpose_type_request final {
-    domain::purpose_type type;
+    std::vector<domain::purpose_type> types;
+
+    static save_purpose_type_request from(domain::purpose_type type);
+    static save_purpose_type_request from(std::vector<domain::purpose_type> types);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_purpose_type_request,
@@ -76,10 +80,10 @@ struct save_purpose_type_request final {
 std::ostream& operator<<(std::ostream& s, const save_purpose_type_request& v);
 
 /**
- * @brief Response confirming purpose type save operation.
+ * @brief Response confirming purpose type save operation(s).
  */
 struct save_purpose_type_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_purpose_type_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_purpose_type_response& v);
-
-/**
- * @brief Result for a single purpose type deletion.
- */
-struct delete_purpose_type_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_purpose_type_result& v);
 
 /**
  * @brief Request to delete one or more purpose types.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_purpose_type_request& v);
  * @brief Response confirming purpose type deletion(s).
  */
 struct delete_purpose_type_response final {
-    std::vector<delete_purpose_type_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_purpose_type_response,

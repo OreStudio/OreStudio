@@ -524,7 +524,7 @@ void CountryController::onRevertCountry(const refdata::domain::country& country)
             using refdata::messaging::save_country_request;
             using refdata::messaging::save_country_response;
 
-            save_country_request request{countryToSave};
+            auto request = save_country_request::from(countryToSave);
             auto payload = request.serialize();
             frame request_frame = frame(message_type::save_country_request,
                 0, std::move(payload));

@@ -240,7 +240,7 @@ void TenantDetailDialog::onSaveClicked() {
         }
 
         iam::messaging::save_tenant_request request;
-        request.tenant = tenant;
+        request.tenants.push_back(tenant);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -326,7 +326,7 @@ void TenantDetailDialog::onDeleteClicked() {
         }
 
         iam::messaging::delete_tenant_request request;
-        request.ids = {id};
+        request.ids.push_back({id});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -349,11 +349,11 @@ void TenantDetailDialog::onDeleteClicked() {
         auto response = iam::messaging::delete_tenant_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

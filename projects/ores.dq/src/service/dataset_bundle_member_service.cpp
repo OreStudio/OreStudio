@@ -53,6 +53,20 @@ void dataset_bundle_member_service::save_member(const domain::dataset_bundle_mem
                               << "/" << member.dataset_code;
 }
 
+void dataset_bundle_member_service::save_members(
+    const std::vector<domain::dataset_bundle_member>& members) {
+    for (const auto& m : members) {
+        if (m.bundle_code.empty()) {
+            throw std::invalid_argument("Bundle cannot be empty.");
+        }
+        if (m.dataset_code.empty()) {
+            throw std::invalid_argument("Dataset cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << members.size() << " dataset bundle members";
+    repo_.write(members);
+}
+
 void dataset_bundle_member_service::remove_member(const std::string& bundle_code,
     const std::string& dataset_code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle member: " << bundle_code

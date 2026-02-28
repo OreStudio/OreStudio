@@ -83,6 +83,13 @@ public:
     void save_book(const domain::book& book);
 
     /**
+     * @brief Saves multiple books (creates or updates).
+     *
+     * @param books The books to save
+     */
+    void save_books(const std::vector<domain::book>& books);
+
+    /**
      * @brief Removes a book.
      *
      * @param id The ID of the book to remove

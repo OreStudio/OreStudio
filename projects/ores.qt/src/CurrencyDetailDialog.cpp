@@ -471,7 +471,7 @@ void CurrencyDetailDialog::onSaveClicked() {
                                            << currency.iso_code;
 
                 // Use single save_currency message for both create and update
-                refdata::messaging::save_currency_request request{currency};
+                auto request = refdata::messaging::save_currency_request::from(currency);
                 auto payload = request.serialize();
                 frame request_frame = frame(message_type::save_currency_request,
                     0, std::move(payload));
@@ -611,13 +611,7 @@ void CurrencyDetailDialog::onDeleteClicked() {
                 return {false, "Invalid server response"};
             }
 
-            // Extract result for the single currency
-            if (response->results.empty()) {
-                BOOST_LOG_SEV(lg(), error) << "Empty results in response";
-                return {false, "Empty results in response"};
-            }
-
-            return {response->results[0].success, response->results[0].message};
+            return {response->success, response->message};
         });
 
 

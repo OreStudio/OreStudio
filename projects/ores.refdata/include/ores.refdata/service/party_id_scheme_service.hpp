@@ -56,6 +56,8 @@ public:
 
     void save_scheme(const domain::party_id_scheme& scheme);
 
+    void save_schemes(const std::vector<domain::party_id_scheme>& schemes);
+
     void remove_scheme(const std::string& code);
 
     std::vector<domain::party_id_scheme>

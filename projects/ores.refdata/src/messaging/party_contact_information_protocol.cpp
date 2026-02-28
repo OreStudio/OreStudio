@@ -197,20 +197,36 @@ std::ostream& operator<<(std::ostream& s, const get_party_contact_informations_r
     return s;
 }
 
+save_party_contact_information_request
+save_party_contact_information_request::from(domain::party_contact_information party_contact_information) {
+    return save_party_contact_information_request{std::vector<domain::party_contact_information>{std::move(party_contact_information)}};
+}
+
+save_party_contact_information_request
+save_party_contact_information_request::from(std::vector<domain::party_contact_information> party_contact_informations) {
+    return save_party_contact_information_request{std::move(party_contact_informations)};
+}
+
 std::vector<std::byte> save_party_contact_information_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_party_contact_information(buffer, party_contact_information);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(party_contact_informations.size()));
+    for (const auto& e : party_contact_informations)
+        write_party_contact_information(buffer, e);
     return buffer;
 }
 
 std::expected<save_party_contact_information_request, error_code>
 save_party_contact_information_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+
     save_party_contact_information_request request;
-
-    auto result = read_party_contact_information(data);
-    if (!result) return std::unexpected(result.error());
-    request.party_contact_information = std::move(*result);
-
+    request.party_contact_informations.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_party_contact_information(data);
+        if (!e) return std::unexpected(e.error());
+        request.party_contact_informations.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -246,10 +262,6 @@ std::ostream& operator<<(std::ostream& s, const save_party_contact_information_r
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_party_contact_information_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_party_contact_information_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -285,12 +297,8 @@ std::ostream& operator<<(std::ostream& s, const delete_party_contact_information
 
 std::vector<std::byte> delete_party_contact_information_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_uuid(buffer, r.id);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -298,28 +306,13 @@ std::expected<delete_party_contact_information_response, error_code>
 delete_party_contact_information_response::deserialize(std::span<const std::byte> data) {
     delete_party_contact_information_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_party_contact_information_result r;
-
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        r.id = *id_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

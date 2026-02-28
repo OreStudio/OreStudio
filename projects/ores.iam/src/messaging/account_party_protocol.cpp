@@ -196,20 +196,36 @@ std::ostream& operator<<(std::ostream& s, const get_account_parties_by_account_r
     return s;
 }
 
+save_account_party_request
+save_account_party_request::from(domain::account_party account_party) {
+    return save_account_party_request{
+        std::vector<domain::account_party>{std::move(account_party)}};
+}
+
+save_account_party_request
+save_account_party_request::from(std::vector<domain::account_party> account_parties) {
+    return save_account_party_request{std::move(account_parties)};
+}
+
 std::vector<std::byte> save_account_party_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_account_party(buffer, account_party);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(account_parties.size()));
+    for (const auto& e : account_parties)
+        write_account_party(buffer, e);
     return buffer;
 }
 
 std::expected<save_account_party_request, error_code>
 save_account_party_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_account_party_request request;
-
-    auto result = read_account_party(data);
-    if (!result) return std::unexpected(result.error());
-    request.account_party = std::move(*result);
-
+    request.account_parties.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_account_party(data);
+        if (!e) return std::unexpected(e.error());
+        request.account_parties.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -245,10 +261,6 @@ std::ostream& operator<<(std::ostream& s, const save_account_party_response& v) 
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_account_party_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::ostream& operator<<(std::ostream& s, const account_party_key& v) {
     rfl::json::write(v, s);
@@ -298,13 +310,8 @@ std::ostream& operator<<(std::ostream& s, const delete_account_party_request& v)
 
 std::vector<std::byte> delete_account_party_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_uuid(buffer, r.account_id);
-        writer::write_uuid(buffer, r.party_id);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -312,32 +319,13 @@ std::expected<delete_account_party_response, error_code>
 delete_account_party_response::deserialize(std::span<const std::byte> data) {
     delete_account_party_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_account_party_result r;
-
-        auto account_id_result = reader::read_uuid(data);
-        if (!account_id_result) return std::unexpected(account_id_result.error());
-        r.account_id = *account_id_result;
-
-        auto party_id_result = reader::read_uuid(data);
-        if (!party_id_result) return std::unexpected(party_id_result.error());
-        r.party_id = *party_id_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

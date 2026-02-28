@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.scheduler/domain/job_definition.hpp"
@@ -37,10 +38,14 @@ namespace ores::scheduler::messaging {
 // ============================================================================
 
 /**
- * @brief Request to save a job definition (create or update).
+ * @brief Request to save one or more job definitions (create or update).
  */
 struct save_job_definition_request final {
-    domain::job_definition definition;
+    std::vector<domain::job_definition> definitions;
+
+    static save_job_definition_request from(domain::job_definition definition);
+    static save_job_definition_request from(
+        std::vector<domain::job_definition> definitions);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_job_definition_request,
@@ -51,10 +56,10 @@ struct save_job_definition_request final {
 std::ostream& operator<<(std::ostream& s, const save_job_definition_request& v);
 
 /**
- * @brief Response confirming job definition save operation.
+ * @brief Response confirming job definition save operation(s).
  */
 struct save_job_definition_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -64,17 +69,6 @@ struct save_job_definition_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_job_definition_response& v);
-
-/**
- * @brief Result for a single job definition deletion.
- */
-struct delete_job_definition_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_job_definition_result& v);
 
 /**
  * @brief Request to delete one or more job definitions.
@@ -94,7 +88,8 @@ std::ostream& operator<<(std::ostream& s, const delete_job_definition_request& v
  * @brief Response confirming job definition deletion(s).
  */
 struct delete_job_definition_response final {
-    std::vector<delete_job_definition_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_job_definition_response,

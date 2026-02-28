@@ -547,10 +547,9 @@ void CurrencyMdiWindow::deleteSelected() {
             return results;
         }
 
-        // Convert batch results to expected format
-        for (const auto& result : response->results) {
-            results.push_back({result.iso_code,
-                {result.success, result.message}});
+        for (const auto& iso_code : iso_codes) {
+            results.push_back({iso_code,
+                {response->success, response->message}});
         }
 
         return results;

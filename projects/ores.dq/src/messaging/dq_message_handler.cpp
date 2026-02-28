@@ -393,19 +393,22 @@ handle_save_change_reason_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
-
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.reasons.size()
+                              << " change reason(s)";
+    for (auto& r : request.reasons) {
+        r.modified_by = auth_result->username;
+        r.performed_by.clear();
+    }
     save_change_reason_response response;
     try {
-        svc.save_reason(request.reason);
+        svc.save_reasons(request.reasons);
         response.success = true;
-        response.message = "Change reason saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved change reason: " << request.reason.code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save change reason: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save change reasons: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save change reasons: ") + e.what();
     }
 
     co_return response.serialize();
@@ -436,23 +439,19 @@ handle_delete_change_reason_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     delete_change_reason_response response;
-    for (const auto& code : request.codes) {
-        delete_change_reason_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_reason(code);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted change reason: " << code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete change reason "
-                                       << code << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " change reason(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete change reason: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -517,21 +516,23 @@ handle_save_change_reason_category_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
-    BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
-
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.categories.size()
+                              << " change reason category(ies)";
+    for (auto& c : request.categories) {
+        c.modified_by = auth_result->username;
+        c.performed_by.clear();
+    }
     save_change_reason_category_response response;
     try {
-        svc.save_category(request.category);
+        svc.save_categories(request.categories);
         response.success = true;
-        response.message = "Change reason category saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved change reason category: "
-                                  << request.category.code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save change reason category: "
+        BOOST_LOG_SEV(lg(), error) << "Failed to save change reason categories: "
                                    << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save change reason categories: ") + e.what();
     }
 
     co_return response.serialize();
@@ -562,23 +563,19 @@ handle_delete_change_reason_category_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), debug) << "Request: " << request;
 
     delete_change_reason_category_response response;
-    for (const auto& code : request.codes) {
-        delete_change_reason_category_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_category(code);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted change reason category: " << code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete change reason category "
-                                       << code << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " change reason category(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete change reason category: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -676,17 +673,22 @@ handle_save_catalog_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.catalogs.size()
+                              << " catalog(s)";
+    for (auto& c : request.catalogs) {
+        c.modified_by = auth_result->username;
+        c.performed_by.clear();
+    }
     save_catalog_response response;
     try {
-        svc.save_catalog(request.catalog);
+        svc.save_catalogs(request.catalogs);
         response.success = true;
-        response.message = "Catalog saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << request.catalog.name;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save catalog: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save catalogs: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save catalogs: ") + e.what();
     }
 
     co_return response.serialize();
@@ -715,23 +717,19 @@ handle_delete_catalog_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_catalog_response response;
-    for (const auto& name : request.names) {
-        delete_catalog_result result;
-        result.name = name;
-        try {
+    try {
+        for (const auto& name : request.names) {
             svc.remove_catalog(name);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted catalog: " << name;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete catalog " << name
-                                       << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.names.size() << " catalog(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete catalog: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -899,17 +897,22 @@ handle_save_data_domain_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.domains.size()
+                              << " data domain(s)";
+    for (auto& d : request.domains) {
+        d.modified_by = auth_result->username;
+        d.performed_by.clear();
+    }
     save_data_domain_response response;
     try {
-        svc.save_data_domain(request.domain);
+        svc.save_data_domains(request.domains);
         response.success = true;
-        response.message = "Data domain saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << request.domain.name;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save data domain: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save data domains: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save data domains: ") + e.what();
     }
 
     co_return response.serialize();
@@ -938,23 +941,19 @@ handle_delete_data_domain_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_data_domain_response response;
-    for (const auto& name : request.names) {
-        delete_data_domain_result result;
-        result.name = name;
-        try {
+    try {
+        for (const auto& name : request.names) {
             svc.remove_data_domain(name);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted data domain: " << name;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete data domain "
-                                       << name << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.names.size() << " data domain(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete data domain: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1084,18 +1083,22 @@ handle_save_subject_area_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.subject_areas.size()
+                              << " subject area(s)";
+    for (auto& s : request.subject_areas) {
+        s.modified_by = auth_result->username;
+        s.performed_by.clear();
+    }
     save_subject_area_response response;
     try {
-        svc.save_subject_area(request.subject_area);
+        svc.save_subject_areas(request.subject_areas);
         response.success = true;
-        response.message = "Subject area saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved subject area: "
-                                  << request.subject_area.name;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save subject area: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save subject areas: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save subject areas: ") + e.what();
     }
 
     co_return response.serialize();
@@ -1124,23 +1127,19 @@ handle_delete_subject_area_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_subject_area_response response;
-    for (const auto& key : request.keys) {
-        delete_subject_area_result result;
-        result.key = key;
-        try {
+    try {
+        for (const auto& key : request.keys) {
             svc.remove_subject_area(key.name, key.domain_name);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted subject area: " << key.name;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete subject area "
-                                       << key.name << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.keys.size() << " subject area(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete subject area: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1237,17 +1236,22 @@ handle_save_dataset_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.datasets.size()
+                              << " dataset(s)";
+    for (auto& d : request.datasets) {
+        d.modified_by = auth_result->username;
+        d.performed_by.clear();
+    }
     save_dataset_response response;
     try {
-        svc.save_dataset(request.dataset);
+        svc.save_datasets(request.datasets);
         response.success = true;
-        response.message = "Dataset saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved dataset: " << request.dataset.id;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save dataset: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save datasets: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save datasets: ") + e.what();
     }
 
     co_return response.serialize();
@@ -1276,23 +1280,19 @@ handle_delete_dataset_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_dataset_response response;
-    for (const auto& id : request.ids) {
-        delete_dataset_result result;
-        result.id = id;
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_dataset(id);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted dataset: " << id;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete dataset "
-                                       << id << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " dataset(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete dataset: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1388,18 +1388,22 @@ handle_save_methodology_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.methodologies.size()
+                              << " methodology(ies)";
+    for (auto& m : request.methodologies) {
+        m.modified_by = auth_result->username;
+        m.performed_by.clear();
+    }
     save_methodology_response response;
     try {
-        svc.save_methodology(request.methodology);
+        svc.save_methodologies(request.methodologies);
         response.success = true;
-        response.message = "Methodology saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved methodology: "
-                                  << request.methodology.id;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save methodology: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save methodologies: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save methodologies: ") + e.what();
     }
 
     co_return response.serialize();
@@ -1428,23 +1432,19 @@ handle_delete_methodology_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_methodology_response response;
-    for (const auto& id : request.ids) {
-        delete_methodology_result result;
-        result.id = id;
-        try {
+    try {
+        for (const auto& id : request.ids) {
             svc.remove_methodology(id);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted methodology: " << id;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete methodology "
-                                       << id << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.ids.size() << " methodology(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete methodology: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1577,18 +1577,22 @@ handle_save_coding_scheme_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.schemes.size()
+                              << " coding scheme(s)";
+    for (auto& s : request.schemes) {
+        s.modified_by = auth_result->username;
+        s.performed_by.clear();
+    }
     save_coding_scheme_response response;
     try {
-        svc.save_coding_scheme(request.scheme);
+        svc.save_coding_schemes(request.schemes);
         response.success = true;
-        response.message = "Coding scheme saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: "
-                                  << request.scheme.code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save coding scheme: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save coding schemes: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save coding schemes: ") + e.what();
     }
 
     co_return response.serialize();
@@ -1617,23 +1621,19 @@ handle_delete_coding_scheme_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_coding_scheme_response response;
-    for (const auto& code : request.codes) {
-        delete_coding_scheme_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_coding_scheme(code);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted coding scheme: " << code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete coding scheme "
-                                       << code << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " coding scheme(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete coding scheme: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1734,19 +1734,24 @@ handle_save_coding_scheme_authority_type_request(std::span<const std::byte> payl
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving "
+                              << request.authority_types.size()
+                              << " coding scheme authority type(s)";
+    for (auto& a : request.authority_types) {
+        a.modified_by = auth_result->username;
+        a.performed_by.clear();
+    }
     save_coding_scheme_authority_type_response response;
     try {
-        svc.save_authority_type(request.authority_type);
+        svc.save_authority_types(request.authority_types);
         response.success = true;
-        response.message = "Coding scheme authority type saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: "
-                                  << request.authority_type.code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save coding scheme authority type: "
+        BOOST_LOG_SEV(lg(), error) << "Failed to save coding scheme authority types: "
                                    << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save coding scheme authority types: ") + e.what();
     }
 
     co_return response.serialize();
@@ -1776,23 +1781,19 @@ handle_delete_coding_scheme_authority_type_request(std::span<const std::byte> pa
 
     const auto& request = *request_result;
     delete_coding_scheme_authority_type_response response;
-    for (const auto& code : request.codes) {
-        delete_coding_scheme_authority_type_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_authority_type(code);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted coding scheme authority type: " << code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete coding scheme authority type "
-                                       << code << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " coding scheme authority type(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete coding scheme authority type: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -1892,18 +1893,22 @@ handle_save_nature_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.dimensions.size()
+                              << " nature dimension(s)";
+    for (auto& d : request.dimensions) {
+        d.modified_by = auth_result->username;
+        d.performed_by.clear();
+    }
     save_nature_dimension_response response;
     try {
-        svc.save_nature_dimension(request.dimension);
+        svc.save_nature_dimensions(request.dimensions);
         response.success = true;
-        response.message = "Nature dimension saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved nature dimension: "
-                                  << request.dimension.code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save nature dimension: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save nature dimensions: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save nature dimensions: ") + e.what();
     }
 
     co_return response.serialize();
@@ -1933,23 +1938,19 @@ handle_delete_nature_dimension_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_nature_dimension_response response;
-    for (const auto& code : request.codes) {
-        delete_nature_dimension_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_nature_dimension(code);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted nature dimension: " << code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete nature dimension "
-                                       << code << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " nature dimension(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete nature dimension: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2049,18 +2050,22 @@ handle_save_origin_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.dimensions.size()
+                              << " origin dimension(s)";
+    for (auto& d : request.dimensions) {
+        d.modified_by = auth_result->username;
+        d.performed_by.clear();
+    }
     save_origin_dimension_response response;
     try {
-        svc.save_origin_dimension(request.dimension);
+        svc.save_origin_dimensions(request.dimensions);
         response.success = true;
-        response.message = "Origin dimension saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved origin dimension: "
-                                  << request.dimension.code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save origin dimension: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save origin dimensions: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save origin dimensions: ") + e.what();
     }
 
     co_return response.serialize();
@@ -2090,23 +2095,19 @@ handle_delete_origin_dimension_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_origin_dimension_response response;
-    for (const auto& code : request.codes) {
-        delete_origin_dimension_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_origin_dimension(code);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted origin dimension: " << code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete origin dimension "
-                                       << code << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " origin dimension(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete origin dimension: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2206,18 +2207,22 @@ handle_save_treatment_dimension_request(std::span<const std::byte> payload,
         co_return std::unexpected(request_result.error());
     }
 
-    const auto& request = *request_result;
+    auto request = std::move(*request_result);
+    BOOST_LOG_SEV(lg(), info) << "Saving " << request.dimensions.size()
+                              << " treatment dimension(s)";
+    for (auto& d : request.dimensions) {
+        d.modified_by = auth_result->username;
+        d.performed_by.clear();
+    }
     save_treatment_dimension_response response;
     try {
-        svc.save_treatment_dimension(request.dimension);
+        svc.save_treatment_dimensions(request.dimensions);
         response.success = true;
-        response.message = "Treatment dimension saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved treatment dimension: "
-                                  << request.dimension.code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save treatment dimension: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save treatment dimensions: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save treatment dimensions: ") + e.what();
     }
 
     co_return response.serialize();
@@ -2247,23 +2252,19 @@ handle_delete_treatment_dimension_request(std::span<const std::byte> payload,
 
     const auto& request = *request_result;
     delete_treatment_dimension_response response;
-    for (const auto& code : request.codes) {
-        delete_treatment_dimension_result result;
-        result.code = code;
-        try {
+    try {
+        for (const auto& code : request.codes) {
             svc.remove_treatment_dimension(code);
-            result.success = true;
-            result.message = "Deleted successfully.";
-            BOOST_LOG_SEV(lg(), info) << "Deleted treatment dimension: " << code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete treatment dimension "
-                                       << code << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+            << request.codes.size() << " treatment dimension(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete treatment dimension: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
-
     co_return response.serialize();
 }
 
@@ -2688,16 +2689,22 @@ handle_save_dataset_bundle_request(std::span<const std::byte> payload,
     auto ctx = make_request_context(*auth_result);
     service::dataset_bundle_service svc(ctx);
 
+    auto request = std::move(*request_result);
+    auto& dataset_bundles = request.bundles;
+    BOOST_LOG_SEV(lg(), info) << "Saving " << dataset_bundles.size() << " bundle(s)";
+    for (auto& b : dataset_bundles) {
+        b.modified_by = auth_result->username;
+        b.performed_by.clear();
+    }
     save_dataset_bundle_response response;
     try {
-        svc.save_bundle(request_result->bundle);
+        svc.save_bundles(dataset_bundles);
         response.success = true;
-        response.message = "Bundle saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved bundle: " << request_result->bundle.id;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save bundle: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save bundles: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save bundles: ") + e.what();
     }
 
     co_return response.serialize();
@@ -2725,20 +2732,19 @@ handle_delete_dataset_bundle_request(std::span<const std::byte> payload,
     service::dataset_bundle_service svc(ctx);
 
     delete_dataset_bundle_response response;
-    for (const auto& id : request_result->ids) {
-        delete_dataset_bundle_result result{.id = id};
-        try {
+    try {
+        for (const auto& id : request_result->ids) {
             svc.remove_bundle(id);
-            result.success = true;
-            result.message = "Bundle deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted bundle: " << id;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete bundle " << id
-                                       << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+                                  << request_result->ids.size() << " bundle(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete dataset bundle: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
 
     co_return response.serialize();
@@ -2862,18 +2868,23 @@ handle_save_dataset_bundle_member_request(std::span<const std::byte> payload,
     auto ctx = make_request_context(*auth_result);
     service::dataset_bundle_member_service svc(ctx);
 
+    auto request = std::move(*request_result);
+    auto& dataset_bundle_members = request.members;
+    BOOST_LOG_SEV(lg(), info) << "Saving " << dataset_bundle_members.size()
+                              << " bundle member(s)";
+    for (auto& m : dataset_bundle_members) {
+        m.modified_by = auth_result->username;
+        m.performed_by.clear();
+    }
     save_dataset_bundle_member_response response;
     try {
-        svc.save_member(request_result->member);
+        svc.save_members(dataset_bundle_members);
         response.success = true;
-        response.message = "Bundle member saved successfully.";
-        BOOST_LOG_SEV(lg(), info) << "Saved bundle member: "
-                                  << request_result->member.bundle_code << "/"
-                                  << request_result->member.dataset_code;
+        response.message = "Saved successfully";
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to save bundle member: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to save bundle members: " << e.what();
         response.success = false;
-        response.message = e.what();
+        response.message = std::string("Failed to save bundle members: ") + e.what();
     }
 
     co_return response.serialize();
@@ -2901,25 +2912,20 @@ handle_delete_dataset_bundle_member_request(std::span<const std::byte> payload,
     service::dataset_bundle_member_service svc(ctx);
 
     delete_dataset_bundle_member_response response;
-    for (const auto& key : request_result->keys) {
-        delete_dataset_bundle_member_result result{
-            .bundle_code = key.bundle_code,
-            .dataset_code = key.dataset_code
-        };
-        try {
+    try {
+        for (const auto& key : request_result->keys) {
             svc.remove_member(key.bundle_code, key.dataset_code);
-            result.success = true;
-            result.message = "Bundle member deleted successfully.";
             BOOST_LOG_SEV(lg(), info) << "Deleted bundle member: "
                                       << key.bundle_code << "/" << key.dataset_code;
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to delete bundle member "
-                                       << key.bundle_code << "/" << key.dataset_code
-                                       << ": " << e.what();
-            result.success = false;
-            result.message = e.what();
         }
-        response.results.push_back(std::move(result));
+        response.success = true;
+        response.message = "Deleted successfully";
+        BOOST_LOG_SEV(lg(), info) << "Batch delete completed: "
+                                  << request_result->keys.size() << " bundle member(s)";
+    } catch (const std::exception& e) {
+        response.success = false;
+        response.message = std::string("Failed to delete dataset bundle member: ") + e.what();
+        BOOST_LOG_SEV(lg(), error) << "Error in batch delete: " << e.what();
     }
 
     co_return response.serialize();

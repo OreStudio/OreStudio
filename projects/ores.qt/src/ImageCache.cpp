@@ -665,7 +665,7 @@ void ImageCache::loadImageById(const std::string& image_id) {
             if (!self) return {false, requested_id, {}};
 
             assets::messaging::get_images_request request;
-            request.image_ids = {requested_id};
+            request.image_ids.push_back(requested_id);
             auto payload = request.serialize();
 
             frame request_frame(message_type::get_images_request, 0, std::move(payload));
@@ -1036,7 +1036,7 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
 
             // Step 3: Save the updated currency
             refdata::messaging::save_currency_request save_request;
-            save_request.currency = currency;
+            save_request.currencies.push_back(currency);
             auto save_payload = save_request.serialize();
 
             frame save_frame(message_type::save_currency_request, 0, std::move(save_payload));
@@ -1151,7 +1151,7 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
 
             // Step 3: Save the updated country
             refdata::messaging::save_country_request save_request;
-            save_request.country = country;
+            save_request.countries.push_back(country);
             auto save_payload = save_request.serialize();
 
             frame save_frame(message_type::save_country_request, 0, std::move(save_payload));

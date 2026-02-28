@@ -56,6 +56,8 @@ public:
 
     void save_event(const domain::lifecycle_event& v);
 
+    void save_events(const std::vector<domain::lifecycle_event>& events);
+
     void remove_event(const std::string& code);
 
     std::vector<domain::lifecycle_event>

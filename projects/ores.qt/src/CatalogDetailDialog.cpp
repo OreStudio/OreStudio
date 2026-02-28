@@ -141,7 +141,7 @@ void CatalogDetailDialog::onSaveClicked() {
             return {false, "Dialog closed"};
 
         dq::messaging::save_catalog_request request;
-        request.catalog = catalog;
+        request.catalogs.push_back(catalog);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -237,10 +237,7 @@ void CatalogDetailDialog::onDeleteClicked() {
         if (!response)
             return {false, "Invalid server response"};
 
-        if (response->results.empty())
-            return {false, "No result returned"};
-
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(this);

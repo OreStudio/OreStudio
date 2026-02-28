@@ -49,6 +49,16 @@ void trade_party_role_service::save_role(const domain::trade_party_role& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved trade party role: " << v.id;
 }
 
+void trade_party_role_service::save_roles(
+    const std::vector<domain::trade_party_role>& roles) {
+    for (const auto& r : roles) {
+        if (r.id.is_nil())
+            throw std::invalid_argument("Trade Party Role id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " trade party roles";
+    repo_.write(ctx_, roles);
+}
+
 void trade_party_role_service::remove_role(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing trade party role: " << id;
     repo_.remove(ctx_, id);

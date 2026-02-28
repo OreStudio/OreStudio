@@ -131,7 +131,7 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_treatment_dimension_request request;
-        request.dimension = dim;
+        request.dimensions.push_back(dim);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -183,7 +183,7 @@ void TreatmentDimensionDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_treatment_dimension_request request;
-        request.codes = {code.toStdString()};
+        request.codes.push_back({code.toStdString()});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -197,7 +197,7 @@ void TreatmentDimensionDetailDialog::onDeleteClicked() {
         if (!payload_result) return false;
 
         auto response = dq::messaging::delete_treatment_dimension_response::deserialize(*payload_result);
-        return response && !response->results.empty() && response->results[0].success;
+        return response && response->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

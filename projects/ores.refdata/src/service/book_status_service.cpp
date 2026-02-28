@@ -52,6 +52,16 @@ void book_status_service::save_status(const domain::book_status& status) {
     BOOST_LOG_SEV(lg(), info) << "Saved book status: " << status.code;
 }
 
+void book_status_service::save_statuses(
+    const std::vector<domain::book_status>& statuses) {
+    for (const auto& s : statuses) {
+        if (s.code.empty())
+            throw std::invalid_argument("Book status code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " book statuses";
+    repo_.write(ctx_, statuses);
+}
+
 void book_status_service::remove_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book status: " << code;
     repo_.remove(ctx_, code);

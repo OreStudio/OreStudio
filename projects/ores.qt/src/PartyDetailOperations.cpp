@@ -61,7 +61,7 @@ operation_result party_detail_operations::save_entity(
     p.change_commentary = data.change_commentary;
 
     refdata::messaging::save_party_request request;
-    request.party = p;
+    request.parties.push_back(p);
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -78,8 +78,7 @@ operation_result party_detail_operations::save_entity(
 
     auto response = refdata::messaging::save_party_response::
         deserialize(*payload_result);
-    if (!response)
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
     return {response->success, response->message};
 }
@@ -88,7 +87,7 @@ operation_result party_detail_operations::delete_entity(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_party_request request;
-    request.ids = {id};
+    request.ids.push_back({id});
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -105,10 +104,9 @@ operation_result party_detail_operations::delete_entity(
 
     auto response = refdata::messaging::delete_party_response::
         deserialize(*payload_result);
-    if (!response || response->results.empty())
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
-    return {response->results[0].success, response->results[0].message};
+    return {response->success, response->message};
 }
 
 load_all_entities_result party_detail_operations::load_all_entities(
@@ -192,7 +190,7 @@ operation_result party_detail_operations::save_identifier(
     ident.performed_by = entry.performed_by;
 
     refdata::messaging::save_party_identifier_request request;
-    request.party_identifier = ident;
+    request.party_identifiers.push_back(ident);
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -209,8 +207,7 @@ operation_result party_detail_operations::save_identifier(
 
     auto response = refdata::messaging::save_party_identifier_response::
         deserialize(*payload_result);
-    if (!response)
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
     return {response->success, response->message};
 }
@@ -219,7 +216,7 @@ operation_result party_detail_operations::delete_identifier(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_party_identifier_request request;
-    request.ids = {id};
+    request.ids.push_back({id});
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -236,10 +233,9 @@ operation_result party_detail_operations::delete_identifier(
 
     auto response = refdata::messaging::delete_party_identifier_response::
         deserialize(*payload_result);
-    if (!response || response->results.empty())
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
-    return {response->results[0].success, response->results[0].message};
+    return {response->success, response->message};
 }
 
 load_contacts_result party_detail_operations::load_contacts(
@@ -297,7 +293,7 @@ operation_result party_detail_operations::save_contact(
     contact.performed_by = entry.performed_by;
 
     refdata::messaging::save_party_contact_information_request request;
-    request.party_contact_information = contact;
+    request.party_contact_informations.push_back(contact);
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -314,8 +310,7 @@ operation_result party_detail_operations::save_contact(
 
     auto response = refdata::messaging::save_party_contact_information_response::
         deserialize(*payload_result);
-    if (!response)
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
     return {response->success, response->message};
 }
@@ -324,7 +319,7 @@ operation_result party_detail_operations::delete_contact(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_party_contact_information_request request;
-    request.ids = {id};
+    request.ids.push_back({id});
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -341,10 +336,9 @@ operation_result party_detail_operations::delete_contact(
 
     auto response = refdata::messaging::delete_party_contact_information_response::
         deserialize(*payload_result);
-    if (!response || response->results.empty())
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
-    return {response->results[0].success, response->results[0].message};
+    return {response->success, response->message};
 }
 
 }

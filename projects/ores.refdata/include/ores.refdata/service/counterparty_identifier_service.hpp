@@ -89,6 +89,13 @@ public:
     void save_counterparty_identifier(const domain::counterparty_identifier& counterparty_identifier);
 
     /**
+     * @brief Saves multiple counterparty identifiers (creates or updates).
+     *
+     * @param counterparty_identifiers The counterparty identifiers to save
+     */
+    void save_counterparty_identifiers(const std::vector<domain::counterparty_identifier>& counterparty_identifiers);
+
+    /**
      * @brief Removes a counterparty identifier.
      *
      * @param id The ID of the counterparty identifier to remove

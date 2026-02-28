@@ -265,20 +265,35 @@ std::ostream& operator<<(std::ostream& s, const get_catalogs_response& v) {
     return s;
 }
 
+save_catalog_request
+save_catalog_request::from(domain::catalog catalog) {
+    return save_catalog_request{std::vector<domain::catalog>{std::move(catalog)}};
+}
+
+save_catalog_request
+save_catalog_request::from(std::vector<domain::catalog> catalogs) {
+    return save_catalog_request{std::move(catalogs)};
+}
+
 std::vector<std::byte> save_catalog_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_catalog(buffer, catalog);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(catalogs.size()));
+    for (const auto& e : catalogs)
+        write_catalog(buffer, e);
     return buffer;
 }
 
 std::expected<save_catalog_request, error_code>
 save_catalog_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_catalog_request request;
-
-    auto catalog_result = read_catalog(data);
-    if (!catalog_result) return std::unexpected(catalog_result.error());
-    request.catalog = std::move(*catalog_result);
-
+    request.catalogs.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_catalog(data);
+        if (!e) return std::unexpected(e.error());
+        request.catalogs.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -314,10 +329,6 @@ std::ostream& operator<<(std::ostream& s, const save_catalog_response& v) {
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_catalog_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_catalog_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -353,12 +364,8 @@ std::ostream& operator<<(std::ostream& s, const delete_catalog_request& v) {
 
 std::vector<std::byte> delete_catalog_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.name);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -366,28 +373,13 @@ std::expected<delete_catalog_response, error_code>
 delete_catalog_response::deserialize(std::span<const std::byte> data) {
     delete_catalog_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_catalog_result r;
-
-        auto name_result = reader::read_string(data);
-        if (!name_result) return std::unexpected(name_result.error());
-        r.name = *name_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
@@ -514,20 +506,35 @@ std::ostream& operator<<(std::ostream& s, const get_data_domains_response& v) {
     return s;
 }
 
+save_data_domain_request
+save_data_domain_request::from(domain::data_domain d) {
+    return save_data_domain_request{std::vector<domain::data_domain>{std::move(d)}};
+}
+
+save_data_domain_request
+save_data_domain_request::from(std::vector<domain::data_domain> domains) {
+    return save_data_domain_request{std::move(domains)};
+}
+
 std::vector<std::byte> save_data_domain_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_data_domain(buffer, domain);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(domains.size()));
+    for (const auto& e : domains)
+        write_data_domain(buffer, e);
     return buffer;
 }
 
 std::expected<save_data_domain_request, error_code>
 save_data_domain_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_data_domain_request request;
-
-    auto domain_result = read_data_domain(data);
-    if (!domain_result) return std::unexpected(domain_result.error());
-    request.domain = std::move(*domain_result);
-
+    request.domains.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_data_domain(data);
+        if (!e) return std::unexpected(e.error());
+        request.domains.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -563,10 +570,6 @@ std::ostream& operator<<(std::ostream& s, const save_data_domain_response& v) {
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_data_domain_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_data_domain_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -602,12 +605,8 @@ std::ostream& operator<<(std::ostream& s, const delete_data_domain_request& v) {
 
 std::vector<std::byte> delete_data_domain_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.name);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -615,28 +614,13 @@ std::expected<delete_data_domain_response, error_code>
 delete_data_domain_response::deserialize(std::span<const std::byte> data) {
     delete_data_domain_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_data_domain_result r;
-
-        auto name_result = reader::read_string(data);
-        if (!name_result) return std::unexpected(name_result.error());
-        r.name = *name_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
@@ -817,20 +801,36 @@ std::ostream& operator<<(std::ostream& s, const get_subject_areas_by_domain_resp
     return s;
 }
 
+save_subject_area_request
+save_subject_area_request::from(domain::subject_area subject_area) {
+    return save_subject_area_request{
+        std::vector<domain::subject_area>{std::move(subject_area)}};
+}
+
+save_subject_area_request
+save_subject_area_request::from(std::vector<domain::subject_area> subject_areas) {
+    return save_subject_area_request{std::move(subject_areas)};
+}
+
 std::vector<std::byte> save_subject_area_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_subject_area(buffer, subject_area);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(subject_areas.size()));
+    for (const auto& e : subject_areas)
+        write_subject_area(buffer, e);
     return buffer;
 }
 
 std::expected<save_subject_area_request, error_code>
 save_subject_area_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_subject_area_request request;
-
-    auto sa_result = read_subject_area(data);
-    if (!sa_result) return std::unexpected(sa_result.error());
-    request.subject_area = std::move(*sa_result);
-
+    request.subject_areas.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_subject_area(data);
+        if (!e) return std::unexpected(e.error());
+        request.subject_areas.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -871,10 +871,6 @@ std::ostream& operator<<(std::ostream& s, const subject_area_key& v) {
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_subject_area_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_subject_area_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -910,41 +906,23 @@ std::ostream& operator<<(std::ostream& s, const delete_subject_area_request& v) 
 
 std::vector<std::byte> delete_subject_area_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        write_subject_area_key(buffer, r.key);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
+
 
 std::expected<delete_subject_area_response, error_code>
 delete_subject_area_response::deserialize(std::span<const std::byte> data) {
     delete_subject_area_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_subject_area_result r;
-
-        auto key_result = read_subject_area_key(data);
-        if (!key_result) return std::unexpected(key_result.error());
-        r.key = std::move(*key_result);
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

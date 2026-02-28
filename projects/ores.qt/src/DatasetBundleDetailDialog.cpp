@@ -200,7 +200,7 @@ void DatasetBundleDetailDialog::onSaveClicked() {
         }
 
         dq::messaging::save_dataset_bundle_request request;
-        request.bundle = bundle;
+        request.bundles.push_back(bundle);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -286,7 +286,7 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
         }
 
         dq::messaging::delete_dataset_bundle_request request;
-        request.ids = {id};
+        request.ids.push_back({id});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -309,11 +309,11 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
         auto response = dq::messaging::delete_dataset_bundle_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.iam/domain/account_party.hpp"
@@ -91,10 +92,14 @@ struct get_account_parties_by_account_response final {
 std::ostream& operator<<(std::ostream& s, const get_account_parties_by_account_response& v);
 
 /**
- * @brief Request to save a account party (create or update).
+ * @brief Request to save one or more account parties (create or update).
  */
 struct save_account_party_request final {
-    domain::account_party account_party;
+    std::vector<domain::account_party> account_parties;
+
+    static save_account_party_request from(domain::account_party account_party);
+    static save_account_party_request from(
+        std::vector<domain::account_party> account_parties);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_account_party_request,
@@ -105,10 +110,10 @@ struct save_account_party_request final {
 std::ostream& operator<<(std::ostream& s, const save_account_party_request& v);
 
 /**
- * @brief Response confirming account party save operation.
+ * @brief Response confirming account party save operation(s).
  */
 struct save_account_party_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -118,18 +123,6 @@ struct save_account_party_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_account_party_response& v);
-
-/**
- * @brief Result for a single account party deletion.
- */
-struct delete_account_party_result final {
-    boost::uuids::uuid account_id;
-    boost::uuids::uuid party_id;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_account_party_result& v);
 
 /**
  * @brief Key identifying a account party for deletion.
@@ -159,7 +152,8 @@ std::ostream& operator<<(std::ostream& s, const delete_account_party_request& v)
  * @brief Response confirming account party deletion(s).
  */
 struct delete_account_party_response final {
-    std::vector<delete_account_party_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_account_party_response,

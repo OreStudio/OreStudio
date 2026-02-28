@@ -86,13 +86,15 @@ void TenantProvisioningWizard::setupPages() {
 void TenantProvisioningWizard::clearBootstrapFlag() {
     BOOST_LOG_SEV(lg(), info) << "Clearing tenant bootstrap mode flag";
 
+    variability::domain::feature_flags flag;
+    flag.name = "system.bootstrap_mode";
+    flag.enabled = false;
+    flag.description = "Bootstrap mode disabled after tenant setup";
+    flag.modified_by = clientManager_->currentUsername();
+    flag.change_reason_code = std::string(reason::codes::new_record);
+    flag.change_commentary = "Tenant setup wizard completed";
     variability::messaging::save_feature_flag_request req;
-    req.flag.name = "system.bootstrap_mode";
-    req.flag.enabled = false;
-    req.flag.description = "Bootstrap mode disabled after tenant setup";
-    req.flag.modified_by = clientManager_->currentUsername();
-    req.flag.change_reason_code = std::string(reason::codes::new_record);
-    req.flag.change_commentary = "Tenant setup wizard completed";
+    req.flags.push_back(std::move(flag));
 
     auto result = clientManager_->process_authenticated_request(std::move(req));
     if (!result) {
@@ -100,7 +102,7 @@ void TenantProvisioningWizard::clearBootstrapFlag() {
                                   << "no response from server";
     } else if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to clear bootstrap flag: "
-                                  << result->error_message;
+                                  << (result->message.empty() ? "Unknown error" : result->message);
     } else {
         BOOST_LOG_SEV(lg(), info) << "Bootstrap flag cleared successfully";
     }

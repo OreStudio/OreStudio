@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.iam/domain/tenant_status.hpp"
@@ -63,10 +64,13 @@ struct get_tenant_statuses_response final {
 std::ostream& operator<<(std::ostream& s, const get_tenant_statuses_response& v);
 
 /**
- * @brief Request to save a tenant status (create or update).
+ * @brief Request to save one or more tenant statuses (create or update).
  */
 struct save_tenant_status_request final {
-    domain::tenant_status status;
+    std::vector<domain::tenant_status> statuses;
+
+    static save_tenant_status_request from(domain::tenant_status status);
+    static save_tenant_status_request from(std::vector<domain::tenant_status> statuses);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_tenant_status_request,
@@ -77,10 +81,10 @@ struct save_tenant_status_request final {
 std::ostream& operator<<(std::ostream& s, const save_tenant_status_request& v);
 
 /**
- * @brief Response confirming tenant status save operation.
+ * @brief Response confirming tenant status save operation(s).
  */
 struct save_tenant_status_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -90,17 +94,6 @@ struct save_tenant_status_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_tenant_status_response& v);
-
-/**
- * @brief Result for a single tenant status deletion.
- */
-struct delete_tenant_status_result final {
-    std::string status;  ///< Text primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_tenant_status_result& v);
 
 /**
  * @brief Request to delete one or more tenant statuses.
@@ -120,7 +113,8 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_status_request& v)
  * @brief Response confirming tenant status deletion(s).
  */
 struct delete_tenant_status_response final {
-    std::vector<delete_tenant_status_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_tenant_status_response,

@@ -175,20 +175,38 @@ std::ostream& operator<<(std::ostream& s, const get_business_unit_types_response
     return s;
 }
 
+save_business_unit_type_request
+save_business_unit_type_request::from(domain::business_unit_type type) {
+    return save_business_unit_type_request{std::vector<domain::business_unit_type>{std::move(type)}};
+}
+
+save_business_unit_type_request
+save_business_unit_type_request::from(std::vector<domain::business_unit_type> types) {
+    return save_business_unit_type_request{std::move(types)};
+}
+
 std::vector<std::byte> save_business_unit_type_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_business_unit_type(buffer, type);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(types.size()));
+    for (const auto& e : types)
+        write_business_unit_type(buffer, e);
     return buffer;
 }
 
 std::expected<save_business_unit_type_request, error_code>
 save_business_unit_type_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result)
+        return std::unexpected(count_result.error());
+
     save_business_unit_type_request request;
-
-    auto result = read_business_unit_type(data);
-    if (!result) return std::unexpected(result.error());
-    request.type = std::move(*result);
-
+    request.types.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_business_unit_type(data);
+        if (!e)
+            return std::unexpected(e.error());
+        request.types.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -224,10 +242,6 @@ std::ostream& operator<<(std::ostream& s, const save_business_unit_type_response
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_business_unit_type_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_business_unit_type_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -263,12 +277,8 @@ std::ostream& operator<<(std::ostream& s, const delete_business_unit_type_reques
 
 std::vector<std::byte> delete_business_unit_type_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_uuid(buffer, r.id);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -276,28 +286,13 @@ std::expected<delete_business_unit_type_response, error_code>
 delete_business_unit_type_response::deserialize(std::span<const std::byte> data) {
     delete_business_unit_type_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_business_unit_type_result r;
-
-        auto id_result = reader::read_uuid(data);
-        if (!id_result) return std::unexpected(id_result.error());
-        r.id = *id_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

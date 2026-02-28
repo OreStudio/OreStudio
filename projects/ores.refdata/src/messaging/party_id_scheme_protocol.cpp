@@ -157,20 +157,36 @@ std::ostream& operator<<(std::ostream& s, const get_party_id_schemes_response& v
     return s;
 }
 
+save_party_id_scheme_request
+save_party_id_scheme_request::from(domain::party_id_scheme scheme) {
+    return save_party_id_scheme_request{std::vector<domain::party_id_scheme>{std::move(scheme)}};
+}
+
+save_party_id_scheme_request
+save_party_id_scheme_request::from(std::vector<domain::party_id_scheme> schemes) {
+    return save_party_id_scheme_request{std::move(schemes)};
+}
+
 std::vector<std::byte> save_party_id_scheme_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_party_id_scheme(buffer, scheme);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(schemes.size()));
+    for (const auto& e : schemes)
+        write_party_id_scheme(buffer, e);
     return buffer;
 }
 
 std::expected<save_party_id_scheme_request, error_code>
 save_party_id_scheme_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+
     save_party_id_scheme_request request;
-
-    auto result = read_party_id_scheme(data);
-    if (!result) return std::unexpected(result.error());
-    request.scheme = std::move(*result);
-
+    request.schemes.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_party_id_scheme(data);
+        if (!e) return std::unexpected(e.error());
+        request.schemes.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -206,10 +222,6 @@ std::ostream& operator<<(std::ostream& s, const save_party_id_scheme_response& v
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_party_id_scheme_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_party_id_scheme_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -245,12 +257,8 @@ std::ostream& operator<<(std::ostream& s, const delete_party_id_scheme_request& 
 
 std::vector<std::byte> delete_party_id_scheme_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -258,28 +266,13 @@ std::expected<delete_party_id_scheme_response, error_code>
 delete_party_id_scheme_response::deserialize(std::span<const std::byte> data) {
     delete_party_id_scheme_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_party_id_scheme_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

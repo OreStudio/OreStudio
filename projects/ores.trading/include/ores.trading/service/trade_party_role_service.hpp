@@ -56,6 +56,8 @@ public:
 
     void save_role(const domain::trade_party_role& v);
 
+    void save_roles(const std::vector<domain::trade_party_role>& roles);
+
     void remove_role(const std::string& id);
 
     std::vector<domain::trade_party_role>

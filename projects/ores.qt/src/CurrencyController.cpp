@@ -544,7 +544,8 @@ void CurrencyController::onRevertCurrency(const refdata::domain::currency& curre
             BOOST_LOG_SEV(lg(), debug) << "Sending save currency request for revert: "
                                        << currencyToSave.iso_code;
 
-            refdata::messaging::save_currency_request request{currencyToSave};
+            refdata::messaging::save_currency_request request;
+            request.currencies.push_back(currencyToSave);
             auto payload = request.serialize();
             frame request_frame = frame(message_type::save_currency_request,
                 0, std::move(payload));

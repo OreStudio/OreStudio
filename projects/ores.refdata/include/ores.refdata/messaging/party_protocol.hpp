@@ -27,6 +27,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/party.hpp"
@@ -71,10 +72,13 @@ struct get_parties_response final {
 std::ostream& operator<<(std::ostream& s, const get_parties_response& v);
 
 /**
- * @brief Request to save a party (create or update).
+ * @brief Request to save one or more parties (create or update).
  */
 struct save_party_request final {
-    domain::party party;
+    std::vector<domain::party> parties;
+
+    static save_party_request from(domain::party party);
+    static save_party_request from(std::vector<domain::party> parties);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_party_request,
@@ -85,10 +89,10 @@ struct save_party_request final {
 std::ostream& operator<<(std::ostream& s, const save_party_request& v);
 
 /**
- * @brief Response confirming party save operation.
+ * @brief Response confirming party save operation(s).
  */
 struct save_party_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -98,17 +102,6 @@ struct save_party_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_party_response& v);
-
-/**
- * @brief Result for a single party deletion.
- */
-struct delete_party_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_party_result& v);
 
 /**
  * @brief Request to delete one or more parties.
@@ -128,7 +121,8 @@ std::ostream& operator<<(std::ostream& s, const delete_party_request& v);
  * @brief Response confirming party deletion(s).
  */
 struct delete_party_response final {
-    std::vector<delete_party_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_party_response,

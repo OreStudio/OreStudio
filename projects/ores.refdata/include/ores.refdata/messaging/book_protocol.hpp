@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/book.hpp"
@@ -70,10 +71,13 @@ struct get_books_response final {
 std::ostream& operator<<(std::ostream& s, const get_books_response& v);
 
 /**
- * @brief Request to save a book (create or update).
+ * @brief Request to save one or more books (create or update).
  */
 struct save_book_request final {
-    domain::book book;
+    std::vector<domain::book> books;
+
+    static save_book_request from(domain::book book);
+    static save_book_request from(std::vector<domain::book> books);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_book_request,
@@ -84,10 +88,10 @@ struct save_book_request final {
 std::ostream& operator<<(std::ostream& s, const save_book_request& v);
 
 /**
- * @brief Response confirming book save operation.
+ * @brief Response confirming book save operation(s).
  */
 struct save_book_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -97,17 +101,6 @@ struct save_book_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_book_response& v);
-
-/**
- * @brief Result for a single book deletion.
- */
-struct delete_book_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_book_result& v);
 
 /**
  * @brief Request to delete one or more books.
@@ -127,7 +120,8 @@ std::ostream& operator<<(std::ostream& s, const delete_book_request& v);
  * @brief Response confirming book deletion(s).
  */
 struct delete_book_response final {
-    std::vector<delete_book_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_book_response,

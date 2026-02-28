@@ -94,6 +94,13 @@ public:
     void save_dataset(const domain::dataset& dataset);
 
     /**
+     * @brief Saves multiple datasets (creates or updates).
+     *
+     * @param datasets The datasets to save
+     */
+    void save_datasets(const std::vector<domain::dataset>& datasets);
+
+    /**
      * @brief Removes a dataset.
      *
      * @param id The ID of the dataset to remove
@@ -141,6 +148,13 @@ public:
      * @param methodology The methodology to save
      */
     void save_methodology(const domain::methodology& methodology);
+
+    /**
+     * @brief Saves multiple methodologies (creates or updates).
+     *
+     * @param methodologies The methodologies to save
+     */
+    void save_methodologies(const std::vector<domain::methodology>& methodologies);
 
     /**
      * @brief Removes a methodology.

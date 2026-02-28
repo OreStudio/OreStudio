@@ -69,6 +69,17 @@ void data_organization_service::save_catalog(const domain::catalog& catalog) {
     BOOST_LOG_SEV(lg(), info) << "Saved catalog: " << catalog.name;
 }
 
+void data_organization_service::save_catalogs(
+    const std::vector<domain::catalog>& catalogs) {
+    for (const auto& c : catalogs) {
+        if (c.name.empty()) {
+            throw std::invalid_argument("Catalog name cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << catalogs.size() << " catalogs";
+    catalog_repo_.write(catalogs);
+}
+
 void data_organization_service::remove_catalog(const std::string& name) {
     BOOST_LOG_SEV(lg(), debug) << "Removing catalog: " << name;
     catalog_repo_.remove(name);
@@ -126,6 +137,17 @@ void data_organization_service::save_data_domain(
     BOOST_LOG_SEV(lg(), debug) << "Saving data domain: " << data_domain.name;
     data_domain_repo_.write(data_domain);
     BOOST_LOG_SEV(lg(), info) << "Saved data domain: " << data_domain.name;
+}
+
+void data_organization_service::save_data_domains(
+    const std::vector<domain::data_domain>& data_domains) {
+    for (const auto& d : data_domains) {
+        if (d.name.empty()) {
+            throw std::invalid_argument("Data domain name cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << data_domains.size() << " data domains";
+    data_domain_repo_.write(data_domains);
 }
 
 void data_organization_service::remove_data_domain(const std::string& name) {
@@ -194,6 +216,20 @@ void data_organization_service::save_subject_area(
                                << " in domain: " << subject_area.domain_name;
     subject_area_repo_.write(subject_area);
     BOOST_LOG_SEV(lg(), info) << "Saved subject area: " << subject_area.name;
+}
+
+void data_organization_service::save_subject_areas(
+    const std::vector<domain::subject_area>& subject_areas) {
+    for (const auto& s : subject_areas) {
+        if (s.name.empty()) {
+            throw std::invalid_argument("Subject area name cannot be empty.");
+        }
+        if (s.domain_name.empty()) {
+            throw std::invalid_argument("Subject area domain name cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << subject_areas.size() << " subject areas";
+    subject_area_repo_.write(subject_areas);
 }
 
 void data_organization_service::remove_subject_area(

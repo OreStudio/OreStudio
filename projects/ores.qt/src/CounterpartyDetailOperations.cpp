@@ -59,7 +59,7 @@ operation_result counterparty_detail_operations::save_entity(
     cpty.change_commentary = data.change_commentary;
 
     refdata::messaging::save_counterparty_request request;
-    request.counterparty = cpty;
+    request.counterparties.push_back(cpty);
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -86,7 +86,7 @@ operation_result counterparty_detail_operations::delete_entity(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_request request;
-    request.ids = {id};
+    request.ids.push_back({id});
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -103,10 +103,9 @@ operation_result counterparty_detail_operations::delete_entity(
 
     auto response = refdata::messaging::delete_counterparty_response::
         deserialize(*payload_result);
-    if (!response || response->results.empty())
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
-    return {response->results[0].success, response->results[0].message};
+    return {response->success, response->message};
 }
 
 load_all_entities_result counterparty_detail_operations::load_all_entities(
@@ -190,7 +189,7 @@ operation_result counterparty_detail_operations::save_identifier(
     ident.performed_by = entry.performed_by;
 
     refdata::messaging::save_counterparty_identifier_request request;
-    request.counterparty_identifier = ident;
+    request.counterparty_identifiers.push_back(ident);
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -217,7 +216,7 @@ operation_result counterparty_detail_operations::delete_identifier(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_identifier_request request;
-    request.ids = {id};
+    request.ids.push_back({id});
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -234,10 +233,9 @@ operation_result counterparty_detail_operations::delete_identifier(
 
     auto response = refdata::messaging::delete_counterparty_identifier_response::
         deserialize(*payload_result);
-    if (!response || response->results.empty())
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
-    return {response->results[0].success, response->results[0].message};
+    return {response->success, response->message};
 }
 
 load_contacts_result counterparty_detail_operations::load_contacts(
@@ -295,7 +293,7 @@ operation_result counterparty_detail_operations::save_contact(
     contact.performed_by = entry.performed_by;
 
     refdata::messaging::save_counterparty_contact_information_request request;
-    request.counterparty_contact_information = contact;
+    request.counterparty_contact_informations.push_back(contact);
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -322,7 +320,7 @@ operation_result counterparty_detail_operations::delete_contact(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_contact_information_request request;
-    request.ids = {id};
+    request.ids.push_back({id});
     auto payload = request.serialize();
 
     comms::messaging::frame request_frame(
@@ -339,10 +337,9 @@ operation_result counterparty_detail_operations::delete_contact(
 
     auto response = refdata::messaging::delete_counterparty_contact_information_response::
         deserialize(*payload_result);
-    if (!response || response->results.empty())
-        return {false, "Invalid server response"};
+    if (!response) return {false, "Invalid server response"};
 
-    return {response->results[0].success, response->results[0].message};
+    return {response->success, response->message};
 }
 
 }

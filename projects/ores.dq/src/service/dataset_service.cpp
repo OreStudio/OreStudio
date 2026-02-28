@@ -68,6 +68,16 @@ void dataset_service::save_dataset(const domain::dataset& dataset) {
     BOOST_LOG_SEV(lg(), info) << "Saved dataset: " << dataset.id;
 }
 
+void dataset_service::save_datasets(const std::vector<domain::dataset>& datasets) {
+    for (const auto& d : datasets) {
+        if (d.id.is_nil()) {
+            throw std::invalid_argument("Dataset ID cannot be nil.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << datasets.size() << " datasets";
+    dataset_repo_.write(datasets);
+}
+
 void dataset_service::remove_dataset(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing dataset: " << id;
     dataset_repo_.remove(id);
@@ -117,6 +127,17 @@ void dataset_service::save_methodology(const domain::methodology& methodology) {
     BOOST_LOG_SEV(lg(), debug) << "Saving methodology: " << methodology.id;
     methodology_repo_.write(methodology);
     BOOST_LOG_SEV(lg(), info) << "Saved methodology: " << methodology.id;
+}
+
+void dataset_service::save_methodologies(
+    const std::vector<domain::methodology>& methodologies) {
+    for (const auto& m : methodologies) {
+        if (m.id.is_nil()) {
+            throw std::invalid_argument("Methodology ID cannot be nil.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << methodologies.size() << " methodologies";
+    methodology_repo_.write(methodologies);
 }
 
 void dataset_service::remove_methodology(const boost::uuids::uuid& id) {

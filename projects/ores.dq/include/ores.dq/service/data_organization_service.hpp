@@ -97,6 +97,13 @@ public:
     void save_catalog(const domain::catalog& catalog);
 
     /**
+     * @brief Saves multiple catalogs (creates or updates).
+     *
+     * @param catalogs The catalogs to save
+     */
+    void save_catalogs(const std::vector<domain::catalog>& catalogs);
+
+    /**
      * @brief Removes a catalog.
      *
      * @param name The name of the catalog to remove
@@ -147,6 +154,13 @@ public:
      * @param data_domain The data domain to save
      */
     void save_data_domain(const domain::data_domain& data_domain);
+
+    /**
+     * @brief Saves multiple data domains (creates or updates).
+     *
+     * @param data_domains The data domains to save
+     */
+    void save_data_domains(const std::vector<domain::data_domain>& data_domains);
 
     /**
      * @brief Removes a data domain.
@@ -201,6 +215,13 @@ public:
      * @param subject_area The subject area to save
      */
     void save_subject_area(const domain::subject_area& subject_area);
+
+    /**
+     * @brief Saves multiple subject areas (creates or updates).
+     *
+     * @param subject_areas The subject areas to save
+     */
+    void save_subject_areas(const std::vector<domain::subject_area>& subject_areas);
 
     /**
      * @brief Removes a subject area.

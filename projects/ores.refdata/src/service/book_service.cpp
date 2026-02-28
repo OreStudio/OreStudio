@@ -63,6 +63,15 @@ void book_service::save_book(const domain::book& book) {
     BOOST_LOG_SEV(lg(), info) << "Saved book: " << book.id;
 }
 
+void book_service::save_books(const std::vector<domain::book>& books) {
+    for (const auto& b : books) {
+        if (b.id.is_nil())
+            throw std::invalid_argument("Book ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << books.size() << " books";
+    repo_.write(books);
+}
+
 void book_service::remove_book(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing book: " << id;
     repo_.remove(id);

@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/dataset_bundle_member.hpp"
@@ -90,10 +91,13 @@ struct get_dataset_bundle_members_by_bundle_response final {
 std::ostream& operator<<(std::ostream& s, const get_dataset_bundle_members_by_bundle_response& v);
 
 /**
- * @brief Request to save a dataset bundle member (create or update).
+ * @brief Request to save one or more dataset bundle members (create or update).
  */
 struct save_dataset_bundle_member_request final {
-    domain::dataset_bundle_member member;
+    std::vector<domain::dataset_bundle_member> members;
+
+    static save_dataset_bundle_member_request from(domain::dataset_bundle_member member);
+    static save_dataset_bundle_member_request from(std::vector<domain::dataset_bundle_member> members);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_dataset_bundle_member_request,
@@ -104,10 +108,10 @@ struct save_dataset_bundle_member_request final {
 std::ostream& operator<<(std::ostream& s, const save_dataset_bundle_member_request& v);
 
 /**
- * @brief Response confirming dataset bundle member save operation.
+ * @brief Response confirming dataset bundle member save operation(s).
  */
 struct save_dataset_bundle_member_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -117,18 +121,6 @@ struct save_dataset_bundle_member_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_dataset_bundle_member_response& v);
-
-/**
- * @brief Result for a single dataset bundle member deletion.
- */
-struct delete_dataset_bundle_member_result final {
-    std::string bundle_code;
-    std::string dataset_code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_dataset_bundle_member_result& v);
 
 /**
  * @brief Key identifying a dataset bundle member for deletion.
@@ -158,7 +150,8 @@ std::ostream& operator<<(std::ostream& s, const delete_dataset_bundle_member_req
  * @brief Response confirming dataset bundle member deletion(s).
  */
 struct delete_dataset_bundle_member_response final {
-    std::vector<delete_dataset_bundle_member_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_dataset_bundle_member_response,

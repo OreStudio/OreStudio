@@ -240,20 +240,36 @@ std::ostream& operator<<(std::ostream& s, const get_nature_dimensions_response& 
     return s;
 }
 
+save_nature_dimension_request
+save_nature_dimension_request::from(domain::nature_dimension dimension) {
+    return save_nature_dimension_request{
+        std::vector<domain::nature_dimension>{std::move(dimension)}};
+}
+
+save_nature_dimension_request
+save_nature_dimension_request::from(std::vector<domain::nature_dimension> dimensions) {
+    return save_nature_dimension_request{std::move(dimensions)};
+}
+
 std::vector<std::byte> save_nature_dimension_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_nature_dimension(buffer, dimension);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(dimensions.size()));
+    for (const auto& e : dimensions)
+        write_nature_dimension(buffer, e);
     return buffer;
 }
 
 std::expected<save_nature_dimension_request, error_code>
 save_nature_dimension_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_nature_dimension_request request;
-
-    auto dim_result = read_nature_dimension(data);
-    if (!dim_result) return std::unexpected(dim_result.error());
-    request.dimension = std::move(*dim_result);
-
+    request.dimensions.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_nature_dimension(data);
+        if (!e) return std::unexpected(e.error());
+        request.dimensions.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -289,10 +305,6 @@ std::ostream& operator<<(std::ostream& s, const save_nature_dimension_response& 
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_nature_dimension_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_nature_dimension_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -328,12 +340,8 @@ std::ostream& operator<<(std::ostream& s, const delete_nature_dimension_request&
 
 std::vector<std::byte> delete_nature_dimension_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -341,28 +349,13 @@ std::expected<delete_nature_dimension_response, error_code>
 delete_nature_dimension_response::deserialize(std::span<const std::byte> data) {
     delete_nature_dimension_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_nature_dimension_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
@@ -489,20 +482,36 @@ std::ostream& operator<<(std::ostream& s, const get_origin_dimensions_response& 
     return s;
 }
 
+save_origin_dimension_request
+save_origin_dimension_request::from(domain::origin_dimension dimension) {
+    return save_origin_dimension_request{
+        std::vector<domain::origin_dimension>{std::move(dimension)}};
+}
+
+save_origin_dimension_request
+save_origin_dimension_request::from(std::vector<domain::origin_dimension> dimensions) {
+    return save_origin_dimension_request{std::move(dimensions)};
+}
+
 std::vector<std::byte> save_origin_dimension_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_origin_dimension(buffer, dimension);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(dimensions.size()));
+    for (const auto& e : dimensions)
+        write_origin_dimension(buffer, e);
     return buffer;
 }
 
 std::expected<save_origin_dimension_request, error_code>
 save_origin_dimension_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_origin_dimension_request request;
-
-    auto dim_result = read_origin_dimension(data);
-    if (!dim_result) return std::unexpected(dim_result.error());
-    request.dimension = std::move(*dim_result);
-
+    request.dimensions.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_origin_dimension(data);
+        if (!e) return std::unexpected(e.error());
+        request.dimensions.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -538,10 +547,6 @@ std::ostream& operator<<(std::ostream& s, const save_origin_dimension_response& 
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_origin_dimension_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_origin_dimension_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -577,12 +582,8 @@ std::ostream& operator<<(std::ostream& s, const delete_origin_dimension_request&
 
 std::vector<std::byte> delete_origin_dimension_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -590,28 +591,13 @@ std::expected<delete_origin_dimension_response, error_code>
 delete_origin_dimension_response::deserialize(std::span<const std::byte> data) {
     delete_origin_dimension_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_origin_dimension_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
@@ -738,20 +724,36 @@ std::ostream& operator<<(std::ostream& s, const get_treatment_dimensions_respons
     return s;
 }
 
+save_treatment_dimension_request
+save_treatment_dimension_request::from(domain::treatment_dimension dimension) {
+    return save_treatment_dimension_request{
+        std::vector<domain::treatment_dimension>{std::move(dimension)}};
+}
+
+save_treatment_dimension_request
+save_treatment_dimension_request::from(std::vector<domain::treatment_dimension> dimensions) {
+    return save_treatment_dimension_request{std::move(dimensions)};
+}
+
 std::vector<std::byte> save_treatment_dimension_request::serialize() const {
     std::vector<std::byte> buffer;
-    write_treatment_dimension(buffer, dimension);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(dimensions.size()));
+    for (const auto& e : dimensions)
+        write_treatment_dimension(buffer, e);
     return buffer;
 }
 
 std::expected<save_treatment_dimension_request, error_code>
 save_treatment_dimension_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_treatment_dimension_request request;
-
-    auto dim_result = read_treatment_dimension(data);
-    if (!dim_result) return std::unexpected(dim_result.error());
-    request.dimension = std::move(*dim_result);
-
+    request.dimensions.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_treatment_dimension(data);
+        if (!e) return std::unexpected(e.error());
+        request.dimensions.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -787,10 +789,6 @@ std::ostream& operator<<(std::ostream& s, const save_treatment_dimension_respons
     return s;
 }
 
-std::ostream& operator<<(std::ostream& s, const delete_treatment_dimension_result& v) {
-    rfl::json::write(v, s);
-    return s;
-}
 
 std::vector<std::byte> delete_treatment_dimension_request::serialize() const {
     std::vector<std::byte> buffer;
@@ -826,12 +824,8 @@ std::ostream& operator<<(std::ostream& s, const delete_treatment_dimension_reque
 
 std::vector<std::byte> delete_treatment_dimension_response::serialize() const {
     std::vector<std::byte> buffer;
-    writer::write_uint32(buffer, static_cast<std::uint32_t>(results.size()));
-    for (const auto& r : results) {
-        writer::write_string(buffer, r.code);
-        writer::write_bool(buffer, r.success);
-        writer::write_string(buffer, r.message);
-    }
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -839,28 +833,13 @@ std::expected<delete_treatment_dimension_response, error_code>
 delete_treatment_dimension_response::deserialize(std::span<const std::byte> data) {
     delete_treatment_dimension_response response;
 
-    auto count_result = reader::read_count(data);
-    if (!count_result) return std::unexpected(count_result.error());
-    auto count = *count_result;
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
 
-    response.results.reserve(count);
-    for (std::uint32_t i = 0; i < count; ++i) {
-        delete_treatment_dimension_result r;
-
-        auto code_result = reader::read_string(data);
-        if (!code_result) return std::unexpected(code_result.error());
-        r.code = *code_result;
-
-        auto success_result = reader::read_bool(data);
-        if (!success_result) return std::unexpected(success_result.error());
-        r.success = *success_result;
-
-        auto message_result = reader::read_string(data);
-        if (!message_result) return std::unexpected(message_result.error());
-        r.message = *message_result;
-
-        response.results.push_back(std::move(r));
-    }
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }

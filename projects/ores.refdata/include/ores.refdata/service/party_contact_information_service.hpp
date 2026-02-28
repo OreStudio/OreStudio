@@ -89,6 +89,13 @@ public:
     void save_party_contact_information(const domain::party_contact_information& party_contact_information);
 
     /**
+     * @brief Saves multiple party contact informations (creates or updates).
+     *
+     * @param party_contact_informations The party contact informations to save
+     */
+    void save_party_contact_informations(const std::vector<domain::party_contact_information>& party_contact_informations);
+
+    /**
      * @brief Removes a party contact information.
      *
      * @param id The ID of the party contact information to remove

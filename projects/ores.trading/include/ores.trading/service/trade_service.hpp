@@ -73,6 +73,8 @@ public:
 
     void save_trade(const domain::trade& v);
 
+    void save_trades(const std::vector<domain::trade>& trades);
+
     void remove_trade(const std::string& id);
 
     std::vector<domain::trade>

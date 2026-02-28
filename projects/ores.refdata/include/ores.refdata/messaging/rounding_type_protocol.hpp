@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/rounding_type.hpp"
@@ -62,10 +63,13 @@ struct get_rounding_types_response final {
 std::ostream& operator<<(std::ostream& s, const get_rounding_types_response& v);
 
 /**
- * @brief Request to save a rounding type (create or update).
+ * @brief Request to save one or more rounding types (create or update).
  */
 struct save_rounding_type_request final {
-    domain::rounding_type type;
+    std::vector<domain::rounding_type> types;
+
+    static save_rounding_type_request from(domain::rounding_type type);
+    static save_rounding_type_request from(std::vector<domain::rounding_type> types);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_rounding_type_request,
@@ -76,10 +80,10 @@ struct save_rounding_type_request final {
 std::ostream& operator<<(std::ostream& s, const save_rounding_type_request& v);
 
 /**
- * @brief Response confirming rounding type save operation.
+ * @brief Response confirming rounding type save operation(s).
  */
 struct save_rounding_type_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_rounding_type_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_rounding_type_response& v);
-
-/**
- * @brief Result for a single rounding type deletion.
- */
-struct delete_rounding_type_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_rounding_type_result& v);
 
 /**
  * @brief Request to delete one or more rounding types.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_rounding_type_request& v)
  * @brief Response confirming rounding type deletion(s).
  */
 struct delete_rounding_type_response final {
-    std::vector<delete_rounding_type_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_rounding_type_response,

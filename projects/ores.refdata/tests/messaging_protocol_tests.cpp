@@ -304,7 +304,7 @@ TEST_CASE("save_currency_request_serialize_deserialize", tags) {
 
     generation_context ctx;
     save_currency_request original;
-    original.currency = generate_synthetic_currency(ctx);
+    original.currencies.push_back(generate_synthetic_currency(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -316,12 +316,12 @@ TEST_CASE("save_currency_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.currency.iso_code == original.currency.iso_code);
-    CHECK(des.currency.name == original.currency.name);
-    CHECK(des.currency.numeric_code == original.currency.numeric_code);
-    CHECK(des.currency.symbol == original.currency.symbol);
-    CHECK(des.currency.fractions_per_unit == original.currency.fractions_per_unit);
-    CHECK(des.currency.rounding_precision == original.currency.rounding_precision);
+    CHECK(des.currencies[0].iso_code == original.currencies[0].iso_code);
+    CHECK(des.currencies[0].name == original.currencies[0].name);
+    CHECK(des.currencies[0].numeric_code == original.currencies[0].numeric_code);
+    CHECK(des.currencies[0].symbol == original.currencies[0].symbol);
+    CHECK(des.currencies[0].fractions_per_unit == original.currencies[0].fractions_per_unit);
+    CHECK(des.currencies[0].rounding_precision == original.currencies[0].rounding_precision);
 }
 
 TEST_CASE("save_currency_response_serialize_deserialize", tags) {
@@ -329,6 +329,7 @@ TEST_CASE("save_currency_response_serialize_deserialize", tags) {
 
     save_currency_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -371,17 +372,8 @@ TEST_CASE("delete_currency_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_currency_response original;
-    delete_currency_result r1;
-    r1.iso_code = "USD";
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_currency_result r2;
-    r2.iso_code = "EUR";
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -392,14 +384,8 @@ TEST_CASE("delete_currency_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].iso_code == "USD");
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].iso_code == "EUR");
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 // ============================================================================
@@ -481,7 +467,7 @@ TEST_CASE("save_country_request_serialize_deserialize", tags) {
 
     save_country_request original;
     generation_context ctx;
-    original.country = generate_fictional_countries(1, ctx)[0];
+    original.countries.push_back(generate_fictional_countries(1, ctx)[0]);
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -493,8 +479,8 @@ TEST_CASE("save_country_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.country.alpha2_code == original.country.alpha2_code);
-    CHECK(des.country.name == original.country.name);
+    CHECK(des.countries[0].alpha2_code == original.countries[0].alpha2_code);
+    CHECK(des.countries[0].name == original.countries[0].name);
 }
 
 TEST_CASE("save_country_response_serialize_deserialize", tags) {
@@ -502,6 +488,7 @@ TEST_CASE("save_country_response_serialize_deserialize", tags) {
 
     save_country_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -544,17 +531,8 @@ TEST_CASE("delete_country_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_country_response original;
-    delete_country_result r1;
-    r1.alpha2_code = "AA";
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_country_result r2;
-    r2.alpha2_code = "BB";
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -565,14 +543,8 @@ TEST_CASE("delete_country_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].alpha2_code == "AA");
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].alpha2_code == "BB");
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_country_history_request_serialize_deserialize", tags) {
@@ -671,7 +643,7 @@ TEST_CASE("save_party_type_request_serialize_deserialize", tags) {
 
     save_party_type_request original;
     generation_context ctx;
-    original.type = generate_synthetic_party_type(ctx);
+    original.types.push_back(generate_synthetic_party_type(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -683,8 +655,8 @@ TEST_CASE("save_party_type_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.type.code == original.type.code);
-    CHECK(des.type.name == original.type.name);
+    CHECK(des.types[0].code == original.types[0].code);
+    CHECK(des.types[0].name == original.types[0].name);
 }
 
 TEST_CASE("save_party_type_response_serialize_deserialize", tags) {
@@ -692,6 +664,7 @@ TEST_CASE("save_party_type_response_serialize_deserialize", tags) {
 
     save_party_type_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -734,17 +707,8 @@ TEST_CASE("delete_party_type_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_party_type_response original;
-    delete_party_type_result r1;
-    r1.code = "PT01";
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_party_type_result r2;
-    r2.code = "PT02";
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -755,14 +719,8 @@ TEST_CASE("delete_party_type_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].code == "PT01");
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].code == "PT02");
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_party_type_history_request_serialize_deserialize", tags) {
@@ -861,7 +819,7 @@ TEST_CASE("save_party_status_request_serialize_deserialize", tags) {
 
     save_party_status_request original;
     generation_context ctx;
-    original.status = generate_synthetic_party_status(ctx);
+    original.statuses.push_back(generate_synthetic_party_status(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -873,8 +831,8 @@ TEST_CASE("save_party_status_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.status.code == original.status.code);
-    CHECK(des.status.name == original.status.name);
+    CHECK(des.statuses[0].code == original.statuses[0].code);
+    CHECK(des.statuses[0].name == original.statuses[0].name);
 }
 
 TEST_CASE("save_party_status_response_serialize_deserialize", tags) {
@@ -882,6 +840,7 @@ TEST_CASE("save_party_status_response_serialize_deserialize", tags) {
 
     save_party_status_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -924,17 +883,8 @@ TEST_CASE("delete_party_status_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_party_status_response original;
-    delete_party_status_result r1;
-    r1.code = "PS01";
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_party_status_result r2;
-    r2.code = "PS02";
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -945,14 +895,8 @@ TEST_CASE("delete_party_status_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].code == "PS01");
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].code == "PS02");
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_party_status_history_request_serialize_deserialize", tags) {
@@ -1051,7 +995,7 @@ TEST_CASE("save_party_id_scheme_request_serialize_deserialize", tags) {
 
     save_party_id_scheme_request original;
     generation_context ctx;
-    original.scheme = generate_synthetic_party_id_scheme(ctx);
+    original.schemes.push_back(generate_synthetic_party_id_scheme(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1063,8 +1007,8 @@ TEST_CASE("save_party_id_scheme_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.scheme.code == original.scheme.code);
-    CHECK(des.scheme.name == original.scheme.name);
+    CHECK(des.schemes[0].code == original.schemes[0].code);
+    CHECK(des.schemes[0].name == original.schemes[0].name);
 }
 
 TEST_CASE("save_party_id_scheme_response_serialize_deserialize", tags) {
@@ -1072,6 +1016,7 @@ TEST_CASE("save_party_id_scheme_response_serialize_deserialize", tags) {
 
     save_party_id_scheme_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -1114,17 +1059,8 @@ TEST_CASE("delete_party_id_scheme_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_party_id_scheme_response original;
-    delete_party_id_scheme_result r1;
-    r1.code = "PIS01";
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_party_id_scheme_result r2;
-    r2.code = "PIS02";
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -1135,14 +1071,8 @@ TEST_CASE("delete_party_id_scheme_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].code == "PIS01");
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].code == "PIS02");
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_party_id_scheme_history_request_serialize_deserialize", tags) {
@@ -1241,7 +1171,7 @@ TEST_CASE("save_contact_type_request_serialize_deserialize", tags) {
 
     save_contact_type_request original;
     generation_context ctx;
-    original.type = generate_synthetic_contact_type(ctx);
+    original.types.push_back(generate_synthetic_contact_type(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1253,8 +1183,8 @@ TEST_CASE("save_contact_type_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.type.code == original.type.code);
-    CHECK(des.type.name == original.type.name);
+    CHECK(des.types[0].code == original.types[0].code);
+    CHECK(des.types[0].name == original.types[0].name);
 }
 
 TEST_CASE("save_contact_type_response_serialize_deserialize", tags) {
@@ -1262,6 +1192,7 @@ TEST_CASE("save_contact_type_response_serialize_deserialize", tags) {
 
     save_contact_type_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -1304,17 +1235,8 @@ TEST_CASE("delete_contact_type_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
     delete_contact_type_response original;
-    delete_contact_type_result r1;
-    r1.code = "CT01";
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_contact_type_result r2;
-    r2.code = "CT02";
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -1325,14 +1247,8 @@ TEST_CASE("delete_contact_type_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].code == "CT01");
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].code == "CT02");
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_contact_type_history_request_serialize_deserialize", tags) {
@@ -1431,7 +1347,7 @@ TEST_CASE("save_party_request_serialize_deserialize", tags) {
 
     save_party_request original;
     generation_context ctx;
-    original.party = generate_synthetic_party(ctx);
+    original.parties.push_back(generate_synthetic_party(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1443,8 +1359,8 @@ TEST_CASE("save_party_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.party.id == original.party.id);
-    CHECK(des.party.full_name == original.party.full_name);
+    CHECK(des.parties[0].id == original.parties[0].id);
+    CHECK(des.parties[0].full_name == original.parties[0].full_name);
 }
 
 TEST_CASE("save_party_response_serialize_deserialize", tags) {
@@ -1452,6 +1368,7 @@ TEST_CASE("save_party_response_serialize_deserialize", tags) {
 
     save_party_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -1494,19 +1411,9 @@ TEST_CASE("delete_party_request_serialize_deserialize", tags) {
 TEST_CASE("delete_party_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    boost::uuids::random_generator uuid_gen;
     delete_party_response original;
-    delete_party_result r1;
-    r1.id = uuid_gen();
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_party_result r2;
-    r2.id = uuid_gen();
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -1517,14 +1424,8 @@ TEST_CASE("delete_party_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].id == r1.id);
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].id == r2.id);
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_party_history_request_serialize_deserialize", tags) {
@@ -1630,7 +1531,7 @@ TEST_CASE("save_counterparty_request_serialize_deserialize", tags) {
 
     save_counterparty_request original;
     generation_context ctx;
-    original.counterparty = generate_synthetic_counterparty(ctx);
+    original.counterparties.push_back(generate_synthetic_counterparty(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1642,8 +1543,8 @@ TEST_CASE("save_counterparty_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.counterparty.id == original.counterparty.id);
-    CHECK(des.counterparty.full_name == original.counterparty.full_name);
+    CHECK(des.counterparties[0].id == original.counterparties[0].id);
+    CHECK(des.counterparties[0].full_name == original.counterparties[0].full_name);
 }
 
 TEST_CASE("save_counterparty_response_serialize_deserialize", tags) {
@@ -1651,6 +1552,7 @@ TEST_CASE("save_counterparty_response_serialize_deserialize", tags) {
 
     save_counterparty_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -1693,19 +1595,9 @@ TEST_CASE("delete_counterparty_request_serialize_deserialize", tags) {
 TEST_CASE("delete_counterparty_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    boost::uuids::random_generator uuid_gen;
     delete_counterparty_response original;
-    delete_counterparty_result r1;
-    r1.id = uuid_gen();
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_counterparty_result r2;
-    r2.id = uuid_gen();
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -1716,14 +1608,8 @@ TEST_CASE("delete_counterparty_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].id == r1.id);
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].id == r2.id);
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_counterparty_history_request_serialize_deserialize", tags) {
@@ -1826,7 +1712,7 @@ TEST_CASE("save_party_identifier_request_serialize_deserialize", tags) {
 
     save_party_identifier_request original;
     generation_context ctx;
-    original.party_identifier = generate_synthetic_party_identifier(ctx);
+    original.party_identifiers.push_back(generate_synthetic_party_identifier(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -1838,7 +1724,7 @@ TEST_CASE("save_party_identifier_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.party_identifier.id == original.party_identifier.id);
+    CHECK(des.party_identifiers[0].id == original.party_identifiers[0].id);
 }
 
 TEST_CASE("save_party_identifier_response_serialize_deserialize", tags) {
@@ -1846,6 +1732,7 @@ TEST_CASE("save_party_identifier_response_serialize_deserialize", tags) {
 
     save_party_identifier_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -1888,19 +1775,9 @@ TEST_CASE("delete_party_identifier_request_serialize_deserialize", tags) {
 TEST_CASE("delete_party_identifier_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    boost::uuids::random_generator uuid_gen;
     delete_party_identifier_response original;
-    delete_party_identifier_result r1;
-    r1.id = uuid_gen();
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_party_identifier_result r2;
-    r2.id = uuid_gen();
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
@@ -1911,14 +1788,8 @@ TEST_CASE("delete_party_identifier_response_serialize_deserialize", tags) {
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].id == r1.id);
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].id == r2.id);
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_party_identifier_history_request_serialize_deserialize", tags) {
@@ -2025,8 +1896,8 @@ TEST_CASE("save_party_contact_information_request_serialize_deserialize", tags) 
     generation_context ctx;
 
     save_party_contact_information_request original;
-    original.party_contact_information =
-        generate_synthetic_party_contact_information(ctx);
+    original.party_contact_informations.push_back(
+        generate_synthetic_party_contact_information(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -2039,8 +1910,8 @@ TEST_CASE("save_party_contact_information_request_serialize_deserialize", tags) 
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.party_contact_information.id ==
-          original.party_contact_information.id);
+    CHECK(des.party_contact_informations[0].id ==
+          original.party_contact_informations[0].id);
 }
 
 TEST_CASE("save_party_contact_information_response_serialize_deserialize", tags) {
@@ -2048,6 +1919,7 @@ TEST_CASE("save_party_contact_information_response_serialize_deserialize", tags)
 
     save_party_contact_information_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -2092,38 +1964,21 @@ TEST_CASE("delete_party_contact_information_request_serialize_deserialize", tags
 TEST_CASE("delete_party_contact_information_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    boost::uuids::random_generator uuid_gen;
     delete_party_contact_information_response original;
-    delete_party_contact_information_result r1;
-    r1.id = uuid_gen();
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_party_contact_information_result r2;
-    r2.id = uuid_gen();
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
     BOOST_LOG_SEV(lg, debug) << "Serialized size: " << serialized.size();
 
-    const auto result =
-        delete_party_contact_information_response::deserialize(serialized);
+    const auto result = delete_party_contact_information_response::deserialize(serialized);
 
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].id == r1.id);
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].id == r2.id);
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_party_contact_information_history_request_serialize_deserialize", tags) {
@@ -2231,8 +2086,8 @@ TEST_CASE("save_counterparty_identifier_request_serialize_deserialize", tags) {
     generation_context ctx;
 
     save_counterparty_identifier_request original;
-    original.counterparty_identifier =
-        generate_synthetic_counterparty_identifier(ctx);
+    original.counterparty_identifiers.push_back(
+        generate_synthetic_counterparty_identifier(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -2245,8 +2100,8 @@ TEST_CASE("save_counterparty_identifier_request_serialize_deserialize", tags) {
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.counterparty_identifier.id ==
-          original.counterparty_identifier.id);
+    CHECK(des.counterparty_identifiers[0].id ==
+          original.counterparty_identifiers[0].id);
 }
 
 TEST_CASE("save_counterparty_identifier_response_serialize_deserialize", tags) {
@@ -2254,6 +2109,7 @@ TEST_CASE("save_counterparty_identifier_response_serialize_deserialize", tags) {
 
     save_counterparty_identifier_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -2298,38 +2154,21 @@ TEST_CASE("delete_counterparty_identifier_request_serialize_deserialize", tags) 
 TEST_CASE("delete_counterparty_identifier_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    boost::uuids::random_generator uuid_gen;
     delete_counterparty_identifier_response original;
-    delete_counterparty_identifier_result r1;
-    r1.id = uuid_gen();
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_counterparty_identifier_result r2;
-    r2.id = uuid_gen();
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
     BOOST_LOG_SEV(lg, debug) << "Serialized size: " << serialized.size();
 
-    const auto result =
-        delete_counterparty_identifier_response::deserialize(serialized);
+    const auto result = delete_counterparty_identifier_response::deserialize(serialized);
 
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].id == r1.id);
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].id == r2.id);
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_counterparty_identifier_history_request_serialize_deserialize", tags) {
@@ -2438,8 +2277,8 @@ TEST_CASE("save_counterparty_contact_information_request_serialize_deserialize",
     generation_context ctx;
 
     save_counterparty_contact_information_request original;
-    original.counterparty_contact_information =
-        generate_synthetic_counterparty_contact_information(ctx);
+    original.counterparty_contact_informations.push_back(
+        generate_synthetic_counterparty_contact_information(ctx));
     BOOST_LOG_SEV(lg, debug) << "Original request: " << original;
 
     const auto serialized = original.serialize();
@@ -2452,8 +2291,8 @@ TEST_CASE("save_counterparty_contact_information_request_serialize_deserialize",
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized request: " << des;
 
-    CHECK(des.counterparty_contact_information.id ==
-          original.counterparty_contact_information.id);
+    CHECK(des.counterparty_contact_informations[0].id ==
+          original.counterparty_contact_informations[0].id);
 }
 
 TEST_CASE("save_counterparty_contact_information_response_serialize_deserialize", tags) {
@@ -2461,6 +2300,7 @@ TEST_CASE("save_counterparty_contact_information_response_serialize_deserialize"
 
     save_counterparty_contact_information_response original;
     original.success = true;
+
     original.message = "ok";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
@@ -2505,38 +2345,21 @@ TEST_CASE("delete_counterparty_contact_information_request_serialize_deserialize
 TEST_CASE("delete_counterparty_contact_information_response_serialize_deserialize", tags) {
     auto lg(make_logger(test_suite));
 
-    boost::uuids::random_generator uuid_gen;
     delete_counterparty_contact_information_response original;
-    delete_counterparty_contact_information_result r1;
-    r1.id = uuid_gen();
-    r1.success = true;
-    r1.message = "deleted";
-    original.results.push_back(r1);
-
-    delete_counterparty_contact_information_result r2;
-    r2.id = uuid_gen();
-    r2.success = false;
-    r2.message = "not found";
-    original.results.push_back(r2);
+    original.success = true;
+    original.message = "Deleted successfully";
     BOOST_LOG_SEV(lg, debug) << "Original response: " << original;
 
     const auto serialized = original.serialize();
     BOOST_LOG_SEV(lg, debug) << "Serialized size: " << serialized.size();
 
-    const auto result =
-        delete_counterparty_contact_information_response::deserialize(serialized);
+    const auto result = delete_counterparty_contact_information_response::deserialize(serialized);
 
     REQUIRE(result.has_value());
     const auto& des = result.value();
     BOOST_LOG_SEV(lg, debug) << "Deserialized response: " << des;
-
-    REQUIRE(des.results.size() == 2);
-    CHECK(des.results[0].id == r1.id);
-    CHECK(des.results[0].success == true);
-    CHECK(des.results[0].message == "deleted");
-    CHECK(des.results[1].id == r2.id);
-    CHECK(des.results[1].success == false);
-    CHECK(des.results[1].message == "not found");
+    CHECK(des.success == original.success);
+    CHECK(des.message == original.message);
 }
 
 TEST_CASE("get_counterparty_contact_information_history_request_serialize_deserialize", tags) {

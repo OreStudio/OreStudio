@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/nature_dimension.hpp"
@@ -64,10 +65,13 @@ struct get_nature_dimensions_response final {
 std::ostream& operator<<(std::ostream& s, const get_nature_dimensions_response& v);
 
 /**
- * @brief Request to save a nature dimension (create or update).
+ * @brief Request to save one or more nature dimensions (create or update).
  */
 struct save_nature_dimension_request final {
-    domain::nature_dimension dimension;
+    std::vector<domain::nature_dimension> dimensions;
+
+    static save_nature_dimension_request from(domain::nature_dimension dimension);
+    static save_nature_dimension_request from(std::vector<domain::nature_dimension> dimensions);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_nature_dimension_request,
@@ -78,10 +82,10 @@ struct save_nature_dimension_request final {
 std::ostream& operator<<(std::ostream& s, const save_nature_dimension_request& v);
 
 /**
- * @brief Response confirming nature dimension save operation.
+ * @brief Response confirming nature dimension save operation(s).
  */
 struct save_nature_dimension_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -91,17 +95,6 @@ struct save_nature_dimension_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_nature_dimension_response& v);
-
-/**
- * @brief Result for a single nature dimension deletion.
- */
-struct delete_nature_dimension_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_nature_dimension_result& v);
 
 /**
  * @brief Request to delete one or more nature dimensions.
@@ -121,7 +114,8 @@ std::ostream& operator<<(std::ostream& s, const delete_nature_dimension_request&
  * @brief Response confirming nature dimension deletion(s).
  */
 struct delete_nature_dimension_response final {
-    std::vector<delete_nature_dimension_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_nature_dimension_response,
@@ -192,10 +186,13 @@ struct get_origin_dimensions_response final {
 std::ostream& operator<<(std::ostream& s, const get_origin_dimensions_response& v);
 
 /**
- * @brief Request to save an origin dimension (create or update).
+ * @brief Request to save one or more origin dimensions (create or update).
  */
 struct save_origin_dimension_request final {
-    domain::origin_dimension dimension;
+    std::vector<domain::origin_dimension> dimensions;
+
+    static save_origin_dimension_request from(domain::origin_dimension dimension);
+    static save_origin_dimension_request from(std::vector<domain::origin_dimension> dimensions);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_origin_dimension_request,
@@ -206,10 +203,10 @@ struct save_origin_dimension_request final {
 std::ostream& operator<<(std::ostream& s, const save_origin_dimension_request& v);
 
 /**
- * @brief Response confirming origin dimension save operation.
+ * @brief Response confirming origin dimension save operation(s).
  */
 struct save_origin_dimension_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -219,17 +216,6 @@ struct save_origin_dimension_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_origin_dimension_response& v);
-
-/**
- * @brief Result for a single origin dimension deletion.
- */
-struct delete_origin_dimension_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_origin_dimension_result& v);
 
 /**
  * @brief Request to delete one or more origin dimensions.
@@ -249,7 +235,8 @@ std::ostream& operator<<(std::ostream& s, const delete_origin_dimension_request&
  * @brief Response confirming origin dimension deletion(s).
  */
 struct delete_origin_dimension_response final {
-    std::vector<delete_origin_dimension_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_origin_dimension_response,
@@ -320,10 +307,13 @@ struct get_treatment_dimensions_response final {
 std::ostream& operator<<(std::ostream& s, const get_treatment_dimensions_response& v);
 
 /**
- * @brief Request to save a treatment dimension (create or update).
+ * @brief Request to save one or more treatment dimensions (create or update).
  */
 struct save_treatment_dimension_request final {
-    domain::treatment_dimension dimension;
+    std::vector<domain::treatment_dimension> dimensions;
+
+    static save_treatment_dimension_request from(domain::treatment_dimension dimension);
+    static save_treatment_dimension_request from(std::vector<domain::treatment_dimension> dimensions);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_treatment_dimension_request,
@@ -334,10 +324,10 @@ struct save_treatment_dimension_request final {
 std::ostream& operator<<(std::ostream& s, const save_treatment_dimension_request& v);
 
 /**
- * @brief Response confirming treatment dimension save operation.
+ * @brief Response confirming treatment dimension save operation(s).
  */
 struct save_treatment_dimension_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -347,17 +337,6 @@ struct save_treatment_dimension_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_treatment_dimension_response& v);
-
-/**
- * @brief Result for a single treatment dimension deletion.
- */
-struct delete_treatment_dimension_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_treatment_dimension_result& v);
 
 /**
  * @brief Request to delete one or more treatment dimensions.
@@ -377,7 +356,8 @@ std::ostream& operator<<(std::ostream& s, const delete_treatment_dimension_reque
  * @brief Response confirming treatment dimension deletion(s).
  */
 struct delete_treatment_dimension_response final {
-    std::vector<delete_treatment_dimension_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_treatment_dimension_response,

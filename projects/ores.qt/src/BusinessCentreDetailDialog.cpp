@@ -264,7 +264,7 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_business_centre_request request;
-        request.business_centre = business_centre;
+        request.business_centres.push_back(business_centre);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -350,7 +350,7 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_business_centre_request request;
-        request.codes = {code_str};
+        request.codes.push_back({code_str});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -373,11 +373,11 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
         auto response = refdata::messaging::delete_business_centre_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

@@ -89,6 +89,13 @@ public:
     void save_counterparty_contact_information(const domain::counterparty_contact_information& counterparty_contact_information);
 
     /**
+     * @brief Saves multiple counterparty contact informations (creates or updates).
+     *
+     * @param counterparty_contact_informations The counterparty contact informations to save
+     */
+    void save_counterparty_contact_informations(const std::vector<domain::counterparty_contact_information>& counterparty_contact_informations);
+
+    /**
      * @brief Removes a counterparty contact information.
      *
      * @param id The ID of the counterparty contact information to remove

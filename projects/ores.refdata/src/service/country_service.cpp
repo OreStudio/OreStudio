@@ -53,6 +53,15 @@ void country_service::save_country(const domain::country& country) {
     repo_.write(ctx_, country);
 }
 
+void country_service::save_countries(const std::vector<domain::country>& countries) {
+    for (const auto& c : countries) {
+        if (c.alpha2_code.empty())
+            throw std::invalid_argument("Country alpha2 code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << countries.size() << " countries";
+    repo_.write(ctx_, countries);
+}
+
 void country_service::delete_country(const std::string& alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Deleting country: " << alpha2_code;
     repo_.remove(ctx_, alpha2_code);

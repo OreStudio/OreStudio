@@ -87,6 +87,14 @@ public:
     void save_currency(const domain::currency& currency);
 
     /**
+     * @brief Saves a batch of currencies atomically (all or nothing).
+     *
+     * @param currencies The currencies to save.
+     * @throws std::exception on failure.
+     */
+    void save_currencies(const std::vector<domain::currency>& currencies);
+
+    /**
      * @brief Deletes a currency by its ISO code.
      *
      * @param iso_code The ISO code of the currency to delete.

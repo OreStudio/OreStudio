@@ -56,6 +56,8 @@ public:
 
     void save_type(const domain::currency_market_tier& v);
 
+    void save_types(const std::vector<domain::currency_market_tier>& types);
+
     void remove_type(const std::string& code);
 
     std::vector<domain::currency_market_tier>

@@ -35,6 +35,65 @@ using ores::utility::serialization::error_code;
 using ores::utility::serialization::reader;
 using ores::utility::serialization::writer;
 
+namespace {
+
+// ============================================================================
+// Feature Flags helpers
+// ============================================================================
+
+void write_feature_flags(std::vector<std::byte>& buffer,
+    const domain::feature_flags& ff) {
+    writer::write_string(buffer, ff.name);
+    writer::write_bool(buffer, ff.enabled);
+    writer::write_string(buffer, ff.description);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
+    writer::write_string(buffer, ff.change_reason_code);
+    writer::write_string(buffer, ff.change_commentary);
+    writer::write_string(buffer,
+        ores::platform::time::datetime::format_time_point(ff.recorded_at));
+}
+
+std::expected<domain::feature_flags, error_code>
+read_feature_flags(std::span<const std::byte>& data) {
+    domain::feature_flags ff;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    ff.name = *name_result;
+
+    auto enabled_result = reader::read_bool(data);
+    if (!enabled_result) return std::unexpected(enabled_result.error());
+    ff.enabled = *enabled_result;
+
+    auto description_result = reader::read_string(data);
+    if (!description_result) return std::unexpected(description_result.error());
+    ff.description = *description_result;
+
+    auto version_result = reader::read_uint32(data);
+    if (!version_result) return std::unexpected(version_result.error());
+    ff.version = static_cast<int>(*version_result);
+
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    ff.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    ff.change_commentary = *change_commentary_result;
+
+    auto recorded_at_result = reader::read_string(data);
+    if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
+    try {
+        ff.recorded_at = ores::platform::time::datetime::parse_time_point(*recorded_at_result);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
+
+    return ff;
+}
+
+} // anonymous namespace
+
 std::vector<std::byte> get_feature_flags_request::serialize() const {
     return {};
 }
@@ -55,20 +114,10 @@ std::ostream& operator<<(std::ostream& s, const get_feature_flags_request& v)
 
 std::vector<std::byte> get_feature_flags_response::serialize() const {
     std::vector<std::byte> buffer;
-
     writer::write_uint32(buffer, static_cast<std::uint32_t>(feature_flags.size()));
-
     for (const auto& ff : feature_flags) {
-        writer::write_string(buffer, ff.name);
-        writer::write_bool(buffer, ff.enabled);
-        writer::write_string(buffer, ff.description);
-        writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
-        writer::write_string(buffer, ff.change_reason_code);
-        writer::write_string(buffer, ff.change_commentary);
-        writer::write_string(buffer,
-            ores::platform::time::datetime::format_time_point(ff.recorded_at));
+        write_feature_flags(buffer, ff);
     }
-
     return buffer;
 }
 
@@ -77,50 +126,14 @@ get_feature_flags_response::deserialize(std::span<const std::byte> data) {
     get_feature_flags_response response;
 
     auto count_result = reader::read_count(data);
-    if (!count_result) {
-        return std::unexpected(count_result.error());
-    }
+    if (!count_result) return std::unexpected(count_result.error());
     auto count = *count_result;
 
     response.feature_flags.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        domain::feature_flags ff;
-
-        auto name_result = reader::read_string(data);
-        if (!name_result) return std::unexpected(name_result.error());
-        ff.name = *name_result;
-
-        auto enabled_result = reader::read_bool(data);
-        if (!enabled_result) return std::unexpected(enabled_result.error());
-        ff.enabled = *enabled_result;
-
-        auto description_result = reader::read_string(data);
-        if (!description_result) return std::unexpected(description_result.error());
-        ff.description = *description_result;
-
-        auto version_result = reader::read_uint32(data);
-        if (!version_result) return std::unexpected(version_result.error());
-        ff.version = static_cast<int>(*version_result);
-
-
-        auto change_reason_code_result = reader::read_string(data);
-        if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
-        ff.change_reason_code = *change_reason_code_result;
-
-        auto change_commentary_result = reader::read_string(data);
-        if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
-        ff.change_commentary = *change_commentary_result;
-
-        auto recorded_at_result = reader::read_string(data);
-        if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
-        try {
-            ff.recorded_at = ores::platform::time::datetime::parse_time_point(
-                *recorded_at_result);
-        } catch (const std::invalid_argument&) {
-            return std::unexpected(error_code::invalid_request);
-        }
-
-        response.feature_flags.push_back(std::move(ff));
+        auto result = read_feature_flags(data);
+        if (!result) return std::unexpected(result.error());
+        response.feature_flags.push_back(std::move(*result));
     }
 
     return response;
@@ -131,43 +144,35 @@ std::ostream& operator<<(std::ostream& s, const get_feature_flags_response& v) {
     return s;
 }
 
+save_feature_flag_request
+save_feature_flag_request::from(domain::feature_flags flag) {
+    return save_feature_flag_request{std::vector<domain::feature_flags>{std::move(flag)}};
+}
+
+save_feature_flag_request
+save_feature_flag_request::from(std::vector<domain::feature_flags> flags) {
+    return save_feature_flag_request{std::move(flags)};
+}
+
 std::vector<std::byte> save_feature_flag_request::serialize() const {
     std::vector<std::byte> buffer;
-
-    writer::write_string(buffer, flag.name);
-    writer::write_bool(buffer, flag.enabled);
-    writer::write_string(buffer, flag.description);
-    writer::write_string(buffer, flag.change_reason_code);
-    writer::write_string(buffer, flag.change_commentary);
-
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(flags.size()));
+    for (const auto& e : flags)
+        write_feature_flags(buffer, e);
     return buffer;
 }
 
 std::expected<save_feature_flag_request, ores::utility::serialization::error_code>
 save_feature_flag_request::deserialize(std::span<const std::byte> data) {
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
     save_feature_flag_request request;
-
-    auto name_result = reader::read_string(data);
-    if (!name_result) return std::unexpected(name_result.error());
-    request.flag.name = *name_result;
-
-    auto enabled_result = reader::read_bool(data);
-    if (!enabled_result) return std::unexpected(enabled_result.error());
-    request.flag.enabled = *enabled_result;
-
-    auto description_result = reader::read_string(data);
-    if (!description_result) return std::unexpected(description_result.error());
-    request.flag.description = *description_result;
-
-
-    auto change_reason_code_result = reader::read_string(data);
-    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
-    request.flag.change_reason_code = *change_reason_code_result;
-
-    auto change_commentary_result = reader::read_string(data);
-    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
-    request.flag.change_commentary = *change_commentary_result;
-
+    request.flags.reserve(*count_result);
+    for (std::uint32_t i = 0; i < *count_result; ++i) {
+        auto e = read_feature_flags(data);
+        if (!e) return std::unexpected(e.error());
+        request.flags.push_back(std::move(*e));
+    }
     return request;
 }
 
@@ -178,10 +183,8 @@ std::ostream& operator<<(std::ostream& s, const save_feature_flag_request& v) {
 
 std::vector<std::byte> save_feature_flag_response::serialize() const {
     std::vector<std::byte> buffer;
-
     writer::write_bool(buffer, success);
-    writer::write_string(buffer, error_message);
-
+    writer::write_string(buffer, message);
     return buffer;
 }
 
@@ -193,9 +196,9 @@ save_feature_flag_response::deserialize(std::span<const std::byte> data) {
     if (!success_result) return std::unexpected(success_result.error());
     response.success = *success_result;
 
-    auto error_message_result = reader::read_string(data);
-    if (!error_message_result) return std::unexpected(error_message_result.error());
-    response.error_message = *error_message_result;
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
 
     return response;
 }
@@ -282,22 +285,12 @@ std::ostream& operator<<(std::ostream& s, const get_feature_flag_history_request
 
 std::vector<std::byte> get_feature_flag_history_response::serialize() const {
     std::vector<std::byte> buffer;
-
     writer::write_bool(buffer, success);
     writer::write_string(buffer, message);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(history.size()));
-
     for (const auto& ff : history) {
-        writer::write_string(buffer, ff.name);
-        writer::write_bool(buffer, ff.enabled);
-        writer::write_string(buffer, ff.description);
-        writer::write_uint32(buffer, static_cast<std::uint32_t>(ff.version));
-        writer::write_string(buffer, ff.change_reason_code);
-        writer::write_string(buffer, ff.change_commentary);
-        writer::write_string(buffer,
-            ores::platform::time::datetime::format_time_point(ff.recorded_at));
+        write_feature_flags(buffer, ff);
     }
-
     return buffer;
 }
 
@@ -319,43 +312,9 @@ get_feature_flag_history_response::deserialize(std::span<const std::byte> data) 
 
     response.history.reserve(count);
     for (std::uint32_t i = 0; i < count; ++i) {
-        domain::feature_flags ff;
-
-        auto name_result = reader::read_string(data);
-        if (!name_result) return std::unexpected(name_result.error());
-        ff.name = *name_result;
-
-        auto enabled_result = reader::read_bool(data);
-        if (!enabled_result) return std::unexpected(enabled_result.error());
-        ff.enabled = *enabled_result;
-
-        auto description_result = reader::read_string(data);
-        if (!description_result) return std::unexpected(description_result.error());
-        ff.description = *description_result;
-
-        auto version_result = reader::read_uint32(data);
-        if (!version_result) return std::unexpected(version_result.error());
-        ff.version = static_cast<int>(*version_result);
-
-
-        auto change_reason_code_result = reader::read_string(data);
-        if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
-        ff.change_reason_code = *change_reason_code_result;
-
-        auto change_commentary_result = reader::read_string(data);
-        if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
-        ff.change_commentary = *change_commentary_result;
-
-        auto recorded_at_result = reader::read_string(data);
-        if (!recorded_at_result) return std::unexpected(recorded_at_result.error());
-        try {
-            ff.recorded_at = ores::platform::time::datetime::parse_time_point(
-                *recorded_at_result);
-        } catch (const std::invalid_argument&) {
-            return std::unexpected(error_code::invalid_request);
-        }
-
-        response.history.push_back(std::move(ff));
+        auto result = read_feature_flags(data);
+        if (!result) return std::unexpected(result.error());
+        response.history.push_back(std::move(*result));
     }
 
     return response;

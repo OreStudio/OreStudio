@@ -71,6 +71,17 @@ void party_contact_information_service::save_party_contact_information(const dom
     BOOST_LOG_SEV(lg(), info) << "Saved party contact information: " << party_contact_information.id;
 }
 
+void party_contact_information_service::save_party_contact_informations(
+    const std::vector<domain::party_contact_information>& party_contact_informations) {
+    for (const auto& pci : party_contact_informations) {
+        if (pci.id.is_nil())
+            throw std::invalid_argument("Party Contact Information ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << party_contact_informations.size()
+                               << " party contact informations";
+    repo_.write(party_contact_informations);
+}
+
 void party_contact_information_service::remove_party_contact_information(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party contact information: " << id;
     repo_.remove(id);

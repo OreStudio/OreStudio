@@ -196,7 +196,7 @@ void MonetaryNatureDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_monetary_nature_request request;
-        request.type = type;
+        request.types.push_back(type);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -282,7 +282,7 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_monetary_nature_request request;
-        request.codes = {code};
+        request.codes.push_back({code});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -305,11 +305,11 @@ void MonetaryNatureDetailDialog::onDeleteClicked() {
         auto response = refdata::messaging::delete_monetary_nature_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

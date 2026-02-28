@@ -56,6 +56,8 @@ public:
 
     void save_status(const domain::party_status& status);
 
+    void save_statuses(const std::vector<domain::party_status>& statuses);
+
     void remove_status(const std::string& code);
 
     std::vector<domain::party_status>

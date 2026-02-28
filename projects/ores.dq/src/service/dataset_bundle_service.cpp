@@ -63,6 +63,17 @@ void dataset_bundle_service::save_bundle(const domain::dataset_bundle& bundle) {
     BOOST_LOG_SEV(lg(), info) << "Saved dataset bundle: " << bundle.id;
 }
 
+void dataset_bundle_service::save_bundles(
+    const std::vector<domain::dataset_bundle>& bundles) {
+    for (const auto& b : bundles) {
+        if (b.id.is_nil()) {
+            throw std::invalid_argument("Dataset Bundle ID cannot be nil.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << bundles.size() << " dataset bundles";
+    repo_.write(bundles);
+}
+
 void dataset_bundle_service::remove_bundle(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing dataset bundle: " << id;
     repo_.remove(id);

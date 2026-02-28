@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.variability/domain/feature_flags.hpp"
@@ -56,12 +57,15 @@ struct get_feature_flags_response final {
 std::ostream& operator<<(std::ostream& s, const get_feature_flags_response& v);
 
 /**
- * @brief Request to save (create or update) a feature flag.
+ * @brief Request to save (create or update) one or more feature flags.
  *
  * Includes change tracking fields for audit trail.
  */
 struct save_feature_flag_request final {
-    domain::feature_flags flag;
+    std::vector<domain::feature_flags> flags;
+
+    static save_feature_flag_request from(domain::feature_flags flag);
+    static save_feature_flag_request from(std::vector<domain::feature_flags> flags);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_feature_flag_request, ores::utility::serialization::error_code>
@@ -75,7 +79,7 @@ std::ostream& operator<<(std::ostream& s, const save_feature_flag_request& v);
  */
 struct save_feature_flag_response final {
     bool success = false;
-    std::string error_message;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_feature_flag_response, ores::utility::serialization::error_code>

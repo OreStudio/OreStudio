@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/coding_scheme.hpp"
@@ -91,10 +92,13 @@ struct get_coding_schemes_by_authority_type_response final {
 std::ostream& operator<<(std::ostream& s, const get_coding_schemes_by_authority_type_response& v);
 
 /**
- * @brief Request to save a coding scheme (create or update).
+ * @brief Request to save one or more coding schemes (create or update).
  */
 struct save_coding_scheme_request final {
-    domain::coding_scheme scheme;
+    std::vector<domain::coding_scheme> schemes;
+
+    static save_coding_scheme_request from(domain::coding_scheme scheme);
+    static save_coding_scheme_request from(std::vector<domain::coding_scheme> schemes);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_coding_scheme_request,
@@ -105,10 +109,10 @@ struct save_coding_scheme_request final {
 std::ostream& operator<<(std::ostream& s, const save_coding_scheme_request& v);
 
 /**
- * @brief Response confirming coding scheme save operation.
+ * @brief Response confirming coding scheme save operation(s).
  */
 struct save_coding_scheme_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -118,17 +122,6 @@ struct save_coding_scheme_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_coding_scheme_response& v);
-
-/**
- * @brief Result for a single coding scheme deletion.
- */
-struct delete_coding_scheme_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_result& v);
 
 /**
  * @brief Request to delete one or more coding schemes.
@@ -148,7 +141,8 @@ std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_request& v)
  * @brief Response confirming coding scheme deletion(s).
  */
 struct delete_coding_scheme_response final {
-    std::vector<delete_coding_scheme_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_coding_scheme_response,
@@ -219,10 +213,13 @@ struct get_coding_scheme_authority_types_response final {
 std::ostream& operator<<(std::ostream& s, const get_coding_scheme_authority_types_response& v);
 
 /**
- * @brief Request to save a coding scheme authority type (create or update).
+ * @brief Request to save one or more coding scheme authority types (create or update).
  */
 struct save_coding_scheme_authority_type_request final {
-    domain::coding_scheme_authority_type authority_type;
+    std::vector<domain::coding_scheme_authority_type> authority_types;
+
+    static save_coding_scheme_authority_type_request from(domain::coding_scheme_authority_type authority_type);
+    static save_coding_scheme_authority_type_request from(std::vector<domain::coding_scheme_authority_type> authority_types);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_coding_scheme_authority_type_request,
@@ -233,10 +230,10 @@ struct save_coding_scheme_authority_type_request final {
 std::ostream& operator<<(std::ostream& s, const save_coding_scheme_authority_type_request& v);
 
 /**
- * @brief Response confirming coding scheme authority type save operation.
+ * @brief Response confirming coding scheme authority type save operation(s).
  */
 struct save_coding_scheme_authority_type_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -246,17 +243,6 @@ struct save_coding_scheme_authority_type_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_coding_scheme_authority_type_response& v);
-
-/**
- * @brief Result for a single coding scheme authority type deletion.
- */
-struct delete_coding_scheme_authority_type_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_authority_type_result& v);
 
 /**
  * @brief Request to delete one or more coding scheme authority types.
@@ -276,7 +262,8 @@ std::ostream& operator<<(std::ostream& s, const delete_coding_scheme_authority_t
  * @brief Response confirming coding scheme authority type deletion(s).
  */
 struct delete_coding_scheme_authority_type_response final {
-    std::vector<delete_coding_scheme_authority_type_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_coding_scheme_authority_type_response,

@@ -49,6 +49,16 @@ void party_role_type_service::save_role_type(const domain::party_role_type& v) {
     BOOST_LOG_SEV(lg(), info) << "Saved party role type: " << v.code;
 }
 
+void party_role_type_service::save_role_types(
+    const std::vector<domain::party_role_type>& role_types) {
+    for (const auto& rt : role_types) {
+        if (rt.code.empty())
+            throw std::invalid_argument("Party Role Type code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << role_types.size() << " party role types";
+    repo_.write(ctx_, role_types);
+}
+
 void party_role_type_service::remove_role_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party role type: " << code;
     repo_.remove(ctx_, code);

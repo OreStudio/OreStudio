@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.iam/domain/tenant_type.hpp"
@@ -63,10 +64,13 @@ struct get_tenant_types_response final {
 std::ostream& operator<<(std::ostream& s, const get_tenant_types_response& v);
 
 /**
- * @brief Request to save a tenant type (create or update).
+ * @brief Request to save one or more tenant types (create or update).
  */
 struct save_tenant_type_request final {
-    domain::tenant_type type;
+    std::vector<domain::tenant_type> types;
+
+    static save_tenant_type_request from(domain::tenant_type type);
+    static save_tenant_type_request from(std::vector<domain::tenant_type> types);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_tenant_type_request,
@@ -77,10 +81,10 @@ struct save_tenant_type_request final {
 std::ostream& operator<<(std::ostream& s, const save_tenant_type_request& v);
 
 /**
- * @brief Response confirming tenant type save operation.
+ * @brief Response confirming tenant type save operation(s).
  */
 struct save_tenant_type_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -90,17 +94,6 @@ struct save_tenant_type_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_tenant_type_response& v);
-
-/**
- * @brief Result for a single tenant type deletion.
- */
-struct delete_tenant_type_result final {
-    std::string type;  ///< Text primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_tenant_type_result& v);
 
 /**
  * @brief Request to delete one or more tenant types.
@@ -120,7 +113,8 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_type_request& v);
  * @brief Response confirming tenant type deletion(s).
  */
 struct delete_tenant_type_response final {
-    std::vector<delete_tenant_type_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_tenant_type_response,

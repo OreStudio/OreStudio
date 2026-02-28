@@ -28,6 +28,7 @@
 #include <rfl.hpp>
 #include <rfl/json.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.refdata/domain/currency.hpp"
@@ -113,14 +114,25 @@ struct get_currencies_response final {
 std::ostream& operator<<(std::ostream& s, const get_currencies_response& v);
 
 /**
- * @brief Request to save a currency (create or update).
+ * @brief Request to save one or more currencies (create or update).
  *
  * Due to bitemporal storage, both create and update operations
  * result in writing a new record. Database triggers handle temporal
- * versioning automatically.
+ * versioning automatically. All entities in the batch are saved in a
+ * single DB transaction — all succeed or all fail.
  */
 struct save_currency_request final {
-    domain::currency currency;
+    std::vector<domain::currency> currencies;
+
+    /**
+     * @brief Factory for single-entity saves (existing callers).
+     */
+    static save_currency_request from(domain::currency currency);
+
+    /**
+     * @brief Factory for batch saves.
+     */
+    static save_currency_request from(std::vector<domain::currency> currencies);
 
     /**
      * @brief Serialize request to bytes.
@@ -140,7 +152,7 @@ std::ostream& operator<<(std::ostream& s, const save_currency_request& v);
  * @brief Response confirming currency save operation.
  */
 struct save_currency_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     /**
@@ -187,24 +199,14 @@ struct delete_currency_request final {
 std::ostream& operator<<(std::ostream& s, const delete_currency_request& v);
 
 /**
- * @brief Result for a single currency deletion.
- */
-struct delete_currency_result final {
-    std::string iso_code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_currency_result& v);
-
-/**
  * @brief Response confirming currency deletion(s).
  *
  * Contains one result per requested currency, indicating individual
  * success or failure. Supports partial success in batch operations.
  */
 struct delete_currency_response final {
-    std::vector<delete_currency_result> results;
+    bool success = false;
+    std::string message;
 
     /**
      * @brief Serialize response to bytes.

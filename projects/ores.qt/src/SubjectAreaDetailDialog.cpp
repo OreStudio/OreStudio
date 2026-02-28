@@ -203,7 +203,7 @@ void SubjectAreaDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_subject_area_request request;
-        request.subject_area = subject_area;
+        request.subject_areas.push_back(subject_area);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -260,7 +260,7 @@ void SubjectAreaDetailDialog::onDeleteClicked() {
         dq::messaging::subject_area_key key;
         key.name = name.toStdString();
         key.domain_name = domain_name.toStdString();
-        request.keys = {key};
+        request.keys.push_back(key);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -274,7 +274,7 @@ void SubjectAreaDetailDialog::onDeleteClicked() {
         if (!payload_result) return false;
 
         auto response = dq::messaging::delete_subject_area_response::deserialize(*payload_result);
-        return response && !response->results.empty() && response->results[0].success;
+        return response && response->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

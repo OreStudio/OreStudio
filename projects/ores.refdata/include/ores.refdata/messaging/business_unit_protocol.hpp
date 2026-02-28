@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/business_unit.hpp"
@@ -70,10 +71,13 @@ struct get_business_units_response final {
 std::ostream& operator<<(std::ostream& s, const get_business_units_response& v);
 
 /**
- * @brief Request to save a business unit (create or update).
+ * @brief Request to save one or more business units (create or update).
  */
 struct save_business_unit_request final {
-    domain::business_unit business_unit;
+    std::vector<domain::business_unit> business_units;
+
+    static save_business_unit_request from(domain::business_unit business_unit);
+    static save_business_unit_request from(std::vector<domain::business_unit> business_units);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_business_unit_request,
@@ -84,10 +88,10 @@ struct save_business_unit_request final {
 std::ostream& operator<<(std::ostream& s, const save_business_unit_request& v);
 
 /**
- * @brief Response confirming business unit save operation.
+ * @brief Response confirming business unit save operation(s).
  */
 struct save_business_unit_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -97,17 +101,6 @@ struct save_business_unit_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_business_unit_response& v);
-
-/**
- * @brief Result for a single business unit deletion.
- */
-struct delete_business_unit_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_business_unit_result& v);
 
 /**
  * @brief Request to delete one or more business units.
@@ -127,7 +120,8 @@ std::ostream& operator<<(std::ostream& s, const delete_business_unit_request& v)
  * @brief Response confirming business unit deletion(s).
  */
 struct delete_business_unit_response final {
-    std::vector<delete_business_unit_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_business_unit_response,

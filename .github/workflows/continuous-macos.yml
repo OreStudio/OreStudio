@@ -90,6 +90,19 @@ jobs:
           postgres-version: "18"
         id: postgres
 
+      - name: Install pgmq extension
+        run: |
+          sharedir=$(pg_config --sharedir)
+          extdir="${sharedir}/extension"
+          pgmq_tmp=$(mktemp -d)
+          git clone --depth=1 https://github.com/pgmq/pgmq.git "${pgmq_tmp}/pgmq"
+          cd "${pgmq_tmp}/pgmq/pgmq-extension"
+          version=$(grep "^default_version" pgmq.control | sed "s/.*= *'//;s/'//")
+          cp "sql/pgmq.sql" "sql/pgmq--${version}.sql"
+          sudo cp pgmq.control "${extdir}/"
+          sudo cp sql/*.sql "${extdir}/"
+          echo "pgmq ${version} installed to ${extdir}"
+
       - name: Setup Database
         run: |
           ./projects/ores.sql/recreate_database.sh -y \

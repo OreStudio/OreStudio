@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.trading/domain/lifecycle_event.hpp"
@@ -62,10 +63,13 @@ struct get_lifecycle_events_response final {
 std::ostream& operator<<(std::ostream& s, const get_lifecycle_events_response& v);
 
 /**
- * @brief Request to save a lifecycle event (create or update).
+ * @brief Request to save one or more lifecycle events (create or update).
  */
 struct save_lifecycle_event_request final {
-    domain::lifecycle_event event;
+    std::vector<domain::lifecycle_event> events;
+
+    static save_lifecycle_event_request from(domain::lifecycle_event event);
+    static save_lifecycle_event_request from(std::vector<domain::lifecycle_event> events);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_lifecycle_event_request,
@@ -76,10 +80,10 @@ struct save_lifecycle_event_request final {
 std::ostream& operator<<(std::ostream& s, const save_lifecycle_event_request& v);
 
 /**
- * @brief Response confirming lifecycle event save operation.
+ * @brief Response confirming lifecycle event save operation(s).
  */
 struct save_lifecycle_event_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_lifecycle_event_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_lifecycle_event_response& v);
-
-/**
- * @brief Result for a single lifecycle event deletion.
- */
-struct delete_lifecycle_event_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_lifecycle_event_result& v);
 
 /**
  * @brief Request to delete one or more lifecycle events.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_lifecycle_event_request& 
  * @brief Response confirming lifecycle event deletion(s).
  */
 struct delete_lifecycle_event_response final {
-    std::vector<delete_lifecycle_event_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_lifecycle_event_response,

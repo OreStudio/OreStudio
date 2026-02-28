@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.trading/domain/party_role_type.hpp"
@@ -62,10 +63,13 @@ struct get_party_role_types_response final {
 std::ostream& operator<<(std::ostream& s, const get_party_role_types_response& v);
 
 /**
- * @brief Request to save a party role type (create or update).
+ * @brief Request to save one or more party role types (create or update).
  */
 struct save_party_role_type_request final {
-    domain::party_role_type role_type;
+    std::vector<domain::party_role_type> role_types;
+
+    static save_party_role_type_request from(domain::party_role_type role_type);
+    static save_party_role_type_request from(std::vector<domain::party_role_type> role_types);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_party_role_type_request,
@@ -76,10 +80,10 @@ struct save_party_role_type_request final {
 std::ostream& operator<<(std::ostream& s, const save_party_role_type_request& v);
 
 /**
- * @brief Response confirming party role type save operation.
+ * @brief Response confirming party role type save operation(s).
  */
 struct save_party_role_type_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -89,17 +93,6 @@ struct save_party_role_type_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_party_role_type_response& v);
-
-/**
- * @brief Result for a single party role type deletion.
- */
-struct delete_party_role_type_result final {
-    std::string code;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_party_role_type_result& v);
 
 /**
  * @brief Request to delete one or more party role types.
@@ -119,7 +112,8 @@ std::ostream& operator<<(std::ostream& s, const delete_party_role_type_request& 
  * @brief Response confirming party role type deletion(s).
  */
 struct delete_party_role_type_response final {
-    std::vector<delete_party_role_type_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_party_role_type_response,

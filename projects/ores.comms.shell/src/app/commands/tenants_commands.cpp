@@ -132,22 +132,20 @@ process_add_tenant(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<save_tenant_request,
                                                         save_tenant_response,
                                                         message_type::save_tenant_request>
-        (save_tenant_request{
-            .tenant = iam::domain::tenant{
-                .version = 0,
-                .id = new_id,
-                .code = std::move(code),
-                .name = std::move(name),
-                .type = std::move(type),
-                .description = std::move(description),
-                .hostname = std::move(hostname),
-                .status = "active",
-                .modified_by = modified_by,
-                .change_reason_code = std::string{reason::codes::new_record},
-                .change_commentary = "Created via shell",
-                .recorded_at = std::chrono::system_clock::now()
-            }
-        });
+        (save_tenant_request::from(iam::domain::tenant{
+            .version = 0,
+            .id = new_id,
+            .code = std::move(code),
+            .name = std::move(name),
+            .type = std::move(type),
+            .description = std::move(description),
+            .hostname = std::move(hostname),
+            .status = "active",
+            .modified_by = modified_by,
+            .change_reason_code = std::string{reason::codes::new_record},
+            .change_commentary = "Created via shell",
+            .recorded_at = std::chrono::system_clock::now()
+        }));
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -161,9 +159,9 @@ process_add_tenant(std::ostream& out, client_session& session,
         out << "✓ Tenant added successfully!" << std::endl;
         out << "  ID: " << new_id << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add tenant: "
-                                  << response.message;
-        out << "✗ Failed to add tenant: " << response.message << std::endl;
+        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add tenant: " << msg;
+        out << "✗ Failed to add tenant: " << msg << std::endl;
     }
 }
 
@@ -269,20 +267,12 @@ process_delete_tenant(std::ostream& out, client_session& session,
     }
 
     const auto& response = *result;
-    if (response.results.empty()) {
-        out << "✗ No results returned from server." << std::endl;
-        return;
-    }
-
-    const auto& delete_result = response.results[0];
-    if (delete_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant: "
-                                  << tenant_id;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant: " << tenant_id;
         out << "✓ Tenant deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: "
-                                  << delete_result.message;
-        out << "✗ Failed to delete tenant: " << delete_result.message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << response.message;
+        out << "✗ Failed to delete tenant: " << response.message << std::endl;
     }
 }
 

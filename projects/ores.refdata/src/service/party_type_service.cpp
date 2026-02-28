@@ -52,6 +52,15 @@ void party_type_service::save_type(const domain::party_type& type) {
     BOOST_LOG_SEV(lg(), info) << "Saved party type: " << type.code;
 }
 
+void party_type_service::save_types(const std::vector<domain::party_type>& types) {
+    for (const auto& t : types) {
+        if (t.code.empty())
+            throw std::invalid_argument("Party type code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " party types";
+    repo_.write(ctx_, types);
+}
+
 void party_type_service::remove_type(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party type: " << code;
     repo_.remove(ctx_, code);

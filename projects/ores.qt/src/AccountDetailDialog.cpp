@@ -497,7 +497,7 @@ void AccountDetailDialog::onSaveClicked() {
                     ap.modified_by        = "";  // server overwrites from session
 
                     iam::messaging::save_account_party_request party_req;
-                    party_req.account_party = ap;
+                    party_req.account_parties.push_back(ap);
 
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(party_req));
@@ -658,13 +658,14 @@ void AccountDetailDialog::onSaveClicked() {
                     ap.modified_by        = "";  // server overwrites from session
 
                     iam::messaging::save_account_party_request request;
-                    request.account_party = ap;
+                    request.account_parties.push_back(ap);
 
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(request));
                     if (!result)
                         return {false, comms::net::to_string(result.error())};
-                    if (!result->success) return {false, result->message};
+                    if (!result->success)
+                        return {false, result->message};
                 }
 
                 // Commit party removals
@@ -679,11 +680,8 @@ void AccountDetailDialog::onSaveClicked() {
                         process_authenticated_request(std::move(request));
                     if (!result)
                         return {false, comms::net::to_string(result.error())};
-                    if (result->results.empty() || !result->results.front().success) {
-                        const std::string msg = result->results.empty()
-                            ? "No result returned"
-                            : result->results.front().message;
-                        return {false, msg};
+                    if (!result->success) {
+                        return {false, result->message};
                     }
                 }
 

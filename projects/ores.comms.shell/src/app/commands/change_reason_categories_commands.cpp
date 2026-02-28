@@ -97,16 +97,14 @@ process_add_category(std::ostream& out, client_session& session,
         save_change_reason_category_request,
         save_change_reason_category_response,
         message_type::save_change_reason_category_request>
-        (save_change_reason_category_request{
-            .category = dq::domain::change_reason_category{
-                .version = 0,
-                .code = std::move(code),
-                .description = std::move(description),
-                .modified_by = modified_by,
-                .change_commentary = std::move(change_commentary),
-                .recorded_at = std::chrono::system_clock::now()
-            }
-        });
+        (save_change_reason_category_request::from(dq::domain::change_reason_category{
+            .version = 0,
+            .code = std::move(code),
+            .description = std::move(description),
+            .modified_by = modified_by,
+            .change_commentary = std::move(change_commentary),
+            .recorded_at = std::chrono::system_clock::now()
+        }));
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -118,9 +116,9 @@ process_add_category(std::ostream& out, client_session& session,
         BOOST_LOG_SEV(lg(), info) << "Successfully added category.";
         out << "✓ Category added successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add category: "
-                                  << response.message;
-        out << "✗ Failed to add category: " << response.message << std::endl;
+        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add category: " << msg;
+        out << "✗ Failed to add category: " << msg << std::endl;
     }
 }
 
@@ -142,7 +140,7 @@ process_delete_category(std::ostream& out, client_session& session,
         delete_change_reason_category_request,
         delete_change_reason_category_response,
         message_type::delete_change_reason_category_request>
-        (delete_change_reason_category_request{.codes = {std::move(code)}});
+        (delete_change_reason_category_request{.codes = {code}});
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -150,22 +148,12 @@ process_delete_category(std::ostream& out, client_session& session,
     }
 
     const auto& response = *result;
-    if (response.results.empty()) {
-        out << "✗ No results returned from server." << std::endl;
-        return;
-    }
-
-    const auto& delete_result = response.results[0];
-    if (delete_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted category: "
-                                  << delete_result.code;
-        out << "✓ Category " << delete_result.code
-            << " deleted successfully!" << std::endl;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted category: " << code;
+        out << "✓ Category " << code << " deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete category: "
-                                  << delete_result.message;
-        out << "✗ Failed to delete category: " << delete_result.message
-            << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete category: " << response.message;
+        out << "✗ Failed to delete category: " << response.message << std::endl;
     }
 }
 

@@ -336,7 +336,7 @@ void BusinessUnitDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_business_unit_request request;
-        request.business_unit = business_unit;
+        request.business_units.push_back(business_unit);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -422,7 +422,7 @@ void BusinessUnitDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_business_unit_request request;
-        request.ids = {id};
+        request.ids.push_back({id});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -445,11 +445,11 @@ void BusinessUnitDetailDialog::onDeleteClicked() {
         auto response = refdata::messaging::delete_business_unit_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

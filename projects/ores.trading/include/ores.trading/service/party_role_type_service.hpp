@@ -56,6 +56,8 @@ public:
 
     void save_role_type(const domain::party_role_type& v);
 
+    void save_role_types(const std::vector<domain::party_role_type>& role_types);
+
     void remove_role_type(const std::string& code);
 
     std::vector<domain::party_role_type>

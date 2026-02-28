@@ -279,8 +279,8 @@ void NatureDimensionMdiWindow::deleteSelected() {
             return results;
         }
 
-        for (const auto& result : response->results) {
-            results.push_back({result.code, {result.success, result.message}});
+        for (const auto& code : codes) {
+            results.push_back({code, {response->success, response->message}});
         }
         return results;
     };

@@ -52,6 +52,16 @@ void party_status_service::save_status(const domain::party_status& status) {
     BOOST_LOG_SEV(lg(), info) << "Saved party status: " << status.code;
 }
 
+void party_status_service::save_statuses(
+    const std::vector<domain::party_status>& statuses) {
+    for (const auto& s : statuses) {
+        if (s.code.empty())
+            throw std::invalid_argument("Party status code cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " party statuses";
+    repo_.write(ctx_, statuses);
+}
+
 void party_status_service::remove_status(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party status: " << code;
     repo_.remove(ctx_, code);

@@ -354,7 +354,7 @@ void PortfolioDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_portfolio_request request;
-        request.portfolio = portfolio;
+        request.portfolios.push_back(portfolio);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -454,7 +454,7 @@ void PortfolioDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_portfolio_request request;
-        request.ids = {id};
+        request.ids.push_back({id});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -477,11 +477,11 @@ void PortfolioDetailDialog::onDeleteClicked() {
         auto response = refdata::messaging::delete_portfolio_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

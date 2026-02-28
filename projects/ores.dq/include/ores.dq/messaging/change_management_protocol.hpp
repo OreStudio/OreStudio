@@ -25,6 +25,7 @@
 #include <vector>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/change_reason_category.hpp"
@@ -123,14 +124,17 @@ std::ostream& operator<<(std::ostream& s,
 // ============================================================================
 
 /**
- * @brief Request to save a change reason (create or update).
+ * @brief Request to save one or more change reasons (create or update).
  *
  * Due to bitemporal storage, both create and update operations
  * result in writing a new record. Database triggers handle temporal
  * versioning automatically. The code field is the natural key.
  */
 struct save_change_reason_request final {
-    domain::change_reason reason;
+    std::vector<domain::change_reason> reasons;
+
+    static save_change_reason_request from(domain::change_reason reason);
+    static save_change_reason_request from(std::vector<domain::change_reason> reasons);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_change_reason_request,
@@ -141,10 +145,10 @@ struct save_change_reason_request final {
 std::ostream& operator<<(std::ostream& s, const save_change_reason_request& v);
 
 /**
- * @brief Response confirming change reason save operation.
+ * @brief Response confirming change reason save operation(s).
  */
 struct save_change_reason_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -154,17 +158,6 @@ struct save_change_reason_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_change_reason_response& v);
-
-/**
- * @brief Result for a single change reason deletion.
- */
-struct delete_change_reason_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_change_reason_result& v);
 
 /**
  * @brief Request to delete one or more change reasons.
@@ -190,7 +183,8 @@ std::ostream& operator<<(std::ostream& s, const delete_change_reason_request& v)
  * success or failure. Supports partial success in batch operations.
  */
 struct delete_change_reason_response final {
-    std::vector<delete_change_reason_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_change_reason_response,
@@ -237,14 +231,17 @@ std::ostream& operator<<(std::ostream& s,
 // ============================================================================
 
 /**
- * @brief Request to save a change reason category (create or update).
+ * @brief Request to save one or more change reason categories (create or update).
  *
  * Due to bitemporal storage, both create and update operations
  * result in writing a new record. Database triggers handle temporal
  * versioning automatically. The code field is the natural key.
  */
 struct save_change_reason_category_request final {
-    domain::change_reason_category category;
+    std::vector<domain::change_reason_category> categories;
+
+    static save_change_reason_category_request from(domain::change_reason_category category);
+    static save_change_reason_category_request from(std::vector<domain::change_reason_category> categories);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_change_reason_category_request,
@@ -256,10 +253,10 @@ std::ostream& operator<<(std::ostream& s,
     const save_change_reason_category_request& v);
 
 /**
- * @brief Response confirming change reason category save operation.
+ * @brief Response confirming change reason category save operation(s).
  */
 struct save_change_reason_category_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -270,18 +267,6 @@ struct save_change_reason_category_response final {
 
 std::ostream& operator<<(std::ostream& s,
     const save_change_reason_category_response& v);
-
-/**
- * @brief Result for a single change reason category deletion.
- */
-struct delete_change_reason_category_result final {
-    std::string code;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s,
-    const delete_change_reason_category_result& v);
 
 /**
  * @brief Request to delete one or more change reason categories.
@@ -308,7 +293,8 @@ std::ostream& operator<<(std::ostream& s,
  * success or failure. Supports partial success in batch operations.
  */
 struct delete_change_reason_category_response final {
-    std::vector<delete_change_reason_category_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_change_reason_category_response,

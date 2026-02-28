@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.iam/domain/tenant.hpp"
@@ -84,10 +85,13 @@ struct get_tenants_response final {
 std::ostream& operator<<(std::ostream& s, const get_tenants_response& v);
 
 /**
- * @brief Request to save a tenant (create or update).
+ * @brief Request to save one or more tenants (create or update).
  */
 struct save_tenant_request final {
-    domain::tenant tenant;
+    std::vector<domain::tenant> tenants;
+
+    static save_tenant_request from(domain::tenant tenant);
+    static save_tenant_request from(std::vector<domain::tenant> tenants);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_tenant_request,
@@ -98,10 +102,10 @@ struct save_tenant_request final {
 std::ostream& operator<<(std::ostream& s, const save_tenant_request& v);
 
 /**
- * @brief Response confirming tenant save operation.
+ * @brief Response confirming tenant save operation(s).
  */
 struct save_tenant_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -111,17 +115,6 @@ struct save_tenant_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_tenant_response& v);
-
-/**
- * @brief Result for a single tenant deletion.
- */
-struct delete_tenant_result final {
-    boost::uuids::uuid id;
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_tenant_result& v);
 
 /**
  * @brief Request to delete one or more tenants.
@@ -141,7 +134,8 @@ std::ostream& operator<<(std::ostream& s, const delete_tenant_request& v);
  * @brief Response confirming tenant deletion(s).
  */
 struct delete_tenant_response final {
-    std::vector<delete_tenant_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_tenant_response,

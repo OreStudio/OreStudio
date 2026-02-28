@@ -76,6 +76,17 @@ void coding_scheme_service::save_coding_scheme(const domain::coding_scheme& sche
     BOOST_LOG_SEV(lg(), info) << "Saved coding scheme: " << scheme.code;
 }
 
+void coding_scheme_service::save_coding_schemes(
+    const std::vector<domain::coding_scheme>& schemes) {
+    for (const auto& s : schemes) {
+        if (s.code.empty()) {
+            throw std::invalid_argument("Coding scheme code cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " coding schemes";
+    coding_scheme_repo_.write(schemes);
+}
+
 void coding_scheme_service::remove_coding_scheme(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Removing coding scheme: " << code;
     coding_scheme_repo_.remove(code);
@@ -118,6 +129,18 @@ void coding_scheme_service::save_authority_type(
     authority_type_repo_.write(authority_type);
     BOOST_LOG_SEV(lg(), info) << "Saved coding scheme authority type: "
                               << authority_type.code;
+}
+
+void coding_scheme_service::save_authority_types(
+    const std::vector<domain::coding_scheme_authority_type>& authority_types) {
+    for (const auto& a : authority_types) {
+        if (a.code.empty()) {
+            throw std::invalid_argument("Authority type code cannot be empty.");
+        }
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << authority_types.size()
+                               << " coding scheme authority types";
+    authority_type_repo_.write(authority_types);
 }
 
 void coding_scheme_service::remove_authority_type(const std::string& code) {

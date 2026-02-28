@@ -26,6 +26,7 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include "ores.comms/messaging/message_type.hpp"
+#include "ores.comms/messaging/save_result.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/party_identifier.hpp"
@@ -65,10 +66,13 @@ struct get_party_identifiers_response final {
 std::ostream& operator<<(std::ostream& s, const get_party_identifiers_response& v);
 
 /**
- * @brief Request to save a party identifier (create or update).
+ * @brief Request to save one or more party identifiers (create or update).
  */
 struct save_party_identifier_request final {
-    domain::party_identifier party_identifier;
+    std::vector<domain::party_identifier> party_identifiers;
+
+    static save_party_identifier_request from(domain::party_identifier party_identifier);
+    static save_party_identifier_request from(std::vector<domain::party_identifier> party_identifiers);
 
     std::vector<std::byte> serialize() const;
     static std::expected<save_party_identifier_request,
@@ -79,10 +83,10 @@ struct save_party_identifier_request final {
 std::ostream& operator<<(std::ostream& s, const save_party_identifier_request& v);
 
 /**
- * @brief Response confirming party identifier save operation.
+ * @brief Response confirming party identifier save operation(s).
  */
 struct save_party_identifier_response final {
-    bool success;
+    bool success = false;
     std::string message;
 
     std::vector<std::byte> serialize() const;
@@ -92,17 +96,6 @@ struct save_party_identifier_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const save_party_identifier_response& v);
-
-/**
- * @brief Result for a single party identifier deletion.
- */
-struct delete_party_identifier_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
-    std::string message;
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_party_identifier_result& v);
 
 /**
  * @brief Request to delete one or more party identifiers.
@@ -122,7 +115,8 @@ std::ostream& operator<<(std::ostream& s, const delete_party_identifier_request&
  * @brief Response confirming party identifier deletion(s).
  */
 struct delete_party_identifier_response final {
-    std::vector<delete_party_identifier_result> results;
+    bool success = false;
+    std::string message;
 
     std::vector<std::byte> serialize() const;
     static std::expected<delete_party_identifier_response,

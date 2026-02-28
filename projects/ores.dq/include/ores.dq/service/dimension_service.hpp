@@ -86,6 +86,13 @@ public:
     void save_nature_dimension(const domain::nature_dimension& dimension);
 
     /**
+     * @brief Saves multiple nature dimensions (creates or updates).
+     *
+     * @param dimensions The dimensions to save
+     */
+    void save_nature_dimensions(const std::vector<domain::nature_dimension>& dimensions);
+
+    /**
      * @brief Removes a nature dimension.
      *
      * @param code The code of the dimension to remove
@@ -124,6 +131,13 @@ public:
     void save_origin_dimension(const domain::origin_dimension& dimension);
 
     /**
+     * @brief Saves multiple origin dimensions (creates or updates).
+     *
+     * @param dimensions The dimensions to save
+     */
+    void save_origin_dimensions(const std::vector<domain::origin_dimension>& dimensions);
+
+    /**
      * @brief Removes an origin dimension.
      *
      * @param code The code of the dimension to remove
@@ -160,6 +174,13 @@ public:
      * @param dimension The dimension to save
      */
     void save_treatment_dimension(const domain::treatment_dimension& dimension);
+
+    /**
+     * @brief Saves multiple treatment dimensions (creates or updates).
+     *
+     * @param dimensions The dimensions to save
+     */
+    void save_treatment_dimensions(const std::vector<domain::treatment_dimension>& dimensions);
 
     /**
      * @brief Removes a treatment dimension.

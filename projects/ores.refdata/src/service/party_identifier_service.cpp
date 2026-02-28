@@ -71,6 +71,16 @@ void party_identifier_service::save_party_identifier(const domain::party_identif
     BOOST_LOG_SEV(lg(), info) << "Saved party identifier: " << party_identifier.id;
 }
 
+void party_identifier_service::save_party_identifiers(
+    const std::vector<domain::party_identifier>& party_identifiers) {
+    for (const auto& pi : party_identifiers) {
+        if (pi.id.is_nil())
+            throw std::invalid_argument("Party Identifier ID cannot be nil.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << party_identifiers.size() << " party identifiers";
+    repo_.write(party_identifiers);
+}
+
 void party_identifier_service::remove_party_identifier(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing party identifier: " << id;
     repo_.remove(id);

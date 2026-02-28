@@ -196,7 +196,7 @@ void PartyStatusDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_party_status_request request;
-        request.status = status;
+        request.statuses.push_back(status);
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -282,7 +282,7 @@ void PartyStatusDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_party_status_request request;
-        request.codes = {code};
+        request.codes.push_back({code});
         auto payload = request.serialize();
 
         comms::messaging::frame request_frame(
@@ -305,11 +305,11 @@ void PartyStatusDetailDialog::onDeleteClicked() {
         auto response = refdata::messaging::delete_party_status_response::
             deserialize(*payload_result);
 
-        if (!response || response->results.empty()) {
+        if (!response) {
             return {false, "Invalid server response"};
         }
 
-        return {response->results[0].success, response->results[0].message};
+        return {response->success, response->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

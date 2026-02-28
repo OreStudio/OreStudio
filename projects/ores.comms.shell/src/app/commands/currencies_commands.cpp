@@ -147,26 +147,24 @@ process_add_currency(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<save_currency_request,
                                                         save_currency_response,
                                                         message_type::save_currency_request>
-        (save_currency_request{
-            .currency = refdata::domain::currency{
-                .version = 0,
-                .iso_code = std::move(iso_code),
-                .name = std::move(name),
-                .numeric_code = std::move(numeric_code),
-                .symbol = std::move(symbol),
-                .fraction_symbol = "",
-                .fractions_per_unit = fractions,
-                .rounding_type = "Nearest",
-                .rounding_precision = 2,
-                .format = "",
-                .monetary_nature = "fiat",
-                .market_tier = "g10",
-                .modified_by = modified_by,
-                .change_reason_code = std::move(change_reason_code),
-                .change_commentary = std::move(change_commentary),
-                .recorded_at = std::chrono::system_clock::now()
-            }
-        });
+        (save_currency_request::from(refdata::domain::currency{
+            .version = 0,
+            .iso_code = std::move(iso_code),
+            .name = std::move(name),
+            .numeric_code = std::move(numeric_code),
+            .symbol = std::move(symbol),
+            .fraction_symbol = "",
+            .fractions_per_unit = fractions,
+            .rounding_type = "Nearest",
+            .rounding_precision = 2,
+            .format = "",
+            .monetary_nature = "fiat",
+            .market_tier = "g10",
+            .modified_by = modified_by,
+            .change_reason_code = std::move(change_reason_code),
+            .change_commentary = std::move(change_commentary),
+            .recorded_at = std::chrono::system_clock::now()
+        }));
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -178,9 +176,9 @@ process_add_currency(std::ostream& out, client_session& session,
         BOOST_LOG_SEV(lg(), info) << "Successfully added currency.";
         out << "✓ Currency added successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add currency: "
-                                  << response.message;
-        out << "✗ Failed to add currency: " << response.message << std::endl;
+        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add currency: " << msg;
+        out << "✗ Failed to add currency: " << msg << std::endl;
     }
 }
 
@@ -201,7 +199,7 @@ process_delete_currency(std::ostream& out, client_session& session,
     auto result = session.process_authenticated_request<delete_currency_request,
                                                         delete_currency_response,
                                                         message_type::delete_currency_request>
-        (delete_currency_request{.iso_codes = {std::move(iso_code)}});
+        (delete_currency_request{.iso_codes = {iso_code}});
 
     if (!result) {
         out << "✗ " << comms::net::to_string(result.error()) << std::endl;
@@ -209,22 +207,12 @@ process_delete_currency(std::ostream& out, client_session& session,
     }
 
     const auto& response = *result;
-    if (response.results.empty()) {
-        out << "✗ No results returned from server." << std::endl;
-        return;
-    }
-
-    const auto& delete_result = response.results[0];
-    if (delete_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: "
-                                  << delete_result.iso_code;
-        out << "✓ Currency " << delete_result.iso_code
-            << " deleted successfully!" << std::endl;
+    if (response.success) {
+        BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: " << iso_code;
+        out << "✓ Currency " << iso_code << " deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: "
-                                  << delete_result.message;
-        out << "✗ Failed to delete currency: " << delete_result.message
-            << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: " << response.message;
+        out << "✗ Failed to delete currency: " << response.message << std::endl;
     }
 }
 

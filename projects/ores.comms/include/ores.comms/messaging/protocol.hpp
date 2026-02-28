@@ -333,12 +333,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // get_job_history_request/response (0x9006/0x9007). Breaking change.
 //
 // Version 46.0 changes all save_*_request messages from carrying a single
-// entity to std::vector<entity>. Responses change from {bool success, string
-// message} to std::vector<save_result> (one result per item). All handlers
-// now process entities atomically in a single DB transaction. Existing
-// single-entity callers use the save_*_request::from(entity) factory.
-// Maximum batch size per request: max_save_batch_size (1000 entities).
-// This is a breaking change affecting every save operation wire format.
+// entity to std::vector<entity>, and all delete_*_request messages from a
+// single key to std::vector<key>. Responses remain {bool success, string
+// message} representing the outcome of the entire batch atomically — all
+// entities are saved or deleted in a single DB transaction; on any failure
+// the whole batch is rolled back. Maximum batch size per request:
+// max_save_batch_size (1000 entities). Breaking change.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 46;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 

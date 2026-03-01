@@ -20,6 +20,7 @@
 #include "ores.qt/OreImportWizard.hpp"
 
 #include <set>
+#include <QDate>
 #include <QPalette>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -614,6 +615,12 @@ void OreTradeImportPage::initializePage() {
     progressBar_->hide();
     logOutput_->hide();
     logOutput_->clear();
+
+    // Pre-fill defaults: today's date and "New" lifecycle event
+    if (tradeDateEdit_->text().isEmpty())
+        tradeDateEdit_->setText(QDate::currentDate().toString("yyyy-MM-dd"));
+    if (lifecycleEventEdit_->text().isEmpty())
+        lifecycleEventEdit_->setText(tr("New"));
 }
 
 bool OreTradeImportPage::validatePage() {

@@ -735,6 +735,12 @@ void OreTradeImportPage::startImport() {
             // Step 4: trades in batches of trade_batch_size
             constexpr int trade_batch_size = 100;
             const int total_trades = static_cast<int>(plan.trades.size());
+            const int num_batches = total_trades == 0 ? 0
+                : (total_trades + trade_batch_size - 1) / trade_batch_size;
+            BOOST_LOG_SEV(local_lg, info)
+                << "Sending " << total_trades << " trades in "
+                << num_batches << " batch(es) of up to "
+                << trade_batch_size << " each";
             for (int offset = 0; offset < total_trades; offset += trade_batch_size) {
                 const int end = std::min(offset + trade_batch_size, total_trades);
                 std::vector<trading::domain::trade> batch;
@@ -743,8 +749,8 @@ void OreTradeImportPage::startImport() {
                     batch.push_back(plan.trades[static_cast<std::size_t>(i)].trade);
 
                 BOOST_LOG_SEV(local_lg, debug) << "Sending trade batch "
-                    << (offset / trade_batch_size + 1) << ": "
-                    << batch.size() << " trades";
+                    << (offset / trade_batch_size + 1) << "/"
+                    << num_batches << ": " << batch.size() << " trades";
 
                 auto req = trading::messaging::save_trade_request::from(
                     std::move(batch));

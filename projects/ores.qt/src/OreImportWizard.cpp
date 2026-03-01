@@ -601,7 +601,9 @@ OreTradeImportPage::OreTradeImportPage(OreImportWizard* wizard)
 }
 
 bool OreTradeImportPage::isComplete() const {
-    return importDone_;
+    if (importDone_)    return true;   // allow advancing after import
+    if (importStarted_) return false;  // disable Next while running
+    return true;                       // enable Next to trigger import
 }
 
 void OreTradeImportPage::initializePage() {
@@ -615,10 +617,7 @@ void OreTradeImportPage::initializePage() {
 
 bool OreTradeImportPage::validatePage() {
     if (importDone_) return true;
-    if (!importStarted_) {
-        importStarted_ = true;
-        startImport();
-    }
+    if (!importStarted_) startImport();
     return false;
 }
 
@@ -628,6 +627,9 @@ void OreTradeImportPage::appendLog(const QString& msg) {
 }
 
 void OreTradeImportPage::startImport() {
+    importStarted_ = true;
+    emit completeChanged();  // disable Next while import runs
+
     // Capture defaults from form
     auto& defs = wizard_->choices().defaults;
     defs.trade_date     = tradeDateEdit_->text().trimmed().toStdString();

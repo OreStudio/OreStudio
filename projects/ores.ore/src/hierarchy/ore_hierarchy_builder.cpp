@@ -19,9 +19,62 @@
  */
 #include "ores.ore/hierarchy/ore_hierarchy_builder.hpp"
 
+#include <algorithm>
+#include <cctype>
+
 namespace ores::ore::hierarchy {
 
 using namespace ores::logging;
+
+namespace {
+
+// Convert a raw directory name to a human-readable portfolio name.
+// Replaces underscores with spaces (e.g. "TA001_Equity_Option" → "TA001 Equity Option").
+std::string make_portfolio_name(const std::string& dir_name) {
+    std::string s = dir_name;
+    std::ranges::replace(s, '_', ' ');
+    return s;
+}
+
+// Convert a raw portfolio XML file stem to a human-readable book name.
+//
+// ORE file naming conventions:
+//   portfolio_capfloor.xml  → "Book capfloor"
+//   portfolio.xml           → "Book <parent portfolio name>"
+//   portfolio100.xml        → "Book 100"
+//   my_custom_file.xml      → "Book my custom file"
+//
+// Rules applied in order:
+//   1. Strip leading "portfolio_" prefix (with underscore).
+//   2. Strip leading "portfolio" prefix when only digits follow (e.g. "portfolio100").
+//   3. Replace underscores with spaces.
+//   4. If nothing descriptive remains, fall back to the parent portfolio name.
+//   5. Prefix with "Book ".
+std::string make_book_name(const std::string& stem,
+                           std::optional<std::size_t> parent_idx,
+                           const std::vector<import_node>& nodes) {
+    std::string s = stem;
+
+    if (s.starts_with("portfolio_")) {
+        s = s.substr(10); // strip "portfolio_"
+    } else if (s.starts_with("portfolio")) {
+        std::string rest = s.substr(9); // everything after "portfolio"
+        bool all_digits = !rest.empty() &&
+            std::ranges::all_of(rest, [](char c){ return std::isdigit(c) != 0; });
+        if (rest.empty() || all_digits)
+            s = rest; // "" or "100", "2", etc.
+    }
+
+    std::ranges::replace(s, '_', ' ');
+
+    // Fall back to parent portfolio name when nothing descriptive remains
+    if (s.empty() && parent_idx && *parent_idx < nodes.size())
+        s = nodes[*parent_idx].name;
+
+    return s.empty() ? "Book" : "Book " + s;
+}
+
+} // namespace
 
 ore_hierarchy_builder::ore_hierarchy_builder(
     std::vector<std::filesystem::path> portfolio_files,
@@ -95,15 +148,16 @@ std::vector<import_node> ore_hierarchy_builder::build() {
         // Interior segments (all except the last) are portfolio names
         std::optional<std::size_t> parent;
         for (std::size_t i = 0; i + 1 < components.size(); ++i) {
-            parent = find_or_add_portfolio(components[i], parent, nodes);
+            parent = find_or_add_portfolio(
+                make_portfolio_name(components[i]), parent, nodes);
         }
 
-        // Leaf: book named after the file stem
+        // Leaf: book named after the file stem (human-readable)
         const auto stem =
             std::filesystem::path(components.back()).stem().string();
 
         import_node book_node;
-        book_node.name = stem;
+        book_node.name = make_book_name(stem, parent, nodes);
         book_node.type = import_node::node_type::book;
         book_node.parent_index = parent;
         book_node.source_files = {file};

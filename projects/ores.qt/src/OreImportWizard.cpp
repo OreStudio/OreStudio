@@ -760,19 +760,19 @@ void OreTradeImportPage::startImport() {
                 auto make_unique_name = [&](const std::string& base,
                                             const std::optional<boost::uuids::uuid>& parent_id)
                         -> std::string {
-                    // Try base + " (ParentName)" first
+                    // Try base + " ParentName" first
                     if (parent_id) {
                         auto pit = portfolio_uuid_remap.find(*parent_id);
                         auto pkey = pit != portfolio_uuid_remap.end() ? pit->second : *parent_id;
                         if (auto nit = uuid_to_name.find(pkey); nit != uuid_to_name.end()) {
-                            std::string candidate = base + " (" + nit->second + ")";
+                            std::string candidate = base + " " + nit->second;
                             if (!committed_names.count(candidate))
                                 return candidate;
                         }
                     }
                     // Fall back to numeric counter
                     for (int n = 2; ; ++n) {
-                        std::string candidate = base + " (" + std::to_string(n) + ")";
+                        std::string candidate = base + " " + std::to_string(n);
                         if (!committed_names.count(candidate))
                             return candidate;
                     }
@@ -875,12 +875,12 @@ void OreTradeImportPage::startImport() {
                         -> std::string {
                     if (auto pit = portfolio_uuid_to_name.find(parent_portfolio_id);
                             pit != portfolio_uuid_to_name.end()) {
-                        std::string candidate = base + " (" + pit->second + ")";
+                        std::string candidate = base + " " + pit->second;
                         if (!committed_book_names.count(candidate))
                             return candidate;
                     }
                     for (int n = 2; ; ++n) {
-                        std::string candidate = base + " (" + std::to_string(n) + ")";
+                        std::string candidate = base + " " + std::to_string(n);
                         if (!committed_book_names.count(candidate))
                             return candidate;
                     }

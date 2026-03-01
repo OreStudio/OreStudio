@@ -158,9 +158,10 @@ ore_import_plan ore_import_planner::plan() {
         b.is_trading_book = 1;
         b.change_reason_code = std::string(reason::codes::new_record);
         b.change_commentary = "Imported from ORE directory";
-        result.books.push_back(b);
 
-        // Import and stamp trades for this book
+        // Import and stamp trades for this book.
+        // Only include the book in the plan if it has at least one trade.
+        const std::size_t trades_before = result.trades.size();
         const auto& defs = choices_.defaults;
         for (const auto& source_file : node.source_files) {
             auto items =
@@ -186,6 +187,14 @@ ore_import_plan ore_import_planner::plan() {
                 result.trades.push_back(std::move(item));
             }
         }
+
+        if (result.trades.size() == trades_before) {
+            // No trades found — skip this book to avoid empty book nodes.
+            BOOST_LOG_SEV(lg(), debug)
+                << "Skipping empty book: " << node.name;
+            continue;
+        }
+        result.books.push_back(b);
     }
 
     BOOST_LOG_SEV(lg(), info) << "Import plan: "

@@ -64,7 +64,7 @@ ores::ore::planner::import_choices default_choices(
     ores::ore::planner::import_choices c;
     c.parent_portfolio_name = "Example1";
     c.create_parent_portfolio = true;
-    c.exclusions = {"Input"};
+    c.hierarchy_strip = {"Input"};
     return c;
 }
 

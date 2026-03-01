@@ -71,11 +71,23 @@ struct import_choices {
     bool create_parent_portfolio = true;
 
     /**
-     * @brief Directory name segments to exclude when building the hierarchy.
+     * @brief Directory name segments to skip during the filesystem scan.
      *
-     * Default excludes "Input" which is the standard ORE example subdirectory.
+     * Files inside these directories are added to scan_result::ignored_files
+     * and never classified or imported.  The default is empty — all
+     * directories are scanned.
      */
-    std::vector<std::string> exclusions = {"Input"};
+    std::vector<std::string> scan_exclusions;
+
+    /**
+     * @brief Directory name segments to strip when building the
+     * portfolio/book hierarchy.
+     *
+     * Default strips "Input" so that the standard ORE input sub-directory
+     * (e.g. Example_1/Input/portfolio.xml) does not create an extra "Input"
+     * portfolio node.  Files inside these directories are still scanned.
+     */
+    std::vector<std::string> hierarchy_strip = {"Input"};
 
     /**
      * @brief Default field values to stamp onto imported trades.

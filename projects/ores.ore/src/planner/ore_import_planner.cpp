@@ -69,7 +69,7 @@ ore_import_plan ore_import_planner::plan() {
     hierarchy::ore_hierarchy_builder builder(
         scan_result_.portfolio_files,
         scan_result_.root,
-        choices_.exclusions);
+        choices_.hierarchy_strip);
 
     const auto nodes = builder.build();
 

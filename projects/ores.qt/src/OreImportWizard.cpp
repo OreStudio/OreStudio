@@ -75,7 +75,8 @@ OreImportWizard::OreImportWizard(ClientManager* clientManager, QWidget* parent)
     setOption(QWizard::NoCancelButtonOnLastPage, true);
 
     // Default choices
-    choices_.exclusions = {"Input"};
+    choices_.scan_exclusions  = {};          // scan all directories by default
+    choices_.hierarchy_strip  = {"Input"};   // strip "Input" from hierarchy paths
     choices_.create_parent_portfolio = true;
     choices_.currency_mode = ore::planner::currency_import_mode::missing_only;
     choices_.party_id = clientManager_->currentPartyId();
@@ -204,14 +205,14 @@ void OreDirectoryPage::startScan() {
     dirEdit_->setEnabled(false);
 
     const std::filesystem::path root = path.toStdString();
-    const auto exclusions = wizard_->choices().exclusions;
+    const auto scan_exclusions = wizard_->choices().scan_exclusions;
 
     auto* watcher = new QFutureWatcher<ore::scanner::scan_result>(this);
     connect(watcher, &QFutureWatcher<ore::scanner::scan_result>::finished,
             this, &OreDirectoryPage::onScanFinished);
 
-    watcher->setFuture(QtConcurrent::run([root, exclusions]() {
-        ore::scanner::ore_directory_scanner scanner(root, exclusions);
+    watcher->setFuture(QtConcurrent::run([root, scan_exclusions]() {
+        ore::scanner::ore_directory_scanner scanner(root, scan_exclusions);
         return scanner.scan();
     }));
 }
@@ -289,7 +290,7 @@ OreScanSummaryPage::OreScanSummaryPage(OreImportWizard* wizard)
 void OreScanSummaryPage::initializePage() {
     // Populate exclusion list from current choices
     exclusionList_->clear();
-    for (const auto& e : wizard_->choices().exclusions)
+    for (const auto& e : wizard_->choices().scan_exclusions)
         exclusionList_->addItem(QString::fromStdString(e));
 
     refreshSummary();
@@ -299,7 +300,7 @@ void OreScanSummaryPage::onExclusionAdded() {
     const auto text = exclusionEdit_->text().trimmed();
     if (text.isEmpty()) return;
 
-    auto& excl = wizard_->choices().exclusions;
+    auto& excl = wizard_->choices().scan_exclusions;
     const auto s = text.toStdString();
     if (std::find(excl.begin(), excl.end(), s) == excl.end()) {
         excl.push_back(s);
@@ -313,7 +314,7 @@ void OreScanSummaryPage::onExclusionRemoved() {
     const auto* item = exclusionList_->currentItem();
     if (!item) return;
     const auto s = item->text().toStdString();
-    auto& excl = wizard_->choices().exclusions;
+    auto& excl = wizard_->choices().scan_exclusions;
     excl.erase(std::remove(excl.begin(), excl.end(), s), excl.end());
     delete exclusionList_->takeItem(exclusionList_->row(item));
     refreshSummary();
@@ -330,7 +331,7 @@ void OreScanSummaryPage::refreshSummary() {
 
     // Rebuild hierarchy to show portfolio/book node count
     ore::hierarchy::ore_hierarchy_builder builder(
-        sr.portfolio_files, sr.root, wizard_->choices().exclusions);
+        sr.portfolio_files, sr.root, wizard_->choices().hierarchy_strip);
     const auto nodes = builder.build();
 
     long portfolios = std::count_if(nodes.begin(), nodes.end(),
@@ -494,7 +495,7 @@ void OrePortfolioPage::onCreateParentToggled(bool checked) {
     const auto& choices = wizard_->choices();
 
     ore::hierarchy::ore_hierarchy_builder builder(
-        sr.portfolio_files, sr.root, choices.exclusions);
+        sr.portfolio_files, sr.root, choices.hierarchy_strip);
     const auto nodes = builder.build();
 
     long portfolios = std::count_if(nodes.begin(), nodes.end(),

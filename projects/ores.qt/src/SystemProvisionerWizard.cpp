@@ -186,10 +186,6 @@ void AdminAccountPage::setupUI() {
     usernameEdit_ = new QLineEdit(this);
     usernameEdit_->setPlaceholderText(tr("Enter username (letters, numbers, underscores)"));
     usernameEdit_->setMaxLength(50);
-    // Validator: alphanumeric and underscores, 3-50 characters
-    auto* usernameValidator = new QRegularExpressionValidator(
-        QRegularExpression("^[a-zA-Z][a-zA-Z0-9_]{2,49}$"), this);
-    usernameEdit_->setValidator(usernameValidator);
     formLayout->addRow(tr("Username:"), usernameEdit_);
 
     // Email
@@ -654,9 +650,6 @@ void ProvisionerTenantAdminPage::setupUI() {
     usernameEdit_ = new QLineEdit(this);
     usernameEdit_->setPlaceholderText(tr("Tenant admin username"));
     usernameEdit_->setMaxLength(50);
-    auto* usernameValidator = new QRegularExpressionValidator(
-        QRegularExpression("^[a-zA-Z][a-zA-Z0-9_]{2,49}$"), this);
-    usernameEdit_->setValidator(usernameValidator);
     formLayout->addRow(tr("Username:"), usernameEdit_);
 
     // Email

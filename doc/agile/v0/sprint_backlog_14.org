@@ -17,30 +17,30 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-01 Sun 10:52], for Sunday, March 01, 2026.
+#+CAPTION: Clock summary at [2026-03-01 Sun 13:41], for Sunday, March 01, 2026.
 |       | <75>                                     |        |      |      |       |
 | Tags  | Headline                                 | Time   |      |      |     % |
 |-------+------------------------------------------+--------+------+------+-------|
-|       | *Total time*                             | *1:55* |      |      | 100.0 |
+|       | *Total time*                             | *4:44* |      |      | 100.0 |
 |-------+------------------------------------------+--------+------+------+-------|
-|       | Stories                                  | 1:55   |      |      | 100.0 |
-|       | Active                                   |        | 1:55 |      | 100.0 |
-| agile | Sprint and product backlog refinement    |        |      | 0:05 |   4.3 |
-| code  | Add trade import mapping dialog to Qt UI |        |      | 1:50 |  95.7 |
+|       | Stories                                  | 4:44   |      |      | 100.0 |
+|       | Active                                   |        | 4:44 |      | 100.0 |
+| agile | Sprint and product backlog refinement    |        |      | 0:05 |   1.8 |
+| code  | Add trade import mapping dialog to Qt UI |        |      | 4:39 |  98.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-01 Sun 10:52]
+#+CAPTION: Clock summary at [2026-03-01 Sun 13:41]
 |       | <75>                                     |        |      |      |       |
 | Tags  | Headline                                 | Time   |      |      |     % |
 |-------+------------------------------------------+--------+------+------+-------|
-|       | *Total time*                             | *3:25* |      |      | 100.0 |
+|       | *Total time*                             | *6:14* |      |      | 100.0 |
 |-------+------------------------------------------+--------+------+------+-------|
-|       | Stories                                  | 3:25   |      |      | 100.0 |
-|       | Active                                   |        | 3:25 |      | 100.0 |
-| agile | Sprint and product backlog refinement    |        |      | 1:35 |  46.3 |
-| code  | Add trade import mapping dialog to Qt UI |        |      | 1:50 |  53.7 |
+|       | Stories                                  | 6:14   |      |      | 100.0 |
+|       | Active                                   |        | 6:14 |      | 100.0 |
+| agile | Sprint and product backlog refinement    |        |      | 1:35 |  25.4 |
+| code  | Add trade import mapping dialog to Qt UI |        |      | 4:39 |  74.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -192,6 +192,7 @@ print(p)
 
 *** STARTED Add trade import mapping dialog to Qt UI                   :code:
     :LOGBOOK:
+    CLOCK: [2026-03-01 Sun 10:52]--[2026-03-01 Sun 13:41] =>  2:49
     CLOCK: [2026-03-01 Sun 09:01]--[2026-03-01 Sun 10:51] =>  1:50
     :END:
 
@@ -221,8 +222,6 @@ Acceptance criteria:
 - Trades appear in the trade list after import.
 
 *** Add party level currency and country restrictions                  :code:
-
-
 
 At present a party can use all currencies and all countries. In reality we
 normally want to restrict this at the party level. We won't be able to do a full

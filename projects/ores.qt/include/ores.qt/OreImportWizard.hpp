@@ -170,6 +170,7 @@ private:
     QLabel* statusLabel_;
     QProgressBar* progressBar_;
     bool scanComplete_ = false;
+    bool scanning_ = false;
 };
 
 class OreScanSummaryPage final : public QWizardPage {

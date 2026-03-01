@@ -165,7 +165,12 @@ OreDirectoryPage::OreDirectoryPage(OreImportWizard* wizard)
 }
 
 bool OreDirectoryPage::isComplete() const {
-    return scanComplete_;
+    // While scanning: keep Next disabled so the user can't re-trigger
+    if (scanning_) return false;
+    // After a successful scan: allow advancing
+    if (scanComplete_) return true;
+    // Path entered but not yet scanned: enable Next so the user can click it to start the scan
+    return !dirEdit_->text().trimmed().isEmpty();
 }
 
 void OreDirectoryPage::onBrowseClicked() {
@@ -178,8 +183,9 @@ void OreDirectoryPage::onBrowseClicked() {
 bool OreDirectoryPage::validatePage() {
     if (scanComplete_)
         return true;
-    startScan();
-    return false;  // will re-check via completeChanged after scan finishes
+    if (!scanning_)
+        startScan();
+    return false;  // stay on page; completeChanged() re-enables Next when done
 }
 
 void OreDirectoryPage::startScan() {
@@ -188,6 +194,9 @@ void OreDirectoryPage::startScan() {
         statusLabel_->setText(tr("Please select a directory."));
         return;
     }
+
+    scanning_ = true;
+    emit completeChanged();  // disable Next while scan runs
 
     statusLabel_->setText(tr("Scanning…"));
     progressBar_->show();
@@ -215,6 +224,7 @@ void OreDirectoryPage::onScanFinished() {
     const auto result = watcher->result();
     watcher->deleteLater();
 
+    scanning_ = false;
     progressBar_->hide();
     browseBtn_->setEnabled(true);
     dirEdit_->setEnabled(true);

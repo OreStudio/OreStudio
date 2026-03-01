@@ -38,8 +38,6 @@
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
     <addaction name="separator"/>
-    <addaction name="ActionImportOreData"/>
-    <addaction name="separator"/>
     <addaction name="ActionMyAccount"/>
     <addaction name="ActionMySessions"/>
     <addaction name="separator"/>
@@ -133,6 +131,8 @@
     <addaction name="ActionOrgExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
+    <addaction name="separator"/>
+    <addaction name="ActionImportOreData"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">

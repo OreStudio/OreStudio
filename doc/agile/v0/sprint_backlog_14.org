@@ -1,0 +1,256 @@
+:PROPERTIES:
+:ID: 93CE19DF-1501-11F1-8EF4-40B0768014EB
+:END:
+#+title: Sprint Backlog 14
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+todo: STARTED | COMPLETED CANCELLED POSTPONED BLOCKED
+#+tags: { code(c) infra(i) analysis(n) agile(a) }
+#+startup: inlineimages
+
+* Sprint Mission
+
+- Start work on grid.
+
+* Stories
+
+** Active
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today-1
+#+TBLNAME: today_summary
+#+CAPTION: Clock summary at [2026-03-01 Sun 00:05], for Saturday, February 28, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *1:30* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 1:30   |      |      | 100.0 |
+|       | Active                                |        | 1:30 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:30 | 100.0 |
+#+end:
+
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
+#+TBLNAME: sprint_summary
+#+CAPTION: Clock summary at [2026-03-01 Sun 00:05]
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *1:35* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 1:35   |      |      | 100.0 |
+|       | Active                                |        | 1:35 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 1:35 | 100.0 |
+#+end:
+
+*** STARTED Sprint and product backlog refinement                     :agile:
+    :LOGBOOK:
+    CLOCK: [2026-02-28 Sat 22:30]--[2026-03-01 Sun 00:05] =>  1:35
+    :END:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
+
+#+name: pie-stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_14_stories_pie_sorted.png :width 1920 :height 1080
+library(conflicted)
+library(ggplot2)
+library(tidyverse)
+library(tibble)
+
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(!is.na(Tags) & nzchar(Tags))
+stories <- unlist(clean_sprint_summary[2])
+percent_values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame and explicitly sort the stories by defining factor levels
+df <- data.frame(
+  stories = stories,
+  percent = percent_values
+) %>%
+  # 1. Sort the data frame by percentage in descending order
+  arrange(desc(percent)) %>%
+  # 2. Convert 'stories' to a factor, setting the levels based on the sorted order.
+  # This makes the order of the slices explicit for ggplot.
+  mutate(
+    stories = factor(stories, levels = stories),
+    lab.pos = cumsum(percent) - 0.5 * percent
+  )
+
+# Manually selected colors to resemble the screenshot
+custom_palette <- c(
+  "#21518f", "#f37735", "#ffc425", "#81b214", "#d7385e",
+  "#662e91", "#00a9ae", "#5c5c5c", "#a0c6e0", "#f8b195",
+  "#ffe385", "#bde0fe", "#c5e0d4", "#e0b8a0", "#a56f8f",
+  "#7a448a", "#4a9a9b", "#9b9b9b", "#6fa8dc", "#f7a072",
+  "#ffd166", "#99d98c", "#ef5d60", "#9d529f", "#3a86ff",
+  "#c1d6e1", "#f9e0ac", "#c2d6a4", "#e69a8d", "#a07d9f"
+)
+
+# Ensure the palette has enough colors for all stories.
+if (length(custom_palette) < length(df$stories)) {
+  warning("Not enough custom colors for all stories. Colors will repeat.")
+  custom_palette <- rep(custom_palette, length.out = length(df$stories))
+}
+
+
+p <- ggplot(df, aes(x = "", y = percent, fill = stories)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y", start = 0) +
+  scale_fill_manual(values = custom_palette) +
+  ggtitle("Sprint 14: Resourcing per Story")  +
+  labs(x = NULL, y = NULL, fill = "Stories") +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(hjust = 0.5, size = 18),
+    legend.position = "right",
+    legend.title = element_text(size = 14),
+    legend.text = element_text(size = 12)
+  )
+
+print(p)
+#+end_src
+
+#+RESULTS: pie-stories-chart
+[[file:sprint_backlog_14_stories_pie_sorted.png]]
+
+#+name: stories-chart
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_14_stories.png :width 1200 :height 650
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+# Filter to only rows with actual story data (non-empty Tags column)
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
+names <- unlist(clean_sprint_summary[2])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+# Create a data frame.
+df <- data.frame(
+  cost = values,
+  stories = factor(names, levels = names[order(values, decreasing = FALSE)]),
+  y = seq(length(names)) * 0.9
+)
+
+# Setup the colors
+blue <- "#076fa2"
+
+p <- ggplot(df) +
+  aes(x = cost, y = stories) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 14: Resourcing per Story") +
+  xlab("Resourcing (%)") + ylab("Stories") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: stories-chart
+[[file:sprint_backlog_14_stories.png]]
+
+#+name: tags-chart
+#+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_14_tags.png :width 600 :height 400
+library(conflicted)
+library(grid)
+library(tidyverse)
+library(tibble)
+
+clean_sprint_summary <- sprint_summary %>% dplyr::filter(Tags != "")
+names <- unlist(clean_sprint_summary[1])
+values <- as.numeric(unlist(clean_sprint_summary[6]))
+
+df <- data.frame(
+  cost = values,
+  tags = names,
+  y = seq(length(names)) * 0.9
+)
+
+df2 <- setNames(aggregate(df$cost, by = list(df$tags), FUN = sum), c("cost", "tags"))
+
+blue <- "#076fa2"
+
+p <- ggplot(df2) +
+  aes(x = cost, y = tags) +
+  geom_col(fill = blue, width = 0.6) +
+  ggtitle("Sprint 14: Resourcing per Tag") +
+  xlab("Resourcing (%)") + ylab("Story types") +
+  theme(text = element_text(size = 15))
+
+print(p)
+#+end_src
+
+#+RESULTS: tags-chart
+[[file:sprint_backlog_14_tags.png]]
+
+*** Add party level currency and country restrictions                  :code:
+
+At present a party can use all currencies and all countries. In reality we
+normally want to restrict this at the party level. We won't be able to do a full
+implementation of this right now but it is a good idea to put in the framework
+so that we start to get a feel for how to work with RLS.
+
+#+begin_quote
+This pull request significantly enhances the reference data management system by
+introducing party-specific visibility for currencies and countries. It
+establishes a robust framework for granular control over which reference data
+elements are accessible to different parties, addressing a limitation where all
+such data was previously tenant-wide. The changes span the entire application
+stack, from database schema and generated C++ code to service-level filtering,
+ensuring a comprehensive and well-integrated solution.
+
+Highlights:
+
+- New Party-Visibility Junction Tables: Introduced
+  ores_refdata_party_currencies_tbl and ores_refdata_party_countries_tbl to
+  control which currencies and countries are visible to specific parties, moving
+  from tenant-wide visibility to per-party control.
+- Full Stack Codegen: Generated the complete domain, repository, service, and
+  test layers for both new entities using codegen models, ensuring consistency
+  and reducing manual effort.
+- Service Integration: Integrated filtering logic into existing currency_service
+  and country_service to leverage the new junction tables, adding
+  list_currencies_for_party and list_countries_for_party methods.
+- Bitemporal Support: Implemented bitemporal functionality for the new junction
+  tables, including valid_from and valid_to columns, versioning, and soft-delete
+  rules.
+#+end_quote
+
+*** Add trade import mapping dialog to Qt UI                           :code:
+
+Add a mapping dialog to the Qt UI for importing ORE portfolio XML files. The
+dialog should allow users to:
+
+1. Select an ORE portfolio XML file.
+2. Preview the trades that will be imported (count, types, counterparties).
+3. Select the ORES book to import trades into.
+4. Map ORE =CounterParty= names to ORES counterparties (or auto-create).
+5. Review and confirm the import.
+
+This dialog should be accessible from the book list window toolbar when a book
+is selected (similar to the currency import button on the currency list window).
+
+Files to modify:
+
+- =BookMdiWindow.hpp/cpp= - add import toolbar action
+- New =ImportTradeDialog.hpp/cpp= - the mapping and preview dialog
+- =BookController.hpp/cpp= - wire up the import action
+
+Acceptance criteria:
+
+- Import button is visible and enabled when a book is selected.
+- Dialog shows trade preview with counterparty mapping.
+- Successful import creates trades in the selected book.
+- Trades appear in the trade list after import.
+
+
+
+
+* Footer
+
+| Previous: [[id:9A4009E7-0E6C-11F1-852D-40B0768014EB][Sprint Backlog 13]] |

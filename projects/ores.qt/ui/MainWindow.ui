@@ -38,6 +38,8 @@
     <addaction name="ActionConnect"/>
     <addaction name="ActionDisconnect"/>
     <addaction name="separator"/>
+    <addaction name="ActionImportOreData"/>
+    <addaction name="separator"/>
     <addaction name="ActionMyAccount"/>
     <addaction name="ActionMySessions"/>
     <addaction name="separator"/>
@@ -276,6 +278,14 @@
   <action name="ActionDisconnect">
    <property name="text">
     <string>&amp;Disconnect</string>
+   </property>
+  </action>
+  <action name="ActionImportOreData">
+   <property name="text">
+    <string>&amp;Import ORE Data...</string>
+   </property>
+   <property name="toolTip">
+    <string>Import ORE directory data into OreStudio</string>
    </property>
   </action>
   <action name="ActionAbout">

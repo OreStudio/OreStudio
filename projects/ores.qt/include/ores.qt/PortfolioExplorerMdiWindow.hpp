@@ -46,6 +46,7 @@
 namespace ores::qt {
 
 class BookController;
+class OreImportController;
 class PortfolioController;
 class TradeController;
 
@@ -80,6 +81,7 @@ public:
         BookController* bookController,
         PortfolioController* portfolioController,
         TradeController* tradeController,
+        OreImportController* oreImportController,
         const QString& username,
         QWidget* parent = nullptr);
     ~PortfolioExplorerMdiWindow() override = default;
@@ -168,6 +170,7 @@ private:
 
     // Controllers (not owned — lifetime guaranteed by MainWindow)
     BookController* bookController_{nullptr};
+    OreImportController* oreImportController_{nullptr};
     PortfolioController* portfolioController_{nullptr};
     TradeController* tradeController_{nullptr};
 
@@ -180,6 +183,7 @@ private:
     QAction* editAction_{nullptr};
     QAction* deleteAction_{nullptr};
     QAction* historyAction_{nullptr};
+    QAction* importAction_{nullptr};
 
     QSplitter* splitter_{nullptr};
 

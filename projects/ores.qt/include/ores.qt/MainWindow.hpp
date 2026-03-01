@@ -87,6 +87,7 @@ class RoundingTypeController;
 class MonetaryNatureController;
 class CurrencyMarketTierController;
 class TradeController;
+class OreImportController;
 class PortfolioExplorerMdiWindow;
 class OrgExplorerMdiWindow;
 class ImageCache;
@@ -631,6 +632,7 @@ private:
     std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
     std::unique_ptr<TradeController> tradeController_;
     std::unique_ptr<JobDefinitionController> jobDefinitionController_;
+    std::unique_ptr<OreImportController> oreImportController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

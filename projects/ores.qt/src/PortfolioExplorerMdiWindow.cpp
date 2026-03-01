@@ -37,6 +37,7 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/BookController.hpp"
+#include "ores.qt/OreImportController.hpp"
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
@@ -54,12 +55,14 @@ PortfolioExplorerMdiWindow::PortfolioExplorerMdiWindow(
     BookController* bookController,
     PortfolioController* portfolioController,
     TradeController* tradeController,
+    OreImportController* oreImportController,
     const QString& username,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
       bookController_(bookController),
+      oreImportController_(oreImportController),
       portfolioController_(portfolioController),
       tradeController_(tradeController) {
 
@@ -138,6 +141,17 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered,
             this, &PortfolioExplorerMdiWindow::onHistorySelected);
+
+    toolbar_->addSeparator();
+
+    importAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::ImportOre, IconUtils::DefaultIconColor),
+        tr("Import ORE"));
+    importAction_->setToolTip(tr("Import ORE directory data into OreStudio"));
+    connect(importAction_, &QAction::triggered, this, [this]() {
+        if (oreImportController_)
+            oreImportController_->trigger(this);
+    });
 }
 
 void PortfolioExplorerMdiWindow::setupTree() {

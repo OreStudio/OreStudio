@@ -20,6 +20,7 @@
 #include "ores.qt/OreImportWizard.hpp"
 
 #include <set>
+#include <QPalette>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
@@ -746,14 +747,20 @@ void OreTradeImportPage::onImportFinished() {
             << res.portfolios << " portfolios, "
             << res.books << " books, "
             << res.trades << " trades";
+        importDone_ = true;
+        emit completeChanged();
     } else {
         appendLog(tr("Error: %1").arg(res.error));
-        statusLabel_->setText(tr("Import failed: %1").arg(res.error));
+        statusLabel_->setText(
+            tr("Import failed: %1\nClick Cancel to abort the wizard.").arg(res.error));
         BOOST_LOG_SEV(lg(), error) << "ORE import failed: " << res.error.toStdString();
-    }
 
-    importDone_ = true;
-    emit completeChanged();
+        // Turn progress bar red to signal failure
+        QPalette pal = progressBar_->palette();
+        pal.setColor(QPalette::Highlight, Qt::red);
+        progressBar_->setPalette(pal);
+        // importDone_ stays false — user must cancel rather than advance
+    }
 }
 
 // ============================================================================

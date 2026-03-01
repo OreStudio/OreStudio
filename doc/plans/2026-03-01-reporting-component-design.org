@@ -1,0 +1,302 @@
+:PROPERTIES:
+:ID: a3f7c812-5e2d-4b9a-8c1f-6d0e3a7b2f4c
+:END:
+#+title: Reporting Component Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Introduce =ores.reporting=, a new domain component responsible for defining and
+executing reports within ORE Studio. Reports are structured, recurring analytical
+outputs driven by a schedule and parameterised by domain data such as portfolios
+and books.
+
+The component models two distinct concepts: a *report definition*, which is the
+persistent template describing what a report does and when it runs, and a *report
+instance*, which is a single execution of that definition. Both have their own
+state machines, and the lifecycle of an instance is driven by events fired from
+=ores.scheduler=.
+
+** Goals
+
+- Define a domain model for report definitions and report instances.
+- Support multiple report types, starting with risk reports (backed by ORE).
+- Use cron expressions (via =ores.scheduler=) to drive recurring execution.
+- Track report instance lifecycle with a dedicated state machine.
+- Lay the foundation for future grid-based execution via a yet-to-be-defined
+  =ores.grid= component.
+
+** Non-Goals
+
+- Implementing =ores.grid= — that component does not yet exist and is out of
+  scope for this design.
+- Rendering or presenting report output in the UI — covered by later stories.
+- Persisting report output artefacts (files, PDFs) — deferred to a later phase.
+- Real-time streaming of report progress — deferred to a later phase.
+
+* Architecture
+
+=ores.reporting= sits in the *Domain Layer*, alongside =ores.ore= and
+=ores.refdata=. It depends on:
+
+- =ores.scheduler= — for cron-based scheduling and trigger events.
+- =ores.ore= — for access to ORE engine capabilities needed by risk reports.
+- =ores.eventing= — to publish and consume lifecycle events.
+- =ores.database= — for persistence of definitions and instances.
+
+In the future it will also depend on:
+
+- =ores.grid= — for distributed/parallel execution of report computations.
+
+#+begin_example
+  [ ores.scheduler ]  ──trigger──▶  [ ores.reporting ]  ──runs──▶  [ ores.ore ]
+         ▲                                  │                              │
+         │  register/deregister             │ publishes events             │
+         └──────────────────────────────────┘                    [ ores.grid ] (future)
+#+end_example
+
+* Domain Model
+
+** report_type
+
+An enumeration of the supported report categories:
+
+#+begin_src cpp
+enum class report_type {
+    risk,   ///< ORE-backed risk computation (VaR, PFE, etc.)
+    grid    ///< Distributed computation on ores.grid (future)
+};
+#+end_src
+
+** report_definition_status
+
+The status values that drive the =report_definition= state machine. Stored as a
+reference data coding scheme in the database (not a check constraint) so that
+the state machine can evolve over time without schema migrations.
+
+| Code       | Description                                                   |
+|------------+---------------------------------------------------------------|
+| =draft=    | Created but not yet scheduled. Editable in full.              |
+| =active=   | Registered with the scheduler. Executes on its cron schedule. |
+| =suspended= | Temporarily removed from the scheduler. No new instances.    |
+| =archived= | Terminal. Retained for history; no further execution.         |
+
+** report_definition_status State Machine
+
+#+begin_example
+                    ┌─────────┐
+            create  │         │
+          ─────────▶│  draft  │
+                    │         │
+                    └────┬────┘
+                         │ activate
+                         ▼
+                    ┌─────────┐         suspend          ┌───────────┐
+                    │         │──────────────────────────▶│           │
+                    │ active  │                           │ suspended │
+                    │         │◀──────────────────────────│           │
+                    └────┬────┘         reactivate        └───────────┘
+                         │ archive
+                         ▼
+                    ┌──────────┐
+                    │ archived │  (terminal)
+                    └──────────┘
+#+end_example
+
+Transitions:
+
+- *draft → active*: User activates the definition. The cron job is registered
+  with =ores.scheduler=. The =cron_job_id= is stored on the definition.
+- *active → suspended*: User suspends the definition. The cron job is removed
+  from =ores.scheduler=. =cron_job_id= is cleared.
+- *suspended → active*: User reactivates the definition. A new cron entry is
+  registered and =cron_job_id= is updated.
+- *active → archived* / *suspended → archived* / *draft → archived*: User
+  archives the definition. Terminal; no further execution.
+
+** report_definition
+
+The persistent template for a report. Parameterised by =report_type= to carry
+type-specific configuration.
+
+#+begin_src cpp
+struct report_definition final {
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id;
+    boost::uuids::uuid party_id;
+
+    std::string name;
+    std::string description;
+
+    report_type type;
+    report_definition_status status;
+
+    /// Validated cron expression that drives recurrence.
+    scheduler::domain::cron_expression schedule_expression;
+
+    /// pg_cron job ID. Present only when status == active.
+    std::optional<std::int64_t> cron_job_id;
+
+    /// Type-specific configuration (see below).
+    std::variant<risk_report_config /*, grid_report_config (future) */> config;
+
+    int version = 0;
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::chrono::system_clock::time_point recorded_at;
+};
+#+end_src
+
+** risk_report_config
+
+Configuration specific to risk reports. Declares the inputs passed to ORE.
+
+#+begin_src cpp
+struct risk_report_config final {
+    /// Portfolios to include (by UUID). Empty means all portfolios.
+    std::vector<boost::uuids::uuid> portfolio_ids;
+
+    /// Books to include (by UUID). Empty means all books in selected portfolios.
+    std::vector<boost::uuids::uuid> book_ids;
+
+    /// ORE computation type (e.g. "NPV", "PFE", "VaR"). Maps to an ORE
+    /// analytics configuration block.
+    std::string analytics_type;
+
+    /// Market data as-of convention: "live" | "eod" | ISO-8601 date string.
+    std::string market_data_convention;
+};
+#+end_src
+
+** report_instance_status
+
+The status values for the =report_instance= state machine:
+
+| Code          | Description                                            |
+|---------------+--------------------------------------------------------|
+| =pending=     | Created in response to a scheduler trigger; not yet running. |
+| =running=     | Execution is in progress.                              |
+| =completed=   | Execution finished successfully. (terminal)            |
+| =failed=      | Execution finished with an error. (terminal)           |
+| =cancelled=   | Cancelled by a user or by archiving the parent definition. (terminal) |
+
+** report_instance_status State Machine
+
+#+begin_example
+  scheduler trigger
+        │
+        ▼
+  ┌─────────┐   start execution   ┌─────────┐
+  │ pending │────────────────────▶│ running │
+  └────┬────┘                     └────┬────┘
+       │                               │
+       │ cancel                ┌───────┼───────┐
+       ▼                       │       │       │
+  ┌──────────┐          success │  failure │  cancel
+  │cancelled │◀──────┐         ▼       ▼       ▼
+  └──────────┘        │   ┌──────────┐ ┌───────┐ ┌──────────┐
+                      │   │completed │ │failed │ │cancelled │
+                      │   └──────────┘ └───────┘ └──────────┘
+                      │                  (all terminal)
+                      └─── (from pending, before start)
+#+end_example
+
+** report_instance
+
+A single execution of a =report_definition=. Created automatically when the
+scheduler fires the trigger for an active definition.
+
+#+begin_src cpp
+struct report_instance final {
+    boost::uuids::uuid id;
+    utility::uuid::tenant_id tenant_id;
+    boost::uuids::uuid party_id;
+
+    /// The definition that produced this instance.
+    boost::uuids::uuid definition_id;
+
+    report_instance_status status;
+
+    /// Scheduler trigger that caused this instance to be created.
+    std::int64_t trigger_run_id;
+
+    /// Execution log / error message.
+    std::string output_message;
+
+    std::chrono::system_clock::time_point created_at;
+    std::chrono::system_clock::time_point started_at;
+    std::optional<std::chrono::system_clock::time_point> completed_at;
+
+    [[nodiscard]] std::optional<std::chrono::seconds> duration() const noexcept {
+        if (!completed_at) return std::nullopt;
+        return std::chrono::duration_cast<std::chrono::seconds>(*completed_at - started_at);
+    }
+};
+#+end_src
+
+* Execution Flow
+
+** Report Definition Activation
+
+1. User sets definition status to =active=.
+2. Reporting service calls =ores.scheduler= to register a cron job whose
+   payload identifies the report definition by UUID.
+3. Scheduler returns a =cron_job_id=; this is stored on the definition.
+4. Definition is persisted with =status = active=.
+
+** Scheduled Execution
+
+1. =ores.scheduler= fires a trigger at the scheduled time (a pg_cron event
+   reaches the event bus via =ores.eventing=).
+2. The reporting service listener receives the event, identifies the
+   =report_definition= from the payload, and creates a =report_instance= with
+   =status = pending=.
+3. The instance transitions to =running= and execution begins:
+   - *Risk reports*: The service constructs ORE input from =risk_report_config=
+     and delegates computation to =ores.ore=.
+   - *Grid reports* (future): The service submits work to =ores.grid=.
+4. On completion the instance transitions to =completed= or =failed=. Output
+   metadata and any error messages are stored on the instance.
+
+* Open Questions
+
+1. *Report output storage*: Where do the artefacts (NPV tables, PFE curves,
+   etc.) produced by risk reports live? A dedicated =report_output= table?
+   Object storage? This is deferred to a later design iteration.
+
+2. *Execution environment for risk reports*: Does ORE run in-process, as a
+   subprocess, or via a future =ores.grid= node? In-process is simplest for
+   the first iteration; subprocess isolation may be required later.
+
+3. *Concurrency*: Should multiple instances of the same definition be allowed
+   to run simultaneously, or should a new trigger be skipped if an instance is
+   already =running=?
+
+4. *ores.grid contract*: The interface between =ores.reporting= and the future
+   =ores.grid= component needs to be defined before grid-type reports can be
+   designed in detail.
+
+5. *Multi-party visibility*: Should report definitions be scoped to a party, or
+   can they span multiple parties within a tenant?
+
+6. *Cancellation*: What is the mechanism for cancelling a running risk report
+   (i.e., interrupting an in-progress ORE computation)?
+
+* Stories
+
+Stories will be added here once the design is reviewed and approved. Expected
+phases:
+
+1. *Foundation*: SQL schema, domain types, JSON I/O, repository, basic CRUD
+   via CLI and HTTP.
+2. *Scheduler integration*: Activate/suspend transitions wiring to
+   =ores.scheduler=.
+3. *Risk report execution*: Integration with =ores.ore= to run computations and
+   populate =report_instance= records.
+4. *UI*: Qt and/or Wt surfaces for managing definitions and viewing instances.
+5. *Grid execution* (future): Integrate with =ores.grid= once that component
+   exists.

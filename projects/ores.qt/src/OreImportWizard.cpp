@@ -21,6 +21,7 @@
 
 #include <map>
 #include <set>
+#include <unordered_set>
 #include <QDate>
 #include <QPalette>
 #include <QVBoxLayout>
@@ -44,6 +45,13 @@
 #include "ores.qt/WidgetUtils.hpp"
 
 namespace {
+
+// Fallback dates used when ORE XML does not supply required trade fields.
+// The values are deliberately conservative: far-past for trade/effective date
+// (users can correct them after import) and far-future for termination.
+constexpr std::string_view fallback_trade_date        = "2026-01-01";
+constexpr std::string_view fallback_timestamp_suffix  = " 00:00:00+00:00";
+constexpr std::string_view fallback_termination_date  = "2099-12-31";
 
 struct ImportResult {
     bool success = false;
@@ -210,7 +218,9 @@ void OreDirectoryPage::startScan() {
     dirEdit_->setEnabled(false);
 
     const std::filesystem::path root = path.toStdString();
-    const auto scan_exclusions = wizard_->choices().scan_exclusions;
+    const auto& excl_vec = wizard_->choices().scan_exclusions;
+    const std::unordered_set<std::string> scan_exclusions(excl_vec.begin(),
+                                                           excl_vec.end());
 
     auto* watcher = new QFutureWatcher<ore::scanner::scan_result>(this);
     connect(watcher, &QFutureWatcher<ore::scanner::scan_result>::finished,
@@ -336,7 +346,9 @@ void OreScanSummaryPage::refreshSummary() {
 
     // Rebuild hierarchy to show portfolio/book node count
     ore::hierarchy::ore_hierarchy_builder builder(
-        sr.portfolio_files, sr.root, wizard_->choices().hierarchy_strip);
+        sr.portfolio_files, sr.root,
+        std::unordered_set<std::string>(wizard_->choices().hierarchy_strip.begin(),
+                                        wizard_->choices().hierarchy_strip.end()));
     const auto nodes = builder.build();
 
     long portfolios = std::count_if(nodes.begin(), nodes.end(),
@@ -563,7 +575,9 @@ void OrePortfolioPage::onCreateParentToggled(bool checked) {
     const auto& choices = wizard_->choices();
 
     ore::hierarchy::ore_hierarchy_builder builder(
-        sr.portfolio_files, sr.root, choices.hierarchy_strip);
+        sr.portfolio_files, sr.root,
+        std::unordered_set<std::string>(choices.hierarchy_strip.begin(),
+                                        choices.hierarchy_strip.end()));
     const auto nodes = builder.build();
 
     long portfolios = std::count_if(nodes.begin(), nodes.end(),
@@ -752,8 +766,12 @@ void OreTradeImportPage::startImport() {
                 // name → UUID for all names committed so far (plan + DB)
                 std::map<std::string, boost::uuids::uuid> committed_names =
                     existing_portfolio_by_name;
-                // UUID → canonical name for portfolios saved in this plan
+                // UUID → canonical name; pre-populate with existing DB portfolios
+                // so that make_unique_name can resolve parent names even when
+                // the parent already exists and is skipped in add_trades_only mode.
                 std::map<boost::uuids::uuid, std::string> uuid_to_name;
+                for (const auto& [name, id] : existing_portfolio_by_name)
+                    uuid_to_name[id] = name;
                 std::vector<refdata::domain::portfolio> portfolios_to_save;
 
                 // Helper: produce a unique name by appending parent name / counter
@@ -979,9 +997,10 @@ void OreTradeImportPage::startImport() {
             {
                 const std::string& td = choices.defaults.trade_date;
                 const std::string ts_fallback = td.empty()
-                    ? "2026-01-01 00:00:00+00:00"
-                    : td + " 00:00:00+00:00";
-                const std::string date_fallback = td.empty() ? "2026-01-01" : td;
+                    ? std::string(fallback_trade_date) + std::string(fallback_timestamp_suffix)
+                    : td + std::string(fallback_timestamp_suffix);
+                const std::string date_fallback = td.empty()
+                    ? std::string(fallback_trade_date) : td;
 
                 int filled = 0;
                 for (auto& item : plan.trades) {
@@ -996,7 +1015,7 @@ void OreTradeImportPage::startImport() {
                         any = true;
                     }
                     if (t.termination_date.empty()) {
-                        t.termination_date = "2099-12-31";
+                        t.termination_date = std::string(fallback_termination_date);
                         any = true;
                     }
                     if (any) ++filled;

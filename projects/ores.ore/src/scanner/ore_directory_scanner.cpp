@@ -28,19 +28,15 @@ using namespace ores::logging;
 
 ore_directory_scanner::ore_directory_scanner(
     std::filesystem::path root,
-    std::vector<std::string> exclusions)
+    std::unordered_set<std::string> exclusions)
     : root_(std::move(root)),
       exclusions_(std::move(exclusions)) {}
 
 bool ore_directory_scanner::is_excluded(
     const std::filesystem::path& relative_path) const {
     for (const auto& component : relative_path) {
-        const auto name = component.string();
-        for (const auto& excl : exclusions_) {
-            if (name == excl) {
-                return true;
-            }
-        }
+        if (exclusions_.contains(component.string()))
+            return true;
     }
     return false;
 }

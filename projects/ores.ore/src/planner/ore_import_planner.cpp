@@ -21,6 +21,7 @@
 
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <unordered_set>
 #include "ores.ore/xml/importer.hpp"
 #include "ores.ore/hierarchy/ore_hierarchy_builder.hpp"
 #include "ores.database/domain/change_reason_constants.hpp"
@@ -77,7 +78,8 @@ ore_import_plan ore_import_planner::plan() {
     hierarchy::ore_hierarchy_builder builder(
         scan_result_.portfolio_files,
         scan_result_.root,
-        choices_.hierarchy_strip);
+        std::unordered_set<std::string>(choices_.hierarchy_strip.begin(),
+                                        choices_.hierarchy_strip.end()));
 
     const auto nodes = builder.build();
 

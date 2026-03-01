@@ -23,6 +23,7 @@
 #include <filesystem>
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "ores.ore/hierarchy/import_node.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -61,7 +62,7 @@ public:
     explicit ore_hierarchy_builder(
         std::vector<std::filesystem::path> portfolio_files,
         std::filesystem::path root,
-        std::vector<std::string> exclusions = {});
+        std::unordered_set<std::string> exclusions = {});
 
     /**
      * @brief Builds the hierarchy nodes.
@@ -85,7 +86,7 @@ private:
 
     std::vector<std::filesystem::path> portfolio_files_;
     std::filesystem::path root_;
-    std::vector<std::string> exclusions_;
+    std::unordered_set<std::string> exclusions_;
 };
 
 }

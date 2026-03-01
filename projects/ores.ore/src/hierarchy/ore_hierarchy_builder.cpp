@@ -79,7 +79,7 @@ std::string make_book_name(const std::string& stem,
 ore_hierarchy_builder::ore_hierarchy_builder(
     std::vector<std::filesystem::path> portfolio_files,
     std::filesystem::path root,
-    std::vector<std::string> exclusions)
+    std::unordered_set<std::string> exclusions)
     : portfolio_files_(std::move(portfolio_files)),
       root_(std::move(root)),
       exclusions_(std::move(exclusions)) {}
@@ -93,14 +93,7 @@ ore_hierarchy_builder::filtered_components(
         if (name == "." || name == "..") {
             continue;
         }
-        bool excluded = false;
-        for (const auto& excl : exclusions_) {
-            if (name == excl) {
-                excluded = true;
-                break;
-            }
-        }
-        if (!excluded) {
+        if (!exclusions_.contains(name)) {
             components.push_back(name);
         }
     }

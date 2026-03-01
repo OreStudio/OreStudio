@@ -22,6 +22,7 @@
 
 #include <filesystem>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include "ores.ore/scanner/scan_result.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -56,7 +57,7 @@ public:
      */
     explicit ore_directory_scanner(
         std::filesystem::path root,
-        std::vector<std::string> exclusions = {});
+        std::unordered_set<std::string> exclusions = {});
 
     /**
      * @brief Walks the directory tree and classifies all files.
@@ -72,7 +73,7 @@ private:
     bool is_excluded(const std::filesystem::path& relative_path) const;
 
     std::filesystem::path root_;
-    std::vector<std::string> exclusions_;
+    std::unordered_set<std::string> exclusions_;
 };
 
 }

@@ -15,30 +15,32 @@
 
 ** Active
 
-#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today-1
+#+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-01 Sun 00:05], for Saturday, February 28, 2026.
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:30* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:30   |      |      | 100.0 |
-|       | Active                                |        | 1:30 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:30 | 100.0 |
+#+CAPTION: Clock summary at [2026-03-01 Sun 13:41], for Sunday, March 01, 2026.
+|       | <75>                                     |        |      |      |       |
+| Tags  | Headline                                 | Time   |      |      |     % |
+|-------+------------------------------------------+--------+------+------+-------|
+|       | *Total time*                             | *4:44* |      |      | 100.0 |
+|-------+------------------------------------------+--------+------+------+-------|
+|       | Stories                                  | 4:44   |      |      | 100.0 |
+|       | Active                                   |        | 4:44 |      | 100.0 |
+| agile | Sprint and product backlog refinement    |        |      | 0:05 |   1.8 |
+| code  | Add trade import mapping dialog to Qt UI |        |      | 4:39 |  98.2 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-01 Sun 00:05]
-|       | <75>                                  |        |      |      |       |
-| Tags  | Headline                              | Time   |      |      |     % |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | *Total time*                          | *1:35* |      |      | 100.0 |
-|-------+---------------------------------------+--------+------+------+-------|
-|       | Stories                               | 1:35   |      |      | 100.0 |
-|       | Active                                |        | 1:35 |      | 100.0 |
-| agile | Sprint and product backlog refinement |        |      | 1:35 | 100.0 |
+#+CAPTION: Clock summary at [2026-03-01 Sun 13:41]
+|       | <75>                                     |        |      |      |       |
+| Tags  | Headline                                 | Time   |      |      |     % |
+|-------+------------------------------------------+--------+------+------+-------|
+|       | *Total time*                             | *6:14* |      |      | 100.0 |
+|-------+------------------------------------------+--------+------+------+-------|
+|       | Stories                                  | 6:14   |      |      | 100.0 |
+|       | Active                                   |        | 6:14 |      | 100.0 |
+| agile | Sprint and product backlog refinement    |        |      | 1:35 |  25.4 |
+| code  | Add trade import mapping dialog to Qt UI |        |      | 4:39 |  74.6 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -188,6 +190,37 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_14_tags.png]]
 
+*** STARTED Add trade import mapping dialog to Qt UI                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-01 Sun 10:52]--[2026-03-01 Sun 13:41] =>  2:49
+    CLOCK: [2026-03-01 Sun 09:01]--[2026-03-01 Sun 10:51] =>  1:50
+    :END:
+
+Add a mapping dialog to the Qt UI for importing ORE portfolio XML files. The
+dialog should allow users to:
+
+1. Select an ORE portfolio XML file.
+2. Preview the trades that will be imported (count, types, counterparties).
+3. Select the ORES book to import trades into.
+4. Map ORE =CounterParty= names to ORES counterparties (or auto-create).
+5. Review and confirm the import.
+
+This dialog should be accessible from the book list window toolbar when a book
+is selected (similar to the currency import button on the currency list window).
+
+Files to modify:
+
+- =BookMdiWindow.hpp/cpp= - add import toolbar action
+- New =ImportTradeDialog.hpp/cpp= - the mapping and preview dialog
+- =BookController.hpp/cpp= - wire up the import action
+
+Acceptance criteria:
+
+- Import button is visible and enabled when a book is selected.
+- Dialog shows trade preview with counterparty mapping.
+- Successful import creates trades in the selected book.
+- Trades appear in the trade list after import.
+
 *** Add party level currency and country restrictions                  :code:
 
 At present a party can use all currencies and all countries. In reality we
@@ -220,36 +253,6 @@ Highlights:
   tables, including valid_from and valid_to columns, versioning, and soft-delete
   rules.
 #+end_quote
-
-*** Add trade import mapping dialog to Qt UI                           :code:
-
-Add a mapping dialog to the Qt UI for importing ORE portfolio XML files. The
-dialog should allow users to:
-
-1. Select an ORE portfolio XML file.
-2. Preview the trades that will be imported (count, types, counterparties).
-3. Select the ORES book to import trades into.
-4. Map ORE =CounterParty= names to ORES counterparties (or auto-create).
-5. Review and confirm the import.
-
-This dialog should be accessible from the book list window toolbar when a book
-is selected (similar to the currency import button on the currency list window).
-
-Files to modify:
-
-- =BookMdiWindow.hpp/cpp= - add import toolbar action
-- New =ImportTradeDialog.hpp/cpp= - the mapping and preview dialog
-- =BookController.hpp/cpp= - wire up the import action
-
-Acceptance criteria:
-
-- Import button is visible and enabled when a book is selected.
-- Dialog shows trade preview with counterparty mapping.
-- Successful import creates trades in the selected book.
-- Trades appear in the trade list after import.
-
-
-
 
 * Footer
 

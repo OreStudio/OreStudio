@@ -792,11 +792,16 @@ void OreTradeImportPage::startImport() {
                         if (it != existing_portfolio_by_name.end()) {
                             // Conflict with DB record
                             portfolio_uuid_remap[p.id] = it->second;
-                            if (new_versions) {
-                                p.id = it->second;
+                            p.id = it->second; // always use the existing UUID
+                            if (new_versions || p.parent_portfolio_id) {
+                                // new_versions: create a new temporal version
+                                // parent set: re-parent the existing portfolio under the
+                                //             newly created wrapping parent (e.g. "ORE Imports")
+                                //             so that the portfolio tree is connected correctly
                                 portfolios_to_save.push_back(std::move(p));
                                 BOOST_LOG_SEV(local_lg, debug)
-                                    << "Portfolio '" << p.name << "' exists, creating new version";
+                                    << "Portfolio '" << p.name << "' exists, "
+                                    << (new_versions ? "creating new version" : "re-parenting");
                             } else {
                                 BOOST_LOG_SEV(local_lg, debug)
                                     << "Portfolio '" << p.name << "' exists, skipping";

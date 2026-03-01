@@ -45,6 +45,9 @@ ore_import_plan ore_import_planner::plan() {
     // =========================================================================
     // Step 1: Currencies
     // =========================================================================
+    // Track ISO codes already added to the plan so that duplicate entries
+    // across multiple currency files are only imported once.
+    std::set<std::string> planned_iso;
     for (const auto& path : scan_result_.currency_files) {
         auto currencies = xml::importer::import_currency_config(path);
         for (auto& c : currencies) {
@@ -52,6 +55,11 @@ ore_import_plan ore_import_planner::plan() {
                 existing_iso_codes_.count(c.iso_code) > 0) {
                 BOOST_LOG_SEV(lg(), debug)
                     << "Skipping existing currency: " << c.iso_code;
+                continue;
+            }
+            if (!planned_iso.insert(c.iso_code).second) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Skipping duplicate currency: " << c.iso_code;
                 continue;
             }
             c.change_reason_code = std::string(reason::codes::new_record);

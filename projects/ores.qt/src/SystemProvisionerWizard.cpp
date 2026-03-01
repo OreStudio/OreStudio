@@ -230,6 +230,19 @@ void AdminAccountPage::setupUI() {
             this, &AdminAccountPage::onShowPasswordToggled);
     PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
 
+    // Real-time email validation: red border until format is valid
+    static const QRegularExpression emailBorderRe(
+        R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
+    connect(emailEdit_, &QLineEdit::textChanged, this, [this](const QString& text) {
+        if (text.isEmpty()) {
+            emailEdit_->setStyleSheet({});
+            return;
+        }
+        const bool valid = emailBorderRe.match(text.trimmed()).hasMatch();
+        emailEdit_->setStyleSheet(valid ? QString{}
+            : QStringLiteral("QLineEdit { border: 1px solid #cc0000; }"));
+    });
+
     // Info box
     auto* infoBox = new QGroupBox(tr("Important"), this);
     auto* infoLayout = new QVBoxLayout(infoBox);
@@ -310,7 +323,8 @@ bool AdminAccountPage::validatePage() {
         emailEdit_->setFocus();
         return false;
     }
-    QRegularExpression emailRe(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)");
+    static const QRegularExpression emailRe(
+        R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
     if (!emailRe.match(email).hasMatch()) {
         validationLabel_->setText(tr("Please enter a valid email address."));
         emailEdit_->setFocus();
@@ -693,6 +707,19 @@ void ProvisionerTenantAdminPage::setupUI() {
             this, &ProvisionerTenantAdminPage::onShowPasswordToggled);
     PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
 
+    // Real-time email validation: red border until format is valid
+    static const QRegularExpression emailBorderRe(
+        R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
+    connect(emailEdit_, &QLineEdit::textChanged, this, [this](const QString& text) {
+        if (text.isEmpty()) {
+            emailEdit_->setStyleSheet({});
+            return;
+        }
+        const bool valid = emailBorderRe.match(text.trimmed()).hasMatch();
+        emailEdit_->setStyleSheet(valid ? QString{}
+            : QStringLiteral("QLineEdit { border: 1px solid #cc0000; }"));
+    });
+
     registerField("tenantAdminUsername*", usernameEdit_);
     registerField("tenantAdminEmail*", emailEdit_);
     registerField("tenantAdminPassword*", passwordEdit_);
@@ -736,7 +763,8 @@ bool ProvisionerTenantAdminPage::validatePage() {
         emailEdit_->setFocus();
         return false;
     }
-    QRegularExpression emailRe(R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$)");
+    static const QRegularExpression emailRe(
+        R"(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]{2,}$)");
     if (!emailRe.match(email).hasMatch()) {
         validationLabel_->setText(tr("Please enter a valid email address."));
         emailEdit_->setFocus();

@@ -112,6 +112,13 @@ AccountDetailDialog::AccountDetailDialog(QWidget* parent)
     PasswordMatchIndicator::connectFields(
         ui_->passwordEdit, ui_->confirmPasswordEdit);
 
+    // Show/hide passwords toggle
+    connect(ui_->showPasswordCheck, &QCheckBox::toggled, this, [this](bool checked) {
+        const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
+        ui_->passwordEdit->setEchoMode(mode);
+        ui_->confirmPasswordEdit->setEchoMode(mode);
+    });
+
     // Hide isAdminCheckBox - admin privileges are now managed via RBAC role assignments
     ui_->isAdminCheckBox->setVisible(false);
 

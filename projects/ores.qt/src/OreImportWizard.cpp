@@ -358,9 +358,9 @@ OreCurrencyPage::OreCurrencyPage(OreImportWizard* wizard)
     auto* layout = new QVBoxLayout(this);
 
     allRadio_ = new QRadioButton(
-        tr("Import <b>all</b> currencies from the ORE file"), this);
+        tr("Import all currencies from the ORE file"), this);
     missingRadio_ = new QRadioButton(
-        tr("Import only currencies <b>not already present</b> in OreStudio"), this);
+        tr("Import only currencies not already present in OreStudio"), this);
     missingRadio_->setChecked(true);
 
     layout->addWidget(allRadio_);
@@ -394,7 +394,7 @@ void OreCurrencyPage::initializePage() {
 
     watcher->setFuture(QtConcurrent::run([cm]() -> Result {
         refdata::messaging::get_currencies_request req;
-        req.limit = 10000;
+        req.limit = 1000;  // server enforces max 1000 per request
         const auto resp = cm->process_authenticated_request(std::move(req));
         Result codes;
         if (resp) {
@@ -413,7 +413,7 @@ void OreCurrencyPage::onFetchFinished() {
     watcher->deleteLater();
 
     const int existing = static_cast<int>(wizard_->existingIsoCodes().size());
-    statusLabel_->setText(tr("Server has <b>%1</b> existing currencies.").arg(existing));
+    statusLabel_->setText(tr("Server has %1 existing currencies.").arg(existing));
 
     fetchDone_ = true;
     onModeChanged();
@@ -435,7 +435,7 @@ void OreCurrencyPage::onModeChanged() {
     const auto plan = planner.plan();
 
     countLabel_->setText(
-        tr("This will import <b>%1</b> currency record(s).")
+        tr("This will import %1 currency record(s).")
         .arg(plan.currencies.size()));
 }
 
@@ -452,15 +452,16 @@ OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
     auto* layout = new QVBoxLayout(this);
 
     createParentCheck_ = new QCheckBox(
-        tr("Create a parent portfolio to wrap all imported portfolios/books"), this);
+        tr("Set a portfolio as the parent of imported portfolios"), this);
     createParentCheck_->setChecked(true);
     layout->addWidget(createParentCheck_);
 
     auto* nameRow = new QHBoxLayout;
-    nameRow->addWidget(new QLabel(tr("Parent portfolio name:"), this));
-    parentNameEdit_ = new QLineEdit(this);
-    parentNameEdit_->setPlaceholderText(tr("e.g. Example1"));
-    nameRow->addWidget(parentNameEdit_);
+    nameRow->addWidget(new QLabel(tr("Parent portfolio:"), this));
+    parentCombo_ = new QComboBox(this);
+    parentCombo_->setEditable(true);
+    parentCombo_->setPlaceholderText(tr("Select or type a portfolio name…"));
+    nameRow->addWidget(parentCombo_);
     layout->addLayout(nameRow);
 
     hierarchyPreviewLabel_ = new QLabel(this);
@@ -474,21 +475,68 @@ OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
 }
 
 void OrePortfolioPage::initializePage() {
-    parentNameEdit_->setText(
-        QString::fromStdString(wizard_->choices().parent_portfolio_name));
+    fetchDone_ = false;
     createParentCheck_->setChecked(wizard_->choices().create_parent_portfolio);
+
+    // Fetch existing portfolios asynchronously to populate combo
+    parentCombo_->clear();
+    parentCombo_->setEnabled(false);
+
+    auto* cm = wizard_->clientManager();
+    using Result = std::vector<std::string>;
+    auto* watcher = new QFutureWatcher<Result>(this);
+    connect(watcher, &QFutureWatcher<Result>::finished,
+            this, &OrePortfolioPage::onPortfoliosFetchFinished);
+
+    watcher->setFuture(QtConcurrent::run([cm]() -> Result {
+        refdata::messaging::get_portfolios_request req;
+        req.limit = 1000;
+        const auto resp = cm->process_authenticated_request(std::move(req));
+        Result names;
+        if (resp) {
+            for (const auto& p : resp->portfolios)
+                names.push_back(p.name);
+            std::sort(names.begin(), names.end());
+        }
+        return names;
+    }));
+
     onCreateParentToggled(createParentCheck_->isChecked());
 }
 
 bool OrePortfolioPage::validatePage() {
     wizard_->choices().create_parent_portfolio = createParentCheck_->isChecked();
     wizard_->choices().parent_portfolio_name =
-        parentNameEdit_->text().trimmed().toStdString();
+        parentCombo_->currentText().trimmed().toStdString();
     return true;
 }
 
+void OrePortfolioPage::onPortfoliosFetchFinished() {
+    auto* watcher = static_cast<QFutureWatcher<std::vector<std::string>>*>(sender());
+    if (!watcher) return;
+
+    const auto names = watcher->result();
+    watcher->deleteLater();
+
+    BOOST_LOG_SEV(lg(), info) << "Fetched " << names.size() << " existing portfolios";
+
+    wizard_->setExistingPortfolioNames(names);
+
+    parentCombo_->clear();
+    for (const auto& n : names)
+        parentCombo_->addItem(QString::fromStdString(n));
+
+    // Restore previously chosen name if any
+    const auto prev = QString::fromStdString(wizard_->choices().parent_portfolio_name);
+    if (!prev.isEmpty())
+        parentCombo_->setCurrentText(prev);
+
+    parentCombo_->setEnabled(createParentCheck_->isChecked());
+    fetchDone_ = true;
+}
+
 void OrePortfolioPage::onCreateParentToggled(bool checked) {
-    parentNameEdit_->setEnabled(checked);
+    parentCombo_->setEnabled(checked && fetchDone_);
 
     // Show quick preview counts
     const auto& sr = wizard_->scanResult();
@@ -506,11 +554,11 @@ void OrePortfolioPage::onCreateParentToggled(bool checked) {
 
     if (checked) {
         hierarchyPreviewLabel_->setText(
-            tr("<b>%1</b> portfolio(s) + 1 parent + <b>%2</b> book(s) will be created.")
+            tr("%1 portfolio(s) + 1 parent + %2 book(s) will be created.")
             .arg(portfolios).arg(books));
     } else {
         hierarchyPreviewLabel_->setText(
-            tr("<b>%1</b> portfolio(s) + <b>%2</b> book(s) will be created.")
+            tr("%1 portfolio(s) + %2 book(s) will be created.")
             .arg(portfolios).arg(books));
     }
 }

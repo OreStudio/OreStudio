@@ -112,6 +112,14 @@ public:
         existingIsoCodes_ = std::move(codes);
     }
 
+    // Existing portfolio names fetched on Page_Portfolio
+    const std::vector<std::string>& existingPortfolioNames() const {
+        return existingPortfolioNames_;
+    }
+    void setExistingPortfolioNames(std::vector<std::string> names) {
+        existingPortfolioNames_ = std::move(names);
+    }
+
 private:
     void setupPages();
 
@@ -120,6 +128,7 @@ private:
     ore::planner::import_choices choices_;
     ore::planner::ore_import_plan importPlan_;
     std::set<std::string> existingIsoCodes_;
+    std::vector<std::string> existingPortfolioNames_;
 
     int savedCurrencies_ = 0;
     int savedPortfolios_ = 0;
@@ -225,6 +234,15 @@ private:
 
 class OrePortfolioPage final : public QWizardPage {
     Q_OBJECT
+
+private:
+    inline static std::string_view logger_name = "ores.qt.ore_portfolio_page";
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     explicit OrePortfolioPage(OreImportWizard* wizard);
     void initializePage() override;
@@ -232,12 +250,14 @@ public:
 
 private slots:
     void onCreateParentToggled(bool checked);
+    void onPortfoliosFetchFinished();
 
 private:
     OreImportWizard* wizard_;
     QCheckBox* createParentCheck_;
-    QLineEdit* parentNameEdit_;
+    QComboBox* parentCombo_;
     QLabel* hierarchyPreviewLabel_;
+    bool fetchDone_ = false;
 };
 
 class OreTradeImportPage final : public QWizardPage {

@@ -36,6 +36,11 @@ const std::string tags("[ore][scanner][directory_scanner]");
 // Helpers
 // ---------------------------------------------------------------------------
 
+// Minimal XML snippets that the scanner recognises by their root element.
+const std::string_view portfolio_xml  = "<Portfolio>\n</Portfolio>\n";
+const std::string_view currency_xml   = "<CurrencyConfig>\n</CurrencyConfig>\n";
+const std::string_view unrelated_xml  = "<Simulation>\n</Simulation>\n";
+
 struct temp_dir {
     std::filesystem::path path;
 
@@ -51,10 +56,19 @@ struct temp_dir {
         std::filesystem::remove_all(path, ec);
     }
 
+    // Create an empty file (for non-XML or excluded files under test).
     void touch(const std::filesystem::path& rel) const {
         const auto full = path / rel;
         std::filesystem::create_directories(full.parent_path());
-        std::ofstream{full};  // create empty file
+        std::ofstream{full};
+    }
+
+    // Create a file with explicit content.
+    void write(const std::filesystem::path& rel,
+               std::string_view content) const {
+        const auto full = path / rel;
+        std::filesystem::create_directories(full.parent_path());
+        std::ofstream{full} << content;
     }
 };
 
@@ -89,29 +103,33 @@ TEST_CASE("scan_empty_directory_produces_empty_results", tags) {
     CHECK(result.root == d.path);
 }
 
-TEST_CASE("scan_classifies_currencyconfig_as_currency", tags) {
+TEST_CASE("scan_classifies_currency_config_by_root_element", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("currencyconfig.xml");
+    // Any filename works — classification is by root element content.
+    d.write("currencies.xml",    currency_xml);
+    d.write("my_currency.xml",   currency_xml);
 
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
 
     BOOST_LOG_SEV(lg, debug) << "Currency files: " << result.currency_files.size();
 
-    REQUIRE(result.currency_files.size() == 1);
+    REQUIRE(result.currency_files.size() == 2);
     CHECK(result.portfolio_files.empty());
-    CHECK(contains(result.currency_files, d.path / "currencyconfig.xml"));
+    CHECK(contains(result.currency_files, d.path / "currencies.xml"));
+    CHECK(contains(result.currency_files, d.path / "my_currency.xml"));
 }
 
-TEST_CASE("scan_classifies_portfolio_xml_as_portfolio", tags) {
+TEST_CASE("scan_classifies_portfolio_xml_by_root_element", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("portfolio.xml");
-    d.touch("portfolio_swaps.xml");
-    d.touch("portfolioFX.xml");
+    // Arbitrary filenames — all recognised by <Portfolio> root element.
+    d.write("portfolio.xml",    portfolio_xml);
+    d.write("fxoption.xml",     portfolio_xml);
+    d.write("swap_usd.xml",     portfolio_xml);
 
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
@@ -121,16 +139,16 @@ TEST_CASE("scan_classifies_portfolio_xml_as_portfolio", tags) {
     REQUIRE(result.portfolio_files.size() == 3);
     CHECK(result.currency_files.empty());
     CHECK(contains(result.portfolio_files, d.path / "portfolio.xml"));
-    CHECK(contains(result.portfolio_files, d.path / "portfolio_swaps.xml"));
-    CHECK(contains(result.portfolio_files, d.path / "portfolioFX.xml"));
+    CHECK(contains(result.portfolio_files, d.path / "fxoption.xml"));
+    CHECK(contains(result.portfolio_files, d.path / "swap_usd.xml"));
 }
 
 TEST_CASE("scan_ignores_unrecognised_xml_files", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("ore.xml");
-    d.touch("config.xml");
+    d.write("ore.xml",    unrelated_xml);
+    d.write("config.xml", unrelated_xml);
     d.touch("readme.txt");
 
     ore_directory_scanner scanner(d.path);
@@ -145,9 +163,9 @@ TEST_CASE("scan_recurses_into_subdirectories", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("Rates/portfolio_irs.xml");
-    d.touch("Credit/portfolio_cds.xml");
-    d.touch("Input/currencyconfig.xml");
+    d.write("Rates/irs.xml",       portfolio_xml);
+    d.write("Credit/cds.xml",      portfolio_xml);
+    d.write("Input/currencies.xml", currency_xml);
 
     ore_directory_scanner scanner(d.path);
     const auto result = scanner.scan();
@@ -167,8 +185,8 @@ TEST_CASE("scan_excludes_files_in_excluded_directory", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("Input/portfolio.xml");        // should be excluded
-    d.touch("Rates/portfolio_irs.xml");    // should be found
+    d.touch("Input/trades.xml");           // excluded — content never read
+    d.write("Rates/irs.xml", portfolio_xml); // should be found
 
     ore_directory_scanner scanner(d.path, {"Input"});
     const auto result = scanner.scan();
@@ -177,37 +195,37 @@ TEST_CASE("scan_excludes_files_in_excluded_directory", tags) {
                              << ", Ignored: " << result.ignored_files.size();
 
     REQUIRE(result.portfolio_files.size() == 1);
-    CHECK(contains(result.portfolio_files, d.path / "Rates" / "portfolio_irs.xml"));
-    CHECK(contains(result.ignored_files, d.path / "Input" / "portfolio.xml"));
+    CHECK(contains(result.portfolio_files, d.path / "Rates" / "irs.xml"));
+    CHECK(contains(result.ignored_files, d.path / "Input" / "trades.xml"));
 }
 
 TEST_CASE("scan_excludes_multiple_exclusion_directories", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("Input/portfolio.xml");
-    d.touch("Output/portfolio.xml");
-    d.touch("Rates/portfolio_irs.xml");
+    d.touch("Input/trades.xml");
+    d.touch("Output/results.xml");
+    d.write("Rates/irs.xml", portfolio_xml);
 
     ore_directory_scanner scanner(d.path, {"Input", "Output"});
     const auto result = scanner.scan();
 
     REQUIRE(result.portfolio_files.size() == 1);
-    CHECK(contains(result.portfolio_files, d.path / "Rates" / "portfolio_irs.xml"));
+    CHECK(contains(result.portfolio_files, d.path / "Rates" / "irs.xml"));
 }
 
 TEST_CASE("scan_excluded_currency_file_is_ignored", tags) {
     auto lg(make_logger(test_suite));
 
     temp_dir d;
-    d.touch("Input/currencyconfig.xml");   // excluded dir
-    d.touch("currencyconfig.xml");         // root — not excluded
+    d.touch("Input/currencies.xml");         // excluded dir — content never read
+    d.write("currencies.xml", currency_xml); // root level — not excluded
 
     ore_directory_scanner scanner(d.path, {"Input"});
     const auto result = scanner.scan();
 
     REQUIRE(result.currency_files.size() == 1);
-    CHECK(contains(result.currency_files, d.path / "currencyconfig.xml"));
+    CHECK(contains(result.currency_files, d.path / "currencies.xml"));
 }
 
 TEST_CASE("scan_nonexistent_directory_returns_empty_result", tags) {

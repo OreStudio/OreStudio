@@ -19,6 +19,9 @@
  */
 #include "ores.ore/scanner/ore_directory_scanner.hpp"
 
+#include <array>
+#include <fstream>
+
 namespace ores::ore::scanner {
 
 using namespace ores::logging;
@@ -67,15 +70,28 @@ scan_result ore_directory_scanner::scan() {
             continue;
         }
 
-        const auto& filename = entry.path().filename().string();
+        if (entry.path().extension() != ".xml") {
+            result.ignored_files.push_back(entry.path());
+            continue;
+        }
 
-        if (filename == "currencyconfig.xml") {
-            BOOST_LOG_SEV(lg(), debug) << "Currency file: " << entry.path();
-            result.currency_files.push_back(entry.path());
-        } else if (entry.path().extension() == ".xml" &&
-                   filename.starts_with("portfolio")) {
+        // Peek at the first 512 bytes to identify the root element.
+        // Portfolio files have <Portfolio> and currency files have
+        // <CurrencyConfig> as their root — both appear within the first
+        // two lines regardless of whether an XML declaration is present.
+        std::array<char, 512> buf{};
+        std::ifstream f(entry.path(), std::ios::binary);
+        const auto n = static_cast<std::size_t>(
+            f.read(buf.data(), static_cast<std::streamsize>(buf.size()))
+             .gcount());
+        const std::string_view head(buf.data(), n);
+
+        if (head.find("<Portfolio>") != std::string_view::npos) {
             BOOST_LOG_SEV(lg(), debug) << "Portfolio file: " << entry.path();
             result.portfolio_files.push_back(entry.path());
+        } else if (head.find("<CurrencyConfig>") != std::string_view::npos) {
+            BOOST_LOG_SEV(lg(), debug) << "Currency file: " << entry.path();
+            result.currency_files.push_back(entry.path());
         } else {
             result.ignored_files.push_back(entry.path());
         }

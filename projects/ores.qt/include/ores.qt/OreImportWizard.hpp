@@ -257,6 +257,8 @@ private:
     QCheckBox* createParentCheck_;
     QComboBox* parentCombo_;
     QLabel* hierarchyPreviewLabel_;
+    QRadioButton* addTradesRadio_;
+    QRadioButton* newVersionsRadio_;
     bool fetchDone_ = false;
 };
 

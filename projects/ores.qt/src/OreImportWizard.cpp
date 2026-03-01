@@ -19,6 +19,7 @@
  */
 #include "ores.qt/OreImportWizard.hpp"
 
+#include <map>
 #include <set>
 #include <QDate>
 #include <QPalette>
@@ -38,6 +39,7 @@
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
+#include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
@@ -471,6 +473,17 @@ OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
     hierarchyPreviewLabel_->setWordWrap(true);
     layout->addWidget(hierarchyPreviewLabel_);
 
+    auto* reimportGroup = new QGroupBox(tr("Re-import behaviour"), this);
+    auto* reimportLayout = new QVBoxLayout(reimportGroup);
+    addTradesRadio_ = new QRadioButton(
+        tr("Add new trades only — skip existing portfolios and books"), this);
+    newVersionsRadio_ = new QRadioButton(
+        tr("Create new versions of all entities (portfolios, books, and trades)"), this);
+    addTradesRadio_->setChecked(true);
+    reimportLayout->addWidget(addTradesRadio_);
+    reimportLayout->addWidget(newVersionsRadio_);
+    layout->addWidget(reimportGroup);
+
     layout->addStretch();
 
     connect(createParentCheck_, &QCheckBox::toggled,
@@ -511,6 +524,10 @@ bool OrePortfolioPage::validatePage() {
     wizard_->choices().create_parent_portfolio = createParentCheck_->isChecked();
     wizard_->choices().parent_portfolio_name =
         parentCombo_->currentText().trimmed().toStdString();
+    wizard_->choices().portfolio_reimport_mode =
+        newVersionsRadio_->isChecked()
+        ? ore::planner::reimport_mode::create_new_versions
+        : ore::planner::reimport_mode::add_trades_only;
     return true;
 }
 
@@ -599,6 +616,8 @@ OreTradeImportPage::OreTradeImportPage(OreImportWizard* wizard)
 
     logOutput_ = new QTextEdit(this);
     logOutput_->setReadOnly(true);
+    logOutput_->setFont(FontUtils::monospace());
+    logOutput_->document()->setDefaultFont(FontUtils::monospace());
     logOutput_->hide();
     layout->addWidget(logOutput_);
 }
@@ -654,15 +673,6 @@ void OreTradeImportPage::startImport() {
     const auto existing = wizard_->existingIsoCodes();
     const auto choices  = wizard_->choices();
 
-    struct ImportResult {
-        bool success;
-        QString error;
-        int currencies;
-        int portfolios;
-        int books;
-        int trades;
-    };
-
     auto* cm = wizard_->clientManager();
 
     auto* watcher = new QFutureWatcher<ImportResult>(this);
@@ -688,13 +698,236 @@ void OreTradeImportPage::startImport() {
 
         try {
             ore::planner::ore_import_planner planner(sr, existing, choices);
-            const auto plan = planner.plan();
+            auto plan = planner.plan();
 
             BOOST_LOG_SEV(local_lg, info) << "Import plan: "
                 << plan.currencies.size() << " currencies, "
                 << plan.portfolios.size() << " portfolios, "
                 << plan.books.size() << " books, "
                 << plan.trades.size() << " trades";
+
+            // -----------------------------------------------------------------
+            // Resolve name conflicts for portfolios and books.
+            //
+            // Portfolio/book triggers upsert by UUID; the name-uniqueness index
+            // fires when the same name is re-imported with a different UUID.
+            // We fetch existing records, remap planned UUIDs → existing UUIDs
+            // for any name match, skip those records from the save batch, and
+            // propagate the remaps to child books and trades.
+            // -----------------------------------------------------------------
+
+            // Step A: fetch existing portfolios
+            std::map<std::string, boost::uuids::uuid> existing_portfolio_by_name;
+            {
+                refdata::messaging::get_portfolios_request req;
+                req.limit = 1000;
+                const auto resp = cm->process_authenticated_request(std::move(req));
+                if (resp) {
+                    for (const auto& p : resp->portfolios)
+                        existing_portfolio_by_name[p.name] = p.id;
+                }
+                BOOST_LOG_SEV(local_lg, debug) << "Fetched "
+                    << existing_portfolio_by_name.size() << " existing portfolios";
+            }
+
+            // Step B: build portfolio UUID remap; decide which to save.
+            //
+            // Two sources of name collisions must be handled:
+            //   1. Within-plan: the hierarchy builder creates distinct nodes for the
+            //      same name at different parent levels (e.g. Legacy/Example_1 and
+            //      XVA/Example_1 both produce an "Example_1" portfolio), but the DB
+            //      name-uniqueness index is on (tenant_id, party_id, name) with no
+            //      parent column.  We disambiguate by appending the parent name as a
+            //      suffix, falling back to a numeric counter if needed.
+            //   2. DB conflict: a portfolio with this name already exists from a
+            //      previous import.  Depending on reimport_mode we either skip or
+            //      create a new version.
+            //
+            // Process in plan order (parents before children) so that parent
+            // remaps are already recorded when child parent_portfolio_id is patched.
+            const bool new_versions = (choices.portfolio_reimport_mode ==
+                ore::planner::reimport_mode::create_new_versions);
+            std::map<boost::uuids::uuid, boost::uuids::uuid> portfolio_uuid_remap;
+            {
+                // name → UUID for all names committed so far (plan + DB)
+                std::map<std::string, boost::uuids::uuid> committed_names =
+                    existing_portfolio_by_name;
+                // UUID → canonical name for portfolios saved in this plan
+                std::map<boost::uuids::uuid, std::string> uuid_to_name;
+                std::vector<refdata::domain::portfolio> portfolios_to_save;
+
+                // Helper: produce a unique name by appending parent name / counter
+                auto make_unique_name = [&](const std::string& base,
+                                            const std::optional<boost::uuids::uuid>& parent_id)
+                        -> std::string {
+                    // Try base + " (ParentName)" first
+                    if (parent_id) {
+                        auto pit = portfolio_uuid_remap.find(*parent_id);
+                        auto pkey = pit != portfolio_uuid_remap.end() ? pit->second : *parent_id;
+                        if (auto nit = uuid_to_name.find(pkey); nit != uuid_to_name.end()) {
+                            std::string candidate = base + " (" + nit->second + ")";
+                            if (!committed_names.count(candidate))
+                                return candidate;
+                        }
+                    }
+                    // Fall back to numeric counter
+                    for (int n = 2; ; ++n) {
+                        std::string candidate = base + " (" + std::to_string(n) + ")";
+                        if (!committed_names.count(candidate))
+                            return candidate;
+                    }
+                };
+
+                for (auto& p : plan.portfolios) {
+                    // Patch parent_portfolio_id through any existing remap
+                    if (p.parent_portfolio_id) {
+                        auto pit = portfolio_uuid_remap.find(*p.parent_portfolio_id);
+                        if (pit != portfolio_uuid_remap.end())
+                            p.parent_portfolio_id = pit->second;
+                    }
+
+                    // --- within-plan name collision → disambiguate ---
+                    if (committed_names.count(p.name)) {
+                        auto it = existing_portfolio_by_name.find(p.name);
+                        if (it != existing_portfolio_by_name.end()) {
+                            // Conflict with DB record
+                            portfolio_uuid_remap[p.id] = it->second;
+                            if (new_versions) {
+                                p.id = it->second;
+                                portfolios_to_save.push_back(std::move(p));
+                                BOOST_LOG_SEV(local_lg, debug)
+                                    << "Portfolio '" << p.name << "' exists, creating new version";
+                            } else {
+                                BOOST_LOG_SEV(local_lg, debug)
+                                    << "Portfolio '" << p.name << "' exists, skipping";
+                            }
+                        } else {
+                            // Within-plan collision: rename with suffix
+                            const auto unique = make_unique_name(p.name, p.parent_portfolio_id);
+                            BOOST_LOG_SEV(local_lg, debug)
+                                << "Portfolio '" << p.name << "' renamed to '" << unique << "'";
+                            p.name = unique;
+                            committed_names[p.name] = p.id;
+                            uuid_to_name[p.id] = p.name;
+                            portfolios_to_save.push_back(std::move(p));
+                        }
+                        continue;
+                    }
+
+                    // --- genuinely new portfolio ---
+                    committed_names[p.name] = p.id;
+                    uuid_to_name[p.id] = p.name;
+                    portfolios_to_save.push_back(std::move(p));
+                }
+                plan.portfolios = std::move(portfolios_to_save);
+                BOOST_LOG_SEV(local_lg, info) << "After dedup: "
+                    << plan.portfolios.size() << " portfolio(s) to save";
+            }
+
+            // Apply portfolio remap to books and trades
+            for (auto& b : plan.books) {
+                auto it = portfolio_uuid_remap.find(b.parent_portfolio_id);
+                if (it != portfolio_uuid_remap.end())
+                    b.parent_portfolio_id = it->second;
+            }
+            for (auto& item : plan.trades) {
+                auto it = portfolio_uuid_remap.find(item.trade.portfolio_id);
+                if (it != portfolio_uuid_remap.end())
+                    item.trade.portfolio_id = it->second;
+            }
+
+            // Step C: fetch existing books
+            std::map<std::string, boost::uuids::uuid> existing_book_by_name;
+            {
+                refdata::messaging::get_books_request req;
+                req.limit = 1000;
+                const auto resp = cm->process_authenticated_request(std::move(req));
+                if (resp) {
+                    for (const auto& b : resp->books)
+                        existing_book_by_name[b.name] = b.id;
+                }
+                BOOST_LOG_SEV(local_lg, debug) << "Fetched "
+                    << existing_book_by_name.size() << " existing books";
+            }
+
+            // Step D: build book UUID remap; decide which to save.
+            // Same two-level dedup as portfolios: within-plan duplicates (same
+            // stem name from files in different directories) and DB conflicts.
+            // Books are named after the file stem ("portfolio", "portfolio_1", …)
+            // which repeats frequently across ORE example directories.
+            std::map<boost::uuids::uuid, boost::uuids::uuid> book_uuid_remap;
+            {
+                std::map<std::string, boost::uuids::uuid> committed_book_names =
+                    existing_book_by_name;
+                // UUID → canonical portfolio name (for suffix generation)
+                // Reuse portfolio uuid_to_name built above — not in scope here,
+                // so we look up via portfolio remap + plan.portfolios name field.
+                // Build a quick UUID → name lookup from the final portfolio list.
+                std::map<boost::uuids::uuid, std::string> portfolio_uuid_to_name;
+                for (const auto& p : plan.portfolios)
+                    portfolio_uuid_to_name[p.id] = p.name;
+                // Also include DB-existing portfolios (skipped in add_trades_only mode)
+                for (const auto& [name, id] : existing_portfolio_by_name)
+                    portfolio_uuid_to_name.emplace(id, name);
+
+                auto make_unique_book_name = [&](const std::string& base,
+                                                 const boost::uuids::uuid& parent_portfolio_id)
+                        -> std::string {
+                    if (auto pit = portfolio_uuid_to_name.find(parent_portfolio_id);
+                            pit != portfolio_uuid_to_name.end()) {
+                        std::string candidate = base + " (" + pit->second + ")";
+                        if (!committed_book_names.count(candidate))
+                            return candidate;
+                    }
+                    for (int n = 2; ; ++n) {
+                        std::string candidate = base + " (" + std::to_string(n) + ")";
+                        if (!committed_book_names.count(candidate))
+                            return candidate;
+                    }
+                };
+
+                std::vector<refdata::domain::book> books_to_save;
+                for (auto& b : plan.books) {
+                    if (committed_book_names.count(b.name)) {
+                        auto it = existing_book_by_name.find(b.name);
+                        if (it != existing_book_by_name.end()) {
+                            // DB conflict
+                            book_uuid_remap[b.id] = it->second;
+                            if (new_versions) {
+                                b.id = it->second;
+                                books_to_save.push_back(std::move(b));
+                                BOOST_LOG_SEV(local_lg, debug)
+                                    << "Book '" << b.name << "' exists, creating new version";
+                            } else {
+                                BOOST_LOG_SEV(local_lg, debug)
+                                    << "Book '" << b.name << "' exists, skipping";
+                            }
+                        } else {
+                            // Within-plan collision: rename with portfolio suffix
+                            const auto unique = make_unique_book_name(b.name, b.parent_portfolio_id);
+                            BOOST_LOG_SEV(local_lg, debug)
+                                << "Book '" << b.name << "' renamed to '" << unique << "'";
+                            b.name = unique;
+                            committed_book_names[b.name] = b.id;
+                            books_to_save.push_back(std::move(b));
+                        }
+                        continue;
+                    }
+
+                    committed_book_names[b.name] = b.id;
+                    books_to_save.push_back(std::move(b));
+                }
+                plan.books = std::move(books_to_save);
+                BOOST_LOG_SEV(local_lg, info) << "After dedup: "
+                    << plan.books.size() << " book(s) to save";
+            }
+
+            // Apply book remap to trades
+            for (auto& item : plan.trades) {
+                auto it = book_uuid_remap.find(item.trade.book_id);
+                if (it != book_uuid_remap.end())
+                    item.trade.book_id = it->second;
+            }
 
             ImportResult res;
 
@@ -730,6 +963,42 @@ void OreTradeImportPage::startImport() {
                             .currencies=res.currencies, .portfolios=res.portfolios};
                 res.books = static_cast<int>(plan.books.size());
                 BOOST_LOG_SEV(local_lg, info) << "Saved " << res.books << " books";
+            }
+
+            // Fill required trade fields that ORE XML may omit.
+            // execution_timestamp, effective_date, and termination_date are NOT
+            // NULL in the DB.  When ORE XML doesn't provide them the mapper
+            // leaves them as empty strings, which the INSERT trigger rejects.
+            // We apply sensible fallbacks derived from trade_date so the import
+            // succeeds; users can correct individual trades afterwards.
+            {
+                const std::string& td = choices.defaults.trade_date;
+                const std::string ts_fallback = td.empty()
+                    ? "2026-01-01 00:00:00+00:00"
+                    : td + " 00:00:00+00:00";
+                const std::string date_fallback = td.empty() ? "2026-01-01" : td;
+
+                int filled = 0;
+                for (auto& item : plan.trades) {
+                    auto& t = item.trade;
+                    bool any = false;
+                    if (t.execution_timestamp.empty()) {
+                        t.execution_timestamp = ts_fallback;
+                        any = true;
+                    }
+                    if (t.effective_date.empty()) {
+                        t.effective_date = date_fallback;
+                        any = true;
+                    }
+                    if (t.termination_date.empty()) {
+                        t.termination_date = "2099-12-31";
+                        any = true;
+                    }
+                    if (any) ++filled;
+                }
+                if (filled > 0)
+                    BOOST_LOG_SEV(local_lg, info) << "Filled missing date fields for "
+                        << filled << " trade(s)";
             }
 
             // Step 4: trades in batches of trade_batch_size
@@ -800,8 +1069,8 @@ void OreTradeImportPage::onImportFinished() {
         emit completeChanged();
     } else {
         appendLog(tr("Error: %1").arg(res.error));
-        statusLabel_->setText(
-            tr("Import failed: %1\nClick Cancel to abort the wizard.").arg(res.error));
+        statusLabel_->setText(tr("Import failed. See the error log below. "
+                                  "Click Cancel to abort the wizard."));
         BOOST_LOG_SEV(lg(), error) << "ORE import failed: " << res.error.toStdString();
 
         // Turn progress bar red to signal failure

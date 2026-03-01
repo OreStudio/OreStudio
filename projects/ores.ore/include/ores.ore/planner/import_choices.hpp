@@ -36,6 +36,18 @@ enum class currency_import_mode {
 };
 
 /**
+ * @brief Controls what happens to portfolios and books that already exist
+ *        in the database (matched by name) during a re-import.
+ */
+enum class reimport_mode {
+    /// Skip existing portfolios/books; attach new trades to them as-is.
+    add_trades_only,
+    /// Re-save existing portfolios/books with their current UUID, producing
+    /// a new temporal version, then add new trades.
+    create_new_versions
+};
+
+/**
  * @brief Default field values to stamp onto imported trades.
  *
  * Fields left empty are not overridden; the value parsed from the ORE
@@ -59,6 +71,11 @@ struct import_choices {
      * @brief How to handle currencies already in the database.
      */
     currency_import_mode currency_mode = currency_import_mode::missing_only;
+
+    /**
+     * @brief How to handle portfolios and books that already exist.
+     */
+    reimport_mode portfolio_reimport_mode = reimport_mode::add_trades_only;
 
     /**
      * @brief Name for the optional wrapping parent portfolio.

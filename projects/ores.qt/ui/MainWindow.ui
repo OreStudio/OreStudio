@@ -282,7 +282,7 @@
   </action>
   <action name="ActionImportOreData">
    <property name="text">
-    <string>&amp;Import ORE Data...</string>
+    <string>ORE &amp;Import</string>
    </property>
    <property name="toolTip">
     <string>Import ORE directory data into OreStudio</string>

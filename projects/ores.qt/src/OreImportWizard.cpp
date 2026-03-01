@@ -37,6 +37,7 @@
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
+#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
@@ -669,63 +670,98 @@ void OreTradeImportPage::startImport() {
             this, &OreTradeImportPage::onImportFinished);
 
     watcher->setFuture(QtConcurrent::run([sr, existing, choices, cm]() -> ImportResult {
+        auto& local_lg = OreTradeImportPage::lg();
+
+        // Helper: build an error string from a failed expected response.
+        // Uses resp->message when available, falls back to transport error text.
+        auto make_error = [&](const auto& resp, const char* step) -> QString {
+            if (!resp) {
+                const auto msg = comms::net::to_string(resp.error());
+                BOOST_LOG_SEV(local_lg, error)
+                    << step << " transport error: " << msg;
+                return QString::fromStdString(std::string(step) + ": " + msg);
+            }
+            BOOST_LOG_SEV(local_lg, error)
+                << step << " server error: " << resp->message;
+            return QString::fromStdString(std::string(step) + ": " + resp->message);
+        };
+
         try {
             ore::planner::ore_import_planner planner(sr, existing, choices);
             const auto plan = planner.plan();
 
+            BOOST_LOG_SEV(local_lg, info) << "Import plan: "
+                << plan.currencies.size() << " currencies, "
+                << plan.portfolios.size() << " portfolios, "
+                << plan.books.size() << " books, "
+                << plan.trades.size() << " trades";
+
             ImportResult res;
 
-            // Step 1: currencies
+            // Step 1: currencies (single batch)
             if (!plan.currencies.empty()) {
                 auto req = refdata::messaging::save_currency_request::from(
                     plan.currencies);
                 const auto resp = cm->process_authenticated_request(std::move(req));
                 if (!resp || !resp->success)
-                    return {.success=false, .error="Currency save failed"};
+                    return {.success=false, .error=make_error(resp, "Currency save")};
                 res.currencies = static_cast<int>(plan.currencies.size());
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.currencies << " currencies";
             }
 
-            // Step 2: portfolios
+            // Step 2: portfolios (single batch)
             if (!plan.portfolios.empty()) {
                 auto req = refdata::messaging::save_portfolio_request::from(
                     plan.portfolios);
                 const auto resp = cm->process_authenticated_request(std::move(req));
                 if (!resp || !resp->success)
-                    return {.success=false, .error="Portfolio save failed",
+                    return {.success=false, .error=make_error(resp, "Portfolio save"),
                             .currencies=res.currencies};
                 res.portfolios = static_cast<int>(plan.portfolios.size());
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.portfolios << " portfolios";
             }
 
-            // Step 3: books
+            // Step 3: books (single batch)
             if (!plan.books.empty()) {
                 auto req = refdata::messaging::save_book_request::from(plan.books);
                 const auto resp = cm->process_authenticated_request(std::move(req));
                 if (!resp || !resp->success)
-                    return {.success=false, .error="Book save failed",
+                    return {.success=false, .error=make_error(resp, "Book save"),
                             .currencies=res.currencies, .portfolios=res.portfolios};
                 res.books = static_cast<int>(plan.books.size());
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.books << " books";
             }
 
-            // Step 4: trades
-            if (!plan.trades.empty()) {
-                std::vector<trading::domain::trade> trade_vec;
-                trade_vec.reserve(plan.trades.size());
-                for (const auto& item : plan.trades)
-                    trade_vec.push_back(item.trade);
+            // Step 4: trades in batches of trade_batch_size
+            constexpr int trade_batch_size = 100;
+            const int total_trades = static_cast<int>(plan.trades.size());
+            for (int offset = 0; offset < total_trades; offset += trade_batch_size) {
+                const int end = std::min(offset + trade_batch_size, total_trades);
+                std::vector<trading::domain::trade> batch;
+                batch.reserve(static_cast<std::size_t>(end - offset));
+                for (int i = offset; i < end; ++i)
+                    batch.push_back(plan.trades[static_cast<std::size_t>(i)].trade);
+
+                BOOST_LOG_SEV(local_lg, debug) << "Sending trade batch "
+                    << (offset / trade_batch_size + 1) << ": "
+                    << batch.size() << " trades";
 
                 auto req = trading::messaging::save_trade_request::from(
-                    std::move(trade_vec));
+                    std::move(batch));
                 const auto resp = cm->process_authenticated_request(std::move(req));
                 if (!resp || !resp->success)
-                    return {.success=false, .error="Trade save failed",
+                    return {.success=false, .error=make_error(resp, "Trade save"),
                             .currencies=res.currencies, .portfolios=res.portfolios,
                             .books=res.books};
-                res.trades = static_cast<int>(plan.trades.size());
+                res.trades += end - offset;
             }
+            if (total_trades > 0)
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.trades << " trades";
 
             res.success = true;
             return res;
         } catch (const std::exception& ex) {
+            BOOST_LOG_SEV(local_lg, error) << "Import exception: " << ex.what();
             return {.success=false, .error=QString::fromStdString(ex.what())};
         }
     }));

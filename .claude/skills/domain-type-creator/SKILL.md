@@ -12,6 +12,35 @@ When you need to add a new domain type to the ORE Studio project with complete s
 
 # How to use this skill
 
+**Recommended approach**: Use code generation first. The `ores.codegen` project can generate all domain type artefacts from JSON models, ensuring consistency and reducing boilerplate errors.
+
+
+## Priority order
+
+1.  **Use code generation**: Create a JSON model and generate all artefacts using the appropriate profiles. See [ORE Studio Codegen](../../../projects/ores.codegen/modeling/ores.codegen.md) for details.
+2.  **Update templates**: If the domain type doesn't fit existing templates, modify the Mustache templates in `library/templates/` to support the new pattern.
+3.  **Manual creation**: Only create artefacts manually as a last resort when code generation cannot support the required pattern.
+
+
+## Code generation workflow
+
+1.  Create a JSON model in `projects/ores.codegen/models/{component}/`
+2.  Generate all C++ artefacts:
+    
+    ```sh
+    cd projects/ores.codegen
+    # Generate all C++ facets (domain, repository, service, protocol, generator)
+    ./run_generator.sh models/{component}/{entity}_schema.json output/ --profile all-cpp
+    ```
+3.  Review the generated output in `output/`
+4.  Copy files to the appropriate `projects/ores.{component}/` directories
+5.  Update `CMakeLists.txt` if needed (files picked up automatically via GLOB)
+6.  Build and verify
+7.  Raise PRs at designated checkpoints
+
+
+## Manual workflow (last resort)
+
 1.  Gather information about the domain type (name, fields, project location).
 2.  Follow the detailed instructions to create all required artefacts in order.
 3.  Build and test the new domain type.
@@ -185,6 +214,194 @@ This is the final phase. At this point you have complete domain type support wit
 4.  Wait for review and merge.
 
 The domain type implementation is now complete.
+
+
+# Using the Code Generator
+
+The code generator can automatically create most domain type artefacts from JSON model definitions. This is the recommended approach for new domain types.
+
+
+## Generator location
+
+```
+projects/ores.codegen/
+├── run_generator.sh           # Main entry point
+├── src/generator.py           # Generator implementation
+├── library/templates/         # Mustache templates
+└── models/                    # Model definitions
+    └── dq/
+        ├── dataset_bundle_domain_entity.json
+        └── dataset_bundle_member_junction.json
+```
+
+
+## Model types
+
+
+### Domain Entity models (`*_domain_entity.json`)
+
+For types with UUID primary key and natural key constraints.
+
+
+### Junction models (`*_junction.json`)
+
+For association tables with composite text primary keys.
+
+
+## Available templates
+
+| Template                          | Output                                | Purpose                     |
+|--------------------------------- |------------------------------------- |--------------------------- |
+| `cpp_domain_type_class.hpp`       | `domain/{entity}.hpp`                 | Domain class definition     |
+| `cpp_domain_type_json_io.hpp`     | `io/{entity}_json_io.hpp`             | JSON serialization header   |
+| `cpp_domain_type_json_io.cpp`     | `io/{entity}_json_io.cpp`             | JSON serialization impl     |
+| `cpp_domain_type_table.hpp`       | `io/{entity}_table.hpp`               | Table I/O header            |
+| `cpp_domain_type_table.cpp`       | `io/{entity}_table.cpp`               | Table I/O impl              |
+| `cpp_domain_type_table_io.hpp`    | `io/{entity}_table_io.hpp`            | Table model header          |
+| `cpp_domain_type_table_io.cpp`    | `io/{entity}_table_io.cpp`            | Table model impl            |
+| `cpp_domain_type_generator.hpp`   | `generator/{entity}_generator.hpp`    | Test data generator header  |
+| `cpp_domain_type_generator.cpp`   | `generator/{entity}_generator.cpp`    | Test data generator impl    |
+| `cpp_domain_type_entity.hpp`      | `repository/{entity}_entity.hpp`      | Repository entity header    |
+| `cpp_domain_type_entity.cpp`      | `repository/{entity}_entity.cpp`      | Repository entity impl      |
+| `cpp_domain_type_mapper.hpp`      | `repository/{entity}_mapper.hpp`      | Entity/domain mapper header |
+| `cpp_domain_type_mapper.cpp`      | `repository/{entity}_mapper.cpp`      | Entity/domain mapper impl   |
+| `cpp_domain_type_repository.hpp`  | `repository/{entity}_repository.hpp`  | Repository CRUD header      |
+| `cpp_domain_type_repository.cpp`  | `repository/{entity}_repository.cpp`  | Repository CRUD impl        |
+| `cpp_service.hpp`                 | `service/{entity}_service.hpp`        | Service layer header        |
+| `cpp_service.cpp`                 | `service/{entity}_service.cpp`        | Service layer impl          |
+| `cpp_protocol.hpp`                | `messaging/{entity}_protocol.hpp`     | Binary protocol header      |
+| `cpp_protocol.cpp`                | `messaging/{entity}_protocol.cpp`     | Binary protocol impl        |
+| `sql_schema_domain_entity_create` | `sql/{component}_{entity}_create.sql` | SQL table schema            |
+| `sql_schema_junction_create`      | `sql/{component}_{entity}_create.sql` | SQL junction schema         |
+
+
+## Running the generator
+
+```sh
+cd projects/ores.codegen
+
+# Generate all C++ files for a domain entity
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/
+
+# Generate specific template only
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
+    --template cpp_domain_type_class.hpp.mustache
+
+# Generate service and protocol (commonly needed for messaging)
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
+    --template cpp_service.hpp.mustache
+./run_generator.sh models/dq/dataset_bundle_domain_entity.json output/ \
+    --template cpp_protocol.hpp.mustache
+```
+
+
+## Workflow with code generation
+
+1.  Create a JSON model in `projects/ores.codegen/models/{component}/`
+2.  Run the generator to produce C++ files
+3.  Review the output in `output/`
+4.  Copy files to the appropriate `projects/ores.{component}/` directories
+5.  Update `CMakeLists.txt` if needed (files picked up automatically via GLOB)
+6.  Build and verify
+
+
+## Model structure
+
+Example domain entity model with full C++ support:
+
+```json
+{
+  "domain_entity": {
+    "component": "dq",
+    "entity_singular": "dataset_bundle",
+    "entity_plural": "dataset_bundles",
+    "entity_title": "Dataset Bundle",
+    "brief": "A named collection of datasets.",
+    "description": "Detailed multi-line description...",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this bundle."
+    },
+
+    "natural_keys": [
+      {
+        "column": "code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique code for stable referencing.",
+        "generator_expr": "std::string(faker::word::noun()) + \"_bundle\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the bundle.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      }
+    ],
+
+    "sql": {"tablename": "dq_dataset_bundles_tbl"},
+
+    "repository": {
+      "entity_singular_short": "bundle",
+      "entity_plural_short": "bundles"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "b"
+    }
+  }
+}
+```
+
+
+## Benefits of code generation
+
+-   Consistency across all domain types
+-   Reduces boilerplate errors
+-   Single source of truth for entity definitions
+-   Easy to update all instances when patterns change
+-   Supports both domain entity and junction table patterns
+
+
+## Type mappings
+
+The following table shows the standard type mappings between database types and C++ types. These MUST be used consistently across all domain types.
+
+| Database Type | C++ Type                                | Include Required                  |
+|------------- |--------------------------------------- |--------------------------------- |
+| uuid          | boost::uuids::uuid                      | <boost/uuid/uuid.hpp>             |
+| text          | std::string                             | <string>                          |
+| integer       | int                                     | (built-in)                        |
+| bigint        | std::int64\_t                           | <cstdint>                         |
+| boolean       | bool                                    | (built-in)                        |
+| timestamp     | std::chrono::system\_clock::time\_point | <chrono>                          |
+| real          | double                                  | (built-in)                        |
+| bytea         | std::vector<std::byte>                  | <vector>, <cstddef>               |
+| uuid (FK)     | boost::uuids::uuid                      | <boost/uuid/uuid.hpp>             |
+| uuid (opt)    | std::optional<boost::uuids::uuid>       | <optional>, <boost/uuid/&#x2026;> |
+
+
+### Primary key types
+
+Domain entities can use either UUID or text primary keys:
+
+-   **UUID primary keys**: Used for entities like `tenant`, `account`, `role`. The primary key column is typically named `id` with type `uuid`.
+
+-   **Text primary keys**: Used for reference data entities like `tenant_type`, `tenant_status`, `currency`. The primary key column uses a domain-specific name (e.g., `type`, `status`, `iso_code`) with type `text`.
+
+The code generator automatically detects the primary key type from the model and generates appropriate serialization code (`write_uuid=/=read_uuid` for UUIDs, `write_string=/=read_string` for text).
 
 
 # Common patterns and conventions

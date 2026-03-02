@@ -72,6 +72,16 @@ Create new items, add to lists, insert content.
 **Usage**: "New" buttons, add to list, create actions.
 
 
+### Copy
+
+Copy an item, creating a duplicate with the same content.
+
+-   Regular: ![img](../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_copy_20_regular.svg)
+-   Filled: ![img](../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_copy_20_filled.svg)
+
+**Usage**: "Copy" toolbar buttons and context menu actions that create a copy of the selected item (e.g. folder, environment, connection). The copy gets the original name suffixed with " (copy)".
+
+
 ### Delete
 
 Remove items, clear content, destructive actions.
@@ -140,6 +150,18 @@ Favorite, bookmark, rate.
 -   Filled: [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.qt/resources/icons/ic_fluent_star_20_filled.svgprojects/ores.qt/resources/icons/ic_fluent_star_20_filled.svg)
 
 **Usage**: Regular for "not favorited", filled for "favorited" state.
+
+
+### Terminal
+
+Interactive command shell, console, REPL.
+
+-   Fluent Regular: ic\_fluent\_window\_console\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_window\_console\_20\_filled.svg
+-   Solar Linear: programming.svg
+-   Solar Bold: programming.svg
+
+**Usage**: Shell widget, console windows, command-line interfaces.
 
 
 ### Wand
@@ -462,6 +484,16 @@ Change master password, manage encryption keys.
 **Usage**: Change master password actions, encryption key management, password vault operations.
 
 
+### Keyboard
+
+Manual data entry, type input, user-typed values.
+
+-   Regular: ![img](../../../projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_keyboard_20_regular.svg)
+-   Filled: ![img](../../../projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_keyboard_20_filled.svg)
+
+**Usage**: Manual entry options in combo boxes or dialogs where the user will type all values themselves (as opposed to selecting from a saved connection or environment). Conveys "I will type this myself".
+
+
 ## Connection Status
 
 Icons indicating connectivity and network state.
@@ -552,6 +584,107 @@ Source code, script, technical document.
 **Usage**: Code files, scripts, configuration files.
 
 
+## Organisation & Entities
+
+Icons representing organisational structure and business entities.
+
+
+### Organization
+
+Internal parties, legal entities within the firm.
+
+-   Fluent Regular: ic\_fluent\_organization\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_organization\_20\_filled.svg
+-   Solar Linear: buildings-2.svg
+-   Solar Bold: buildings-2.svg
+
+**Usage**: Party management (internal legal entities). Shows an org-chart/hierarchy symbol representing corporate structure.
+
+
+### Handshake
+
+External counterparties, trading relationships.
+
+-   Fluent Regular: ic\_fluent\_handshake\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_handshake\_20\_filled.svg
+-   Solar Linear: hand-shake.svg
+-   Solar Bold: hand-shake.svg
+
+**Usage**: Counterparty management. Represents external business relationships.
+
+
+### People Team
+
+Business units, organisational divisions.
+
+-   Fluent Regular: ic\_fluent\_people\_team\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_people\_team\_20\_filled.svg
+-   Solar Linear: structure.svg
+-   Solar Bold: structure.svg
+
+**Usage**: Business unit management. Shows a team/group of people, distinct from the building icons used for centres and tenants.
+
+
+### Building Bank
+
+Financial centres, business centres (London, New York, Tokyo).
+
+-   Fluent Regular: ic\_fluent\_building\_bank\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_building\_bank\_20\_filled.svg
+-   Solar Linear: buildings-3.svg
+-   Solar Bold: buildings-3.svg
+
+**Usage**: Business centre reference data. A bank/institutional building representing financial centres where business operations occur.
+
+
+### Building Skyscraper
+
+Tenants, enterprise organisations.
+
+-   Fluent Regular: ic\_fluent\_building\_skyscraper\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_building\_skyscraper\_20\_filled.svg
+-   Solar Linear: buildings.svg
+-   Solar Bold: buildings.svg
+
+**Usage**: Tenant management (admin). A tall building/skyscraper representing an enterprise-level organisation.
+
+
+### Building
+
+Generic building, general infrastructure.
+
+-   Fluent Regular: ic\_fluent\_building\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_building\_20\_filled.svg
+-   Solar Linear: buildings.svg
+-   Solar Bold: buildings.svg
+
+**Usage**: Reserved for generic building contexts. Avoid using for specific entity types; prefer the specialised variants above.
+
+
+### Briefcase
+
+Portfolios, investment collections.
+
+-   Fluent Regular: ic\_fluent\_briefcase\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_briefcase\_20\_filled.svg
+-   Solar Linear: case-round.svg
+-   Solar Bold: case-round.svg
+
+**Usage**: Portfolio management. A briefcase representing a collection of investments or financial instruments.
+
+
+### Book Open
+
+Books, trading books, accounting books.
+
+-   Fluent Regular: ic\_fluent\_book\_open\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_book\_open\_20\_filled.svg
+-   Solar Linear: book-2.svg
+-   Solar Bold: book-2.svg
+
+**Usage**: Book management. An open book representing trading/accounting books. Distinct from the closed Book icon used for methodologies and reference materials.
+
+
 ## Data & Finance
 
 Icons for numerical data and financial concepts.
@@ -636,30 +769,30 @@ Activity history, past actions, audit trail.
 
 Scheduler, scheduled jobs, cron tasks.
 
--   Regular: `projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svg`
--   Filled: `projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svg`
+-   Regular: [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svgprojects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svg)
+-   Filled: [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svgprojects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svg)
 
-**Usage**: Scheduler menu entries, job definition list window title, any UI element representing scheduled/recurring work. Solar fallback: `calendar.svg`.
+**Usage**: Scheduler menu entries, job definition list window title, any UI element representing scheduled/recurring work. Solar fallback: \`calendar.svg\`.
 
 
 ### Calendar Add
 
 Schedule a new job, create a scheduled task.
 
--   Regular: `projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_add_20_regular.svg`
--   Filled: `projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_add_20_filled.svg`
+-   Regular: [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_add_20_regular.svgprojects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_add_20_regular.svg)
+-   Filled: [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_add_20_filled.svgprojects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_add_20_filled.svg)
 
-**Usage**: "Schedule Job" button in job definition list toolbar. Use instead of generic `Add` when the action specifically creates a scheduled task. Solar fallback: `calendar-add.svg`.
+**Usage**: "Schedule Job" button in job definition list toolbar. Use instead of generic \`Add\` when the action specifically creates a scheduled task. Solar fallback: \`calendar-add.svg\`.
 
 
 ### Calendar Cancel
 
 Unschedule a job, deactivate a scheduled task.
 
--   Regular: `projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svg`
--   Filled: `projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svg`
+-   Regular: [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svgprojects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svg)
+-   Filled: [~/Development/OreStudio/OreStudio.local1/](file:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svgprojects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svg)
 
-**Usage**: "Unschedule" button in job definition list toolbar and detail dialog. Semantically distinct from `Delete` (which implies permanent removal) — unschedule removes from pg_cron while retaining the definition. Solar fallback: `alarm-remove.svg`.
+**Usage**: "Unschedule" button in job definition list toolbar and detail dialog. Semantically distinct from \`Delete\` (which implies permanent removal) — unschedule removes from pg\_cron while retaining the definition. Solar fallback: \`alarm-remove.svg\`.
 
 
 ## Text & Formatting
@@ -679,58 +812,69 @@ Text validation, spell check, language processing.
 
 # Quick Reference Table
 
-| Concept             | Icon Name                           | Regular | Filled |
-|------------------- |----------------------------------- |------- |------ |
-| Add/Create          | add\_20                             | Default | Active |
-| Delete/Remove       | delete\_20                          | Default | Danger |
-| Purge/Clear All     | delete\_dismiss\_20                 | Default | Danger |
-| Edit/Modify         | edit\_20                            | Default | Active |
-| Save                | save\_20                            | Default | Active |
-| Confirm/Check       | checkmark\_20                       | Default | Done   |
-| Cancel/Close        | dismiss\_20                         | Default | Active |
-| Favorite            | star\_20                            | Off     | On     |
-| Generate            | wand\_20                            | Default | Active |
-| Reload              | arrow\_clockwise\_16                | Default | Active |
-| Redo                | arrow\_clockwise\_16                | Default | Active |
-| Back                | arrow\_left\_20                     | Default | Active |
-| Forward             | arrow\_right\_20                    | Default | Active |
-| Download            | arrow\_download\_20                 | Default | Active |
-| Sync                | arrow\_sync\_20                     | Default | Active |
-| Undo                | arrow\_rotate\_counterclockwise\_20 | Default | Active |
-| Info                | info\_20                            | Default | Active |
-| Warning             | warning\_20                         | Default | Alert  |
-| Error               | error\_circle\_20                   | Default | Alert  |
-| Help                | question\_20                        | Default | Active |
-| User                | person\_20                          | Default | Active |
-| Add User            | person\_add\_20                     | Default | Active |
-| Team                | person\_accounts\_20                | Default | Active |
-| Locked              | lock\_closed\_20                    | Default | Active |
-| Unlocked            | lock\_open\_20                      | Default | Active |
-| Change Password     | key\_multiple\_20                   | Default | Active |
-| Connected           | plug\_connected\_20                 | Default | Active |
-| Disconnected        | plug\_disconnected\_20              | Default | Alert  |
-| Verified Connection | plug\_connected\_checkmark\_20      | Default | Active |
-| Server Link         | server\_link\_20                    | Default | Active |
-| Folder              | folder\_20                          | Closed  | Active |
-| Folder Open         | folder\_open\_20                    | Open    | Active |
-| Table Document      | document\_table\_20                 | Default | Active |
-| Code Document       | document\_code\_16                  | Default | Active |
-| Code/Scheme         | code\_20                            | Default | Active |
-| Database/Dataset    | database\_20                        | Default | Active |
-| Book/Methodology    | book\_20                            | Default | Active |
-| Currency            | currency\_dollar\_euro\_20          | Default | Active |
-| Time                | clock\_16                           | Default | Active |
-| History             | history\_20                         | Default | Active |
-| Scheduler/Jobs      | calendar\_clock\_20                 | Default | Active |
-| Schedule Job        | calendar\_add\_20                   | Default | Active |
-| Unschedule Job      | calendar\_cancel\_20                | Default | Active |
-| Import CSV          | arrow\_download\_csv\_20            | Default | Active |
-| Import FPML         | arrow\_download\_fpml\_20           | Default | Active |
-| Import ORE          | arrow\_download\_ore\_20            | Default | Active |
-| Export CSV          | arrow\_upload\_csv\_20              | Default | Active |
-| Export FPML         | arrow\_upload\_fpml\_20             | Default | Active |
-| Export ORE          | arrow\_upload\_ore\_20              | Default | Active |
-| Publish             | arrow\_upload\_20                   | Default | Active |
+| Concept              | Icon Name                           | Regular | Filled |
+|-------------------- |----------------------------------- |------- |------ |
+| Add/Create           | add\_20                             | Default | Active |
+| Copy                 | copy\_20                            | Default | Active |
+| Delete/Remove        | delete\_20                          | Default | Danger |
+| Purge/Clear All      | delete\_dismiss\_20                 | Default | Danger |
+| Edit/Modify          | edit\_20                            | Default | Active |
+| Save                 | save\_20                            | Default | Active |
+| Confirm/Check        | checkmark\_20                       | Default | Done   |
+| Cancel/Close         | dismiss\_20                         | Default | Active |
+| Favorite             | star\_20                            | Off     | On     |
+| Generate             | wand\_20                            | Default | Active |
+| Reload               | arrow\_clockwise\_16                | Default | Active |
+| Redo                 | arrow\_clockwise\_16                | Default | Active |
+| Back                 | arrow\_left\_20                     | Default | Active |
+| Forward              | arrow\_right\_20                    | Default | Active |
+| Download             | arrow\_download\_20                 | Default | Active |
+| Sync                 | arrow\_sync\_20                     | Default | Active |
+| Undo                 | arrow\_rotate\_counterclockwise\_20 | Default | Active |
+| Info                 | info\_20                            | Default | Active |
+| Warning              | warning\_20                         | Default | Alert  |
+| Error                | error\_circle\_20                   | Default | Alert  |
+| Help                 | question\_20                        | Default | Active |
+| User                 | person\_20                          | Default | Active |
+| Add User             | person\_add\_20                     | Default | Active |
+| Team                 | person\_accounts\_20                | Default | Active |
+| Locked               | lock\_closed\_20                    | Default | Active |
+| Unlocked             | lock\_open\_20                      | Default | Active |
+| Change Password      | key\_multiple\_20                   | Default | Active |
+| Manual Entry         | keyboard\_20                        | Default | Active |
+| Connected            | plug\_connected\_20                 | Default | Active |
+| Disconnected         | plug\_disconnected\_20              | Default | Alert  |
+| Verified Connection  | plug\_connected\_checkmark\_20      | Default | Active |
+| Server Link          | server\_link\_20                    | Default | Active |
+| Folder               | folder\_20                          | Closed  | Active |
+| Folder Open          | folder\_open\_20                    | Open    | Active |
+| Table Document       | document\_table\_20                 | Default | Active |
+| Code Document        | document\_code\_16                  | Default | Active |
+| Code/Scheme          | code\_20                            | Default | Active |
+| Database/Dataset     | database\_20                        | Default | Active |
+| Book/Methodology     | book\_20                            | Default | Active |
+| Book Open/Books      | book\_open\_20                      | Default | Active |
+| Briefcase/Portfolio  | briefcase\_20                       | Default | Active |
+| Building (generic)   | building\_20                        | Default | Active |
+| Building Bank/Centre | building\_bank\_20                  | Default | Active |
+| Building Skyscraper  | building\_skyscraper\_20            | Default | Active |
+| Organization/Party   | organization\_20                    | Default | Active |
+| Handshake/Cpty       | handshake\_20                       | Default | Active |
+| People Team/BU       | people\_team\_20                    | Default | Active |
+| Currency             | currency\_dollar\_euro\_20          | Default | Active |
+| Time                 | clock\_16                           | Default | Active |
+| History              | history\_20                         | Default | Active |
+| Scheduler/Jobs       | calendar\_clock\_20                 | Default | Active |
+| Schedule Job         | calendar\_add\_20                   | Default | Active |
+| Unschedule Job       | calendar\_cancel\_20                | Default | Active |
+| Import CSV           | arrow\_download\_csv\_20            | Default | Active |
+| Import FPML          | arrow\_download\_fpml\_20           | Default | Active |
+| Import ORE           | arrow\_download\_ore\_20            | Default | Active |
+| Export CSV           | arrow\_upload\_csv\_20              | Default | Active |
+| Export FPML          | arrow\_upload\_fpml\_20             | Default | Active |
+| Export ORE           | arrow\_upload\_ore\_20              | Default | Active |
+| Publish              | arrow\_upload\_20                   | Default | Active |
+| Terminal             | window\_console\_20                 | Default | Active |
 
 
 # Adding New Icons

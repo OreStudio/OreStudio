@@ -12,6 +12,36 @@ When you need to add new message types, modify existing protocol messages, or ma
 
 # How to use this skill
 
+**Recommended approach**: Use code generation for standard CRUD protocol messages. The `ores.codegen` project can generate protocol request/response structs from JSON models.
+
+
+## Priority order
+
+1.  **Use code generation**: For standard CRUD protocol patterns, create a JSON model and generate using `--profile protocol`. See [ORE Studio Codegen](../../../projects/ores.codegen/modeling/ores.codegen.md).
+2.  **Update templates**: If the protocol doesn't fit existing templates, modify the protocol Mustache templates in `library/templates/` to support the new message pattern.
+3.  **Manual creation**: Only create protocol messages manually for non-standard patterns (authentication, custom workflows, etc.).
+
+
+## Code generation workflow
+
+1.  Ensure a JSON model exists in `projects/ores.codegen/models/{component}/`
+2.  Generate protocol files:
+    
+    ```sh
+    cd projects/ores.codegen
+    ./run_generator.sh models/{component}/{entity}_domain_entity.json output/ --profile protocol
+    ```
+3.  Review the generated output in `output/`
+4.  Copy files to `projects/ores.{component}/`:
+    -   Headers to `include/ores.{component}/messaging/`
+    -   Sources to `src/messaging/`
+5.  Add message types to `message_types.hpp` (not yet automated)
+6.  Create message handlers (not yet automated)
+7.  Update protocol version and test
+
+
+## Manual workflow
+
 1.  Determine if your change is breaking (major version bump) or backward compatible (minor version bump).
 2.  Follow the detailed instructions to add or modify protocol messages.
 3.  Update the protocol version appropriately.
@@ -574,6 +604,140 @@ Never include passwords or secrets in plain text in protocol messages. Use secur
 -   Keep protocol structs separate from service logic
 -   Use mappers to convert between protocol types and domain types
 -   Group related message types in the same protocol file
+
+
+# Optional filter fields for list requests
+
+For list requests that need to support filtering options (e.g., including deleted records), add optional boolean fields with sensible defaults. This pattern allows backward-compatible extension of existing requests.
+
+
+## Protocol pattern
+
+
+### Request struct
+
+Add optional filter fields with default values:
+
+```cpp
+struct get_items_request final {
+    /**
+     * @brief Include soft-deleted items in response.
+     *
+     * When true, returns the latest version of all items including deleted.
+     * When false (default), returns only active items (valid_to = infinity).
+     */
+    bool include_deleted = false;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_items_request, error_code>
+    deserialize(std::span<const std::byte> data);
+};
+```
+
+
+### Serialization
+
+Serialize boolean filter fields using a single byte:
+
+```cpp
+std::vector<std::byte> get_items_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, include_deleted);
+    return buffer;
+}
+
+std::expected<get_items_request, error_code>
+get_items_request::deserialize(std::span<const std::byte> data) {
+    get_items_request request;
+
+    // Handle both old (empty) and new (with flag) formats
+    if (!data.empty()) {
+        auto include_deleted_result = reader::read_bool(data);
+        if (!include_deleted_result) return std::unexpected(include_deleted_result.error());
+        request.include_deleted = *include_deleted_result;
+    }
+
+    return request;
+}
+```
+
+Note: Checking `data.empty()` before reading allows backward compatibility with older clients that send empty payloads.
+
+
+## Repository method
+
+Add a method to read all items including deleted:
+
+```cpp
+// Returns the latest version of each item, including deleted ones
+std::vector<domain::item> read_all_latest();
+```
+
+Implementation using SQL `DISTINCT ON`:
+
+```cpp
+std::vector<domain::item> item_repository::read_all_latest() {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all latest items including deleted";
+
+    // Use DISTINCT ON to get latest version of each item
+    const std::string sql =
+        "SELECT DISTINCT ON (id) * FROM items_tbl "
+        "ORDER BY id, valid_from DESC";
+
+    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
+        "Reading all latest items");
+
+    // Map rows to domain objects...
+}
+```
+
+
+## Message handler
+
+Update the handler to check the filter flag:
+
+```cpp
+handler_result message_handler::handle_get_items_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    auto request_result = get_items_request::deserialize(payload);
+    if (!request_result) {
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    std::vector<domain::item> items;
+
+    if (request.include_deleted) {
+        items = item_repo_.read_all_latest();
+    } else {
+        items = item_repo_.read_latest();
+    }
+
+    get_items_response response{.items = std::move(items)};
+    co_return response.serialize();
+}
+```
+
+
+## Shell command
+
+Add a command variant to expose the filter:
+
+```cpp
+menu->Insert("get", [&session](std::ostream& out) {
+    process_get_items(std::ref(out), std::ref(session), false);
+}, "Retrieve active items");
+
+menu->Insert("get-all", [&session](std::ostream& out) {
+    process_get_items(std::ref(out), std::ref(session), true);
+}, "Retrieve all items including deleted");
+```
+
+
+## Version impact
+
+Adding optional fields with defaults is a **minor version bump** (backward compatible). Older clients sending empty payloads will continue to work with default behavior.
 
 
 # Incremental loading with modified\_since

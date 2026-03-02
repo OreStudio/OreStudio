@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: 57b7d4d9-aaa5-427d-8d16-0e82da9d3763
+:END:
+#+title: PR Shepherd Skill
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+
+#+begin_export markdown
+---
+name: pr-shepherd
+description: Autonomously monitor a PR after creation, addressing review comments and CI failures until the build is green.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+This skill manages the post-creation phase of a Pull Request autonomously.
+After a PR is raised it enters a watch-and-fix loop: wait for initial feedback,
+address any review comments, monitor CI, and fix any failures — repeating until
+CI passes green.
+
+* When to Use This Skill
+
+Use this skill immediately after a PR has been created and pushed, when you
+want to:
+
+- Automatically pick up and address reviewer comments without manual prompting.
+- Monitor CI continuously and fix build or test failures as they appear.
+- Drive a PR to a green state with minimal user intervention.
+
+* How to Use This Skill
+
+1. Ensure the PR has been pushed and created (e.g. via =gh pr create=).
+2. Run this skill, passing the PR number if not on the current branch.
+3. The skill will execute the watch-and-fix loop until CI is green.
+
+See [[*Detailed Instructions][Detailed Instructions]] for the full loop behaviour.
+
+* Detailed Instructions
+
+** Overview
+
+Before starting the loop, ask the user for the polling interval:
+
+#+BEGIN_QUOTE
+How long should I wait between checks? (default: 10 minutes)
+#+END_QUOTE
+
+Accept any value in minutes. Use 10 minutes if the user does not specify.
+Convert to seconds for =sleep= (e.g. 5 minutes → =sleep 300=).
+
+The skill then runs a loop at that interval:
+
+1. Wait the chosen interval for CI and reviewers to produce initial feedback.
+2. Fetch and address all open review comments.
+3. Check CI status.
+   - *Green*: loop exits — PR is ready.
+   - *Still running*: wait another interval and repeat from step 2.
+   - *Red*: investigate failures, apply fixes, push, then wait and repeat.
+
+** Step 1: Wait for Initial Feedback
+
+After the PR is created, pause for the chosen interval before checking
+anything. This gives CI time to start and reviewers time to post early
+comments.
+
+#+BEGIN_SRC sh
+sleep <interval_in_seconds>
+#+END_SRC
+
+** Step 2: Fetch and Address Review Comments
+
+Retrieve all unresolved review comments on the PR:
+
+#+BEGIN_SRC sh
+gh pr view --comments
+gh api repos/{owner}/{repo}/pulls/{pr_number}/comments
+#+END_SRC
+
+For each open comment:
+
+1. Read the comment carefully and understand the requested change.
+2. Apply the fix in the relevant source file(s).
+3. Stage and commit the change:
+
+#+BEGIN_SRC sh
+git add <modified-files>
+git commit -m "[component] Address review comment: <brief description>
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+#+END_SRC
+
+4. Push all accumulated commits once all comments in the current batch are
+   addressed:
+
+#+BEGIN_SRC sh
+git push
+#+END_SRC
+
+*Important*: never amend existing commits — always create new commits for
+fixes. This preserves the review history.
+
+** Step 3: Check CI Status
+
+Query the current state of all CI checks on the PR:
+
+#+BEGIN_SRC sh
+gh pr checks
+#+END_SRC
+
+Interpret the result:
+
+| Outcome          | Action                                         |
+|------------------+------------------------------------------------|
+| All green (pass) | Loop exits. PR is ready to merge.              |
+| Pending/queued   | Wait the chosen interval, then return to Step 2. |
+| Any failure      | Investigate and fix (see Step 4), then repeat. |
+
+** Step 4: Fix CI Failures
+
+When one or more checks are red:
+
+1. Identify the failing check:
+
+#+BEGIN_SRC sh
+gh run list --branch <branch-name>
+gh run view <run-id> --log-failed
+#+END_SRC
+
+2. Read the failure output carefully. Common categories:
+
+   - *Compilation errors*: fix the offending source files.
+   - *Test failures*: fix or update the failing tests.
+   - *Linting / formatting*: apply the required formatting fixes.
+   - *Schema validation*: re-run =validate_schemas.sh= locally and fix warnings.
+
+3. Apply the fixes, commit, and push:
+
+#+BEGIN_SRC sh
+git add <modified-files>
+git commit -m "[component] Fix CI failure: <brief description>
+
+Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+git push
+#+END_SRC
+
+4. Return to Step 1 (wait the chosen interval) and repeat the loop.
+
+** Loop Termination
+
+The loop terminates when =gh pr checks= reports all checks as passed. At that
+point inform the user:
+
+#+BEGIN_QUOTE
+All CI checks are green. The PR is ready to review and merge.
+#+END_QUOTE
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENCE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

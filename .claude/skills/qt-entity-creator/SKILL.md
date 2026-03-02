@@ -19,6 +19,37 @@ Prerequisites:
 
 # How to use this skill
 
+**Recommended approach**: Use code generation first. The `ores.codegen` project can generate all Qt UI components from JSON models, ensuring consistency with established patterns.
+
+
+## Priority order
+
+1.  **Use code generation**: Create a JSON model and generate Qt components using `--profile qt`. See [ORE Studio Codegen](../../../projects/ores.codegen/modeling/ores.codegen.md) for details.
+2.  **Update templates**: If the entity doesn't fit existing templates, modify the Qt Mustache templates in `library/templates/` to support the new pattern.
+3.  **Manual creation**: Only create Qt components manually as a last resort when code generation cannot support the required UI pattern.
+
+
+## Code generation workflow
+
+1.  Ensure a JSON model exists in `projects/ores.codegen/models/{component}/`
+2.  Generate all Qt UI components:
+    
+    ```sh
+    cd projects/ores.codegen
+    ./run_generator.sh models/{component}/{entity}_domain_entity.json output/ --profile qt
+    ```
+3.  Review the generated output in `output/`
+4.  Copy files to `projects/ores.qt/`:
+    -   Headers to `include/ores.qt/`
+    -   Sources to `src/`
+    -   UI files to `ui/`
+5.  Integrate controller into MainWindow (Step 8 below)
+6.  Build and test
+7.  Raise PRs at designated checkpoints
+
+
+## Manual workflow (last resort)
+
 1.  Gather entity requirements (name, fields, features needed).
 2.  Follow the detailed instructions to create components in order.
 3.  Each phase ends with a PR checkpoint - raise PR, wait for review, merge.
@@ -130,12 +161,11 @@ public:
     // Data access
     const <component>::domain::<entity>* get<Entity>(int row) const;
     void refresh();
-    void clear();
 
-    // Pagination (if needed)
+    // Pagination
     std::uint32_t page_size() const { return page_size_; }
     void set_page_size(std::uint32_t size);
-    std::uint64_t total_available_count() const { return total_available_count_; }
+    std::uint32_t total_available_count() const { return total_available_count_; }
     void load_page(std::uint32_t offset, std::uint32_t limit);
 
 signals:
@@ -149,20 +179,19 @@ private:
     struct FetchResult {
         bool success;
         std::vector<<component>::domain::<entity>> entries;
-        std::uint64_t total_count;
+        std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
-    void fetch_data();
+    void fetch_data(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
     std::vector<<component>::domain::<entity>> entries_;
     QFutureWatcher<FetchResult>* watcher_;
 
     std::uint32_t page_size_{100};
-    std::uint32_t current_offset_{0};
-    std::uint64_t total_available_count_{0};
+    std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 };
 
@@ -184,35 +213,46 @@ The implementation should:
 
 -   Async fetch pattern with exception handling
 
+    Use `process_authenticated_request` for typed request/response handling. The protocol request must include `offset` and `limit` fields, and the response must include `total_available_count`.
+    
     ```cpp
     #include "ores.qt/ExceptionHelper.hpp"
+    #include "ores.comms/net/client_session.hpp"
     
-    void Client<Entity>Model::fetch_data() {
+    void Client<Entity>Model::fetch_data(std::uint32_t offset, std::uint32_t limit) {
+        is_fetching_ = true;
         QPointer<Client<Entity>Model> self = this;
     
-        QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
-            return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
-                if (!self || !self->clientManager_) {
-                    return {.success = false, .entries = {}, .total_count = 0,
-                            .error_message = "Model was destroyed",
-                            .error_details = {}};
-                }
+        QFuture<FetchResult> future =
+            QtConcurrent::run([self, offset, limit]() -> FetchResult {
+                return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
+                    if (!self || !self->clientManager_) {
+                        return {.success = false, .entries = {}, .total_available_count = 0,
+                                .error_message = "Model was destroyed",
+                                .error_details = {}};
+                    }
     
-                // Build and send request...
-                auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
-                if (!response_result) {
-                    return {.success = false, .entries = {}, .total_count = 0,
-                            .error_message = "Failed to send request",
-                            .error_details = {}};
-                }
+                    // Build typed request with pagination params
+                    <component>::messaging::get_<entity>s_request request;
+                    request.offset = offset;
+                    request.limit = limit;
     
-                // Deserialize response...
-                return {.success = true,
-                        .entries = std::move(response->entries),
-                        .total_count = response->total_count,
-                        .error_message = {}, .error_details = {}};
-            }, "<entity>s");  // Entity name for error messages
-        });
+                    auto result = self->clientManager_->
+                        process_authenticated_request(std::move(request));
+    
+                    if (!result) {
+                        return {.success = false, .entries = {}, .total_available_count = 0,
+                                .error_message = QString::fromStdString(
+                                    "Failed to fetch: " + comms::net::to_string(result.error())),
+                                .error_details = {}};
+                    }
+    
+                    return {.success = true,
+                            .entries = std::move(result-><entity>s),
+                            .total_available_count = result->total_available_count,
+                            .error_message = {}, .error_details = {}};
+                }, "<entity>s");  // Entity name for error messages
+            });
     
         watcher_->setFuture(future);
     }
@@ -231,7 +271,7 @@ The implementation should:
     
         beginResetModel();
         entries_ = std::move(result.entries);
-        total_available_count_ = result.total_count;
+        total_available_count_ = result.total_available_count;
         endResetModel();
     
         emit dataLoaded();
@@ -367,7 +407,10 @@ The MdiWindow inherits from `EntityListMdiWindow` which provides:
 -   `markAsStale()` / `clearStaleIndicator()` for stale indicator support
 -   Pure virtual `reload()` method
 -   `initializeStaleIndicator(QAction*, QString)` helper for toolbar setup
+-   `initializeTableSettings()` for column resize, visibility, settings persistence, and window size
 -   `normalRefreshTooltip()` / `staleRefreshTooltip()` virtual methods for customization
+-   `sizeHint()` override — returns saved window size or default from `initializeTableSettings()`
+-   `saveSettings()` — automatically saves header state and window size on close
 
 ```cpp
 #ifndef ORES_QT_<ENTITY>_MDI_WINDOW_HPP
@@ -406,7 +449,6 @@ public:
     ~<Entity>MdiWindow() override = default;
 
     Client<Entity>Model* model() const { return model_.get(); }
-    QSize sizeHint() const override { return QSize(900, 600); }
 
 public slots:
     void reload() override;  // Pure virtual from EntityListMdiWindow
@@ -483,17 +525,61 @@ private:
     10. Update action states.
     11. Load initial data if connected.
 
--   Standard table configuration
+-   Standard table configuration and settings
 
+    After creating the table view and model, call `initializeTableSettings()` from the base class. This single call handles:
+    
+    -   Setting `ResizeToContents` on all columns
+    -   Column visibility context menu (right-click header to show/hide columns)
+    -   Saving/restoring header state (column order, visibility, width) via `QSettings`
+    -   Saving/restoring window size via `QSettings`
+    -   Settings version management (bump to discard stale saved state)
+    -   Default hidden columns (applied when no saved state or version mismatch)
+    -   `sizeHint()` returns saved window size or the default size you specify
+    
     ```cpp
     tableView_->setAlternatingRowColors(true);
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setWordWrap(false);
     tableView_->setSortingEnabled(true);
-    tableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    tableView_->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    tableView_->verticalHeader()->setVisible(false);
+    
+    // This replaces ALL manual column setup, save/restore, and column visibility code.
+    // Parameters: tableView, sourceModel, settingsGroup, defaultHiddenColumns, defaultSize, settingsVersion
+    initializeTableSettings(tableView_, model_.get(),
+        "<Entity>ListWindow",
+        {Client<Entity>Model::Description},  // Columns hidden by default (or {} for none)
+        {900, 400},  // Default window size
+        1);          // Bump when column layout changes
     ```
+    
+    **Important**: Do NOT use `setColumnWidth()`, `setStretchLastSection(true)`, or `setSectionResizeMode(QHeaderView::Fixed)`. All list windows must use `ResizeToContents` consistently (set by `initializeTableSettings()`) so columns auto-size to actual data and behave identically across all entity windows.
+    
+    **Do NOT implement** the following in subclasses — they are handled by the base class:
+    
+    -   `sizeHint()` — returns saved window size or default from `initializeTableSettings()`
+    -   `saveSettings()` — saves header state and window size on close
+    -   `setupColumnVisibility()` / `showHeaderContextMenu()` — column visibility context menu
+    -   Any manual `QSettings` save/restore code
+
+-   Settings versioning for column layout
+
+    When column layout changes (columns added, removed, renamed, or reordered), bump the `settingsVersion` parameter in `initializeTableSettings()` to invalidate cached header state. This forces users to get the new defaults on next launch.
+
+-   Non-Latin text detection for transliterated names
+
+    When an entity has both a `full_name` (possibly in non-Latin script) and a `transliterated_name`, merge them into the Name column display rather than showing a separate Transliterated Name column. Use `TextUtils` from `ores.qt/TextUtils.hpp`:
+    
+    ```cpp
+    #include "ores.qt/TextUtils.hpp"
+    // ...
+    case FullName:
+        return TextUtils::display_name_with_transliteration(
+            entity.full_name, entity.transliterated_name);
+    ```
+    
+    This detects non-Latin characters (Korean, Chinese, Japanese, Arabic, Cyrillic, etc.) and appends the transliteration in parentheses, truncated to 30 characters with an ellipsis. The Transliterated Name column should be hidden by default (enforced in `restoreSettings()` regardless of saved state).
 
 -   Stale indicator pattern (using EntityListMdiWindow base class)
 
@@ -532,6 +618,46 @@ private:
     -   `markAsStale()` - Starts pulse animation and shows stale tooltip
     -   `clearStaleIndicator()` - Stops animation and restores normal state
     -   `normalRefreshTooltip()` / `staleRefreshTooltip()` - Override for custom tooltips
+
+-   Pagination widget pattern
+
+    For entities with large datasets, add a `PaginationWidget` below the table view and connect its signals to the model:
+    
+    ```cpp
+    // In setupUi():
+    pagination_widget_ = new PaginationWidget(this);
+    layout->addWidget(pagination_widget_);
+    
+    // In setupConnections():
+    connect(pagination_widget_, &PaginationWidget::page_size_changed,
+            this, [this](std::uint32_t size) {
+        model_->set_page_size(size);
+        model_->refresh();
+    });
+    
+    connect(pagination_widget_, &PaginationWidget::load_all_requested,
+            this, [this]() {
+        const auto total = model_->total_available_count();
+        if (total > 0 && total <= 1000) {
+            model_->set_page_size(total);
+            model_->refresh();
+        }
+    });
+    
+    connect(pagination_widget_, &PaginationWidget::page_requested,
+            this, [this](std::uint32_t offset, std::uint32_t limit) {
+        model_->load_page(offset, limit);
+    });
+    
+    // In onDataLoaded():
+    const auto loaded = model_->rowCount();
+    const auto total = model_->total_available_count();
+    pagination_widget_->update_state(loaded, total);
+    pagination_widget_->set_load_all_enabled(
+        loaded < static_cast<int>(total) && total > 0 && total <= 1000);
+    ```
+    
+    Reference: `CurrencyMdiWindow` and `PartyMdiWindow` both implement this pattern.
 
 -   Deletion pattern
 
@@ -660,6 +786,7 @@ public:
     ~<Entity>DetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
+    void setChangeReasonCache(ChangeReasonCache* cache);
     void setUsername(const std::string& username);
     void set<Entity>(const <component>::domain::<entity>& entity);
     <component>::domain::<entity> get<Entity>() const;
@@ -721,6 +848,7 @@ private:
 
     // Data
     ClientManager* clientManager_{nullptr};
+    ChangeReasonCache* changeReasonCache_{nullptr};
     std::string username_;
     <component>::domain::<entity> current<Entity>_;
     std::vector<<component>::domain::<entity>> history_;
@@ -735,23 +863,83 @@ private:
 
 ### UI file structure
 
-Create a Qt Designer `.ui` file with:
+All detail dialogs use a standard tabbed layout. The standard structure is:
 
-1.  Main vertical layout.
-2.  Form layout for entity fields.
-3.  Metadata group box (version, recorded by, recorded at) - hidden in create mode.
-4.  Appropriate input widgets for each field type:
-    -   `QLineEdit` for text fields
-    -   `QSpinBox` / `QDoubleSpinBox` for numbers
-    -   `QCheckBox` for booleans
-    -   `QComboBox` for enums or foreign keys
-    -   `QDateTimeEdit` for timestamps
+-   **General** tab: entity-specific form fields inside a "Basic Information" group box, plus a vertical spacer.
+-   (Optional entity-specific tabs: e.g. "Flag", "Formatting", "Rounding".)
+-   **Provenance** tab: a promoted `ProvenanceWidget` displaying the six standard provenance fields (see [data\_quality](../../domain/data_quality.md) for field descriptions).
+-   Button row (`Delete` + `Save`) **outside** the tab widget, at the bottom.
+
+The widget names are standardised so that the three pure-virtual overrides in `DetailDialogBase` are uniform across all dialogs:
+
+| Widget             | Type                         | Purpose                              |
+|------------------ |---------------------------- |------------------------------------ |
+| `tabWidget`        | `QTabWidget`                 | Container for all tabs               |
+| `generalTab`       | `QWidget`                    | First tab (entity fields)            |
+| `provenanceTab`    | `QWidget`                    | Last tab (provenance fields)         |
+| `provenanceWidget` | `ores::qt::ProvenanceWidget` | Promoted widget inside provenanceTab |
+
+Minimum dialog size: **600×500**.
+
+The `ProvenanceWidget` is declared as a Qt Designer custom widget:
+
+```xml
+<customwidgets>
+  <customwidget>
+    <class>ores::qt::ProvenanceWidget</class>
+    <extends>QWidget</extends>
+    <header>ores.qt/ProvenanceWidget.hpp</header>
+    <container>0</container>
+  </customwidget>
+</customwidgets>
+```
+
+Appropriate input widgets for each field type:
+
+-   `QLineEdit` for text fields
+-   `QSpinBox` / `QDoubleSpinBox` for numbers
+-   `QCheckBox` for booleans
+-   `QComboBox` for enums or foreign keys
+-   `QDateTimeEdit` for timestamps
+-   `QTextEdit` / `QPlainTextEdit` for multi-line text
+
+
+### Header structure additions for tabbed dialogs
+
+Every detail dialog must implement three pure-virtual accessors inherited from `DetailDialogBase`. Declare them in the `protected:` section:
+
+```cpp
+protected:
+    QTabWidget* tabWidget() const override;
+    QWidget* provenanceTab() const override;
+    ProvenanceWidget* provenanceWidget() const override;
+```
+
+Define them in the `.cpp` as one-liners after the destructor:
+
+```cpp
+QTabWidget* <Entity>DetailDialog::tabWidget() const {
+    return ui_->tabWidget;
+}
+
+QWidget* <Entity>DetailDialog::provenanceTab() const {
+    return ui_->provenanceTab;
+}
+
+ProvenanceWidget* <Entity>DetailDialog::provenanceWidget() const {
+    return ui_->provenanceWidget;
+}
+```
 
 
 ### Implementation patterns
 
 -   Mode handling
 
+    Use `setProvenanceEnabled` (provided by `DetailDialogBase`) to enable or disable the Provenance tab. The tab stays visible in all modes so the tab strip remains uniform; it is merely disabled (greyed out) in create mode.
+    
+    Use `populateProvenance` to populate all six fields in a single call, and `clearProvenance` to reset them.
+    
     ```cpp
     void <Entity>DetailDialog::setCreateMode(bool createMode) {
         isAddMode_ = createMode;
@@ -759,13 +947,32 @@ Create a Qt Designer `.ui` file with:
         // Primary key editable only in create mode
         ui_->identifierEdit->setReadOnly(!createMode);
     
-        // Metadata hidden in create mode
-        ui_->metadataGroup->setVisible(!createMode);
+        // Provenance tab disabled in create mode (no data yet)
+        setProvenanceEnabled(!createMode);
     
         // Delete disabled in create mode
         deleteAction_->setEnabled(!createMode);
     
         updateSaveResetButtonState();
+    }
+    
+    void <Entity>DetailDialog::set<Entity>(const <component>::domain::<entity>& entity) {
+        current<Entity>_ = entity;
+        updateUiFrom<Entity>();
+    }
+    
+    void <Entity>DetailDialog::updateUiFrom<Entity>() {
+        // Populate entity-specific fields...
+        ui_->nameEdit->setText(QString::fromStdString(current<Entity>_.name));
+        // ...
+    
+        // Populate all six provenance fields via base class helper
+        populateProvenance(current<Entity>_.version,
+                           current<Entity>_.modified_by,
+                           current<Entity>_.performed_by,
+                           current<Entity>_.recorded_at,
+                           current<Entity>_.change_reason_code,
+                           current<Entity>_.change_commentary);
     }
     
     void <Entity>DetailDialog::setReadOnly(bool readOnly, int versionNumber) {
@@ -781,6 +988,14 @@ Create a Qt Designer `.ui` file with:
         }
     }
     ```
+
+-   Tab enable/disable rules
+
+    | Tab                  | Create mode  | Edit mode | Read-only mode             |
+    |-------------------- |------------ |--------- |-------------------------- |
+    | General              | enabled      | enabled   | enabled (fields read-only) |
+    | Entity-specific tabs | enabled      | enabled   | enabled (fields read-only) |
+    | Provenance           | **disabled** | enabled   | enabled                    |
 
 -   Field change tracking
 
@@ -812,10 +1027,33 @@ Create a Qt Designer `.ui` file with:
             return;
         }
     
+        // Change reason dialog (amend mode only — not required for create)
+        std::string change_reason_code;
+        std::string change_commentary;
+        if (!isAddMode_) {
+            if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+                emit errorMessage(tr("Change reasons not loaded. Please try again."));
+                return;
+            }
+            auto reasons = changeReasonCache_->getReasonsForAmend(
+                std::string{reason::categories::common});
+            if (reasons.empty()) {
+                emit errorMessage(tr("No change reasons available. Please contact administrator."));
+                return;
+            }
+            ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Amend,
+                                   isDirty_, this);
+            if (dlg.exec() != QDialog::Accepted)
+                return;
+            change_reason_code = dlg.selectedReasonCode();
+            change_commentary  = dlg.commentary();
+        }
+    
         auto entity = get<Entity>();
     
         QPointer<<Entity>DetailDialog> self = this;
-        QFuture<SaveResult> future = QtConcurrent::run([self, entity]() -> SaveResult {
+        QFuture<SaveResult> future = QtConcurrent::run(
+                [self, entity, change_reason_code, change_commentary]() -> SaveResult {
             return exception_helper::wrap_async_fetch<SaveResult>([&]() -> SaveResult {
                 if (!self) {
                     return {.success = false,
@@ -860,6 +1098,90 @@ Create a Qt Designer `.ui` file with:
     }
     ```
 
+-   Async delete pattern with change reason
+
+    ```cpp
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+    
+    void <Entity>DetailDialog::onDeleteClicked() {
+        if (!clientManager_ || !clientManager_->isConnected()) {
+            MessageBoxHelper::warning(this, "Disconnected",
+                "Cannot delete <entity> while disconnected from server.");
+            return;
+        }
+    
+        // Confirmation dialog
+        auto reply = MessageBoxHelper::question(this, "Delete <Entity>",
+            QString("Are you sure you want to delete '%1'?").arg(identifier()),
+            QMessageBox::Yes | QMessageBox::No);
+        if (reply != QMessageBox::Yes)
+            return;
+    
+        // Change reason dialog for delete
+        std::string change_reason_code;
+        std::string change_commentary;
+        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+            emit errorMessage(tr("Change reasons not loaded. Please try again."));
+            return;
+        }
+        auto reasons = changeReasonCache_->getReasonsForDelete(
+            std::string{reason::categories::common});
+        if (reasons.empty()) {
+            emit errorMessage(tr("No change reasons available. Please contact administrator."));
+            return;
+        }
+        ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Delete,
+                               false, this);
+        if (dlg.exec() != QDialog::Accepted)
+            return;
+        change_reason_code = dlg.selectedReasonCode();
+        change_commentary  = dlg.commentary();
+    
+        QPointer<<Entity>DetailDialog> self = this;
+        auto task = [self, id = current<Entity>_.id,
+                     change_reason_code, change_commentary]() -> DeleteResult {
+            if (!self || !self->clientManager_)
+                return {.success = false, .message = "Dialog closed"};
+    
+            // Build and send delete request...
+            return {.success = response->success, .message = response->message};
+        };
+    
+        auto* watcher = new QFutureWatcher<DeleteResult>(self);
+        connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
+            auto result = watcher->result();
+            watcher->deleteLater();
+    
+            if (result.success) {
+                emit self-><entity>Deleted(self->identifier());
+                self->requestClose();
+            } else {
+                QString errorMsg = QString::fromStdString(result.message);
+                emit self->errorMessage(errorMsg);
+                MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+            }
+        });
+    
+        QFuture<DeleteResult> future = QtConcurrent::run(task);
+        watcher->setFuture(future);
+    }
+    ```
+
+-   Required includes for change reason support
+
+    ```cpp
+    #include "ores.qt/ChangeReasonCache.hpp"
+    #include "ores.qt/ChangeReasonDialog.hpp"
+    #include "ores.dq/domain/change_reason_constants.hpp"
+    
+    namespace ores::qt {
+    
+    namespace reason = dq::domain::change_reason_constants;
+    ```
+
 
 ### Commit message
 
@@ -867,7 +1189,7 @@ Create a Qt Designer `.ui` file with:
 [qt] Add <Entity>DetailDialog for <entity> editing
 
 Create detail dialog with create/edit/view-only modes, version
-navigation, and async save/delete operations.
+navigation, and async save/delete operations with change reason tracking.
 ```
 
 
@@ -1273,6 +1595,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        ChangeReasonCache* changeReasonCache,
         QObject* parent = nullptr);
 
     void showListWindow() override;
@@ -1296,6 +1619,7 @@ private:
                           bool createMode, bool readOnly = false,
                           int versionNumber = 0);
 
+    ChangeReasonCache* changeReasonCache_;
     QPointer<<Entity>MdiWindow> listWindow_;
     QPointer<DetachableMdiSubWindow> listMdiSubWindow_;
 };
@@ -1303,6 +1627,12 @@ private:
 }
 
 #endif
+```
+
+Also add the forward declaration before the class:
+
+```cpp
+class ChangeReasonCache;
 ```
 
 
@@ -1340,9 +1670,11 @@ private:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
+        ChangeReasonCache* changeReasonCache,
         QObject* parent)
         : EntityController(mainWindow, mdiArea, clientManager, username,
                            <entity>_event_name, parent),  // Pass event name to base
+          changeReasonCache_(changeReasonCache),
           listWindow_(nullptr),
           listMdiSubWindow_(nullptr) {
     
@@ -1461,6 +1793,7 @@ private:
     
         auto* detailDialog = new <Entity>DetailDialog(mainWindow_);
         detailDialog->setClientManager(clientManager_);
+        detailDialog->setChangeReasonCache(changeReasonCache_);
         detailDialog->setUsername(username_.toStdString());
         detailDialog->setCreateMode(createMode);
         if (entity) {
@@ -1621,9 +1954,10 @@ Add to `MainWindow.ui`:
 In `MainWindow.cpp` constructor:
 
 ```cpp
-// Create controller
+// Create controller — pass changeReasonCache_ so dialogs can show
+// the change reason dialog before save (amend) and delete.
 <entity>Controller_ = new <Entity>Controller(
-    this, mdiArea_, clientManager_, username_, this);
+    this, mdiArea_, clientManager_, username_, changeReasonCache_, this);
 
 // Connect signals from controller to MainWindow
 connect(<entity>Controller_, &<Entity>Controller::detachableWindowCreated,
@@ -1760,13 +2094,15 @@ Use the [icon-guidelines](../icon-guidelines/SKILL.md) skill for icon selection.
 
 ## Window size hints
 
-| Window Type     | Size     |
-|--------------- |-------- |
-| List (standard) | 900x600  |
-| List (large)    | 1000x600 |
-| List (small)    | 700x400  |
-| Detail dialog   | 600x500  |
-| History dialog  | 900x600  |
+Pass the default size as the 5th argument to `initializeTableSettings()`. The base class `sizeHint()` returns this value (or the saved window size if the user has resized it previously).
+
+| Window Type     | Size     | Notes                     |
+|--------------- |-------- |------------------------- |
+| List (standard) | 900x400  | Default for most entities |
+| List (large)    | 1000x600 | Currencies, countries     |
+| List (small)    | 700x400  | Roles                     |
+| Detail dialog   | 600x500  |                           |
+| History dialog  | 900x600  |                           |
 
 
 ## Color constants
@@ -1775,6 +2111,52 @@ Use `color_constants` from `ColorConstants.hpp`:
 
 -   `icon_color` - Light gray (220, 220, 220) for toolbar icons
 -   `stale_indicator` - Orange (255, 165, 0) for stale data indicator
+
+
+### Item delegates must reference the model's Column enum
+
+When creating a custom `ItemDelegate`, **never hardcode column indices**. Always reference the model's public `Column` enum. This ensures that adding, removing, or reordering columns in the model is automatically reflected in the delegate at compile time.
+
+```cpp
+#include "ores.qt/Client<Entity>Model.hpp"
+
+namespace ores::qt {
+
+using Column = Client<Entity>Model::Column;
+
+void <Entity>ItemDelegate::paint(QPainter* painter,
+    const QStyleOptionViewItem& option,
+    const QModelIndex& index) const {
+
+    QStyleOptionViewItem opt = option;
+    initStyleOption(&opt, index);
+
+    // CORRECT: Use enum values for column checks
+    if (index.column() == Column::Status) {
+        drawBadge(painter, opt.rect, /* ... */);
+        return;
+    }
+
+    switch (index.column()) {
+        case Column::Name:
+            opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+            break;
+        case Column::Version:
+            opt.font = monospaceFont_;
+            opt.displayAlignment = Qt::AlignCenter;
+            break;
+        // ...
+    }
+}
+```
+
+**Anti-pattern** - do not duplicate column indices as local constants:
+
+```cpp
+// WRONG: These go stale when the model's Column enum changes.
+constexpr int status_column_index = 2;
+constexpr int locked_column_index = 3;
+```
 
 
 ### Badge colors for item delegates
@@ -1834,6 +2216,116 @@ void MyItemDelegate::paint(QPainter* painter,
 ```
 
 This ensures badges scale correctly with system font settings and high-DPI displays. Do NOT store a hardcoded `badgeFont_` member.
+
+
+## Populating combo boxes and columns with external entity data
+
+Entities often have fields that reference other entities (e.g. a party's `business_center_code` references a business centre). These fields need combo boxes in detail dialogs and may need enriched display (e.g. flag icons) in list models. The key principle is: **centralise the data fetching in `LookupFetcher`** so multiple consumers share a single implementation.
+
+
+### Adding external data to `LookupFetcher`
+
+`LookupFetcher` (`include/ores.qt/LookupFetcher.hpp`, `src/LookupFetcher.cpp`) provides synchronous fetch functions designed to be called from `QtConcurrent::run`. There are two patterns depending on the consumer:
+
+1.  **For detail dialog combo boxes**: Add the codes to `lookup_result` and fetch them inside the existing `fetch_party_lookups()` or `fetch_tenant_lookups()`. The dialog's `populateLookups()` already runs these asynchronously and populates combos from the result.
+
+2.  **For list model enrichment** (e.g. icon lookups, display name resolution): Add a standalone function that returns the mapping. This keeps it decoupled from the lookup result struct.
+
+Both patterns must use `process_authenticated_request` rather than the low-level `sendRequest` / frame construction pattern.
+
+Example - adding a standalone fetch function:
+
+```cpp
+// In LookupFetcher.hpp:
+std::unordered_map<std::string, std::string>
+fetch_business_centre_image_map(ClientManager* cm);
+
+// In LookupFetcher.cpp:
+std::unordered_map<std::string, std::string>
+fetch_business_centre_image_map(ClientManager* cm) {
+    std::unordered_map<std::string, std::string> mapping;
+    if (!cm) return mapping;
+
+    refdata::messaging::get_business_centres_request request;
+    request.limit = 1000;
+    auto response = cm->process_authenticated_request(std::move(request));
+    if (response) {
+        for (const auto& bc : response->business_centres) {
+            std::string image_id_str;
+            if (bc.image_id)
+                image_id_str = boost::uuids::to_string(*bc.image_id);
+            mapping.emplace(bc.code, std::move(image_id_str));
+        }
+    }
+    return mapping;
+}
+```
+
+
+### Using external data in detail dialog combo boxes
+
+When a detail dialog has a field that references another entity:
+
+1.  Use `QComboBox` (set `editable=true` if free text should be allowed) in the `.ui` file.
+2.  Add the codes to the `lookup_result` struct if not already present.
+3.  Fetch them inside the appropriate `fetch_*_lookups()` function.
+4.  Populate the combo in the dialog's `populateLookups()` callback:
+
+```cpp
+self->ui_->businessCenterCombo->clear();
+for (const auto& code : result.business_centre_codes) {
+    self->ui_->businessCenterCombo->addItem(QString::fromStdString(code));
+}
+```
+
+1.  Use `setCurrentText()` / `currentText()` for reading/writing the value.
+2.  Use `setEnabled(!readOnly)` instead of `setReadOnly()` for read-only mode.
+
+Reference: `PartyDetailDialog` and `CounterpartyDetailDialog` (business centre combo).
+
+
+### Using external data in list model columns
+
+When a list model needs to display enriched data from another entity (e.g. country flag icons from business centres):
+
+1.  Add the shared fetch function to `LookupFetcher` (see above).
+2.  In the model, call the shared function via `QtConcurrent::run` and store the result. The async boilerplate stays in the model because it needs to update model-specific state and emit `dataChanged`:
+
+```cpp
+void Client<Entity>Model::fetch_external_data() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    using MapType = std::unordered_map<std::string, std::string>;
+    QPointer<Client<Entity>Model> self = this;
+
+    auto* watcher = new QFutureWatcher<MapType>(this);
+    connect(watcher, &QFutureWatcher<MapType>::finished,
+            this, [self, watcher]() {
+        auto mapping = watcher->result();
+        watcher->deleteLater();
+        if (!self || mapping.empty())
+            return;
+
+        self->code_to_value_ = std::move(mapping);
+
+        if (!self->entries_.empty()) {
+            emit self->dataChanged(self->index(0, TargetColumn),
+                self->index(self->rowCount() - 1, TargetColumn),
+                {Qt::DecorationRole});
+        }
+    });
+
+    watcher->setFuture(QtConcurrent::run(
+        [cm = clientManager_]() { return fetch_the_shared_function(cm); }));
+}
+```
+
+**Important**: Never duplicate the server-fetch logic across models. The async watcher wrapper is model-specific, but the data fetching must be in `LookupFetcher`.
+
+Reference: `ClientPartyModel` and `ClientCounterpartyModel` (flag icons from business centres via `fetch_business_centre_image_map`).
+
+**Note on server limits**: The server enforces a maximum request limit (currently 1000). Do not exceed this. If an entity has more than 1000 records, you will need pagination in the fetch function.
 
 
 ## Related skills

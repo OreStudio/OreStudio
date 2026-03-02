@@ -115,3 +115,15 @@ TENANT_002 ores_telemetry_logs_tbl
 # There is exactly one row per database instance; tenant_id has no meaning here.
 # =============================================================================
 TENANT_001 ores_database_info_tbl
+
+# =============================================================================
+# Reporting junction tables - tenant_id not in PK/EXCLUDE by design.
+# risk_report_config_id is a globally unique UUID that already implies a single
+# tenant; tenant isolation is enforced via RLS rather than PK membership.
+# The EXCLUDE constraint covers the config+scope pair over time; adding tenant_id
+# would be redundant since the config UUID is globally unique.
+# =============================================================================
+TENANT_002 ores_reporting_risk_report_config_portfolios_tbl
+TENANT_003 ores_reporting_risk_report_config_portfolios_tbl
+TENANT_002 ores_reporting_risk_report_config_books_tbl
+TENANT_003 ores_reporting_risk_report_config_books_tbl

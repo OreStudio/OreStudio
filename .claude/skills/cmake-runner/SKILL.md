@@ -63,6 +63,18 @@ cmake --build --preset linux-clang-release
 ```
 
 
+## Parallel builds and tests
+
+CMake presets do not set a job count, so by default builds run single-threaded. To enable parallel builds and tests persistently on your machine, add these environment variables to `~/.bashrc` (or equivalent):
+
+```sh
+export CMAKE_BUILD_PARALLEL_LEVEL=6   # parallel jobs for cmake --build
+export CTEST_PARALLEL_LEVEL=6        # parallel jobs for ctest
+```
+
+Replace `6` with the number of CPU cores you want to use. These variables act as a fallback: they apply when no `jobs` value is set in the CMake preset (which is the current state of `CMakePresets.json`). They do **not** override an explicit `jobs` setting in a preset.
+
+
 ## Running tests
 
 

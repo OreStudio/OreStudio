@@ -86,6 +86,7 @@ package "Workflow" {
     [skill-manager] <<workflow>> as sm
     [skill-review] <<workflow>> as sr
     [pr-manager] <<workflow>> as prm
+    [pr-shepherd] <<workflow>> as prs
     [autonomous-developer] <<workflow>> as ad
     [semi-autonomous-developer] <<workflow>> as sad
 }
@@ -137,6 +138,9 @@ ohr --> http
 
 ' Workflow dependencies
 apo --> ns
+
+' PR shepherd dependencies
+prs --> prm
 
 ' Autonomous developer dependencies
 ad --> apo

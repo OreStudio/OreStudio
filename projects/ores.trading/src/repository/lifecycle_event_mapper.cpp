@@ -19,8 +19,6 @@
  */
 #include "ores.trading/repository/lifecycle_event_mapper.hpp"
 
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/lexical_cast.hpp>
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.trading/domain/lifecycle_event_json_io.hpp" // IWYU pragma: keep.
 
@@ -38,7 +36,6 @@ lifecycle_event_mapper::map(const lifecycle_event_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.code = v.code.value();
     r.description = v.description.value_or("");
-    r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -60,7 +57,6 @@ lifecycle_event_mapper::map(const domain::lifecycle_event& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
-    r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::uuids::to_string(*v.fsm_state_id)) : std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

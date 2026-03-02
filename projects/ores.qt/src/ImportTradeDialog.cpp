@@ -618,7 +618,7 @@ void ImportTradeDialog::onImportClicked() {
         tti.trade.trade_date = tradeDate;
         tti.trade.effective_date = effectiveDate;
         tti.trade.termination_date = terminationDate;
-        tti.trade.lifecycle_event = lifecycleEvent;
+        tti.trade.activity_type_code = lifecycleEvent;
         tti.trade.execution_timestamp = executionTimestamp;
 
         // Per-row netting set

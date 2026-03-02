@@ -37,7 +37,6 @@ domain::lifecycle_event generate_synthetic_lifecycle_event(
     r.version = 1;
     r.code = std::string(faker::word::noun()) + "_event_" + std::to_string(++counter);
     r.description = std::string(faker::lorem::sentence());
-    r.fsm_state_id = std::nullopt;
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.new";

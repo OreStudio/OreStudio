@@ -83,7 +83,7 @@ QVariant ClientTradeModel::data(
         case TradeType:
             return QString::fromStdString(trade.trade_type);
         case LifecycleEvent:
-            return QString::fromStdString(trade.lifecycle_event);
+            return QString::fromStdString(trade.activity_type_code);
         case TradeDate:
             return QString::fromStdString(trade.trade_date);
         case EffectiveDate:

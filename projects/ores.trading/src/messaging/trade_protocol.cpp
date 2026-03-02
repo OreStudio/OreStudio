@@ -57,7 +57,8 @@ void write_trade(std::vector<std::byte>& buffer,
     }
     writer::write_string(buffer, tr.trade_type);
     writer::write_string(buffer, tr.netting_set_id);
-    writer::write_string(buffer, tr.lifecycle_event);
+    writer::write_string(buffer, tr.activity_type_code);
+    writer::write_uuid(buffer, tr.status_id);
     writer::write_string(buffer, tr.trade_date);
     writer::write_string(buffer, tr.execution_timestamp);
     writer::write_string(buffer, tr.effective_date);
@@ -122,9 +123,13 @@ read_trade(std::span<const std::byte>& data) {
     if (!netting_set_id_result) return std::unexpected(netting_set_id_result.error());
     tr.netting_set_id = *netting_set_id_result;
 
-    auto lifecycle_event_result = reader::read_string(data);
-    if (!lifecycle_event_result) return std::unexpected(lifecycle_event_result.error());
-    tr.lifecycle_event = *lifecycle_event_result;
+    auto activity_type_code_result = reader::read_string(data);
+    if (!activity_type_code_result) return std::unexpected(activity_type_code_result.error());
+    tr.activity_type_code = *activity_type_code_result;
+
+    auto status_id_result = reader::read_uuid(data);
+    if (!status_id_result) return std::unexpected(status_id_result.error());
+    tr.status_id = *status_id_result;
 
     auto trade_date_result = reader::read_string(data);
     if (!trade_date_result) return std::unexpected(trade_date_result.error());

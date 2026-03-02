@@ -747,7 +747,7 @@ void OreTradeImportPage::startImport() {
     // Capture defaults from form
     auto& defs = wizard_->choices().defaults;
     defs.trade_date      = tradeDateEdit_->text().trimmed().toStdString();
-    defs.lifecycle_event = lifecycleEventEdit_->text().trimmed().toStdString();
+    defs.activity_type_code = lifecycleEventEdit_->text().trimmed().toStdString();
 
     const QString cpUuidStr = defaultCounterpartyCombo_->currentData().toString();
     if (!cpUuidStr.isEmpty()) {

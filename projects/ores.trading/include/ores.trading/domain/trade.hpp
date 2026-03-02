@@ -111,11 +111,18 @@ struct trade final {
     std::string netting_set_id;
 
     /**
-     * @brief Lifecycle event type (e.g. New, Amendment, Novation, Termination).
+     * @brief Activity type code classifying this trade event.
      *
-     * Soft FK to ores_trading_lifecycle_events_tbl.
+     * Soft FK to ores_trading_activity_types_tbl.
      */
-    std::string lifecycle_event;
+    std::string activity_type_code;
+
+    /**
+     * @brief Current FSM state for this trade (e.g. new, live, expired, cancelled).
+     *
+     * Soft FK to ores_dq_fsm_states_tbl.
+     */
+    boost::uuids::uuid status_id;
 
     /**
      * @brief Date the trade was agreed.

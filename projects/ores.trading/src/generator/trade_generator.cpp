@@ -21,6 +21,7 @@
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <boost/uuid/nil_generator.hpp>
 #include "ores.utility/generation/generation_keys.hpp"
 
 namespace ores::trading::generator {
@@ -42,7 +43,8 @@ domain::trade generate_synthetic_trade(
     r.successor_trade_id = std::nullopt;
     r.trade_type = std::string("Swap");
     r.netting_set_id = std::string("NS-001");
-    r.lifecycle_event = std::string("New");
+    r.activity_type_code = std::string("new_booking");
+    r.status_id = boost::uuids::nil_uuid();
     r.trade_date = std::string("2025-01-15");
     r.execution_timestamp = std::string("2025-01-15 10:00:00");
     r.effective_date = std::string("2025-01-16");

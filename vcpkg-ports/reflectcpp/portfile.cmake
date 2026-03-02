@@ -43,12 +43,6 @@ vcpkg_cmake_config_fixup(
     CONFIG_PATH "lib/cmake/${PORT}"
 )
 
-# libbson 2.x uses package name "bson" (not "bson-1.0"); fix the installed config.
-vcpkg_replace_string(
-    "${CURRENT_PACKAGES_DIR}/share/${PORT}/${PORT}-config.cmake"
-    "find_dependency(bson-1.0)"
-    "find_dependency(bson)"
-)
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"

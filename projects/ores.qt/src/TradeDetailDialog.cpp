@@ -313,7 +313,7 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
 void TradeDetailDialog::updateUiFromTrade() {
     ui_->externalIdEdit->setText(QString::fromStdString(trade_.external_id));
     ui_->tradeTypeEdit->setText(QString::fromStdString(trade_.trade_type));
-    ui_->lifecycleEventEdit->setText(QString::fromStdString(trade_.lifecycle_event));
+    ui_->lifecycleEventEdit->setText(QString::fromStdString(trade_.activity_type_code));
     ui_->nettingSetIdEdit->setText(QString::fromStdString(trade_.netting_set_id));
     ui_->tradeDateEdit->setText(QString::fromStdString(trade_.trade_date));
     ui_->effectiveDateEdit->setText(QString::fromStdString(trade_.effective_date));
@@ -350,7 +350,7 @@ void TradeDetailDialog::updateTradeFromUi() {
         trade_.external_id = ui_->externalIdEdit->text().trimmed().toStdString();
     }
     trade_.trade_type = ui_->tradeTypeEdit->text().trimmed().toStdString();
-    trade_.lifecycle_event = ui_->lifecycleEventEdit->text().trimmed().toStdString();
+    trade_.activity_type_code = ui_->lifecycleEventEdit->text().trimmed().toStdString();
     trade_.netting_set_id = ui_->nettingSetIdEdit->text().trimmed().toStdString();
     trade_.trade_date = ui_->tradeDateEdit->text().trimmed().toStdString();
     trade_.effective_date = ui_->effectiveDateEdit->text().trimmed().toStdString();

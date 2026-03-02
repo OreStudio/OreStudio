@@ -395,4 +395,166 @@ std::ostream& operator<<(std::ostream& s, const get_report_definition_history_re
     return s;
 }
 
+// ============================================================================
+// Report Scheduling Messages Implementation
+// ============================================================================
+
+std::vector<std::byte> schedule_report_definitions_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(ids.size()));
+    for (const auto& id : ids) {
+        writer::write_uuid(buffer, id);
+    }
+    writer::write_string(buffer, performed_by);
+    writer::write_string(buffer, change_reason_code);
+    writer::write_string(buffer, change_commentary);
+    return buffer;
+}
+
+std::expected<schedule_report_definitions_request, error_code>
+schedule_report_definitions_request::deserialize(std::span<const std::byte> data) {
+    schedule_report_definitions_request request;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    request.ids.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        request.ids.push_back(*id_result);
+    }
+
+    auto performed_by_result = reader::read_string(data);
+    if (!performed_by_result) return std::unexpected(performed_by_result.error());
+    request.performed_by = *performed_by_result;
+
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    request.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    request.change_commentary = *change_commentary_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const schedule_report_definitions_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> schedule_report_definitions_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(scheduled_count));
+    return buffer;
+}
+
+std::expected<schedule_report_definitions_response, error_code>
+schedule_report_definitions_response::deserialize(std::span<const std::byte> data) {
+    schedule_report_definitions_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    response.scheduled_count = static_cast<int>(*count_result);
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const schedule_report_definitions_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> unschedule_report_definitions_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(ids.size()));
+    for (const auto& id : ids) {
+        writer::write_uuid(buffer, id);
+    }
+    writer::write_string(buffer, performed_by);
+    writer::write_string(buffer, change_reason_code);
+    writer::write_string(buffer, change_commentary);
+    return buffer;
+}
+
+std::expected<unschedule_report_definitions_request, error_code>
+unschedule_report_definitions_request::deserialize(std::span<const std::byte> data) {
+    unschedule_report_definitions_request request;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    request.ids.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto id_result = reader::read_uuid(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        request.ids.push_back(*id_result);
+    }
+
+    auto performed_by_result = reader::read_string(data);
+    if (!performed_by_result) return std::unexpected(performed_by_result.error());
+    request.performed_by = *performed_by_result;
+
+    auto change_reason_code_result = reader::read_string(data);
+    if (!change_reason_code_result) return std::unexpected(change_reason_code_result.error());
+    request.change_reason_code = *change_reason_code_result;
+
+    auto change_commentary_result = reader::read_string(data);
+    if (!change_commentary_result) return std::unexpected(change_commentary_result.error());
+    request.change_commentary = *change_commentary_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const unschedule_report_definitions_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+std::vector<std::byte> unschedule_report_definitions_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(unscheduled_count));
+    return buffer;
+}
+
+std::expected<unschedule_report_definitions_response, error_code>
+unschedule_report_definitions_response::deserialize(std::span<const std::byte> data) {
+    unschedule_report_definitions_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    response.unscheduled_count = static_cast<int>(*count_result);
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const unschedule_report_definitions_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

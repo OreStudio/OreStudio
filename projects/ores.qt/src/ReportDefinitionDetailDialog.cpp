@@ -20,6 +20,7 @@
 #include "ores.qt/ReportDefinitionDetailDialog.hpp"
 
 #include <QMessageBox>
+#include <QComboBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
@@ -28,6 +29,8 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
+#include "ores.reporting/messaging/report_type_protocol.hpp"
+#include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
 #include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
@@ -84,16 +87,18 @@ void ReportDefinitionDetailDialog::setupConnections() {
             &ReportDefinitionDetailDialog::onCodeChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &ReportDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->reportTypeEdit, &QLineEdit::textChanged, this,
+    connect(ui_->reportTypeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &ReportDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->scheduleExpressionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->cronWidget, &CronExpressionWidget::cronChanged, this,
             &ReportDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->concurrencyPolicyEdit, &QLineEdit::textChanged, this,
+    connect(ui_->concurrencyPolicyCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &ReportDefinitionDetailDialog::onFieldChanged);
 }
 
 void ReportDefinitionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    loadReportTypes();
+    loadConcurrencyPolicies();
 }
 
 void ReportDefinitionDetailDialog::setUsername(const std::string& username) {
@@ -122,19 +127,166 @@ void ReportDefinitionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->nameEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->reportTypeEdit->setReadOnly(readOnly);
-    ui_->scheduleExpressionEdit->setReadOnly(readOnly);
-    ui_->concurrencyPolicyEdit->setReadOnly(readOnly);
+    ui_->reportTypeCombo->setEnabled(!readOnly);
+    ui_->cronWidget->setReadOnly(readOnly);
+    ui_->concurrencyPolicyCombo->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
+}
+
+void ReportDefinitionDetailDialog::loadReportTypes() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<ReportDefinitionDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<reporting::domain::report_type> types;
+        std::string error;
+    };
+
+    auto task = [self]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}, "Dialog closed"};
+
+        reporting::messaging::get_report_types_request request;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result)
+            return {false, {}, "Failed to fetch report types"};
+
+        return {true, std::move(result->types), {}};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (self && result.success) {
+            self->populateReportTypeCombo(result.types);
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void ReportDefinitionDetailDialog::loadConcurrencyPolicies() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<ReportDefinitionDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<reporting::domain::concurrency_policy> policies;
+        std::string error;
+    };
+
+    auto task = [self]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}, "Dialog closed"};
+
+        reporting::messaging::get_concurrency_policies_request request;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result)
+            return {false, {}, "Failed to fetch concurrency policies"};
+
+        return {true, std::move(result->policies), {}};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (self && result.success) {
+            self->populateConcurrencyPolicyCombo(result.policies);
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void ReportDefinitionDetailDialog::populateReportTypeCombo(
+    const std::vector<reporting::domain::report_type>& types) {
+
+    ui_->reportTypeCombo->blockSignals(true);
+    ui_->reportTypeCombo->clear();
+    for (const auto& t : types) {
+        ui_->reportTypeCombo->addItem(
+            QString::fromStdString(t.name),
+            QString::fromStdString(t.code));
+    }
+    ui_->reportTypeCombo->blockSignals(false);
+
+    // Re-apply current definition value if set
+    if (!definition_.report_type.empty()) {
+        const QString code = QString::fromStdString(definition_.report_type);
+        for (int i = 0; i < ui_->reportTypeCombo->count(); ++i) {
+            if (ui_->reportTypeCombo->itemData(i).toString() == code) {
+                ui_->reportTypeCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+}
+
+void ReportDefinitionDetailDialog::populateConcurrencyPolicyCombo(
+    const std::vector<reporting::domain::concurrency_policy>& policies) {
+
+    ui_->concurrencyPolicyCombo->blockSignals(true);
+    ui_->concurrencyPolicyCombo->clear();
+    for (const auto& p : policies) {
+        ui_->concurrencyPolicyCombo->addItem(
+            QString::fromStdString(p.name),
+            QString::fromStdString(p.code));
+    }
+    ui_->concurrencyPolicyCombo->blockSignals(false);
+
+    // Re-apply current definition value if set
+    if (!definition_.concurrency_policy.empty()) {
+        const QString code = QString::fromStdString(definition_.concurrency_policy);
+        for (int i = 0; i < ui_->concurrencyPolicyCombo->count(); ++i) {
+            if (ui_->concurrencyPolicyCombo->itemData(i).toString() == code) {
+                ui_->concurrencyPolicyCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
 }
 
 void ReportDefinitionDetailDialog::updateUiFromDefinition() {
     ui_->nameEdit->setText(QString::fromStdString(definition_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(definition_.description));
-    ui_->reportTypeEdit->setText(QString::fromStdString(definition_.report_type));
-    ui_->scheduleExpressionEdit->setText(QString::fromStdString(definition_.schedule_expression));
-    ui_->concurrencyPolicyEdit->setText(QString::fromStdString(definition_.concurrency_policy));
+
+    // Report type combo
+    if (!definition_.report_type.empty()) {
+        const QString code = QString::fromStdString(definition_.report_type);
+        for (int i = 0; i < ui_->reportTypeCombo->count(); ++i) {
+            if (ui_->reportTypeCombo->itemData(i).toString() == code) {
+                ui_->reportTypeCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
+    // Cron widget
+    ui_->cronWidget->setCronExpression(
+        QString::fromStdString(definition_.schedule_expression));
+
+    // Concurrency policy combo
+    if (!definition_.concurrency_policy.empty()) {
+        const QString code = QString::fromStdString(definition_.concurrency_policy);
+        for (int i = 0; i < ui_->concurrencyPolicyCombo->count(); ++i) {
+            if (ui_->concurrencyPolicyCombo->itemData(i).toString() == code) {
+                ui_->concurrencyPolicyCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
 
     populateProvenance(definition_.version,
                        definition_.modified_by,
@@ -152,9 +304,9 @@ void ReportDefinitionDetailDialog::updateDefinitionFromUi() {
         definition_.name = ui_->nameEdit->text().trimmed().toStdString();
     }
     definition_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    definition_.report_type = ui_->reportTypeEdit->text().trimmed().toStdString();
-    definition_.schedule_expression = ui_->scheduleExpressionEdit->text().trimmed().toStdString();
-    definition_.concurrency_policy = ui_->concurrencyPolicyEdit->text().trimmed().toStdString();
+    definition_.report_type = ui_->reportTypeCombo->currentData().toString().toStdString();
+    definition_.schedule_expression = ui_->cronWidget->cronExpression().trimmed().toStdString();
+    definition_.concurrency_policy = ui_->concurrencyPolicyCombo->currentData().toString().toStdString();
     definition_.modified_by = username_;
     definition_.performed_by = username_;
 }
@@ -176,11 +328,15 @@ void ReportDefinitionDetailDialog::updateSaveButtonState() {
 
 bool ReportDefinitionDetailDialog::validateInput() {
     const QString name_val = ui_->nameEdit->text().trimmed();
-    const QString report_type_val = ui_->reportTypeEdit->text().trimmed();
-    const QString schedule_expression_val = ui_->scheduleExpressionEdit->text().trimmed();
-    const QString concurrency_policy_val = ui_->concurrencyPolicyEdit->text().trimmed();
-
-    return !name_val.isEmpty() && !report_type_val.isEmpty() && !schedule_expression_val.isEmpty() && !concurrency_policy_val.isEmpty();
+    if (name_val.isEmpty())
+        return false;
+    if (ui_->reportTypeCombo->currentIndex() < 0)
+        return false;
+    if (!ui_->cronWidget->isValid())
+        return false;
+    if (ui_->concurrencyPolicyCombo->currentIndex() < 0)
+        return false;
+    return true;
 }
 
 void ReportDefinitionDetailDialog::onSaveClicked() {

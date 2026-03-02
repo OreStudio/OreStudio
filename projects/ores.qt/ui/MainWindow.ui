@@ -144,13 +144,8 @@
     <addaction name="ActionReportDefinitions"/>
     <addaction name="ActionReportInstances"/>
     <addaction name="separator"/>
-    <widget class="QMenu" name="menuScheduler">
-     <property name="title">
-      <string>&amp;Scheduler</string>
-     </property>
-     <addaction name="ActionJobDefinitions"/>
-    </widget>
-    <addaction name="menuScheduler"/>
+    <addaction name="ActionJobDefinitions"/>
+    <addaction name="ActionReportScheduler"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
@@ -629,10 +624,18 @@
   </action>
   <action name="ActionJobDefinitions">
    <property name="text">
-    <string>&amp;Job Definitions</string>
+    <string>&amp;Scheduled Job Definitions</string>
    </property>
    <property name="toolTip">
     <string>Manage scheduled job definitions</string>
+   </property>
+  </action>
+  <action name="ActionReportScheduler">
+   <property name="text">
+    <string>Run &amp;Reports</string>
+   </property>
+   <property name="toolTip">
+    <string>Schedule and manage report execution</string>
    </property>
   </action>
   <action name="ActionReportTypes">

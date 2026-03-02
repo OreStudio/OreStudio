@@ -20,6 +20,7 @@
 #include "ores.qt/ClientReportDefinitionModel.hpp"
 
 #include <QtConcurrent>
+#include <QColor>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
@@ -87,6 +88,8 @@ QVariant ClientReportDefinitionModel::data(
             return QString::fromStdString(definition.schedule_expression);
         case ConcurrencyPolicy:
             return QString::fromStdString(definition.concurrency_policy);
+        case Status:
+            return definition.scheduler_job_id.has_value() ? tr("Active") : tr("Inactive");
         case Version:
             return static_cast<qlonglong>(definition.version);
         case ModifiedBy:
@@ -97,6 +100,13 @@ QVariant ClientReportDefinitionModel::data(
     }
 
     if (role == Qt::ForegroundRole) {
+        if (index.column() == Status) {
+            if (definition.scheduler_job_id.has_value()) {
+                return QColor(0x22, 0x8B, 0x22); // Forest green for Active
+            } else {
+                return QColor(Qt::gray);
+            }
+        }
         return recency_foreground_color(definition.name);
     }
 
@@ -117,6 +127,8 @@ QVariant ClientReportDefinitionModel::headerData(
         return tr("Schedule");
     case ConcurrencyPolicy:
         return tr("Concurrency");
+    case Status:
+        return tr("Status");
     case Version:
         return tr("Version");
     case ModifiedBy:

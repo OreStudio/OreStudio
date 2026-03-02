@@ -59,6 +59,7 @@ public:
         ReportType,
         ScheduleExpression,
         ConcurrencyPolicy,
+        Status,
         Version,
         ModifiedBy,
         ColumnCount

@@ -112,11 +112,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="scheduleExpressionEdit">
-            <property name="placeholderText">
-             <string>e.g., 0 * * * * (every hour)</string>
-            </property>
-           </widget>
+           <widget class="ores::qt::CronExpressionWidget" name="cronWidget" native="true"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="labelDatabaseName">
@@ -208,6 +204,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::CronExpressionWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/CronExpressionWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

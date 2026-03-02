@@ -20,10 +20,13 @@
 #ifndef ORES_QT_REPORT_DEFINITION_DETAIL_DIALOG_HPP
 #define ORES_QT_REPORT_DEFINITION_DETAIL_DIALOG_HPP
 
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.reporting/domain/report_definition.hpp"
+#include "ores.reporting/domain/report_type.hpp"
+#include "ores.reporting/domain/concurrency_policy.hpp"
 
 namespace Ui {
 class ReportDefinitionDetailDialog;
@@ -84,6 +87,10 @@ private:
     void updateDefinitionFromUi();
     void updateSaveButtonState();
     bool validateInput();
+    void loadReportTypes();
+    void loadConcurrencyPolicies();
+    void populateReportTypeCombo(const std::vector<reporting::domain::report_type>& types);
+    void populateConcurrencyPolicyCombo(const std::vector<reporting::domain::concurrency_policy>& policies);
 
     Ui::ReportDefinitionDetailDialog* ui_;
     ClientManager* clientManager_;

@@ -86,11 +86,7 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="reportTypeEdit">
-            <property name="placeholderText">
-             <string>e.g. risk</string>
-            </property>
-           </widget>
+           <widget class="QComboBox" name="reportTypeCombo"/>
           </item>
           <item row="3" column="0">
            <widget class="QLabel" name="labelScheduleExpression">
@@ -100,11 +96,7 @@
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QLineEdit" name="scheduleExpressionEdit">
-            <property name="placeholderText">
-             <string>e.g. 0 6 * * 1</string>
-            </property>
-           </widget>
+           <widget class="ores::qt::CronExpressionWidget" name="cronWidget" native="true"/>
           </item>
           <item row="4" column="0">
            <widget class="QLabel" name="labelConcurrencyPolicy">
@@ -114,11 +106,7 @@
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QLineEdit" name="concurrencyPolicyEdit">
-            <property name="placeholderText">
-             <string>e.g. skip</string>
-            </property>
-           </widget>
+           <widget class="QComboBox" name="concurrencyPolicyCombo"/>
           </item>
          </layout>
         </widget>
@@ -196,6 +184,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::CronExpressionWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/CronExpressionWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

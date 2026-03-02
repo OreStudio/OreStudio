@@ -83,6 +83,7 @@ class ReportTypeController;
 class ConcurrencyPolicyController;
 class ReportDefinitionController;
 class ReportInstanceController;
+class ReportSchedulerController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
@@ -640,6 +641,7 @@ private:
     std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;
     std::unique_ptr<ReportDefinitionController> reportDefinitionController_;
     std::unique_ptr<ReportInstanceController> reportInstanceController_;
+    std::unique_ptr<ReportSchedulerController> reportSchedulerController_;
     std::unique_ptr<OreImportController> oreImportController_;
 
     /** @brief Event bus for decoupled event handling */

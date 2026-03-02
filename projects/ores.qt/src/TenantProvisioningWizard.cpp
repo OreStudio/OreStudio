@@ -189,7 +189,6 @@ BundleSelectionPage::BundleSelectionPage(TenantProvisioningWizard* wizard)
 }
 
 void BundleSelectionPage::setupUI() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     bundleModel_ = new ClientDatasetBundleModel(
@@ -246,6 +245,8 @@ void BundleSelectionPage::setupUI() {
             this, [this](const QString& msg) {
         statusLabel_->setText(tr("Failed to load catalogues: %1").arg(msg));
     });
+
+    WidgetUtils::setupComboBoxes(this);
 }
 
 void BundleSelectionPage::onBundleChanged(int index) {
@@ -442,7 +443,6 @@ DataSourceSelectionPage::DataSourceSelectionPage(
 }
 
 void DataSourceSelectionPage::setupUI() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(12);
 
@@ -526,6 +526,8 @@ void DataSourceSelectionPage::setupUI() {
             this, &DataSourceSelectionPage::onModeChanged);
     connect(syntheticRadio_, &QRadioButton::toggled,
             this, &DataSourceSelectionPage::onModeChanged);
+
+    WidgetUtils::setupComboBoxes(this);
 }
 
 void DataSourceSelectionPage::onModeChanged() {
@@ -576,7 +578,6 @@ PartySetupPage::PartySetupPage(TenantProvisioningWizard* wizard)
 }
 
 void PartySetupPage::setupUI() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     instructionLabel_ = new QLabel(this);
@@ -605,6 +606,8 @@ void PartySetupPage::setupUI() {
 
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
     layout->addWidget(leiPicker_);
+
+    WidgetUtils::setupComboBoxes(this);
 }
 
 void PartySetupPage::initializePage() {

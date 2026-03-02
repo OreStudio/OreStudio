@@ -18,6 +18,9 @@
  *
  */
 #include "ores.cli/config/domain_parsers/refdata_parser.hpp"
+#include "ores.cli/config/entity_parsers/countries_parser.hpp"
+#include "ores.cli/config/entity_parsers/currencies_parser.hpp"
+#include "ores.cli/config/parser_exception.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include <format>
@@ -34,6 +37,7 @@ namespace ores::cli::config::domain_parsers {
 
         using ores::cli::config::options;
         using ores::cli::config::parser_exception;
+        namespace entity_parsers = ores::cli::config::entity_parsers;
 
         const std::string currencies_command_name("currencies");
         const std::string

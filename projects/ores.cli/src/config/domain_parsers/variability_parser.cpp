@@ -36,6 +36,7 @@ namespace ores::cli::config::domain_parsers {
 
         using ores::cli::config::options;
         using ores::cli::config::parser_exception;
+        namespace entity_parsers = ores::cli::config::entity_parsers;
 
         const std::string feature_flags_command_name("feature-flags");
         const std::string feature_flags_command_desc("Manage feature flags (list, delete, add).");

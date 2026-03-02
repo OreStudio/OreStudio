@@ -28,3 +28,7 @@
 \ir ./reporting_risk_report_configs_drop.sql
 \ir ./reporting_report_definitions_notify_trigger_drop.sql
 \ir ./reporting_report_definitions_drop.sql
+\ir ./reporting_concurrency_policies_notify_trigger_drop.sql
+\ir ./reporting_concurrency_policies_drop.sql
+\ir ./reporting_report_types_notify_trigger_drop.sql
+\ir ./reporting_report_types_drop.sql

@@ -25,6 +25,12 @@
 -- Risk report configuration is stored in a dedicated table with analytics flags
 -- derived from the ORE ore.xml structure.
 
+-- Enum tables (must precede report_definitions which validates against them)
+\ir ./reporting_report_types_create.sql
+\ir ./reporting_report_types_notify_trigger_create.sql
+\ir ./reporting_concurrency_policies_create.sql
+\ir ./reporting_concurrency_policies_notify_trigger_create.sql
+
 \ir ./reporting_report_definitions_create.sql
 \ir ./reporting_report_definitions_notify_trigger_create.sql
 \ir ./reporting_risk_report_configs_create.sql

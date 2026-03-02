@@ -28,6 +28,11 @@
 \echo '=== Reporting Component Population ==='
 \echo ''
 
+\echo '--- Enum Tables ---'
+\ir ./reporting_report_types_populate.sql
+\ir ./reporting_concurrency_policies_populate.sql
+
+\echo ''
 \echo '--- FSM Machines ---'
 \ir ./dq_fsm_report_definition_lifecycle_populate.sql
 \ir ./dq_fsm_report_instance_lifecycle_populate.sql

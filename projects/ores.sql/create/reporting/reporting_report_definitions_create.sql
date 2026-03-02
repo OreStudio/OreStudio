@@ -28,8 +28,9 @@
  * Lifecycle is managed through the report_definition_lifecycle FSM machine.
  * fsm_state_id points to the current state in ores_dq_fsm_states_tbl.
  *
- * cron_job_id is set by the scheduler service when the definition is activated
- * and cleared when it is suspended. It mirrors the pg_cron jobid.
+ * scheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set
+ * by the scheduler service when the definition is activated (state: active).
+ * It is cleared when the definition is suspended or archived.
  */
 
 create table if not exists "ores_reporting_report_definitions_tbl" (
@@ -43,7 +44,7 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     "fsm_state_id"         uuid    null,
     "schedule_expression"  text    not null,
     "concurrency_policy"   text    not null default 'skip',
-    "cron_job_id"          bigint  null,
+    "scheduler_job_id"     uuid    null,
     "modified_by"          text    not null,
     "performed_by"         text    not null,
     "change_reason_code"   text    not null,
@@ -59,9 +60,7 @@ create table if not exists "ores_reporting_report_definitions_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
     check ("name" <> ''),
-    check ("schedule_expression" <> ''),
-    check ("report_type" in ('risk', 'grid')),
-    check ("concurrency_policy" in ('skip', 'queue', 'fail'))
+    check ("schedule_expression" <> '')
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -79,10 +78,10 @@ create unique index if not exists ores_reporting_report_definitions_name_uniq_id
 on "ores_reporting_report_definitions_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Unique cron_job_id among active records (NULL allowed when not scheduled)
-create unique index if not exists ores_reporting_report_definitions_cron_job_id_uniq_idx
-on "ores_reporting_report_definitions_tbl" (cron_job_id)
-where valid_to = ores_utility_infinity_timestamp_fn() and cron_job_id is not null;
+-- Unique scheduler_job_id among active records (NULL allowed when not scheduled)
+create unique index if not exists ores_reporting_report_definitions_scheduler_job_id_uniq_idx
+on "ores_reporting_report_definitions_tbl" (scheduler_job_id)
+where valid_to = ores_utility_infinity_timestamp_fn() and scheduler_job_id is not null;
 
 -- Tenant index
 create index if not exists ores_reporting_report_definitions_tenant_idx
@@ -118,6 +117,12 @@ begin
             new.party_id
             using errcode = '23503';
     end if;
+
+    -- Validate report_type
+    new.report_type := ores_reporting_validate_report_type_fn(new.tenant_id, new.report_type);
+
+    -- Validate concurrency_policy
+    new.concurrency_policy := ores_reporting_validate_concurrency_policy_fn(new.tenant_id, new.concurrency_policy);
 
     -- Validate fsm_state_id (soft FK to ores_dq_fsm_states_tbl)
     if new.fsm_state_id is not null then

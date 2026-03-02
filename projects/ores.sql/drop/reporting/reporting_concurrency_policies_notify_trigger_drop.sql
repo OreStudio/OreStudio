@@ -18,14 +18,5 @@
  *
  */
 
-drop rule if exists ores_reporting_report_definitions_delete_rule on "ores_reporting_report_definitions_tbl";
-drop trigger if exists ores_reporting_report_definitions_insert_trg on "ores_reporting_report_definitions_tbl";
-drop function if exists ores_reporting_report_definitions_insert_fn;
-drop index if exists ores_reporting_report_definitions_fsm_state_idx;
-drop index if exists ores_reporting_report_definitions_party_idx;
-drop index if exists ores_reporting_report_definitions_tenant_idx;
-drop index if exists ores_reporting_report_definitions_scheduler_job_id_uniq_idx;
-drop index if exists ores_reporting_report_definitions_name_uniq_idx;
-drop index if exists ores_reporting_report_definitions_id_uniq_idx;
-drop index if exists ores_reporting_report_definitions_version_uniq_idx;
-drop table if exists "ores_reporting_report_definitions_tbl";
+drop trigger if exists ores_reporting_concurrency_policies_notify_trg on "ores_reporting_concurrency_policies_tbl";
+drop function if exists ores_reporting_concurrency_policies_notify_fn;

@@ -999,35 +999,247 @@ struct ReportEntry {
     const char* schedule;
 };
 
-// Representative ORE risk reports for a typical trading desk.
+// Full ORE analytic coverage for a typical trading desk, ordered by
+// natural execution dependency (calibration → curves → valuation →
+// market risk → counterparty risk → scenario analysis → regulatory capital).
 // All use report_type="risk" and concurrency_policy="skip".
-constexpr std::array<ReportEntry, 8> k_default_reports{{
+constexpr std::array<ReportEntry, 28> k_default_reports{{
+    // --- Market data & calibration (5-6 am) ----------------------------
+    {.name = "Model Calibration",
+     .description =
+         "Calibrates interest rate, FX, and volatility models "
+         "(LGM, Hull-White, SABR, Black-Scholes) to live market data. "
+         "Outputs calibrated parameters and fit quality metrics (RMSE). "
+         "Must run before exposure simulation, XVA, and sensitivity "
+         "analytics that depend on calibrated model parameters.",
+     .schedule = "0 5 * * 1-5"},
+    {.name = "Yield Curves",
+     .description =
+         "Bootstraps discount and projection yield curves from market "
+         "instruments (deposits, FRAs, swaps, OIS, bonds). Outputs the "
+         "full term structure of interest rates used by all pricing "
+         "engines. Essential prerequisite for NPV, sensitivity, and "
+         "Monte Carlo exposure analytics.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Credit Curves",
+     .description =
+         "Bootstraps credit default swap (CDS) spread curves for "
+         "counterparties and reference entities. Outputs survival "
+         "probability and hazard rate term structures. Used by CVA, "
+         "DVA, CRIF, and SIMM calculations as the credit risk input.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Correlation",
+     .description =
+         "Computes and outputs the correlation matrix between risk "
+         "factors across all asset classes (rates, FX, equity, credit, "
+         "commodities). Used as the covariance input for parametric "
+         "VaR, SIMM initial margin, and scenario generation.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Scenario Generation",
+     .description =
+         "Generates Monte Carlo scenario paths across the simulation "
+         "date grid using calibrated stochastic models. Produces the "
+         "scenario cube consumed downstream by counterparty exposure, "
+         "XVA, dynamic initial margin, and historical simulation VaR "
+         "analytics.",
+     .schedule = "0 6 * * 1-5"},
+    // --- Core valuation (6-7 am) ----------------------------------------
     {.name = "Portfolio NPV",
-     .description = "Daily portfolio net present value in base currency.",
+     .description =
+         "Daily mark-to-market net present value of the entire portfolio "
+         "in base reporting currency. Produces trade-level and "
+         "portfolio-level valuations using today's market data. Primary "
+         "source for P&L reporting, risk management, and the basis for "
+         "regulatory capital calculations.",
      .schedule = "0 6 * * 1-5"},
     {.name = "Cashflow Report",
-     .description = "Scheduled cash flow profiles for liquidity planning.",
+     .description =
+         "Projects and outputs the complete scheduled cash flow profile "
+         "for all live trades: fixed and floating coupons, notional "
+         "exchanges, and option exercise payoffs, broken down by date, "
+         "counterparty, and currency. Used for liquidity planning, "
+         "funding cost analysis, and collateral management.",
      .schedule = "0 6 * * 1-5"},
-    {.name = "Market Risk Sensitivities",
-     .description = "First and second order sensitivities (delta, gamma, vega) "
-                    "by risk factor.",
+    {.name = "Portfolio Details",
+     .description =
+         "Detailed breakdown of all live portfolio positions including "
+         "trade attributes, notional, maturity, product type, pricing "
+         "model, and book or portfolio allocation. Supports portfolio "
+         "management reporting, limit monitoring, and regulatory "
+         "position reporting.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "CRIF",
+     .description =
+         "Generates the Common Risk Interchange Format (CRIF) "
+         "sensitivity file from trade-level sensitivities. CRIF is the "
+         "standardised input format required by the ISDA SIMM margin "
+         "model. Covers interest rate, FX, equity, credit qualifying, "
+         "credit non-qualifying, and commodity risk classes.",
      .schedule = "0 7 * * 1-5"},
+    // --- Market risk (7-8 am) --------------------------------------------
+    {.name = "Market Risk Sensitivities",
+     .description =
+         "First and second order sensitivities by risk factor. Delta "
+         "measures exposure to parallel rate or price shifts; Gamma "
+         "captures convexity; Vega measures exposure to implied "
+         "volatility. Outputs par and zero sensitivities with optional "
+         "Jacobian transformation for hedge ratio computation. Core "
+         "input for VaR, hedging, and limit monitoring.",
+     .schedule = "0 7 * * 1-5"},
+    {.name = "Sensitivity Stress",
+     .description =
+         "Sensitivities recomputed under each predefined stress "
+         "scenario, showing how the delta and vega profile shifts under "
+         "adverse market conditions. Supports stressed limits monitoring "
+         "and hedging strategy review under crisis market conditions.",
+     .schedule = "0 7 * * 1-5"},
+    {.name = "P&L Report",
+     .description =
+         "Daily profit and loss by book, portfolio, and product type. "
+         "Decomposes P&L into new deals, matured deals, cash flows "
+         "received, and MTM change from market moves. Provides the "
+         "authoritative P&L number for front office, finance, and risk "
+         "management sign-off.",
+     .schedule = "0 7 * * 1-5"},
+    {.name = "P&L Attribution",
+     .description =
+         "P&L bridge report decomposing the daily MTM change into "
+         "contributions from individual risk factors: delta P&L (rate "
+         "and price moves), gamma P&L (convexity), theta (time decay), "
+         "vega (volatility change), and unexplained residual. Essential "
+         "for model validation, controller sign-off, and regulatory "
+         "P&L explain under FRTB.",
+     .schedule = "0 7 * * 1-5"},
+    // --- Counterparty risk (8-9 am) --------------------------------------
     {.name = "Counterparty Exposure",
-     .description = "Monte Carlo counterparty credit exposure profiles (EPE, PFE).",
+     .description =
+         "Monte Carlo simulation of future counterparty credit exposure "
+         "across the portfolio lifetime. Computes Expected Positive "
+         "Exposure (EPE) and Expected Negative Exposure (ENE) profiles "
+         "per netting set at each simulation date. Prerequisite for "
+         "CVA, DVA, FVA, and Dynamic Initial Margin calculations.",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "Potential Future Exposure",
+     .description =
+         "Potential Future Exposure (PFE) at specified confidence levels "
+         "(typically 95% and 99%) over the simulation horizon. Outputs "
+         "peak PFE and PFE profiles by counterparty and netting set. "
+         "Used for credit line utilisation monitoring, internal capital "
+         "allocation, and regulatory IMM model validation.",
      .schedule = "0 8 * * 1-5"},
     {.name = "CVA/DVA Report",
-     .description = "Credit valuation adjustment and debit valuation adjustment.",
+     .description =
+         "Credit Valuation Adjustment (CVA) and Debit Valuation "
+         "Adjustment (DVA) calculated from simulated exposure profiles "
+         "and bootstrapped credit curves. Includes Funding Valuation "
+         "Adjustment (FVA) for uncollateralised portfolios and "
+         "Collateral Valuation Adjustment (COLVA) where applicable. "
+         "Primary XVA P&L and pricing adjustment report.",
      .schedule = "0 8 * * 1-5"},
+    {.name = "XVA Sensitivities",
+     .description =
+         "First and second order sensitivities of all XVA components "
+         "(CVA, DVA, FVA, COLVA) to underlying market risk factors. "
+         "Enables XVA hedging strategy construction, XVA desk limits "
+         "monitoring, and attribution of XVA P&L to individual market "
+         "moves.",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "XVA Explain",
+     .description =
+         "XVA P&L attribution decomposing the daily change in "
+         "CVA/DVA/FVA into contributions from new deals, matured deals, "
+         "passage of time (theta), and market moves per risk factor "
+         "class. Supports XVA desk P&L explain, model validation, and "
+         "regulatory audit trails.",
+     .schedule = "0 8 * * 1-5"},
+    // --- Scenario analysis (9-10 am) -------------------------------------
     {.name = "Stress Test",
-     .description = "Portfolio P&L under predefined market stress scenarios.",
+     .description =
+         "Portfolio P&L under a library of predefined stress scenarios, "
+         "including historical crises (2008 financial crisis, 2020 "
+         "COVID shock, 1997 Asian crisis) and hypothetical shocks "
+         "(parallel rate +200bps, equity -30%, credit spreads +500bps, "
+         "FX devaluation). Outputs NPV and P&L change by book and "
+         "counterparty for each scenario.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "XVA Stress",
+     .description =
+         "XVA components recomputed under predefined market stress "
+         "scenarios. Shows how CVA, DVA, and FVA change under adverse "
+         "conditions such as counterparty credit spread widening, "
+         "funding cost increases, or market volatility spikes. Used for "
+         "stressed regulatory capital requirements and XVA risk limits.",
      .schedule = "0 9 * * 1-5"},
     {.name = "Value at Risk",
-     .description = "Parametric Value-at-Risk at 95% and 99% confidence levels "
-                    "(1-day and 10-day).",
+     .description =
+         "Parametric (delta-gamma-normal) Value-at-Risk using the "
+         "sensitivity vector and historical covariance matrix. Computes "
+         "1-day and 10-day VaR at 95% and 99% confidence levels with "
+         "risk class breakdown. Suitable for FRTB standardised approach "
+         "capital requirements and internal risk limits monitoring.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "Historical Simulation VaR",
+     .description =
+         "Full revaluation Value-at-Risk using historical market data "
+         "scenarios (typically 1-3 years of daily observations). "
+         "Captures non-linear payoffs and fat tails better than "
+         "parametric VaR. Includes Expected Shortfall (CVaR) at "
+         "97.5%. Provides the basis for Internal Models Approach (IMA) "
+         "capital models under FRTB.",
+     .schedule = "0 9 * * 1-5"},
+    // --- Margin (9-10 am) ------------------------------------------------
+    {.name = "Dynamic Initial Margin",
+     .description =
+         "Model-based Dynamic Initial Margin (DIM) calculated from the "
+         "simulated exposure cube using regression against market "
+         "scenarios. Captures how initial margin requirements evolve "
+         "over the netting set lifetime. Feeds directly into Margin "
+         "Valuation Adjustment (MVA) within the XVA framework.",
      .schedule = "0 9 * * 1-5"},
     {.name = "SIMM Initial Margin",
-     .description = "ISDA SIMM regulatory initial margin calculation.",
+     .description =
+         "ISDA SIMM (Standard Initial Margin Model) regulatory margin "
+         "per netting set. Aggregates CRIF sensitivities across "
+         "interest rate, credit, equity, FX, and commodity risk classes "
+         "using the prescribed SIMM methodology. Required for "
+         "non-cleared derivatives under BCBS/IOSCO Phase 6 margin "
+         "rules.",
      .schedule = "0 9 * * 1-5"},
+    {.name = "Initial Margin Schedule",
+     .description =
+         "Schedule-based initial margin using the simplified BCBS/IOSCO "
+         "gross notional schedule method. Provides a conservative "
+         "regulatory floor for initial margin obligations without "
+         "sensitivity computation. Applicable to smaller counterparty "
+         "relationships below the SIMM calculation threshold.",
+     .schedule = "0 9 * * 1-5"},
+    // --- Regulatory capital (10-11 am) -----------------------------------
+    {.name = "SA-CVA",
+     .description =
+         "Standardised CVA (SA-CVA) regulatory capital charge per "
+         "Basel IV / CRR3. Aggregates CVA delta and vega sensitivities "
+         "across risk classes using supervisory prescribed delta factors "
+         "and correlation matrices. Produces the CVA risk capital "
+         "requirement for institutions that elect or are required to "
+         "use the SA-CVA approach under FRTB.",
+     .schedule = "0 10 * * 1-5"},
+    {.name = "BA-CVA",
+     .description =
+         "Basic CVA (BA-CVA) regulatory capital charge, the simplified "
+         "alternative to SA-CVA under Basel IV. Computes capital using "
+         "supervisory EAD, maturity, and credit risk weights without "
+         "full sensitivity computation. Applicable to institutions "
+         "below the material CVA portfolio threshold for SA-CVA.",
+     .schedule = "0 10 * * 1-5"},
+    {.name = "SA-CCR",
+     .description =
+         "Standardised Approach for Counterparty Credit Risk (SA-CCR) "
+         "Exposure-at-Default (EAD) calculation per Basel III/IV. "
+         "Applies supervisory delta, maturity factor, and supervisory "
+         "factor to each netting set. Required for Risk-Weighted Asset "
+         "(RWA) and leverage ratio calculations. Replaces the legacy "
+         "Current Exposure Method (CEM).",
+     .schedule = "0 10 * * 1-5"},
 }};
 
 } // anonymous namespace

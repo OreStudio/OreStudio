@@ -86,18 +86,23 @@ insert into ores_refdata_counterparties_tbl (
 insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
-    trade_type, netting_set_id, lifecycle_event,
+    trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
+) select
     'f1000000-0000-0000-0000-000000000001'::uuid,
     ores_iam_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000001'::uuid,
     'f0000000-0000-0000-0000-000000000002'::uuid,
-    'Swap', 'NS-VIEW-001', 'New',
+    'Swap', 'NS-VIEW-001', 'new_booking', s.id,
     current_date, current_timestamp, current_date, current_date + interval '1 year',
     current_user, current_user, 'system.test', 'Trade for view tests'
-);
+from ores_dq_fsm_states_tbl s
+join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+where m.name = 'trade_status'
+  and m.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.name = 'new'
+  and s.valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Assign Counterparty role to Alpha Bank
 insert into ores_trading_party_roles_tbl (
@@ -157,18 +162,23 @@ select is(
 insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
-    trade_type, netting_set_id, lifecycle_event,
+    trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
+) select
     'f1000000-0000-0000-0000-000000000002'::uuid,
     ores_iam_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000001'::uuid,
     'f0000000-0000-0000-0000-000000000002'::uuid,
-    'Swap', 'NS-VIEW-002', 'New',
+    'Swap', 'NS-VIEW-002', 'new_booking', s.id,
     current_date, current_timestamp, current_date, current_date + interval '1 year',
     current_user, current_user, 'system.test', 'Trade with no counterparty role'
-);
+from ores_dq_fsm_states_tbl s
+join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+where m.name = 'trade_status'
+  and m.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.name = 'new'
+  and s.valid_to = ores_utility_infinity_timestamp_fn();
 
 select is(
     (select count(*)::integer from ores_trade_ore_envelope_vw
@@ -182,22 +192,27 @@ select is(
 -- Test 5: After novation, view shows updated counterparty (Beta Bank)
 -- =============================================================================
 
--- Apply novation
+-- Apply novation (status stays 'new' until confirmed; activity type drives the event)
 insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
-    trade_type, netting_set_id, lifecycle_event,
+    trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
+) select
     'f1000000-0000-0000-0000-000000000001'::uuid,
     ores_iam_system_tenant_id_fn(), 0,
     'f0000000-0000-0000-0000-000000000001'::uuid,
     'f0000000-0000-0000-0000-000000000002'::uuid,
-    'Swap', 'NS-VIEW-001', 'Novation',
+    'Swap', 'NS-VIEW-001', 'novation', s.id,
     current_date, current_timestamp, current_date, current_date + interval '1 year',
     current_user, current_user, 'system.amendment', 'Novation event'
-);
+from ores_dq_fsm_states_tbl s
+join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+where m.name = 'trade_status'
+  and m.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.name = 'new'
+  and s.valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Soft-delete Alpha Bank's Counterparty role
 delete from ores_trading_party_roles_tbl
@@ -227,15 +242,15 @@ select is(
 );
 
 -- =============================================================================
--- Test 6: lifecycle_event in view reflects novation
+-- Test 6: activity_type_code in view reflects novation
 -- =============================================================================
 
 select is(
-    (select lifecycle_event from ores_trade_ore_envelope_vw
+    (select activity_type_code from ores_trade_ore_envelope_vw
      where trade_id = 'f1000000-0000-0000-0000-000000000001'::uuid
        and tenant_id = ores_iam_system_tenant_id_fn()),
-    'Novation',
-    'view: lifecycle_event shows Novation after novation event'
+    'novation',
+    'view: activity_type_code shows novation after novation event'
 );
 
 select * from finish();

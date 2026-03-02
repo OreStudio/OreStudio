@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_table_create.mustache
- * To modify, update the template and regenerate.
- */
 
 -- =============================================================================
--- Trade Lifecycle Events - Valid lifecycle event types (New, Amendment, Novation, PartialTermination, FullTermination)
+-- Activity Types - Internal trade activity classification (~30 types).
+-- Each activity type maps optionally to an FpML event type and/or to an
+-- FSM transition that drives trade status changes.
 -- =============================================================================
 
-create table if not exists "ores_trading_lifecycle_events_tbl" (
+create table if not exists "ores_trading_activity_types_tbl" (
     "code" text not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "category" text not null,
+    "requires_confirmation" boolean not null default false,
     "description" text null,
-    "fsm_state_id" uuid null,
+    "fpml_event_type_code" text null,
+    "fsm_transition_id" uuid null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -46,22 +46,29 @@ create table if not exists "ores_trading_lifecycle_events_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("code" <> '')
+    check ("code" <> ''),
+    check ("category" in (
+        'new_activity',
+        'lifecycle_event',
+        'misbooking',
+        'valuation_change',
+        'cancellation'
+    ))
 );
 
-create unique index if not exists ores_trading_lifecycle_events_version_uniq_idx
-on "ores_trading_lifecycle_events_tbl" (tenant_id, code, version)
+create unique index if not exists ores_trading_activity_types_version_uniq_idx
+on "ores_trading_activity_types_tbl" (tenant_id, code, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists ores_trading_lifecycle_events_code_uniq_idx
-on "ores_trading_lifecycle_events_tbl" (tenant_id, code)
+create unique index if not exists ores_trading_activity_types_code_uniq_idx
+on "ores_trading_activity_types_tbl" (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists ores_trading_lifecycle_events_tenant_idx
-on "ores_trading_lifecycle_events_tbl" (tenant_id)
+create index if not exists ores_trading_activity_types_tenant_idx
+on "ores_trading_activity_types_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_trading_lifecycle_events_insert_fn()
+create or replace function ores_trading_activity_types_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -72,8 +79,14 @@ begin
     -- Validate change_reason_code
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
 
+    -- Validate fpml_event_type_code if provided (soft FK)
+    if new.fpml_event_type_code is not null and new.fpml_event_type_code <> '' then
+        new.fpml_event_type_code := ores_trading_validate_fpml_event_type_fn(
+            new.tenant_id, new.fpml_event_type_code);
+    end if;
+
     select version into current_version
-    from "ores_trading_lifecycle_events_tbl"
+    from "ores_trading_activity_types_tbl"
     where tenant_id = new.tenant_id
       and code = new.code
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -87,7 +100,7 @@ begin
         end if;
         new.version = current_version + 1;
 
-        update "ores_trading_lifecycle_events_tbl"
+        update "ores_trading_activity_types_tbl"
         set valid_to = current_timestamp
         where tenant_id = new.tenant_id
           and code = new.code
@@ -106,52 +119,47 @@ begin
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_trading_lifecycle_events_insert_trg
-before insert on "ores_trading_lifecycle_events_tbl"
+create or replace trigger ores_trading_activity_types_insert_trg
+before insert on "ores_trading_activity_types_tbl"
 for each row
-execute function ores_trading_lifecycle_events_insert_fn();
+execute function ores_trading_activity_types_insert_fn();
 
-create or replace rule ores_trading_lifecycle_events_delete_rule as
-on delete to "ores_trading_lifecycle_events_tbl"
+create or replace rule ores_trading_activity_types_delete_rule as
+on delete to "ores_trading_activity_types_tbl"
 do instead
-  update "ores_trading_lifecycle_events_tbl"
+  update "ores_trading_activity_types_tbl"
   set valid_to = current_timestamp
   where tenant_id = old.tenant_id
   and code = old.code
   and valid_to = ores_utility_infinity_timestamp_fn();
 
 -- =============================================================================
--- Validation function for lifecycle_event
--- Validates that a code exists in the lifecycle_events table.
--- Returns the validated value, or default if null/empty.
--- Uses system tenant data (shared reference data).
+-- Validation function for activity_type_code
 -- =============================================================================
-create or replace function ores_trading_validate_lifecycle_event_fn(
+create or replace function ores_trading_validate_activity_type_fn(
     p_tenant_id uuid,
     p_value text
 ) returns text as $$
 begin
-    -- Return default if null or empty
     if p_value is null or p_value = '' then
-        raise exception 'Invalid lifecycle_event: value cannot be null or empty'
+        raise exception 'Invalid activity_type_code: value cannot be null or empty'
             using errcode = '23502';
     end if;
 
     -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_trading_lifecycle_events_tbl limit 1) then
+    if not exists (select 1 from ores_trading_activity_types_tbl limit 1) then
         return p_value;
     end if;
 
-    -- Validate against reference data
     if not exists (
-        select 1 from ores_trading_lifecycle_events_tbl
+        select 1 from ores_trading_activity_types_tbl
         where tenant_id = ores_iam_system_tenant_id_fn()
           and code = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
-        raise exception 'Invalid lifecycle_event: %. Must be one of: %', p_value, (
+        raise exception 'Invalid activity_type_code: %. Must be one of: %', p_value, (
             select string_agg(code::text, ', ' order by code)
-            from ores_trading_lifecycle_events_tbl
+            from ores_trading_activity_types_tbl
             where tenant_id = ores_iam_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';

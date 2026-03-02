@@ -18,21 +18,5 @@
  *
  */
 
-/**
- * Trade Population Master Script
- *
- * Populates the trade component with all reference data.
- * All scripts are idempotent and can be safely re-run.
- */
-
-\echo '=== Trade Population ==='
-\echo ''
-
-\ir ./trading_trade_types_populate.sql
-\ir ./trading_fpml_event_types_populate.sql
-\ir ./trading_activity_types_populate.sql
-\ir ./trading_party_role_types_populate.sql
-\ir ./trading_trade_id_types_populate.sql
-
-\echo ''
-\echo '=== Trade Population Complete ==='
+drop trigger if exists ores_trading_fpml_event_types_notify_trg on "ores_trading_fpml_event_types_tbl";
+drop function if exists ores_trading_fpml_event_types_notify_fn;

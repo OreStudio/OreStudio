@@ -17,17 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/*
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_schema_notify_trigger.mustache
- * To modify, update the template and regenerate.
- */
 
-create or replace function ores_trading_lifecycle_events_notify_fn()
+create or replace function ores_trading_activity_types_notify_fn()
 returns trigger as $$
 declare
     notification_payload jsonb;
-    entity_name text := 'ores.trading.lifecycle_event';
+    entity_name text := 'ores.trading.activity_type';
     change_timestamp timestamptz := NOW();
     changed_code text;
     changed_tenant_id text;
@@ -47,12 +42,12 @@ begin
         'tenant_id', changed_tenant_id
     );
 
-    perform pg_notify('ores_trading_lifecycle_events', notification_payload::text);
+    perform pg_notify('ores_trading_activity_types', notification_payload::text);
 
     return null;
 end;
 $$ language plpgsql;
 
-create or replace trigger ores_trading_lifecycle_events_notify_trg
-after insert or update or delete on ores_trading_lifecycle_events_tbl
-for each row execute function ores_trading_lifecycle_events_notify_fn();
+create or replace trigger ores_trading_activity_types_notify_trg
+after insert or update or delete on ores_trading_activity_types_tbl
+for each row execute function ores_trading_activity_types_notify_fn();

@@ -37,11 +37,24 @@ with check (
 );
 
 -- -----------------------------------------------------------------------------
--- Lifecycle Events
+-- FpML Event Types
 -- -----------------------------------------------------------------------------
-alter table ores_trading_lifecycle_events_tbl enable row level security;
+alter table ores_trading_fpml_event_types_tbl enable row level security;
 
-create policy ores_trading_lifecycle_events_tenant_isolation_policy on ores_trading_lifecycle_events_tbl
+create policy ores_trading_fpml_event_types_tenant_isolation_policy on ores_trading_fpml_event_types_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- Activity Types
+-- -----------------------------------------------------------------------------
+alter table ores_trading_activity_types_tbl enable row level security;
+
+create policy ores_trading_activity_types_tenant_isolation_policy on ores_trading_activity_types_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

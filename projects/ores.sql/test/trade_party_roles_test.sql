@@ -64,18 +64,23 @@ insert into ores_refdata_portfolios_tbl (
 insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
-    trade_type, netting_set_id, lifecycle_event,
+    trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
+) select
     'e1000000-0000-0000-0000-000000000001'::uuid,
     ores_iam_system_tenant_id_fn(), 0,
     'e0000000-0000-0000-0000-000000000001'::uuid,
     'e0000000-0000-0000-0000-000000000002'::uuid,
-    'Swap', 'NS-ROLES-001', 'New',
+    'Swap', 'NS-ROLES-001', 'new_booking', s.id,
     current_date, current_timestamp, current_date, current_date + interval '1 year',
     current_user, current_user, 'system.test', 'Trade for party role tests'
-);
+from ores_dq_fsm_states_tbl s
+join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+where m.name = 'trade_status'
+  and m.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.name = 'new'
+  and s.valid_to = ores_utility_infinity_timestamp_fn();
 
 insert into ores_refdata_counterparties_tbl (
     id, tenant_id, version,

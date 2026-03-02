@@ -28,7 +28,7 @@
 \echo '=== FSM Population ==='
 \echo ''
 
-\ir ./dq_fsm_trade_lifecycle_populate.sql
+\ir ./dq_fsm_trade_status_populate.sql
 
 \echo ''
 \echo '=== FSM Population Complete ==='

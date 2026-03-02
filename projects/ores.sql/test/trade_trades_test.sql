@@ -26,7 +26,7 @@
  * - book_id soft FK validation rejects invalid UUIDs
  * - portfolio_id soft FK validation rejects invalid UUIDs
  * - trade_type validation rejects invalid codes
- * - lifecycle_event validation rejects invalid codes
+ * - activity_type_code validation rejects invalid codes
  * - Temporal versioning: amendment creates new row, closes old row
  *
  * Run with: pg_prove -d <database> test/trade_trades_test.sql
@@ -66,6 +66,17 @@ insert into ores_refdata_portfolios_tbl (
     'system.test', 'Test portfolio'
 );
 
+-- Resolve FSM status IDs for tests
+do $$ begin
+    if not exists (
+        select 1 from ores_dq_fsm_machines_tbl
+        where name = 'trade_status'
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'trade_status FSM not found. Run dq_fsm populate first.';
+    end if;
+end $$;
+
 -- =============================================================================
 -- Test 1: Valid insert gets version 1
 -- =============================================================================
@@ -73,18 +84,23 @@ insert into ores_refdata_portfolios_tbl (
 insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
-    trade_type, netting_set_id, lifecycle_event,
+    trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
+) select
     'c1000000-0000-0000-0000-000000000001'::uuid,
     ores_iam_system_tenant_id_fn(), 0,
     'c0000000-0000-0000-0000-000000000001'::uuid,
     'c0000000-0000-0000-0000-000000000002'::uuid,
-    'Swap', 'NS-TEST-001', 'New',
+    'Swap', 'NS-TEST-001', 'new_booking', s.id,
     current_date, current_timestamp, current_date, current_date + interval '1 year',
     current_user, current_user, 'system.test', 'Test trade insert'
-);
+from ores_dq_fsm_states_tbl s
+join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+where m.name = 'trade_status'
+  and m.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.name = 'new'
+  and s.valid_to = ores_utility_infinity_timestamp_fn();
 
 select is(
     (select version from ores_trading_trades_tbl
@@ -113,10 +129,10 @@ select is(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trading_trades_tbl (
+    format($$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
-        trade_type, netting_set_id, lifecycle_event,
+        trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
@@ -124,10 +140,15 @@ select throws_ok(
         ores_iam_system_tenant_id_fn(), 0,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
-        'Swap', 'NS-BAD', 'New',
+        'Swap', 'NS-BAD', 'new_booking', %L::uuid,
         current_date, current_timestamp, current_date, current_date + interval '1 year',
         current_user, current_user, 'system.test', 'Bad book_id'
     )$$,
+    (select s.id::text from ores_dq_fsm_states_tbl s
+     join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+     where m.name = 'trade_status' and m.valid_to = ores_utility_infinity_timestamp_fn()
+       and s.name = 'new' and s.valid_to = ores_utility_infinity_timestamp_fn())
+    ),
     '23503',
     NULL,
     'trade insert: invalid book_id raises 23503'
@@ -138,10 +159,10 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trading_trades_tbl (
+    format($$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
-        trade_type, netting_set_id, lifecycle_event,
+        trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
@@ -149,10 +170,15 @@ select throws_ok(
         ores_iam_system_tenant_id_fn(), 0,
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'deadbeef-dead-dead-dead-deaddeadbeef'::uuid,
-        'Swap', 'NS-BAD', 'New',
+        'Swap', 'NS-BAD', 'new_booking', %L::uuid,
         current_date, current_timestamp, current_date, current_date + interval '1 year',
         current_user, current_user, 'system.test', 'Bad portfolio_id'
     )$$,
+    (select s.id::text from ores_dq_fsm_states_tbl s
+     join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+     where m.name = 'trade_status' and m.valid_to = ores_utility_infinity_timestamp_fn()
+       and s.name = 'new' and s.valid_to = ores_utility_infinity_timestamp_fn())
+    ),
     '23503',
     NULL,
     'trade insert: invalid portfolio_id raises 23503'
@@ -163,10 +189,10 @@ select throws_ok(
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trading_trades_tbl (
+    format($$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
-        trade_type, netting_set_id, lifecycle_event,
+        trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
@@ -174,24 +200,29 @@ select throws_ok(
         ores_iam_system_tenant_id_fn(), 0,
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
-        'INVALID_TYPE', 'NS-BAD', 'New',
+        'INVALID_TYPE', 'NS-BAD', 'new_booking', %L::uuid,
         current_date, current_timestamp, current_date, current_date + interval '1 year',
         current_user, current_user, 'system.test', 'Bad trade_type'
     )$$,
+    (select s.id::text from ores_dq_fsm_states_tbl s
+     join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+     where m.name = 'trade_status' and m.valid_to = ores_utility_infinity_timestamp_fn()
+       and s.name = 'new' and s.valid_to = ores_utility_infinity_timestamp_fn())
+    ),
     '23503',
     NULL,
     'trade insert: invalid trade_type raises 23503'
 );
 
 -- =============================================================================
--- Test 6: lifecycle_event validation rejects invalid codes
+-- Test 6: activity_type_code validation rejects invalid codes
 -- =============================================================================
 
 select throws_ok(
-    $$insert into ores_trading_trades_tbl (
+    format($$insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         book_id, portfolio_id,
-        trade_type, netting_set_id, lifecycle_event,
+        trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
@@ -199,35 +230,45 @@ select throws_ok(
         ores_iam_system_tenant_id_fn(), 0,
         'c0000000-0000-0000-0000-000000000001'::uuid,
         'c0000000-0000-0000-0000-000000000002'::uuid,
-        'Swap', 'NS-BAD', 'INVALID_EVENT',
+        'Swap', 'NS-BAD', 'INVALID_ACTIVITY', %L::uuid,
         current_date, current_timestamp, current_date, current_date + interval '1 year',
-        current_user, current_user, 'system.test', 'Bad lifecycle_event'
+        current_user, current_user, 'system.test', 'Bad activity_type_code'
     )$$,
+    (select s.id::text from ores_dq_fsm_states_tbl s
+     join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+     where m.name = 'trade_status' and m.valid_to = ores_utility_infinity_timestamp_fn()
+       and s.name = 'new' and s.valid_to = ores_utility_infinity_timestamp_fn())
+    ),
     '23503',
     NULL,
-    'trade insert: invalid lifecycle_event raises 23503'
+    'trade insert: invalid activity_type_code raises 23503'
 );
 
 -- =============================================================================
 -- Test 7: Temporal versioning — amendment closes old row, creates new
 -- =============================================================================
 
--- Insert amendment (same id, version 0 = accept current)
+-- Insert amendment (same id, version 0 = accept current); status stays 'new'
 insert into ores_trading_trades_tbl (
     id, tenant_id, version,
     book_id, portfolio_id,
-    trade_type, netting_set_id, lifecycle_event,
+    trade_type, netting_set_id, activity_type_code, status_id,
     trade_date, execution_timestamp, effective_date, termination_date,
     modified_by, performed_by, change_reason_code, change_commentary
-) values (
+) select
     'c1000000-0000-0000-0000-000000000001'::uuid,
     ores_iam_system_tenant_id_fn(), 0,
     'c0000000-0000-0000-0000-000000000001'::uuid,
     'c0000000-0000-0000-0000-000000000002'::uuid,
-    'Swap', 'NS-TEST-001', 'Amendment',
+    'Swap', 'NS-TEST-001', 'amendment', s.id,
     current_date, current_timestamp, current_date, current_date + interval '2 years',
     current_user, current_user, 'system.amendment', 'Test amendment'
-);
+from ores_dq_fsm_states_tbl s
+join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+where m.name = 'trade_status'
+  and m.valid_to = ores_utility_infinity_timestamp_fn()
+  and s.name = 'new'
+  and s.valid_to = ores_utility_infinity_timestamp_fn();
 
 -- New current row has version 2
 select is(

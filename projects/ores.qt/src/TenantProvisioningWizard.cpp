@@ -24,14 +24,19 @@
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
+#include <array>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
+#include <QListWidgetItem>
 #include <QSizePolicy>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
+#include "ores.refdata/messaging/party_protocol.hpp"
+#include "ores.reporting/messaging/report_definition_protocol.hpp"
 #include "ores.synthetic/messaging/generate_organisation_protocol.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
@@ -78,6 +83,8 @@ void TenantProvisioningWizard::setupPages() {
     setPage(Page_PartySetup, new PartySetupPage(this));
     setPage(Page_CounterpartySetup, new CounterpartySetupPage(this));
     setPage(Page_OrganisationSetup, new OrganisationSetupPage(this));
+    setPage(Page_ReportSetup, new ReportSetupPage(this));
+    setPage(Page_ReportInstall, new ReportInstallPage(this));
     setPage(Page_Summary, new ApplyAndSummaryPage(this));
 
     setStartId(Page_Welcome);
@@ -981,6 +988,324 @@ void OrganisationSetupPage::startSyntheticGeneration() {
 }
 
 // ============================================================================
+// ReportSetupPage
+// ============================================================================
+
+namespace {
+
+struct ReportEntry {
+    const char* name;
+    const char* description;
+    const char* schedule;
+};
+
+// Representative ORE risk reports for a typical trading desk.
+// All use report_type="risk" and concurrency_policy="skip".
+constexpr std::array<ReportEntry, 8> k_default_reports{{
+    {.name = "Portfolio NPV",
+     .description = "Daily portfolio net present value in base currency.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Cashflow Report",
+     .description = "Scheduled cash flow profiles for liquidity planning.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Market Risk Sensitivities",
+     .description = "First and second order sensitivities (delta, gamma, vega) "
+                    "by risk factor.",
+     .schedule = "0 7 * * 1-5"},
+    {.name = "Counterparty Exposure",
+     .description = "Monte Carlo counterparty credit exposure profiles (EPE, PFE).",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "CVA/DVA Report",
+     .description = "Credit valuation adjustment and debit valuation adjustment.",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "Stress Test",
+     .description = "Portfolio P&L under predefined market stress scenarios.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "Value at Risk",
+     .description = "Parametric Value-at-Risk at 95% and 99% confidence levels "
+                    "(1-day and 10-day).",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "SIMM Initial Margin",
+     .description = "ISDA SIMM regulatory initial margin calculation.",
+     .schedule = "0 9 * * 1-5"},
+}};
+
+} // anonymous namespace
+
+ReportSetupPage::ReportSetupPage(TenantProvisioningWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Report Definitions"));
+    setSubTitle(tr("Optionally create a set of standard risk report definitions "
+                   "for your tenant. You can add, modify, or remove these later "
+                   "from the Reporting menu."));
+
+    setupUI();
+}
+
+void ReportSetupPage::setupUI() {
+    auto* layout = new QVBoxLayout(this);
+    layout->setSpacing(8);
+
+    auto* infoLabel = new QLabel(
+        tr("Select the report definitions to create. All reports are "
+           "scheduled on weekdays and use the 'skip' concurrency policy "
+           "(new runs are skipped while a prior run is still in progress)."),
+        this);
+    infoLabel->setWordWrap(true);
+    layout->addWidget(infoLabel);
+
+    layout->addSpacing(6);
+
+    // Select All / Deselect All buttons
+    auto* btnLayout = new QHBoxLayout();
+    auto* selectAllBtn = new QPushButton(tr("Select All"), this);
+    auto* deselectAllBtn = new QPushButton(tr("Deselect All"), this);
+    selectAllBtn->setMaximumWidth(120);
+    deselectAllBtn->setMaximumWidth(120);
+    btnLayout->addWidget(selectAllBtn);
+    btnLayout->addWidget(deselectAllBtn);
+    btnLayout->addStretch();
+    layout->addLayout(btnLayout);
+
+    reportList_ = new QListWidget(this);
+    reportList_->setSpacing(2);
+    reportList_->setAlternatingRowColors(true);
+
+    for (const auto& entry : k_default_reports) {
+        auto* item = new QListWidgetItem(reportList_);
+        item->setCheckState(Qt::Checked);
+
+        // Two-line display: name (bold) + description
+        item->setText(QString("%1\n%2")
+            .arg(QString::fromUtf8(entry.name))
+            .arg(QString::fromUtf8(entry.description)));
+        item->setData(Qt::UserRole, QString::fromUtf8(entry.name));
+        item->setData(Qt::UserRole + 1, QString::fromUtf8(entry.description));
+        item->setData(Qt::UserRole + 2, QString::fromUtf8(entry.schedule));
+        reportList_->addItem(item);
+    }
+
+    layout->addWidget(reportList_);
+
+    connect(selectAllBtn, &QPushButton::clicked, this, [this]() {
+        for (int i = 0; i < reportList_->count(); ++i) {
+            reportList_->item(i)->setCheckState(Qt::Checked);
+        }
+    });
+
+    connect(deselectAllBtn, &QPushButton::clicked, this, [this]() {
+        for (int i = 0; i < reportList_->count(); ++i) {
+            reportList_->item(i)->setCheckState(Qt::Unchecked);
+        }
+    });
+}
+
+bool ReportSetupPage::validatePage() {
+    std::vector<TenantProvisioningWizard::ReportSpec> selected;
+    for (int i = 0; i < reportList_->count(); ++i) {
+        const auto* item = reportList_->item(i);
+        if (item->checkState() == Qt::Checked) {
+            TenantProvisioningWizard::ReportSpec spec;
+            spec.name = item->data(Qt::UserRole).toString().toStdString();
+            spec.description = item->data(Qt::UserRole + 1).toString().toStdString();
+            spec.schedule_expression = item->data(Qt::UserRole + 2).toString().toStdString();
+            spec.report_type = "risk";
+            spec.concurrency_policy = "skip";
+            selected.push_back(std::move(spec));
+        }
+    }
+    wizard_->setSelectedReports(std::move(selected));
+    return true;
+}
+
+int ReportSetupPage::nextId() const {
+    // Count checked items
+    int checked = 0;
+    for (int i = 0; i < reportList_->count(); ++i) {
+        if (reportList_->item(i)->checkState() == Qt::Checked) {
+            ++checked;
+        }
+    }
+    return checked > 0
+        ? TenantProvisioningWizard::Page_ReportInstall
+        : TenantProvisioningWizard::Page_Summary;
+}
+
+// ============================================================================
+// ReportInstallPage
+// ============================================================================
+
+ReportInstallPage::ReportInstallPage(TenantProvisioningWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Creating Report Definitions"));
+    setFinalPage(false);
+
+    auto* layout = new QVBoxLayout(this);
+
+    statusLabel_ = new QLabel(tr("Starting..."), this);
+    statusLabel_->setStyleSheet("font-weight: bold;");
+    layout->addWidget(statusLabel_);
+
+    progressBar_ = new QProgressBar(this);
+    progressBar_->setRange(0, 0);
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
+    layout->addWidget(progressBar_);
+
+    logOutput_ = new QTextEdit(this);
+    logOutput_->setReadOnly(true);
+    logOutput_->setFont(FontUtils::monospace());
+    layout->addWidget(logOutput_);
+}
+
+bool ReportInstallPage::isComplete() const {
+    return installComplete_;
+}
+
+void ReportInstallPage::initializePage() {
+    installComplete_ = false;
+    installSuccess_ = false;
+    logOutput_->clear();
+    statusLabel_->setText(tr("Creating report definitions..."));
+    progressBar_->setRange(0, 0);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
+
+    startInstall();
+}
+
+void ReportInstallPage::appendLog(const QString& message) {
+    logOutput_->append(message);
+    auto cursor = logOutput_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    logOutput_->setTextCursor(cursor);
+}
+
+void ReportInstallPage::startInstall() {
+    const auto specs = wizard_->selectedReports();
+    const std::string username = wizard_->clientManager()->currentUsername();
+    ClientManager* clientManager = wizard_->clientManager();
+
+    BOOST_LOG_SEV(lg(), info) << "Creating " << specs.size()
+                              << " report definitions";
+
+    appendLog(tr("Looking up system party..."));
+
+    struct InstallResult {
+        bool success = false;
+        int created = 0;
+        std::string error;
+    };
+
+    auto* watcher = new QFutureWatcher<InstallResult>(this);
+    connect(watcher, &QFutureWatcher<InstallResult>::finished,
+            [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Report install failed: "
+                                       << result.error;
+            statusLabel_->setText(tr("Failed to create report definitions."));
+            appendLog(tr("ERROR: %1").arg(
+                QString::fromStdString(result.error)));
+            progressBar_->setStyleSheet(
+                "QProgressBar::chunk { background-color: #cc0000; }");
+            installSuccess_ = false;
+        } else {
+            BOOST_LOG_SEV(lg(), info) << "Created " << result.created
+                                      << " report definitions";
+            statusLabel_->setText(
+                tr("Created %1 report definition(s) successfully.")
+                    .arg(result.created));
+            installSuccess_ = true;
+        }
+
+        installComplete_ = true;
+        emit completeChanged();
+    });
+
+    QFuture<InstallResult> future = QtConcurrent::run(
+        [clientManager, specs, username]() -> InstallResult {
+            InstallResult result;
+
+            // Step 1: find system party
+            refdata::messaging::get_parties_request partiesReq;
+            partiesReq.limit = 10;
+            auto partiesRes = clientManager->process_authenticated_request(
+                std::move(partiesReq));
+
+            if (!partiesRes || partiesRes->parties.empty()) {
+                result.error = "No parties found; cannot assign report definitions.";
+                return result;
+            }
+
+            // Use the System-category party (root, no parent). Fall back to first.
+            boost::uuids::uuid partyId = partiesRes->parties.front().id;
+            for (const auto& p : partiesRes->parties) {
+                if (p.party_category == "System") {
+                    partyId = p.id;
+                    break;
+                }
+            }
+
+            // Step 2: create each selected report definition
+            boost::uuids::random_generator gen;
+            namespace reason = ores::database::domain::change_reason_constants;
+
+            for (const auto& spec : specs) {
+                reporting::domain::report_definition def;
+                def.id = gen();
+                def.name = spec.name;
+                def.description = spec.description;
+                def.report_type = spec.report_type;
+                def.schedule_expression = spec.schedule_expression;
+                def.concurrency_policy = spec.concurrency_policy;
+                def.party_id = partyId;
+                def.modified_by = username;
+                def.performed_by = username;
+                def.change_reason_code =
+                    std::string(reason::codes::new_record);
+                def.change_commentary =
+                    "Created during tenant provisioning";
+
+                reporting::messaging::save_report_definition_request req;
+                req.definition = std::move(def);
+
+                auto res = clientManager->process_authenticated_request(
+                    std::move(req));
+
+                if (!res || !res->success) {
+                    result.error = "Failed to create '" + spec.name + "': " +
+                        (res ? res->message : "no server response");
+                    return result;
+                }
+
+                ++result.created;
+            }
+
+            result.success = true;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
+
+    appendLog(tr("Creating %1 report definition(s)...")
+        .arg(static_cast<int>(specs.size())));
+}
+
+// ============================================================================
 // ApplyAndSummaryPage
 // ============================================================================
 
@@ -1057,6 +1382,17 @@ void ApplyAndSummaryPage::initializePage() {
             summary += tr("<p><b>Organisation data:</b> Business units, portfolios, "
                           "and trading books published.</p>");
         }
+    }
+
+    const auto& reports = wizard_->selectedReports();
+    if (!reports.empty()) {
+        summary += tr("<p><b>Report definitions created (%1):</b></p><ul>")
+            .arg(static_cast<int>(reports.size()));
+        for (const auto& r : reports) {
+            summary += tr("<li>%1</li>")
+                .arg(QString::fromStdString(r.name));
+        }
+        summary += tr("</ul>");
     }
 
     summary += tr("<p>The bootstrap mode flag has been cleared. This wizard "

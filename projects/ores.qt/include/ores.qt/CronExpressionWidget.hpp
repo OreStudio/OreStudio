@@ -22,22 +22,19 @@
 
 #include <QWidget>
 #include <QLineEdit>
-#include <QLabel>
 #include <QString>
+
+class QPushButton;
 
 namespace ores::qt {
 
 /**
- * @brief User-friendly widget for entering and editing cron expressions.
+ * @brief Compact widget for entering and editing cron expressions.
  *
- * Provides quick preset buttons (Hourly, Daily, etc.), individual field
- * editors for the five standard cron fields, a read-only expression display,
- * and a human-readable description of the schedule.
- *
- * Layout (top to bottom):
- *   - Quick preset toolbar
- *   - Five field editors (Min, Hour, Day, Month, Weekday)
- *   - Expression display + human-readable description
+ * Shows an editable cron string (red border when invalid) and a "..."
+ * button that opens the CronEditorDialog for a tab-based visual builder.
+ * The public API is identical to the old widget so all dialogs that
+ * embed it as a custom widget require no changes.
  */
 class CronExpressionWidget : public QWidget {
     Q_OBJECT
@@ -45,48 +42,30 @@ class CronExpressionWidget : public QWidget {
 public:
     explicit CronExpressionWidget(QWidget* parent = nullptr);
 
-    /**
-     * @brief Returns the current cron expression string (5-field).
-     */
+    /** Returns the current cron expression string (5-field). */
     QString cronExpression() const;
 
-    /**
-     * @brief Sets all fields from a cron expression string.
-     */
+    /** Sets the cron expression, updating the line edit. */
     void setCronExpression(const QString& expr);
 
-    /**
-     * @brief Returns true if the current expression parses successfully.
-     */
+    /** Returns true if the current expression parses successfully. */
     bool isValid() const;
 
-    /**
-     * @brief Enables or disables editing of all fields and preset buttons.
-     */
+    /** Enables or disables editing and the builder button. */
     void setReadOnly(bool readOnly);
 
 signals:
     void cronChanged(const QString& expression);
 
 private slots:
-    void onHourlyClicked();
-    void onDailyClicked();
-    void onWeekdaysClicked();
-    void onWeeklyClicked();
-    void onMonthlyClicked();
-    void onFieldChanged();
+    void onExpressionEdited();
+    void onBuilderClicked();
 
 private:
-    void updateExpression();
-    QString describeExpression() const;
+    void updateValidationStyle();
 
-    QLineEdit* minuteEdit_;
-    QLineEdit* hourEdit_;
-    QLineEdit* dayEdit_;
-    QLineEdit* monthEdit_;
-    QLineEdit* weekdayEdit_;
-    QLineEdit* expressionEdit_;  ///< Read-only display of assembled cron string
-    QLabel*    descriptionLabel_;
+    QLineEdit*   expressionEdit_;
+    QPushButton* builderButton_;
 };
 
 }

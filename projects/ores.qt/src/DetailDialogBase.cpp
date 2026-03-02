@@ -21,6 +21,7 @@
 
 #include <QMessageBox>
 #include <QTabWidget>
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 
 namespace ores::qt {
@@ -62,7 +63,7 @@ void DetailDialogBase::clearProvenance() {
 
 void DetailDialogBase::onCloseClicked() {
     if (hasUnsavedChanges()) {
-        auto reply = QMessageBox::question(
+        auto reply = MessageBoxHelper::question(
             this, tr("Unsaved Changes"),
             tr("You have unsaved changes. Close anyway?"),
             QMessageBox::Yes | QMessageBox::No);

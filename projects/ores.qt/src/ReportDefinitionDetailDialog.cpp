@@ -220,9 +220,7 @@ void ReportDefinitionDetailDialog::populateReportTypeCombo(
             QString::fromStdString(t.name),
             QString::fromStdString(t.code));
     }
-    ui_->reportTypeCombo->blockSignals(false);
-
-    // Re-apply current definition value if set
+    // Re-apply current definition value while signals are still blocked
     if (!definition_.report_type.empty()) {
         const QString code = QString::fromStdString(definition_.report_type);
         for (int i = 0; i < ui_->reportTypeCombo->count(); ++i) {
@@ -232,6 +230,7 @@ void ReportDefinitionDetailDialog::populateReportTypeCombo(
             }
         }
     }
+    ui_->reportTypeCombo->blockSignals(false);
 }
 
 void ReportDefinitionDetailDialog::populateConcurrencyPolicyCombo(
@@ -244,9 +243,7 @@ void ReportDefinitionDetailDialog::populateConcurrencyPolicyCombo(
             QString::fromStdString(p.name),
             QString::fromStdString(p.code));
     }
-    ui_->concurrencyPolicyCombo->blockSignals(false);
-
-    // Re-apply current definition value if set
+    // Re-apply current definition value while signals are still blocked
     if (!definition_.concurrency_policy.empty()) {
         const QString code = QString::fromStdString(definition_.concurrency_policy);
         for (int i = 0; i < ui_->concurrencyPolicyCombo->count(); ++i) {
@@ -256,6 +253,7 @@ void ReportDefinitionDetailDialog::populateConcurrencyPolicyCombo(
             }
         }
     }
+    ui_->concurrencyPolicyCombo->blockSignals(false);
 }
 
 void ReportDefinitionDetailDialog::updateUiFromDefinition() {

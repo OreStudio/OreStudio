@@ -141,6 +141,11 @@ void JobDefinitionDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void JobDefinitionDetailDialog::updateUiFromDefinition() {
+    const QSignalBlocker b1(ui_->jobNameEdit);
+    const QSignalBlocker b2(ui_->descriptionEdit);
+    const QSignalBlocker b3(ui_->commandEdit);
+    const QSignalBlocker b4(ui_->databaseNameEdit);
+
     ui_->jobNameEdit->setText(QString::fromStdString(definition_.job_name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(definition_.description));
     ui_->commandEdit->setPlainText(QString::fromStdString(definition_.command));

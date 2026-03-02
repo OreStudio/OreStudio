@@ -339,6 +339,18 @@ Synchronize data, refresh with server.
 **Usage**: Sync buttons, bidirectional refresh.
 
 
+### Arrow Trending
+
+Trades, financial market movement, trending data.
+
+-   Fluent Regular: ic\_fluent\_arrow\_trending\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_arrow\_trending\_20\_filled.svg
+-   Solar Linear: transfer-horizontal.svg
+-   Solar Bold: transfer-horizontal.svg
+
+**Usage**: Trades management (`ActionTrades` toolbar/menu). An upward-trending arrow represents financial market activity and transaction flow. Solar fallback: `transfer-horizontal.svg`.
+
+
 ### Arrow Clockwise (16px)
 
 Rotate clockwise, redo action.
@@ -690,6 +702,18 @@ Books, trading books, accounting books.
 Icons for numerical data and financial concepts.
 
 
+### Chart Multiple
+
+Report definitions, report templates with multiple visualisation types.
+
+-   Fluent Regular: ic\_fluent\_chart\_multiple\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_chart\_multiple\_20\_filled.svg
+-   Solar Linear: presentation-graph.svg
+-   Solar Bold: presentation-graph.svg
+
+**Usage**: Report Definition management (`ActionReportDefinitions`). Multiple chart types on one icon conveys "a template that can generate various report formats". Distinct from the histogram icon used for data analytics. Solar fallback: `presentation-graph.svg`.
+
+
 ### Database
 
 Data storage, datasets, data dimensions.
@@ -795,6 +819,18 @@ Unschedule a job, deactivate a scheduled task.
 **Usage**: "Unschedule" button in job definition list toolbar and detail dialog. Semantically distinct from \`Delete\` (which implies permanent removal) — unschedule removes from pg\_cron while retaining the definition. Solar fallback: \`alarm-remove.svg\`.
 
 
+### Tasks App
+
+Job definitions list, task management application.
+
+-   Fluent Regular: ic\_fluent\_tasks\_app\_20\_regular.svg
+-   Fluent Filled: ic\_fluent\_tasks\_app\_20\_filled.svg
+-   Solar Linear: clipboard-list.svg
+-   Solar Bold: clipboard-list.svg
+
+**Usage**: Job Definition management (`ActionJobDefinitions` toolbar/menu). Represents a task management application — a list of scheduled jobs/tasks to execute. Distinct from `CalendarClock` (used for scheduler-concept menu entries and window titles) — use `TasksApp` for the job definitions list window and toolbar button. Solar fallback: `clipboard-list.svg`.
+
+
 ## Text & Formatting
 
 Icons for text manipulation and formatting.
@@ -830,6 +866,7 @@ Text validation, spell check, language processing.
 | Forward              | arrow\_right\_20                    | Default | Active |
 | Download             | arrow\_download\_20                 | Default | Active |
 | Sync                 | arrow\_sync\_20                     | Default | Active |
+| Trades               | arrow\_trending\_20                 | Default | Active |
 | Undo                 | arrow\_rotate\_counterclockwise\_20 | Default | Active |
 | Info                 | info\_20                            | Default | Active |
 | Warning              | warning\_20                         | Default | Alert  |
@@ -867,6 +904,8 @@ Text validation, spell check, language processing.
 | Scheduler/Jobs       | calendar\_clock\_20                 | Default | Active |
 | Schedule Job         | calendar\_add\_20                   | Default | Active |
 | Unschedule Job       | calendar\_cancel\_20                | Default | Active |
+| Job Definitions List | tasks\_app\_20                      | Default | Active |
+| Report Definitions   | chart\_multiple\_20                 | Default | Active |
 | Import CSV           | arrow\_download\_csv\_20            | Default | Active |
 | Import FPML          | arrow\_download\_fpml\_20           | Default | Active |
 | Import ORE           | arrow\_download\_ore\_20            | Default | Active |

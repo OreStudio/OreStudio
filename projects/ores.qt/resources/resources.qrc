@@ -19,6 +19,7 @@
     <file>icons/fluentui/filled/ic_fluent_arrow_upload_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_arrow_upload_csv_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_arrow_upload_fpml_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_arrow_trending_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_arrow_upload_ore_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_book_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_book_open_20_filled.svg</file>
@@ -38,6 +39,7 @@
     <file>icons/fluentui/filled/ic_fluent_column_triple_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_contact_card_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_currency_dollar_euro_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_chart_multiple_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_data_bar_vertical_ascending_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_database_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_delete_20_filled.svg</file>
@@ -78,6 +80,7 @@
     <file>icons/fluentui/filled/ic_fluent_star_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_table_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_tag_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_tasks_app_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_text_abc_underline_double_32_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_window_console_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_wand_20_filled.svg</file>
@@ -97,6 +100,7 @@
     <file>icons/fluentui/regular/ic_fluent_arrow_upload_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_arrow_upload_csv_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_arrow_upload_fpml_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_arrow_trending_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_arrow_upload_ore_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_book_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_book_open_20_regular.svg</file>
@@ -116,6 +120,7 @@
     <file>icons/fluentui/regular/ic_fluent_column_triple_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_contact_card_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_currency_dollar_euro_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_chart_multiple_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_data_bar_vertical_ascending_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_database_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_delete_20_regular.svg</file>
@@ -156,6 +161,7 @@
     <file>icons/fluentui/regular/ic_fluent_star_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_table_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_tag_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_tasks_app_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_text_abc_underline_double_32_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_window_console_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_wand_20_regular.svg</file>
@@ -212,6 +218,7 @@
     <file>icons/solarized/Bold/notes-minimalistic.svg</file>
     <file>icons/solarized/Bold/pen-new-square.svg</file>
     <file>icons/solarized/Bold/plug-circle.svg</file>
+    <file>icons/solarized/Bold/presentation-graph.svg</file>
     <file>icons/solarized/Bold/question-circle.svg</file>
     <file>icons/solarized/Bold/record-circle.svg</file>
     <file>icons/solarized/Bold/refresh-circle.svg</file>
@@ -223,6 +230,7 @@
     <file>icons/solarized/Bold/programming.svg</file>
     <file>icons/solarized/Bold/tag.svg</file>
     <file>icons/solarized/Bold/text-underline.svg</file>
+    <file>icons/solarized/Bold/transfer-horizontal.svg</file>
     <file>icons/solarized/Bold/trash-bin-trash.svg</file>
     <file>icons/solarized/Bold/undo-left-round.svg</file>
     <file>icons/solarized/Bold/upload-square.svg</file>
@@ -281,6 +289,7 @@
     <file>icons/solarized/Linear/notes-minimalistic.svg</file>
     <file>icons/solarized/Linear/pen-new-square.svg</file>
     <file>icons/solarized/Linear/plug-circle.svg</file>
+    <file>icons/solarized/Linear/presentation-graph.svg</file>
     <file>icons/solarized/Linear/question-circle.svg</file>
     <file>icons/solarized/Linear/record-circle.svg</file>
     <file>icons/solarized/Linear/refresh-circle.svg</file>
@@ -292,6 +301,7 @@
     <file>icons/solarized/Linear/programming.svg</file>
     <file>icons/solarized/Linear/tag.svg</file>
     <file>icons/solarized/Linear/text-underline.svg</file>
+    <file>icons/solarized/Linear/transfer-horizontal.svg</file>
     <file>icons/solarized/Linear/trash-bin-trash.svg</file>
     <file>icons/solarized/Linear/undo-left-round.svg</file>
     <file>icons/solarized/Linear/upload-square.svg</file>

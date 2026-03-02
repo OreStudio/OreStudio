@@ -233,11 +233,11 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBusinessCentres->setIcon(IconUtils::createRecoloredIcon(Icon::BuildingBank, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnitTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
-    ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
-    ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
+    ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
+    ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
-    ui_->ActionReportDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
+    ui_->ActionReportDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::ChartMultiple, IconUtils::DefaultIconColor));
     ui_->ActionReportInstances->setIcon(IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor));
     ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     ui_->ActionOrgExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor));

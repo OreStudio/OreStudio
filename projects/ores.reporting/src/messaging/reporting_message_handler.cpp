@@ -662,8 +662,8 @@ namespace {
  * @brief Escape single-quote characters for embedding in a SQL string literal.
  *
  * PostgreSQL uses '' (two single quotes) to represent a literal single quote
- * inside a single-quoted string. This helper is used when baking a report
- * name into the pg_cron command SQL at scheduling time.
+ * inside a single-quoted string. Used when baking a report name into the
+ * pg_cron command SQL (a pgmq.send() call) at scheduling time.
  */
 std::string sql_single_quote_escape(const std::string& s) {
     std::string result;
@@ -725,18 +725,18 @@ reporting_message_handler::handle_schedule_report_definitions_request(
         }
 
         // Build the SQL command that pg_cron will execute on each firing.
-        // The tenant UUID and report name are baked in at scheduling time;
+        // Posts a message to the pgmq 'report_events' queue. The queue name,
+        // tenant UUID, and report name are baked in at scheduling time;
         // now() is evaluated at execution time by pg_cron.
         const std::string tenant_str = auth->tenant_id.to_string();
         const std::string safe_name = sql_single_quote_escape(def->name);
         const std::string command =
-            "INSERT INTO ores_reporting_report_event_queue_tbl "
-            "(id, tenant_id, payload, queued_at) "
-            "VALUES (gen_random_uuid(), '" + tenant_str + "'::uuid, "
+            "SELECT pgmq.send('report_events', "
             "jsonb_build_object("
             "'report_name', '" + safe_name + "', "
             "'event', 'scheduled', "
-            "'triggered_at', now()::text), now())";
+            "'tenant_id', '" + tenant_str + "', "
+            "'triggered_at', now()::text), 0)";
 
         // Create the job definition. The unique job_name is keyed on the
         // report definition UUID so that re-scheduling the same report

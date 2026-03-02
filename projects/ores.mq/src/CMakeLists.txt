@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.eventing.lib
     PRIVATE
+        ores.comms.lib
         ores.utility.lib
         ores.logging.lib
         ores.platform.lib

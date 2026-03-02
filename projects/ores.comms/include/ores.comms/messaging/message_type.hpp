@@ -649,6 +649,11 @@ enum class message_type : std::uint16_t {
     delete_report_instance_response = 0xA035,
     get_report_instance_history_request = 0xA036,
     get_report_instance_history_response = 0xA037,
+    // MQ subsystem (0xB000-0xBFFF)
+    get_queues_request              = 0xB000,
+    get_queues_response             = 0xB001,
+    get_queue_metrics_request       = 0xB002,
+    get_queue_metrics_response      = 0xB003,
     // Sentinel value - must remain after the highest message type value
     last_value,
 };
@@ -1195,6 +1200,10 @@ enum class message_type : std::uint16_t {
     case message_type::delete_report_instance_response: return "delete_report_instance_response";
     case message_type::get_report_instance_history_request: return "get_report_instance_history_request";
     case message_type::get_report_instance_history_response: return "get_report_instance_history_response";
+    case message_type::get_queues_request:            return "get_queues_request";
+    case message_type::get_queues_response:           return "get_queues_response";
+    case message_type::get_queue_metrics_request:     return "get_queue_metrics_request";
+    case message_type::get_queue_metrics_response:    return "get_queue_metrics_response";
     default: return {};
     }
 }

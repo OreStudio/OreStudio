@@ -339,8 +339,10 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // entities are saved or deleted in a single DB transaction; on any failure
 // the whole batch is rolled back. Maximum batch size per request:
 // max_save_batch_size (1000 entities). Breaking change.
+//
+// Version 46.1 adds MQ subsystem (0xB000) with get_queues and get_queue_metrics.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 46;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;
@@ -365,6 +367,8 @@ constexpr std::uint16_t SCHEDULER_SUBSYSTEM_MIN = 0x9000;
 constexpr std::uint16_t SCHEDULER_SUBSYSTEM_MAX = 0x9FFF;
 constexpr std::uint16_t REPORTING_SUBSYSTEM_MIN = 0xA000;
 constexpr std::uint16_t REPORTING_SUBSYSTEM_MAX = 0xAFFF;
+constexpr std::uint16_t MQ_SUBSYSTEM_MIN = 0xB000;
+constexpr std::uint16_t MQ_SUBSYSTEM_MAX = 0xBFFF;
 
 }
 

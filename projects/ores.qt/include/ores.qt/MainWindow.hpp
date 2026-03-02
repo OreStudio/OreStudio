@@ -86,6 +86,7 @@ class ReportInstanceController;
 class PortfolioController;
 class BookController;
 class BookStatusController;
+class QueueMonitorController;
 class PurposeTypeController;
 class RoundingTypeController;
 class MonetaryNatureController;
@@ -630,6 +631,7 @@ private:
     std::unique_ptr<PortfolioController> portfolioController_;
     std::unique_ptr<BookController> bookController_;
     std::unique_ptr<BookStatusController> bookStatusController_;
+    std::unique_ptr<QueueMonitorController> queueMonitorController_;
     std::unique_ptr<PurposeTypeController> purposeTypeController_;
     std::unique_ptr<RoundingTypeController> roundingTypeController_;
     std::unique_ptr<MonetaryNatureController> monetaryNatureController_;

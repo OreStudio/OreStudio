@@ -1,0 +1,109 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/QueueMonitorController.hpp"
+
+#include <QPointer>
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/QueueMonitorMdiWindow.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+QueueMonitorController::QueueMonitorController(
+    QMainWindow* mainWindow,
+    QMdiArea* mdiArea,
+    ClientManager* clientManager,
+    const QString& username,
+    QObject* parent)
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+          std::string_view{}, parent),
+      listWindow_(nullptr),
+      listMdiSubWindow_(nullptr) {
+
+    BOOST_LOG_SEV(lg(), debug) << "QueueMonitorController created";
+}
+
+void QueueMonitorController::showListWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "showListWindow called";
+
+    const QString key = build_window_key("list", "queues");
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing queue monitor window";
+        return;
+    }
+
+    listWindow_ = new QueueMonitorMdiWindow(clientManager_);
+
+    connect(listWindow_, &QueueMonitorMdiWindow::statusChanged,
+            this, &QueueMonitorController::statusMessage);
+    connect(listWindow_, &QueueMonitorMdiWindow::errorOccurred,
+            this, &QueueMonitorController::errorMessage);
+
+    listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
+    listMdiSubWindow_->setWidget(listWindow_);
+    listMdiSubWindow_->setWindowTitle(tr("Queue Monitor"));
+    listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Server, IconUtils::DefaultIconColor));
+    listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
+    listMdiSubWindow_->resize(listWindow_->sizeHint());
+
+    mdiArea_->addSubWindow(listMdiSubWindow_);
+    listMdiSubWindow_->show();
+
+    track_window(key, listMdiSubWindow_);
+    register_detachable_window(listMdiSubWindow_);
+
+    connect(listMdiSubWindow_, &QObject::destroyed,
+            this, [self = QPointer<QueueMonitorController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+        self->listWindow_ = nullptr;
+        self->listMdiSubWindow_ = nullptr;
+    });
+
+    BOOST_LOG_SEV(lg(), debug) << "Queue monitor window created";
+}
+
+void QueueMonitorController::closeAllWindows() {
+    BOOST_LOG_SEV(lg(), debug) << "closeAllWindows called";
+
+    QList<QString> keys = managed_windows_.keys();
+    for (const QString& key : keys) {
+        if (auto* window = managed_windows_.value(key))
+            window->close();
+    }
+    managed_windows_.clear();
+
+    listWindow_ = nullptr;
+    listMdiSubWindow_ = nullptr;
+}
+
+void QueueMonitorController::reloadListWindow() {
+    if (listWindow_)
+        listWindow_->reload();
+}
+
+EntityListMdiWindow* QueueMonitorController::listWindow() const {
+    return listWindow_;
+}
+
+}

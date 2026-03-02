@@ -89,7 +89,6 @@
 #include "ores.qt/ConcurrencyPolicyController.hpp"
 #include "ores.qt/ReportDefinitionController.hpp"
 #include "ores.qt/ReportInstanceController.hpp"
-#include "ores.qt/ReportSchedulerController.hpp"
 #include "ores.qt/OreImportController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
@@ -240,7 +239,6 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
     ui_->ActionReportDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::ChartMultiple, IconUtils::DefaultIconColor));
     ui_->ActionReportInstances->setIcon(IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor));
-    ui_->ActionReportScheduler->setIcon(IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
     ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     ui_->ActionOrgExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
@@ -760,12 +758,6 @@ MainWindow::MainWindow(QWidget* parent) :
             jobDefinitionController_->showListWindow();
     });
 
-    // Connect Report Scheduler action to controller
-    connect(ui_->ActionReportScheduler, &QAction::triggered, this, [this]() {
-        if (reportSchedulerController_)
-            reportSchedulerController_->showListWindow();
-    });
-
     // Connect Reporting actions to controllers
     connect(ui_->ActionReportTypes, &QAction::triggered, this, [this]() {
         if (reportTypeController_)
@@ -1190,7 +1182,6 @@ void MainWindow::updateMenuState() {
     ui_->ActionJobDefinitions->setEnabled(isLoggedIn);
     ui_->ActionReportDefinitions->setEnabled(isLoggedIn);
     ui_->ActionReportInstances->setEnabled(isLoggedIn);
-    ui_->ActionReportScheduler->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1963,20 +1954,6 @@ void MainWindow::createControllers() {
     connect(reportInstanceController_.get(), &ReportInstanceController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
-    reportSchedulerController_ = std::make_unique<ReportSchedulerController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
-    connect(reportSchedulerController_.get(), &ReportSchedulerController::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(reportSchedulerController_.get(), &ReportSchedulerController::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(reportSchedulerController_.get(), &ReportSchedulerController::detachableWindowCreated,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(reportSchedulerController_.get(), &ReportSchedulerController::detachableWindowDestroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create ORE import controller
     oreImportController_ = std::make_unique<OreImportController>(clientManager_, this);

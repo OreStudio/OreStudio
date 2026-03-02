@@ -20,9 +20,11 @@
 #ifndef ORES_QT_REPORT_DEFINITION_MDI_WINDOW_HPP
 #define ORES_QT_REPORT_DEFINITION_MDI_WINDOW_HPP
 
+#include <vector>
 #include <QToolBar>
 #include <QTableView>
 #include <QSortFilterProxyModel>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientReportDefinitionModel.hpp"
@@ -68,12 +70,16 @@ signals:
     void addNewRequested();
     void definitionDeleted(const QString& code);
     void showDefinitionHistory(const reporting::domain::report_definition& definition);
+    void scheduleRequested(const std::vector<boost::uuids::uuid>& ids);
+    void unscheduleRequested(const std::vector<boost::uuids::uuid>& ids);
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+    void scheduleSelected();
+    void unscheduleSelected();
 
 private slots:
     void onDataLoaded();
@@ -108,6 +114,8 @@ private:
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+    QAction* scheduleAction_;
+    QAction* unscheduleAction_;
 };
 
 }

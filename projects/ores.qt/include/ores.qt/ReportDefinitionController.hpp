@@ -20,8 +20,10 @@
 #ifndef ORES_QT_REPORT_DEFINITION_CONTROLLER_HPP
 #define ORES_QT_REPORT_DEFINITION_CONTROLLER_HPP
 
+#include <vector>
 #include <QMdiArea>
 #include <QMainWindow>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -78,6 +80,8 @@ private slots:
     void onRevertVersion(const reporting::domain::report_definition& definition);
     void onOpenVersion(const reporting::domain::report_definition& definition,
                        int versionNumber);
+    void onScheduleRequested(const std::vector<boost::uuids::uuid>& ids);
+    void onUnscheduleRequested(const std::vector<boost::uuids::uuid>& ids);
 
 private:
     void showAddWindow();

@@ -51,7 +51,9 @@ ReportDefinitionMdiWindow::ReportDefinitionMdiWindow(
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
-      historyAction_(nullptr) {
+      historyAction_(nullptr),
+      scheduleAction_(nullptr),
+      unscheduleAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -124,6 +126,26 @@ void ReportDefinitionMdiWindow::setupToolbar() {
     historyAction_->setEnabled(false);
     connect(historyAction_, &QAction::triggered, this,
             &ReportDefinitionMdiWindow::viewHistorySelected);
+
+    toolbar_->addSeparator();
+
+    scheduleAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::CalendarAdd, IconUtils::DefaultIconColor),
+        tr("Schedule"));
+    scheduleAction_->setToolTip(tr("Schedule selected report definitions"));
+    scheduleAction_->setEnabled(false);
+    connect(scheduleAction_, &QAction::triggered, this,
+            &ReportDefinitionMdiWindow::scheduleSelected);
+
+    unscheduleAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::CalendarCancel, IconUtils::DefaultIconColor),
+        tr("Unschedule"));
+    unscheduleAction_->setToolTip(tr("Unschedule selected report definitions"));
+    unscheduleAction_->setEnabled(false);
+    connect(unscheduleAction_, &QAction::triggered, this,
+            &ReportDefinitionMdiWindow::unscheduleSelected);
 }
 
 void ReportDefinitionMdiWindow::setupTable() {
@@ -135,7 +157,7 @@ void ReportDefinitionMdiWindow::setupTable() {
     tableView_ = new QTableView(this);
     tableView_->setModel(proxyModel_);
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
@@ -217,10 +239,30 @@ void ReportDefinitionMdiWindow::onDoubleClicked(const QModelIndex& index) {
 }
 
 void ReportDefinitionMdiWindow::updateActionStates() {
-    const bool hasSelection = tableView_->selectionModel()->hasSelection();
-    editAction_->setEnabled(hasSelection);
-    deleteAction_->setEnabled(hasSelection);
-    historyAction_->setEnabled(hasSelection);
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    const int count = selected.size();
+
+    // Single-item actions
+    editAction_->setEnabled(count == 1);
+    historyAction_->setEnabled(count == 1);
+
+    // Multi-item actions
+    deleteAction_->setEnabled(count >= 1);
+
+    // Schedule/unschedule: scan selected rows for active/inactive status
+    bool hasInactive = false;
+    bool hasActive = false;
+    for (const auto& index : selected) {
+        const auto sourceIndex = proxyModel_->mapToSource(index);
+        if (const auto* def = model_->getDefinition(sourceIndex.row())) {
+            if (def->scheduler_job_id.has_value())
+                hasActive = true;
+            else
+                hasInactive = true;
+        }
+    }
+    scheduleAction_->setEnabled(hasInactive);
+    unscheduleAction_->setEnabled(hasActive);
 }
 
 void ReportDefinitionMdiWindow::addNew() {
@@ -254,6 +296,34 @@ void ReportDefinitionMdiWindow::viewHistorySelected() {
                                    << definition->name;
         emit showDefinitionHistory(*definition);
     }
+}
+
+void ReportDefinitionMdiWindow::scheduleSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    std::vector<boost::uuids::uuid> ids;
+    for (const auto& index : selected) {
+        const auto sourceIndex = proxyModel_->mapToSource(index);
+        if (const auto* def = model_->getDefinition(sourceIndex.row())) {
+            if (!def->scheduler_job_id.has_value())
+                ids.push_back(def->id);
+        }
+    }
+    if (!ids.empty())
+        emit scheduleRequested(ids);
+}
+
+void ReportDefinitionMdiWindow::unscheduleSelected() {
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    std::vector<boost::uuids::uuid> ids;
+    for (const auto& index : selected) {
+        const auto sourceIndex = proxyModel_->mapToSource(index);
+        if (const auto* def = model_->getDefinition(sourceIndex.row())) {
+            if (def->scheduler_job_id.has_value())
+                ids.push_back(def->id);
+        }
+    }
+    if (!ids.empty())
+        emit unscheduleRequested(ids);
 }
 
 void ReportDefinitionMdiWindow::deleteSelected() {

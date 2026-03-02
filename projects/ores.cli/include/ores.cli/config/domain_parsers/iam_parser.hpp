@@ -17,29 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_CLI_CONFIG_DOMAIN_PARSERS_IAM_PARSER_HPP
+#define ORES_CLI_CONFIG_DOMAIN_PARSERS_IAM_PARSER_HPP
 
-namespace ores::cli::config {
+#include "ores.cli/config/options.hpp"
+#include <boost/program_options.hpp>
+#include <iosfwd>
+#include <optional>
+
+namespace ores::cli::config::domain_parsers {
 
     /**
-     * @brief List of available entities to target.
+     * @brief Handles parsing of iam domain commands.
      */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        feature_flags
-    };
+    std::optional<options> handle_iam_command(bool has_help,
+                                              const boost::program_options::parsed_options& po,
+                                              std::ostream& info,
+                                              boost::program_options::variables_map& vm);
 
 }
 

@@ -39,8 +39,8 @@ Display global help showing all available commands.
 ORE Studio is a User Interface for Open Source Risk Engine (ORE).
 CLI provides a command line version of the interface.
 ORE Studio is created by the ORE Studio project.
-ores.cli uses a command-based interface: <command> <options>.
-See below for a list of valid commands.
+ores.cli uses a domain-based interface: <domain> <entity> <operation> <options>.
+See below for a list of valid domains and their entities.
 
 Global options:
 
@@ -57,7 +57,7 @@ Logging:
   --log-directory arg (=log)          Where to place the log files.
   --log-filename arg (=ores.cli.log)  Name of the log file.
 
-Commands:
+Domains:
 
    currencies     Manage currencies (import, export, list, delete, add).
    accounts       Manage accounts (list, delete, add).
@@ -98,7 +98,7 @@ Currency management operations from the [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE9
 Show available operations for currencies.
 
 #+begin_src sh :wrap src text
-./ores.cli currencies --help
+./ores.cli refdata currencies --help
 #+end_src
 
 #+RESULTS:
@@ -125,7 +125,7 @@ Import currencies from ORE XML format.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies import ${db_args} ${log_args} \
+./ores.cli refdata currencies import ${db_args} ${log_args} \
   --target ${data_dir}/currencies_API.xml
 #+end_src
 
@@ -138,7 +138,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies import ${db_args} ${log_args} \
+./ores.cli refdata currencies import ${db_args} ${log_args} \
   --target ${data_dir}/currencies_API.xml \
   --target ${data_dir}/currencies_42.xml
 #+end_src
@@ -157,7 +157,7 @@ Export currencies to external formats (ORE XML or CSV).
 
 #+begin_src sh :wrap src xml
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${db_args} ${log_args} --format xml | \
+./ores.cli refdata currencies export ${db_args} ${log_args} --format xml | \
     xmllint --format - | \
     head -n 20
 #+end_src
@@ -190,7 +190,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src csv
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${db_args} ${log_args} \
+./ores.cli refdata currencies export ${db_args} ${log_args} \
   --format csv | head
 #+end_src
 
@@ -212,7 +212,7 @@ AWG,Aruban florin,533,"","",100,Closest,2,"","",ores,2025-12-11 23:45:39,2025-12
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${db_args} ${log_args} \
+./ores.cli refdata currencies export ${db_args} ${log_args} \
   --format json --key USD | jq .
 #+end_src
 
@@ -243,7 +243,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${db_args} ${log_args} \
+./ores.cli refdata currencies export ${db_args} ${log_args} \
   --format json --key USD --all-versions | jq .[:3]
 #+end_src
 
@@ -308,7 +308,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies export ${db_args} ${log_args} \
+./ores.cli refdata currencies export ${db_args} ${log_args} \
   --format json --as-of "2025-12-11 23:44:52" | jq .[:3]
 #+end_src
 
@@ -377,7 +377,7 @@ List currencies using internal formats (JSON or table).
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies list ${db_args} ${log_args} \
+./ores.cli refdata currencies list ${db_args} ${log_args} \
   --format json | jq .[:3]
 #+end_src
 
@@ -442,7 +442,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies list ${db_args} ${log_args} \
+./ores.cli refdata currencies list ${db_args} ${log_args} \
   --format table  | head -n 15
 #+end_src
 
@@ -469,7 +469,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies list ${db_args} ${log_args} \
+./ores.cli refdata currencies list ${db_args} ${log_args} \
   --format json --key EUR | jq .
 #+end_src
 
@@ -502,7 +502,7 @@ Delete a currency by ISO code.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies delete ${db_args} ${log_args} \
+./ores.cli refdata currencies delete ${db_args} ${log_args} \
   --key ZAR
 #+end_src
 
@@ -517,9 +517,9 @@ Add a new currency.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli currencies add ${db_args} ${log_args} --iso-code ABCDE --name "New Currency" \
+./ores.cli refdata currencies add ${db_args} ${log_args} --iso-code ABCDE --name "New Currency" \
     --numeric-code 1234 --modified-by test --currency-type major
-./ores.cli currencies list ${db_args} ${log_args} \
+./ores.cli refdata currencies list ${db_args} ${log_args} \
   --format table --key ABCDE
 #+end_src
 
@@ -548,7 +548,7 @@ Account management operations from the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097
 Show available operations for accounts.
 
 #+begin_src sh :wrap src text
-./ores.cli accounts --help
+./ores.cli iam accounts --help
 #+end_src
 
 #+RESULTS:
@@ -573,7 +573,7 @@ List accounts from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts list ${db_args} ${log_args} \
+./ores.cli iam accounts list ${db_args} ${log_args} \
   --format json | jq .
 #+end_src
 
@@ -598,7 +598,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts list ${db_args} ${log_args} \
+./ores.cli iam accounts list ${db_args} ${log_args} \
   --format table
 #+end_src
 
@@ -616,7 +616,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts list ${db_args} ${log_args} \
+./ores.cli iam accounts list ${db_args} ${log_args} \
   --format json --key adminuser | jq .
 #+end_src
 
@@ -641,7 +641,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts list ${db_args} ${log_args} \
+./ores.cli iam accounts list ${db_args} ${log_args} \
   --format json --key adminuser --all-versions | jq .
 #+end_src
 
@@ -670,7 +670,7 @@ Delete an account by username or UUID.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts delete ${db_args} ${log_args} \
+./ores.cli iam accounts delete ${db_args} ${log_args} \
   --key newuser4
 #+end_src
 
@@ -683,7 +683,7 @@ Account deleted successfully: 3b6efad4-039f-4dd4-8e0d-6209a08f8148
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts delete ${db_args} ${log_args} \
+./ores.cli iam accounts delete ${db_args} ${log_args} \
   --key 9dec6b76-f982-47c3-bb11-58b62ca5c0d1
 #+end_src
 
@@ -700,7 +700,7 @@ Add a new account using command-line arguments.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts add ${db_args} ${log_args} \
+./ores.cli iam accounts add ${db_args} ${log_args} \
   --username newuser5 \
   --email newuser5@example.com \
   --password "Secure-Password-123" \
@@ -717,7 +717,7 @@ Successfully added account: newuser5 (ID: e7bddd23-c004-4652-99e1-8d4ff5856fe1)
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli accounts add ${db_args} ${log_args} \
+./ores.cli iam accounts add ${db_args} ${log_args} \
   --username adminuser2 --email adminuser2@example.com \
   --password "Admin-Password-456" --admin --modified-by admin
 #+end_src
@@ -736,7 +736,7 @@ Login info operations.
 Show available operations for feature flags.
 
 #+begin_src sh :wrap src text
-./ores.cli login-info add --help
+./ores.cli iam login-info add --help
 #+end_src
 
 #+RESULTS:
@@ -783,7 +783,7 @@ List feature flags from the database.
 
 #+begin_src sh :wrap src json
 export ORES_CLI_DB_PASSWORD
-./ores.cli login-info list ${db_args} ${log_args} --format json | jq .
+./ores.cli iam login-info list ${db_args} ${log_args} --format json | jq .
 #+end_src
 
 #+RESULTS:
@@ -805,7 +805,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli login-info list ${db_args} ${log_args} --format table
+./ores.cli iam login-info list ${db_args} ${log_args} --format table
 #+end_src
 
 #+RESULTS:
@@ -822,7 +822,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src json
 export ORES_CLI_DB_PASSWORD
-./ores.cli login-info list ${db_args} ${log_args} \
+./ores.cli iam login-info list ${db_args} ${log_args} \
   --format json --key "019b1008-6da1-733c-a6e6-e942eaab2ed6" | jq .
 #+end_src
 
@@ -847,7 +847,7 @@ Delete a feature flag by key.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli login-info delete ${db_args} ${log_args} \
+./ores.cli iam login-info delete ${db_args} ${log_args} \
   --key "Test feature3"
 #+end_src
 
@@ -861,7 +861,7 @@ Add a new feature flag (not yet implemented).
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli login-info add ${db_args} ${log_args} --account-id "e7bddd23-c004-4652-99e1-8d4ff5856fe1"
+./ores.cli iam login-info add ${db_args} ${log_args} --account-id "e7bddd23-c004-4652-99e1-8d4ff5856fe1"
 #+end_src
 
 #+RESULTS:
@@ -878,7 +878,7 @@ Feature flag management from the [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ORE 
 Show available operations for feature flags.
 
 #+begin_src sh :wrap src text
-./ores.cli feature-flags --help
+./ores.cli variability feature-flags --help
 #+end_src
 
 #+RESULTS:
@@ -903,7 +903,7 @@ List feature flags from the database.
 
 #+begin_src sh :wrap src json
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature-flags list ${db_args} ${log_args} --format json | jq .
+./ores.cli variability feature-flags list ${db_args} ${log_args} --format json | jq .
 #+end_src
 
 #+RESULTS:
@@ -937,7 +937,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature-flags list ${db_args} ${log_args} --format table
+./ores.cli variability feature-flags list ${db_args} ${log_args} --format table
 #+end_src
 
 #+RESULTS:
@@ -958,7 +958,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src json
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature-flags list ${db_args} ${log_args} \
+./ores.cli variability feature-flags list ${db_args} ${log_args} \
   --format json --key "system.bootstrap_mode" | jq .
 #+end_src
 
@@ -981,7 +981,7 @@ Add a new feature flag.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature-flags add ${db_args} ${log_args} --name "Test feature3" \
+./ores.cli variability feature-flags add ${db_args} ${log_args} --name "Test feature3" \
     --description "Some description" --enabled 0 --modified-by admin
 #+end_src
 
@@ -996,7 +996,7 @@ Delete a feature flag by key.
 
 #+begin_src sh  :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli feature-flags delete ${db_args} ${log_args} \
+./ores.cli variability feature-flags delete ${db_args} ${log_args} \
   --key "Test feature3"
 #+end_src
 
@@ -1017,7 +1017,7 @@ Role management operations from the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][O
 Show available operations for roles.
 
 #+begin_src sh :wrap src text
-./ores.cli roles --help
+./ores.cli iam roles --help
 #+end_src
 
 #+RESULTS:
@@ -1042,7 +1042,7 @@ List roles from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles list ${db_args} ${log_args} --format json | jq .[:3]
+./ores.cli iam roles list ${db_args} ${log_args} --format json | jq .[:3]
 #+end_src
 
 #+RESULTS:
@@ -1088,7 +1088,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles list ${db_args} ${log_args} --format table
+./ores.cli iam roles list ${db_args} ${log_args} --format table
 #+end_src
 
 #+RESULTS:
@@ -1111,7 +1111,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles list ${db_args} ${log_args} \
+./ores.cli iam roles list ${db_args} ${log_args} \
   --format json --key "Admin" | jq .
 #+end_src
 
@@ -1138,7 +1138,7 @@ Delete a role by ID.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles delete ${db_args} ${log_args} --key "Test Role"
+./ores.cli iam roles delete ${db_args} ${log_args} --key "Test Role"
 #+end_src
 
 #+RESULTS:
@@ -1154,7 +1154,7 @@ Add a new role with optional permission assignments.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles add ${db_args} ${log_args} \
+./ores.cli iam roles add ${db_args} ${log_args} \
   --name "Test Role" \
   --description "A test role for demonstration" \
   --recorded-by admin \
@@ -1171,7 +1171,7 @@ Successfully added role: Test Role
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli roles add ${db_args} ${log_args} \
+./ores.cli iam roles add ${db_args} ${log_args} \
   --name "Custom Role" \
   --description "Role with specific permissions" \
   --recorded-by admin \
@@ -1196,7 +1196,7 @@ Permission management operations from the [[id:D00BEA0D-E501-C534-A013-E6F40C1A6
 Show available operations for permissions.
 
 #+begin_src sh :wrap src text
-./ores.cli permissions --help
+./ores.cli iam permissions --help
 #+end_src
 
 #+RESULTS:
@@ -1221,7 +1221,7 @@ List permissions from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli permissions list ${db_args} ${log_args} --format json | jq .[:5]
+./ores.cli iam permissions list ${db_args} ${log_args} --format json | jq .[:5]
 #+end_src
 
 #+RESULTS:
@@ -1259,7 +1259,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli permissions list ${db_args} ${log_args} --format table
+./ores.cli iam permissions list ${db_args} ${log_args} --format table
 #+end_src
 
 #+RESULTS:
@@ -1299,7 +1299,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli permissions list ${db_args} ${log_args} \
+./ores.cli iam permissions list ${db_args} ${log_args} \
   --format json --key "accounts:create" | jq .
 #+end_src
 
@@ -1320,7 +1320,7 @@ Delete a permission by ID.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli permissions delete ${db_args} ${log_args} \
+./ores.cli iam permissions delete ${db_args} ${log_args} \
   --key "currencies:audit"
 #+end_src
 
@@ -1335,7 +1335,7 @@ Add a new permission.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli permissions add ${db_args} ${log_args} \
+./ores.cli iam permissions add ${db_args} ${log_args} \
   --code "currencies:audit" \
   --description "Permission to audit currency changes"
 #+end_src
@@ -1357,7 +1357,7 @@ Country management operations from the [[id:8A1C5E2D-9B4F-4E8A-A7C3-6F2D1E0B9A5C
 Show available operations for countries.
 
 #+begin_src sh :wrap src text
-./ores.cli countries --help
+./ores.cli refdata countries --help
 #+end_src
 
 *** List
@@ -1368,14 +1368,14 @@ List countries from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli countries list ${db_args} ${log_args} --format json | jq .[:3]
+./ores.cli refdata countries list ${db_args} ${log_args} --format json | jq .[:3]
 #+end_src
 
 **** List all as table
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli countries list ${db_args} ${log_args} --format table | head -n 15
+./ores.cli refdata countries list ${db_args} ${log_args} --format table | head -n 15
 #+end_src
 
 #+RESULTS:
@@ -1401,7 +1401,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli countries list ${db_args} ${log_args} \
+./ores.cli refdata countries list ${db_args} ${log_args} \
   --format json --key "US" | jq .
 #+end_src
 
@@ -1411,7 +1411,7 @@ Delete a country by alpha-2 code.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli countries delete ${db_args} ${log_args} \
+./ores.cli refdata countries delete ${db_args} ${log_args} \
   --key "XX"
 #+end_src
 
@@ -1421,7 +1421,7 @@ Add a new country.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli countries add ${db_args} ${log_args} \
+./ores.cli refdata countries add ${db_args} ${log_args} \
   --alpha2-code "XX" \
   --alpha3-code "XXX" \
   --name "Test Country" \
@@ -1448,7 +1448,7 @@ Change reason management operations from the [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A
 Show available operations for change reasons.
 
 #+begin_src sh :wrap src text
-./ores.cli change-reasons --help
+./ores.cli dq change-reasons --help
 #+end_src
 
 *** List
@@ -1459,7 +1459,7 @@ List change reasons from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reasons list ${db_args} ${log_args} --format json | jq .[:5]
+./ores.cli dq change-reasons list ${db_args} ${log_args} --format json | jq .[:5]
 #+end_src
 
 #+RESULTS:
@@ -1537,7 +1537,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reasons list ${db_args} ${log_args} --format table
+./ores.cli dq change-reasons list ${db_args} ${log_args} --format table
 #+end_src
 
 #+RESULTS:
@@ -1574,7 +1574,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reasons list ${db_args} ${log_args} \
+./ores.cli dq change-reasons list ${db_args} ${log_args} \
   --format json --key "data_correction" | jq .
 #+end_src
 
@@ -1584,7 +1584,7 @@ Delete a change reason by code.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reasons delete ${db_args} ${log_args} \
+./ores.cli dq change-reasons delete ${db_args} ${log_args} \
   --key "test_reason"
 #+end_src
 
@@ -1594,7 +1594,7 @@ Add a new change reason.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reasons add ${db_args} ${log_args} \
+./ores.cli dq change-reasons add ${db_args} ${log_args} \
   --code "test.reason" \
   --description "Test change reason for CLI demonstration" \
   --category-code "operational" \

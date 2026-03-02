@@ -195,7 +195,7 @@ begin
 
     return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create or replace trigger ores_reporting_risk_report_configs_insert_trg
 before insert on "ores_reporting_risk_report_configs_tbl"

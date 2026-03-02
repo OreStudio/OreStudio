@@ -60,6 +60,30 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+create policy ores_reporting_risk_report_configs_party_isolation_policy
+on ores_reporting_risk_report_configs_tbl
+as restrictive
+for all using (
+    exists (
+        select 1
+        from ores_reporting_report_definitions_tbl rd
+        where rd.tenant_id = ores_reporting_risk_report_configs_tbl.tenant_id
+          and rd.id = ores_reporting_risk_report_configs_tbl.report_definition_id
+          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rd.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+)
+with check (
+    exists (
+        select 1
+        from ores_reporting_report_definitions_tbl rd
+        where rd.tenant_id = ores_reporting_risk_report_configs_tbl.tenant_id
+          and rd.id = ores_reporting_risk_report_configs_tbl.report_definition_id
+          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rd.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+);
+
 -- -----------------------------------------------------------------------------
 -- Risk Report Config Portfolios
 -- -----------------------------------------------------------------------------
@@ -74,6 +98,38 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+create policy ores_reporting_risk_report_config_portfolios_party_isolation_policy
+on ores_reporting_risk_report_config_portfolios_tbl
+as restrictive
+for all using (
+    exists (
+        select 1
+        from ores_reporting_risk_report_configs_tbl rc
+        join ores_reporting_report_definitions_tbl rd
+          on rd.tenant_id = rc.tenant_id
+         and rd.id = rc.report_definition_id
+         and rd.valid_to = ores_utility_infinity_timestamp_fn()
+        where rc.tenant_id = ores_reporting_risk_report_config_portfolios_tbl.tenant_id
+          and rc.id = ores_reporting_risk_report_config_portfolios_tbl.risk_report_config_id
+          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+)
+with check (
+    exists (
+        select 1
+        from ores_reporting_risk_report_configs_tbl rc
+        join ores_reporting_report_definitions_tbl rd
+          on rd.tenant_id = rc.tenant_id
+         and rd.id = rc.report_definition_id
+         and rd.valid_to = ores_utility_infinity_timestamp_fn()
+        where rc.tenant_id = ores_reporting_risk_report_config_portfolios_tbl.tenant_id
+          and rc.id = ores_reporting_risk_report_config_portfolios_tbl.risk_report_config_id
+          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+);
+
 -- -----------------------------------------------------------------------------
 -- Risk Report Config Books
 -- -----------------------------------------------------------------------------
@@ -86,6 +142,38 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+create policy ores_reporting_risk_report_config_books_party_isolation_policy
+on ores_reporting_risk_report_config_books_tbl
+as restrictive
+for all using (
+    exists (
+        select 1
+        from ores_reporting_risk_report_configs_tbl rc
+        join ores_reporting_report_definitions_tbl rd
+          on rd.tenant_id = rc.tenant_id
+         and rd.id = rc.report_definition_id
+         and rd.valid_to = ores_utility_infinity_timestamp_fn()
+        where rc.tenant_id = ores_reporting_risk_report_config_books_tbl.tenant_id
+          and rc.id = ores_reporting_risk_report_config_books_tbl.risk_report_config_id
+          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.valid_to = ores_utility_infinity_timestamp_fn()
+    )
+)
+with check (
+    exists (
+        select 1
+        from ores_reporting_risk_report_configs_tbl rc
+        join ores_reporting_report_definitions_tbl rd
+          on rd.tenant_id = rc.tenant_id
+         and rd.id = rc.report_definition_id
+         and rd.valid_to = ores_utility_infinity_timestamp_fn()
+        where rc.tenant_id = ores_reporting_risk_report_config_books_tbl.tenant_id
+          and rc.id = ores_reporting_risk_report_config_books_tbl.risk_report_config_id
+          and rd.party_id = any(ores_iam_visible_party_ids_fn())
+          and rc.valid_to = ores_utility_infinity_timestamp_fn()
+    )
 );
 
 -- -----------------------------------------------------------------------------

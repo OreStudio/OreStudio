@@ -98,6 +98,13 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git push
 #+END_SRC
 
+5. Reply to each review comment on GitHub, referencing the fix commit:
+
+#+BEGIN_SRC sh
+gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
+  -X POST -f body="Fixed in commit <sha> — <brief description of what was changed>."
+#+END_SRC
+
 *Important*: never amend existing commits — always create new commits for
 fixes. This preserves the review history.
 

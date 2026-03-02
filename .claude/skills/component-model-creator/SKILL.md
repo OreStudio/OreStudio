@@ -209,9 +209,9 @@ namespace ores #F2F2F2 {
 | Element    | Stereotype              | Color   | Description                        |
 |---------- |----------------------- |------- |---------------------------------- |
 | Domain     | (none)                  | #F7E5FF | Core domain entities               |
-| ORM        | <a id="orgf4fa79d"></a> | #99CB99 | Repository entities/mappers        |
+| ORM        | <a id="org4b40010"></a> | #99CB99 | Repository entities/mappers        |
 | Generators | (none)                  | #FFFACD | Test data generators               |
-| Tests      | <a id="orgc3a7cb5"></a> | #C5E1A5 | Test suite classes                 |
+| Tests      | <a id="orgf262a30"></a> | #C5E1A5 | Test suite classes                 |
 | Namespaces | (none)                  | #F2F2F2 | All namespaces use this background |
 
 

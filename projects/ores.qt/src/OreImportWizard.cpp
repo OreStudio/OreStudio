@@ -35,9 +35,12 @@
 #include "ores.ore/scanner/ore_directory_scanner.hpp"
 #include "ores.ore/planner/ore_import_planner.hpp"
 #include "ores.ore/hierarchy/ore_hierarchy_builder.hpp"
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.qt/FontUtils.hpp"
@@ -617,6 +620,17 @@ OreTradeImportPage::OreTradeImportPage(OreImportWizard* wizard)
     lifecycleEventEdit_ = new QLineEdit(this);
     lifecycleEventEdit_->setPlaceholderText(tr("e.g. New (leave blank to keep ORE value)"));
     form->addRow(tr("Default lifecycle event:"), lifecycleEventEdit_);
+
+    defaultCounterpartyCombo_ = new QComboBox(this);
+    defaultCounterpartyCombo_->addItem(tr("-- None (use ORE value) --"), QString());
+    defaultCounterpartyCombo_->setEnabled(false);
+    counterpartyStatusLabel_ = new QLabel(tr("Loading…"), this);
+    counterpartyStatusLabel_->setStyleSheet(QStringLiteral("color: gray; font-style: italic;"));
+    auto* cpRow = new QHBoxLayout;
+    cpRow->addWidget(defaultCounterpartyCombo_);
+    cpRow->addWidget(counterpartyStatusLabel_);
+    form->addRow(tr("Default counterparty:"), cpRow);
+
     layout->addLayout(form);
 
     statusLabel_ = new QLabel(this);
@@ -655,6 +669,64 @@ void OreTradeImportPage::initializePage() {
         tradeDateEdit_->setText(QDate::currentDate().toString("yyyy-MM-dd"));
     if (lifecycleEventEdit_->text().isEmpty())
         lifecycleEventEdit_->setText(tr("New"));
+
+    // Async fetch counterparties to populate the default counterparty combo
+    defaultCounterpartyCombo_->setEnabled(false);
+    counterpartyStatusLabel_->setText(tr("Loading…"));
+
+    using CounterpartyList = std::vector<refdata::domain::counterparty>;
+    auto* cm = wizard_->clientManager();
+    auto* watcher = new QFutureWatcher<CounterpartyList>(this);
+    connect(watcher, &QFutureWatcher<CounterpartyList>::finished,
+            this, &OreTradeImportPage::onCounterpartiesFetchFinished);
+
+    watcher->setFuture(QtConcurrent::run([cm]() -> CounterpartyList {
+        refdata::messaging::get_counterparties_request req;
+        req.limit = 1000;
+        const auto resp = cm->process_authenticated_request(std::move(req));
+        if (!resp) return {};
+        return resp->counterparties;
+    }));
+}
+
+void OreTradeImportPage::onCounterpartiesFetchFinished() {
+    using CounterpartyList = std::vector<refdata::domain::counterparty>;
+    auto* watcher = static_cast<QFutureWatcher<CounterpartyList>*>(sender());
+    if (!watcher) return;
+
+    const auto counterparties = watcher->result();
+    watcher->deleteLater();
+
+    BOOST_LOG_SEV(lg(), info) << "Fetched " << counterparties.size()
+                              << " counterparties for import defaults";
+
+    // Preserve current selection across re-visits
+    const QString prevData = defaultCounterpartyCombo_->currentData().toString();
+    defaultCounterpartyCombo_->clear();
+    defaultCounterpartyCombo_->addItem(tr("-- None (use ORE value) --"), QString());
+
+    for (const auto& cp : counterparties) {
+        defaultCounterpartyCombo_->addItem(
+            QString::fromStdString(cp.full_name),
+            QString::fromStdString(boost::uuids::to_string(cp.id)));
+    }
+
+    if (!prevData.isEmpty()) {
+        for (int i = 1; i < defaultCounterpartyCombo_->count(); ++i) {
+            if (defaultCounterpartyCombo_->itemData(i).toString() == prevData) {
+                defaultCounterpartyCombo_->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
+    if (counterparties.empty()) {
+        counterpartyStatusLabel_->setText(tr("(no counterparties found)"));
+    } else {
+        counterpartyStatusLabel_->setText(
+            tr("(%1 loaded)").arg(static_cast<int>(counterparties.size())));
+    }
+    defaultCounterpartyCombo_->setEnabled(true);
 }
 
 bool OreTradeImportPage::validatePage() {
@@ -674,8 +746,20 @@ void OreTradeImportPage::startImport() {
 
     // Capture defaults from form
     auto& defs = wizard_->choices().defaults;
-    defs.trade_date     = tradeDateEdit_->text().trimmed().toStdString();
+    defs.trade_date      = tradeDateEdit_->text().trimmed().toStdString();
     defs.lifecycle_event = lifecycleEventEdit_->text().trimmed().toStdString();
+
+    const QString cpUuidStr = defaultCounterpartyCombo_->currentData().toString();
+    if (!cpUuidStr.isEmpty()) {
+        try {
+            defs.default_counterparty_id =
+                boost::lexical_cast<boost::uuids::uuid>(cpUuidStr.toStdString());
+        } catch (...) {
+            defs.default_counterparty_id = std::nullopt;
+        }
+    } else {
+        defs.default_counterparty_id = std::nullopt;
+    }
 
     progressBar_->setValue(0);
     progressBar_->show();

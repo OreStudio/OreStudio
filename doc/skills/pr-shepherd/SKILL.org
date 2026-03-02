@@ -105,6 +105,36 @@ gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
   -X POST -f body="Fixed in commit <sha> — <brief description of what was changed>."
 #+END_SRC
 
+6. Resolve each review thread on GitHub using the GraphQL API.
+   First, get the thread IDs:
+
+#+BEGIN_SRC sh
+gh api graphql -f query='
+{
+  repository(owner: "{owner}", name: "{repo}") {
+    pullRequest(number: {pr_number}) {
+      reviewThreads(first: 50) {
+        nodes {
+          id
+          isResolved
+          comments(first: 1) { nodes { databaseId body } }
+        }
+      }
+    }
+  }
+}'
+#+END_SRC
+
+   Then resolve each unresolved thread:
+
+#+BEGIN_SRC sh
+gh api graphql -f query="mutation {
+  resolveReviewThread(input: {threadId: \"<thread_id>\"}) {
+    thread { isResolved }
+  }
+}"
+#+END_SRC
+
 *Important*: never amend existing commits — always create new commits for
 fixes. This preserves the review history.
 

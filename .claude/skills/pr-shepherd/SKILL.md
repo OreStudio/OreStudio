@@ -22,7 +22,7 @@ Use this skill immediately after a PR has been created and pushed, when you want
 2.  Run this skill, passing the PR number if not on the current branch.
 3.  The skill will execute the watch-and-fix loop until CI is green.
 
-See [Detailed Instructions](#orgc45b787) for the full loop behaviour.
+See [Detailed Instructions](#org4f20844) for the full loop behaviour.
 
 
 # Detailed Instructions
@@ -88,6 +88,35 @@ git push
 ```sh
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
   -X POST -f body="Fixed in commit <sha> — <brief description of what was changed>."
+```
+
+1.  Resolve each review thread on GitHub using the GraphQL API. First, get the thread IDs:
+
+```sh
+gh api graphql -f query='
+{
+  repository(owner: "{owner}", name: "{repo}") {
+    pullRequest(number: {pr_number}) {
+      reviewThreads(first: 50) {
+        nodes {
+          id
+          isResolved
+          comments(first: 1) { nodes { databaseId body } }
+        }
+      }
+    }
+  }
+}'
+```
+
+Then resolve each unresolved thread:
+
+```sh
+gh api graphql -f query="mutation {
+  resolveReviewThread(input: {threadId: \"<thread_id>\"}) {
+    thread { isResolved }
+  }
+}"
 ```
 
 **Important**: never amend existing commits — always create new commits for fixes. This preserves the review history.

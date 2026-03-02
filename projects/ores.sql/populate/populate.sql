@@ -75,6 +75,14 @@
 \echo '--- Data Catalogues Layer ---'
 \ir catalogues/catalogues_populate.sql
 
+-- =============================================================================
+-- Reporting Layer
+-- =============================================================================
+
+\echo ''
+\echo '--- Reporting Layer ---'
+\ir reporting/reporting_populate.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 

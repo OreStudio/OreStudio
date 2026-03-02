@@ -19,6 +19,7 @@
  */
 #include "ores.qt/CronExpressionWidget.hpp"
 #include "ores.qt/CronEditorDialog.hpp"
+#include "ores.qt/IconUtils.hpp"
 
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -29,7 +30,7 @@ namespace ores::qt {
 CronExpressionWidget::CronExpressionWidget(QWidget* parent)
     : QWidget(parent),
       expressionEdit_(new QLineEdit(this)),
-      builderButton_(new QPushButton(tr("..."), this)) {
+      builderButton_(new QPushButton(this)) {
 
     auto* layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -40,6 +41,9 @@ CronExpressionWidget::CronExpressionWidget(QWidget* parent)
             this, &CronExpressionWidget::onExpressionEdited);
 
     builderButton_->setFixedWidth(32);
+    builderButton_->setFixedHeight(32);
+    builderButton_->setIcon(IconUtils::createRecoloredIcon(
+        Icon::Clock, IconUtils::DefaultIconColor));
     builderButton_->setToolTip(tr("Open cron expression builder"));
     connect(builderButton_, &QPushButton::clicked,
             this, &CronExpressionWidget::onBuilderClicked);

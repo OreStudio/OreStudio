@@ -206,6 +206,11 @@ QString CronFieldWidget::value() const {
 void CronFieldWidget::setValue(const QString& field) {
     const QString f = field.trimmed();
 
+    // Block the changed() signal for the duration of this update so that
+    // intermediate states (e.g. mode switch before combo values are set)
+    // don't propagate. The caller is responsible for triggering a refresh.
+    const QSignalBlocker self(this);
+
     const QSignalBlocker sb_every(everyCombo_);
     const QSignalBlocker sb_start(startCombo_);
     const QSignalBlocker sb_min(minCombo_);

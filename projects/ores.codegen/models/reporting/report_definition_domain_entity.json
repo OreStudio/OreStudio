@@ -40,7 +40,7 @@
         "type": "text",
         "cpp_type": "std::string",
         "nullable": false,
-        "description": "Optional human-readable description of the report.",
+        "description": "Human-readable description of the report.",
         "generator_expr": "std::string(faker::lorem::sentence())"
       },
       {

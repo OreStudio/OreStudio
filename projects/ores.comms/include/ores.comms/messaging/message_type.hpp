@@ -608,6 +608,42 @@ enum class message_type : std::uint16_t {
     delete_job_definition_response = 0x900B,
     get_job_definition_history_request = 0x900C,
     get_job_definition_history_response = 0x900D,
+    // Reporting subsystem - Report types
+    get_report_types_request = 0xA000,
+    get_report_types_response = 0xA001,
+    save_report_type_request = 0xA002,
+    save_report_type_response = 0xA003,
+    delete_report_type_request = 0xA004,
+    delete_report_type_response = 0xA005,
+    get_report_type_history_request = 0xA006,
+    get_report_type_history_response = 0xA007,
+    // Reporting subsystem - Concurrency policies
+    get_concurrency_policies_request = 0xA010,
+    get_concurrency_policies_response = 0xA011,
+    save_concurrency_policy_request = 0xA012,
+    save_concurrency_policy_response = 0xA013,
+    delete_concurrency_policy_request = 0xA014,
+    delete_concurrency_policy_response = 0xA015,
+    get_concurrency_policy_history_request = 0xA016,
+    get_concurrency_policy_history_response = 0xA017,
+    // Reporting subsystem - Report definitions
+    get_report_definitions_request = 0xA020,
+    get_report_definitions_response = 0xA021,
+    save_report_definition_request = 0xA022,
+    save_report_definition_response = 0xA023,
+    delete_report_definition_request = 0xA024,
+    delete_report_definition_response = 0xA025,
+    get_report_definition_history_request = 0xA026,
+    get_report_definition_history_response = 0xA027,
+    // Reporting subsystem - Report instances
+    get_report_instances_request = 0xA030,
+    get_report_instances_response = 0xA031,
+    save_report_instance_request = 0xA032,
+    save_report_instance_response = 0xA033,
+    delete_report_instance_request = 0xA034,
+    delete_report_instance_response = 0xA035,
+    get_report_instance_history_request = 0xA036,
+    get_report_instance_history_response = 0xA037,
     // Sentinel value - must remain after the highest message type value
     last_value,
 };
@@ -1118,6 +1154,38 @@ enum class message_type : std::uint16_t {
     case message_type::delete_job_definition_response: return "delete_job_definition_response";
     case message_type::get_job_definition_history_request: return "get_job_definition_history_request";
     case message_type::get_job_definition_history_response: return "get_job_definition_history_response";
+    case message_type::get_report_types_request: return "get_report_types_request";
+    case message_type::get_report_types_response: return "get_report_types_response";
+    case message_type::save_report_type_request: return "save_report_type_request";
+    case message_type::save_report_type_response: return "save_report_type_response";
+    case message_type::delete_report_type_request: return "delete_report_type_request";
+    case message_type::delete_report_type_response: return "delete_report_type_response";
+    case message_type::get_report_type_history_request: return "get_report_type_history_request";
+    case message_type::get_report_type_history_response: return "get_report_type_history_response";
+    case message_type::get_concurrency_policies_request: return "get_concurrency_policies_request";
+    case message_type::get_concurrency_policies_response: return "get_concurrency_policies_response";
+    case message_type::save_concurrency_policy_request: return "save_concurrency_policy_request";
+    case message_type::save_concurrency_policy_response: return "save_concurrency_policy_response";
+    case message_type::delete_concurrency_policy_request: return "delete_concurrency_policy_request";
+    case message_type::delete_concurrency_policy_response: return "delete_concurrency_policy_response";
+    case message_type::get_concurrency_policy_history_request: return "get_concurrency_policy_history_request";
+    case message_type::get_concurrency_policy_history_response: return "get_concurrency_policy_history_response";
+    case message_type::get_report_definitions_request: return "get_report_definitions_request";
+    case message_type::get_report_definitions_response: return "get_report_definitions_response";
+    case message_type::save_report_definition_request: return "save_report_definition_request";
+    case message_type::save_report_definition_response: return "save_report_definition_response";
+    case message_type::delete_report_definition_request: return "delete_report_definition_request";
+    case message_type::delete_report_definition_response: return "delete_report_definition_response";
+    case message_type::get_report_definition_history_request: return "get_report_definition_history_request";
+    case message_type::get_report_definition_history_response: return "get_report_definition_history_response";
+    case message_type::get_report_instances_request: return "get_report_instances_request";
+    case message_type::get_report_instances_response: return "get_report_instances_response";
+    case message_type::save_report_instance_request: return "save_report_instance_request";
+    case message_type::save_report_instance_response: return "save_report_instance_response";
+    case message_type::delete_report_instance_request: return "delete_report_instance_request";
+    case message_type::delete_report_instance_response: return "delete_report_instance_response";
+    case message_type::get_report_instance_history_request: return "get_report_instance_history_request";
+    case message_type::get_report_instance_history_response: return "get_report_instance_history_response";
     default: return {};
     }
 }

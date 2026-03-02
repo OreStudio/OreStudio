@@ -363,6 +363,8 @@ constexpr std::uint16_t TRADE_SUBSYSTEM_MIN = 0x8000;
 constexpr std::uint16_t TRADE_SUBSYSTEM_MAX = 0x8FFF;
 constexpr std::uint16_t SCHEDULER_SUBSYSTEM_MIN = 0x9000;
 constexpr std::uint16_t SCHEDULER_SUBSYSTEM_MAX = 0x9FFF;
+constexpr std::uint16_t REPORTING_SUBSYSTEM_MIN = 0xA000;
+constexpr std::uint16_t REPORTING_SUBSYSTEM_MAX = 0xAFFF;
 
 }
 

@@ -67,6 +67,11 @@
 #include "ores.trading/messaging/registrar.hpp"
 #include "ores.trading/eventing/trade_changed_event.hpp"
 #include "ores.scheduler/messaging/registrar.hpp"
+#include "ores.reporting/messaging/registrar.hpp"
+#include "ores.reporting/eventing/report_type_changed_event.hpp"
+#include "ores.reporting/eventing/concurrency_policy_changed_event.hpp"
+#include "ores.reporting/eventing/report_definition_changed_event.hpp"
+#include "ores.reporting/eventing/report_instance_changed_event.hpp"
 #include "ores.mq/domain/queue_message_event.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
@@ -329,6 +334,22 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         refdata::eventing::portfolio_changed_event>(
         event_source, "ores.refdata.portfolio", "ores_portfolios",
         *channel_registry, "Portfolio data modified");
+    eventing::service::registrar::register_mapping<
+        reporting::eventing::report_type_changed_event>(
+        event_source, "ores.reporting.report_type", "ores_reporting_report_types",
+        *channel_registry, "Report type data modified");
+    eventing::service::registrar::register_mapping<
+        reporting::eventing::concurrency_policy_changed_event>(
+        event_source, "ores.reporting.concurrency_policy", "ores_reporting_concurrency_policies",
+        *channel_registry, "Concurrency policy data modified");
+    eventing::service::registrar::register_mapping<
+        reporting::eventing::report_definition_changed_event>(
+        event_source, "ores.reporting.report_definition", "ores_reporting_report_definitions",
+        *channel_registry, "Report definition data modified");
+    eventing::service::registrar::register_mapping<
+        reporting::eventing::report_instance_changed_event>(
+        event_source, "ores.reporting.report_instance", "ores_reporting_report_instances",
+        *channel_registry, "Report instance data modified");
 
     // Start the event source to begin listening for database notifications
     event_source.start();
@@ -586,6 +607,38 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                                      e.ids, e.tenant_id);
         });
 
+    auto report_type_sub = event_bus.subscribe<reporting::eventing::report_type_changed_event>(
+        [&subscription_mgr](const reporting::eventing::report_type_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                reporting::eventing::report_type_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.codes, e.tenant_id);
+        });
+
+    auto concurrency_policy_sub = event_bus.subscribe<reporting::eventing::concurrency_policy_changed_event>(
+        [&subscription_mgr](const reporting::eventing::concurrency_policy_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                reporting::eventing::concurrency_policy_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.codes, e.tenant_id);
+        });
+
+    auto report_definition_sub = event_bus.subscribe<reporting::eventing::report_definition_changed_event>(
+        [&subscription_mgr](const reporting::eventing::report_definition_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                reporting::eventing::report_definition_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids, e.tenant_id);
+        });
+
+    auto report_instance_sub = event_bus.subscribe<reporting::eventing::report_instance_changed_event>(
+        [&subscription_mgr](const reporting::eventing::report_instance_changed_event& e) {
+            using traits = eventing::domain::event_traits<
+                reporting::eventing::report_instance_changed_event>;
+            subscription_mgr->notify(std::string{traits::name}, e.timestamp,
+                                     e.ids, e.tenant_id);
+        });
+
     // Bridge pgmq queue messages to remote subscribers.
     // Each message is published under "ores.mq.q.<queue_name>" so clients can
     // subscribe to individual queues. The raw JSONB body is forwarded as the
@@ -635,6 +688,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::synthetic::messaging::registrar::register_handlers(*srv, ctx, auth_service);
     ores::trading::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::scheduler::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
+    ores::reporting::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
 
     // Register system info handler for get_system_info_request (no auth required)
     auto si_handler =

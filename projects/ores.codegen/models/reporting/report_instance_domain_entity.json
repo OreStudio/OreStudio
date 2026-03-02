@@ -1,0 +1,134 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "reporting",
+    "entity_singular": "report_instance",
+    "entity_plural": "report_instances",
+    "entity_title": "Report Instance",
+    "has_tenant_id": true,
+    "brief": "A single execution of a report definition.",
+    "description": "A single execution of a report_definition. Created automatically when the\nscheduler fires a trigger for an active definition.\n\nLifecycle is managed through the report_instance_lifecycle FSM machine.\nfsm_state_id points to the current state in ores_dq_fsm_states_tbl.\n\nstarted_at is NULL when the instance is cancelled or skipped before execution\nbegins. completed_at is NULL while running or in a terminal-before-start state.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this report instance."
+    },
+
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this report instance (inherited from the definition).",
+        "generator_expr": "boost::uuids::random_generator()()"
+      },
+      {
+        "name": "definition_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "The report definition that produced this instance.",
+        "generator_expr": "boost::uuids::random_generator()()"
+      },
+      {
+        "name": "fsm_state_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Current FSM state (FK to ores_dq_fsm_states_tbl).",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "trigger_run_id",
+        "type": "bigint",
+        "cpp_type": "std::int64_t",
+        "nullable": false,
+        "description": "Scheduler trigger run ID that caused this instance to be created.",
+        "generator_expr": "faker::number::integer<std::int64_t>(1, 1000000)"
+      },
+      {
+        "name": "output_message",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Execution log or error message.",
+        "generator_expr": "std::string()"
+      },
+      {
+        "name": "started_at",
+        "type": "timestamp",
+        "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
+        "nullable": true,
+        "description": "When execution began. NULL if cancelled before starting.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "completed_at",
+        "type": "timestamp",
+        "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
+        "nullable": true,
+        "description": "When execution completed. NULL while running or before start.",
+        "generator_expr": "std::nullopt"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_reporting_report_instances_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "instance",
+      "entity_plural_short": "instances",
+      "entity_singular_words": "report instance",
+      "entity_plural_words": "report instances"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<cstdint>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<cstdint>", "<optional>", "<string>", "\"sqlgen/Timestamp.hpp\"", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "ri"
+    },
+
+    "qt": {
+      "domain_include": "ores.reporting/domain/report_instance.hpp",
+      "domain_class": "reporting::domain::report_instance",
+      "protocol_include": "ores.reporting/messaging/report_instance_protocol.hpp",
+      "collection_name": "instances",
+      "item_var": "instance",
+      "key_field": "id",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "reporting::messaging::get_report_instances_request",
+      "get_response_class": "reporting::messaging::get_report_instances_response",
+      "get_message_type": "get_report_instances_request",
+      "save_request_class": "reporting::messaging::save_report_instance_request",
+      "save_response_class": "reporting::messaging::save_report_instance_response",
+      "save_message_type": "save_report_instance_request",
+      "delete_request_class": "reporting::messaging::delete_report_instance_request",
+      "delete_response_class": "reporting::messaging::delete_report_instance_response",
+      "delete_message_type": "delete_report_instance_request",
+      "history_request_class": "reporting::messaging::get_report_instance_history_request",
+      "history_response_class": "reporting::messaging::get_report_instance_history_response",
+      "history_message_type": "get_report_instance_history_request",
+
+      "columns": [
+        {"enum_name": "DefinitionId", "field": "definition_id", "header": "Definition",  "is_string": true,    "width": 200},
+        {"enum_name": "TriggerRunId", "field": "trigger_run_id","header": "Trigger Run", "is_int": true,       "width": 100},
+        {"enum_name": "OutputMessage","field": "output_message", "header": "Output",     "is_string": true,    "width": 250},
+        {"enum_name": "StartedAt",    "field": "started_at",     "header": "Started At", "is_timestamp": true, "width": 150},
+        {"enum_name": "CompletedAt",  "field": "completed_at",   "header": "Completed",  "is_timestamp": true, "width": 150},
+        {"enum_name": "Version",      "field": "version",        "header": "Version",    "is_int": true,       "width": 60},
+        {"enum_name": "ModifiedBy",   "field": "modified_by",    "header": "Modified By","is_string": true,    "width": 120}
+      ],
+
+      "settings_group": "ReportInstanceListWindow",
+      "window_title": "Report Instances",
+      "icon": "Play"
+    }
+  }
+}

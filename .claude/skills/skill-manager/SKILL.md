@@ -95,7 +95,7 @@ MA 02110-1301, USA.
 ```
 
 -   Update the file `doc/skills/claude_code_skills.org` in section "Available Skills" with a link to new skill, following the pattern of the previous skills.
--   Update the skill dependencies diagram `doc/skills/modeling/skill_dependencies.puml` to add the new skill and its dependencies on other skills. See [Skill dependencies diagram](#org94bc9a7) for details.
+-   Update the skill dependencies diagram `doc/skills/modeling/skill_dependencies.puml` to add the new skill and its dependencies on other skills. See [Skill dependencies diagram](#org98a24c6) for details.
 
 
 ## Skill dependencies diagram

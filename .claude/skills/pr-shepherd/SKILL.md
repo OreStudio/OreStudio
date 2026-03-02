@@ -22,7 +22,7 @@ Use this skill immediately after a PR has been created and pushed, when you want
 2.  Run this skill, passing the PR number if not on the current branch.
 3.  The skill will execute the watch-and-fix loop until CI is green.
 
-See [Detailed Instructions](#org41eb562) for the full loop behaviour.
+See [Detailed Instructions](#orgc45b787) for the full loop behaviour.
 
 
 # Detailed Instructions
@@ -81,6 +81,13 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 ```sh
 git push
+```
+
+1.  Reply to each review comment on GitHub, referencing the fix commit:
+
+```sh
+gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
+  -X POST -f body="Fixed in commit <sha> — <brief description of what was changed>."
 ```
 
 **Important**: never amend existing commits — always create new commits for fixes. This preserves the review history.

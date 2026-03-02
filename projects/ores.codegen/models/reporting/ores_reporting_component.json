@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "reporting",
+    "full_name": "ores.reporting",
+    "brief": "Reporting domain component",
+    "description": "Provides domain types, repositories, services and protocol support for report management including report definitions, risk report configurations and report instances."
+  }
+}

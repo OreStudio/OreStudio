@@ -29,6 +29,7 @@
 
 namespace ores::qt {
 
+class QueueChartWindow;
 class QueueMonitorMdiWindow;
 class DetachableMdiSubWindow;
 
@@ -70,7 +71,12 @@ signals:
 protected:
     EntityListMdiWindow* listWindow() const override;
 
+private slots:
+    void onViewChartRequested(const QString& queueName);
+
 private:
+    void showChartWindow(const QString& queueName);
+
     QueueMonitorMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

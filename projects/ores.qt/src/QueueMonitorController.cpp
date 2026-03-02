@@ -21,6 +21,7 @@
 
 #include <QPointer>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/QueueChartWindow.hpp"
 #include "ores.qt/QueueMonitorMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 
@@ -57,6 +58,8 @@ void QueueMonitorController::showListWindow() {
             this, &QueueMonitorController::statusMessage);
     connect(listWindow_, &QueueMonitorMdiWindow::errorOccurred,
             this, &QueueMonitorController::errorMessage);
+    connect(listWindow_, &QueueMonitorMdiWindow::viewChartRequested,
+            this, &QueueMonitorController::onViewChartRequested);
 
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
     listMdiSubWindow_->setWidget(listWindow_);
@@ -104,6 +107,50 @@ void QueueMonitorController::reloadListWindow() {
 
 EntityListMdiWindow* QueueMonitorController::listWindow() const {
     return listWindow_;
+}
+
+void QueueMonitorController::onViewChartRequested(const QString& queueName) {
+    BOOST_LOG_SEV(lg(), debug) << "View chart requested for: "
+                               << queueName.toStdString();
+    showChartWindow(queueName);
+}
+
+void QueueMonitorController::showChartWindow(const QString& queueName) {
+    const QString key = build_window_key("chart", queueName);
+    if (try_reuse_window(key)) {
+        BOOST_LOG_SEV(lg(), debug) << "Reusing existing chart window for: "
+                                   << queueName.toStdString();
+        return;
+    }
+
+    auto* chartWindow = new QueueChartWindow(queueName, clientManager_);
+
+    connect(chartWindow, &QueueChartWindow::statusChanged,
+            this, &QueueMonitorController::statusMessage);
+    connect(chartWindow, &QueueChartWindow::errorOccurred,
+            this, &QueueMonitorController::errorMessage);
+
+    auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
+    subWindow->setWidget(chartWindow);
+    subWindow->setWindowTitle(tr("Chart: %1").arg(queueName));
+    subWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::Chart, IconUtils::DefaultIconColor));
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->resize(chartWindow->sizeHint());
+
+    track_window(key, subWindow);
+    register_detachable_window(subWindow);
+
+    connect(subWindow, &QObject::destroyed,
+            this, [self = QPointer<QueueMonitorController>(this), key]() {
+        if (!self) return;
+        self->untrack_window(key);
+    });
+
+    show_managed_window(subWindow, listMdiSubWindow_, QPoint(60, 60));
+
+    BOOST_LOG_SEV(lg(), debug) << "Chart window created for: "
+                               << queueName.toStdString();
 }
 
 }

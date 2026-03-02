@@ -61,6 +61,7 @@ public slots:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
+    void viewChartRequested(const QString& queueName);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -70,12 +71,16 @@ protected:
 private slots:
     void onDataLoaded();
     void onLoadError(const QString& error_message, const QString& details = {});
+    void onSelectionChanged();
+    void onRowDoubleClicked(const QModelIndex& index);
+    void onViewChart();
 
 private:
     void setupUi();
     void setupToolbar();
     void setupTable();
     void setupConnections();
+    void updateActionStates();
 
     ClientManager* clientManager_;
     QToolBar* toolbar_;
@@ -83,6 +88,7 @@ private:
     ClientQueueModel* model_;
     QSortFilterProxyModel* proxyModel_;
     QAction* reloadAction_;
+    QAction* chartAction_;
 };
 
 }

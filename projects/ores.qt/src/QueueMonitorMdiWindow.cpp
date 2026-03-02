@@ -71,6 +71,16 @@ void QueueMonitorMdiWindow::setupToolbar() {
 
     initializeStaleIndicator(reloadAction_,
                              IconUtils::iconPath(Icon::ArrowClockwise));
+
+    toolbar_->addSeparator();
+
+    chartAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+        tr("View Chart"));
+    chartAction_->setToolTip(tr("Show time-series chart for selected queue"));
+    chartAction_->setEnabled(false);
+    connect(chartAction_, &QAction::triggered,
+            this, &QueueMonitorMdiWindow::onViewChart);
 }
 
 void QueueMonitorMdiWindow::setupTable() {
@@ -95,11 +105,20 @@ void QueueMonitorMdiWindow::setupTable() {
         ClientQueueModel::kDefaultWindowSize, 1);
 }
 
+void QueueMonitorMdiWindow::updateActionStates() {
+    const bool has_selection =
+        tableView_->selectionModel() &&
+        tableView_->selectionModel()->hasSelection();
+    chartAction_->setEnabled(has_selection);
+}
+
 void QueueMonitorMdiWindow::setupConnections() {
     connect(model_, &ClientQueueModel::dataLoaded,
             this, &QueueMonitorMdiWindow::onDataLoaded);
     connect(model_, &ClientQueueModel::loadError,
             this, &QueueMonitorMdiWindow::onLoadError);
+    connect(tableView_, &QTableView::doubleClicked,
+            this, &QueueMonitorMdiWindow::onRowDoubleClicked);
 }
 
 void QueueMonitorMdiWindow::reload() {
@@ -111,6 +130,35 @@ void QueueMonitorMdiWindow::reload() {
 
 void QueueMonitorMdiWindow::onDataLoaded() {
     emit statusChanged(tr("Loaded %1 queues").arg(model_->rowCount()));
+
+    // Wire selection model after model data is loaded (proxy model may
+    // not have a valid selection model before first data arrives).
+    disconnect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
+               this, &QueueMonitorMdiWindow::onSelectionChanged);
+    connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &QueueMonitorMdiWindow::onSelectionChanged);
+    updateActionStates();
+}
+
+void QueueMonitorMdiWindow::onSelectionChanged() {
+    updateActionStates();
+}
+
+void QueueMonitorMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
+    const auto sourceIndex = proxyModel_->mapToSource(index);
+    if (const auto* row = model_->getRow(sourceIndex.row())) {
+        emit viewChartRequested(QString::fromStdString(row->queue_name));
+    }
+}
+
+void QueueMonitorMdiWindow::onViewChart() {
+    const auto selection = tableView_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) return;
+
+    const auto sourceIndex = proxyModel_->mapToSource(selection.first());
+    if (const auto* row = model_->getRow(sourceIndex.row())) {
+        emit viewChartRequested(QString::fromStdString(row->queue_name));
+    }
 }
 
 void QueueMonitorMdiWindow::onLoadError(const QString& error_message,

@@ -345,8 +345,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 46.2 adds get_queue_metric_samples_request/response (0xB004/0xB005)
 // for querying time-series queue metrics from ores_mq_metrics_samples_tbl.
 // Supports optional from/to time-window filters for chart data retrieval.
+//
+// Version 46.3 adds queue management and messaging operations (0xB006-0xB013):
+// create_queue, drop_queue, purge_queue, send_message, read_messages,
+// pop_messages, delete_messages.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 46;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

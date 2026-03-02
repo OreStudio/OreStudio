@@ -31,11 +31,12 @@
 namespace ores::qt {
 
 /**
- * @brief Read-only MDI window for monitoring pgmq queue state.
+ * @brief MDI window for monitoring and managing pgmq queues.
  *
  * Shows a merged view of queue metadata (from list_queues) and live metrics
- * (from metrics_all) in a sortable table. There are no create/edit/delete
- * actions — this is a monitoring screen only.
+ * (from metrics_all) in a sortable table. Supports create, delete, and purge
+ * queue operations, opening a detail dialog for message publish/read, and a
+ * chart window for time-series metrics.
  */
 class QueueMonitorMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -62,6 +63,10 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void viewChartRequested(const QString& queueName);
+    void openDetailsRequested(const QString& queueName);
+    void createQueueRequested();
+    void deleteQueueRequested(const QString& queueName);
+    void purgeQueueRequested(const QString& queueName);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -74,6 +79,9 @@ private slots:
     void onSelectionChanged();
     void onRowDoubleClicked(const QModelIndex& index);
     void onViewChart();
+    void onCreateQueue();
+    void onDeleteQueue();
+    void onPurgeQueue();
 
 private:
     void setupUi();
@@ -89,6 +97,9 @@ private:
     QSortFilterProxyModel* proxyModel_;
     QAction* reloadAction_;
     QAction* chartAction_;
+    QAction* createAction_;
+    QAction* deleteQueueAction_;
+    QAction* purgeAction_;
 };
 
 }

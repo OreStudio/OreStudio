@@ -408,4 +408,536 @@ std::ostream& operator<<(std::ostream& s,
     return s;
 }
 
+// ============================================================================
+// Shared helpers for queue_message
+// ============================================================================
+
+namespace {
+
+void write_queue_message(std::vector<std::byte>& buffer,
+    const queue_message& m) {
+    writer::write_int64(buffer, m.msg_id);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(m.read_ct));
+    writer::write_string(buffer, m.enqueued_at);
+    writer::write_string(buffer, m.vt);
+    writer::write_string(buffer, m.payload);
+}
+
+std::expected<queue_message, error_code>
+read_queue_message(std::span<const std::byte>& data) {
+    queue_message m;
+
+    auto id_result = reader::read_int64(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    m.msg_id = *id_result;
+
+    auto rct_result = reader::read_uint32(data);
+    if (!rct_result) return std::unexpected(rct_result.error());
+    m.read_ct = static_cast<std::int32_t>(*rct_result);
+
+    auto enq_result = reader::read_string(data);
+    if (!enq_result) return std::unexpected(enq_result.error());
+    m.enqueued_at = *enq_result;
+
+    auto vt_result = reader::read_string(data);
+    if (!vt_result) return std::unexpected(vt_result.error());
+    m.vt = *vt_result;
+
+    auto payload_result = reader::read_string(data);
+    if (!payload_result) return std::unexpected(payload_result.error());
+    m.payload = *payload_result;
+
+    return m;
+}
+
+std::expected<std::vector<queue_message>, error_code>
+read_queue_messages(std::span<const std::byte>& data) {
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    std::vector<queue_message> messages;
+    messages.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto result = read_queue_message(data);
+        if (!result) return std::unexpected(result.error());
+        messages.push_back(std::move(*result));
+    }
+    return messages;
+}
+
+} // anonymous namespace
+
+// ============================================================================
+// create_queue_request
+// ============================================================================
+
+std::vector<std::byte> create_queue_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    writer::write_bool(buffer, is_unlogged);
+    return buffer;
+}
+
+std::expected<create_queue_request, error_code>
+create_queue_request::deserialize(std::span<const std::byte> data) {
+    create_queue_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    auto unlogged_result = reader::read_bool(data);
+    if (!unlogged_result) return std::unexpected(unlogged_result.error());
+    request.is_unlogged = *unlogged_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const create_queue_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// create_queue_response
+// ============================================================================
+
+std::vector<std::byte> create_queue_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<create_queue_response, error_code>
+create_queue_response::deserialize(std::span<const std::byte> data) {
+    create_queue_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const create_queue_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// drop_queue_request
+// ============================================================================
+
+std::vector<std::byte> drop_queue_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    return buffer;
+}
+
+std::expected<drop_queue_request, error_code>
+drop_queue_request::deserialize(std::span<const std::byte> data) {
+    drop_queue_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const drop_queue_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// drop_queue_response
+// ============================================================================
+
+std::vector<std::byte> drop_queue_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    return buffer;
+}
+
+std::expected<drop_queue_response, error_code>
+drop_queue_response::deserialize(std::span<const std::byte> data) {
+    drop_queue_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const drop_queue_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// purge_queue_request
+// ============================================================================
+
+std::vector<std::byte> purge_queue_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    return buffer;
+}
+
+std::expected<purge_queue_request, error_code>
+purge_queue_request::deserialize(std::span<const std::byte> data) {
+    purge_queue_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const purge_queue_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// purge_queue_response
+// ============================================================================
+
+std::vector<std::byte> purge_queue_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_int64(buffer, purged_count);
+    return buffer;
+}
+
+std::expected<purge_queue_response, error_code>
+purge_queue_response::deserialize(std::span<const std::byte> data) {
+    purge_queue_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto count_result = reader::read_int64(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    response.purged_count = *count_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const purge_queue_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// send_message_request
+// ============================================================================
+
+std::vector<std::byte> send_message_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    writer::write_string(buffer, payload);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(delay_seconds));
+    return buffer;
+}
+
+std::expected<send_message_request, error_code>
+send_message_request::deserialize(std::span<const std::byte> data) {
+    send_message_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    auto payload_result = reader::read_string(data);
+    if (!payload_result) return std::unexpected(payload_result.error());
+    request.payload = *payload_result;
+
+    auto delay_result = reader::read_uint32(data);
+    if (!delay_result) return std::unexpected(delay_result.error());
+    request.delay_seconds = static_cast<std::int32_t>(*delay_result);
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const send_message_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// send_message_response
+// ============================================================================
+
+std::vector<std::byte> send_message_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_int64(buffer, msg_id);
+    return buffer;
+}
+
+std::expected<send_message_response, error_code>
+send_message_response::deserialize(std::span<const std::byte> data) {
+    send_message_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto id_result = reader::read_int64(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    response.msg_id = *id_result;
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const send_message_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// read_messages_request
+// ============================================================================
+
+std::vector<std::byte> read_messages_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(count));
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(vt_seconds));
+    return buffer;
+}
+
+std::expected<read_messages_request, error_code>
+read_messages_request::deserialize(std::span<const std::byte> data) {
+    read_messages_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    request.count = static_cast<std::int32_t>(*count_result);
+
+    auto vt_result = reader::read_uint32(data);
+    if (!vt_result) return std::unexpected(vt_result.error());
+    request.vt_seconds = static_cast<std::int32_t>(*vt_result);
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const read_messages_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// read_messages_response
+// ============================================================================
+
+std::vector<std::byte> read_messages_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(messages.size()));
+    for (const auto& m : messages)
+        write_queue_message(buffer, m);
+    return buffer;
+}
+
+std::expected<read_messages_response, error_code>
+read_messages_response::deserialize(std::span<const std::byte> data) {
+    read_messages_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto msgs = read_queue_messages(data);
+    if (!msgs) return std::unexpected(msgs.error());
+    response.messages = std::move(*msgs);
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const read_messages_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// pop_messages_request
+// ============================================================================
+
+std::vector<std::byte> pop_messages_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(count));
+    return buffer;
+}
+
+std::expected<pop_messages_request, error_code>
+pop_messages_request::deserialize(std::span<const std::byte> data) {
+    pop_messages_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    request.count = static_cast<std::int32_t>(*count_result);
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const pop_messages_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// pop_messages_response
+// ============================================================================
+
+std::vector<std::byte> pop_messages_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(messages.size()));
+    for (const auto& m : messages)
+        write_queue_message(buffer, m);
+    return buffer;
+}
+
+std::expected<pop_messages_response, error_code>
+pop_messages_response::deserialize(std::span<const std::byte> data) {
+    pop_messages_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto msgs = read_queue_messages(data);
+    if (!msgs) return std::unexpected(msgs.error());
+    response.messages = std::move(*msgs);
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const pop_messages_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// delete_messages_request
+// ============================================================================
+
+std::vector<std::byte> delete_messages_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(msg_ids.size()));
+    for (const auto id : msg_ids)
+        writer::write_int64(buffer, id);
+    return buffer;
+}
+
+std::expected<delete_messages_request, error_code>
+delete_messages_request::deserialize(std::span<const std::byte> data) {
+    delete_messages_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    request.msg_ids.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        auto id_result = reader::read_int64(data);
+        if (!id_result) return std::unexpected(id_result.error());
+        request.msg_ids.push_back(*id_result);
+    }
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_messages_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// delete_messages_response
+// ============================================================================
+
+std::vector<std::byte> delete_messages_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(deleted_count));
+    return buffer;
+}
+
+std::expected<delete_messages_response, error_code>
+delete_messages_response::deserialize(std::span<const std::byte> data) {
+    delete_messages_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto count_result = reader::read_uint32(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    response.deleted_count = static_cast<std::int32_t>(*count_result);
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s, const delete_messages_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

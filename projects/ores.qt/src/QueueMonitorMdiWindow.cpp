@@ -37,7 +37,11 @@ QueueMonitorMdiWindow::QueueMonitorMdiWindow(
       tableView_(nullptr),
       model_(nullptr),
       proxyModel_(nullptr),
-      reloadAction_(nullptr) {
+      reloadAction_(nullptr),
+      chartAction_(nullptr),
+      createAction_(nullptr),
+      deleteQueueAction_(nullptr),
+      purgeAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -71,6 +75,31 @@ void QueueMonitorMdiWindow::setupToolbar() {
 
     initializeStaleIndicator(reloadAction_,
                              IconUtils::iconPath(Icon::ArrowClockwise));
+
+    toolbar_->addSeparator();
+
+    createAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Add, IconUtils::DefaultIconColor),
+        tr("Create Queue"));
+    createAction_->setToolTip(tr("Create a new queue"));
+    connect(createAction_, &QAction::triggered,
+            this, &QueueMonitorMdiWindow::onCreateQueue);
+
+    deleteQueueAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::Delete, IconUtils::DefaultIconColor),
+        tr("Delete Queue"));
+    deleteQueueAction_->setToolTip(tr("Permanently delete the selected queue"));
+    deleteQueueAction_->setEnabled(false);
+    connect(deleteQueueAction_, &QAction::triggered,
+            this, &QueueMonitorMdiWindow::onDeleteQueue);
+
+    purgeAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(Icon::DeleteDismiss, IconUtils::DefaultIconColor),
+        tr("Purge Queue"));
+    purgeAction_->setToolTip(tr("Delete all messages from the selected queue"));
+    purgeAction_->setEnabled(false);
+    connect(purgeAction_, &QAction::triggered,
+            this, &QueueMonitorMdiWindow::onPurgeQueue);
 
     toolbar_->addSeparator();
 
@@ -110,6 +139,8 @@ void QueueMonitorMdiWindow::updateActionStates() {
         tableView_->selectionModel() &&
         tableView_->selectionModel()->hasSelection();
     chartAction_->setEnabled(has_selection);
+    deleteQueueAction_->setEnabled(has_selection);
+    purgeAction_->setEnabled(has_selection);
 }
 
 void QueueMonitorMdiWindow::setupConnections() {
@@ -147,7 +178,7 @@ void QueueMonitorMdiWindow::onSelectionChanged() {
 void QueueMonitorMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
     const auto sourceIndex = proxyModel_->mapToSource(index);
     if (const auto* row = model_->getRow(sourceIndex.row())) {
-        emit viewChartRequested(QString::fromStdString(row->queue_name));
+        emit openDetailsRequested(QString::fromStdString(row->queue_name));
     }
 }
 
@@ -166,6 +197,30 @@ void QueueMonitorMdiWindow::onLoadError(const QString& error_message,
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
+}
+
+void QueueMonitorMdiWindow::onCreateQueue() {
+    emit createQueueRequested();
+}
+
+void QueueMonitorMdiWindow::onDeleteQueue() {
+    const auto selection = tableView_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) return;
+
+    const auto sourceIndex = proxyModel_->mapToSource(selection.first());
+    if (const auto* row = model_->getRow(sourceIndex.row())) {
+        emit deleteQueueRequested(QString::fromStdString(row->queue_name));
+    }
+}
+
+void QueueMonitorMdiWindow::onPurgeQueue() {
+    const auto selection = tableView_->selectionModel()->selectedRows();
+    if (selection.isEmpty()) return;
+
+    const auto sourceIndex = proxyModel_->mapToSource(selection.first());
+    if (const auto* row = model_->getRow(sourceIndex.row())) {
+        emit purgeQueueRequested(QString::fromStdString(row->queue_name));
+    }
 }
 
 }

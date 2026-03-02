@@ -34,8 +34,8 @@ namespace ores::mq::messaging {
  * @brief Message handler for the MQ subsystem messages.
  *
  * Processes messages in the MQ subsystem range (0xB000-0xBFFF).
- * Handles get_queues and get_queue_metrics read-only queries by
- * delegating directly to pgmq::client.
+ * Handles queue management (create, drop, purge) and message operations
+ * (send, read, pop, delete) by delegating directly to pgmq::client.
  */
 class mq_message_handler final
     : public comms::messaging::tenant_aware_handler {
@@ -71,6 +71,41 @@ private:
     boost::asio::awaitable<std::expected<std::vector<std::byte>,
         ores::utility::serialization::error_code>>
     handle_get_queue_metric_samples_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_create_queue_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_drop_queue_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_purge_queue_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_send_message_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_read_messages_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_pop_messages_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_delete_messages_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     pgmq::client client_;

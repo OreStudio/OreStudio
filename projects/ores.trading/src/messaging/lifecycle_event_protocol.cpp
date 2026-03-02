@@ -44,10 +44,6 @@ void write_lifecycle_event(std::vector<std::byte>& buffer,
     writer::write_uint32(buffer, static_cast<std::uint32_t>(le.version));
     writer::write_string(buffer, le.code);
     writer::write_string(buffer, le.description);
-    writer::write_bool(buffer, le.fsm_state_id.has_value());
-    if (le.fsm_state_id.has_value()) {
-        writer::write_uuid(buffer, *le.fsm_state_id);
-    }
     writer::write_string(buffer, le.modified_by);
     writer::write_string(buffer, le.performed_by);
     writer::write_string(buffer, le.change_reason_code);
@@ -71,14 +67,6 @@ read_lifecycle_event(std::span<const std::byte>& data) {
     auto description_result = reader::read_string(data);
     if (!description_result) return std::unexpected(description_result.error());
     le.description = *description_result;
-
-    auto fsm_state_id_present_result = reader::read_bool(data);
-    if (!fsm_state_id_present_result) return std::unexpected(fsm_state_id_present_result.error());
-    if (*fsm_state_id_present_result) {
-        auto fsm_state_id_result = reader::read_uuid(data);
-        if (!fsm_state_id_result) return std::unexpected(fsm_state_id_result.error());
-        le.fsm_state_id = *fsm_state_id_result;
-    }
 
     auto modified_by_result = reader::read_string(data);
     if (!modified_by_result) return std::unexpected(modified_by_result.error());

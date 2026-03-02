@@ -43,9 +43,9 @@ domain::trade raw_row_to_trade(
     // Column order matches explicit SELECT in read_latest_filtered CTE:
     // 0:id, 1:tenant_id, 2:version, 3:party_id, 4:external_id, 5:book_id,
     // 6:portfolio_id, 7:successor_trade_id, 8:counterparty_id, 9:trade_type,
-    // 10:netting_set_id, 11:lifecycle_event, 12:trade_date, 13:execution_timestamp,
-    // 14:effective_date, 15:termination_date, 16:modified_by, 17:performed_by,
-    // 18:change_reason_code, 19:change_commentary, 20:valid_from
+    // 10:netting_set_id, 11:activity_type_code, 12:status_id, 13:trade_date,
+    // 14:execution_timestamp, 15:effective_date, 16:termination_date, 17:modified_by,
+    // 18:performed_by, 19:change_reason_code, 20:change_commentary, 21:valid_from
     domain::trade r;
     r.id = boost::lexical_cast<boost::uuids::uuid>(row[0].value());
     r.tenant_id = utility::uuid::tenant_id::from_string(row[1].value()).value();
@@ -60,16 +60,17 @@ domain::trade raw_row_to_trade(
         r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(*row[8]);
     r.trade_type = row[9].value();
     r.netting_set_id = row[10].value();
-    r.lifecycle_event = row[11].value();
-    r.trade_date = row[12].value();
-    r.execution_timestamp = row[13].value();
-    r.effective_date = row[14].value();
-    r.termination_date = row[15].value();
-    r.modified_by = row[16].value();
-    r.performed_by = row[17].value();
-    r.change_reason_code = row[18].value();
-    r.change_commentary = row[19].value();
-    r.recorded_at = timestamp_to_timepoint(std::string_view{row[20].value()});
+    r.activity_type_code = row[11].value();
+    r.status_id = boost::lexical_cast<boost::uuids::uuid>(row[12].value());
+    r.trade_date = row[13].value();
+    r.execution_timestamp = row[14].value();
+    r.effective_date = row[15].value();
+    r.termination_date = row[16].value();
+    r.modified_by = row[17].value();
+    r.performed_by = row[18].value();
+    r.change_reason_code = row[19].value();
+    r.change_commentary = row[20].value();
+    r.recorded_at = timestamp_to_timepoint(std::string_view{row[21].value()});
     return r;
 }
 

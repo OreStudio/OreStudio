@@ -281,10 +281,10 @@ void TradeHistoryDialog::updateChangesTable(int currentVersionIndex) {
                   QString::fromStdString(current.trade_type));
     }
 
-    if (current.lifecycle_event != previous.lifecycle_event) {
+    if (current.activity_type_code != previous.activity_type_code) {
         addChange("Lifecycle Event",
-                  QString::fromStdString(previous.lifecycle_event),
-                  QString::fromStdString(current.lifecycle_event));
+                  QString::fromStdString(previous.activity_type_code),
+                  QString::fromStdString(current.activity_type_code));
     }
 
     if (current.netting_set_id != previous.netting_set_id) {
@@ -337,7 +337,7 @@ void TradeHistoryDialog::updateFullDetails(int versionIndex) {
 
     ui_->externalIdValue->setText(QString::fromStdString(version.external_id));
     ui_->tradeTypeValue->setText(QString::fromStdString(version.trade_type));
-    ui_->lifecycleEventValue->setText(QString::fromStdString(version.lifecycle_event));
+    ui_->lifecycleEventValue->setText(QString::fromStdString(version.activity_type_code));
     ui_->nettingSetIdValue->setText(QString::fromStdString(version.netting_set_id));
     ui_->tradeDateValue->setText(QString::fromStdString(version.trade_date));
     ui_->effectiveDateValue->setText(QString::fromStdString(version.effective_date));

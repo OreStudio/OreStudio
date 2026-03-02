@@ -55,7 +55,8 @@ trading::domain::trade trade_mapper::map(const trade& v) {
         }
     }
 
-    r.lifecycle_event = "New";
+    r.activity_type_code = "new_booking";
+    r.status_id = boost::uuids::nil_uuid();
     r.modified_by = "ores";
     r.change_reason_code = "system.external_data_import";
     r.change_commentary = "Imported from ORE XML portfolio";

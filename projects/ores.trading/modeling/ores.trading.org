@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B
+:END:
+#+title: ORE Studio Trading Component
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Trade booking and lifecycle management for [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]], implementing the core
+domain model for financial trades with full temporal versioning and FSM-enforced
+status transitions.
+
+* Component Architecture
+
+Diagram:
+
+#+attr_html: :width 100% :alt Trading Component Diagram
+#+caption: ORE Studio Trading Component Diagram
+[[file:ores.trading.png][file:ores.trading.png]]
+
+Implements the core domain model for trade booking and lifecycle management. Key
+features:
+
+- Domain model: Trade and activity type entities with temporal versioning
+- Trade status FSM: Four-state machine (new, live, expired, cancelled) enforced
+  via the ores.dq FSM infrastructure
+- Activity taxonomy: ~30 activity types across five categories for P&L attribution
+- JSON I/O: Serialization using reflection (rfl library)
+- Table I/O: Formatted table output using fort library
+- Database persistence: ORM entities, mappers, and repositories with temporal support
+- Message-based API: Request/response handlers for trade operations (0x5000-0x5FFF)
+- Synthetic data: Test data generation using faker-cxx
+- Version history: Full amendment history via temporal versioning; cancel-and-rebook
+  via successor_trade_id
+
+The module is organized into namespaces: domain (core entities), repository (ORM
+and persistence), service (business logic and FSM validation), messaging (API
+handlers), and generators (test data).
+
+For trade status state machine design see [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]].
+
+For multi-party trade isolation see [[id:BAE3AA18-6027-10A4-965B-2C174C237195][Multi-Party Architecture]].
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

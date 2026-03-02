@@ -30,8 +30,11 @@
 \ir ./trading_trade_types_create.sql
 \ir ./trading_trade_types_notify_trigger_create.sql
 
-\ir ./trading_lifecycle_events_create.sql
-\ir ./trading_lifecycle_events_notify_trigger_create.sql
+\ir ./trading_fpml_event_types_create.sql
+\ir ./trading_fpml_event_types_notify_trigger_create.sql
+
+\ir ./trading_activity_types_create.sql
+\ir ./trading_activity_types_notify_trigger_create.sql
 
 \ir ./trading_party_role_types_create.sql
 \ir ./trading_party_role_types_notify_trigger_create.sql

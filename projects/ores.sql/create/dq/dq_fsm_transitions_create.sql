@@ -30,7 +30,7 @@ create table if not exists "ores_dq_fsm_transitions_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "machine_id" uuid not null,
-    "from_state_id" uuid not null,
+    "from_state_id" uuid null,
     "to_state_id" uuid not null,
     "name" text not null,
     "guard_function" text null,
@@ -96,16 +96,24 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate from_state_id (mandatory soft FK) and retrieve its machine
-    select machine_id into from_machine_id
-    from ores_dq_fsm_states_tbl
-    where tenant_id = NEW.tenant_id and id = NEW.from_state_id
-      and valid_to = ores_utility_infinity_timestamp_fn();
+    -- Validate from_state_id (optional soft FK: NULL means initial transition)
+    if NEW.from_state_id is not null then
+        select machine_id into from_machine_id
+        from ores_dq_fsm_states_tbl
+        where tenant_id = NEW.tenant_id and id = NEW.from_state_id
+          and valid_to = ores_utility_infinity_timestamp_fn();
 
-    if not found then
-        raise exception 'Invalid from_state_id: %. No active FSM state found with this id.',
-            NEW.from_state_id
-            using errcode = '23503';
+        if not found then
+            raise exception 'Invalid from_state_id: %. No active FSM state found with this id.',
+                NEW.from_state_id
+                using errcode = '23503';
+        end if;
+
+        if from_machine_id <> NEW.machine_id then
+            raise exception 'from_state_id % belongs to machine %, not the declared machine_id %.',
+                NEW.from_state_id, from_machine_id, NEW.machine_id
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Validate to_state_id (mandatory soft FK) and retrieve its machine
@@ -117,13 +125,6 @@ begin
     if not found then
         raise exception 'Invalid to_state_id: %. No active FSM state found with this id.',
             NEW.to_state_id
-            using errcode = '23503';
-    end if;
-
-    -- Ensure both states belong to the declared machine
-    if from_machine_id <> NEW.machine_id then
-        raise exception 'from_state_id % belongs to machine %, not the declared machine_id %.',
-            NEW.from_state_id, from_machine_id, NEW.machine_id
             using errcode = '23503';
     end if;
 

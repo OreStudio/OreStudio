@@ -43,12 +43,17 @@ vcpkg_cmake_config_fixup(
     CONFIG_PATH "lib/cmake/${PORT}"
 )
 
-# libbson 2.x uses package name "bson" (not "bson-1.0"); fix the installed config.
-vcpkg_replace_string(
-    "${CURRENT_PACKAGES_DIR}/share/${PORT}/${PORT}-config.cmake"
-    "find_dependency(bson-1.0)"
-    "find_dependency(bson)"
+# The reflectcpp-config.cmake.in template hardcodes find_dependency(bson-1.0).
+# libbson 1.x exports its cmake package as "bson-1.0"; libbson 2.x exports as "bson".
+# Patch the installed config to try bson-1.0 first, then fall back to bson.
+set(_reflectcpp_cfg "${CURRENT_PACKAGES_DIR}/share/${PORT}/${PORT}-config.cmake")
+file(READ "${_reflectcpp_cfg}" _reflectcpp_cfg_content)
+string(REPLACE
+    "  find_dependency(bson-1.0)"
+    "  find_package(bson-1.0 CONFIG QUIET)\n  if(NOT bson-1.0_FOUND)\n    find_dependency(bson)\n  endif()"
+    _reflectcpp_cfg_content "${_reflectcpp_cfg_content}"
 )
+file(WRITE "${_reflectcpp_cfg}" "${_reflectcpp_cfg_content}")
 
 file(REMOVE_RECURSE
     "${CURRENT_PACKAGES_DIR}/debug/include"

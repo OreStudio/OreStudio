@@ -18,8 +18,8 @@
  *
  */
 
-drop rule if exists ores_trading_lifecycle_events_delete_rule on "ores_trading_lifecycle_events_tbl";
-drop trigger if exists ores_trading_lifecycle_events_insert_trg on "ores_trading_lifecycle_events_tbl";
-drop function if exists ores_trading_lifecycle_events_insert_fn;
-drop function if exists ores_trading_validate_lifecycle_event_fn;
-drop table if exists "ores_trading_lifecycle_events_tbl";
+drop rule if exists ores_trading_activity_types_delete_rule on "ores_trading_activity_types_tbl";
+drop trigger if exists ores_trading_activity_types_insert_trg on "ores_trading_activity_types_tbl";
+drop function if exists ores_trading_activity_types_insert_fn;
+drop function if exists ores_trading_validate_activity_type_fn;
+drop table if exists "ores_trading_activity_types_tbl";

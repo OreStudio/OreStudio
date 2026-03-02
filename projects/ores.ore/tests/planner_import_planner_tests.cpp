@@ -276,7 +276,7 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
 
     auto choices = default_choices(root);
     choices.defaults.trade_date = "2026-01-01";
-    choices.defaults.lifecycle_event = "Amendment";
+    choices.defaults.activity_type_code = "novation";
 
     ore_import_planner planner(sr, {}, choices);
     const auto plan = planner.plan();
@@ -289,6 +289,6 @@ TEST_CASE("plan_trade_defaults_override_parsed_values", tags) {
     for (const auto& item : plan.trades) {
         INFO("Trade: " << item.trade.external_id);
         CHECK(item.trade.trade_date == "2026-01-01");
-        CHECK(item.trade.lifecycle_event == "Amendment");
+        CHECK(item.trade.activity_type_code == "novation");
     }
 }

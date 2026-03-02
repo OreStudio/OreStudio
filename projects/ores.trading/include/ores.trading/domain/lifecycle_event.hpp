@@ -21,9 +21,7 @@
 #define ORES_TRADING_DOMAIN_LIFECYCLE_EVENT_HPP
 
 #include <chrono>
-#include <optional>
 #include <string>
-#include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
@@ -56,11 +54,6 @@ struct lifecycle_event final {
      * @brief Detailed description of the lifecycle event.
      */
     std::string description;
-
-    /**
-     * @brief Optional FSM state identifier associated with this lifecycle event.
-     */
-    std::optional<boost::uuids::uuid> fsm_state_id;
 
     /**
      * @brief Username of the person who last modified this lifecycle event.

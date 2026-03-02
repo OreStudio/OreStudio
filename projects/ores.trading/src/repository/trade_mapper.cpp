@@ -45,7 +45,8 @@ trade_mapper::map(const trade_entity& v) {
     r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
     r.netting_set_id = v.netting_set_id;
-    r.lifecycle_event = v.lifecycle_event;
+    r.activity_type_code = v.activity_type_code;
+    r.status_id = boost::lexical_cast<boost::uuids::uuid>(v.status_id);
     r.trade_date = v.trade_date;
     r.execution_timestamp = v.execution_timestamp;
     r.effective_date = v.effective_date;
@@ -78,7 +79,8 @@ trade_mapper::map(const domain::trade& v) {
     r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::uuids::to_string(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
     r.netting_set_id = v.netting_set_id;
-    r.lifecycle_event = v.lifecycle_event;
+    r.activity_type_code = v.activity_type_code;
+    r.status_id = boost::uuids::to_string(v.status_id);
     r.trade_date = v.trade_date;
     r.execution_timestamp = v.execution_timestamp;
     r.effective_date = v.effective_date;

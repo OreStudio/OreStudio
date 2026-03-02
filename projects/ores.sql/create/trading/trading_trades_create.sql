@@ -41,7 +41,8 @@ create table if not exists "ores_trading_trades_tbl" (
     "counterparty_id" uuid null,
     "trade_type" text not null,
     "netting_set_id" text not null,
-    "lifecycle_event" text not null,
+    "activity_type_code" text not null,
+    "status_id" uuid not null,
     "trade_date" date not null,
     "execution_timestamp" timestamp with time zone not null,
     "effective_date" date not null,
@@ -163,8 +164,18 @@ begin
     -- Validate trade_type
     NEW.trade_type := ores_trading_validate_trade_type_fn(NEW.tenant_id, NEW.trade_type);
 
-    -- Validate lifecycle_event
-    NEW.lifecycle_event := ores_trading_validate_lifecycle_event_fn(NEW.tenant_id, NEW.lifecycle_event);
+    -- Validate activity_type_code
+    NEW.activity_type_code := ores_trading_validate_activity_type_fn(NEW.tenant_id, NEW.activity_type_code);
+
+    -- Validate status_id (soft FK to ores_dq_fsm_states_tbl)
+    if not exists (
+        select 1 from ores_dq_fsm_states_tbl
+        where id = NEW.status_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid status_id: %. FSM state must exist.', NEW.status_id
+            using errcode = '23503';
+    end if;
 
     -- Version management
     select version into current_version

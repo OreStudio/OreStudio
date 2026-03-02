@@ -33,13 +33,12 @@ namespace ores::trading::repository {
  */
 struct lifecycle_event_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename = "ores_trading_lifecycle_events_tbl";
+    constexpr static const char* tablename = "ores_trading_fpml_event_types_tbl";
 
     sqlgen::PrimaryKey<std::string> code;
     std::string tenant_id;
     int version = 0;
     std::optional<std::string> description;
-    std::optional<std::string> fsm_state_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

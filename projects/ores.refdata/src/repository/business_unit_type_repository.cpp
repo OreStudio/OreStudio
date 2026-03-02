@@ -60,8 +60,9 @@ void business_unit_type_repository::write(
 std::vector<domain::business_unit_type>
 business_unit_type_repository::read_latest() {
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
-        where("valid_to"_c == max.value()) |
+        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("name"_c);
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
@@ -75,9 +76,10 @@ business_unit_type_repository::read_latest(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit type. Id: " << id;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
-        where("id"_c == id_str && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "id"_c == id_str && "valid_to"_c == max.value());
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
         ctx_, query,
@@ -90,8 +92,9 @@ business_unit_type_repository::read_latest_by_code(const std::string& code) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest business unit type. Code: " << code;
 
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
-        where("code"_c == code && "valid_to"_c == max.value());
+        where("tenant_id"_c == tid && "code"_c == code && "valid_to"_c == max.value());
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
         ctx_, query,
@@ -103,9 +106,10 @@ std::vector<domain::business_unit_type>
 business_unit_type_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all business unit type versions. Id: " << id;
 
+    const auto tid = ctx_.tenant_id().to_string();
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<business_unit_type_entity>> |
-        where("id"_c == id_str) |
+        where("tenant_id"_c == tid && "id"_c == id_str) |
         order_by("version"_c.desc());
 
     return execute_read_query<business_unit_type_entity, domain::business_unit_type>(
@@ -117,9 +121,10 @@ business_unit_type_repository::read_all(const boost::uuids::uuid& id) {
 void business_unit_type_repository::remove(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing business unit type from database: " << id;
 
+    const auto tid = ctx_.tenant_id().to_string();
     const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::delete_from<business_unit_type_entity> |
-        where("id"_c == id_str);
+        where("tenant_id"_c == tid && "id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing business unit type from database");
 }

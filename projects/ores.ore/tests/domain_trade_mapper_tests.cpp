@@ -56,7 +56,7 @@ TEST_CASE("map_trade_with_swap_type", tags) {
 
     CHECK(result.external_id == "Swap_20y");
     CHECK(result.trade_type == "Swap");
-    CHECK(result.lifecycle_event == "New");
+    CHECK(result.activity_type_code == "new_booking");
     CHECK(result.modified_by == "ores");
     CHECK(result.change_reason_code == "system.external_data_import");
     CHECK(result.change_commentary == "Imported from ORE XML portfolio");

@@ -49,7 +49,32 @@ declare
     v_uti_id      uuid := gen_random_uuid();
     v_int_id      uuid := gen_random_uuid();
     v_role_a_id   uuid := gen_random_uuid();
+    v_status_new  uuid;
+    v_status_live uuid;
 begin
+    -- Look up FSM states for trade_status
+    select s.id into v_status_new
+    from ores_dq_fsm_states_tbl s
+    join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+    where m.tenant_id = v_sys_tenant
+      and m.name = 'trade_status'
+      and m.valid_to = ores_utility_infinity_timestamp_fn()
+      and s.name = 'new'
+      and s.valid_to = ores_utility_infinity_timestamp_fn();
+
+    select s.id into v_status_live
+    from ores_dq_fsm_states_tbl s
+    join ores_dq_fsm_machines_tbl m on m.id = s.machine_id
+    where m.tenant_id = v_sys_tenant
+      and m.name = 'trade_status'
+      and m.valid_to = ores_utility_infinity_timestamp_fn()
+      and s.name = 'live'
+      and s.valid_to = ores_utility_infinity_timestamp_fn();
+
+    if v_status_new is null or v_status_live is null then
+        raise notice 'SKIP: trade_status FSM states not found. Run dq_fsm populate first.';
+        return;
+    end if;
     -- Look up prerequisite data
     select id into v_book_id
     from ores_refdata_books_tbl
@@ -112,13 +137,13 @@ begin
     insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         external_id, book_id, portfolio_id,
-        trade_type, netting_set_id, lifecycle_event,
+        trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         v_trade_id, v_sys_tenant, 0,
         'SAMPLE-IRS-001', v_book_id, v_portfolio_id,
-        'Swap', 'NS-SAMPLE-001', 'New',
+        'Swap', 'NS-SAMPLE-001', 'new_booking', v_status_new,
         current_date,
         current_timestamp,
         current_date,
@@ -178,17 +203,17 @@ begin
     -- insert trigger uses current_timestamp which is per-statement in a txn,
     -- but in a real flow they would be distinct transactions).
 
-    -- Re-insert trade with 'Novation' lifecycle event (upsert-by-insert)
+    -- Re-insert trade with 'novation' activity (upsert-by-insert); status stays live
     insert into ores_trading_trades_tbl (
         id, tenant_id, version,
         external_id, book_id, portfolio_id,
-        trade_type, netting_set_id, lifecycle_event,
+        trade_type, netting_set_id, activity_type_code, status_id,
         trade_date, execution_timestamp, effective_date, termination_date,
         modified_by, performed_by, change_reason_code, change_commentary
     ) values (
         v_trade_id, v_sys_tenant, 0,
         'SAMPLE-IRS-001', v_book_id, v_portfolio_id,
-        'Swap', 'NS-SAMPLE-001', 'Novation',
+        'Swap', 'NS-SAMPLE-001', 'novation', v_status_live,
         current_date,
         current_timestamp,
         current_date,
@@ -238,7 +263,7 @@ select
     trade_type,
     netting_set_id,
     counterparty,
-    lifecycle_event,
+    activity_type_code,
     valid_from
 from ores_trade_ore_envelope_vw
 where tenant_id = ores_iam_system_tenant_id_fn()

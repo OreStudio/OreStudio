@@ -26,8 +26,11 @@
 -- Trade Types
 drop policy if exists ores_trading_trade_types_tenant_isolation_policy on "ores_trading_trade_types_tbl";
 
--- Lifecycle Events
-drop policy if exists ores_trading_lifecycle_events_tenant_isolation_policy on "ores_trading_lifecycle_events_tbl";
+-- FpML Event Types
+drop policy if exists ores_trading_fpml_event_types_tenant_isolation_policy on "ores_trading_fpml_event_types_tbl";
+
+-- Activity Types
+drop policy if exists ores_trading_activity_types_tenant_isolation_policy on "ores_trading_activity_types_tbl";
 
 -- Party Role Types
 drop policy if exists ores_trading_party_role_types_tenant_isolation_policy on "ores_trading_party_role_types_tbl";

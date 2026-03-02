@@ -117,7 +117,7 @@ TEST_CASE("import_portfolio_from_minimal_swap", tags) {
     CHECK(t.external_id == "Swap_20y");
     CHECK(t.trade_type == "Swap");
     CHECK(t.netting_set_id == "CPTY_A");
-    CHECK(t.lifecycle_event == "New");
+    CHECK(t.activity_type_code == "new_booking");
     CHECK(t.modified_by == "ores");
     CHECK(t.change_reason_code == "system.external_data_import");
 }

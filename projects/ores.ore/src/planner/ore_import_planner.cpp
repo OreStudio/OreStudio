@@ -181,8 +181,8 @@ ore_import_plan ore_import_planner::plan() {
                     item.trade.effective_date = defs.effective_date;
                 if (!defs.termination_date.empty())
                     item.trade.termination_date = defs.termination_date;
-                if (!defs.lifecycle_event.empty())
-                    item.trade.lifecycle_event = defs.lifecycle_event;
+                if (!defs.activity_type_code.empty())
+                    item.trade.activity_type_code = defs.activity_type_code;
                 if (defs.default_counterparty_id)
                     item.trade.counterparty_id = defs.default_counterparty_id;
 

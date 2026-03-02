@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,6 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADING_DOMAIN_ACTIVITY_TYPE_JSON_IO_HPP
+#define ORES_TRADING_DOMAIN_ACTIVITY_TYPE_JSON_IO_HPP
 
-drop trigger if exists ores_trading_lifecycle_events_notify_trg on "ores_trading_lifecycle_events_tbl";
-drop function if exists ores_trading_lifecycle_events_notify_fn;
+#include <iosfwd>
+#include "ores.trading/domain/activity_type.hpp"
+
+namespace ores::trading::domain {
+
+/**
+ * @brief Dumps the activity_type to a stream in JSON format.
+ */
+std::ostream& operator<<(std::ostream& s, const activity_type& v);
+
+}
+
+#endif

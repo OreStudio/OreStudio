@@ -87,9 +87,9 @@ fsm_transition_repository::find_by_id(
     BOOST_LOG_SEV(lg(), debug) << "Finding FSM transition by id.";
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto tid_str = boost::uuids::to_string(id);
+    const auto id_str = boost::uuids::to_string(id);
     const auto query = sqlgen::read<std::vector<fsm_transition_entity>> |
-        where("tenant_id"_c == tid && "id"_c == tid_str &&
+        where("tenant_id"_c == tid && "id"_c == id_str &&
               "valid_to"_c == max.value());
 
     auto results = execute_read_query<fsm_transition_entity, domain::fsm_transition>(

@@ -39,3 +39,4 @@
 \ir ./reporting_risk_report_config_books_create.sql
 \ir ./reporting_report_instances_create.sql
 \ir ./reporting_report_instances_notify_trigger_create.sql
+\ir ./reporting_report_event_queue_create.sql

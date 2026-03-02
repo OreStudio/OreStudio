@@ -21,6 +21,7 @@
 #include "ores.reporting/messaging/reporting_message_handler.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include "ores.reporting/messaging/report_type_protocol.hpp"
 #include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
@@ -29,6 +30,8 @@
 #include "ores.reporting/service/concurrency_policy_service.hpp"
 #include "ores.reporting/service/report_definition_service.hpp"
 #include "ores.reporting/service/report_instance_service.hpp"
+#include "ores.scheduler/service/cron_scheduler.hpp"
+#include "ores.scheduler/domain/cron_expression.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -75,6 +78,10 @@ reporting_message_handler::handle_message(message_type type,
         co_return co_await handle_delete_report_definition_request(payload, remote_address);
     case message_type::get_report_definition_history_request:
         co_return co_await handle_get_report_definition_history_request(payload, remote_address);
+    case message_type::schedule_report_definitions_request:
+        co_return co_await handle_schedule_report_definitions_request(payload, remote_address);
+    case message_type::unschedule_report_definitions_request:
+        co_return co_await handle_unschedule_report_definitions_request(payload, remote_address);
     // Report instances
     case message_type::get_report_instances_request:
         co_return co_await handle_get_report_instances_request(payload, remote_address);
@@ -640,6 +647,212 @@ reporting_message_handler::handle_get_report_instance_history_request(
         BOOST_LOG_SEV(lg(), error) << "Failed to get report instance history: " << e.what();
         response.success = false;
         response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+// ============================================================================
+// Report Scheduling
+// ============================================================================
+
+namespace {
+
+/**
+ * @brief Escape single-quote characters for embedding in a SQL string literal.
+ *
+ * PostgreSQL uses '' (two single quotes) to represent a literal single quote
+ * inside a single-quoted string. This helper is used when baking a report
+ * name into the pg_cron command SQL at scheduling time.
+ */
+std::string sql_single_quote_escape(const std::string& s) {
+    std::string result;
+    result.reserve(s.size());
+    for (char c : s) {
+        if (c == '\'') result += "''";
+        else result += c;
+    }
+    return result;
+}
+
+} // anonymous namespace
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+    ores::utility::serialization::error_code>>
+reporting_message_handler::handle_schedule_report_definitions_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Processing schedule_report_definitions_request.";
+
+    auto auth = require_authentication(remote_address, "Schedule report definitions");
+    if (!auth) co_return std::unexpected(auth.error());
+
+    auto request_result = schedule_report_definitions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize schedule_report_definitions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    auto ctx = make_request_context(*auth);
+    service::report_definition_service report_svc(ctx);
+    scheduler::service::cron_scheduler sched_svc(ctx);
+
+    schedule_report_definitions_response response;
+    response.success = true;
+
+    for (const auto& id : request.ids) {
+        const std::string id_str = boost::uuids::to_string(id);
+
+        auto def = report_svc.find_definition(id_str);
+        if (!def) {
+            BOOST_LOG_SEV(lg(), warn) << "Report definition not found for scheduling: " << id_str;
+            response.success = false;
+            response.message = "Report definition not found: " + id_str;
+            continue;
+        }
+
+        // Parse the stored cron expression string into a typed cron_expression.
+        auto cron_expr = scheduler::domain::cron_expression::from_string(
+            def->schedule_expression);
+        if (!cron_expr) {
+            BOOST_LOG_SEV(lg(), error) << "Invalid cron expression '"
+                << def->schedule_expression << "' for definition " << id_str
+                << ": " << cron_expr.error();
+            response.success = false;
+            response.message = "Invalid cron expression: " + cron_expr.error();
+            continue;
+        }
+
+        // Build the SQL command that pg_cron will execute on each firing.
+        // The tenant UUID and report name are baked in at scheduling time;
+        // now() is evaluated at execution time by pg_cron.
+        const std::string tenant_str = auth->tenant_id.to_string();
+        const std::string safe_name = sql_single_quote_escape(def->name);
+        const std::string command =
+            "INSERT INTO ores_reporting_report_event_queue_tbl "
+            "(id, tenant_id, payload, queued_at) "
+            "VALUES (gen_random_uuid(), '" + tenant_str + "'::uuid, "
+            "jsonb_build_object("
+            "'report_name', '" + safe_name + "', "
+            "'event', 'scheduled', "
+            "'triggered_at', now()::text), now())";
+
+        // Create the job definition. The unique job_name is keyed on the
+        // report definition UUID so that re-scheduling the same report
+        // updates the existing pg_cron entry in-place.
+        scheduler::domain::job_definition job_def;
+        job_def.id = boost::uuids::random_generator()();
+        job_def.tenant_id = auth->tenant_id;
+        job_def.party_id = auth->party_id;
+        job_def.job_name = "ores:report:" + id_str;
+        job_def.description = "Scheduled run for report: " + def->name;
+        job_def.command = command;
+        job_def.schedule_expression = *cron_expr;
+        job_def.is_active = true;
+        job_def.modified_by = auth->username;
+        job_def.performed_by = auth->username;
+        job_def.change_reason_code = request.change_reason_code;
+        job_def.change_commentary = request.change_commentary;
+
+        try {
+            auto scheduled = sched_svc.schedule(
+                std::move(job_def),
+                request.change_reason_code,
+                request.change_commentary);
+
+            BOOST_LOG_SEV(lg(), info)
+                << "Scheduled report definition " << id_str
+                << " as pg_cron job " << scheduled.job_name;
+
+            // Link the scheduler job back to the report definition.
+            def->scheduler_job_id = scheduled.id;
+            def->modified_by = auth->username;
+            def->performed_by = auth->username;
+            def->change_reason_code = request.change_reason_code;
+            def->change_commentary = request.change_commentary;
+            report_svc.save_definition(*def);
+
+            ++response.scheduled_count;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to schedule report definition " << id_str
+                << ": " << e.what();
+            response.success = false;
+            response.message = e.what();
+        }
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+    ores::utility::serialization::error_code>>
+reporting_message_handler::handle_unschedule_report_definitions_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Processing unschedule_report_definitions_request.";
+
+    auto auth = require_authentication(remote_address, "Unschedule report definitions");
+    if (!auth) co_return std::unexpected(auth.error());
+
+    auto request_result = unschedule_report_definitions_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize unschedule_report_definitions_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    auto ctx = make_request_context(*auth);
+    service::report_definition_service report_svc(ctx);
+    scheduler::service::cron_scheduler sched_svc(ctx);
+
+    unschedule_report_definitions_response response;
+    response.success = true;
+
+    for (const auto& id : request.ids) {
+        const std::string id_str = boost::uuids::to_string(id);
+
+        auto def = report_svc.find_definition(id_str);
+        if (!def) {
+            BOOST_LOG_SEV(lg(), warn) << "Report definition not found for unscheduling: " << id_str;
+            response.success = false;
+            response.message = "Report definition not found: " + id_str;
+            continue;
+        }
+
+        if (!def->scheduler_job_id.has_value()) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Report definition " << id_str << " has no active scheduler job; skipping.";
+            continue;
+        }
+
+        try {
+            sched_svc.unschedule(
+                *def->scheduler_job_id,
+                auth->username,
+                request.change_reason_code,
+                request.change_commentary);
+
+            BOOST_LOG_SEV(lg(), info)
+                << "Unscheduled report definition " << id_str;
+
+            // Clear the scheduler link on the report definition.
+            def->scheduler_job_id = std::nullopt;
+            def->modified_by = auth->username;
+            def->performed_by = auth->username;
+            def->change_reason_code = request.change_reason_code;
+            def->change_commentary = request.change_commentary;
+            report_svc.save_definition(*def);
+
+            ++response.unscheduled_count;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to unschedule report definition " << id_str
+                << ": " << e.what();
+            response.success = false;
+            response.message = e.what();
+        }
     }
 
     co_return response.serialize();

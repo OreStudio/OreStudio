@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.database.lib
         ores.comms.lib
+        ores.scheduler.lib
         ores.utility.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx

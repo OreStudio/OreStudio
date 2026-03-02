@@ -120,6 +120,16 @@ private:
     handle_get_report_definition_history_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_schedule_report_definitions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_unschedule_report_definitions_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     // Report instance handlers
     boost::asio::awaitable<std::expected<std::vector<std::byte>,
         ores::utility::serialization::error_code>>

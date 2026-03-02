@@ -41,24 +41,32 @@ See [[*Detailed Instructions][Detailed Instructions]] for the full loop behaviou
 
 ** Overview
 
-The skill runs a loop with a 10-minute polling interval:
+Before starting the loop, ask the user for the polling interval:
 
-1. Wait 10 minutes for CI and reviewers to produce initial feedback.
+#+BEGIN_QUOTE
+How long should I wait between checks? (default: 10 minutes)
+#+END_QUOTE
+
+Accept any value in minutes. Use 10 minutes if the user does not specify.
+Convert to seconds for =sleep= (e.g. 5 minutes → =sleep 300=).
+
+The skill then runs a loop at that interval:
+
+1. Wait the chosen interval for CI and reviewers to produce initial feedback.
 2. Fetch and address all open review comments.
 3. Check CI status.
    - *Green*: loop exits — PR is ready.
-   - *Still running*: wait another 10 minutes and repeat from step 2.
+   - *Still running*: wait another interval and repeat from step 2.
    - *Red*: investigate failures, apply fixes, push, then wait and repeat.
 
 ** Step 1: Wait for Initial Feedback
 
-After the PR is created, pause for 10 minutes before checking anything. This
-gives CI time to start and reviewers time to post early comments.
-
-Use the =sleep= command:
+After the PR is created, pause for the chosen interval before checking
+anything. This gives CI time to start and reviewers time to post early
+comments.
 
 #+BEGIN_SRC sh
-sleep 600
+sleep <interval_in_seconds>
 #+END_SRC
 
 ** Step 2: Fetch and Address Review Comments
@@ -106,7 +114,7 @@ Interpret the result:
 | Outcome          | Action                                         |
 |------------------+------------------------------------------------|
 | All green (pass) | Loop exits. PR is ready to merge.              |
-| Pending/queued   | Wait 10 minutes, then return to Step 2.        |
+| Pending/queued   | Wait the chosen interval, then return to Step 2. |
 | Any failure      | Investigate and fix (see Step 4), then repeat. |
 
 ** Step 4: Fix CI Failures
@@ -137,7 +145,7 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git push
 #+END_SRC
 
-4. Return to Step 1 (wait 10 minutes) and repeat the loop.
+4. Return to Step 1 (wait the chosen interval) and repeat the loop.
 
 ** Loop Termination
 

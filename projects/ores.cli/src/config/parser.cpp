@@ -310,7 +310,6 @@ std::optional<options> parse_arguments(const std::vector<std::string>& arguments
      */
     return handle_domain_command(domain_name, has_help, po, info, vm);
 }
-}
 
 namespace ores::cli::config {
 

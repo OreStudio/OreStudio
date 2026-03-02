@@ -141,6 +141,13 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QCheckBox" name="showPasswordCheck">
+            <property name="text">
+             <string>Show passwords</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

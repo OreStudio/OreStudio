@@ -1,0 +1,24 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -277,10 +277,18 @@
+     list(APPEND REFLECT_CPP_SOURCES
+         src/reflectcpp_bson.cpp
+     )
+-    if (NOT TARGET mongo::bson_static AND NOT TARGET mongo::bson_shared)
+-        find_package(bson-1.0 CONFIG REQUIRED)
++    if (NOT TARGET mongo::bson_static AND NOT TARGET mongo::bson_shared
++            AND NOT TARGET bson::static AND NOT TARGET bson::shared)
++        find_package(bson CONFIG QUIET)
++        if (NOT bson_FOUND)
++            find_package(bson-1.0 CONFIG REQUIRED)
++        endif ()
++    endif ()
++    if (TARGET bson::static OR TARGET bson::shared)
++        target_link_libraries(reflectcpp PUBLIC $<IF:$<TARGET_EXISTS:bson::static>,bson::static,bson::shared>)
++    else ()
++        target_link_libraries(reflectcpp PUBLIC $<IF:$<TARGET_EXISTS:mongo::bson_static>,mongo::bson_static,mongo::bson_shared>)
+     endif ()
+-    target_link_libraries(reflectcpp PUBLIC $<IF:$<TARGET_EXISTS:mongo::bson_static>,mongo::bson_static,mongo::bson_shared>)
+ endif ()
+
+ if (REFLECTCPP_CAPNPROTO OR REFLECTCPP_CHECK_HEADERS)

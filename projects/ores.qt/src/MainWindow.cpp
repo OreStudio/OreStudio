@@ -85,6 +85,7 @@
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
+#include "ores.qt/OreImportController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -240,6 +241,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionMonetaryNatures->setIcon(IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
     ui_->ActionCurrencyMarketTiers->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionMyAccount->setIcon(IconUtils::createRecoloredIcon(Icon::Person, IconUtils::DefaultIconColor));
+    ui_->ActionImportOreData->setIcon(IconUtils::createRecoloredIcon(Icon::ImportOre, IconUtils::DefaultIconColor));
     ui_->ActionMySessions->setIcon(IconUtils::createRecoloredIcon(Icon::Clock, IconUtils::DefaultIconColor));
     ui_->ExitAction->setIcon(IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
     ui_->ActionOpenRecording->setIcon(IconUtils::createRecoloredIcon(Icon::FolderOpen, IconUtils::DefaultIconColor));
@@ -262,6 +264,10 @@ MainWindow::MainWindow(QWidget* parent) :
         &MainWindow::onDisconnectTriggered);
     connect(ui_->ActionMyAccount, &QAction::triggered, this,
         &MainWindow::onMyAccountTriggered);
+    connect(ui_->ActionImportOreData, &QAction::triggered, this, [this]() {
+        if (oreImportController_)
+            oreImportController_->trigger(this);
+    });
     connect(ui_->ActionMySessions, &QAction::triggered, this,
         &MainWindow::onMySessionsTriggered);
     connect(ui_->ActionAbout, &QAction::triggered, this,
@@ -669,6 +675,7 @@ MainWindow::MainWindow(QWidget* parent) :
             bookController_.get(),
             portfolioController_.get(),
             tradeController_.get(),
+            oreImportController_.get(),
             QString::fromStdString(username_),
             this);
 
@@ -1143,6 +1150,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionTrades->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
+    ui_->ActionImportOreData->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1853,6 +1861,13 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create ORE import controller
+    oreImportController_ = std::make_unique<OreImportController>(clientManager_, this);
+    connect(oreImportController_.get(), &OreImportController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message, 5000);
+    });
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";
 }

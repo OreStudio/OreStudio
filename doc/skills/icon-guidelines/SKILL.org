@@ -658,6 +658,39 @@ Activity history, past actions, audit trail.
 
 *Usage*: History views, recent items, activity logs.
 
+*** Calendar Clock
+
+Scheduler, scheduled jobs, cron tasks.
+
+-   Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_clock_20_regular.svg]]
+-   Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_clock_20_filled.svg]]
+
+*Usage*: Scheduler menu entries, job definition list window title, any UI
+element representing scheduled/recurring work. Solar fallback: `calendar.svg`.
+
+*** Calendar Add
+
+Schedule a new job, create a scheduled task.
+
+-   Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_add_20_regular.svg]]
+-   Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_add_20_filled.svg]]
+
+*Usage*: "Schedule Job" button in job definition list toolbar. Use instead of
+generic `Add` when the action specifically creates a scheduled task. Solar
+fallback: `calendar-add.svg`.
+
+*** Calendar Cancel
+
+Unschedule a job, deactivate a scheduled task.
+
+-   Regular: [[proj:projects/ores.qt/resources/icons/fluentui/regular/ic_fluent_calendar_cancel_20_regular.svg]]
+-   Filled: [[proj:projects/ores.qt/resources/icons/fluentui/filled/ic_fluent_calendar_cancel_20_filled.svg]]
+
+*Usage*: "Unschedule" button in job definition list toolbar and detail dialog.
+Semantically distinct from `Delete` (which implies permanent removal) —
+unschedule removes from pg_cron while retaining the definition. Solar fallback:
+`alarm-remove.svg`.
+
 ** Text & Formatting
 
 Icons for text manipulation and formatting.
@@ -675,7 +708,7 @@ Text validation, spell check, language processing.
 | Concept              | Icon Name                        | Regular | Filled |
 |----------------------+----------------------------------+---------+--------|
 | Add/Create           | add_20                           | Default | Active |
-| Copy       | copy_20                          | Default | Active |
+| Copy                 | copy_20                          | Default | Active |
 | Delete/Remove        | delete_20                        | Default | Danger |
 | Purge/Clear All      | delete_dismiss_20                | Default | Danger |
 | Edit/Modify          | edit_20                          | Default | Active |
@@ -724,6 +757,9 @@ Text validation, spell check, language processing.
 | Currency             | currency_dollar_euro_20          | Default | Active |
 | Time                 | clock_16                         | Default | Active |
 | History              | history_20                       | Default | Active |
+| Scheduler/Jobs       | calendar_clock_20                | Default | Active |
+| Schedule Job         | calendar_add_20                  | Default | Active |
+| Unschedule Job       | calendar_cancel_20               | Default | Active |
 | Import CSV           | arrow_download_csv_20            | Default | Active |
 | Import FPML          | arrow_download_fpml_20           | Default | Active |
 | Import ORE           | arrow_download_ore_20            | Default | Active |

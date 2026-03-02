@@ -131,6 +131,8 @@
     <addaction name="ActionOrgExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
+    <addaction name="separator"/>
+    <addaction name="ActionImportOreData"/>
    </widget>
    <widget class="QMenu" name="menuSystem">
     <property name="title">
@@ -276,6 +278,14 @@
   <action name="ActionDisconnect">
    <property name="text">
     <string>&amp;Disconnect</string>
+   </property>
+  </action>
+  <action name="ActionImportOreData">
+   <property name="text">
+    <string>ORE &amp;Import</string>
+   </property>
+   <property name="toolTip">
+    <string>Import ORE directory data into OreStudio</string>
    </property>
   </action>
   <action name="ActionAbout">

@@ -97,6 +97,9 @@ void MasterPasswordDialog::setupUI() {
         break;
     }
 
+    showPasswordCheck_ = new QCheckBox(tr("Show password"), this);
+    formLayout->addRow(QString{}, showPasswordCheck_);
+
     layout->addLayout(formLayout);
 
     buttonBox_ = new QDialogButtonBox(
@@ -113,6 +116,12 @@ void MasterPasswordDialog::setupUI() {
             this, &MasterPasswordDialog::updateOkButtonState);
     connect(confirmPasswordEdit_, &QLineEdit::textChanged,
             this, &MasterPasswordDialog::updateOkButtonState);
+    connect(showPasswordCheck_, &QCheckBox::toggled, this, [this](bool checked) {
+        const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
+        if (!currentPasswordEdit_->isHidden()) currentPasswordEdit_->setEchoMode(mode);
+        if (!newPasswordEdit_->isHidden())     newPasswordEdit_->setEchoMode(mode);
+        if (!confirmPasswordEdit_->isHidden()) confirmPasswordEdit_->setEchoMode(mode);
+    });
     connect(buttonBox_, &QDialogButtonBox::accepted,
             this, &MasterPasswordDialog::onOkClicked);
     connect(buttonBox_, &QDialogButtonBox::rejected,

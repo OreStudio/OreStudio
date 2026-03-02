@@ -20,6 +20,7 @@
 #ifndef ORES_QT_MASTER_PASSWORD_DIALOG_HPP
 #define ORES_QT_MASTER_PASSWORD_DIALOG_HPP
 
+#include <QCheckBox>
 #include <QDialog>
 #include <QLineEdit>
 #include <QPushButton>
@@ -78,6 +79,7 @@ private:
     QLineEdit* currentPasswordEdit_;
     QLineEdit* newPasswordEdit_;
     QLineEdit* confirmPasswordEdit_;
+    QCheckBox* showPasswordCheck_;
     QDialogButtonBox* buttonBox_;
 };
 

@@ -85,6 +85,10 @@
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
+#include "ores.qt/ReportTypeController.hpp"
+#include "ores.qt/ConcurrencyPolicyController.hpp"
+#include "ores.qt/ReportDefinitionController.hpp"
+#include "ores.qt/ReportInstanceController.hpp"
 #include "ores.qt/OreImportController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
@@ -231,6 +235,10 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBusinessUnitTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::CalendarClock, IconUtils::DefaultIconColor));
+    ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
+    ui_->ActionReportDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
+    ui_->ActionReportInstances->setIcon(IconUtils::createRecoloredIcon(Icon::Record, IconUtils::DefaultIconColor));
     ui_->ActionPortfolioExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::BriefcaseFilled, IconUtils::DefaultIconColor));
     ui_->ActionOrgExplorer->setIcon(IconUtils::createRecoloredIcon(Icon::Organization, IconUtils::DefaultIconColor));
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
@@ -750,6 +758,24 @@ MainWindow::MainWindow(QWidget* parent) :
             jobDefinitionController_->showListWindow();
     });
 
+    // Connect Reporting actions to controllers
+    connect(ui_->ActionReportTypes, &QAction::triggered, this, [this]() {
+        if (reportTypeController_)
+            reportTypeController_->showListWindow();
+    });
+    connect(ui_->ActionConcurrencyPolicies, &QAction::triggered, this, [this]() {
+        if (concurrencyPolicyController_)
+            concurrencyPolicyController_->showListWindow();
+    });
+    connect(ui_->ActionReportDefinitions, &QAction::triggered, this, [this]() {
+        if (reportDefinitionController_)
+            reportDefinitionController_->showListWindow();
+    });
+    connect(ui_->ActionReportInstances, &QAction::triggered, this, [this]() {
+        if (reportInstanceController_)
+            reportInstanceController_->showListWindow();
+    });
+
     // Connect Purpose Types action to controller
     connect(ui_->ActionPurposeTypes, &QAction::triggered, this, [this]() {
         if (purposeTypeController_)
@@ -1151,6 +1177,10 @@ void MainWindow::updateMenuState() {
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
     ui_->ActionImportOreData->setEnabled(isLoggedIn);
+    ui_->ActionReportTypes->setEnabled(isLoggedIn);
+    ui_->ActionConcurrencyPolicies->setEnabled(isLoggedIn);
+    ui_->ActionReportDefinitions->setEnabled(isLoggedIn);
+    ui_->ActionReportInstances->setEnabled(isLoggedIn);
 
     // My Account and My Sessions menu items require authentication
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
@@ -1860,6 +1890,67 @@ void MainWindow::createControllers() {
     connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create reporting controllers
+    reportTypeController_ = std::make_unique<ReportTypeController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(reportTypeController_.get(), &ReportTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(reportTypeController_.get(), &ReportTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(reportTypeController_.get(), &ReportTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(reportTypeController_.get(), &ReportTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    concurrencyPolicyController_ = std::make_unique<ConcurrencyPolicyController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(concurrencyPolicyController_.get(), &ConcurrencyPolicyController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(concurrencyPolicyController_.get(), &ConcurrencyPolicyController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(concurrencyPolicyController_.get(), &ConcurrencyPolicyController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(concurrencyPolicyController_.get(), &ConcurrencyPolicyController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    reportDefinitionController_ = std::make_unique<ReportDefinitionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(reportDefinitionController_.get(), &ReportDefinitionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(reportDefinitionController_.get(), &ReportDefinitionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(reportDefinitionController_.get(), &ReportDefinitionController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(reportDefinitionController_.get(), &ReportDefinitionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    reportInstanceController_ = std::make_unique<ReportInstanceController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(reportInstanceController_.get(), &ReportInstanceController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(reportInstanceController_.get(), &ReportInstanceController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(reportInstanceController_.get(), &ReportInstanceController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(reportInstanceController_.get(), &ReportInstanceController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create ORE import controller

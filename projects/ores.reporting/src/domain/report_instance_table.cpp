@@ -21,7 +21,6 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include "ores.platform/time/datetime.hpp"
 
 namespace ores::reporting::domain {
 
@@ -29,22 +28,10 @@ std::string convert_to_table(const std::vector<report_instance>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header
-          << "ID" << "Definition ID" << "Trigger Run" << "Output"
-          << "Started At" << "Completed At" << "Version" << "Modified By"
-          << fort::endr;
+    table << fort::header << fort::endr;
 
     for (const auto& ri : v) {
-        using ores::platform::time::datetime;
-        table << boost::uuids::to_string(ri.id)
-              << boost::uuids::to_string(ri.definition_id)
-              << ri.trigger_run_id
-              << ri.output_message
-              << (ri.started_at ? datetime::format_time_point(*ri.started_at) : "N/A")
-              << (ri.completed_at ? datetime::format_time_point(*ri.completed_at) : "N/A")
-              << ri.version
-              << ri.modified_by
-              << fort::endr;
+        table << fort::endr;
     }
     return table.to_string();
 }

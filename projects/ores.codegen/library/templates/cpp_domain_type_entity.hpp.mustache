@@ -33,6 +33,9 @@ struct {{entity_singular}}_entity {
 {{#is_uuid}}
     std::string {{name}};
 {{/is_uuid}}
+{{#is_optional_timestamp}}
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> {{name}};
+{{/is_optional_timestamp}}
 {{#is_nullable_string}}
     std::optional<{{{cpp_type}}}> {{name}};
 {{/is_nullable_string}}

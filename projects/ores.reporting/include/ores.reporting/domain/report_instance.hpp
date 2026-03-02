@@ -58,6 +58,16 @@ struct report_instance final {
     boost::uuids::uuid id;
 
     /**
+     * @brief Human-readable name copied from the report definition at creation time.
+     */
+    std::string name;
+
+    /**
+     * @brief Description copied from the report definition at creation time.
+     */
+    std::string description;
+
+    /**
      * @brief Party that owns this report instance (inherited from the definition).
      */
     boost::uuids::uuid party_id;

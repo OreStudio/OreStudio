@@ -37,6 +37,8 @@ report_instance_mapper::map(const report_instance_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+    r.name = v.name;
+    r.description = v.description;
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
     r.definition_id = boost::lexical_cast<boost::uuids::uuid>(v.definition_id);
     r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.fsm_state_id)) : std::nullopt;
@@ -64,6 +66,8 @@ report_instance_mapper::map(const domain::report_instance& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.name = v.name;
+    r.description = v.description;
     r.party_id = boost::uuids::to_string(v.party_id);
     r.definition_id = boost::uuids::to_string(v.definition_id);
     r.fsm_state_id = v.fsm_state_id.has_value() ? std::optional(boost::uuids::to_string(*v.fsm_state_id)) : std::nullopt;

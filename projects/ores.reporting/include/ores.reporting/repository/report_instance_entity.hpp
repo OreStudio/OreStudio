@@ -20,7 +20,6 @@
 #ifndef ORES_REPORTING_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
 #define ORES_REPORTING_REPOSITORY_REPORT_INSTANCE_ENTITY_HPP
 
-#include <cstdint>
 #include <string>
 #include <optional>
 #include <ostream>
@@ -39,6 +38,8 @@ struct report_instance_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::string name;
+    std::string description;
     std::string party_id;
     std::string definition_id;
     std::optional<std::string> fsm_state_id;

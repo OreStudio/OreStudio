@@ -35,6 +35,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.refdata.lib
     ores.trading.lib
     ores.scheduler.lib
+    ores.reporting.lib
     ores.comms.lib
     ores.comms.shell.lib
     ores.dq.lib

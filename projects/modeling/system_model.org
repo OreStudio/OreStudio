@@ -79,6 +79,10 @@ The system is organised into four architectural layers:
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]]: User authentication, authorisation, and session management.
 - [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]: Financial Products Markup Language (FPML) processing infrastructure for handling derivatives and securities trade representations.
 - [[id:9a71f1f5-c3ed-4c07-9d7d-c5b42d4a1332][ores.ore]]: ORE (Open Source Risk Engine) specific code, mainly importing and exporting capabilities.
+- [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]: Trade booking and lifecycle management. FSM-enforced trade status
+  (new, live, expired, cancelled), full activity type taxonomy (~30 types across
+  five categories), temporal versioning, and message API. Depends on: refdata,
+  fpml, dq.
 - Depends on: Foundation, Infrastructure
 
 ** Application Layer

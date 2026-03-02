@@ -279,6 +279,21 @@ package "Domain Layer" #F2F2F2 {
     Provides comprehensive support for parsing, validating, and processing Financial Products Markup Language documents.
     Organized into: domain, service, repository, messaging, generators namespaces.
     end note
+
+    component [ores.trading] as trading #F7E5FF
+
+    note right of trading
+    Trade booking and lifecycle management for financial instruments:
+    - Domain: Trade and activity type entities with temporal versioning
+    - Trade Status FSM: Four-state machine (new, live, expired, cancelled) via ores.dq FSM infrastructure
+    - Activity Taxonomy: ~30 activity types across five categories (New Activity, Life-Cycle Event,
+      Misbooking, Valuation Change, Cancellation) for P&L attribution and reporting
+    - Amendment Model: Temporal versioning for in-place amendments; successor_trade_id for cancel-rebook
+    - Persistence: ORM entities, mappers, and repositories with full temporal support
+    - Message API: Request/response handlers for trade operations (0x5000-0x5FFF)
+    - Test Data: Synthetic trade generation using faker-cxx
+    Organized into: domain, repository, service, messaging, generators namespaces.
+    end note
 }
 
 ' Application Layer
@@ -428,6 +443,14 @@ dq --> iam
 
 fpml --> telemetry
 fpml --> platform
+
+trading --> telemetry
+trading --> database
+trading --> dq
+trading --> refdata
+trading --> fpml
+trading --> comms
+trading --> iam
 
 ' Dependencies - Shell to Foundation/Domain/Infrastructure
 shell --> telemetry

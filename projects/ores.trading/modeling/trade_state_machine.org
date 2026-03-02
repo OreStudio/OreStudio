@@ -1,0 +1,304 @@
+:PROPERTIES:
+:ID: B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D
+:END:
+#+title: Trade Status State Machine
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+ORE Studio models the operational state of a trade using a finite state machine
+(FSM). This document describes the FSM design: the states a trade can be in, the
+events that cause transitions between states, and the full taxonomy of trade
+activity types used for P&L attribution and reporting.
+
+The FSM is implemented using the generic state machine infrastructure in
+[[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]], which provides the database tables =ores_dq_fsm_machines_tbl=,
+=ores_dq_fsm_states_tbl=, and =ores_dq_fsm_transitions_tbl=.
+
+* Two Core Concepts
+
+Trade status and activity type are distinct concepts that are often confused
+because both relate to what has happened to a trade. They serve different
+purposes and must be modelled separately.
+
+** Trade Status
+
+The /trade status/ is the operational state of a trade at a given moment. It
+answers the question: /what state is this trade in right now?/
+
+Status drives:
+- Whether a trade is included in risk and P&L calculations (only =live= trades).
+- What operations are permissible on the trade.
+- Reporting and reconciliation filters.
+
+** Activity Type
+
+The /activity type/ classifies the event that created or changed a trade record.
+It answers the question: /why does this trade record exist, and what kind of change
+does it represent?/
+
+Activity type drives:
+- P&L attribution: which P&L bucket did this change fall into?
+- Trade activity reporting: how is the day's activity broken down?
+- Confirmation workflow: does this activity require a new legal confirmation?
+- Audit and reconciliation.
+
+Activity types are grouped into four categories: New Activity, Life-Cycle Event,
+Misbooking, and Valuation Change.
+
+* Trade Status State Machine
+
+** States
+
+| State       | Description                                              | Initial | Terminal |
+|-------------+----------------------------------------------------------+---------+----------|
+| =new=       | Trade booked; awaiting confirmation of terms.            | Yes     | No       |
+| =live=      | Trade confirmed and active; included in risk and P&L.    | No      | No       |
+| =expired=   | Contract ceased naturally: expired, matured, exercised.  | No      | Yes      |
+| =cancelled= | Trade removed from the book: cancelled or terminated.    | No      | Yes      |
+
+** Transitions
+
+| From        | To          | Trigger            | Notes                                              |
+|-------------+-------------+--------------------+----------------------------------------------------|
+| (initial)   | =new=       | Book               | Any trade-creating activity.                       |
+| =new=       | =live=      | Confirm            | Legal confirmation received; trade becomes active. |
+| =new=       | =cancelled= | Cancel             | Trade cancelled before confirmation.               |
+| =live=      | =expired=   | Expire/Mature/Exercise | Contract ceases naturally.                     |
+| =live=      | =cancelled= | Cancel/Terminate   | Trade removed or early terminated.                 |
+
+** State Diagram
+
+#+begin_example
+                              ┌─────────────────────────────────────────────────────┐
+                              │              TRADE STATUS STATE MACHINE              │
+                              └─────────────────────────────────────────────────────┘
+
+                                      (initial)
+                                          │
+                                      Book│
+                                          ▼
+                                   ┌─────────────┐
+                                   │     NEW      │  ◀──── New Activity events
+                                   │  (initial)   │         (require confirmation)
+                                   └──────┬──────┘
+                            Cancel │      │ Confirm
+                                   │      ▼
+                              ┌────▼   ┌─────────────┐
+                              │        │    LIVE      │  ◀──── Life-Cycle Events
+                              │        │  (active)    │         (in-terms changes)
+                              │        └──────┬──────┘
+                              │  Cancel/      │ Expire/
+                              │  Terminate    │ Mature/
+                              │               │ Exercise
+                              ▼               ▼
+                         ┌──────────┐  ┌──────────────┐
+                         │CANCELLED │  │   EXPIRED    │
+                         │(terminal)│  │  (terminal)  │
+                         └──────────┘  └──────────────┘
+#+end_example
+
+* Temporal Versioning and Amendments
+
+** Normal Amendments
+
+When a trade's terms are amended (e.g. Restructure, Novation, Upsize), ORE
+Studio does not create a new trade record. Instead, it uses temporal versioning:
+
+- The existing trade row's =valid_to= is set to the current timestamp.
+- A new row is inserted with the same =id=, =valid_from= set to now, and
+  =valid_to= set to infinity.
+- The new temporal version carries status =new=, pending re-confirmation of
+  the amended terms.
+- On confirmation, the status transitions to =live=.
+
+This preserves the full amendment history of the trade under a single =id=.
+
+#+begin_example
+trade_id = X
+─────────────────────────────────────────────────────────────────
+ valid_from    valid_to       status   terms
+─────────────────────────────────────────────────────────────────
+ 2026-01-10    2026-03-01     live     notional=10M
+ 2026-03-01    ∞              new      notional=15M   ◀ upsize
+─────────────────────────────────────────────────────────────────
+#+end_example
+
+** Cancel and Rebook
+
+The =successor_trade_id= field is used exclusively for /cancel and rebook/
+scenarios, where a trade is cancelled and an entirely new trade is created to
+replace it. This is distinct from a normal amendment:
+
+- The original trade is moved to =cancelled= status.
+- A new trade with a fresh =id= is created (entering =new= status).
+- The new trade's =successor_trade_id= is set to the original trade's =id= for
+  traceability.
+
+Use cases: Misbooking correction, administrative re-booking.
+
+** Misbooking Correction
+
+A misbooking creates a /correction trade/ with =successor_trade_id= pointing to
+the erroneous original:
+
+1. Original erroneous trade: status → =cancelled=.
+2. Correction trade created: fresh =id=, =successor_trade_id= = original =id=.
+3. Correction trade status begins at =new=; moves to =live= on confirmation.
+
+* Activity Type Taxonomy
+
+Activity types are used for P&L attribution and trade activity reporting. They
+are classified into four categories.
+
+** New Activity
+
+New Activity events require legal confirmation. They produce a trade record in
+=new= status that must transition to =live= via confirmation.
+
+| Activity Type      | Description                                                                                                              | Status Effect                                                           |
+|--------------------+--------------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------|
+| New                | A new legal contract. Trade exists today but did not exist yesterday.                                                    | New trade → =new=                                                       |
+| Close-Out          | Equal and opposite trade to close an existing open position. May include a value-transfer deal (buyout, buy-back).       | Original trade → =cancelled=; new close-out trade → =new=              |
+| Early Termination  | Trade terminated before its scheduled maturity. Covers close-out, tear-up, and compression (netted swap elimination).   | Original trade → =cancelled=; termination trade → =new= if applicable  |
+| Restructure / Roll | Terms of an existing trade renegotiated: components added, removed, or heavily modified. Requires new confirmation.      | New temporal version of trade → =new=                                   |
+| Partial Close-Out  | Notionals of an existing trade reduced. Also known as tear-up or downsize. Requires new confirmation.                    | New temporal version of trade → =new=                                   |
+| Upsize             | Notionals of an existing trade increased. Requires new confirmation.                                                     | New temporal version of trade → =new=                                   |
+| Novation           | Trade counterparty changed (assignment). Bank may step in/out with or without risk change. New confirmation required.    | New temporal version of trade → =new=                                   |
+| Funding Roll       | P&L from new funding tickets rolling a book balance from day T to T+1. Includes interest paid/received on the position. | New trade → =new=                                                       |
+| Contra Revenue     | Revenue reduction (expense-like): brokerage, agency commissions, bullion fees, sales credits, transfer pricing.         | New trade → =new=                                                       |
+| CVA / WWR          | Credit Valuation Adjustment or Wrong-Way Risk trade. Captures counterparty default risk and correlated credit exposure.  | New trade → =new=                                                       |
+
+** Life-Cycle Events
+
+Life-Cycle Events are changes to the value of the trade specific to the terms of
+the original contract. No legal confirmation is required.
+
+| Activity Type      | Description                                                                                                              | Status Effect             |
+|--------------------+--------------------------------------------------------------------------------------------------------------------------+---------------------------|
+| Rate Reset         | Daily fixing impact: actual rate versus previous day's projected rate, for floating-rate products such as IRS.           | None                      |
+| Floating Reset     | Floating rate reset per the terms of the trade; similar to Rate Reset but may also include spread changes.               | None                      |
+| Fixings            | A fixing has been published; cashflows referencing the fixing are updated. P&L captured between day-0 and cash trade.    | None                      |
+| Notional Reset     | Notional changes per contract terms (e.g. resettable notional). Not an upsize or downsize; no confirmation needed.       | None                      |
+| Strike Reset       | Strike reset per contract terms. Supported for resettable call/put and resettable double-digital barriers.               | None                      |
+| Expired            | Trade status changed because it expired out of the money, referenced against an expiry fixing.                           | =live= → =expired=        |
+| Exercised          | Trade status changed because it was exercised in the money, referenced against an expiry fixing.                         | =live= → =expired=        |
+| Physical Delivery  | Physical settlement during the life of the trade or at expiry.                                                           | None                      |
+| Cash Settlement    | Cash payment during the life of a trade or at expiry. Includes option rebates.                                           | None                      |
+| Maturity           | Contract ceases after its last fixing or payment. Trade has passed its maturity date. No confirmation required.          | =live= → =expired=        |
+| Triggered          | Trade amended due to a barrier trigger event.                                                                            | Depends on trigger type   |
+| Corporate Actions  | Action initiated by a company that impacts issued equity or debt.                                                        | None                      |
+| Rebalance          | Change to various components per a defined event within the original confirmation.                                       | None                      |
+| Amortisation       | Change in notional per the terms of the initial trade.                                                                   | None                      |
+
+** Misbooking
+
+A misbooking is a change to a trade due to an error in the booking terms of the
+original contract.
+
+| Activity Type | Description                                                                                                              | Status Effect                                           |
+|---------------+--------------------------------------------------------------------------------------------------------------------------+---------------------------------------------------------|
+| Misbooking    | Correction of an erroneous booking. Creates a correction trade with =successor_trade_id= referencing the original trade. | Original → =cancelled=; correction trade → =new=        |
+
+** Valuation Changes
+
+Valuation Changes are changes to the value of a trade that are not specific to
+the terms of the contract. They represent changes in analytics, models, or static
+data inputs. No confirmation is required. These are treated as amendments — they
+do not change the trade's operational status.
+
+| Activity Type               | Description                                                                                         | Status Effect |
+|-----------------------------+-----------------------------------------------------------------------------------------------------+---------------|
+| Model / Model Parameters    | P&L from changes within valuation models impacting trade value.                                     | None (amend)  |
+| System Release / Analytics  | P&L from changes within valuation models due to a system or analytics upgrade.                      | None (amend)  |
+| Static Data                 | Amendments to static data inputs to the trade (e.g. counterparty change affecting funding curves).  | None (amend)  |
+| Script Changes              | Change to the valuation script for structured trades, impacting trade value.                        | None (amend)  |
+
+** Cancellation
+
+| Activity Type | Description                                                                                             | Status Effect          |
+|---------------+---------------------------------------------------------------------------------------------------------+------------------------|
+| Cancel        | Trade removed or set to Cancelled/Deleted status. Leads to reversal of historic ledger postings.        | any state → =cancelled= |
+
+* Activity Type to FSM Mapping Summary
+
+| Activity Type               | Category          | Requires Confirmation | Status Transition                              |
+|-----------------------------+-------------------+-----------------------+------------------------------------------------|
+| New                         | New Activity      | Yes                   | (init) → =new=                                |
+| Close-Out                   | New Activity      | Yes                   | original → =cancelled=; new trade → =new=     |
+| Early Termination           | New Activity      | Yes                   | =live= → =cancelled=                          |
+| Restructure / Roll          | New Activity      | Yes                   | new temporal version → =new=                  |
+| Partial Close-Out           | New Activity      | Yes                   | new temporal version → =new=                  |
+| Upsize                      | New Activity      | Yes                   | new temporal version → =new=                  |
+| Novation                    | New Activity      | Yes                   | new temporal version → =new=                  |
+| Funding Roll                | New Activity      | Yes                   | new trade → =new=                             |
+| Contra Revenue              | New Activity      | Yes                   | new trade → =new=                             |
+| CVA / WWR                   | New Activity      | Yes                   | new trade → =new=                             |
+| Rate Reset                  | Life-Cycle Event  | No                    | None                                          |
+| Floating Reset              | Life-Cycle Event  | No                    | None                                          |
+| Fixings                     | Life-Cycle Event  | No                    | None                                          |
+| Notional Reset              | Life-Cycle Event  | No                    | None                                          |
+| Strike Reset                | Life-Cycle Event  | No                    | None                                          |
+| Expired                     | Life-Cycle Event  | No                    | =live= → =expired=                            |
+| Exercised                   | Life-Cycle Event  | No                    | =live= → =expired=                            |
+| Physical Delivery           | Life-Cycle Event  | No                    | None                                          |
+| Cash Settlement             | Life-Cycle Event  | No                    | None                                          |
+| Maturity                    | Life-Cycle Event  | No                    | =live= → =expired=                            |
+| Triggered                   | Life-Cycle Event  | No                    | Depends on trigger type                       |
+| Corporate Actions           | Life-Cycle Event  | No                    | None                                          |
+| Rebalance                   | Life-Cycle Event  | No                    | None                                          |
+| Amortisation                | Life-Cycle Event  | No                    | None                                          |
+| Misbooking                  | Misbooking        | No                    | original → =cancelled=; correction → =new=    |
+| Model / Model Parameters    | Valuation Change  | No                    | None (amend)                                  |
+| System Release / Analytics  | Valuation Change  | No                    | None (amend)                                  |
+| Static Data                 | Valuation Change  | No                    | None (amend)                                  |
+| Script Changes              | Valuation Change  | No                    | None (amend)                                  |
+| Cancel                      | Cancellation      | No                    | any → =cancelled=                             |
+
+* Database Representation
+
+** Trade Status FSM
+
+The trade status machine is seeded in =ores_dq_fsm_machines_tbl= under the name
+=trade_status= with four states and five transitions as described above.
+
+The =ores_trading_trades_tbl= carries a =status_id= column (soft foreign key to
+=ores_dq_fsm_states_tbl=) representing the trade's current status.
+
+** Activity Types
+
+The full set of activity types is stored in =ores_trading_activity_types_tbl=
+(replaces the narrower =ores_trading_lifecycle_events_tbl=). Each activity type
+record includes:
+
+- =code=: unique identifier (e.g. =novation=, =rate_reset=).
+- =category=: one of =new_activity=, =lifecycle_event=, =misbooking=,
+  =valuation_change=, =cancellation=.
+- =requires_confirmation=: boolean.
+- =fsm_transition_id=: optional reference to the triggered FSM transition (null
+  for no-status-change activities).
+- =description=: human-readable description.
+
+** FSM Transition Enforcement
+
+Before a trade status transition is applied, the server validates it against the
+=ores_dq_fsm_transitions_tbl= to confirm the (from_state, to_state) pair is
+legal for the =trade_status= machine. Invalid transitions are rejected with an
+error response.
+
+* Related Components
+
+| Component | File                                                                  | Purpose                                 |
+|-----------+-----------------------------------------------------------------------+-----------------------------------------|
+| ores.dq   | [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]               | FSM infrastructure (machines, states, transitions) |
+| ores.trading | [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]       | Trade domain model and repository       |
+| ores.fpml | [[id:7C2A8B4E-1F5D-4C9E-B8A2-7F1C3D5E6A9B][ores.fpml]]             | FpML trade format parsing               |
+| sql       | =ores_dq_fsm_machines_tbl=                                            | FSM machine definitions                 |
+| sql       | =ores_dq_fsm_states_tbl=                                              | FSM state definitions                   |
+| sql       | =ores_dq_fsm_transitions_tbl=                                         | FSM transition rules                    |
+| sql       | =ores_trading_trades_tbl=                                             | Trade records with =status_id= column   |
+| sql       | =ores_trading_activity_types_tbl=                                     | Activity type reference data            |
+
+| Top: [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] | Previous: [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] |

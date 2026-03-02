@@ -43,18 +43,6 @@ roundingType parse_rounding_type(const std::string& s) {
     throw std::runtime_error("Invalid rounding type: " + s);
 }
 
-// Map ORE CurrencyType values to OreStudio monetary_nature enum values.
-// ORE uses: "Major", "Metal", "Crypto" (and others may exist).
-// OreStudio accepts: "fiat", "commodity", "synthetic", "supranational".
-std::string map_monetary_nature(const std::string& ore_type) {
-    if (ore_type == "Metal")
-        return "commodity";
-    if (ore_type == "Crypto")
-        return "synthetic";
-    // "Major", "Minor", or anything unrecognised → fiat
-    return "fiat";
-}
-
 }
 
 refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
@@ -70,13 +58,9 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.rounding_type = to_string(v.RoundingType);
     r.rounding_precision = static_cast<int>(v.RoundingPrecision);
     r.format = "";  // Not in XSD
-    const std::string ore_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
-    r.monetary_nature = map_monetary_nature(ore_type);
-    // ORE XML's CurrencyType attribute captures the economic nature of the
-    // currency (e.g. "Fiat", "Crypto"), which maps to monetary_nature.  The ORE
-    // XML schema has no concept of market tier, so market_tier is left empty
-    // on import and is not written on export.  This is a known limitation:
-    // market_tier must be set separately after import if it is needed.
+    r.monetary_nature = v.CurrencyType ? std::string(*v.CurrencyType) : "";
+    // ORE XML's CurrencyType attribute is stored as-is in monetary_nature.
+    // market_tier is left empty on import and is not written on export.
     r.market_tier = "";
     r.modified_by = "ores";
     r.change_reason_code = "system.external_data_import";

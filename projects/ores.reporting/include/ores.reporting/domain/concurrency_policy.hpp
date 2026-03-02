@@ -1,0 +1,95 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_HPP
+#define ORES_REPORTING_DOMAIN_CONCURRENCY_POLICY_HPP
+
+#include <chrono>
+#include <string>
+
+namespace ores::reporting::domain {
+
+/**
+ * @brief Report instance concurrency behaviour when a new trigger fires.
+ *
+ * Reference data table defining valid concurrency policies for report definitions.
+ * Examples: 'skip', 'queue', 'fail'.
+ * 
+ * Concurrency policies control what happens when a scheduler trigger fires
+ * for a report definition that already has a running instance.
+ */
+struct concurrency_policy final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Unique concurrency policy code.
+     *
+     * Examples: 'skip', 'queue', 'fail'.
+     */
+    std::string code;
+
+    /**
+     * @brief Human-readable name for the concurrency policy.
+     */
+    std::string name;
+
+    /**
+     * @brief Detailed description of the concurrency policy behaviour.
+     */
+    std::string description;
+
+    /**
+     * @brief Order for UI display purposes.
+     */
+    int display_order;
+
+    /**
+     * @brief Username of the person who last modified this concurrency policy.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     *
+     * References change_reasons table (soft FK).
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+}
+
+#endif

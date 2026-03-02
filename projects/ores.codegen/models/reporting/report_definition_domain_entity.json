@@ -1,0 +1,157 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "reporting",
+    "entity_singular": "report_definition",
+    "entity_plural": "report_definitions",
+    "entity_title": "Report Definition",
+    "has_tenant_id": true,
+    "brief": "Persistent template for a scheduled report.",
+    "description": "The persistent template for a report. Describes what to run, when to run it,\nand how to handle concurrent executions. Type-specific configuration (e.g.\nrisk parameters) lives in a separate table keyed by report_definition_id.\n\nLifecycle is managed through the report_definition_lifecycle FSM machine.\nfsm_state_id points to the current state in ores_dq_fsm_states_tbl.\n\nscheduler_job_id links to ores_scheduler_job_definitions_tbl.id and is set\nby the scheduler service when the definition is activated (state: active).\nIt is cleared when the definition is suspended or archived.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID uniquely identifying this report definition."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique name for the report definition within a tenant.",
+        "generator_expr": "std::string(faker::word::noun()) + \"_report\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "party_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Party that owns this report definition.",
+        "generator_expr": "boost::uuids::random_generator()()"
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Optional human-readable description of the report.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "report_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Report type code (FK to ores_reporting_report_types_tbl).",
+        "generator_expr": "std::string(\"risk\")"
+      },
+      {
+        "name": "fsm_state_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Current FSM state (FK to ores_dq_fsm_states_tbl). Null until first activation.",
+        "generator_expr": "std::nullopt"
+      },
+      {
+        "name": "schedule_expression",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Validated cron expression driving report recurrence.",
+        "generator_expr": "std::string(\"0 6 * * 1\")"
+      },
+      {
+        "name": "concurrency_policy",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Concurrency policy code (FK to ores_reporting_concurrency_policies_tbl).",
+        "generator_expr": "std::string(\"skip\")"
+      },
+      {
+        "name": "scheduler_job_id",
+        "type": "uuid",
+        "cpp_type": "std::optional<boost::uuids::uuid>",
+        "nullable": true,
+        "description": "Scheduler job UUID (FK to ores_scheduler_job_definitions_tbl). Present only when status is active.",
+        "generator_expr": "std::nullopt"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_reporting_report_definitions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "definition",
+      "entity_plural_short": "definitions",
+      "entity_singular_words": "report definition",
+      "entity_plural_words": "report definitions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
+        "entity": ["<optional>", "<string>", "\"sqlgen/Timestamp.hpp\"", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "rd"
+    },
+
+    "qt": {
+      "domain_include": "ores.reporting/domain/report_definition.hpp",
+      "domain_class": "reporting::domain::report_definition",
+      "protocol_include": "ores.reporting/messaging/report_definition_protocol.hpp",
+      "collection_name": "definitions",
+      "item_var": "definition",
+      "key_field": "name",
+      "key_widget": "nameEdit",
+      "has_uuid_primary_key": true,
+
+      "get_request_class": "reporting::messaging::get_report_definitions_request",
+      "get_response_class": "reporting::messaging::get_report_definitions_response",
+      "get_message_type": "get_report_definitions_request",
+      "save_request_class": "reporting::messaging::save_report_definition_request",
+      "save_response_class": "reporting::messaging::save_report_definition_response",
+      "save_message_type": "save_report_definition_request",
+      "delete_request_class": "reporting::messaging::delete_report_definition_request",
+      "delete_response_class": "reporting::messaging::delete_report_definition_response",
+      "delete_message_type": "delete_report_definition_request",
+      "history_request_class": "reporting::messaging::get_report_definition_history_request",
+      "history_response_class": "reporting::messaging::get_report_definition_history_response",
+      "history_message_type": "get_report_definition_history_request",
+
+      "detail_fields": [
+        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter report definition name"},
+        {"field": "description", "label": "Description", "widget": "descriptionEdit",
+         "type": "text_edit", "placeholder": "Enter a description"},
+        {"field": "report_type", "label": "Report Type", "widget": "reportTypeEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. risk"},
+        {"field": "schedule_expression", "label": "Schedule (cron)", "widget": "scheduleExpressionEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. 0 6 * * 1"},
+        {"field": "concurrency_policy", "label": "Concurrency Policy", "widget": "concurrencyPolicyEdit",
+         "type": "line_edit", "is_required": true, "placeholder": "e.g. skip"}
+      ],
+
+      "columns": [
+        {"enum_name": "Name",              "field": "name",               "header": "Name",       "is_string": true,    "width": 200},
+        {"enum_name": "ReportType",        "field": "report_type",        "header": "Type",       "is_string": true,    "width": 100},
+        {"enum_name": "ScheduleExpression","field": "schedule_expression","header": "Schedule",   "is_string": true,    "width": 150},
+        {"enum_name": "ConcurrencyPolicy", "field": "concurrency_policy", "header": "Concurrency","is_string": true,    "width": 100},
+        {"enum_name": "Version",           "field": "version",            "header": "Version",    "is_int": true,       "width": 60},
+        {"enum_name": "ModifiedBy",        "field": "modified_by",        "header": "Modified By","is_string": true,    "width": 120}
+      ],
+
+      "settings_group": "ReportDefinitionListWindow",
+      "window_title": "Report Definitions",
+      "icon": "FileText"
+    }
+  }
+}

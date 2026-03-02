@@ -1,0 +1,121 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "reporting",
+    "entity_singular": "concurrency_policy",
+    "entity_plural": "concurrency_policies",
+    "entity_title": "Concurrency Policy",
+    "brief": "Report instance concurrency behaviour when a new trigger fires.",
+    "description": "Reference data table defining valid concurrency policies for report definitions.\nExamples: 'skip', 'queue', 'fail'.\n\nConcurrency policies control what happens when a scheduler trigger fires\nfor a report definition that already has a running instance.",
+
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique concurrency policy code.",
+      "detail": "Examples: 'skip', 'queue', 'fail'."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the concurrency policy.",
+        "generator_expr": "std::string(faker::word::adjective()) + \" Policy\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of the concurrency policy behaviour.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Order for UI display purposes.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_reporting_concurrency_policies_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "policy",
+      "entity_plural_short": "policies",
+      "entity_singular_words": "concurrency policy",
+      "entity_plural_words": "concurrency policies"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "cp",
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.reporting/domain/concurrency_policy.hpp",
+      "domain_class": "reporting::domain::concurrency_policy",
+      "protocol_include": "ores.reporting/messaging/concurrency_policy_protocol.hpp",
+      "collection_name": "policies",
+      "item_var": "policy",
+      "key_field": "code",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "reporting::messaging::get_concurrency_policies_request",
+      "get_response_class": "reporting::messaging::get_concurrency_policies_response",
+      "get_message_type": "get_concurrency_policies_request",
+      "save_request_class": "reporting::messaging::save_concurrency_policy_request",
+      "save_response_class": "reporting::messaging::save_concurrency_policy_response",
+      "save_message_type": "save_concurrency_policy_request",
+      "delete_request_class": "reporting::messaging::delete_concurrency_policy_request",
+      "delete_response_class": "reporting::messaging::delete_concurrency_policy_response",
+      "delete_message_type": "delete_concurrency_policy_request",
+      "history_request_class": "reporting::messaging::get_concurrency_policy_history_request",
+      "history_response_class": "reporting::messaging::get_concurrency_policy_history_response",
+      "history_message_type": "get_concurrency_policy_history_request",
+
+      "detail_fields": [
+        {"field": "code", "label": "Code", "widget": "codeEdit", "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Enter policy code"},
+        {"field": "name", "label": "Name", "widget": "nameEdit", "type": "line_edit",
+         "is_required": true, "placeholder": "Enter display name"},
+        {"field": "description", "label": "Description", "widget": "descriptionEdit",
+         "type": "text_edit", "placeholder": "Enter a description"}
+      ],
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 120},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "ConcurrencyPolicyListWindow",
+      "window_title": "Concurrency Policies",
+      "icon": "LayoutList"
+    }
+  }
+}

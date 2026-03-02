@@ -32,6 +32,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.mq/pgmq/mq_exception.hpp"
 #include "ores.mq/pgmq/message.hpp"
+#include "ores.mq/pgmq/metrics_sample.hpp"
 #include "ores.mq/pgmq/queue_info.hpp"
 #include "ores.mq/pgmq/queue_metrics.hpp"
 
@@ -350,6 +351,20 @@ public:
      * @brief Returns statistics for all queues.
      */
     std::vector<queue_metrics> metrics_all(ores::database::context ctx);
+
+    /**
+     * @brief Returns time-series samples for a specific queue.
+     *
+     * Queries ores_mq_metrics_samples_tbl populated by the pg_cron scrape job.
+     * Results are ordered by sample_time ASC. At most 10,000 rows are returned.
+     *
+     * @param from Optional start of time window (inclusive).
+     * @param to   Optional end of time window (inclusive).
+     */
+    std::vector<metrics_sample> metric_samples(ores::database::context ctx,
+        const std::string& queue_name,
+        std::optional<std::chrono::system_clock::time_point> from = {},
+        std::optional<std::chrono::system_clock::time_point> to = {});
 
     // -----------------------------------------------------------------------
     // NOTIFY / LISTEN integration

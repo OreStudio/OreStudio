@@ -271,4 +271,141 @@ std::ostream& operator<<(std::ostream& s, const get_queue_metrics_response& v) {
     return s;
 }
 
+// ============================================================================
+// get_queue_metric_samples_request
+// ============================================================================
+
+std::vector<std::byte> get_queue_metric_samples_request::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_string(buffer, queue_name);
+    if (from) {
+        writer::write_bool(buffer, true);
+        writer::write_string(buffer,
+            ores::platform::time::datetime::format_time_point_utc(*from));
+    } else {
+        writer::write_bool(buffer, false);
+    }
+    if (to) {
+        writer::write_bool(buffer, true);
+        writer::write_string(buffer,
+            ores::platform::time::datetime::format_time_point_utc(*to));
+    } else {
+        writer::write_bool(buffer, false);
+    }
+    return buffer;
+}
+
+std::expected<get_queue_metric_samples_request, error_code>
+get_queue_metric_samples_request::deserialize(std::span<const std::byte> data) {
+    get_queue_metric_samples_request request;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    request.queue_name = *name_result;
+
+    auto has_from_result = reader::read_bool(data);
+    if (!has_from_result) return std::unexpected(has_from_result.error());
+    if (*has_from_result) {
+        auto ts_result = reader::read_string(data);
+        if (!ts_result) return std::unexpected(ts_result.error());
+        try {
+            request.from = ores::platform::time::datetime::parse_time_point(*ts_result);
+        } catch (const std::invalid_argument&) {
+            return std::unexpected(error_code::invalid_request);
+        }
+    }
+
+    auto has_to_result = reader::read_bool(data);
+    if (!has_to_result) return std::unexpected(has_to_result.error());
+    if (*has_to_result) {
+        auto ts_result = reader::read_string(data);
+        if (!ts_result) return std::unexpected(ts_result.error());
+        try {
+            request.to = ores::platform::time::datetime::parse_time_point(*ts_result);
+        } catch (const std::invalid_argument&) {
+            return std::unexpected(error_code::invalid_request);
+        }
+    }
+
+    return request;
+}
+
+std::ostream& operator<<(std::ostream& s,
+    const get_queue_metric_samples_request& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+// ============================================================================
+// get_queue_metric_samples_response
+// ============================================================================
+
+std::vector<std::byte> get_queue_metric_samples_response::serialize() const {
+    std::vector<std::byte> buffer;
+    writer::write_bool(buffer, success);
+    writer::write_string(buffer, message);
+    writer::write_string(buffer, queue_name);
+    writer::write_uint32(buffer, static_cast<std::uint32_t>(samples.size()));
+    for (const auto& s : samples) {
+        writer::write_string(buffer,
+            ores::platform::time::datetime::format_time_point_utc(s.sample_time));
+        writer::write_int64(buffer, s.queue_length);
+        writer::write_int64(buffer, s.total_messages);
+    }
+    return buffer;
+}
+
+std::expected<get_queue_metric_samples_response, error_code>
+get_queue_metric_samples_response::deserialize(std::span<const std::byte> data) {
+    get_queue_metric_samples_response response;
+
+    auto success_result = reader::read_bool(data);
+    if (!success_result) return std::unexpected(success_result.error());
+    response.success = *success_result;
+
+    auto message_result = reader::read_string(data);
+    if (!message_result) return std::unexpected(message_result.error());
+    response.message = *message_result;
+
+    auto name_result = reader::read_string(data);
+    if (!name_result) return std::unexpected(name_result.error());
+    response.queue_name = *name_result;
+
+    auto count_result = reader::read_count(data);
+    if (!count_result) return std::unexpected(count_result.error());
+    auto count = *count_result;
+
+    response.samples.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        pgmq::metrics_sample s;
+
+        auto ts_result = reader::read_string(data);
+        if (!ts_result) return std::unexpected(ts_result.error());
+        try {
+            s.sample_time =
+                ores::platform::time::datetime::parse_time_point(*ts_result);
+        } catch (const std::invalid_argument&) {
+            return std::unexpected(error_code::invalid_request);
+        }
+
+        auto ql_result = reader::read_int64(data);
+        if (!ql_result) return std::unexpected(ql_result.error());
+        s.queue_length = *ql_result;
+
+        auto tm_result = reader::read_int64(data);
+        if (!tm_result) return std::unexpected(tm_result.error());
+        s.total_messages = *tm_result;
+
+        response.samples.push_back(std::move(s));
+    }
+
+    return response;
+}
+
+std::ostream& operator<<(std::ostream& s,
+    const get_queue_metric_samples_response& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
 }

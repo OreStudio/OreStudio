@@ -23,11 +23,14 @@
 #include <span>
 #include <iosfwd>
 #include <string>
+#include <optional>
 #include <vector>
+#include <chrono>
 #include <expected>
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
+#include "ores.mq/pgmq/metrics_sample.hpp"
 #include "ores.mq/pgmq/queue_info.hpp"
 #include "ores.mq/pgmq/queue_metrics.hpp"
 
@@ -97,6 +100,72 @@ struct get_queue_metrics_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_queue_metrics_response& v);
 
+// ============================================================================
+// get_queue_metric_samples messages
+// ============================================================================
+
+/**
+ * @brief Request to retrieve time-series metric samples for a specific queue.
+ *
+ * Returns rows from ores_mq_metrics_samples_tbl, ordered by sample_time ASC.
+ * The optional from/to fields define an inclusive time window. When omitted,
+ * all available samples for the queue are returned (capped at 10,000 rows).
+ */
+struct get_queue_metric_samples_request final {
+    std::string queue_name;
+    std::optional<std::chrono::system_clock::time_point> from;
+    std::optional<std::chrono::system_clock::time_point> to;
+
+    /**
+     * @brief Serialize request to bytes.
+     *
+     * Format:
+     * - 2+N bytes: queue_name (string)
+     * - 1 byte:   has_from flag
+     * - (if has_from) 2+N bytes: from timestamp (ISO UTC string)
+     * - 1 byte:   has_to flag
+     * - (if has_to) 2+N bytes: to timestamp (ISO UTC string)
+     */
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_queue_metric_samples_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const get_queue_metric_samples_request& v);
+
+/**
+ * @brief Response containing time-series metric samples for a queue.
+ */
+struct get_queue_metric_samples_response final {
+    bool success{false};
+    std::string message;
+    std::string queue_name;
+    std::vector<pgmq::metrics_sample> samples;
+
+    /**
+     * @brief Serialize response to bytes.
+     *
+     * Format:
+     * - 1 byte:   success
+     * - 2+N bytes: message (error text, empty on success)
+     * - 2+N bytes: queue_name
+     * - 4 bytes:  sample count
+     * - Per sample:
+     *   - 2+N bytes: sample_time (ISO UTC string)
+     *   - 8 bytes:   queue_length (int64)
+     *   - 8 bytes:   total_messages (int64)
+     */
+    std::vector<std::byte> serialize() const;
+    static std::expected<get_queue_metric_samples_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s,
+    const get_queue_metric_samples_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -115,6 +184,14 @@ struct message_traits<mq::messaging::get_queue_metrics_request> {
     using response_type = mq::messaging::get_queue_metrics_response;
     static constexpr message_type request_message_type =
         message_type::get_queue_metrics_request;
+};
+
+template<>
+struct message_traits<mq::messaging::get_queue_metric_samples_request> {
+    using request_type = mq::messaging::get_queue_metric_samples_request;
+    using response_type = mq::messaging::get_queue_metric_samples_response;
+    static constexpr message_type request_message_type =
+        message_type::get_queue_metric_samples_request;
 };
 
 }

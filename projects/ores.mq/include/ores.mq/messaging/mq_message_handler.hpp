@@ -68,6 +68,11 @@ private:
     handle_get_queue_metrics_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_get_queue_metric_samples_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
     pgmq::client client_;
 };
 

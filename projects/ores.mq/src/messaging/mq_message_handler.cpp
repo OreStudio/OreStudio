@@ -44,6 +44,8 @@ mq_message_handler::handle_message(message_type type,
         co_return co_await handle_get_queues_request(payload, remote_address);
     case message_type::get_queue_metrics_request:
         co_return co_await handle_get_queue_metrics_request(payload, remote_address);
+    case message_type::get_queue_metric_samples_request:
+        co_return co_await handle_get_queue_metric_samples_request(payload, remote_address);
     default:
         BOOST_LOG_SEV(lg(), error) << "Unknown MQ message type " << std::hex
                                    << static_cast<std::uint16_t>(type);
@@ -108,6 +110,44 @@ mq_message_handler::handle_get_queue_metrics_request(
         BOOST_LOG_SEV(lg(), info) << "Retrieved metrics for " << response.metrics.size() << " queues";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to retrieve queue metrics: " << e.what();
+        response.success = false;
+        response.message = e.what();
+    }
+
+    co_return response.serialize();
+}
+
+boost::asio::awaitable<std::expected<std::vector<std::byte>,
+    ores::utility::serialization::error_code>>
+mq_message_handler::handle_get_queue_metric_samples_request(
+    std::span<const std::byte> payload, const std::string& remote_address) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Processing get_queue_metric_samples_request.";
+
+    auto auth = require_authentication(remote_address, "Get queue metric samples");
+    if (!auth) co_return std::unexpected(auth.error());
+
+    auto request_result = get_queue_metric_samples_request::deserialize(payload);
+    if (!request_result) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Failed to deserialize get_queue_metric_samples_request";
+        co_return std::unexpected(request_result.error());
+    }
+
+    const auto& request = *request_result;
+    auto ctx = make_request_context(*auth);
+
+    get_queue_metric_samples_response response;
+    response.queue_name = request.queue_name;
+    try {
+        response.samples = client_.metric_samples(
+            ctx, request.queue_name, request.from, request.to);
+        response.success = true;
+        BOOST_LOG_SEV(lg(), info) << "Retrieved " << response.samples.size()
+                                  << " metric samples for queue '"
+                                  << request.queue_name << "'";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to retrieve metric samples: " << e.what();
         response.success = false;
         response.message = e.what();
     }

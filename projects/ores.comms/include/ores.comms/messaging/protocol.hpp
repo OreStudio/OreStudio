@@ -341,8 +341,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // max_save_batch_size (1000 entities). Breaking change.
 //
 // Version 46.1 adds MQ subsystem (0xB000) with get_queues and get_queue_metrics.
+//
+// Version 46.2 adds get_queue_metric_samples_request/response (0xB004/0xB005)
+// for querying time-series queue metrics from ores_mq_metrics_samples_tbl.
+// Supports optional from/to time-window filters for chart data retrieval.
 constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 46;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 1;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 2;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

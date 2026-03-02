@@ -58,6 +58,7 @@ target_link_libraries(${lib_target_name}
         ores.synthetic.lib
         ores.trading.lib
         ores.scheduler.lib
+        ores.reporting.lib
         ores.mq.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

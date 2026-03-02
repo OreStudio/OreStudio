@@ -22,7 +22,7 @@ Use this skill immediately after a PR has been created and pushed, when you want
 2.  Run this skill, passing the PR number if not on the current branch.
 3.  The skill will execute the watch-and-fix loop until CI is green.
 
-See [Detailed Instructions](#org4f20844) for the full loop behaviour.
+See [Detailed Instructions](#org008e2d2) for the full loop behaviour.
 
 
 # Detailed Instructions

@@ -23,6 +23,7 @@
 #include <libpq-fe.h>
 #include <stdexcept>
 #include <sstream>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::database::repository {
@@ -67,6 +68,23 @@ std::string build_connection_string(const sqlgen::postgres::Credentials& creds) 
 }
 
 /**
+ * @brief Executes a single SET_CONFIG SQL on a raw connection.
+ *
+ * Extracted to avoid repeating the PQexec + error-check pattern.
+ */
+void set_pg_config(PGconn* conn, const std::string& key,
+    const std::string& value, logging::logger_t& lg) {
+    const std::string sql =
+        "SELECT set_config('" + key + "', '" + value + "', false)";
+    pg_result_guard r(PQexec(conn, sql.c_str()));
+    if (PQresultStatus(r.result) != PGRES_TUPLES_OK) {
+        const std::string err = PQerrorMessage(conn);
+        BOOST_LOG_SEV(lg, error) << "Failed to set " << key << ": " << err;
+        throw std::runtime_error("Failed to set " + key + ": " + err);
+    }
+}
+
+/**
  * @brief Sets the tenant context on a connection for RLS policies.
  *
  * This mirrors what tenant_aware_pool does when acquiring a connection.
@@ -96,6 +114,36 @@ void set_tenant_context(PGconn* conn,
     BOOST_LOG_SEV(lg, debug) << "Set tenant context to: " << tenant_id_str;
 }
 
+/**
+ * @brief Sets the full session context on a raw connection, mirroring
+ * tenant_aware_pool::acquire(). Sets tenant, party, visible_party_ids,
+ * and actor from the context object.
+ */
+void set_full_context(PGconn* conn, const context& ctx, logging::logger_t& lg) {
+    set_tenant_context(conn, ctx.tenant_id(), lg);
+
+    if (ctx.party_id().has_value()) {
+        set_pg_config(conn, "app.current_party_id",
+            boost::uuids::to_string(*ctx.party_id()), lg);
+    }
+
+    const auto& vpids = ctx.visible_party_ids();
+    if (!vpids.empty()) {
+        std::string ids = "{";
+        for (std::size_t i = 0; i < vpids.size(); ++i) {
+            if (i > 0) ids += ",";
+            ids += boost::uuids::to_string(vpids[i]);
+        }
+        ids += "}";
+        set_pg_config(conn, "app.visible_party_ids", ids, lg);
+    }
+
+    const auto& actor = ctx.actor();
+    if (!actor.empty()) {
+        set_pg_config(conn, "app.current_actor", actor, lg);
+    }
+}
+
 } // anonymous namespace
 
 std::vector<std::string> execute_raw_string_query(context ctx,
@@ -116,8 +164,8 @@ std::vector<std::string> execute_raw_string_query(context ctx,
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
-    // Set tenant context for RLS policies
-    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+    // Set full session context for RLS policies (tenant + party + actor)
+    set_full_context(conn_guard.conn, ctx, lg);
 
     // Execute the query
     pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
@@ -160,8 +208,8 @@ std::map<std::string, std::vector<std::string>> execute_raw_grouped_query(
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
-    // Set tenant context for RLS policies
-    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+    // Set full session context for RLS policies (tenant + party + actor)
+    set_full_context(conn_guard.conn, ctx, lg);
 
     // Execute the query
     pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
@@ -211,8 +259,8 @@ std::vector<std::vector<std::optional<std::string>>> execute_raw_multi_column_qu
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
-    // Set tenant context for RLS policies
-    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+    // Set full session context for RLS policies (tenant + party + actor)
+    set_full_context(conn_guard.conn, ctx, lg);
 
     // Execute the query
     pg_result_guard result_guard(PQexec(conn_guard.conn, sql.c_str()));
@@ -260,8 +308,8 @@ void execute_raw_command(context ctx, const std::string& sql,
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
-    // Set tenant context for RLS policies
-    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+    // Set full session context for RLS policies (tenant + party + actor)
+    set_full_context(conn_guard.conn, ctx, lg);
 
     // Begin transaction
     pg_result_guard begin_guard(PQexec(conn_guard.conn, "BEGIN"));
@@ -317,8 +365,8 @@ std::vector<std::string> execute_parameterized_string_query(context ctx,
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
-    // Set tenant context for RLS policies
-    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+    // Set full session context for RLS policies (tenant + party + actor)
+    set_full_context(conn_guard.conn, ctx, lg);
 
     // Build parameter arrays for PQexecParams
     std::vector<const char*> param_values;
@@ -487,8 +535,8 @@ void execute_parameterized_command(context ctx, const std::string& sql,
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
-    // Set tenant context for RLS policies
-    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+    // Set full session context for RLS policies (tenant + party + actor)
+    set_full_context(conn_guard.conn, ctx, lg);
 
     // Build parameter arrays for PQexecParams
     std::vector<const char*> param_values;
@@ -559,7 +607,7 @@ std::vector<std::vector<std::optional<std::string>>> execute_parameterized_multi
         throw std::runtime_error("Database connection failed: " + err_msg);
     }
 
-    set_tenant_context(conn_guard.conn, ctx.tenant_id(), lg);
+    set_full_context(conn_guard.conn, ctx, lg);
 
     std::vector<const char*> param_values;
     param_values.reserve(params.size());

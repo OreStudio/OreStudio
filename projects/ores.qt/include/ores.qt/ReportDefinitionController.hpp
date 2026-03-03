@@ -62,6 +62,8 @@ public:
         const QString& username,
         QObject* parent = nullptr);
 
+    ~ReportDefinitionController() override;
+
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
@@ -74,6 +76,8 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
+    void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
+                                const QStringList& entityIds, const QString& tenantId);
     void onShowDetails(const reporting::domain::report_definition& definition);
     void onAddNewRequested();
     void onShowHistory(const reporting::domain::report_definition& definition);

@@ -19,10 +19,11 @@
  */
 #include "ores.mq/service/mq_job_initializer.hpp"
 
+#include <algorithm>
 #include <stdexcept>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.database/service/service_accounts.hpp"
 #include "ores.scheduler/builder/job_definition_builder.hpp"
 #include "ores.scheduler/service/cron_scheduler.hpp"
 
@@ -41,23 +42,15 @@ constexpr std::string_view job_name        = "ores.mq.metrics_scrape";
 constexpr std::string_view job_description = "Scrape pgmq queue metrics into ores_mq_metrics_samples_tbl";
 constexpr std::string_view job_command     = "SELECT ores_mq_scrape_metrics_fn()";
 constexpr std::string_view job_schedule    = "* * * * *";
-constexpr std::string_view job_modified_by = "system";
+const std::string_view job_modified_by = database::service::service_accounts::comms;
 
 } // anonymous namespace
 
-void mq_job_initializer::initialise(const context& ctx) {
+void mq_job_initializer::initialise(const context& ctx,
+                                    const boost::uuids::uuid& system_party_id) {
     BOOST_LOG_SEV(lg(), info) << "Initialising MQ metrics scrape job.";
 
-    // Look up the system party so the job definition is owned correctly.
     const auto system_tenant = utility::uuid::tenant_id::system();
-    refdata::repository::party_repository party_repo(ctx);
-    const auto parties = party_repo.read_system_party(system_tenant.to_string());
-    if (parties.empty()) {
-        throw std::runtime_error(
-            "mq_job_initializer: system party not found for system tenant");
-    }
-    const auto& system_party = parties.front();
-
     const auto result = scheduler::builder::job_definition_builder{}
         .with_name(job_name)
         .with_description(job_description)
@@ -65,7 +58,7 @@ void mq_job_initializer::initialise(const context& ctx) {
         .with_cron_schedule(job_schedule)
         .with_database(ctx.credentials().dbname)
         .with_tenant(system_tenant)
-        .with_party(system_party.id)
+        .with_party(system_party_id)
         .with_modified_by(job_modified_by)
         .build();
 
@@ -74,9 +67,23 @@ void mq_job_initializer::initialise(const context& ctx) {
             "mq_job_initializer: failed to build job definition: " + result.error());
     }
 
-    scheduler::service::cron_scheduler cron(ctx);
-    cron.schedule(*result, "SYSTEM_INIT", "MQ metrics scrape job registered at service startup");
+    // Use a party-scoped context so the restrictive SELECT RLS policy
+    // (party_id = ANY(ores_iam_visible_party_ids_fn())) is satisfied
+    // when querying for existing job definitions.
+    const auto party_ctx = ctx.with_party(
+        system_tenant, system_party_id, {system_party_id}, "");
+    scheduler::service::cron_scheduler cron(party_ctx);
 
+    const auto existing = cron.get_all_definitions();
+    const bool already_exists = std::ranges::any_of(existing,
+        [](const auto& d) { return d.job_name == job_name; });
+
+    if (already_exists) {
+        BOOST_LOG_SEV(lg(), info) << "MQ metrics scrape job already registered, skipping.";
+        return;
+    }
+
+    cron.schedule(*result, "SYSTEM_INIT", "MQ metrics scrape job registered at service startup");
     BOOST_LOG_SEV(lg(), info) << "MQ metrics scrape job registered successfully.";
 }
 

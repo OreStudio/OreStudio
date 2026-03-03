@@ -66,7 +66,7 @@ TEST_CASE("write_single_tenant_type", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_type_repository repo;
     auto tt = make_tenant_type(h);
@@ -80,7 +80,7 @@ TEST_CASE("write_multiple_tenant_types", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_type_repository repo;
     std::vector<tenant_type> types;
@@ -96,7 +96,7 @@ TEST_CASE("read_latest_tenant_types", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_type_repository repo;
     std::vector<tenant_type> written;
@@ -118,7 +118,7 @@ TEST_CASE("read_latest_tenant_type_by_type", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_type_repository repo;
     auto tt = make_tenant_type(h);
@@ -142,7 +142,7 @@ TEST_CASE("read_nonexistent_tenant_type", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_type_repository repo;
 

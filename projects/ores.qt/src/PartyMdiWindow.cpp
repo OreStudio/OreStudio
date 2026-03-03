@@ -147,6 +147,7 @@ void PartyMdiWindow::setupTable() {
     auto* delegate = new EntityItemDelegate({
         cs::mono_bold_left, // BusinessCenterCode (flag icon inline via DecorationRole)
         cs::text_left,     // ShortCode
+        cs::mono_left,     // Codename
         cs::text_left,     // FullName
         cs::text_left,     // TransliteratedName
         cs::text_left,     // PartyCategory
@@ -164,7 +165,7 @@ void PartyMdiWindow::setupTable() {
 
     initializeTableSettings(tableView_, model_,
         "PartyListWindow",
-        {ClientPartyModel::TransliteratedName},
+        {ClientPartyModel::TransliteratedName, ClientPartyModel::Codename},
         {900, 400}, 4);
 }
 

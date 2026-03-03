@@ -317,8 +317,7 @@ handle_save_currency_request(std::span<const std::byte> payload,
 
     // Override modified_by with authenticated username
     for (auto& c : request.currencies) {
-        c.modified_by = auth->username;
-        c.performed_by.clear();
+        stamp_auth(c, *auth);
     }
 
     save_currency_response response;
@@ -572,8 +571,7 @@ handle_save_business_centre_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.business_centres.size()
                               << " business centre(s)";
     for (auto& e : request.business_centres) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_business_centre_response response;
@@ -770,8 +768,7 @@ handle_save_country_request(std::span<const std::byte> payload,
 
     // Override modified_by with authenticated username
     for (auto& e : request.countries) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_country_response response;
@@ -948,8 +945,7 @@ handle_save_party_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " party type(s)";
     for (auto& e : request.types) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_party_type_response response;
@@ -1115,8 +1111,7 @@ handle_save_party_status_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.statuses.size() << " party status(es)";
     for (auto& e : request.statuses) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_party_status_response response;
@@ -1282,8 +1277,7 @@ handle_save_party_id_scheme_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.schemes.size() << " party ID scheme(s)";
     for (auto& e : request.schemes) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_party_id_scheme_response response;
@@ -1449,8 +1443,7 @@ handle_save_contact_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " contact type(s)";
     for (auto& e : request.types) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_contact_type_response response;
@@ -1634,8 +1627,7 @@ handle_save_party_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.parties.size() << " party(ies)";
     for (auto& e : request.parties) {
         e.tenant_id = auth->tenant_id.to_string();
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_party_response response;
@@ -1821,8 +1813,7 @@ handle_save_counterparty_request(std::span<const std::byte> payload,
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.counterparties.size() << " counterparty(ies)";
     for (auto& e : request.counterparties) {
         e.tenant_id = auth->tenant_id.to_string();
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_counterparty_response response;
@@ -1995,8 +1986,7 @@ handle_save_business_unit_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.business_units.size() << " business unit(s)";
     for (auto& e : request.business_units) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_business_unit_response response;
@@ -2168,8 +2158,7 @@ handle_save_business_unit_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " business unit type(s)";
     for (auto& e : request.types) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_business_unit_type_response response;
@@ -2345,10 +2334,7 @@ handle_save_portfolio_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.portfolios.size() << " portfolio(s)";
     for (auto& e : request.portfolios) {
-        e.tenant_id = auth->tenant_id.to_string();
-        e.modified_by = auth->username;
-        e.performed_by.clear();
-        e.party_id = auth->party_id;
+        stamp_auth(e, *auth);
     }
 
     save_portfolio_response response;
@@ -2523,8 +2509,7 @@ handle_save_book_request(std::span<const std::byte> payload,
     for (auto& e : request.books) {
         e.tenant_id = auth->tenant_id.to_string();
         e.party_id = auth->party_id;
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_book_response response;
@@ -2706,8 +2691,7 @@ handle_save_counterparty_identifier_request(std::span<const std::byte> payload,
                               << " counterparty identifier(s)";
     for (auto& e : request.counterparty_identifiers) {
         e.tenant_id = auth->tenant_id.to_string();
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_counterparty_identifier_response response;
@@ -2882,8 +2866,7 @@ handle_save_counterparty_contact_information_request(std::span<const std::byte> 
                               << " counterparty contact information(s)";
     for (auto& e : request.counterparty_contact_informations) {
         e.tenant_id = auth->tenant_id.to_string();
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_counterparty_contact_information_response response;
@@ -3058,8 +3041,7 @@ handle_save_party_identifier_request(std::span<const std::byte> payload,
                               << " party identifier(s)";
     for (auto& e : request.party_identifiers) {
         e.tenant_id = auth->tenant_id.to_string();
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_party_identifier_response response;
@@ -3234,8 +3216,7 @@ handle_save_party_contact_information_request(std::span<const std::byte> payload
                               << " party contact information(s)";
     for (auto& e : request.party_contact_informations) {
         e.tenant_id = auth->tenant_id.to_string();
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_party_contact_information_response response;
@@ -3560,8 +3541,7 @@ handle_save_purpose_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " purpose type(s)";
     for (auto& e : request.types) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_purpose_type_response response;
@@ -3725,8 +3705,7 @@ handle_save_rounding_type_request(std::span<const std::byte> payload,
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " rounding type(s)";
     for (auto& e : request.types) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_rounding_type_response response;

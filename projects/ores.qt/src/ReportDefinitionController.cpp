@@ -25,6 +25,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ReportDefinitionMdiWindow.hpp"
 #include "ores.qt/ReportDefinitionDetailDialog.hpp"
 #include "ores.qt/ReportDefinitionHistoryDialog.hpp"
@@ -36,18 +37,50 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+
+constexpr std::string_view report_definition_event_name =
+    "ores.reporting.report_definition_changed";
+
+} // namespace
+
 ReportDefinitionController::ReportDefinitionController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "ReportDefinitionController created";
+
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::notificationReceived,
+                this, &ReportDefinitionController::onNotificationReceived);
+
+        auto subscribeAll = [self = QPointer<ReportDefinitionController>(this)]() {
+            if (!self) return;
+            BOOST_LOG_SEV(lg(), info) << "Subscribing to report definition change events";
+            self->clientManager_->subscribeToEvent(std::string{report_definition_event_name});
+        };
+
+        connect(clientManager_, &ClientManager::loggedIn, this, subscribeAll);
+        connect(clientManager_, &ClientManager::reconnected, this, subscribeAll);
+
+        if (clientManager_->isConnected())
+            subscribeAll();
+    }
+}
+
+ReportDefinitionController::~ReportDefinitionController() {
+    BOOST_LOG_SEV(lg(), debug) << "ReportDefinitionController destroyed";
+    if (clientManager_)
+        clientManager_->unsubscribeFromEvent(std::string{report_definition_event_name});
 }
 
 void ReportDefinitionController::showListWindow() {
@@ -150,6 +183,7 @@ void ReportDefinitionController::showAddWindow() {
     auto* detailDialog = new ReportDefinitionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &ReportDefinitionDetailDialog::statusMessage,
@@ -192,6 +226,7 @@ void ReportDefinitionController::showDetailWindow(
     auto* detailDialog = new ReportDefinitionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(false);
     detailDialog->setDefinition(definition);
 
@@ -391,6 +426,21 @@ void ReportDefinitionController::onRevertVersion(
 
 EntityListMdiWindow* ReportDefinitionController::listWindow() const {
     return listWindow_;
+}
+
+void ReportDefinitionController::onNotificationReceived(
+    const QString& eventType, const QDateTime& timestamp,
+    const QStringList& entityIds, const QString& /*tenantId*/) {
+
+    if (eventType.toStdString() != report_definition_event_name)
+        return;
+
+    BOOST_LOG_SEV(lg(), info) << "Received report_definition_changed notification at "
+                              << timestamp.toString(Qt::ISODate).toStdString()
+                              << " with " << entityIds.size() << " id(s)";
+
+    if (listWindow_)
+        listWindow_->markAsStale();
 }
 
 void ReportDefinitionController::onScheduleRequested(

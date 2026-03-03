@@ -87,9 +87,35 @@ protected:
     make_request_context(const service::session_info& session) const {
         if (!session.visible_party_ids.empty()) {
             return ctx_.with_party(session.tenant_id, session.party_id,
-                                   session.visible_party_ids);
+                                   session.visible_party_ids, session.username);
         }
-        return ctx_.with_tenant(session.tenant_id);
+        return ctx_.with_tenant(session.tenant_id, session.username);
+    }
+
+    /**
+     * @brief Stamp authentication fields onto a domain entity.
+     *
+     * Sets modified_by, performed_by, tenant_id, and party_id from the
+     * authenticated session. Fields are conditionally set via C++23
+     * requires-expressions, so the same helper works for all entity types
+     * regardless of which subset of fields they expose.
+     *
+     * @tparam Entity Any domain entity type with at least a modified_by field.
+     * @param entity  The entity to stamp.
+     * @param session The authenticated session to stamp from.
+     */
+    template<typename Entity>
+    static void stamp_auth(Entity& entity, const service::session_info& session) {
+        entity.modified_by = session.username;
+        if constexpr (requires { entity.performed_by = session.username; })
+            entity.performed_by = session.username;
+        // Entities use either utility::uuid::tenant_id or std::string for tenant.
+        if constexpr (requires { entity.tenant_id = session.tenant_id; })
+            entity.tenant_id = session.tenant_id;
+        else if constexpr (requires { entity.tenant_id = session.tenant_id.to_string(); })
+            entity.tenant_id = session.tenant_id.to_string();
+        if constexpr (requires { entity.party_id = session.party_id; })
+            entity.party_id = session.party_id;
     }
 
     /**

@@ -150,7 +150,7 @@ TEST_CASE("system_party_sees_all_assignments", tags) {
     REQUIRE(visible.size() >= 3); // system + A + B at minimum
 
     // Create a system-party-scoped context
-    auto sys_ctx = ctx.with_party(tid, system_party_id, visible);
+    auto sys_ctx = ctx.with_party(tid, system_party_id, visible, "");
     party_counterparty_repository sys_repo(sys_ctx);
 
     auto all = sys_repo.read_latest();
@@ -207,7 +207,7 @@ TEST_CASE("party_a_sees_only_own_assignments", tags) {
     repo.write(make_pc(h, party_b.id, cp3.id));
 
     // Party A: visible set is just [party_a]
-    auto a_ctx = ctx.with_party(tid, party_a.id, {party_a.id});
+    auto a_ctx = ctx.with_party(tid, party_a.id, {party_a.id}, "");
     party_counterparty_repository a_repo(a_ctx);
 
     auto a_results = a_repo.read_latest();
@@ -265,7 +265,7 @@ TEST_CASE("party_b_sees_only_own_assignments", tags) {
     repo.write(make_pc(h, party_b.id, cp3.id));
 
     // Party B: visible set is just [party_b]
-    auto b_ctx = ctx.with_party(tid, party_b.id, {party_b.id});
+    auto b_ctx = ctx.with_party(tid, party_b.id, {party_b.id}, "");
     party_counterparty_repository b_repo(b_ctx);
 
     auto b_results = b_repo.read_latest();
@@ -319,7 +319,7 @@ TEST_CASE("nested_party_hierarchy_visibility", tags) {
                              << parent_visible.size();
     REQUIRE(parent_visible.size() >= 2); // parent + child
 
-    auto parent_ctx = ctx.with_party(tid, parent.id, parent_visible);
+    auto parent_ctx = ctx.with_party(tid, parent.id, parent_visible, "");
     party_counterparty_repository parent_repo(parent_ctx);
     auto parent_results = parent_repo.read_latest();
     BOOST_LOG_SEV(lg, debug) << "Parent sees " << parent_results.size()
@@ -327,7 +327,7 @@ TEST_CASE("nested_party_hierarchy_visibility", tags) {
     CHECK(parent_results.size() >= 1);
 
     // Child sees only its own assignments (visible = [child])
-    auto child_ctx = ctx.with_party(tid, child.id, {child.id});
+    auto child_ctx = ctx.with_party(tid, child.id, {child.id}, "");
     party_counterparty_repository child_repo(child_ctx);
     auto child_results = child_repo.read_latest();
     BOOST_LOG_SEV(lg, debug) << "Child sees " << child_results.size()

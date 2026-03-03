@@ -2494,7 +2494,7 @@ handle_publish_bundle_request(std::span<const std::byte> payload,
                 request.target_tenant_id;
             co_return err_response.serialize();
         }
-        ctx = ctx.with_tenant(*target_tid);
+        ctx = ctx.with_tenant(*target_tid, "");
         BOOST_LOG_SEV(lg(), info) << "Publishing bundle to target tenant: "
                                   << request.target_tenant_id;
     }

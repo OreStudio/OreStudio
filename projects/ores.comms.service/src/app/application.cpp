@@ -28,6 +28,8 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include "ores.refdata/messaging/registrar.hpp"
+#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.refdata/eventing/country_changed_event.hpp"
 #include "ores.refdata/eventing/party_changed_event.hpp"
@@ -692,7 +694,16 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::scheduler::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::reporting::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::mq::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
-    ores::mq::service::mq_job_initializer::initialise(ctx);
+
+    {
+        const auto system_tenant =
+            utility::uuid::tenant_id::system().to_string();
+        refdata::repository::party_repository party_repo(ctx);
+        const auto parties = party_repo.read_system_party(system_tenant);
+        if (parties.empty())
+            throw std::runtime_error("System party not found for system tenant");
+        ores::mq::service::mq_job_initializer::initialise(ctx, parties.front().id);
+    }
 
     // Register system info handler for get_system_info_request (no auth required)
     auto si_handler =

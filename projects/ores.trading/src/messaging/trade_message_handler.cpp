@@ -173,8 +173,7 @@ trade_message_handler::handle_save_trade_type_request(
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.types.size() << " trade type(s)";
     for (auto& t : request.types) {
-        t.modified_by = auth->username;
-        t.performed_by.clear();
+        stamp_auth(t, *auth);
     }
 
     save_trade_type_response response;
@@ -316,8 +315,7 @@ trade_message_handler::handle_save_lifecycle_event_request(
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.events.size() << " lifecycle event(s)";
     for (auto& e : request.events) {
-        e.modified_by = auth->username;
-        e.performed_by.clear();
+        stamp_auth(e, *auth);
     }
 
     save_lifecycle_event_response response;
@@ -459,8 +457,7 @@ trade_message_handler::handle_save_party_role_type_request(
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.role_types.size() << " party role type(s)";
     for (auto& rt : request.role_types) {
-        rt.modified_by = auth->username;
-        rt.performed_by.clear();
+        stamp_auth(rt, *auth);
     }
 
     save_party_role_type_response response;
@@ -602,8 +599,7 @@ trade_message_handler::handle_save_trade_id_type_request(
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.id_types.size() << " trade ID type(s)";
     for (auto& t : request.id_types) {
-        t.modified_by = auth->username;
-        t.performed_by.clear();
+        stamp_auth(t, *auth);
     }
 
     save_trade_id_type_response response;
@@ -764,8 +760,7 @@ trade_message_handler::handle_save_trade_request(
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.trades.size() << " trade(s)";
     for (auto& t : request.trades) {
-        t.modified_by = auth->username;
-        t.performed_by.clear();
+        stamp_auth(t, *auth);
     }
 
     save_trade_response response;
@@ -912,8 +907,7 @@ trade_message_handler::handle_save_trade_identifier_request(
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.identifiers.size() << " trade identifier(s)";
     for (auto& i : request.identifiers) {
-        i.modified_by = auth->username;
-        i.performed_by.clear();
+        stamp_auth(i, *auth);
     }
 
     save_trade_identifier_response response;
@@ -1060,8 +1054,7 @@ trade_message_handler::handle_save_trade_party_role_request(
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.roles.size() << " trade party role(s)";
     for (auto& r : request.roles) {
-        r.modified_by = auth->username;
-        r.performed_by.clear();
+        stamp_auth(r, *auth);
     }
 
     save_trade_party_role_response response;

@@ -1951,7 +1951,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     reportDefinitionController_ = std::make_unique<ReportDefinitionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(reportDefinitionController_.get(), &ReportDefinitionController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);

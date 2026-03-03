@@ -17,23 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata/domain/party_table.hpp"
+#ifndef ORES_DATABASE_SERVICE_SERVICE_ACCOUNTS_HPP
+#define ORES_DATABASE_SERVICE_SERVICE_ACCOUNTS_HPP
 
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#include <string_view>
 
-namespace ores::refdata::domain {
+namespace ores::database::service::service_accounts {
 
-std::string convert_to_table(const std::vector<party>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+/**
+ * @brief Username constants for system service accounts.
+ *
+ * These must match the usernames created by
+ * projects/ores.sql/populate/iam/iam_service_accounts_populate.sql
+ * and the PostgreSQL roles in setup_user.sql.
+ */
 
-    table << fort::header << "Code" << "Codename" << "Name" << "Type" << "Status" << "Business Center" << "Modified By" << "Version" << fort::endr;
+constexpr std::string_view ddl      = "ores_ddl_user";
+constexpr std::string_view cli      = "ores_cli_user";
+constexpr std::string_view wt       = "ores_wt_user";
+constexpr std::string_view comms    = "ores_comms_user";
+constexpr std::string_view http     = "ores_http_user";
+constexpr std::string_view test_ddl = "ores_test_ddl_user";
+constexpr std::string_view test_dml = "ores_test_dml_user";
 
-    for (const auto& p : v) {
-        table << p.short_code << p.codename << p.full_name << p.party_type << p.status << p.business_center_code << p.modified_by << p.version << fort::endr;
-    }
-    return table.to_string();
 }
 
-}
+#endif

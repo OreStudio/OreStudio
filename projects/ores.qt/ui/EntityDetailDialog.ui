@@ -57,85 +57,102 @@
            </widget>
           </item>
           <item row="1" column="0">
+           <widget class="QLabel" name="label_codenameEdit">
+            <property name="text">
+             <string>Codename:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="codenameEdit">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+            <property name="placeholderText">
+             <string>Auto-assigned</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
            <widget class="QLabel" name="label_nameEdit">
             <property name="text">
              <string>Full Name:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="nameEdit">
             <property name="placeholderText">
              <string>Enter full name</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="label_transliteratedNameEdit">
             <property name="text">
              <string>Transliterated Name:</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="transliteratedNameEdit">
             <property name="placeholderText">
              <string>ASCII transliteration (optional)</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="label_partyCategoryEdit">
             <property name="text">
              <string>Category:</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QComboBox" name="partyCategoryCombo"/>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="label_partyTypeEdit">
             <property name="text">
              <string>Party Type:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <widget class="QComboBox" name="partyTypeCombo"/>
           </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="label_parentEntityEdit">
             <property name="text">
              <string>Parent:</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QComboBox" name="parentEntityCombo">
             <property name="editable">
              <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="6" column="0">
+          <item row="7" column="0">
            <widget class="QLabel" name="label_statusEdit">
             <property name="text">
              <string>Status:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="7" column="1">
            <widget class="QComboBox" name="statusCombo"/>
           </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="label_businessCenterEdit">
             <property name="text">
              <string>Business Centre:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="8" column="1">
            <widget class="QComboBox" name="businessCenterCombo">
             <property name="editable">
              <bool>true</bool>

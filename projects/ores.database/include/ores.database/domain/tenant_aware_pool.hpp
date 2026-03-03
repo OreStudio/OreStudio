@@ -60,8 +60,10 @@ public:
      * @brief Constructs a tenant-aware pool wrapper (tenant-only).
      */
     tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
-                      utility::uuid::tenant_id tenant_id)
-        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)) {}
+                      utility::uuid::tenant_id tenant_id,
+                      std::string actor = "")
+        : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)),
+          actor_(std::move(actor)) {}
 
     /**
      * @brief Constructs a tenant-and-party-aware pool wrapper.
@@ -69,10 +71,12 @@ public:
     tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
                       utility::uuid::tenant_id tenant_id,
                       boost::uuids::uuid party_id,
-                      std::vector<boost::uuids::uuid> visible_party_ids)
+                      std::vector<boost::uuids::uuid> visible_party_ids,
+                      std::string actor = "")
         : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)),
           party_id_(party_id),
-          visible_party_ids_(std::move(visible_party_ids)) {}
+          visible_party_ids_(std::move(visible_party_ids)),
+          actor_(std::move(actor)) {}
 
     /**
      * @brief Acquires a session and sets the tenant (and party) context.
@@ -144,6 +148,21 @@ public:
                                        << " parties)";
         }
 
+        // Set current actor (username) if available.
+        if (!actor_.empty()) {
+            const std::string actor_sql =
+                "SELECT set_config('app.current_actor', '" +
+                actor_ + "', false)";
+
+            auto actor_result = (*session_result)->execute(actor_sql);
+            if (!actor_result) {
+                return sqlgen::error("Failed to set actor context: " +
+                    std::string(actor_result.error().what()));
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Set actor context to: " << actor_;
+        }
+
         return session_result;
     }
 
@@ -163,6 +182,11 @@ public:
     const std::vector<boost::uuids::uuid>& visible_party_ids() const {
         return visible_party_ids_;
     }
+
+    /**
+     * @brief Gets the current actor (username), if set.
+     */
+    const std::string& actor() const { return actor_; }
 
     /**
      * @brief Gets the underlying connection pool.
@@ -186,6 +210,7 @@ private:
     utility::uuid::tenant_id tenant_id_;
     std::optional<boost::uuids::uuid> party_id_;
     std::vector<boost::uuids::uuid> visible_party_ids_;
+    std::string actor_;
 };
 
 }

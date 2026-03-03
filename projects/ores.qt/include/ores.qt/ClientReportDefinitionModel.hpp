@@ -60,6 +60,7 @@ public:
         ScheduleExpression,
         ConcurrencyPolicy,
         Status,
+        NextFire,
         Version,
         ModifiedBy,
         ColumnCount

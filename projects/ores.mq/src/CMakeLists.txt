@@ -40,7 +40,6 @@ target_link_libraries(${lib_target_name}
         ores.eventing.lib
     PRIVATE
         ores.comms.lib
-        ores.refdata.lib
         ores.scheduler.lib
         ores.utility.lib
         ores.logging.lib

@@ -107,6 +107,12 @@ void EntityDetailDialog::setupUi() {
         ui_->label_partyCategoryEdit->setVisible(false);
         ui_->partyCategoryCombo->setVisible(false);
     }
+
+    // Codename is party-only; hide it for counterparties
+    if (!ops_->has_party_category()) {
+        ui_->label_codenameEdit->setVisible(false);
+        ui_->codenameEdit->setVisible(false);
+    }
 }
 
 void EntityDetailDialog::setupIdentifierTable() {
@@ -566,6 +572,10 @@ void EntityDetailDialog::setReadOnly(bool readOnly) {
 
 void EntityDetailDialog::updateUiFromEntity() {
     ui_->codeEdit->setText(QString::fromStdString(entity_.short_code));
+    if (ops_->has_party_category()) {
+        ui_->codenameEdit->setText(
+            QString::fromStdString(entity_.codename.value_or("")));
+    }
     ui_->nameEdit->setText(QString::fromStdString(entity_.full_name));
     ui_->transliteratedNameEdit->setText(
         QString::fromStdString(entity_.transliterated_name.value_or("")));

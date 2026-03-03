@@ -349,8 +349,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 46.3 adds queue management and messaging operations (0xB006-0xB013):
 // create_queue, drop_queue, purge_queue, send_message, read_messages,
 // pop_messages, delete_messages.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 46;
-constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 3;
+//
+// Version 47.0 adds codename field to party wire format after short_code.
+// The codename is a globally unique adjective_noun pair used as the per-party
+// pgmq queue prefix. Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 47;
+constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
 constexpr std::uint16_t CORE_SUBSYSTEM_MIN = 0x0000;

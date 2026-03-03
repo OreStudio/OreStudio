@@ -147,7 +147,7 @@ std::vector<queue_info> client::list_queues(ores::database::context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Listing queues.";
     // Columns: queue_name(0), created_at(1), is_unlogged(2), is_partitioned(3)
     auto rows = execute_raw_multi_column_query(ctx,
-        "SELECT * FROM pgmq.list_queues()",
+        "SELECT * FROM ores_mq_list_party_queues_fn()",
         lg(), "pgmq list queues");
 
     std::vector<queue_info> result;
@@ -394,7 +394,7 @@ queue_metrics client::metrics(ores::database::context ctx,
 std::vector<queue_metrics> client::metrics_all(ores::database::context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Getting metrics for all queues.";
     auto rows = execute_raw_multi_column_query(ctx,
-        "SELECT * FROM pgmq.metrics_all()",
+        "SELECT * FROM ores_mq_metrics_party_fn()",
         lg(), "pgmq metrics_all");
 
     std::vector<queue_metrics> result;
@@ -410,28 +410,20 @@ std::vector<metrics_sample> client::metric_samples(ores::database::context ctx,
 
     BOOST_LOG_SEV(lg(), debug) << "Getting metric samples for queue: " << queue_name;
 
-    // Build query dynamically based on optional time-window filters.
-    std::string sql =
+    // Delegate to party-scoped SQL function.  Empty string is passed for
+    // unset time-window bounds and converted to NULL via NULLIF inside the call.
+    const std::string from_str = from
+        ? ores::platform::time::datetime::format_time_point_utc(*from) : "";
+    const std::string to_str = to
+        ? ores::platform::time::datetime::format_time_point_utc(*to) : "";
+
+    const std::string sql =
         "SELECT sample_time, queue_length, total_messages "
-        "FROM ores_mq_metrics_samples_tbl "
-        "WHERE queue_name = $1";
-    std::vector<std::string> params{queue_name};
-    int next_param = 2;
+        "FROM ores_mq_metric_samples_fn("
+        "$1, NULLIF($2, '')::timestamptz, NULLIF($3, '')::timestamptz)";
 
-    if (from) {
-        sql += " AND sample_time >= $" + std::to_string(next_param++);
-        params.push_back(
-            ores::platform::time::datetime::format_time_point_utc(*from));
-    }
-    if (to) {
-        sql += " AND sample_time <= $" + std::to_string(next_param++);
-        params.push_back(
-            ores::platform::time::datetime::format_time_point_utc(*to));
-    }
-    sql += " ORDER BY sample_time ASC LIMIT 10000";
-
-    auto rows = execute_parameterized_multi_column_query(ctx, sql, params,
-        lg(), "mq metric samples");
+    auto rows = execute_parameterized_multi_column_query(ctx, sql,
+        {queue_name, from_str, to_str}, lg(), "mq metric samples");
 
     std::vector<metrics_sample> result;
     result.reserve(rows.size());

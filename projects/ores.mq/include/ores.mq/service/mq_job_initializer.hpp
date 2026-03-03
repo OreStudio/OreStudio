@@ -20,6 +20,7 @@
 #ifndef ORES_MQ_SERVICE_MQ_JOB_INITIALIZER_HPP
 #define ORES_MQ_SERVICE_MQ_JOB_INITIALIZER_HPP
 
+#include <boost/uuid/uuid.hpp>
 #include "ores.database/domain/context.hpp"
 
 namespace ores::mq::service {
@@ -41,16 +42,18 @@ public:
     /**
      * @brief Register the metrics scrape job with pg_cron.
      *
-     * Looks up the system party for the system tenant, then calls
-     * cron_scheduler::schedule() to register:
+     * @param ctx The database context.
+     * @param system_party_id UUID of the system party that owns the job definition.
+     *
+     * Calls cron_scheduler::schedule() to register:
      *   name:     "ores.mq.metrics_scrape"
      *   command:  "SELECT ores_mq_scrape_metrics_fn()"
      *   schedule: "* * * * *"  (every minute)
      *
-     * @throws std::runtime_error if the system party cannot be found or
-     *         if pg_cron scheduling fails.
+     * @throws std::runtime_error if pg_cron scheduling fails.
      */
-    static void initialise(const context& ctx);
+    static void initialise(const context& ctx,
+                           const boost::uuids::uuid& system_party_id);
 };
 
 } // namespace ores::mq::service

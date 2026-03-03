@@ -47,8 +47,10 @@ public:
      */
     explicit context(sqlgen::ConnectionPool<connection_type> connection_pool,
                      sqlgen::postgres::Credentials credentials,
-                     utility::uuid::tenant_id tenant_id)
-    : connection_pool_(std::move(connection_pool), std::move(tenant_id)),
+                     utility::uuid::tenant_id tenant_id,
+                     std::string actor = "")
+    : connection_pool_(std::move(connection_pool), std::move(tenant_id),
+                       std::move(actor)),
       credentials_(std::move(credentials)) {}
 
     /**
@@ -58,9 +60,11 @@ public:
                      sqlgen::postgres::Credentials credentials,
                      utility::uuid::tenant_id tenant_id,
                      boost::uuids::uuid party_id,
-                     std::vector<boost::uuids::uuid> visible_party_ids)
+                     std::vector<boost::uuids::uuid> visible_party_ids,
+                     std::string actor = "")
     : connection_pool_(std::move(connection_pool), std::move(tenant_id),
-                       party_id, std::move(visible_party_ids)),
+                       party_id, std::move(visible_party_ids),
+                       std::move(actor)),
       credentials_(std::move(credentials)) {}
 
     /**
@@ -95,6 +99,11 @@ public:
     }
 
     /**
+     * @brief Gets the current actor (username) for this context.
+     */
+    const std::string& actor() const { return connection_pool_.actor(); }
+
+    /**
      * @brief Gets the underlying raw connection pool.
      */
     const sqlgen::ConnectionPool<connection_type>& underlying_pool() const {
@@ -104,9 +113,10 @@ public:
     /**
      * @brief Creates a new context with a different tenant ID (no party).
      */
-    [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id) const {
+    [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id,
+                                      std::string actor) const {
         return context(connection_pool_.underlying_pool(), credentials_,
-                       std::move(tenant_id));
+                       std::move(tenant_id), std::move(actor));
     }
 
     /**
@@ -115,10 +125,11 @@ public:
     [[nodiscard]] context with_party(
         utility::uuid::tenant_id tenant_id,
         boost::uuids::uuid party_id,
-        std::vector<boost::uuids::uuid> visible_party_ids) const {
+        std::vector<boost::uuids::uuid> visible_party_ids,
+        std::string actor) const {
         return context(connection_pool_.underlying_pool(), credentials_,
                        std::move(tenant_id), party_id,
-                       std::move(visible_party_ids));
+                       std::move(visible_party_ids), std::move(actor));
     }
 
 private:

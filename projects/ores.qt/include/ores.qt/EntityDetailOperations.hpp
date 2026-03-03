@@ -93,6 +93,7 @@ struct entity_data final {
     boost::uuids::uuid id;
     std::string full_name;
     std::string short_code;
+    std::optional<std::string> codename; ///< Party-only field; immutable.
     std::optional<std::string> transliterated_name;
     std::optional<std::string> party_category; ///< Party-only field.
     std::string party_type;

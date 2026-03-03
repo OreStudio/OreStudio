@@ -59,6 +59,7 @@ public:
     enum Column {
         BusinessCenterCode,
         ShortCode,
+        Codename,
         FullName,
         TransliteratedName,
         PartyCategory,

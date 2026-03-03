@@ -35,6 +35,7 @@ create table if not exists "ores_refdata_parties_tbl" (
     "version" integer not null,
     "full_name" text not null,
     "short_code" text not null,
+    "codename" text not null default '',
     "transliterated_name" text null,
     "party_category" text not null default 'Operational',
     "party_type" text not null,
@@ -54,7 +55,9 @@ create table if not exists "ores_refdata_parties_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
+    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check (length("codename") <= 32),
+    check ("codename" = '' or "codename" ~ '^[a-z][a-z_]+$')
 );
 
 -- Non-unique full_name index for search. Full names are not unique in
@@ -93,6 +96,11 @@ where parent_party_id is null and party_category <> 'System' and valid_to = ores
 create unique index if not exists ores_refdata_parties_system_party_uniq_idx
 on "ores_refdata_parties_tbl" (tenant_id)
 where party_category = 'System' and valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Globally unique codename across all tenants (empty string excluded)
+create unique index if not exists ores_refdata_parties_codename_uniq_idx
+on "ores_refdata_parties_tbl" (codename)
+where valid_to = ores_utility_infinity_timestamp_fn() and codename <> '';
 
 create or replace function ores_refdata_parties_insert_fn()
 returns trigger as $$
@@ -148,6 +156,13 @@ begin
         end if;
         NEW.version = current_version + 1;
 
+        -- Codename is immutable: restore from active row on every update.
+        select codename into NEW.codename
+        from "ores_refdata_parties_tbl"
+        where tenant_id = NEW.tenant_id
+          and id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn();
+
         update "ores_refdata_parties_tbl"
         set valid_to = current_timestamp
         where tenant_id = NEW.tenant_id
@@ -156,6 +171,25 @@ begin
           and valid_from < current_timestamp;
     else
         NEW.version = 1;
+
+        -- Auto-generate codename using existing whimsical name infrastructure.
+        if NEW.codename = '' or NEW.codename is null then
+            loop
+                NEW.codename := ores_utility_generate_whimsical_name_fn();
+                exit when not exists (
+                    select 1 from "ores_refdata_parties_tbl"
+                    where codename = NEW.codename
+                      and valid_to = ores_utility_infinity_timestamp_fn()
+                );
+            end loop;
+        end if;
+        -- Validate the final codename.
+        if NEW.codename !~ '^[a-z][a-z_]+$' then
+            raise exception 'codename must match ^[a-z][a-z_]+$ got: %', NEW.codename
+                using errcode = '23514';
+        end if;
+        -- Provision the per-party report event queue (transactional DDL).
+        perform pgmq.create(NEW.codename || '_report_events');
     end if;
 
     NEW.valid_from = current_timestamp;

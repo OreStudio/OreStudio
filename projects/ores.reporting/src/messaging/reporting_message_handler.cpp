@@ -32,6 +32,7 @@
 #include "ores.reporting/service/report_instance_service.hpp"
 #include "ores.scheduler/service/cron_scheduler.hpp"
 #include "ores.scheduler/domain/cron_expression.hpp"
+#include "ores.refdata/service/party_service.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -724,14 +725,25 @@ reporting_message_handler::handle_schedule_report_definitions_request(
             continue;
         }
 
+        // Look up the party to get the codename for the queue name.
+        ores::refdata::service::party_service party_svc(ctx);
+        const auto party = party_svc.find_party(def->party_id);
+        if (!party) {
+            BOOST_LOG_SEV(lg(), error) << "Party not found for report definition: " << id_str;
+            response.success = false;
+            response.message = "Party not found for report definition: " + id_str;
+            continue;
+        }
+        const std::string queue_name = party->codename + "_report_events";
+
         // Build the SQL command that pg_cron will execute on each firing.
-        // Posts a message to the pgmq 'report_events' queue. The queue name,
+        // Posts a message to the per-party pgmq queue. The queue name,
         // tenant UUID, and report name are baked in at scheduling time;
         // now() is evaluated at execution time by pg_cron.
         const std::string tenant_str = auth->tenant_id.to_string();
         const std::string safe_name = sql_single_quote_escape(def->name);
         const std::string command =
-            "SELECT pgmq.send('report_events', "
+            "SELECT pgmq.send('" + queue_name + "', "
             "jsonb_build_object("
             "'report_name', '" + safe_name + "', "
             "'event', 'scheduled', "

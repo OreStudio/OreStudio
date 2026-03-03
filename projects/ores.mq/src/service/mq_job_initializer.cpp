@@ -22,7 +22,6 @@
 #include <stdexcept>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.refdata/repository/party_repository.hpp"
 #include "ores.scheduler/builder/job_definition_builder.hpp"
 #include "ores.scheduler/service/cron_scheduler.hpp"
 
@@ -45,19 +44,11 @@ constexpr std::string_view job_modified_by = "system";
 
 } // anonymous namespace
 
-void mq_job_initializer::initialise(const context& ctx) {
+void mq_job_initializer::initialise(const context& ctx,
+                                    const boost::uuids::uuid& system_party_id) {
     BOOST_LOG_SEV(lg(), info) << "Initialising MQ metrics scrape job.";
 
-    // Look up the system party so the job definition is owned correctly.
     const auto system_tenant = utility::uuid::tenant_id::system();
-    refdata::repository::party_repository party_repo(ctx);
-    const auto parties = party_repo.read_system_party(system_tenant.to_string());
-    if (parties.empty()) {
-        throw std::runtime_error(
-            "mq_job_initializer: system party not found for system tenant");
-    }
-    const auto& system_party = parties.front();
-
     const auto result = scheduler::builder::job_definition_builder{}
         .with_name(job_name)
         .with_description(job_description)
@@ -65,7 +56,7 @@ void mq_job_initializer::initialise(const context& ctx) {
         .with_cron_schedule(job_schedule)
         .with_database(ctx.credentials().dbname)
         .with_tenant(system_tenant)
-        .with_party(system_party.id)
+        .with_party(system_party_id)
         .with_modified_by(job_modified_by)
         .build();
 

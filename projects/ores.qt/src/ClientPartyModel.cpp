@@ -106,6 +106,8 @@ QVariant ClientPartyModel::data(
         switch (index.column()) {
         case ShortCode:
             return QString::fromStdString(party.short_code);
+        case Codename:
+            return QString::fromStdString(party.codename);
         case FullName:
             return TextUtils::display_name_with_transliteration(
                 party.full_name, party.transliterated_name);
@@ -145,6 +147,8 @@ QVariant ClientPartyModel::headerData(
     switch (section) {
     case ShortCode:
         return tr("Code");
+    case Codename:
+        return tr("Codename");
     case FullName:
         return tr("Name");
     case TransliteratedName:

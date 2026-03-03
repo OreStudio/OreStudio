@@ -51,6 +51,7 @@ entity_data to_entity_data(const refdata::domain::party& p) {
     d.id = p.id;
     d.full_name = p.full_name;
     d.short_code = p.short_code;
+    d.codename = p.codename.empty() ? std::nullopt : std::optional<std::string>(p.codename);
     d.transliterated_name = p.transliterated_name;
     d.party_category = p.party_category;
     d.party_type = p.party_type;

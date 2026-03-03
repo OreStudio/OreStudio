@@ -45,6 +45,7 @@ void write_party(std::vector<std::byte>& buffer,
     writer::write_uuid(buffer, p.id);
     writer::write_string(buffer, p.full_name);
     writer::write_string(buffer, p.short_code);
+    writer::write_string(buffer, p.codename);
     writer::write_string(buffer, p.party_category);
     writer::write_string(buffer, p.party_type);
     writer::write_bool(buffer, p.parent_party_id.has_value());
@@ -84,6 +85,10 @@ read_party(std::span<const std::byte>& data) {
     auto short_code_result = reader::read_string(data);
     if (!short_code_result) return std::unexpected(short_code_result.error());
     p.short_code = *short_code_result;
+
+    auto codename_result = reader::read_string(data);
+    if (!codename_result) return std::unexpected(codename_result.error());
+    p.codename = *codename_result;
 
     auto party_category_result = reader::read_string(data);
     if (!party_category_result) return std::unexpected(party_category_result.error());

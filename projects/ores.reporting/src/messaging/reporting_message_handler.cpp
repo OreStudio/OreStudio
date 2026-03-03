@@ -425,6 +425,7 @@ reporting_message_handler::handle_save_report_definition_request(
     request.definition.modified_by = auth->username;
     request.definition.performed_by = auth->username;
     request.definition.tenant_id = auth->tenant_id;
+    request.definition.party_id = auth->party_id;
 
     auto ctx = make_request_context(*auth);
     service::report_definition_service svc(ctx);
@@ -564,6 +565,7 @@ reporting_message_handler::handle_save_report_instance_request(
     request.instance.modified_by = auth->username;
     request.instance.performed_by = auth->username;
     request.instance.tenant_id = auth->tenant_id;
+    request.instance.party_id = auth->party_id;
 
     auto ctx = make_request_context(*auth);
     service::report_instance_service svc(ctx);

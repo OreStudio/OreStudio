@@ -125,11 +125,8 @@ handle_save_feature_flag_request(std::span<const std::byte> payload,
 
     auto request = std::move(*request_result);
     BOOST_LOG_SEV(lg(), info) << "Saving " << request.flags.size() << " feature flag(s)";
-    for (auto& flag : request.flags) {
-        flag.tenant_id = ctx.tenant_id().to_string();
-        flag.modified_by = auth->username;
-        flag.performed_by.clear();
-    }
+    for (auto& flag : request.flags)
+        stamp_auth(flag, *auth);
 
     save_feature_flag_response response;
     try {

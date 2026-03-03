@@ -17,7 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#pragma once
+#ifndef ORES_MQ_SERVICE_MQ_JOB_INITIALIZER_HPP
+#define ORES_MQ_SERVICE_MQ_JOB_INITIALIZER_HPP
 
 #include "ores.database/domain/context.hpp"
 
@@ -53,3 +54,5 @@ public:
 };
 
 } // namespace ores::mq::service
+
+#endif

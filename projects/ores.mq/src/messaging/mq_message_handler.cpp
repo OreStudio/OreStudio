@@ -384,11 +384,9 @@ mq_message_handler::handle_pop_messages_request(
 
     pop_messages_response response;
     try {
-        for (int i = 0; i < request.count; ++i) {
-            auto m = client_.pop<std::string>(ctx, request.queue_name);
-            if (!m) break;
-            response.messages.push_back(to_wire_message(*m));
-        }
+        auto msgs = client_.pop_batch<std::string>(ctx, request.queue_name, request.count);
+        response.messages.reserve(msgs.size());
+        for (const auto& m : msgs) response.messages.push_back(to_wire_message(m));
         response.success = true;
         BOOST_LOG_SEV(lg(), info) << "Popped " << response.messages.size()
                                   << " messages from queue '" << request.queue_name << "'";

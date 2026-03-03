@@ -96,6 +96,9 @@ private:
     std::optional<raw_msg> do_pop(ores::database::context ctx,
         const std::string& queue_name);
 
+    std::vector<raw_msg> do_pop_batch(ores::database::context ctx,
+        const std::string& queue_name, int qty);
+
     std::optional<raw_msg> do_set_vt(ores::database::context ctx,
         const std::string& queue_name, int64_t msg_id, std::chrono::seconds vt);
 
@@ -274,6 +277,21 @@ public:
         auto row = do_pop(std::move(ctx), queue_name);
         if (!row) return std::nullopt;
         return to_message<T>(*row);
+    }
+
+    /**
+     * @brief Reads and atomically deletes up to @p qty messages in one call.
+     *
+     * Uses pgmq.pop(queue_name, qty) which performs a single round-trip to the
+     * database regardless of the number of messages requested.
+     *
+     * @param qty Maximum number of messages to pop.
+     * @return The popped messages (may be fewer than @p qty if the queue is short).
+     */
+    template<typename T>
+    std::vector<message<T>> pop_batch(ores::database::context ctx,
+                                       const std::string& queue_name, int qty) {
+        return to_messages<T>(do_pop_batch(std::move(ctx), queue_name, qty));
     }
 
     // -----------------------------------------------------------------------

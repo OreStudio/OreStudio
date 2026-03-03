@@ -266,6 +266,22 @@ std::optional<client::raw_msg> client::do_pop(ores::database::context ctx,
     return parse_raw_msg(rows.front());
 }
 
+std::vector<client::raw_msg> client::do_pop_batch(ores::database::context ctx,
+                                                   const std::string& queue_name,
+                                                   int qty) {
+    BOOST_LOG_SEV(lg(), debug) << "Batch-popping " << qty
+                               << " messages from queue: " << queue_name;
+    auto rows = execute_parameterized_multi_column_query(ctx,
+        "SELECT * FROM pgmq.pop($1, $2::integer)",
+        {queue_name, std::to_string(qty)},
+        lg(), "pgmq pop batch");
+
+    std::vector<raw_msg> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) result.push_back(parse_raw_msg(row));
+    return result;
+}
+
 // ---------------------------------------------------------------------------
 // Erase / archive
 // ---------------------------------------------------------------------------

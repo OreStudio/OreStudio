@@ -34,6 +34,7 @@ namespace ores::qt {
 
 class ReportDefinitionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing report definition windows and operations.
@@ -59,6 +60,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -92,6 +94,7 @@ private:
     void showDetailWindow(const reporting::domain::report_definition& definition);
     void showHistoryWindow(const reporting::domain::report_definition& definition);
 
+    ChangeReasonCache* changeReasonCache_;
     ReportDefinitionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

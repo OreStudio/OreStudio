@@ -25,6 +25,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ReportDefinitionMdiWindow.hpp"
 #include "ores.qt/ReportDefinitionDetailDialog.hpp"
 #include "ores.qt/ReportDefinitionHistoryDialog.hpp"
@@ -47,10 +48,12 @@ ReportDefinitionController::ReportDefinitionController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -180,6 +183,7 @@ void ReportDefinitionController::showAddWindow() {
     auto* detailDialog = new ReportDefinitionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &ReportDefinitionDetailDialog::statusMessage,
@@ -222,6 +226,7 @@ void ReportDefinitionController::showDetailWindow(
     auto* detailDialog = new ReportDefinitionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setCreateMode(false);
     detailDialog->setDefinition(definition);
 

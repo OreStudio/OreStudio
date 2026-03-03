@@ -22,7 +22,9 @@
 #include <QtConcurrent>
 #include <QColor>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
+#include "ores.scheduler/domain/cron_expression.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.comms/net/client_session.hpp"
@@ -90,6 +92,16 @@ QVariant ClientReportDefinitionModel::data(
             return QString::fromStdString(definition.concurrency_policy);
         case Status:
             return definition.scheduler_job_id.has_value() ? tr("Active") : tr("Inactive");
+        case NextFire: {
+            if (!definition.scheduler_job_id.has_value() || definition.schedule_expression.empty())
+                return tr("—");
+            auto expr = scheduler::domain::cron_expression::from_string(definition.schedule_expression);
+            if (!expr)
+                return tr("—");
+            const auto tp = expr->next_occurrence();
+            return QString::fromStdString(
+                platform::time::datetime::format_time_point_utc(tp));
+        }
         case Version:
             return static_cast<qlonglong>(definition.version);
         case ModifiedBy:
@@ -129,6 +141,8 @@ QVariant ClientReportDefinitionModel::headerData(
         return tr("Concurrency");
     case Status:
         return tr("Status");
+    case NextFire:
+        return tr("Next Fire (UTC)");
     case Version:
         return tr("Version");
     case ModifiedBy:

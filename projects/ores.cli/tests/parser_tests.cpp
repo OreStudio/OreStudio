@@ -17,23 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.cli/config/parser.hpp"
-
-#include <vector>
-#include <sstream>
-#include <boost/program_options.hpp>
-#include <catch2/catch_test_macros.hpp>
-#include "ores.logging/make_logger.hpp"
-#include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.
-#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.cli/config/entity.hpp"
 #include "ores.cli/config/format.hpp"
+#include "ores.cli/config/parser.hpp"
 #include "ores.cli/config/parser_exception.hpp"
+#include "ores.logging/make_logger.hpp"
+#include "ores.utility/streaming/std_optional.hpp" // IWYU pragma: keep.
+#include "ores.utility/streaming/std_vector.hpp"   // IWYU pragma: keep.
+#include <boost/program_options.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <sstream>
+#include <vector>
 
 namespace {
 
-const std::string_view test_suite("ores.cli.tests");
-const std::string tags("[parsing]");
+    const std::string_view test_suite("ores.cli.tests");
+    const std::string tags("[parsing]");
 
 }
 
@@ -60,9 +59,9 @@ TEST_CASE("test_help_option", tags) {
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
     CHECK(info.str().find("ORE Studio") != std::string::npos);
-    CHECK(info.str().find("Commands:") != std::string::npos);
-    CHECK(info.str().find("currencies") != std::string::npos);
-    CHECK(info.str().find("accounts") != std::string::npos);
+    CHECK(info.str().find("Domains:") != std::string::npos);
+    CHECK(info.str().find("refdata") != std::string::npos);
+    CHECK(info.str().find("iam") != std::string::npos);
 }
 
 TEST_CASE("test_version_option", tags) {
@@ -91,7 +90,7 @@ TEST_CASE("test_import_help", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"currencies", "import", "--help"};
+    std::vector<std::string> args = {"refdata", "currencies", "import", "--help"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -111,7 +110,7 @@ TEST_CASE("test_export_help", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"currencies", "list", "--help"};
+    std::vector<std::string> args = {"refdata", "currencies", "list", "--help"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -134,15 +133,10 @@ TEST_CASE("test_logging_options", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "currencies",
-        "import",
-        "--log-enabled",
-        "--log-level", "debug",
-        "--log-directory", "test_logs",
-        "--log-to-console",
-        "--target", "test.xml"
-    };
+    std::vector<std::string> args = {"refdata",         "currencies",  "import",
+                                     "--log-enabled",   "--log-level", "debug",
+                                     "--log-directory", "test_logs",   "--log-to-console",
+                                     "--target",        "test.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -163,11 +157,8 @@ TEST_CASE("test_import_basic", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "currencies",
-        "import",
-        "--target", "test_file.xml"
-    };
+    std::vector<std::string> args = {"refdata", "currencies", "import", "--target",
+                                     "test_file.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -188,13 +179,8 @@ TEST_CASE("test_import_multiple_targets", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "currencies",
-        "import",
-        "--target", "file1.xml",
-        "--target", "file2.xml",
-        "--target", "file3.xml"
-    };
+    std::vector<std::string> args = {"refdata",  "currencies", "import",   "--target", "file1.xml",
+                                     "--target", "file2.xml",  "--target", "file3.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -217,10 +203,7 @@ TEST_CASE("test_export_basic", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "currencies",
-        "list"
-    };
+    std::vector<std::string> args = {"refdata", "currencies", "list"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -243,14 +226,9 @@ TEST_CASE("test_export_full_options", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "currencies",
-        "list",
-        "--as-of", "2025-01-01",
-        "--key", "USD",
-        "--all-versions",
-        "--format", "xml"
-    };
+    std::vector<std::string> args = {"refdata",    "currencies", "list", "--as-of",
+                                     "2025-01-01", "--key",      "USD",  "--all-versions",
+                                     "--format",   "xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -267,13 +245,13 @@ TEST_CASE("test_export_full_options", tags) {
     CHECK(result->exporting->target_format == format::xml);
 }
 
-TEST_CASE("test_invalid_command", tags) {
+TEST_CASE("test_invalid_domain", tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"invalid_command"};
+    std::vector<std::string> args = {"invalid_domain"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
     BOOST_LOG_SEV(lg, debug) << "Info: " << info.str();
     BOOST_LOG_SEV(lg, debug) << "Error: " << error.str();
@@ -287,7 +265,7 @@ TEST_CASE("test_missing_required_import_args", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"import"};
+    std::vector<std::string> args = {"refdata", "currencies", "import"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
@@ -298,7 +276,7 @@ TEST_CASE("test_missing_required_export_args", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"export"};
+    std::vector<std::string> args = {"refdata", "currencies", "export"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
@@ -309,13 +287,8 @@ TEST_CASE("test_import_with_logging", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "currencies",
-        "import",
-        "--log-enabled",
-        "--log-level", "trace",
-        "--target", "test.xml"
-    };
+    std::vector<std::string> args = {"refdata",     "currencies", "import",   "--log-enabled",
+                                     "--log-level", "trace",      "--target", "test.xml"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
@@ -336,13 +309,8 @@ TEST_CASE("test_export_with_logging", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {
-        "currencies",
-        "list",
-        "--log-enabled",
-        "--log-level", "warn",
-        "--format", "json"
-    };
+    std::vector<std::string> args = {"refdata",     "currencies", "list",     "--log-enabled",
+                                     "--log-level", "warn",       "--format", "json"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);

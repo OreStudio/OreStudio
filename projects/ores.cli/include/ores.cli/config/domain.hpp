@@ -17,29 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_CLI_CONFIG_DOMAIN_HPP
+#define ORES_CLI_CONFIG_DOMAIN_HPP
 
 namespace ores::cli::config {
 
     /**
-     * @brief List of available entities to target.
+     * @brief Top-level domain sub-menus exposed by the CLI.
      */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        feature_flags
-    };
+    enum class domain { refdata, iam, dq, variability };
 
 }
 

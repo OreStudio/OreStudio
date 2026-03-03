@@ -136,6 +136,11 @@ import_options read_import_options(const variables_map& vm, entity e) {
 
     r.target_entity = e;
 
+    if (vm.count(import_targets_arg) == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply at least one import target."));
+    }
+
     const auto t(vm[import_targets_arg].as<std::vector<std::string>>());
     if (t.empty()) {
         BOOST_THROW_EXCEPTION(
@@ -255,6 +260,10 @@ handle_currencies_command(bool has_help,
         }
         store(command_line_parser(o).options(d).run(), vm);
         store(parse_environment(d, name_mapper), vm);
+        if (vm.count("format") == 0) {
+            BOOST_THROW_EXCEPTION(
+                parser_exception("Must supply --format for export command."));
+        }
         r.exporting = read_export_options(vm, entity::currencies);
     } else if (operation == delete_command_name) {
         auto d = add_common_options(make_delete_options_description());

@@ -29,9 +29,9 @@
 --
 -- Access rules (evaluated in order):
 --
---   1. app.visible_party_ids is non-empty → only queues whose name starts with
---      the codename of a party in the visible set are returned (applies to all
---      roles including SuperAdmin — the UI party selector always takes effect).
+--   1. app.current_party_id is set → only queues whose name starts with the
+--      codename of that specific party are returned (applies to all roles
+--      including SuperAdmin — the UI party selector always takes effect).
 --   2. No party selected AND actor has 'SuperAdmin' role → all queues visible.
 --   3. Otherwise (no party selected, not super-admin) → no queues returned.
 --
@@ -74,19 +74,19 @@ returns table(
 language plpgsql stable security definer
 as $$
 declare
-    v_visible_ids uuid[];
+    v_party_id uuid;
 begin
-    v_visible_ids := ores_iam_visible_party_ids_fn();
+    v_party_id := ores_iam_current_party_id_fn();
 
-    -- Party context takes precedence: filter by visible parties regardless of role.
-    if v_visible_ids is not null and array_length(v_visible_ids, 1) is not null then
+    -- Party context takes precedence: filter by the selected party regardless of role.
+    if v_party_id is not null then
         return query
             select q.queue_name::text, q.created_at, q.is_unlogged, q.is_partitioned
             from pgmq.list_queues() q
             where exists (
                 select 1
                 from ores_refdata_parties_tbl p
-                where p.id = any(v_visible_ids)
+                where p.id = v_party_id
                   and p.valid_to = ores_utility_infinity_timestamp_fn()
                   and q.queue_name like p.codename || '_%'
             );
@@ -120,12 +120,12 @@ returns table(
 language plpgsql stable security definer
 as $$
 declare
-    v_visible_ids uuid[];
+    v_party_id uuid;
 begin
-    v_visible_ids := ores_iam_visible_party_ids_fn();
+    v_party_id := ores_iam_current_party_id_fn();
 
-    -- Party context takes precedence: filter by visible parties regardless of role.
-    if v_visible_ids is not null and array_length(v_visible_ids, 1) is not null then
+    -- Party context takes precedence: filter by the selected party regardless of role.
+    if v_party_id is not null then
         return query
             select m.queue_name::text, m.queue_length, m.newest_msg_age_sec,
                    m.oldest_msg_age_sec, m.total_messages, m.scrape_time
@@ -133,7 +133,7 @@ begin
             where exists (
                 select 1
                 from ores_refdata_parties_tbl p
-                where p.id = any(v_visible_ids)
+                where p.id = v_party_id
                   and p.valid_to = ores_utility_infinity_timestamp_fn()
                   and m.queue_name like p.codename || '_%'
             );
@@ -174,16 +174,16 @@ returns table(
 language plpgsql stable security definer
 as $$
 declare
-    v_visible_ids uuid[];
+    v_party_id uuid;
 begin
-    v_visible_ids := ores_iam_visible_party_ids_fn();
+    v_party_id := ores_iam_current_party_id_fn();
 
-    -- Party context takes precedence: verify queue belongs to a visible party.
-    if v_visible_ids is not null and array_length(v_visible_ids, 1) is not null then
+    -- Party context takes precedence: verify queue belongs to the selected party.
+    if v_party_id is not null then
         if not exists (
             select 1
             from ores_refdata_parties_tbl p
-            where p.id = any(v_visible_ids)
+            where p.id = v_party_id
               and p.valid_to = ores_utility_infinity_timestamp_fn()
               and p_queue_name like p.codename || '_%'
         ) then

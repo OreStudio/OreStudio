@@ -60,14 +60,14 @@ begin
     -- Super-admin / system context: no party filter, return all queues.
     if v_visible_ids is null or array_length(v_visible_ids, 1) is null then
         return query
-            select q.queue_name, q.created_at, q.is_unlogged, q.is_partitioned
+            select q.queue_name::text, q.created_at, q.is_unlogged, q.is_partitioned
             from pgmq.list_queues() q;
         return;
     end if;
 
     -- Party context: return only queues prefixed by the codename of a visible party.
     return query
-        select q.queue_name, q.created_at, q.is_unlogged, q.is_partitioned
+        select q.queue_name::text, q.created_at, q.is_unlogged, q.is_partitioned
         from pgmq.list_queues() q
         where exists (
             select 1
@@ -103,7 +103,7 @@ begin
     -- Super-admin / system context: no party filter, return all metrics.
     if v_visible_ids is null or array_length(v_visible_ids, 1) is null then
         return query
-            select m.queue_name, m.queue_length, m.newest_msg_age_sec,
+            select m.queue_name::text, m.queue_length, m.newest_msg_age_sec,
                    m.oldest_msg_age_sec, m.total_messages, m.scrape_time
             from pgmq.metrics_all() m;
         return;
@@ -111,7 +111,7 @@ begin
 
     -- Party context: return only metrics for queues belonging to visible parties.
     return query
-        select m.queue_name, m.queue_length, m.newest_msg_age_sec,
+        select m.queue_name::text, m.queue_length, m.newest_msg_age_sec,
                m.oldest_msg_age_sec, m.total_messages, m.scrape_time
         from pgmq.metrics_all() m
         where exists (

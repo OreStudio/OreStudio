@@ -19,6 +19,7 @@
  */
 #include "ores.mq/service/mq_job_initializer.hpp"
 
+#include <algorithm>
 #include <stdexcept>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -67,8 +68,17 @@ void mq_job_initializer::initialise(const context& ctx,
     }
 
     scheduler::service::cron_scheduler cron(ctx);
-    cron.schedule(*result, "SYSTEM_INIT", "MQ metrics scrape job registered at service startup");
 
+    const auto existing = cron.get_all_definitions();
+    const bool already_exists = std::ranges::any_of(existing,
+        [](const auto& d) { return d.job_name == job_name; });
+
+    if (already_exists) {
+        BOOST_LOG_SEV(lg(), info) << "MQ metrics scrape job already registered, skipping.";
+        return;
+    }
+
+    cron.schedule(*result, "SYSTEM_INIT", "MQ metrics scrape job registered at service startup");
     BOOST_LOG_SEV(lg(), info) << "MQ metrics scrape job registered successfully.";
 }
 

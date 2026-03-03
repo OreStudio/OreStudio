@@ -32,6 +32,11 @@
  * - @b domain sub-namespace: a high-level API that hides pgmq internals and
  *   integrates with the ores.comms remoting layer, allowing messages to be
  *   sent and received transparently over the communications infrastructure.
+ *
+ * - @b messaging sub-namespace: binary protocol support for the MQ subsystem
+ *   (0xB000-0xBFFF). Provides get_queues and get_queue_metrics request/response
+ *   messages so that Qt UI components can query queue state on demand. The
+ *   registrar registers the mq_message_handler with the comms server.
  */
 namespace ores::mq {}
 

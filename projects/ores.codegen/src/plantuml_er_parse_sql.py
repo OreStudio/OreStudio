@@ -46,11 +46,12 @@ COMPONENT_PREFIXES = {
     'ores_geo_': {'name': 'geo', 'description': 'Geolocation', 'schema': 'public', 'color': '#FFF9C4', 'order': 7},
     'ores_dq_fsm_': {'name': 'dq_fsm', 'description': 'FSM (Data Quality)', 'schema': 'public', 'color': '#E8EAF6', 'order': 8},
     'ores_trading_': {'name': 'trading', 'description': 'Trading & Lifecycle', 'schema': 'public', 'color': '#E8F5E9', 'order': 9},
-    'ores_scheduler_': {'name': 'scheduler', 'description': 'Job Scheduler (pg_cron)', 'schema': 'public', 'color': '#F1F8E9', 'order': 10},
-    'ores_reporting_': {'name': 'reporting', 'description': 'Reporting & Analytics', 'schema': 'public', 'color': '#E0F7FA', 'order': 11},
-    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 12},
-    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 13},
-    'ores_database_': {'name': 'database', 'description': 'Database Infrastructure', 'schema': 'public', 'color': '#EFEBE9', 'order': 14},
+    'ores_mq_': {'name': 'mq', 'description': 'Message Queue (pgmq)', 'schema': 'public', 'color': '#FBE9E7', 'order': 10},
+    'ores_scheduler_': {'name': 'scheduler', 'description': 'Job Scheduler (pg_cron)', 'schema': 'public', 'color': '#F1F8E9', 'order': 11},
+    'ores_reporting_': {'name': 'reporting', 'description': 'Reporting & Analytics', 'schema': 'public', 'color': '#E0F7FA', 'order': 12},
+    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 13},
+    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 14},
+    'ores_database_': {'name': 'database', 'description': 'Database Infrastructure', 'schema': 'public', 'color': '#EFEBE9', 'order': 15},
 }
 
 # Valid schema names for pattern matching

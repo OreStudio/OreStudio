@@ -117,6 +117,13 @@ TENANT_002 ores_telemetry_logs_tbl
 TENANT_001 ores_database_info_tbl
 
 # =============================================================================
+# MQ metrics samples table - system-level time-series, not tenant-specific.
+# pgmq queues are global (shared infrastructure); metrics_all() returns no
+# tenant context. tenant_id has no meaning in this monitoring table.
+# =============================================================================
+TENANT_001 ores_mq_metrics_samples_tbl
+
+# =============================================================================
 # Reporting junction tables - tenant_id not in PK/EXCLUDE by design.
 # risk_report_config_id is a globally unique UUID that already implies a single
 # tenant; tenant isolation is enforced via RLS rather than PK membership.

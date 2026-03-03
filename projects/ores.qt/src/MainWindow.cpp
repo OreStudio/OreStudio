@@ -79,6 +79,7 @@
 #include "ores.qt/PortfolioController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/BookStatusController.hpp"
+#include "ores.qt/QueueMonitorController.hpp"
 #include "ores.qt/PurposeTypeController.hpp"
 #include "ores.qt/RoundingTypeController.hpp"
 #include "ores.qt/MonetaryNatureController.hpp"
@@ -244,6 +245,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionPortfolios->setIcon(IconUtils::createRecoloredIcon(Icon::Briefcase, IconUtils::DefaultIconColor));
     ui_->ActionBooks->setIcon(IconUtils::createRecoloredIcon(Icon::BookOpen, IconUtils::DefaultIconColor));
     ui_->ActionBookStatuses->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
+    ui_->ActionQueueMonitor->setIcon(IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor));
     ui_->ActionPurposeTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Flag, IconUtils::DefaultIconColor));
     ui_->ActionRoundingTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionMonetaryNatures->setIcon(IconUtils::createRecoloredIcon(Icon::Classification, IconUtils::DefaultIconColor));
@@ -669,6 +671,12 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionBookStatuses, &QAction::triggered, this, [this]() {
         if (bookStatusController_)
             bookStatusController_->showListWindow();
+    });
+
+    // Connect Queue Monitor action to controller
+    connect(ui_->ActionQueueMonitor, &QAction::triggered, this, [this]() {
+        if (queueMonitorController_)
+            queueMonitorController_->showListWindow();
     });
 
     // Connect Portfolio/Book Tree action
@@ -1169,6 +1177,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionPortfolios->setEnabled(isLoggedIn);
     ui_->ActionBooks->setEnabled(isLoggedIn);
     ui_->ActionBookStatuses->setEnabled(isLoggedIn);
+    ui_->ActionQueueMonitor->setEnabled(isLoggedIn);
     ui_->ActionPurposeTypes->setEnabled(isLoggedIn);
     ui_->ActionRoundingTypes->setEnabled(isLoggedIn);
     ui_->ActionMonetaryNatures->setEnabled(isLoggedIn);
@@ -1768,6 +1777,23 @@ void MainWindow::createControllers() {
     connect(bookStatusController_.get(), &BookStatusController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(bookStatusController_.get(), &BookStatusController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create queue monitor controller
+    queueMonitorController_ = std::make_unique<QueueMonitorController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+
+    connect(queueMonitorController_.get(), &QueueMonitorController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(queueMonitorController_.get(), &QueueMonitorController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(queueMonitorController_.get(), &QueueMonitorController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(queueMonitorController_.get(), &QueueMonitorController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create purpose type controller

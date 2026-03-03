@@ -32,6 +32,7 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.mq/pgmq/mq_exception.hpp"
 #include "ores.mq/pgmq/message.hpp"
+#include "ores.mq/pgmq/metrics_sample.hpp"
 #include "ores.mq/pgmq/queue_info.hpp"
 #include "ores.mq/pgmq/queue_metrics.hpp"
 
@@ -94,6 +95,9 @@ private:
 
     std::optional<raw_msg> do_pop(ores::database::context ctx,
         const std::string& queue_name);
+
+    std::vector<raw_msg> do_pop_batch(ores::database::context ctx,
+        const std::string& queue_name, int qty);
 
     std::optional<raw_msg> do_set_vt(ores::database::context ctx,
         const std::string& queue_name, int64_t msg_id, std::chrono::seconds vt);
@@ -275,6 +279,21 @@ public:
         return to_message<T>(*row);
     }
 
+    /**
+     * @brief Reads and atomically deletes up to @p qty messages in one call.
+     *
+     * Uses pgmq.pop(queue_name, qty) which performs a single round-trip to the
+     * database regardless of the number of messages requested.
+     *
+     * @param qty Maximum number of messages to pop.
+     * @return The popped messages (may be fewer than @p qty if the queue is short).
+     */
+    template<typename T>
+    std::vector<message<T>> pop_batch(ores::database::context ctx,
+                                       const std::string& queue_name, int qty) {
+        return to_messages<T>(do_pop_batch(std::move(ctx), queue_name, qty));
+    }
+
     // -----------------------------------------------------------------------
     // Deleting / archiving
     // -----------------------------------------------------------------------
@@ -350,6 +369,20 @@ public:
      * @brief Returns statistics for all queues.
      */
     std::vector<queue_metrics> metrics_all(ores::database::context ctx);
+
+    /**
+     * @brief Returns time-series samples for a specific queue.
+     *
+     * Queries ores_mq_metrics_samples_tbl populated by the pg_cron scrape job.
+     * Results are ordered by sample_time ASC. At most 10,000 rows are returned.
+     *
+     * @param from Optional start of time window (inclusive).
+     * @param to   Optional end of time window (inclusive).
+     */
+    std::vector<metrics_sample> metric_samples(ores::database::context ctx,
+        const std::string& queue_name,
+        std::optional<std::chrono::system_clock::time_point> from = {},
+        std::optional<std::chrono::system_clock::time_point> to = {});
 
     // -----------------------------------------------------------------------
     // NOTIFY / LISTEN integration

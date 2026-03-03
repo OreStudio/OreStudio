@@ -266,6 +266,22 @@ std::optional<client::raw_msg> client::do_pop(ores::database::context ctx,
     return parse_raw_msg(rows.front());
 }
 
+std::vector<client::raw_msg> client::do_pop_batch(ores::database::context ctx,
+                                                   const std::string& queue_name,
+                                                   int qty) {
+    BOOST_LOG_SEV(lg(), debug) << "Batch-popping " << qty
+                               << " messages from queue: " << queue_name;
+    auto rows = execute_parameterized_multi_column_query(ctx,
+        "SELECT * FROM pgmq.pop($1, $2::integer)",
+        {queue_name, std::to_string(qty)},
+        lg(), "pgmq pop batch");
+
+    std::vector<raw_msg> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) result.push_back(parse_raw_msg(row));
+    return result;
+}
+
 // ---------------------------------------------------------------------------
 // Erase / archive
 // ---------------------------------------------------------------------------
@@ -384,6 +400,49 @@ std::vector<queue_metrics> client::metrics_all(ores::database::context ctx) {
     std::vector<queue_metrics> result;
     result.reserve(rows.size());
     for (const auto& row : rows) result.push_back(parse_metrics_row(row));
+    return result;
+}
+
+std::vector<metrics_sample> client::metric_samples(ores::database::context ctx,
+    const std::string& queue_name,
+    std::optional<std::chrono::system_clock::time_point> from,
+    std::optional<std::chrono::system_clock::time_point> to) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Getting metric samples for queue: " << queue_name;
+
+    // Build query dynamically based on optional time-window filters.
+    std::string sql =
+        "SELECT sample_time, queue_length, total_messages "
+        "FROM ores_mq_metrics_samples_tbl "
+        "WHERE queue_name = $1";
+    std::vector<std::string> params{queue_name};
+    int next_param = 2;
+
+    if (from) {
+        sql += " AND sample_time >= $" + std::to_string(next_param++);
+        params.push_back(
+            ores::platform::time::datetime::format_time_point_utc(*from));
+    }
+    if (to) {
+        sql += " AND sample_time <= $" + std::to_string(next_param++);
+        params.push_back(
+            ores::platform::time::datetime::format_time_point_utc(*to));
+    }
+    sql += " ORDER BY sample_time ASC LIMIT 10000";
+
+    auto rows = execute_parameterized_multi_column_query(ctx, sql, params,
+        lg(), "mq metric samples");
+
+    std::vector<metrics_sample> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 3) continue;
+        metrics_sample s;
+        s.sample_time    = parse_pg_timestamp(row[0].value_or(""));
+        s.queue_length   = std::stoll(row[1].value_or("0"));
+        s.total_messages = std::stoll(row[2].value_or("0"));
+        result.push_back(std::move(s));
+    }
     return result;
 }
 

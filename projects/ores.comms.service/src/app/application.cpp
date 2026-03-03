@@ -68,6 +68,8 @@
 #include "ores.trading/eventing/trade_changed_event.hpp"
 #include "ores.scheduler/messaging/registrar.hpp"
 #include "ores.reporting/messaging/registrar.hpp"
+#include "ores.mq/messaging/registrar.hpp"
+#include "ores.mq/service/mq_job_initializer.hpp"
 #include "ores.reporting/eventing/report_type_changed_event.hpp"
 #include "ores.reporting/eventing/concurrency_policy_changed_event.hpp"
 #include "ores.reporting/eventing/report_definition_changed_event.hpp"
@@ -689,6 +691,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::trading::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::scheduler::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::reporting::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
+    ores::mq::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
+    ores::mq::service::mq_job_initializer::initialise(ctx);
 
     // Register system info handler for get_system_info_request (no auth required)
     auto si_handler =

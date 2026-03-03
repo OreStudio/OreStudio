@@ -187,8 +187,15 @@
      </property>
      <addaction name="ActionFeatureFlags"/>
     </widget>
+    <widget class="QMenu" name="menuMessageQueue">
+     <property name="title">
+      <string>&amp;Message Queue</string>
+     </property>
+     <addaction name="ActionQueueMonitor"/>
+    </widget>
     <addaction name="menuIdentity"/>
     <addaction name="menuConfiguration"/>
+    <addaction name="menuMessageQueue"/>
     <addaction name="menuTelemetry"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
@@ -659,6 +666,14 @@
    </property>
    <property name="toolTip">
     <string>View report execution instances</string>
+   </property>
+  </action>
+  <action name="ActionQueueMonitor">
+   <property name="text">
+    <string>&amp;Queue Monitor</string>
+   </property>
+   <property name="toolTip">
+    <string>Monitor message queue state and metrics</string>
    </property>
   </action>
   <action name="ActionPortfolios">

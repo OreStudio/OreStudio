@@ -649,6 +649,27 @@ enum class message_type : std::uint16_t {
     delete_report_instance_response = 0xA035,
     get_report_instance_history_request = 0xA036,
     get_report_instance_history_response = 0xA037,
+    // MQ subsystem (0xB000-0xBFFF)
+    get_queues_request              = 0xB000,
+    get_queues_response             = 0xB001,
+    get_queue_metrics_request       = 0xB002,
+    get_queue_metrics_response      = 0xB003,
+    get_queue_metric_samples_request  = 0xB004,
+    get_queue_metric_samples_response = 0xB005,
+    create_queue_request              = 0xB006,
+    create_queue_response             = 0xB007,
+    drop_queue_request                = 0xB008,
+    drop_queue_response               = 0xB009,
+    purge_queue_request               = 0xB00A,
+    purge_queue_response              = 0xB00B,
+    send_message_request              = 0xB00C,
+    send_message_response             = 0xB00D,
+    read_messages_request             = 0xB00E,
+    read_messages_response            = 0xB00F,
+    pop_messages_request              = 0xB010,
+    pop_messages_response             = 0xB011,
+    delete_messages_request           = 0xB012,
+    delete_messages_response          = 0xB013,
     // Sentinel value - must remain after the highest message type value
     last_value,
 };
@@ -1195,6 +1216,26 @@ enum class message_type : std::uint16_t {
     case message_type::delete_report_instance_response: return "delete_report_instance_response";
     case message_type::get_report_instance_history_request: return "get_report_instance_history_request";
     case message_type::get_report_instance_history_response: return "get_report_instance_history_response";
+    case message_type::get_queues_request:                   return "get_queues_request";
+    case message_type::get_queues_response:                  return "get_queues_response";
+    case message_type::get_queue_metrics_request:            return "get_queue_metrics_request";
+    case message_type::get_queue_metrics_response:           return "get_queue_metrics_response";
+    case message_type::get_queue_metric_samples_request:     return "get_queue_metric_samples_request";
+    case message_type::get_queue_metric_samples_response:    return "get_queue_metric_samples_response";
+    case message_type::create_queue_request:                 return "create_queue_request";
+    case message_type::create_queue_response:                return "create_queue_response";
+    case message_type::drop_queue_request:                   return "drop_queue_request";
+    case message_type::drop_queue_response:                  return "drop_queue_response";
+    case message_type::purge_queue_request:                  return "purge_queue_request";
+    case message_type::purge_queue_response:                 return "purge_queue_response";
+    case message_type::send_message_request:                 return "send_message_request";
+    case message_type::send_message_response:                return "send_message_response";
+    case message_type::read_messages_request:                return "read_messages_request";
+    case message_type::read_messages_response:               return "read_messages_response";
+    case message_type::pop_messages_request:                 return "pop_messages_request";
+    case message_type::pop_messages_response:                return "pop_messages_response";
+    case message_type::delete_messages_request:              return "delete_messages_request";
+    case message_type::delete_messages_response:             return "delete_messages_response";
     default: return {};
     }
 }

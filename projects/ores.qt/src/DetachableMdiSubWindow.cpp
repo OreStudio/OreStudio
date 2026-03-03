@@ -19,6 +19,7 @@
  */
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 
 #include <iomanip>
 #include <sstream>
@@ -140,7 +141,7 @@ void DetachableMdiSubWindow::closeEvent(QCloseEvent* event) {
 
     if (auto* dialog = qobject_cast<DetailDialogBase*>(widget())) {
         if (dialog->hasUnsavedChanges() && !dialog->isCloseConfirmed()) {
-            auto reply = QMessageBox::question(
+            auto reply = MessageBoxHelper::question(
                 this, tr("Unsaved Changes"),
                 tr("You have unsaved changes. Close anyway?"),
                 QMessageBox::Yes | QMessageBox::No);

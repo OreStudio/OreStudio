@@ -42,6 +42,7 @@ enum class Icon {
     ArrowRight,
     ArrowRotateCounterclockwise,
     ArrowSync,
+    ArrowTrending,
     Book,
     BookOpen,
     // Calendar icons for scheduling operations
@@ -55,6 +56,7 @@ enum class Icon {
     BuildingBank,
     BuildingSkyscraper,
     Chart,
+    ChartMultiple,
     Checkmark,
     Classification,
     Clock,
@@ -113,6 +115,7 @@ enum class Icon {
     Star,
     Table,
     Tag,
+    TasksApp,
     Terminal,
     Wand,
     Warning

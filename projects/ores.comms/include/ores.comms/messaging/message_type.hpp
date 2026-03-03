@@ -635,6 +635,11 @@ enum class message_type : std::uint16_t {
     delete_report_definition_response = 0xA025,
     get_report_definition_history_request = 0xA026,
     get_report_definition_history_response = 0xA027,
+    // Reporting subsystem - Report scheduling
+    schedule_report_definitions_request    = 0xA028,
+    schedule_report_definitions_response   = 0xA029,
+    unschedule_report_definitions_request  = 0xA02A,
+    unschedule_report_definitions_response = 0xA02B,
     // Reporting subsystem - Report instances
     get_report_instances_request = 0xA030,
     get_report_instances_response = 0xA031,
@@ -1178,6 +1183,10 @@ enum class message_type : std::uint16_t {
     case message_type::delete_report_definition_response: return "delete_report_definition_response";
     case message_type::get_report_definition_history_request: return "get_report_definition_history_request";
     case message_type::get_report_definition_history_response: return "get_report_definition_history_response";
+    case message_type::schedule_report_definitions_request: return "schedule_report_definitions_request";
+    case message_type::schedule_report_definitions_response: return "schedule_report_definitions_response";
+    case message_type::unschedule_report_definitions_request: return "unschedule_report_definitions_request";
+    case message_type::unschedule_report_definitions_response: return "unschedule_report_definitions_response";
     case message_type::get_report_instances_request: return "get_report_instances_request";
     case message_type::get_report_instances_response: return "get_report_instances_response";
     case message_type::save_report_instance_request: return "save_report_instance_request";

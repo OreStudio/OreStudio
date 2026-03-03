@@ -27,6 +27,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include "ui_JobDefinitionDetailDialog.h"
 #include "ores.scheduler/domain/cron_expression.hpp"
+#include "ores.qt/CronExpressionWidget.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -92,7 +93,7 @@ void JobDefinitionDetailDialog::setupConnections() {
             &JobDefinitionDetailDialog::onFieldChanged);
     connect(ui_->commandEdit, &QPlainTextEdit::textChanged, this,
             &JobDefinitionDetailDialog::onFieldChanged);
-    connect(ui_->scheduleExpressionEdit, &QLineEdit::textChanged, this,
+    connect(ui_->cronWidget, &CronExpressionWidget::cronChanged, this,
             &JobDefinitionDetailDialog::onFieldChanged);
     connect(ui_->databaseNameEdit, &QLineEdit::textChanged, this,
             &JobDefinitionDetailDialog::onFieldChanged);
@@ -133,17 +134,22 @@ void JobDefinitionDetailDialog::setReadOnly(bool readOnly) {
     ui_->jobNameEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->commandEdit->setReadOnly(readOnly);
-    ui_->scheduleExpressionEdit->setReadOnly(readOnly);
+    ui_->cronWidget->setReadOnly(readOnly);
     ui_->databaseNameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->unscheduleButton->setVisible(!readOnly);
 }
 
 void JobDefinitionDetailDialog::updateUiFromDefinition() {
+    const QSignalBlocker b1(ui_->jobNameEdit);
+    const QSignalBlocker b2(ui_->descriptionEdit);
+    const QSignalBlocker b3(ui_->commandEdit);
+    const QSignalBlocker b4(ui_->databaseNameEdit);
+
     ui_->jobNameEdit->setText(QString::fromStdString(definition_.job_name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(definition_.description));
     ui_->commandEdit->setPlainText(QString::fromStdString(definition_.command));
-    ui_->scheduleExpressionEdit->setText(
+    ui_->cronWidget->setCronExpression(
         QString::fromStdString(definition_.schedule_expression.to_string()));
     ui_->databaseNameEdit->setText(QString::fromStdString(definition_.database_name));
 
@@ -164,7 +170,7 @@ void JobDefinitionDetailDialog::updateDefinitionFromUi() {
     }
     definition_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     definition_.command = ui_->commandEdit->toPlainText().trimmed().toStdString();
-    const auto cron_str = ui_->scheduleExpressionEdit->text().trimmed().toStdString();
+    const auto cron_str = ui_->cronWidget->cronExpression().trimmed().toStdString();
     if (auto result = scheduler::domain::cron_expression::from_string(cron_str)) {
         definition_.schedule_expression = *result;
     }
@@ -190,15 +196,12 @@ void JobDefinitionDetailDialog::updateSaveButtonState() {
 bool JobDefinitionDetailDialog::validateInput() {
     const QString job_name_val = ui_->jobNameEdit->text().trimmed();
     const QString command_val = ui_->commandEdit->toPlainText().trimmed();
-    const QString schedule_expression_val = ui_->scheduleExpressionEdit->text().trimmed();
     const QString database_name_val = ui_->databaseNameEdit->text().trimmed();
 
-    if (job_name_val.isEmpty() || command_val.isEmpty() ||
-        schedule_expression_val.isEmpty() || database_name_val.isEmpty())
+    if (job_name_val.isEmpty() || command_val.isEmpty() || database_name_val.isEmpty())
         return false;
 
-    return scheduler::domain::cron_expression::from_string(
-        schedule_expression_val.toStdString()).has_value();
+    return ui_->cronWidget->isValid();
 }
 
 void JobDefinitionDetailDialog::onSaveClicked() {

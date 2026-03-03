@@ -18,6 +18,22 @@
 
     "columns": [
       {
+        "name": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Human-readable name copied from the report definition at creation time.",
+        "generator_expr": "std::string(faker::word::noun()) + \"_instance\""
+      },
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Description copied from the report definition at creation time.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
         "name": "party_id",
         "type": "uuid",
         "cpp_type": "boost::uuids::uuid",
@@ -89,7 +105,8 @@
     "cpp": {
       "includes": {
         "domain": ["<chrono>", "<cstdint>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"],
-        "entity": ["<cstdint>", "<optional>", "<string>", "\"sqlgen/Timestamp.hpp\"", "<boost/uuid/uuid.hpp>"]
+        "entity": ["<cstdint>", "<optional>", "<string>", "\"sqlgen/Timestamp.hpp\"", "<boost/uuid/uuid.hpp>"],
+        "generator": ["\"faker-cxx/Word.h\"", "\"faker-cxx/Lorem.h\""]
       },
       "iterator_var": "ri"
     },
@@ -100,7 +117,8 @@
       "protocol_include": "ores.reporting/messaging/report_instance_protocol.hpp",
       "collection_name": "instances",
       "item_var": "instance",
-      "key_field": "id",
+      "key_field": "name",
+      "key_widget": "nameEdit",
       "has_uuid_primary_key": true,
 
       "get_request_class": "reporting::messaging::get_report_instances_request",
@@ -116,19 +134,29 @@
       "history_response_class": "reporting::messaging::get_report_instance_history_response",
       "history_message_type": "get_report_instance_history_request",
 
+      "detail_fields": [
+        {"field": "name",           "label": "Name",          "widget": "nameEdit",        "type": "line_edit",
+         "is_key": true, "is_required": true, "placeholder": "Report instance name"},
+        {"field": "description",    "label": "Description",   "widget": "descriptionEdit", "type": "text_edit",
+         "placeholder": "Description"},
+        {"field": "output_message", "label": "Output",        "widget": "outputEdit",      "type": "text_edit",
+         "placeholder": "Execution log or error message"}
+      ],
+
       "columns": [
-        {"enum_name": "DefinitionId", "field": "definition_id", "header": "Definition",  "is_string": true,    "width": 200},
-        {"enum_name": "TriggerRunId", "field": "trigger_run_id","header": "Trigger Run", "is_int": true,       "width": 100},
-        {"enum_name": "OutputMessage","field": "output_message", "header": "Output",     "is_string": true,    "width": 250},
-        {"enum_name": "StartedAt",    "field": "started_at",     "header": "Started At", "is_timestamp": true, "width": 150},
-        {"enum_name": "CompletedAt",  "field": "completed_at",   "header": "Completed",  "is_timestamp": true, "width": 150},
-        {"enum_name": "Version",      "field": "version",        "header": "Version",    "is_int": true,       "width": 60},
-        {"enum_name": "ModifiedBy",   "field": "modified_by",    "header": "Modified By","is_string": true,    "width": 120}
+        {"enum_name": "Name",         "field": "name",          "header": "Name",       "is_string": true,    "width": 200},
+        {"enum_name": "DefinitionId", "field": "definition_id", "header": "Definition", "is_uuid": true,      "width": 200},
+        {"enum_name": "TriggerRunId", "field": "trigger_run_id","header": "Trigger Run","is_int": true,       "width": 100},
+        {"enum_name": "OutputMessage","field": "output_message", "header": "Output",    "is_string": true,    "width": 250},
+        {"enum_name": "StartedAt",    "field": "started_at",    "header": "Started At", "is_timestamp": true, "width": 150},
+        {"enum_name": "CompletedAt",  "field": "completed_at",  "header": "Completed",  "is_timestamp": true, "width": 150},
+        {"enum_name": "Version",      "field": "version",       "header": "Version",    "is_int": true,       "width": 60},
+        {"enum_name": "ModifiedBy",   "field": "modified_by",   "header": "Modified By","is_string": true,    "width": 120}
       ],
 
       "settings_group": "ReportInstanceListWindow",
       "window_title": "Report Instances",
-      "icon": "Play"
+      "icon": "Record"
     }
   }
 }

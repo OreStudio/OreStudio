@@ -43,17 +43,26 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 # Set them in ~/.bashrc for per-machine configuration (see cmake-runner skill).
 #
 cmake_host_system_information(RESULT ORES_CPU_CORES QUERY NUMBER_OF_LOGICAL_CORES)
-message(STATUS "CMAKE_BUILD_PARALLEL_LEVEL: $ENV{CMAKE_BUILD_PARALLEL_LEVEL} (logical cores: ${ORES_CPU_CORES})")
-message(STATUS "CTEST_PARALLEL_LEVEL: $ENV{CTEST_PARALLEL_LEVEL}")
-if(ORES_CPU_CORES GREATER 1)
-    if("$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "1")
-        message(WARNING "CMAKE_BUILD_PARALLEL_LEVEL is not set (or set to 1) but ${ORES_CPU_CORES} logical cores are available. "
-            "Set it in ~/.bashrc for faster builds: export CMAKE_BUILD_PARALLEL_LEVEL=${ORES_CPU_CORES}")
-    endif()
-    if("$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "1")
-        message(WARNING "CTEST_PARALLEL_LEVEL is not set (or set to 1) but ${ORES_CPU_CORES} logical cores are available. "
-            "Set it in ~/.bashrc for faster tests: export CTEST_PARALLEL_LEVEL=${ORES_CPU_CORES}")
-    endif()
+if(ORES_CPU_CORES GREATER 2)
+    math(EXPR ORES_DEFAULT_JOBS "${ORES_CPU_CORES} - 2")
+else()
+    set(ORES_DEFAULT_JOBS 1)
+endif()
+if("$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "1")
+    set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${ORES_DEFAULT_JOBS})
+    message(STATUS "CMAKE_BUILD_PARALLEL_LEVEL auto-set to ${ORES_DEFAULT_JOBS} "
+        "(logical cores: ${ORES_CPU_CORES}; set in ~/.bashrc to make permanent)")
+else()
+    message(STATUS "CMAKE_BUILD_PARALLEL_LEVEL: $ENV{CMAKE_BUILD_PARALLEL_LEVEL} "
+        "(logical cores: ${ORES_CPU_CORES})")
+endif()
+if("$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "1")
+    set(ENV{CTEST_PARALLEL_LEVEL} ${ORES_DEFAULT_JOBS})
+    message(STATUS "CTEST_PARALLEL_LEVEL auto-set to ${ORES_DEFAULT_JOBS} "
+        "(logical cores: ${ORES_CPU_CORES}; set in ~/.bashrc to make permanent)")
+else()
+    message(STATUS "CTEST_PARALLEL_LEVEL: $ENV{CTEST_PARALLEL_LEVEL} "
+        "(logical cores: ${ORES_CPU_CORES})")
 endif()
 
 # ctest support

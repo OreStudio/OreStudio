@@ -3,6 +3,9 @@
 #include "ores.qt/Client{{domain_entity.entity_pascal}}Model.hpp"
 
 #include <QtConcurrent>
+{{#domain_entity.qt.has_uuid_primary_key}}
+#include <boost/uuid/uuid_io.hpp>
+{{/domain_entity.qt.has_uuid_primary_key}}
 #include "{{domain_entity.qt.protocol_include}}"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
@@ -66,8 +69,11 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
 {{#is_string}}
             return QString::fromStdString({{domain_entity.qt.item_var}}.{{field}});
 {{/is_string}}
+{{#is_uuid}}
+            return QString::fromStdString(boost::uuids::to_string({{domain_entity.qt.item_var}}.{{field}}));
+{{/is_uuid}}
 {{#is_int}}
-            return {{domain_entity.qt.item_var}}.{{field}};
+            return static_cast<qlonglong>({{domain_entity.qt.item_var}}.{{field}});
 {{/is_int}}
 {{#is_timestamp}}
             return relative_time_helper::format({{domain_entity.qt.item_var}}.{{field}});

@@ -46,6 +46,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::ArrowRight: return {"ic_fluent_arrow_right_20", "arrow-right.svg"};
         case Icon::ArrowRotateCounterclockwise: return {"ic_fluent_arrow_rotate_counterclockwise_20", "undo-left-round.svg"};
         case Icon::ArrowSync: return {"ic_fluent_arrow_sync_20", "refresh-circle.svg"};
+        case Icon::ArrowTrending: return {"ic_fluent_arrow_trending_20", "transfer-horizontal.svg"};
         case Icon::Book: return {"ic_fluent_book_20", "notes-minimalistic.svg"};
         case Icon::CalendarAdd:    return {"ic_fluent_calendar_add_20",    "calendar-add.svg"};
         case Icon::CalendarCancel: return {"ic_fluent_calendar_cancel_20", "alarm-remove.svg"};
@@ -58,6 +59,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::BuildingBank: return {"ic_fluent_building_bank_20", "buildings-3.svg"};
         case Icon::BuildingSkyscraper: return {"ic_fluent_building_skyscraper_20", "buildings.svg"};
         case Icon::Chart: return {"ic_fluent_data_bar_vertical_ascending_20", "chart-2.svg"};
+        case Icon::ChartMultiple: return {"ic_fluent_chart_multiple_20", "presentation-graph.svg"};
         case Icon::Checkmark: return {"ic_fluent_checkmark_20", "check-circle.svg"};
         case Icon::Classification: return {"ic_fluent_classification_20", "layers.svg"};
         case Icon::Clock: return {"ic_fluent_clock_16", "clock-circle.svg"};
@@ -116,6 +118,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::Star: return {"ic_fluent_star_20", "star-circle.svg"};
         case Icon::Table: return {"ic_fluent_table_20", "document-add.svg"};
         case Icon::Tag: return {"ic_fluent_tag_20", "tag.svg"};
+        case Icon::TasksApp: return {"ic_fluent_tasks_app_20", "clipboard-list.svg"};
         case Icon::Terminal: return {"ic_fluent_window_console_20", "programming.svg"};
         case Icon::Wand: return {"ic_fluent_wand_20", "magic-stick-3.svg"};
         case Icon::Warning: return {"ic_fluent_warning_20", "danger-circle.svg"};

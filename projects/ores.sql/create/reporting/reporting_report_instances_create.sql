@@ -42,6 +42,8 @@ create table if not exists "ores_reporting_report_instances_tbl" (
     "id"               uuid    not null,
     "tenant_id"        uuid    not null,
     "version"          integer not null,
+    "name"             text    not null,
+    "description"      text    not null default '',
     "party_id"         uuid    not null,
     "definition_id"    uuid    not null,
     "fsm_state_id"     uuid    null,
@@ -63,6 +65,7 @@ create table if not exists "ores_reporting_report_instances_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
+    check ("name" <> ''),
     check ("completed_at" is null or "started_at" is not null)
 );
 
@@ -74,6 +77,11 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 -- Current record uniqueness
 create unique index if not exists ores_reporting_report_instances_id_uniq_idx
 on "ores_reporting_report_instances_tbl" (tenant_id, id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Natural key: unique instance name per tenant
+create unique index if not exists ores_reporting_report_instances_name_uniq_idx
+on "ores_reporting_report_instances_tbl" (tenant_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
@@ -95,6 +103,8 @@ create or replace function ores_reporting_report_instances_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
+    def_name        text;
+    def_description text;
 begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
@@ -111,16 +121,24 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate definition_id (soft FK to ores_reporting_report_definitions_tbl)
-    if not exists (
-        select 1 from ores_reporting_report_definitions_tbl
-        where tenant_id = new.tenant_id
-          and id = new.definition_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
+    -- Validate definition_id; copy name/description from definition if not provided
+    select name, description into def_name, def_description
+    from ores_reporting_report_definitions_tbl
+    where tenant_id = new.tenant_id
+      and id = new.definition_id
+      and valid_to = ores_utility_infinity_timestamp_fn();
+
+    if not found then
         raise exception 'Invalid definition_id: %. No active report definition found with this id.',
             new.definition_id
             using errcode = '23503';
+    end if;
+
+    if new.name = '' then
+        new.name := def_name;
+    end if;
+    if new.description = '' then
+        new.description := coalesce(def_description, '');
     end if;
 
     -- Validate fsm_state_id (soft FK to ores_dq_fsm_states_tbl)

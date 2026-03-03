@@ -30,6 +30,9 @@
 #include <QCheckBox>
 #include <QTextEdit>
 #include <QPushButton>
+#include <QListWidget>
+#include <vector>
+#include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 
@@ -74,7 +77,20 @@ public:
         Page_PartySetup,
         Page_CounterpartySetup,
         Page_OrganisationSetup,
+        Page_ReportSetup,
+        Page_ReportInstall,
         Page_Summary
+    };
+
+    /**
+     * @brief Specification for an initial report definition to create during provisioning.
+     */
+    struct ReportSpec {
+        std::string name;
+        std::string description;
+        std::string schedule_expression;
+        std::string report_type;
+        std::string concurrency_policy;
     };
 
     enum class DataSourceMode {
@@ -129,6 +145,9 @@ public:
     bool syntheticGenerateIdentifiers() const { return syntheticGenerateIdentifiers_; }
     void setSyntheticGenerateIdentifiers(bool v) { syntheticGenerateIdentifiers_ = v; }
 
+    std::vector<ReportSpec> selectedReports() const { return selectedReports_; }
+    void setSelectedReports(std::vector<ReportSpec> r) { selectedReports_ = std::move(r); }
+
     /**
      * @brief Clears the system.bootstrap_mode flag for the current tenant.
      */
@@ -156,6 +175,7 @@ private:
     int syntheticBusinessUnitCount_ = 10;
     bool syntheticGenerateAddresses_ = true;
     bool syntheticGenerateIdentifiers_ = true;
+    std::vector<ReportSpec> selectedReports_;
 };
 
 // Forward declarations
@@ -166,6 +186,8 @@ class DataSourceSelectionPage;
 class PartySetupPage;
 class CounterpartySetupPage;
 class OrganisationSetupPage;
+class ReportSetupPage;
+class ReportInstallPage;
 class ApplyAndSummaryPage;
 
 /**
@@ -338,6 +360,66 @@ private:
     QTextEdit* logOutput_;
     bool publishComplete_ = false;
     bool publishSuccess_ = false;
+};
+
+/**
+ * @brief Page for selecting which initial report definitions to create.
+ *
+ * Presents a checklist of representative ORE risk report definitions. The user
+ * can select any combination (or none). Selections are stored in the wizard for
+ * creation by ReportInstallPage. If nothing is selected this page routes directly
+ * to the summary, skipping ReportInstallPage.
+ */
+class ReportSetupPage final : public QWizardPage {
+    Q_OBJECT
+
+public:
+    explicit ReportSetupPage(TenantProvisioningWizard* wizard);
+    bool validatePage() override;
+    int nextId() const override;
+
+private:
+    void setupUI();
+
+    TenantProvisioningWizard* wizard_;
+    QListWidget* reportList_;
+};
+
+/**
+ * @brief Page that asynchronously creates the selected report definitions.
+ *
+ * Fetches the tenant's system party, then creates each selected report definition
+ * via save_report_definition_request. Follows the same async pattern as
+ * BundleInstallPage.
+ */
+class ReportInstallPage final : public QWizardPage {
+    Q_OBJECT
+
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.report_install_page";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+public:
+    explicit ReportInstallPage(TenantProvisioningWizard* wizard);
+    void initializePage() override;
+    bool isComplete() const override;
+
+private:
+    void startInstall();
+    void appendLog(const QString& message);
+
+    TenantProvisioningWizard* wizard_;
+    QLabel* statusLabel_;
+    QProgressBar* progressBar_;
+    QTextEdit* logOutput_;
+    bool installComplete_ = false;
+    bool installSuccess_ = false;
 };
 
 /**

@@ -302,6 +302,18 @@ Synchronize data, refresh with server.
 
 *Usage*: Sync buttons, bidirectional refresh.
 
+*** Arrow Trending
+Trades, financial market movement, trending data.
+
+- Fluent Regular: ic_fluent_arrow_trending_20_regular.svg
+- Fluent Filled: ic_fluent_arrow_trending_20_filled.svg
+- Solar Linear: transfer-horizontal.svg
+- Solar Bold: transfer-horizontal.svg
+
+*Usage*: Trades management (=ActionTrades= toolbar/menu). An upward-trending arrow
+represents financial market activity and transaction flow. Solar fallback:
+~transfer-horizontal.svg~.
+
 *** Arrow Clockwise (16px)
 Rotate clockwise, redo action.
 
@@ -598,6 +610,19 @@ from the closed Book icon used for methodologies and reference materials.
 
 Icons for numerical data and financial concepts.
 
+*** Chart Multiple
+Report definitions, report templates with multiple visualisation types.
+
+- Fluent Regular: ic_fluent_chart_multiple_20_regular.svg
+- Fluent Filled: ic_fluent_chart_multiple_20_filled.svg
+- Solar Linear: presentation-graph.svg
+- Solar Bold: presentation-graph.svg
+
+*Usage*: Report Definition management (=ActionReportDefinitions=). Multiple chart
+types on one icon conveys "a template that can generate various report formats".
+Distinct from the histogram icon used for data analytics. Solar fallback:
+~presentation-graph.svg~.
+
 *** Database
 Data storage, datasets, data dimensions.
 
@@ -691,6 +716,20 @@ Semantically distinct from `Delete` (which implies permanent removal) —
 unschedule removes from pg_cron while retaining the definition. Solar fallback:
 `alarm-remove.svg`.
 
+*** Tasks App
+Job definitions list, task management application.
+
+- Fluent Regular: ic_fluent_tasks_app_20_regular.svg
+- Fluent Filled: ic_fluent_tasks_app_20_filled.svg
+- Solar Linear: clipboard-list.svg
+- Solar Bold: clipboard-list.svg
+
+*Usage*: Job Definition management (=ActionJobDefinitions= toolbar/menu). Represents a
+task management application — a list of scheduled jobs/tasks to execute. Distinct
+from =CalendarClock= (used for scheduler-concept menu entries and window titles)
+— use =TasksApp= for the job definitions list window and toolbar button. Solar
+fallback: ~clipboard-list.svg~.
+
 ** Text & Formatting
 
 Icons for text manipulation and formatting.
@@ -723,6 +762,7 @@ Text validation, spell check, language processing.
 | Forward              | arrow_right_20                   | Default | Active |
 | Download             | arrow_download_20                | Default | Active |
 | Sync                 | arrow_sync_20                    | Default | Active |
+| Trades               | arrow_trending_20                | Default | Active |
 | Undo                 | arrow_rotate_counterclockwise_20 | Default | Active |
 | Info                 | info_20                          | Default | Active |
 | Warning              | warning_20                       | Default | Alert  |
@@ -760,6 +800,8 @@ Text validation, spell check, language processing.
 | Scheduler/Jobs       | calendar_clock_20                | Default | Active |
 | Schedule Job         | calendar_add_20                  | Default | Active |
 | Unschedule Job       | calendar_cancel_20               | Default | Active |
+| Job Definitions List | tasks_app_20                     | Default | Active |
+| Report Definitions   | chart_multiple_20                | Default | Active |
 | Import CSV           | arrow_download_csv_20            | Default | Active |
 | Import FPML          | arrow_download_fpml_20           | Default | Active |
 | Import ORE           | arrow_download_ore_20            | Default | Active |

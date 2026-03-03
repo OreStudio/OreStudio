@@ -160,6 +160,76 @@ struct get_report_definition_history_response final {
 
 std::ostream& operator<<(std::ostream& s, const get_report_definition_history_response& v);
 
+// ============================================================================
+// Report Scheduling Messages
+// ============================================================================
+
+/**
+ * @brief Request to schedule (activate) one or more report definitions.
+ */
+struct schedule_report_definitions_request final {
+    std::vector<boost::uuids::uuid> ids;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<schedule_report_definitions_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const schedule_report_definitions_request& v);
+
+/**
+ * @brief Response confirming report definition scheduling.
+ */
+struct schedule_report_definitions_response final {
+    bool success = false;
+    std::string message;
+    int scheduled_count = 0;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<schedule_report_definitions_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const schedule_report_definitions_response& v);
+
+/**
+ * @brief Request to unschedule (deactivate) one or more report definitions.
+ */
+struct unschedule_report_definitions_request final {
+    std::vector<boost::uuids::uuid> ids;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<unschedule_report_definitions_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const unschedule_report_definitions_request& v);
+
+/**
+ * @brief Response confirming report definition unscheduling.
+ */
+struct unschedule_report_definitions_response final {
+    bool success = false;
+    std::string message;
+    int unscheduled_count = 0;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<unschedule_report_definitions_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const unschedule_report_definitions_response& v);
+
 }
 
 namespace ores::comms::messaging {
@@ -195,6 +265,22 @@ struct message_traits<reporting::messaging::get_report_definition_history_reques
     using response_type = reporting::messaging::get_report_definition_history_response;
     static constexpr message_type request_message_type =
         message_type::get_report_definition_history_request;
+};
+
+template<>
+struct message_traits<reporting::messaging::schedule_report_definitions_request> {
+    using request_type = reporting::messaging::schedule_report_definitions_request;
+    using response_type = reporting::messaging::schedule_report_definitions_response;
+    static constexpr message_type request_message_type =
+        message_type::schedule_report_definitions_request;
+};
+
+template<>
+struct message_traits<reporting::messaging::unschedule_report_definitions_request> {
+    using request_type = reporting::messaging::unschedule_report_definitions_request;
+    using response_type = reporting::messaging::unschedule_report_definitions_response;
+    static constexpr message_type request_message_type =
+        message_type::unschedule_report_definitions_request;
 };
 
 }

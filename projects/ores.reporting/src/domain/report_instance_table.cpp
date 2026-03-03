@@ -19,29 +19,39 @@
  */
 #include "ores.reporting/domain/report_instance_table.hpp"
 
+#include <array>
+#include <ctime>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include "ores.platform/time/datetime.hpp"
 
 namespace ores::reporting::domain {
+
+namespace {
+
+std::string format_timepoint(
+    const std::optional<std::chrono::system_clock::time_point>& tp) {
+    if (!tp) return "N/A";
+    const std::time_t t = std::chrono::system_clock::to_time_t(*tp);
+    std::array<char, 32> buf{};
+    std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
+    return buf.data();
+}
+
+}
 
 std::string convert_to_table(const std::vector<report_instance>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header
-          << "ID" << "Definition ID" << "Trigger Run" << "Output"
-          << "Started At" << "Completed At" << "Version" << "Modified By"
-          << fort::endr;
+          << "ID" << "Name" << "Started At" << "Completed At"
+          << "Version" << "Modified By" << fort::endr;
 
     for (const auto& ri : v) {
-        using ores::platform::time::datetime;
         table << boost::uuids::to_string(ri.id)
-              << boost::uuids::to_string(ri.definition_id)
-              << ri.trigger_run_id
-              << ri.output_message
-              << (ri.started_at ? datetime::format_time_point(*ri.started_at) : "N/A")
-              << (ri.completed_at ? datetime::format_time_point(*ri.completed_at) : "N/A")
+              << ri.name
+              << format_timepoint(ri.started_at)
+              << format_timepoint(ri.completed_at)
               << ri.version
               << ri.modified_by
               << fort::endr;

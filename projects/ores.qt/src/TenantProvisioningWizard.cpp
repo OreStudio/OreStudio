@@ -24,14 +24,19 @@
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
+#include <array>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
+#include <QListWidgetItem>
 #include <QSizePolicy>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/uuid_generators.hpp>
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq/messaging/publish_bundle_protocol.hpp"
+#include "ores.refdata/messaging/party_protocol.hpp"
+#include "ores.reporting/messaging/report_definition_protocol.hpp"
 #include "ores.synthetic/messaging/generate_organisation_protocol.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
@@ -78,6 +83,8 @@ void TenantProvisioningWizard::setupPages() {
     setPage(Page_PartySetup, new PartySetupPage(this));
     setPage(Page_CounterpartySetup, new CounterpartySetupPage(this));
     setPage(Page_OrganisationSetup, new OrganisationSetupPage(this));
+    setPage(Page_ReportSetup, new ReportSetupPage(this));
+    setPage(Page_ReportInstall, new ReportInstallPage(this));
     setPage(Page_Summary, new ApplyAndSummaryPage(this));
 
     setStartId(Page_Welcome);
@@ -189,7 +196,6 @@ BundleSelectionPage::BundleSelectionPage(TenantProvisioningWizard* wizard)
 }
 
 void BundleSelectionPage::setupUI() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     bundleModel_ = new ClientDatasetBundleModel(
@@ -246,6 +252,8 @@ void BundleSelectionPage::setupUI() {
             this, [this](const QString& msg) {
         statusLabel_->setText(tr("Failed to load catalogues: %1").arg(msg));
     });
+
+    WidgetUtils::setupComboBoxes(this);
 }
 
 void BundleSelectionPage::onBundleChanged(int index) {
@@ -442,7 +450,6 @@ DataSourceSelectionPage::DataSourceSelectionPage(
 }
 
 void DataSourceSelectionPage::setupUI() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(12);
 
@@ -526,6 +533,8 @@ void DataSourceSelectionPage::setupUI() {
             this, &DataSourceSelectionPage::onModeChanged);
     connect(syntheticRadio_, &QRadioButton::toggled,
             this, &DataSourceSelectionPage::onModeChanged);
+
+    WidgetUtils::setupComboBoxes(this);
 }
 
 void DataSourceSelectionPage::onModeChanged() {
@@ -576,7 +585,6 @@ PartySetupPage::PartySetupPage(TenantProvisioningWizard* wizard)
 }
 
 void PartySetupPage::setupUI() {
-    WidgetUtils::setupComboBoxes(this);
     auto* layout = new QVBoxLayout(this);
 
     instructionLabel_ = new QLabel(this);
@@ -605,6 +613,8 @@ void PartySetupPage::setupUI() {
 
     leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
     layout->addWidget(leiPicker_);
+
+    WidgetUtils::setupComboBoxes(this);
 }
 
 void PartySetupPage::initializePage() {
@@ -978,6 +988,536 @@ void OrganisationSetupPage::startSyntheticGeneration() {
 }
 
 // ============================================================================
+// ReportSetupPage
+// ============================================================================
+
+namespace {
+
+struct ReportEntry {
+    const char* name;
+    const char* description;
+    const char* schedule;
+};
+
+// Full ORE analytic coverage for a typical trading desk, ordered by
+// natural execution dependency (calibration → curves → valuation →
+// market risk → counterparty risk → scenario analysis → regulatory capital).
+// All use report_type="risk" and concurrency_policy="skip".
+constexpr std::array<ReportEntry, 28> k_default_reports{{
+    // --- Market data & calibration (5-6 am) ----------------------------
+    {.name = "Model Calibration",
+     .description =
+         "Calibrates interest rate, FX, and volatility models "
+         "(LGM, Hull-White, SABR, Black-Scholes) to live market data. "
+         "Outputs calibrated parameters and fit quality metrics (RMSE). "
+         "Must run before exposure simulation, XVA, and sensitivity "
+         "analytics that depend on calibrated model parameters.",
+     .schedule = "0 5 * * 1-5"},
+    {.name = "Yield Curves",
+     .description =
+         "Bootstraps discount and projection yield curves from market "
+         "instruments (deposits, FRAs, swaps, OIS, bonds). Outputs the "
+         "full term structure of interest rates used by all pricing "
+         "engines. Essential prerequisite for NPV, sensitivity, and "
+         "Monte Carlo exposure analytics.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Credit Curves",
+     .description =
+         "Bootstraps credit default swap (CDS) spread curves for "
+         "counterparties and reference entities. Outputs survival "
+         "probability and hazard rate term structures. Used by CVA, "
+         "DVA, CRIF, and SIMM calculations as the credit risk input.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Correlation",
+     .description =
+         "Computes and outputs the correlation matrix between risk "
+         "factors across all asset classes (rates, FX, equity, credit, "
+         "commodities). Used as the covariance input for parametric "
+         "VaR, SIMM initial margin, and scenario generation.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Scenario Generation",
+     .description =
+         "Generates Monte Carlo scenario paths across the simulation "
+         "date grid using calibrated stochastic models. Produces the "
+         "scenario cube consumed downstream by counterparty exposure, "
+         "XVA, dynamic initial margin, and historical simulation VaR "
+         "analytics.",
+     .schedule = "0 6 * * 1-5"},
+    // --- Core valuation (6-7 am) ----------------------------------------
+    {.name = "Portfolio NPV",
+     .description =
+         "Daily mark-to-market net present value of the entire portfolio "
+         "in base reporting currency. Produces trade-level and "
+         "portfolio-level valuations using today's market data. Primary "
+         "source for P&L reporting, risk management, and the basis for "
+         "regulatory capital calculations.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Cashflow Report",
+     .description =
+         "Projects and outputs the complete scheduled cash flow profile "
+         "for all live trades: fixed and floating coupons, notional "
+         "exchanges, and option exercise payoffs, broken down by date, "
+         "counterparty, and currency. Used for liquidity planning, "
+         "funding cost analysis, and collateral management.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "Portfolio Details",
+     .description =
+         "Detailed breakdown of all live portfolio positions including "
+         "trade attributes, notional, maturity, product type, pricing "
+         "model, and book or portfolio allocation. Supports portfolio "
+         "management reporting, limit monitoring, and regulatory "
+         "position reporting.",
+     .schedule = "0 6 * * 1-5"},
+    {.name = "CRIF",
+     .description =
+         "Generates the Common Risk Interchange Format (CRIF) "
+         "sensitivity file from trade-level sensitivities. CRIF is the "
+         "standardised input format required by the ISDA SIMM margin "
+         "model. Covers interest rate, FX, equity, credit qualifying, "
+         "credit non-qualifying, and commodity risk classes.",
+     .schedule = "0 7 * * 1-5"},
+    // --- Market risk (7-8 am) --------------------------------------------
+    {.name = "Market Risk Sensitivities",
+     .description =
+         "First and second order sensitivities by risk factor. Delta "
+         "measures exposure to parallel rate or price shifts; Gamma "
+         "captures convexity; Vega measures exposure to implied "
+         "volatility. Outputs par and zero sensitivities with optional "
+         "Jacobian transformation for hedge ratio computation. Core "
+         "input for VaR, hedging, and limit monitoring.",
+     .schedule = "0 7 * * 1-5"},
+    {.name = "Sensitivity Stress",
+     .description =
+         "Sensitivities recomputed under each predefined stress "
+         "scenario, showing how the delta and vega profile shifts under "
+         "adverse market conditions. Supports stressed limits monitoring "
+         "and hedging strategy review under crisis market conditions.",
+     .schedule = "0 7 * * 1-5"},
+    {.name = "P&L Report",
+     .description =
+         "Daily profit and loss by book, portfolio, and product type. "
+         "Decomposes P&L into new deals, matured deals, cash flows "
+         "received, and MTM change from market moves. Provides the "
+         "authoritative P&L number for front office, finance, and risk "
+         "management sign-off.",
+     .schedule = "0 7 * * 1-5"},
+    {.name = "P&L Attribution",
+     .description =
+         "P&L bridge report decomposing the daily MTM change into "
+         "contributions from individual risk factors: delta P&L (rate "
+         "and price moves), gamma P&L (convexity), theta (time decay), "
+         "vega (volatility change), and unexplained residual. Essential "
+         "for model validation, controller sign-off, and regulatory "
+         "P&L explain under FRTB.",
+     .schedule = "0 7 * * 1-5"},
+    // --- Counterparty risk (8-9 am) --------------------------------------
+    {.name = "Counterparty Exposure",
+     .description =
+         "Monte Carlo simulation of future counterparty credit exposure "
+         "across the portfolio lifetime. Computes Expected Positive "
+         "Exposure (EPE) and Expected Negative Exposure (ENE) profiles "
+         "per netting set at each simulation date. Prerequisite for "
+         "CVA, DVA, FVA, and Dynamic Initial Margin calculations.",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "Potential Future Exposure",
+     .description =
+         "Potential Future Exposure (PFE) at specified confidence levels "
+         "(typically 95% and 99%) over the simulation horizon. Outputs "
+         "peak PFE and PFE profiles by counterparty and netting set. "
+         "Used for credit line utilisation monitoring, internal capital "
+         "allocation, and regulatory IMM model validation.",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "CVA/DVA Report",
+     .description =
+         "Credit Valuation Adjustment (CVA) and Debit Valuation "
+         "Adjustment (DVA) calculated from simulated exposure profiles "
+         "and bootstrapped credit curves. Includes Funding Valuation "
+         "Adjustment (FVA) for uncollateralised portfolios and "
+         "Collateral Valuation Adjustment (COLVA) where applicable. "
+         "Primary XVA P&L and pricing adjustment report.",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "XVA Sensitivities",
+     .description =
+         "First and second order sensitivities of all XVA components "
+         "(CVA, DVA, FVA, COLVA) to underlying market risk factors. "
+         "Enables XVA hedging strategy construction, XVA desk limits "
+         "monitoring, and attribution of XVA P&L to individual market "
+         "moves.",
+     .schedule = "0 8 * * 1-5"},
+    {.name = "XVA Explain",
+     .description =
+         "XVA P&L attribution decomposing the daily change in "
+         "CVA/DVA/FVA into contributions from new deals, matured deals, "
+         "passage of time (theta), and market moves per risk factor "
+         "class. Supports XVA desk P&L explain, model validation, and "
+         "regulatory audit trails.",
+     .schedule = "0 8 * * 1-5"},
+    // --- Scenario analysis (9-10 am) -------------------------------------
+    {.name = "Stress Test",
+     .description =
+         "Portfolio P&L under a library of predefined stress scenarios, "
+         "including historical crises (2008 financial crisis, 2020 "
+         "COVID shock, 1997 Asian crisis) and hypothetical shocks "
+         "(parallel rate +200bps, equity -30%, credit spreads +500bps, "
+         "FX devaluation). Outputs NPV and P&L change by book and "
+         "counterparty for each scenario.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "XVA Stress",
+     .description =
+         "XVA components recomputed under predefined market stress "
+         "scenarios. Shows how CVA, DVA, and FVA change under adverse "
+         "conditions such as counterparty credit spread widening, "
+         "funding cost increases, or market volatility spikes. Used for "
+         "stressed regulatory capital requirements and XVA risk limits.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "Value at Risk",
+     .description =
+         "Parametric (delta-gamma-normal) Value-at-Risk using the "
+         "sensitivity vector and historical covariance matrix. Computes "
+         "1-day and 10-day VaR at 95% and 99% confidence levels with "
+         "risk class breakdown. Suitable for FRTB standardised approach "
+         "capital requirements and internal risk limits monitoring.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "Historical Simulation VaR",
+     .description =
+         "Full revaluation Value-at-Risk using historical market data "
+         "scenarios (typically 1-3 years of daily observations). "
+         "Captures non-linear payoffs and fat tails better than "
+         "parametric VaR. Includes Expected Shortfall (CVaR) at "
+         "97.5%. Provides the basis for Internal Models Approach (IMA) "
+         "capital models under FRTB.",
+     .schedule = "0 9 * * 1-5"},
+    // --- Margin (9-10 am) ------------------------------------------------
+    {.name = "Dynamic Initial Margin",
+     .description =
+         "Model-based Dynamic Initial Margin (DIM) calculated from the "
+         "simulated exposure cube using regression against market "
+         "scenarios. Captures how initial margin requirements evolve "
+         "over the netting set lifetime. Feeds directly into Margin "
+         "Valuation Adjustment (MVA) within the XVA framework.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "SIMM Initial Margin",
+     .description =
+         "ISDA SIMM (Standard Initial Margin Model) regulatory margin "
+         "per netting set. Aggregates CRIF sensitivities across "
+         "interest rate, credit, equity, FX, and commodity risk classes "
+         "using the prescribed SIMM methodology. Required for "
+         "non-cleared derivatives under BCBS/IOSCO Phase 6 margin "
+         "rules.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "Initial Margin Schedule",
+     .description =
+         "Schedule-based initial margin using the simplified BCBS/IOSCO "
+         "gross notional schedule method. Provides a conservative "
+         "regulatory floor for initial margin obligations without "
+         "sensitivity computation. Applicable to smaller counterparty "
+         "relationships below the SIMM calculation threshold.",
+     .schedule = "0 9 * * 1-5"},
+    // --- Regulatory capital (10-11 am) -----------------------------------
+    {.name = "SA-CVA",
+     .description =
+         "Standardised CVA (SA-CVA) regulatory capital charge per "
+         "Basel IV / CRR3. Aggregates CVA delta and vega sensitivities "
+         "across risk classes using supervisory prescribed delta factors "
+         "and correlation matrices. Produces the CVA risk capital "
+         "requirement for institutions that elect or are required to "
+         "use the SA-CVA approach under FRTB.",
+     .schedule = "0 10 * * 1-5"},
+    {.name = "BA-CVA",
+     .description =
+         "Basic CVA (BA-CVA) regulatory capital charge, the simplified "
+         "alternative to SA-CVA under Basel IV. Computes capital using "
+         "supervisory EAD, maturity, and credit risk weights without "
+         "full sensitivity computation. Applicable to institutions "
+         "below the material CVA portfolio threshold for SA-CVA.",
+     .schedule = "0 10 * * 1-5"},
+    {.name = "SA-CCR",
+     .description =
+         "Standardised Approach for Counterparty Credit Risk (SA-CCR) "
+         "Exposure-at-Default (EAD) calculation per Basel III/IV. "
+         "Applies supervisory delta, maturity factor, and supervisory "
+         "factor to each netting set. Required for Risk-Weighted Asset "
+         "(RWA) and leverage ratio calculations. Replaces the legacy "
+         "Current Exposure Method (CEM).",
+     .schedule = "0 10 * * 1-5"},
+}};
+
+} // anonymous namespace
+
+ReportSetupPage::ReportSetupPage(TenantProvisioningWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Report Definitions"));
+    setSubTitle(tr("Optionally create a set of standard risk report definitions "
+                   "for your tenant. You can add, modify, or remove these later "
+                   "from the Reporting menu."));
+
+    setupUI();
+}
+
+void ReportSetupPage::setupUI() {
+    auto* layout = new QVBoxLayout(this);
+    layout->setSpacing(8);
+
+    auto* infoLabel = new QLabel(
+        tr("Select the report definitions to create. All reports are "
+           "scheduled on weekdays and use the 'skip' concurrency policy "
+           "(new runs are skipped while a prior run is still in progress)."),
+        this);
+    infoLabel->setWordWrap(true);
+    layout->addWidget(infoLabel);
+
+    layout->addSpacing(6);
+
+    // Select All / Deselect All buttons
+    auto* btnLayout = new QHBoxLayout();
+    auto* selectAllBtn = new QPushButton(tr("Select All"), this);
+    auto* deselectAllBtn = new QPushButton(tr("Deselect All"), this);
+    selectAllBtn->setMaximumWidth(120);
+    deselectAllBtn->setMaximumWidth(120);
+    btnLayout->addWidget(selectAllBtn);
+    btnLayout->addWidget(deselectAllBtn);
+    btnLayout->addStretch();
+    layout->addLayout(btnLayout);
+
+    reportList_ = new QListWidget(this);
+    reportList_->setSpacing(2);
+    reportList_->setAlternatingRowColors(true);
+
+    for (const auto& entry : k_default_reports) {
+        auto* item = new QListWidgetItem(reportList_);
+        item->setCheckState(Qt::Checked);
+
+        // Two-line display: name (bold) + description
+        item->setText(QString("%1\n%2")
+            .arg(QString::fromUtf8(entry.name))
+            .arg(QString::fromUtf8(entry.description)));
+        item->setData(Qt::UserRole, QString::fromUtf8(entry.name));
+        item->setData(Qt::UserRole + 1, QString::fromUtf8(entry.description));
+        item->setData(Qt::UserRole + 2, QString::fromUtf8(entry.schedule));
+        reportList_->addItem(item);
+    }
+
+    layout->addWidget(reportList_);
+
+    connect(selectAllBtn, &QPushButton::clicked, this, [this]() {
+        for (int i = 0; i < reportList_->count(); ++i) {
+            reportList_->item(i)->setCheckState(Qt::Checked);
+        }
+    });
+
+    connect(deselectAllBtn, &QPushButton::clicked, this, [this]() {
+        for (int i = 0; i < reportList_->count(); ++i) {
+            reportList_->item(i)->setCheckState(Qt::Unchecked);
+        }
+    });
+}
+
+bool ReportSetupPage::validatePage() {
+    std::vector<TenantProvisioningWizard::ReportSpec> selected;
+    for (int i = 0; i < reportList_->count(); ++i) {
+        const auto* item = reportList_->item(i);
+        if (item->checkState() == Qt::Checked) {
+            TenantProvisioningWizard::ReportSpec spec;
+            spec.name = item->data(Qt::UserRole).toString().toStdString();
+            spec.description = item->data(Qt::UserRole + 1).toString().toStdString();
+            spec.schedule_expression = item->data(Qt::UserRole + 2).toString().toStdString();
+            spec.report_type = "risk";
+            spec.concurrency_policy = "skip";
+            selected.push_back(std::move(spec));
+        }
+    }
+    wizard_->setSelectedReports(std::move(selected));
+    return true;
+}
+
+int ReportSetupPage::nextId() const {
+    // Count checked items
+    int checked = 0;
+    for (int i = 0; i < reportList_->count(); ++i) {
+        if (reportList_->item(i)->checkState() == Qt::Checked) {
+            ++checked;
+        }
+    }
+    return checked > 0
+        ? TenantProvisioningWizard::Page_ReportInstall
+        : TenantProvisioningWizard::Page_Summary;
+}
+
+// ============================================================================
+// ReportInstallPage
+// ============================================================================
+
+ReportInstallPage::ReportInstallPage(TenantProvisioningWizard* wizard)
+    : QWizardPage(wizard), wizard_(wizard) {
+
+    setTitle(tr("Creating Report Definitions"));
+    setFinalPage(false);
+
+    auto* layout = new QVBoxLayout(this);
+
+    statusLabel_ = new QLabel(tr("Starting..."), this);
+    statusLabel_->setStyleSheet("font-weight: bold;");
+    layout->addWidget(statusLabel_);
+
+    progressBar_ = new QProgressBar(this);
+    progressBar_->setRange(0, 0);
+    progressBar_->setTextVisible(false);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
+    layout->addWidget(progressBar_);
+
+    logOutput_ = new QTextEdit(this);
+    logOutput_->setReadOnly(true);
+    logOutput_->setFont(FontUtils::monospace());
+    layout->addWidget(logOutput_);
+}
+
+bool ReportInstallPage::isComplete() const {
+    return installComplete_;
+}
+
+void ReportInstallPage::initializePage() {
+    installComplete_ = false;
+    installSuccess_ = false;
+    logOutput_->clear();
+    statusLabel_->setText(tr("Creating report definitions..."));
+    progressBar_->setRange(0, 0);
+    progressBar_->setStyleSheet(
+        "QProgressBar { border: 1px solid #3d3d3d; border-radius: 3px; "
+        "background: #2d2d2d; height: 20px; }"
+        "QProgressBar::chunk { background-color: #4a9eff; }");
+
+    startInstall();
+}
+
+void ReportInstallPage::appendLog(const QString& message) {
+    logOutput_->append(message);
+    auto cursor = logOutput_->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    logOutput_->setTextCursor(cursor);
+}
+
+void ReportInstallPage::startInstall() {
+    const auto specs = wizard_->selectedReports();
+    const std::string username = wizard_->clientManager()->currentUsername();
+    ClientManager* clientManager = wizard_->clientManager();
+
+    BOOST_LOG_SEV(lg(), info) << "Creating " << specs.size()
+                              << " report definitions";
+
+    appendLog(tr("Looking up system party..."));
+
+    struct InstallResult {
+        bool success = false;
+        int created = 0;
+        std::string error;
+    };
+
+    auto* watcher = new QFutureWatcher<InstallResult>(this);
+    connect(watcher, &QFutureWatcher<InstallResult>::finished,
+            [this, watcher]() {
+        const auto result = watcher->result();
+        watcher->deleteLater();
+
+        progressBar_->setRange(0, 1);
+        progressBar_->setValue(1);
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Report install failed: "
+                                       << result.error;
+            statusLabel_->setText(tr("Failed to create report definitions."));
+            appendLog(tr("ERROR: %1").arg(
+                QString::fromStdString(result.error)));
+            progressBar_->setStyleSheet(
+                "QProgressBar::chunk { background-color: #cc0000; }");
+            installSuccess_ = false;
+        } else {
+            BOOST_LOG_SEV(lg(), info) << "Created " << result.created
+                                      << " report definitions";
+            statusLabel_->setText(
+                tr("Created %1 report definition(s) successfully.")
+                    .arg(result.created));
+            installSuccess_ = true;
+        }
+
+        installComplete_ = true;
+        emit completeChanged();
+    });
+
+    QFuture<InstallResult> future = QtConcurrent::run(
+        [clientManager, specs, username]() -> InstallResult {
+            InstallResult result;
+
+            // Step 1: find system party
+            refdata::messaging::get_parties_request partiesReq;
+            partiesReq.limit = 10;
+            auto partiesRes = clientManager->process_authenticated_request(
+                std::move(partiesReq));
+
+            if (!partiesRes || partiesRes->parties.empty()) {
+                result.error = "No parties found; cannot assign report definitions.";
+                return result;
+            }
+
+            // Use the System-category party (root, no parent). Fall back to first.
+            boost::uuids::uuid partyId = partiesRes->parties.front().id;
+            for (const auto& p : partiesRes->parties) {
+                if (p.party_category == "System") {
+                    partyId = p.id;
+                    break;
+                }
+            }
+
+            // Step 2: create each selected report definition
+            boost::uuids::random_generator gen;
+            namespace reason = ores::database::domain::change_reason_constants;
+
+            for (const auto& spec : specs) {
+                reporting::domain::report_definition def;
+                def.id = gen();
+                def.name = spec.name;
+                def.description = spec.description;
+                def.report_type = spec.report_type;
+                def.schedule_expression = spec.schedule_expression;
+                def.concurrency_policy = spec.concurrency_policy;
+                def.party_id = partyId;
+                def.modified_by = username;
+                def.performed_by = username;
+                def.change_reason_code =
+                    std::string(reason::codes::new_record);
+                def.change_commentary =
+                    "Created during tenant provisioning";
+
+                reporting::messaging::save_report_definition_request req;
+                req.definition = std::move(def);
+
+                auto res = clientManager->process_authenticated_request(
+                    std::move(req));
+
+                if (!res || !res->success) {
+                    result.error = "Failed to create '" + spec.name + "': " +
+                        (res ? res->message : "no server response");
+                    return result;
+                }
+
+                ++result.created;
+            }
+
+            result.success = true;
+            return result;
+        }
+    );
+
+    watcher->setFuture(future);
+
+    appendLog(tr("Creating %1 report definition(s)...")
+        .arg(static_cast<int>(specs.size())));
+}
+
+// ============================================================================
 // ApplyAndSummaryPage
 // ============================================================================
 
@@ -1054,6 +1594,17 @@ void ApplyAndSummaryPage::initializePage() {
             summary += tr("<p><b>Organisation data:</b> Business units, portfolios, "
                           "and trading books published.</p>");
         }
+    }
+
+    const auto& reports = wizard_->selectedReports();
+    if (!reports.empty()) {
+        summary += tr("<p><b>Report definitions created (%1):</b></p><ul>")
+            .arg(static_cast<int>(reports.size()));
+        for (const auto& r : reports) {
+            summary += tr("<li>%1</li>")
+                .arg(QString::fromStdString(r.name));
+        }
+        summary += tr("</ul>");
     }
 
     summary += tr("<p>The bootstrap mode flag has been cleared. This wizard "

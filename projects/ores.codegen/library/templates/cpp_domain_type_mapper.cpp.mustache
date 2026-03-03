@@ -39,6 +39,9 @@ domain::{{entity_singular}}
 {{#is_optional_uuid}}
     r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
 {{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
+{{/is_optional_timestamp}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
@@ -83,6 +86,9 @@ domain::{{entity_singular}}
 {{#is_optional_uuid}}
     r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.{{name}})) : std::nullopt;
 {{/is_optional_uuid}}
+{{#is_optional_timestamp}}
+    r.{{name}} = v.{{name}}.has_value() ? std::optional(timepoint_to_timestamp(*v.{{name}}, lg())) : std::nullopt;
+{{/is_optional_timestamp}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.empty() ? std::nullopt : std::optional(v.{{name}});
 {{/is_nullable_string}}

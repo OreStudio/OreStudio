@@ -1137,9 +1137,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for col in domain_entity['columns']:
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
+                is_timestamp_type = col.get('type') == 'timestamp'
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
-                col['is_nullable_string'] = col.get('nullable', False) and not is_uuid_type
+                col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)
+                col['is_nullable_string'] = col.get('nullable', False) and not is_uuid_type and not is_timestamp_type
                 col['is_simple'] = not col.get('nullable', False) and not is_uuid_type
                 col['iter_var'] = iter_var
         if 'natural_keys' in domain_entity:

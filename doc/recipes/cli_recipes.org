@@ -59,12 +59,12 @@ Logging:
 
 Domains:
 
-   currencies     Manage currencies (import, export, list, delete, add).
-   accounts       Manage accounts (list, delete, add).
-   feature-flags  Manage feature flags (list, delete, add).
-   login-info     View login tracking information (list).
+   refdata        Reference data: currencies, countries.
+   iam            Identity and access management: accounts, roles, permissions, login-info.
+   dq             Data quality: change-reasons, change-reason-categories.
+   variability    Feature flags and variability: feature-flags.
 
-For entity and operation specific options, use: <entity> <operation> --help
+For entity and operation specific options, use: <domain> <entity> <operation> --help
 #+end_src
 
 *** Version
@@ -1622,7 +1622,7 @@ Change reason category management operations from the [[id:8A2B3C4D-5E6F-7A8B-9C
 Show available operations for change reason categories.
 
 #+begin_src sh :wrap src text
-./ores.cli change-reason-categories --help
+./ores.cli dq change-reason-categories --help
 #+end_src
 
 *** List
@@ -1633,7 +1633,7 @@ List change reason categories from the database.
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reason-categories list ${db_args} ${log_args} --format json | jq .
+./ores.cli dq change-reason-categories list ${db_args} ${log_args} --format json | jq .
 #+end_src
 
 #+RESULTS:
@@ -1670,7 +1670,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh :wrap src org
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reason-categories list ${db_args} ${log_args} --format table
+./ores.cli dq change-reason-categories list ${db_args} ${log_args} --format table
 #+end_src
 
 #+RESULTS:
@@ -1691,7 +1691,7 @@ export ORES_CLI_DB_PASSWORD
 
 #+begin_src sh
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reason-categories list ${db_args} ${log_args} \
+./ores.cli dq change-reason-categories list ${db_args} ${log_args} \
   --format json --key "common" | jq .
 #+end_src
 
@@ -1715,7 +1715,7 @@ Delete a change reason category by code.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reason-categories delete ${db_args} ${log_args} \
+./ores.cli dq change-reason-categories delete ${db_args} ${log_args} \
   --key "test_category"
 #+end_src
 
@@ -1730,7 +1730,7 @@ Add a new change reason category.
 
 #+begin_src sh :wrap src text
 export ORES_CLI_DB_PASSWORD
-./ores.cli change-reason-categories add ${db_args} ${log_args} \
+./ores.cli dq change-reason-categories add ${db_args} ${log_args} \
   --code "test_category" \
   --description "Test category for CLI demonstration" \
   --recorded-by admin \

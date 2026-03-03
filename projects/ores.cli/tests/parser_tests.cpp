@@ -276,7 +276,7 @@ TEST_CASE("test_missing_required_export_args", tags) {
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"refdata", "currencies", "list"};
+    std::vector<std::string> args = {"refdata", "currencies", "export"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }

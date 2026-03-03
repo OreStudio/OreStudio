@@ -19,6 +19,7 @@
  */
 #include "ores.reporting/domain/report_instance_table.hpp"
 
+#include <array>
 #include <ctime>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
@@ -31,9 +32,9 @@ std::string format_timepoint(
     const std::optional<std::chrono::system_clock::time_point>& tp) {
     if (!tp) return "N/A";
     const std::time_t t = std::chrono::system_clock::to_time_t(*tp);
-    char buf[32];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
-    return buf;
+    std::array<char, 32> buf{};
+    std::strftime(buf.data(), buf.size(), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
+    return buf.data();
 }
 
 }

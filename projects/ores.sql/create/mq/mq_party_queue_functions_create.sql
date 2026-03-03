@@ -27,16 +27,36 @@
 --
 --   queue name = {codename}_{suffix}
 --
--- The session variable app.visible_party_ids (a uuid[]) is set by the
--- connection pool on every request and drives the filter:
+-- Access rules (evaluated in order):
 --
---   * NULL or empty array  → super-admin / system context: all queues visible.
---   * Non-empty array      → only queues whose name starts with the codename of
---                            a party in the visible set are returned.
+--   1. Actor has the 'SuperAdmin' role  → all queues visible.
+--   2. app.visible_party_ids is non-empty → only queues whose name starts with
+--      the codename of a party in the visible set are returned.
+--   3. Otherwise (no party selected, not super-admin) → no queues returned.
 --
--- All three functions use SECURITY DEFINER so they can read
--- ores_refdata_parties_tbl regardless of the caller's role.
+-- All three functions use SECURITY DEFINER so they can read the IAM and
+-- refdata tables regardless of the caller's role.
 -- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- Internal helper: returns true when the current actor has the SuperAdmin role.
+-- ---------------------------------------------------------------------------
+create or replace function ores_mq_actor_is_super_admin_fn()
+returns boolean
+language plpgsql stable security definer
+as $$
+begin
+    return exists (
+        select 1
+        from ores_iam_accounts_tbl a
+        join ores_iam_account_roles_tbl ar on ar.account_id = a.id
+          and ar.valid_to = ores_utility_infinity_timestamp_fn()
+        join ores_iam_roles_tbl r on r.id = ar.role_id
+        where a.username = ores_iam_current_actor_fn()
+          and r.name = 'SuperAdmin'
+    );
+end;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- ores_mq_list_party_queues_fn
@@ -55,27 +75,32 @@ as $$
 declare
     v_visible_ids uuid[];
 begin
-    v_visible_ids := ores_iam_visible_party_ids_fn();
-
-    -- Super-admin / system context: no party filter, return all queues.
-    if v_visible_ids is null or array_length(v_visible_ids, 1) is null then
+    -- SuperAdmin sees all queues regardless of party selection.
+    if ores_mq_actor_is_super_admin_fn() then
         return query
             select q.queue_name::text, q.created_at, q.is_unlogged, q.is_partitioned
             from pgmq.list_queues() q;
         return;
     end if;
 
+    v_visible_ids := ores_iam_visible_party_ids_fn();
+
     -- Party context: return only queues prefixed by the codename of a visible party.
-    return query
-        select q.queue_name::text, q.created_at, q.is_unlogged, q.is_partitioned
-        from pgmq.list_queues() q
-        where exists (
-            select 1
-            from ores_refdata_parties_tbl p
-            where p.id = any(v_visible_ids)
-              and p.valid_to = ores_utility_infinity_timestamp_fn()
-              and q.queue_name like p.codename || '_%'
-        );
+    if v_visible_ids is not null and array_length(v_visible_ids, 1) is not null then
+        return query
+            select q.queue_name::text, q.created_at, q.is_unlogged, q.is_partitioned
+            from pgmq.list_queues() q
+            where exists (
+                select 1
+                from ores_refdata_parties_tbl p
+                where p.id = any(v_visible_ids)
+                  and p.valid_to = ores_utility_infinity_timestamp_fn()
+                  and q.queue_name like p.codename || '_%'
+            );
+        return;
+    end if;
+
+    -- No party selected and not super-admin: return nothing.
 end;
 $$;
 
@@ -98,10 +123,8 @@ as $$
 declare
     v_visible_ids uuid[];
 begin
-    v_visible_ids := ores_iam_visible_party_ids_fn();
-
-    -- Super-admin / system context: no party filter, return all metrics.
-    if v_visible_ids is null or array_length(v_visible_ids, 1) is null then
+    -- SuperAdmin sees all queue metrics regardless of party selection.
+    if ores_mq_actor_is_super_admin_fn() then
         return query
             select m.queue_name::text, m.queue_length, m.newest_msg_age_sec,
                    m.oldest_msg_age_sec, m.total_messages, m.scrape_time
@@ -109,18 +132,25 @@ begin
         return;
     end if;
 
+    v_visible_ids := ores_iam_visible_party_ids_fn();
+
     -- Party context: return only metrics for queues belonging to visible parties.
-    return query
-        select m.queue_name::text, m.queue_length, m.newest_msg_age_sec,
-               m.oldest_msg_age_sec, m.total_messages, m.scrape_time
-        from pgmq.metrics_all() m
-        where exists (
-            select 1
-            from ores_refdata_parties_tbl p
-            where p.id = any(v_visible_ids)
-              and p.valid_to = ores_utility_infinity_timestamp_fn()
-              and m.queue_name like p.codename || '_%'
-        );
+    if v_visible_ids is not null and array_length(v_visible_ids, 1) is not null then
+        return query
+            select m.queue_name::text, m.queue_length, m.newest_msg_age_sec,
+                   m.oldest_msg_age_sec, m.total_messages, m.scrape_time
+            from pgmq.metrics_all() m
+            where exists (
+                select 1
+                from ores_refdata_parties_tbl p
+                where p.id = any(v_visible_ids)
+                  and p.valid_to = ores_utility_infinity_timestamp_fn()
+                  and m.queue_name like p.codename || '_%'
+            );
+        return;
+    end if;
+
+    -- No party selected and not super-admin: return nothing.
 end;
 $$;
 
@@ -149,10 +179,16 @@ as $$
 declare
     v_visible_ids uuid[];
 begin
-    v_visible_ids := ores_iam_visible_party_ids_fn();
+    -- SuperAdmin can access samples for any queue.
+    if not ores_mq_actor_is_super_admin_fn() then
+        v_visible_ids := ores_iam_visible_party_ids_fn();
 
-    -- Party context: verify the requested queue is visible before returning data.
-    if v_visible_ids is not null and array_length(v_visible_ids, 1) is not null then
+        -- No party selected and not super-admin: return nothing.
+        if v_visible_ids is null or array_length(v_visible_ids, 1) is null then
+            return;
+        end if;
+
+        -- Party context: verify the requested queue belongs to a visible party.
         if not exists (
             select 1
             from ores_refdata_parties_tbl p

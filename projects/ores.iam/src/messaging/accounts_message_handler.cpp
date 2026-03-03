@@ -110,7 +110,7 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
 
 database::context accounts_message_handler::make_request_context(
     const comms::service::session_info& session) const {
-    return ctx_.with_tenant(session.tenant_id);
+    return ctx_.with_tenant(session.tenant_id, session.username);
 }
 
 accounts_message_handler::handler_result
@@ -125,7 +125,7 @@ accounts_message_handler::handle_message(message_type type,
     // for non-system tenants.
     if (auto pending = sessions_->take_pending_samples(remote_address)) {
         try {
-            auto tenant_ctx = ctx_.with_tenant(pending->tenant_id);
+            auto tenant_ctx = ctx_.with_tenant(pending->tenant_id, "");
             repository::session_repository flush_repo(tenant_ctx);
             flush_repo.insert_samples(pending->session_id,
                 pending->tenant_id.to_uuid(), pending->samples);
@@ -491,7 +491,7 @@ handle_login_request(std::span<const std::byte> payload,
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
                                            << ctx_.tenant_id().to_string();
-                return ctx_.with_tenant(ctx_.tenant_id());
+                return ctx_.with_tenant(ctx_.tenant_id(), "");
             }
         }();
 
@@ -1018,7 +1018,7 @@ handle_create_initial_admin_request(std::span<const std::byte> payload,
             if (hostname.empty()) {
                 BOOST_LOG_SEV(lg(), debug) << "No hostname in principal, using handler tenant: "
                                            << ctx_.tenant_id().to_string();
-                return ctx_.with_tenant(ctx_.tenant_id());
+                return ctx_.with_tenant(ctx_.tenant_id(), "");
             } else {
                 BOOST_LOG_SEV(lg(), debug) << "Looking up tenant by hostname: " << hostname;
                 tenant_id = database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
@@ -1929,7 +1929,7 @@ accounts_message_handler::resolve_role_target(
                 database::service::tenant_context::lookup_by_hostname(ctx_, hostname);
             return database::service::tenant_context::with_tenant(ctx_, tenant_id.to_string());
         } else {
-            return ctx_.with_tenant(ctx_.tenant_id());
+            return ctx_.with_tenant(ctx_.tenant_id(), "");
         }
     }();
 
@@ -2369,7 +2369,7 @@ handle_select_party_request(std::span<const std::byte> payload,
         co_return std::unexpected(ores::utility::serialization::error_code::authentication_failed);
     }
 
-    auto login_ctx = ctx_.with_tenant(session->tenant_id);
+    auto login_ctx = ctx_.with_tenant(session->tenant_id, session->username);
 
     // Validate requested party is assigned to this account
     repository::account_party_repository ap_repo(login_ctx);

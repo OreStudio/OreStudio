@@ -27,6 +27,7 @@
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.platform/environment/environment.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 
@@ -73,7 +74,7 @@ database::database_options test_database_manager::make_database_options() {
 
     return database::database_options {
         .user = environment::environment::get_value_or_default(
-            prefix + "USER", "ores_test_dml_user"),
+            prefix + "USER", std::string(database::service::service_accounts::test_dml)),
         .password = environment::environment::get_value_or_default(
             prefix + "PASSWORD", ""),
         .host = environment::environment::get_value_or_default(

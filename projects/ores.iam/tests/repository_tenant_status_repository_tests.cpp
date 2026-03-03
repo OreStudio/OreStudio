@@ -66,7 +66,7 @@ TEST_CASE("write_single_tenant_status", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     auto ts = make_tenant_status(h);
@@ -80,7 +80,7 @@ TEST_CASE("write_multiple_tenant_statuses", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     std::vector<tenant_status> statuses;
@@ -96,7 +96,7 @@ TEST_CASE("read_latest_tenant_statuses", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     std::vector<tenant_status> written;
@@ -118,7 +118,7 @@ TEST_CASE("read_latest_tenant_status_by_status", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
     auto ts = make_tenant_status(h);
@@ -142,7 +142,7 @@ TEST_CASE("read_nonexistent_tenant_status", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_status_repository repo;
 

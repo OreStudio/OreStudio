@@ -50,7 +50,7 @@ TEST_CASE("write_single_tenant", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -65,7 +65,7 @@ TEST_CASE("write_multiple_tenants", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -80,7 +80,7 @@ TEST_CASE("read_latest_tenants", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -101,7 +101,7 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -127,7 +127,7 @@ TEST_CASE("read_latest_tenant_by_code", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
     tenant_repository repo(sys_ctx);
@@ -152,7 +152,7 @@ TEST_CASE("read_nonexistent_tenant", tags) {
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(
-        ores::utility::uuid::tenant_id::system());
+        ores::utility::uuid::tenant_id::system(), "");
 
     tenant_repository repo(sys_ctx);
 

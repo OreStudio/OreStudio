@@ -179,7 +179,7 @@ context tenant_context::with_tenant(const context& ctx, const std::string& tenan
     const auto tenant_id = resolve_tenant_id(ctx, tenant);
 
     // Create the new context with the resolved tenant ID
-    auto result = ctx.with_tenant(tenant_id);
+    auto result = ctx.with_tenant(tenant_id, "");
 
     // Verify the tenant context works
     verify_tenant_context(result, tenant_id);

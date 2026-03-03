@@ -23,6 +23,7 @@
 #include <ranges>
 #include <boost/throw_exception.hpp>
 #include "ores.platform/environment/environment.hpp"
+#include "ores.database/service/service_accounts.hpp"
 
 namespace ores::database {
 
@@ -47,7 +48,7 @@ database_configuration::make_options_description() {
     options_description r("Database");
     r.add_options()
         ("db-user",
-            value<std::string>()->default_value("ores_cli_user"),
+            value<std::string>()->default_value(std::string(service::service_accounts::cli)),
             "Database user name.")
         ("db-password",
             value<std::string>()->default_value(""),

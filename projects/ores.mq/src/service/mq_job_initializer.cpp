@@ -22,6 +22,7 @@
 #include <stdexcept>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.database/service/service_accounts.hpp"
 #include "ores.scheduler/builder/job_definition_builder.hpp"
 #include "ores.scheduler/service/cron_scheduler.hpp"
 
@@ -40,7 +41,7 @@ constexpr std::string_view job_name        = "ores.mq.metrics_scrape";
 constexpr std::string_view job_description = "Scrape pgmq queue metrics into ores_mq_metrics_samples_tbl";
 constexpr std::string_view job_command     = "SELECT ores_mq_scrape_metrics_fn()";
 constexpr std::string_view job_schedule    = "* * * * *";
-constexpr std::string_view job_modified_by = "system";
+const std::string_view job_modified_by = database::service::service_accounts::comms;
 
 } // anonymous namespace
 

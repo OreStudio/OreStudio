@@ -19,19 +19,41 @@
  */
 #include "ores.reporting/domain/report_instance_table.hpp"
 
+#include <ctime>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
 namespace ores::reporting::domain {
 
+namespace {
+
+std::string format_timepoint(
+    const std::optional<std::chrono::system_clock::time_point>& tp) {
+    if (!tp) return "N/A";
+    const std::time_t t = std::chrono::system_clock::to_time_t(*tp);
+    char buf[32];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
+    return buf;
+}
+
+}
+
 std::string convert_to_table(const std::vector<report_instance>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header
+          << "ID" << "Name" << "Started At" << "Completed At"
+          << "Version" << "Modified By" << fort::endr;
 
     for (const auto& ri : v) {
-        table << fort::endr;
+        table << boost::uuids::to_string(ri.id)
+              << ri.name
+              << format_timepoint(ri.started_at)
+              << format_timepoint(ri.completed_at)
+              << ri.version
+              << ri.modified_by
+              << fort::endr;
     }
     return table.to_string();
 }

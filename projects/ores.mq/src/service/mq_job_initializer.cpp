@@ -67,7 +67,12 @@ void mq_job_initializer::initialise(const context& ctx,
             "mq_job_initializer: failed to build job definition: " + result.error());
     }
 
-    scheduler::service::cron_scheduler cron(ctx);
+    // Use a party-scoped context so the restrictive SELECT RLS policy
+    // (party_id = ANY(ores_iam_visible_party_ids_fn())) is satisfied
+    // when querying for existing job definitions.
+    const auto party_ctx = ctx.with_party(
+        system_tenant, system_party_id, {system_party_id}, "");
+    scheduler::service::cron_scheduler cron(party_ctx);
 
     const auto existing = cron.get_all_definitions();
     const bool already_exists = std::ranges::any_of(existing,

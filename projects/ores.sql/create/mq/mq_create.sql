@@ -26,3 +26,4 @@
 
 \ir ./mq_metrics_samples_create.sql
 \ir ./mq_scrape_functions_create.sql
+\ir ./mq_party_queue_functions_create.sql

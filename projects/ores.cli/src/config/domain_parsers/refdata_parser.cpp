@@ -23,6 +23,7 @@
 #include "ores.cli/config/parser_exception.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include <algorithm>
 #include <format>
 #include <iomanip>
 
@@ -81,27 +82,56 @@ namespace ores::cli::config::domain_parsers {
                                                   std::ostream& info,
                                                   variables_map& vm) {
 
-        auto o(collect_unrecognized(po.options, include_positional));
+        const std::string entity_name = vm["command"].as<std::string>();
 
-        if (has_help && o.empty()) {
+        // Get remaining args from po - skip domain + entity
+        // po.unrecognized contains all positional args not consumed by top-level parser
+        auto unrecognized = collect_unrecognized(po.options, include_positional);
+
+        // Skip domain + entity - rest is operation + options
+        // unrecognized = [domain, entity, operation, options...]
+        std::vector<std::string> operation_and_options;
+        if (unrecognized.size() > 2) {
+            operation_and_options =
+                std::vector<std::string>(unrecognized.begin() + 2, unrecognized.end());
+        }
+
+        if (has_help && operation_and_options.empty()) {
             print_domain_help(info);
             return {};
         }
 
-        if (o.empty()) {
-            BOOST_THROW_EXCEPTION(
-                parser_exception("refdata domain requires an entity (currencies, countries)"));
+        // Remove --help from operation_and_options if present (has_help is already set)
+        if (has_help) {
+            operation_and_options.erase(
+                std::remove(operation_and_options.begin(), operation_and_options.end(), "--help"),
+                operation_and_options.end());
         }
-
-        const auto entity_name = o.front();
-        o.erase(o.begin());
 
         validate_entity_name(entity_name);
 
+        // Prepend entity name so entity parser can erase it (it expects first element = entity)
+        std::vector<std::string> entity_args_with_name;
+        entity_args_with_name.push_back(entity_name);
+        entity_args_with_name.insert(entity_args_with_name.end(), operation_and_options.begin(),
+                                     operation_and_options.end());
+
+        boost::program_options::options_description desc;
+        desc.add_options()("command", boost::program_options::value<std::string>(), "Command");
+
+        boost::program_options::positional_options_description pos;
+        pos.add("command", -1);
+
+        auto new_po = boost::program_options::command_line_parser(entity_args_with_name)
+                          .options(desc)
+                          .positional(pos)
+                          .allow_unregistered()
+                          .run();
+
         if (entity_name == currencies_command_name) {
-            return entity_parsers::handle_currencies_command(has_help, po, info, vm);
+            return entity_parsers::handle_currencies_command(has_help, new_po, info, vm);
         } else if (entity_name == countries_command_name) {
-            return entity_parsers::handle_countries_command(has_help, po, info, vm);
+            return entity_parsers::handle_countries_command(has_help, new_po, info, vm);
         }
 
         return {};

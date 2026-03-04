@@ -18,5 +18,6 @@
  *
  */
 
+\ir ./scheduler_job_instances_drop.sql
 \ir ./scheduler_job_definitions_notify_trigger_drop.sql
 \ir ./scheduler_job_definitions_drop.sql

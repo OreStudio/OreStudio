@@ -17,17 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.mq/pgmq/queue_info_json_io.hpp"
+#pragma once
 
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.scheduler/service/action_handler.hpp"
 
-namespace ores::mq::pgmq {
+namespace ores::scheduler::service {
 
-std::ostream& operator<<(std::ostream& s, const queue_info& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+/**
+ * @brief Sends a message to an MQ queue on each job firing.
+ *
+ * Handles jobs with action_type == "send_mq_message". The action_payload JSON
+ * must contain: {"queue_id":"<uuid>","message_type":"<str>","payload":{...}}.
+ */
+class mq_action_handler final : public action_handler {
+public:
+    [[nodiscard]] std::string_view action_type() const noexcept override {
+        return "send_mq_message";
+    }
 
-}
+    boost::asio::awaitable<std::expected<void, std::string>>
+    execute(const action_context& ctx) override;
+};
+
+} // namespace ores::scheduler::service

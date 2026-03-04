@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,19 +17,6 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_QUEUE_INFO_JSON_IO_HPP
-#define ORES_MQ_PGMQ_QUEUE_INFO_JSON_IO_HPP
 
-#include <iosfwd>
-#include "ores.mq/pgmq/queue_info.hpp"
-
-namespace ores::mq::pgmq {
-
-/**
- * @brief Dumps the queue_info object to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const queue_info& v);
-
-}
-
-#endif
+drop function if exists ores_mq_queue_stats_scrape_fn;
+drop table if exists ores_mq_queue_stats_tbl cascade;

@@ -21,20 +21,19 @@
 #define ORES_SCHEDULER_DOMAIN_JOB_DEFINITION_HPP
 
 #include <chrono>
-#include <cstdint>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.scheduler/domain/cron_expression.hpp"
 
 namespace ores::scheduler::domain {
 
 /**
- * @brief Persistent plan for a pg_cron scheduled SQL job.
+ * @brief Persistent plan for an in-process scheduled job.
  *
- * Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
- * cron expression, SQL command, target database, and active state.
+ * Represents a single scheduled task managed by the OreStudio in-process
+ * scheduler. Tracks the job name, cron expression, SQL command or MQ message
+ * payload, and active state.
  */
 struct job_definition final {
     /**
@@ -43,24 +42,17 @@ struct job_definition final {
     boost::uuids::uuid id;
 
     /**
-     * @brief Tenant identifier for multi-tenancy isolation.
+     * @brief Tenant identifier for multi-tenancy isolation. Null for system jobs.
      */
-    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    std::optional<boost::uuids::uuid> tenant_id;
 
     /**
-     * @brief Party that owns this job definition.
+     * @brief Party that owns this job definition. Null for system jobs.
      */
-    boost::uuids::uuid party_id;
+    std::optional<boost::uuids::uuid> party_id;
 
     /**
-     * @brief pg_cron job ID linking to cron.job.jobid.
-     *
-     * Null when the job has not yet been scheduled or has been paused.
-     */
-    std::optional<std::int64_t> cron_job_id;
-
-    /**
-     * @brief Unique name passed to pg_cron.
+     * @brief Unique name for this job.
      */
     std::string job_name;
 
@@ -80,12 +72,18 @@ struct job_definition final {
     cron_expression schedule_expression;
 
     /**
-     * @brief Target PostgreSQL database name.
+     * @brief Type of action to execute on each firing.
      */
-    std::string database_name;
+    std::string action_type = "execute_sql";  // "execute_sql" | "send_mq_message"
 
     /**
-     * @brief False = paused (unscheduled from pg_cron).
+     * @brief JSON payload for the action.
+     * For send_mq_message: {"queue_id":"<uuid>","message_type":"<str>","payload":{}}
+     */
+    std::string action_payload = "{}";
+
+    /**
+     * @brief False = paused (not scheduled).
      */
     bool is_active = false;
 

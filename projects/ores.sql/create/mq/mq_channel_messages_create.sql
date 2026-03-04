@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,26 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_MQ_EXCEPTION_HPP
-#define ORES_MQ_PGMQ_MQ_EXCEPTION_HPP
 
-#include <string>
-#include <stdexcept>
-
-namespace ores::mq::pgmq {
-
-/**
- * @brief Exception thrown by pgmq client operations.
- *
- * Wraps any error returned by the pgmq PostgreSQL extension or encountered
- * while communicating with the database for queue operations.
- */
-class mq_exception : public std::runtime_error {
-public:
-    explicit mq_exception(const std::string& message)
-        : std::runtime_error(message) {}
-};
-
-}
-
-#endif
+-- STUB: populated by chat feature. Structure documented here for schema awareness.
+-- ores_mq_channel_messages_tbl will store persistent multi-reader messages.
+-- Trigger will NOTIFY ores_mq_channel_{queue_id} for real-time delivery.
+-- Schema: id bigserial, queue_id uuid, sender_id uuid, sender_type text (human/system/llm),
+--   message_type text (CHAT_MSG/SYSTEM_ALERT/RICH_DATA), payload jsonb, raw_payload bytea,
+--   created_at timestamptz, PRIMARY KEY (id, created_at).
+-- Hypertable + retention policy added when chat feature is implemented.

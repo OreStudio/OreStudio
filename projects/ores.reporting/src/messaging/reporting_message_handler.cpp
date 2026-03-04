@@ -32,7 +32,7 @@
 #include "ores.reporting/service/report_instance_service.hpp"
 #include "ores.scheduler/service/cron_scheduler.hpp"
 #include "ores.scheduler/domain/cron_expression.hpp"
-#include "ores.refdata/service/party_service.hpp"
+#include "ores.mq/service/mq_service.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -653,27 +653,6 @@ reporting_message_handler::handle_get_report_instance_history_request(
 // Report Scheduling
 // ============================================================================
 
-namespace {
-
-/**
- * @brief Escape single-quote characters for embedding in a SQL string literal.
- *
- * PostgreSQL uses '' (two single quotes) to represent a literal single quote
- * inside a single-quoted string. Used when baking a report name into the
- * pg_cron command SQL (a pgmq.send() call) at scheduling time.
- */
-std::string sql_single_quote_escape(const std::string& s) {
-    std::string result;
-    result.reserve(s.size());
-    for (char c : s) {
-        if (c == '\'') result += "''";
-        else result += c;
-    }
-    return result;
-}
-
-} // anonymous namespace
-
 boost::asio::awaitable<std::expected<std::vector<std::byte>,
     ores::utility::serialization::error_code>>
 reporting_message_handler::handle_schedule_report_definitions_request(
@@ -721,42 +700,51 @@ reporting_message_handler::handle_schedule_report_definitions_request(
             continue;
         }
 
-        // Look up the party to get the codename for the queue name.
-        ores::refdata::service::party_service party_svc(ctx);
-        const auto party = party_svc.find_party(def->party_id);
-        if (!party) {
-            BOOST_LOG_SEV(lg(), error) << "Party not found for report definition: " << id_str;
+        // Look up the per-party report_events queue from ores_mq_queues_tbl.
+        ores::mq::service::mq_service mq_svc(ctx);
+        const auto queue_opt = mq_svc.find_queue(
+            "report_events",
+            std::optional<boost::uuids::uuid>(auth->tenant_id.to_uuid()),
+            std::optional<boost::uuids::uuid>(auth->party_id));
+        if (!queue_opt) {
+            BOOST_LOG_SEV(lg(), error)
+                << "No report_events queue found for party "
+                << auth->party_id << " definition: " << id_str;
             response.success = false;
-            response.message = "Party not found for report definition: " + id_str;
+            response.message = "No report_events queue found for party";
             continue;
         }
-        const std::string queue_name = party->codename + "_report_events";
 
-        // Build the SQL command that pg_cron will execute on each firing.
-        // Posts a message to the per-party pgmq queue. The queue name,
-        // tenant UUID, and report name are baked in at scheduling time;
-        // now() is evaluated at execution time by pg_cron.
-        const std::string tenant_str = auth->tenant_id.to_string();
-        const std::string safe_name = sql_single_quote_escape(def->name);
+        const auto queue_id_str = boost::uuids::to_string(queue_opt->id);
+        const auto def_id_str = id_str;
+
+        // Build the SQL command that the in-process scheduler fires on each
+        // cron tick: sends a report_scheduled message to the MQ queue.
         const std::string command =
-            "SELECT pgmq.send('" + queue_name + "', "
-            "jsonb_build_object("
-            "'report_name', '" + safe_name + "', "
-            "'event', 'scheduled', "
-            "'tenant_id', '" + tenant_str + "', "
-            "'triggered_at', now()::text), 0)";
+            "SELECT ores_mq_messages_send_fn('" + queue_id_str + "'::uuid, "
+            "'report_scheduled', "
+            "jsonb_build_object('report_definition_id', '" + def_id_str + "'))";
+
+        // JSON action payload for the scheduler's send_mq_message action type.
+        const std::string action_payload =
+            "{\"queue_id\":\"" + queue_id_str + "\","
+            "\"message_type\":\"report_scheduled\","
+            "\"payload\":{\"report_definition_id\":\"" + def_id_str + "\"}}";
 
         // Create the job definition. The unique job_name is keyed on the
         // report definition UUID so that re-scheduling the same report
-        // updates the existing pg_cron entry in-place.
+        // updates the existing entry in-place.
         scheduler::domain::job_definition job_def;
         job_def.id = boost::uuids::random_generator()();
-        job_def.tenant_id = auth->tenant_id;
-        job_def.party_id = auth->party_id;
+        job_def.tenant_id = std::optional<boost::uuids::uuid>(
+            auth->tenant_id.to_uuid());
+        job_def.party_id = std::optional<boost::uuids::uuid>(auth->party_id);
         job_def.job_name = "ores:report:" + id_str;
         job_def.description = "Scheduled run for report: " + def->name;
         job_def.command = command;
         job_def.schedule_expression = *cron_expr;
+        job_def.action_type = "send_mq_message";
+        job_def.action_payload = action_payload;
         job_def.is_active = true;
         job_def.modified_by = auth->username;
         job_def.performed_by = auth->username;
@@ -771,7 +759,7 @@ reporting_message_handler::handle_schedule_report_definitions_request(
 
             BOOST_LOG_SEV(lg(), info)
                 << "Scheduled report definition " << id_str
-                << " as pg_cron job " << scheduled.job_name;
+                << " as scheduler job " << scheduled.job_name;
 
             // Link the scheduler job back to the report definition.
             def->scheduler_job_id = scheduled.id;

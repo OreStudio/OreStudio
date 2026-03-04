@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,33 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_QUEUE_INFO_HPP
-#define ORES_MQ_PGMQ_QUEUE_INFO_HPP
 
-#include <chrono>
-#include <string>
-
-namespace ores::mq::pgmq {
-
-/**
- * @brief Metadata about a pgmq queue.
- *
- * Mirrors the pgmq.queue_record composite type returned by pgmq.list_queues().
- */
-struct queue_info final {
-    /// Name of the queue.
-    std::string queue_name;
-
-    /// Timestamp when the queue was created (UTC).
-    std::chrono::system_clock::time_point created_at;
-
-    /// True if the queue was created as UNLOGGED (no WAL, faster but non-durable).
-    bool is_unlogged{false};
-
-    /// True if the queue is partitioned.
-    bool is_partitioned{false};
-};
-
-}
-
-#endif
+drop table if exists ores_mq_message_archive_tbl cascade;

@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,25 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_METRICS_SAMPLE_HPP
-#define ORES_MQ_PGMQ_METRICS_SAMPLE_HPP
 
-#include <chrono>
-#include <cstdint>
-
-namespace ores::mq::pgmq {
-
-/**
- * @brief A single time-series sample from ores_mq_metrics_samples_tbl.
- *
- * Recorded by ores_mq_scrape_metrics_fn() once per minute.
- */
-struct metrics_sample final {
-    std::chrono::system_clock::time_point sample_time;
-    std::int64_t queue_length{0};
-    std::int64_t total_messages{0};
-};
-
-}
-
-#endif
+-- Seed the MQ stats scrape job (system scope, runs every minute)
+insert into ores_scheduler_job_definitions_tbl (
+    id, tenant_id, party_id, job_name, description, command,
+    schedule_expression, action_type, action_payload, is_active,
+    modified_by, performed_by, change_reason_code, change_commentary,
+    valid_from, valid_to
+) values (
+    gen_random_uuid(), NULL, NULL,
+    'ores.mq.metrics_scrape',
+    'Scrape MQ queue stats every minute',
+    'SELECT ores_mq_queue_stats_scrape_fn()',
+    '* * * * *',
+    'execute_sql',
+    '{}',
+    1,
+    'system', 'system', 'system.new_record', '',
+    current_timestamp, ores_utility_infinity_timestamp_fn()
+);

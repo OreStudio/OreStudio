@@ -26,7 +26,6 @@
 #include "ores.comms/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.mq/pgmq/client.hpp"
 
 namespace ores::mq::messaging {
 
@@ -35,7 +34,7 @@ namespace ores::mq::messaging {
  *
  * Processes messages in the MQ subsystem range (0xB000-0xBFFF).
  * Handles queue management (create, drop, purge) and message operations
- * (send, read, pop, delete) by delegating directly to pgmq::client.
+ * (send, read, pop, ack, nack) by delegating to service::mq_service.
  */
 class mq_message_handler final
     : public comms::messaging::tenant_aware_handler {
@@ -65,12 +64,12 @@ private:
 
     boost::asio::awaitable<std::expected<std::vector<std::byte>,
         ores::utility::serialization::error_code>>
-    handle_get_queue_metrics_request(std::span<const std::byte> payload,
+    handle_get_queue_stats_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     boost::asio::awaitable<std::expected<std::vector<std::byte>,
         ores::utility::serialization::error_code>>
-    handle_get_queue_metric_samples_request(std::span<const std::byte> payload,
+    handle_get_queue_stats_samples_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
     boost::asio::awaitable<std::expected<std::vector<std::byte>,
@@ -105,10 +104,18 @@ private:
 
     boost::asio::awaitable<std::expected<std::vector<std::byte>,
         ores::utility::serialization::error_code>>
-    handle_delete_messages_request(std::span<const std::byte> payload,
+    handle_ack_messages_request(std::span<const std::byte> payload,
         const std::string& remote_address);
 
-    pgmq::client client_;
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_nack_message_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
+
+    boost::asio::awaitable<std::expected<std::vector<std::byte>,
+        ores::utility::serialization::error_code>>
+    handle_delete_messages_request(std::span<const std::byte> payload,
+        const std::string& remote_address);
 };
 
 }

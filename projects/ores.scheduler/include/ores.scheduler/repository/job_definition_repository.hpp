@@ -20,7 +20,6 @@
 #ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 #define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
 
-#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -29,7 +28,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.scheduler/domain/job_definition.hpp"
-#include "ores.scheduler/domain/job_instance.hpp"
 
 namespace ores::scheduler::repository {
 
@@ -61,32 +59,17 @@ public:
     std::vector<domain::job_definition>
     read_all(context ctx, const std::string& id);
 
+    /**
+     * @brief Returns all active job definitions regardless of tenant.
+     *
+     * Used by the scheduler_loop to load all jobs it needs to fire.
+     */
+    std::vector<domain::job_definition> read_all_active(context ctx);
+
     std::optional<domain::job_definition>
     find_by_id(context ctx, const boost::uuids::uuid& id);
 
     void remove(context ctx, const std::string& id);
-
-    /**
-     * @brief Sets the cron_job_id on the current active record (raw UPDATE,
-     *        no new bitemporal version).
-     */
-    void update_cron_job_id(context ctx, const boost::uuids::uuid& id,
-                            std::int64_t cron_job_id);
-
-    /**
-     * @brief Clears cron_job_id and sets is_active=0 on the current active
-     *        record (raw UPDATE, no new bitemporal version).
-     */
-    void clear_cron_job_id(context ctx, const boost::uuids::uuid& id);
-
-    /**
-     * @brief Returns pg_cron execution history for the given job definition.
-     *
-     * Queries cron.job_run_details in the postgres database via the
-     * cron_job_id stored on the job definition.
-     */
-    std::vector<domain::job_instance>
-    get_job_history(context ctx, const boost::uuids::uuid& id, std::size_t limit);
 };
 
 }

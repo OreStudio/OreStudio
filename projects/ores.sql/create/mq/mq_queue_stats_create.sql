@@ -19,22 +19,22 @@
  */
 
 -- =============================================================================
--- MQ queue metrics time-series samples.
--- Populated by ores_mq_scrape_metrics_fn() via a pg_cron job.
--- Designed for TimescaleDB hypertable; degrades gracefully to a plain table.
--- Partitioned by sample_time.
+-- MQ queue statistics time-series table.
+-- Populated by ores_mq_queue_stats_scrape_fn() via a pg_cron job.
+-- TimescaleDB hypertable when available; degrades gracefully to a plain table.
+-- Partitioned by recorded_at with 1-day chunks and 30-day retention.
 -- =============================================================================
 
-create table if not exists ores_mq_metrics_samples_tbl (
-    "queue_name"     text                     not null,
-    "sample_time"    timestamp with time zone not null,
-    "queue_length"   bigint                   not null default 0,
-    "total_messages" bigint                   not null default 0,
-    primary key (queue_name, sample_time)
+create table if not exists ores_mq_queue_stats_tbl (
+    recorded_at       timestamptz not null,
+    queue_id          uuid        not null,
+    tenant_id         uuid,
+    party_id          uuid,
+    pending_count     bigint      not null default 0,
+    processing_count  bigint      not null default 0,
+    total_archived    bigint      not null default 0,
+    primary key (queue_id, recorded_at)
 );
-
-create index if not exists ores_mq_metrics_samples_queue_idx
-on ores_mq_metrics_samples_tbl (queue_name, sample_time desc);
 
 do $$
 declare
@@ -50,8 +50,8 @@ begin
         raise notice '=========================================';
 
         perform public.create_hypertable(
-            'ores_mq_metrics_samples_tbl',
-            'sample_time',
+            'ores_mq_queue_stats_tbl',
+            'recorded_at',
             chunk_time_interval => interval '1 day',
             if_not_exists => true
         );
@@ -64,7 +64,7 @@ begin
 
             if current_license = 'timescale' then
                 perform public.add_retention_policy(
-                    'ores_mq_metrics_samples_tbl',
+                    'ores_mq_queue_stats_tbl',
                     drop_after => interval '30 days',
                     if_not_exists => true
                 );
@@ -75,11 +75,32 @@ begin
             end if;
         end;
 
-        raise notice 'TimescaleDB setup complete for ores_mq_metrics_samples_tbl';
+        raise notice 'TimescaleDB setup complete for ores_mq_queue_stats_tbl';
     else
         raise notice '================================================';
         raise notice 'TimescaleDB NOT available - using regular table';
         raise notice '================================================';
-        raise notice 'Note: Manual cleanup of old sample data will be required';
+        raise notice 'Note: Manual cleanup of old stats data will be required';
     end if;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- Scrape function: point-in-time snapshot of all active queue depths
+-- ---------------------------------------------------------------------------
+
+create or replace function ores_mq_queue_stats_scrape_fn() returns void
+language sql security definer
+as $$
+    insert into ores_mq_queue_stats_tbl (
+        recorded_at, queue_id, tenant_id, party_id,
+        pending_count, processing_count, total_archived
+    )
+    select now(), q.id, q.tenant_id, q.party_id,
+        count(*) filter (where m.status = 'pending'),
+        count(*) filter (where m.status = 'processing'),
+        (select count(*) from ores_mq_message_archive_tbl a where a.queue_id = q.id)
+    from ores_mq_queues_tbl q
+    left join ores_mq_messages_tbl m on m.queue_id = q.id
+    where q.is_active = true
+    group by q.id, q.tenant_id, q.party_id;
+$$;

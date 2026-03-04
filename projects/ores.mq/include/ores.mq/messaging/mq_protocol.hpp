@@ -31,9 +31,8 @@
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
-#include "ores.mq/pgmq/metrics_sample.hpp"
-#include "ores.mq/pgmq/queue_info.hpp"
-#include "ores.mq/pgmq/queue_metrics.hpp"
+#include "ores.mq/domain/queue_definition.hpp"
+#include "ores.mq/domain/queue_stats.hpp"
 
 namespace ores::mq::messaging {
 
@@ -42,7 +41,7 @@ namespace ores::mq::messaging {
 // ============================================================================
 
 /**
- * @brief Request to retrieve all pgmq queues.
+ * @brief Request to retrieve all active queues.
  */
 struct get_queues_request final {
     std::vector<std::byte> serialize() const;
@@ -54,12 +53,12 @@ struct get_queues_request final {
 std::ostream& operator<<(std::ostream& s, const get_queues_request& v);
 
 /**
- * @brief Response containing all pgmq queues.
+ * @brief Response containing all active queues.
  */
 struct get_queues_response final {
     bool success{false};
     std::string message;
-    std::vector<pgmq::queue_info> queues;
+    std::vector<domain::queue_definition> queues;
 
     std::vector<std::byte> serialize() const;
     static std::expected<get_queues_response,
@@ -70,116 +69,96 @@ struct get_queues_response final {
 std::ostream& operator<<(std::ostream& s, const get_queues_response& v);
 
 // ============================================================================
-// get_queue_metrics messages
+// get_queue_stats messages
 // ============================================================================
 
 /**
- * @brief Request to retrieve metrics for all pgmq queues.
+ * @brief Request to retrieve statistics for all queues.
  */
-struct get_queue_metrics_request final {
+struct get_queue_stats_request final {
     std::vector<std::byte> serialize() const;
-    static std::expected<get_queue_metrics_request,
+    static std::expected<get_queue_stats_request,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_queue_metrics_request& v);
+std::ostream& operator<<(std::ostream& s, const get_queue_stats_request& v);
 
 /**
- * @brief Response containing metrics for all pgmq queues.
+ * @brief Response containing statistics for all queues.
  */
-struct get_queue_metrics_response final {
+struct get_queue_stats_response final {
     bool success{false};
     std::string message;
-    std::vector<pgmq::queue_metrics> metrics;
+    std::vector<domain::queue_stats> stats;
 
     std::vector<std::byte> serialize() const;
-    static std::expected<get_queue_metrics_response,
+    static std::expected<get_queue_stats_response,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_queue_metrics_response& v);
+std::ostream& operator<<(std::ostream& s, const get_queue_stats_response& v);
 
 // ============================================================================
-// get_queue_metric_samples messages
+// get_queue_stats_samples messages
 // ============================================================================
 
 /**
- * @brief Request to retrieve time-series metric samples for a specific queue.
+ * @brief Request to retrieve time-series statistics samples for a specific queue.
  *
- * Returns rows from ores_mq_metrics_samples_tbl, ordered by sample_time ASC.
  * The optional from/to fields define an inclusive time window. When omitted,
- * all available samples for the queue are returned (capped at 10,000 rows).
+ * all available samples for the queue are returned.
  */
-struct get_queue_metric_samples_request final {
-    std::string queue_name;
+struct get_queue_stats_samples_request final {
+    std::string queue_id;   // UUID as string
     std::optional<std::chrono::system_clock::time_point> from;
     std::optional<std::chrono::system_clock::time_point> to;
 
-    /**
-     * @brief Serialize request to bytes.
-     *
-     * Format:
-     * - 2+N bytes: queue_name (string)
-     * - 1 byte:   has_from flag
-     * - (if has_from) 2+N bytes: from timestamp (ISO UTC string)
-     * - 1 byte:   has_to flag
-     * - (if has_to) 2+N bytes: to timestamp (ISO UTC string)
-     */
     std::vector<std::byte> serialize() const;
-    static std::expected<get_queue_metric_samples_request,
+    static std::expected<get_queue_stats_samples_request,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s,
-    const get_queue_metric_samples_request& v);
+    const get_queue_stats_samples_request& v);
 
 /**
- * @brief Response containing time-series metric samples for a queue.
+ * @brief Response containing time-series statistics samples for a queue.
  */
-struct get_queue_metric_samples_response final {
+struct get_queue_stats_samples_response final {
     bool success{false};
     std::string message;
-    std::string queue_name;
-    std::vector<pgmq::metrics_sample> samples;
+    std::string queue_id;   // UUID as string
+    std::vector<domain::queue_stats> samples;
 
-    /**
-     * @brief Serialize response to bytes.
-     *
-     * Format:
-     * - 1 byte:   success
-     * - 2+N bytes: message (error text, empty on success)
-     * - 2+N bytes: queue_name
-     * - 4 bytes:  sample count
-     * - Per sample:
-     *   - 2+N bytes: sample_time (ISO UTC string)
-     *   - 8 bytes:   queue_length (int64)
-     *   - 8 bytes:   total_messages (int64)
-     */
     std::vector<std::byte> serialize() const;
-    static std::expected<get_queue_metric_samples_response,
+    static std::expected<get_queue_stats_samples_response,
                          ores::utility::serialization::error_code>
     deserialize(std::span<const std::byte> data);
 };
 
 std::ostream& operator<<(std::ostream& s,
-    const get_queue_metric_samples_response& v);
+    const get_queue_stats_samples_response& v);
 
 // ============================================================================
 // Shared wire type for messages read from a queue
 // ============================================================================
 
 /**
- * @brief A single pgmq message as returned over the wire.
+ * @brief A single queue message as returned over the wire.
  */
 struct queue_message final {
     std::int64_t msg_id{0};
-    std::int32_t read_ct{0};
-    std::string enqueued_at;  // ISO UTC string
-    std::string vt;           // ISO UTC visibility timeout string
-    std::string payload;      // Raw JSON body
+    std::string queue_id;       // UUID as string
+    std::string message_type;
+    std::string payload_type;   // "json" or "binary"
+    std::string status;         // "pending", "processing", "done", "failed"
+    std::string created_at;     // ISO UTC string
+    std::string visible_after;  // ISO UTC string
+    std::int32_t read_count{0};
+    std::string payload;        // JSON body when payload_type == "json"
 };
 
 // ============================================================================
@@ -188,7 +167,9 @@ struct queue_message final {
 
 struct create_queue_request final {
     std::string queue_name;
-    bool is_unlogged{false};
+    std::string scope_type;     // "party", "tenant", "system"
+    std::string queue_type;     // "task", "channel"
+    std::string description;
 
     std::vector<std::byte> serialize() const;
     static std::expected<create_queue_request,
@@ -201,6 +182,7 @@ std::ostream& operator<<(std::ostream& s, const create_queue_request& v);
 struct create_queue_response final {
     bool success{false};
     std::string message;
+    std::string queue_id;   // UUID as string, assigned on success
 
     std::vector<std::byte> serialize() const;
     static std::expected<create_queue_response,
@@ -270,8 +252,9 @@ std::ostream& operator<<(std::ostream& s, const purge_queue_response& v);
 // ============================================================================
 
 struct send_message_request final {
-    std::string queue_name;
-    std::string payload;         // Raw JSON body
+    std::string queue_id;       // UUID as string
+    std::string message_type;
+    std::string payload;        // JSON body
     std::int32_t delay_seconds{0};
 
     std::vector<std::byte> serialize() const;
@@ -296,13 +279,13 @@ struct send_message_response final {
 std::ostream& operator<<(std::ostream& s, const send_message_response& v);
 
 // ============================================================================
-// read_messages messages  (non-destructive peek)
+// read_messages messages  (non-destructive peek with visibility lock)
 // ============================================================================
 
 struct read_messages_request final {
-    std::string queue_name;
+    std::string queue_id;       // UUID as string
     std::int32_t count{1};
-    std::int32_t vt_seconds{30};  // visibility timeout extension in seconds
+    std::int32_t vt_seconds{30};
 
     std::vector<std::byte> serialize() const;
     static std::expected<read_messages_request,
@@ -326,11 +309,11 @@ struct read_messages_response final {
 std::ostream& operator<<(std::ostream& s, const read_messages_response& v);
 
 // ============================================================================
-// pop_messages messages  (atomic read + delete)
+// pop_messages messages  (read + immediate ack)
 // ============================================================================
 
 struct pop_messages_request final {
-    std::string queue_name;
+    std::string queue_id;       // UUID as string
     std::int32_t count{1};
 
     std::vector<std::byte> serialize() const;
@@ -355,7 +338,62 @@ struct pop_messages_response final {
 std::ostream& operator<<(std::ostream& s, const pop_messages_response& v);
 
 // ============================================================================
-// delete_messages messages
+// ack_messages messages  (acknowledge / permanently delete)
+// ============================================================================
+
+struct ack_messages_request final {
+    std::vector<std::int64_t> message_ids;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<ack_messages_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const ack_messages_request& v);
+
+struct ack_messages_response final {
+    bool success{false};
+    std::string message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<ack_messages_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const ack_messages_response& v);
+
+// ============================================================================
+// nack_message messages  (negative acknowledge)
+// ============================================================================
+
+struct nack_message_request final {
+    std::int64_t message_id{0};
+    std::string error;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<nack_message_request,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const nack_message_request& v);
+
+struct nack_message_response final {
+    bool success{false};
+    std::string message;
+
+    std::vector<std::byte> serialize() const;
+    static std::expected<nack_message_response,
+                         ores::utility::serialization::error_code>
+    deserialize(std::span<const std::byte> data);
+};
+
+std::ostream& operator<<(std::ostream& s, const nack_message_response& v);
+
+// ============================================================================
+// delete_messages messages (kept for backward compatibility)
 // ============================================================================
 
 struct delete_messages_request final {
@@ -396,19 +434,19 @@ struct message_traits<mq::messaging::get_queues_request> {
 };
 
 template<>
-struct message_traits<mq::messaging::get_queue_metrics_request> {
-    using request_type = mq::messaging::get_queue_metrics_request;
-    using response_type = mq::messaging::get_queue_metrics_response;
+struct message_traits<mq::messaging::get_queue_stats_request> {
+    using request_type = mq::messaging::get_queue_stats_request;
+    using response_type = mq::messaging::get_queue_stats_response;
     static constexpr message_type request_message_type =
-        message_type::get_queue_metrics_request;
+        message_type::get_queue_stats_request;
 };
 
 template<>
-struct message_traits<mq::messaging::get_queue_metric_samples_request> {
-    using request_type = mq::messaging::get_queue_metric_samples_request;
-    using response_type = mq::messaging::get_queue_metric_samples_response;
+struct message_traits<mq::messaging::get_queue_stats_samples_request> {
+    using request_type = mq::messaging::get_queue_stats_samples_request;
+    using response_type = mq::messaging::get_queue_stats_samples_response;
     static constexpr message_type request_message_type =
-        message_type::get_queue_metric_samples_request;
+        message_type::get_queue_stats_samples_request;
 };
 
 template<>
@@ -457,6 +495,22 @@ struct message_traits<mq::messaging::pop_messages_request> {
     using response_type = mq::messaging::pop_messages_response;
     static constexpr message_type request_message_type =
         message_type::pop_messages_request;
+};
+
+template<>
+struct message_traits<mq::messaging::ack_messages_request> {
+    using request_type = mq::messaging::ack_messages_request;
+    using response_type = mq::messaging::ack_messages_response;
+    static constexpr message_type request_message_type =
+        message_type::ack_messages_request;
+};
+
+template<>
+struct message_traits<mq::messaging::nack_message_request> {
+    using request_type = mq::messaging::nack_message_request;
+    using response_type = mq::messaging::nack_message_response;
+    static constexpr message_type request_message_type =
+        message_type::nack_message_request;
 };
 
 template<>

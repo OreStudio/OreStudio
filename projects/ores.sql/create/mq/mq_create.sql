@@ -18,12 +18,11 @@
  *
  */
 
--- =============================================================================
 -- MQ Tables and Functions
--- =============================================================================
--- Time-series samples for queue metrics (hypertable if TimescaleDB is available)
--- and the scrape function invoked by pg_cron to populate those samples.
+-- Custom message queue tables with native RLS, replacing pgmq.
 
-\ir ./mq_metrics_samples_create.sql
-\ir ./mq_scrape_functions_create.sql
-\ir ./mq_party_queue_functions_create.sql
+\ir ./mq_queues_create.sql
+\ir ./mq_messages_create.sql
+\ir ./mq_message_archive_create.sql
+\ir ./mq_queue_stats_create.sql
+\ir ./mq_channel_messages_create.sql

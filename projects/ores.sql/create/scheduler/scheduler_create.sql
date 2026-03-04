@@ -21,11 +21,8 @@
 -- =============================================================================
 -- Scheduler Tables
 -- =============================================================================
--- OreStudio metadata overlay for pg_cron scheduled jobs.
---
--- PREREQUISITE: pg_cron extension must be installed and loaded via
--- shared_preload_libraries in postgresql.conf before creating this schema.
--- See setup_extensions.sql for pg_cron installation instructions.
+-- OreStudio built-in scheduler job definitions and execution history.
 
 \ir ./scheduler_job_definitions_create.sql
 \ir ./scheduler_job_definitions_notify_trigger_create.sql
+\ir ./scheduler_job_instances_create.sql

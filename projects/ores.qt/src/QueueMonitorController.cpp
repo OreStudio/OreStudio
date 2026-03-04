@@ -124,13 +124,15 @@ EntityListMdiWindow* QueueMonitorController::listWindow() const {
     return listWindow_;
 }
 
-void QueueMonitorController::onViewChartRequested(const QString& queueName) {
+void QueueMonitorController::onViewChartRequested(const QString& queueId,
+                                                  const QString& queueName) {
     BOOST_LOG_SEV(lg(), debug) << "View chart requested for: "
                                << queueName.toStdString();
-    showChartWindow(queueName);
+    showChartWindow(queueId, queueName);
 }
 
-void QueueMonitorController::showChartWindow(const QString& queueName) {
+void QueueMonitorController::showChartWindow(const QString& queueId,
+                                             const QString& queueName) {
     const QString key = build_window_key("chart", queueName);
     if (try_reuse_window(key)) {
         BOOST_LOG_SEV(lg(), debug) << "Reusing existing chart window for: "
@@ -138,7 +140,7 @@ void QueueMonitorController::showChartWindow(const QString& queueName) {
         return;
     }
 
-    auto* chartWindow = new QueueChartWindow(queueName, clientManager_);
+    auto* chartWindow = new QueueChartWindow(queueId, queueName, clientManager_);
 
     connect(chartWindow, &QueueChartWindow::statusChanged,
             this, &QueueMonitorController::statusMessage);
@@ -168,13 +170,15 @@ void QueueMonitorController::showChartWindow(const QString& queueName) {
                                << queueName.toStdString();
 }
 
-void QueueMonitorController::onOpenDetailsRequested(const QString& queueName) {
+void QueueMonitorController::onOpenDetailsRequested(
+    const QString& queueId, const QString& queueName) {
     BOOST_LOG_SEV(lg(), debug) << "Open details requested for: "
                                << queueName.toStdString();
-    showDetailWindow(queueName);
+    showDetailWindow(queueId, queueName);
 }
 
-void QueueMonitorController::showDetailWindow(const QString& queueName) {
+void QueueMonitorController::showDetailWindow(
+    const QString& queueId, const QString& queueName) {
     const QString key = build_window_key("details", queueName);
     if (try_reuse_window(key)) {
         BOOST_LOG_SEV(lg(), debug) << "Reusing existing detail window for: "
@@ -182,7 +186,7 @@ void QueueMonitorController::showDetailWindow(const QString& queueName) {
         return;
     }
 
-    auto* detailWidget = new QueueDetailDialog(queueName, clientManager_);
+    auto* detailWidget = new QueueDetailDialog(queueId, queueName, clientManager_);
 
     connect(detailWidget, &QueueDetailDialog::statusChanged,
             this, &QueueMonitorController::statusMessage);
@@ -219,8 +223,10 @@ void QueueMonitorController::onCreateQueueRequested() {
     if (dlg.exec() != QDialog::Accepted)
         return;
 
-    const QString queueName = dlg.queueName();
-    const bool isUnlogged = dlg.isUnlogged();
+    const QString queueName   = dlg.queueName();
+    const QString scopeType   = dlg.scopeType();
+    const QString queueType   = dlg.queueType();
+    const QString description = dlg.description();
 
     if (queueName.isEmpty())
         return;
@@ -233,7 +239,7 @@ void QueueMonitorController::onCreateQueueRequested() {
 
     QPointer<QueueMonitorController> self = this;
     auto future = QtConcurrent::run(
-            [self, queueName, isUnlogged]() -> CreateResult {
+            [self, queueName, scopeType, queueType, description]() -> CreateResult {
         return exception_helper::wrap_async_fetch<CreateResult>(
                 [&]() -> CreateResult {
             if (!self || !self->clientManager_) {
@@ -243,8 +249,10 @@ void QueueMonitorController::onCreateQueueRequested() {
             }
 
             mq::messaging::create_queue_request req;
-            req.queue_name = queueName.toStdString();
-            req.is_unlogged = isUnlogged;
+            req.queue_name  = queueName.toStdString();
+            req.scope_type  = scopeType.toStdString();
+            req.queue_type  = queueType.toStdString();
+            req.description = description.toStdString();
 
             auto result = self->clientManager_
                 ->process_authenticated_request(std::move(req));

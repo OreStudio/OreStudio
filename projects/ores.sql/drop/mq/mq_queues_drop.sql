@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,17 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.mq/pgmq/queue_metrics_json_io.hpp"
 
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-
-namespace ores::mq::pgmq {
-
-std::ostream& operator<<(std::ostream& s, const queue_metrics& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-}
+drop function if exists ores_mq_queues_create_fn;
+drop index if exists ores_mq_queues_system_name_uniq_idx;
+drop index if exists ores_mq_queues_tenant_name_uniq_idx;
+drop index if exists ores_mq_queues_party_name_uniq_idx;
+drop table if exists ores_mq_queues_tbl cascade;

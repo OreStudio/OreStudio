@@ -17,40 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_QUEUE_METRICS_HPP
-#define ORES_MQ_PGMQ_QUEUE_METRICS_HPP
+#ifndef ORES_MQ_DOMAIN_QUEUE_DEFINITION_HPP
+#define ORES_MQ_DOMAIN_QUEUE_DEFINITION_HPP
 
 #include <chrono>
-#include <cstdint>
 #include <optional>
 #include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.mq/domain/queue_scope_type.hpp"
+#include "ores.mq/domain/queue_type.hpp"
 
-namespace ores::mq::pgmq {
+namespace ores::mq::domain {
 
 /**
- * @brief Statistics about a pgmq queue.
+ * @brief Definition of a message queue.
  *
- * Mirrors the pgmq.metrics_result composite type returned by pgmq.metrics()
- * and pgmq.metrics_all().
+ * Mirrors a row in ores_mq_queues_tbl.
  */
-struct queue_metrics final {
-    /// Name of the queue.
-    std::string queue_name;
-
-    /// Number of messages currently visible in the queue.
-    int64_t queue_length{0};
-
-    /// Age in seconds of the newest message (nullopt if queue is empty).
-    std::optional<int32_t> newest_msg_age_sec;
-
-    /// Age in seconds of the oldest message (nullopt if queue is empty).
-    std::optional<int32_t> oldest_msg_age_sec;
-
-    /// Total number of messages ever sent to this queue.
-    int64_t total_messages{0};
-
-    /// Timestamp when these metrics were collected (UTC).
-    std::chrono::system_clock::time_point scrape_time;
+struct queue_definition final {
+    boost::uuids::uuid id;
+    std::optional<boost::uuids::uuid> tenant_id;
+    std::optional<boost::uuids::uuid> party_id;
+    queue_scope_type scope_type = queue_scope_type::party;
+    queue_type type = queue_type::task;
+    std::string name;
+    std::string description;
+    std::chrono::system_clock::time_point created_at;
+    bool is_active = true;
 };
 
 }

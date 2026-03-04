@@ -33,10 +33,12 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-QueueDetailDialog::QueueDetailDialog(const QString& queueName,
+QueueDetailDialog::QueueDetailDialog(const QString& queueId,
+                                     const QString& queueName,
                                      ClientManager* clientManager,
                                      QWidget* parent)
     : QWidget(parent),
+      queueId_(queueId),
       queueName_(queueName),
       clientManager_(clientManager),
       toolbar_(nullptr),
@@ -235,7 +237,7 @@ void QueueDetailDialog::onPublish() {
                     }
 
                     mq::messaging::send_message_request request;
-                    request.queue_name = queueName.toStdString();
+                    request.queue_id = self->queueId_.toStdString();
                     request.payload = payload.toStdString();
                     request.delay_seconds = delay;
 
@@ -312,7 +314,7 @@ void QueueDetailDialog::onGetMessages() {
 
                     if (mode == GetMode::Pop) {
                         mq::messaging::pop_messages_request request;
-                        request.queue_name = queueName.toStdString();
+                        request.queue_id = self->queueId_.toStdString();
                         request.count = count;
 
                         auto result = self->clientManager_->process_authenticated_request(
@@ -328,7 +330,7 @@ void QueueDetailDialog::onGetMessages() {
                         messages = std::move(result->messages);
                     } else {
                         mq::messaging::read_messages_request request;
-                        request.queue_name = queueName.toStdString();
+                        request.queue_id = self->queueId_.toStdString();
                         request.count = count;
                         request.vt_seconds = vt;
 
@@ -381,11 +383,11 @@ void QueueDetailDialog::populateMessagesTable(
         messagesTable_->setItem(row, 0,
             new QTableWidgetItem(QString::number(m.msg_id)));
         messagesTable_->setItem(row, 1,
-            new QTableWidgetItem(QString::number(m.read_ct)));
+            new QTableWidgetItem(QString::number(m.read_count)));
         messagesTable_->setItem(row, 2,
-            new QTableWidgetItem(QString::fromStdString(m.enqueued_at)));
+            new QTableWidgetItem(QString::fromStdString(m.created_at)));
         messagesTable_->setItem(row, 3,
-            new QTableWidgetItem(QString::fromStdString(m.vt)));
+            new QTableWidgetItem(QString::fromStdString(m.visible_after)));
         // Store the full payload but truncate for display
         auto* payloadItem = new QTableWidgetItem(
             QString::fromStdString(m.payload));

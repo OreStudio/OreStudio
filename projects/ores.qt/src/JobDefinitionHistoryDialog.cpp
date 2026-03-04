@@ -45,10 +45,10 @@ QString format_status(scheduler::domain::job_status s) {
 
 QString format_duration(const scheduler::domain::job_instance& instance) {
     if (auto dur = instance.duration()) {
-        const auto secs = dur->count();
-        if (secs < 60)
-            return QString("%1s").arg(secs);
-        return QString("%1m %2s").arg(secs / 60).arg(secs % 60);
+        const auto ms = dur->count();
+        if (ms < 60000)
+            return QString("%1ms").arg(ms);
+        return QString("%1m %2s").arg(ms / 60000).arg((ms % 60000) / 1000);
     }
     return QObject::tr("Running…");
 }
@@ -185,7 +185,7 @@ void JobDefinitionHistoryDialog::updateRunList() {
         ui_->versionListWidget->insertRow(row);
 
         auto* runIdItem = new QTableWidgetItem(
-            QString::number(inst.instance_id));
+            QString::number(inst.id));
         runIdItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         ui_->versionListWidget->setItem(row, 0, runIdItem);
 
@@ -193,11 +193,11 @@ void JobDefinitionHistoryDialog::updateRunList() {
         ui_->versionListWidget->setItem(row, 1, statusItem);
 
         auto* startItem = new QTableWidgetItem(
-            relative_time_helper::format(inst.start_time));
+            relative_time_helper::format(inst.triggered_at));
         ui_->versionListWidget->setItem(row, 2, startItem);
 
-        QString endText = inst.end_time
-            ? relative_time_helper::format(*inst.end_time)
+        QString endText = inst.completed_at
+            ? relative_time_helper::format(*inst.completed_at)
             : tr("—");
         auto* endItem = new QTableWidgetItem(endText);
         ui_->versionListWidget->setItem(row, 3, endItem);
@@ -206,7 +206,7 @@ void JobDefinitionHistoryDialog::updateRunList() {
         ui_->versionListWidget->setItem(row, 4, durationItem);
 
         auto* msgItem = new QTableWidgetItem(
-            QString::fromStdString(inst.return_message));
+            QString::fromStdString(inst.error_message));
         ui_->versionListWidget->setItem(row, 5, msgItem);
     }
 

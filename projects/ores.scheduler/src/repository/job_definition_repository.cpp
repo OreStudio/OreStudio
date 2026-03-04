@@ -25,7 +25,6 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.scheduler/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
-#include "ores.scheduler/domain/job_status.hpp"
 #include "ores.scheduler/repository/job_definition_entity.hpp"
 #include "ores.scheduler/repository/job_definition_mapper.hpp"
 
@@ -53,46 +52,104 @@ void job_definition_repository::write(
         lg(), "Writing job definitions to database.");
 }
 
+namespace {
+
+constexpr std::string_view SELECT_COLS =
+    "SELECT id::text, tenant_id::text, version, party_id::text, "
+    "       job_name, description, command, schedule_expression, "
+    "       action_type, action_payload, is_active, "
+    "       modified_by, performed_by, change_reason_code, change_commentary, "
+    "       valid_from::text, valid_to::text "
+    "FROM ores_scheduler_job_definitions_tbl ";
+
+std::vector<domain::job_definition> parse_rows(
+    const std::vector<std::vector<std::optional<std::string>>>& rows) {
+    std::vector<domain::job_definition> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 17) continue;
+        job_definition_entity entity;
+        if (row[0]) entity.id = *row[0];
+        if (row[1]) entity.tenant_id = *row[1];
+        if (row[2]) entity.version = std::stoi(*row[2]);
+        if (row[3]) entity.party_id = *row[3];
+        if (row[4]) entity.job_name = *row[4];
+        if (row[5]) entity.description = *row[5];
+        if (row[6]) entity.command = *row[6];
+        if (row[7]) entity.schedule_expression = *row[7];
+        if (row[8]) entity.action_type = *row[8];
+        if (row[9]) entity.action_payload = *row[9];
+        if (row[10]) entity.is_active = std::stoi(*row[10]);
+        if (row[11]) entity.modified_by = *row[11];
+        if (row[12]) entity.performed_by = *row[12];
+        if (row[13]) entity.change_reason_code = *row[13];
+        if (row[14]) entity.change_commentary = *row[14];
+        if (row[15]) entity.valid_from = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">(*row[15]);
+        if (row[16]) entity.valid_to = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">(*row[16]);
+        result.push_back(job_definition_mapper::map(entity));
+    }
+    return result;
+}
+
+} // anonymous namespace
+
 std::vector<domain::job_definition>
 job_definition_repository::read_latest(context ctx) {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
-        where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-        order_by("id"_c);
+    const std::string sql = std::string(SELECT_COLS) +
+        "WHERE tenant_id = $1::uuid "
+        "  AND valid_to = ores_utility_infinity_timestamp_fn() "
+        "ORDER BY id";
 
-    return execute_read_query<job_definition_entity, domain::job_definition>(
-        ctx, query,
-        [](const auto& entities) { return job_definition_mapper::map(entities); },
-        lg(), "Reading latest job definitions");
+    const auto rows = execute_parameterized_multi_column_query(ctx, sql, {tid},
+        lg(), "Reading latest job definitions.");
+    return parse_rows(rows);
 }
 
 std::vector<domain::job_definition>
 job_definition_repository::read_latest(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest job definition. id: " << id;
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+    const std::string sql = std::string(SELECT_COLS) +
+        "WHERE tenant_id = $1::uuid "
+        "  AND id = $2::uuid "
+        "  AND valid_to = ores_utility_infinity_timestamp_fn()";
 
-    return execute_read_query<job_definition_entity, domain::job_definition>(
-        ctx, query,
-        [](const auto& entities) { return job_definition_mapper::map(entities); },
+    const auto rows = execute_parameterized_multi_column_query(ctx, sql, {tid, id},
         lg(), "Reading latest job definition by id.");
+    return parse_rows(rows);
 }
 
 std::vector<domain::job_definition>
 job_definition_repository::read_all(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all job definition versions. id: " << id;
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<job_definition_entity>> |
-        where("tenant_id"_c == tid && "id"_c == id) |
-        order_by("version"_c.desc());
+    const std::string sql = std::string(SELECT_COLS) +
+        "WHERE tenant_id = $1::uuid "
+        "  AND id = $2::uuid "
+        "ORDER BY version DESC";
 
-    return execute_read_query<job_definition_entity, domain::job_definition>(
-        ctx, query,
-        [](const auto& entities) { return job_definition_mapper::map(entities); },
+    const auto rows = execute_parameterized_multi_column_query(ctx, sql, {tid, id},
         lg(), "Reading all job definition versions by id.");
+    return parse_rows(rows);
+}
+
+std::vector<domain::job_definition>
+job_definition_repository::read_all_active(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all active job definitions.";
+
+    // Query all active jobs across all tenants (no tenant filter).
+    const std::string sql = std::string(SELECT_COLS) +
+        "WHERE is_active = 1 "
+        "  AND valid_to = ores_utility_infinity_timestamp_fn() "
+        "ORDER BY id";
+
+    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(),
+        "Reading all active job definitions.");
+
+    const auto result = parse_rows(rows);
+    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size() << " active job definitions.";
+    return result;
 }
 
 void job_definition_repository::remove(context ctx, const std::string& id) {
@@ -113,116 +170,6 @@ job_definition_repository::find_by_id(context ctx, const boost::uuids::uuid& id)
     if (results.empty())
         return std::nullopt;
     return results.front();
-}
-
-void job_definition_repository::update_cron_job_id(
-    context ctx, const boost::uuids::uuid& id, std::int64_t cron_job_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating cron_job_id for: " << id
-                               << " -> " << cron_job_id;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto id_str = boost::uuids::to_string(id);
-    const auto cron_str = std::to_string(cron_job_id);
-
-    const std::string sql =
-        "UPDATE ores_scheduler_job_definitions_tbl "
-        "SET cron_job_id = $3::bigint "
-        "WHERE tenant_id = $1::uuid AND id = $2::uuid "
-        "AND valid_to = ores_utility_infinity_timestamp_fn()";
-
-    execute_parameterized_command(ctx, sql, {tid, id_str, cron_str},
-        lg(), "Updating cron_job_id.");
-}
-
-void job_definition_repository::clear_cron_job_id(
-    context ctx, const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Clearing cron_job_id for: " << id;
-    const auto tid = ctx.tenant_id().to_string();
-    const auto id_str = boost::uuids::to_string(id);
-
-    const std::string sql =
-        "UPDATE ores_scheduler_job_definitions_tbl "
-        "SET cron_job_id = NULL, is_active = 0 "
-        "WHERE tenant_id = $1::uuid AND id = $2::uuid "
-        "AND valid_to = ores_utility_infinity_timestamp_fn()";
-
-    execute_parameterized_command(ctx, sql, {tid, id_str},
-        lg(), "Clearing cron_job_id.");
-}
-
-std::vector<domain::job_instance>
-job_definition_repository::get_job_history(
-    context ctx, const boost::uuids::uuid& id, std::size_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting job history for: " << id
-                               << " limit: " << limit;
-
-    // First, find the definition to get its cron_job_id.
-    auto def = find_by_id(ctx, id);
-    if (!def || !def->cron_job_id) {
-        BOOST_LOG_SEV(lg(), debug) << "No active pg_cron job found for: " << id;
-        return {};
-    }
-    const auto cron_job_id = *def->cron_job_id;
-    const auto parent_id_str = boost::uuids::to_string(id);
-
-    // Query cron.job_run_details in the postgres database.
-    auto pg_creds = ctx.credentials();
-    pg_creds.dbname = "postgres";
-
-    const std::string sql =
-        "SELECT runid::text, jobid::text, status, return_message, "
-        "       start_time::text, end_time::text "
-        "FROM cron.job_run_details "
-        "WHERE jobid = " + std::to_string(cron_job_id) +
-        " ORDER BY runid DESC LIMIT " + std::to_string(limit);
-
-    const auto rows = execute_raw_multi_column_query(
-        pg_creds, sql, lg(), "Reading pg_cron job history.");
-
-    std::vector<domain::job_instance> result;
-    result.reserve(rows.size());
-
-    for (const auto& row : rows) {
-        if (row.size() < 6) continue;
-
-        domain::job_instance inst{
-            .instance_id = 0,
-            .cron_job_id = cron_job_id,
-            .parent_job_id = id,
-        };
-
-        if (row[0]) inst.instance_id = std::stoll(*row[0]);
-
-        // Status
-        const auto& status_str = row[2].value_or("starting");
-        if (status_str == "succeeded")
-            inst.status = domain::job_status::succeeded;
-        else if (status_str == "failed")
-            inst.status = domain::job_status::failed;
-        else
-            inst.status = domain::job_status::starting;
-
-        inst.return_message = row[3].value_or("");
-
-        // Timestamps
-        if (row[4]) {
-            try {
-                inst.start_time =
-                    ores::platform::time::datetime::parse_time_point(*row[4]);
-            } catch (...) {}
-        }
-        if (row[5]) {
-            try {
-                inst.end_time =
-                    ores::platform::time::datetime::parse_time_point(*row[5]);
-            } catch (...) {}
-        }
-
-        result.push_back(std::move(inst));
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size()
-                               << " history entries for: " << id;
-    return result;
 }
 
 }

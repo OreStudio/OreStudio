@@ -107,7 +107,13 @@ scheduler_message_handler::handle_schedule_job_request(
     }
 
     auto request = std::move(*request_result);
+
+    // Stamp authentication fields (modified_by, performed_by).
+    // tenant_id and party_id are set manually from the session since the new
+    // job_definition fields are optional<uuid> rather than utility::uuid::tenant_id.
     stamp_auth(request.definition, *auth);
+    request.definition.tenant_id = auth->tenant_id.to_uuid();
+    request.definition.party_id = auth->party_id;
 
     auto ctx = make_request_context(*auth);
     service::cron_scheduler svc(ctx);

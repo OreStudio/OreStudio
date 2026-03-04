@@ -29,29 +29,30 @@
 namespace ores::scheduler::domain {
 
 /**
- * @brief A read-only record of a single pg_cron job execution.
+ * @brief A record of a single in-process job execution.
  *
- * Populated by querying cron.job_run_details joined with
- * ores_scheduler_job_definitions_tbl. Tenant and party isolation is enforced
- * at the application layer: only run details for cron_job_ids that belong to
- * the current tenant+party context are ever returned.
+ * Written to ores_scheduler_job_instances_tbl by the scheduler_loop.
+ * Tenant and party isolation is enforced at the application layer.
  */
 struct job_instance final {
-    std::int64_t instance_id;                                 ///< cron.job_run_details.runid
-    std::int64_t cron_job_id;                                 ///< cron.job_run_details.jobid
-    boost::uuids::uuid parent_job_id;                         ///< Our job_definition.id
+    std::int64_t id = 0;
+    std::optional<boost::uuids::uuid> tenant_id;
+    std::optional<boost::uuids::uuid> party_id;
+    boost::uuids::uuid job_definition_id;
+    std::string action_type;
     job_status status = job_status::starting;
-    std::string return_message;                               ///< stdout or error text
-    std::chrono::system_clock::time_point start_time;
-    std::optional<std::chrono::system_clock::time_point> end_time;
+    std::chrono::system_clock::time_point triggered_at;
+    std::chrono::system_clock::time_point started_at;
+    std::optional<std::chrono::system_clock::time_point> completed_at;
+    std::optional<std::int64_t> duration_ms;
+    std::string error_message;
 
     /**
      * @brief Wall-clock duration of the execution, if it has completed.
      */
-    [[nodiscard]] std::optional<std::chrono::seconds> duration() const noexcept {
-        if (!end_time)
-            return std::nullopt;
-        return std::chrono::duration_cast<std::chrono::seconds>(*end_time - start_time);
+    [[nodiscard]] std::optional<std::chrono::milliseconds> duration() const noexcept {
+        if (!duration_ms) return std::nullopt;
+        return std::chrono::milliseconds(*duration_ms);
     }
 };
 

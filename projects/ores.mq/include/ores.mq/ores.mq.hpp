@@ -20,23 +20,24 @@
 #define ORES_MQ_HPP
 
 /**
- * @brief Message queue support for OreStudio, built on top of pgmq.
+ * @brief Message queue support for OreStudio, built on custom MQ tables.
  *
  * This component provides two layers of message queue functionality:
  *
- * - @b pgmq sub-namespace: a low-level C++23 wrapper around the pgmq
- *   PostgreSQL extension. The API mirrors Npgmq (the .NET pgmq client),
- *   mapping its queue management, send, read, archive, and delete operations
- *   to idiomatic C++23 using sqlgen for database access.
+ * - @b domain sub-namespace: domain types for queue definitions, messages
+ *   and statistics (queue_definition, mq_message, queue_stats, etc.).
  *
- * - @b domain sub-namespace: a high-level API that hides pgmq internals and
- *   integrates with the ores.comms remoting layer, allowing messages to be
- *   sent and received transparently over the communications infrastructure.
+ * - @b repository sub-namespace: data access for MQ tables
+ *   (queue_repository, message_repository, queue_stats_repository).
+ *
+ * - @b service sub-namespace: high-level mq_service facade that composes
+ *   the repositories, and queue_listener for NOTIFY-driven event dispatch.
  *
  * - @b messaging sub-namespace: binary protocol support for the MQ subsystem
- *   (0xB000-0xBFFF). Provides get_queues and get_queue_metrics request/response
- *   messages so that Qt UI components can query queue state on demand. The
- *   registrar registers the mq_message_handler with the comms server.
+ *   (0xB000-0xBFFF). Provides get_queues, get_queue_stats, send/read/ack
+ *   request/response messages so that Qt UI components can query queue state
+ *   on demand. The registrar registers the mq_message_handler with the comms
+ *   server.
  */
 namespace ores::mq {}
 

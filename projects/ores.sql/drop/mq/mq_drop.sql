@@ -18,6 +18,9 @@
  *
  */
 
--- Drop functions before tables (functions reference the table)
-\ir ./mq_scrape_functions_drop.sql
+-- Drop in reverse dependency order: messages before queues
+\ir ./mq_queue_stats_drop.sql
+\ir ./mq_message_archive_drop.sql
+\ir ./mq_messages_drop.sql
+\ir ./mq_queues_drop.sql
 \ir ./mq_metrics_samples_drop.sql

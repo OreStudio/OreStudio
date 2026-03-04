@@ -670,6 +670,14 @@ enum class message_type : std::uint16_t {
     pop_messages_response             = 0xB011,
     delete_messages_request           = 0xB012,
     delete_messages_response          = 0xB013,
+    get_queue_stats_request           = 0xB014,
+    get_queue_stats_response          = 0xB015,
+    get_queue_stats_samples_request   = 0xB016,
+    get_queue_stats_samples_response  = 0xB017,
+    ack_messages_request              = 0xB018,
+    ack_messages_response             = 0xB019,
+    nack_message_request              = 0xB01A,
+    nack_message_response             = 0xB01B,
     // Sentinel value - must remain after the highest message type value
     last_value,
 };
@@ -1236,6 +1244,14 @@ enum class message_type : std::uint16_t {
     case message_type::pop_messages_response:                return "pop_messages_response";
     case message_type::delete_messages_request:              return "delete_messages_request";
     case message_type::delete_messages_response:             return "delete_messages_response";
+    case message_type::get_queue_stats_request:              return "get_queue_stats_request";
+    case message_type::get_queue_stats_response:             return "get_queue_stats_response";
+    case message_type::get_queue_stats_samples_request:      return "get_queue_stats_samples_request";
+    case message_type::get_queue_stats_samples_response:     return "get_queue_stats_samples_response";
+    case message_type::ack_messages_request:                 return "ack_messages_request";
+    case message_type::ack_messages_response:                return "ack_messages_response";
+    case message_type::nack_message_request:                 return "nack_message_request";
+    case message_type::nack_message_response:                return "nack_message_response";
     default: return {};
     }
 }

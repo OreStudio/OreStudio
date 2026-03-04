@@ -29,24 +29,14 @@
  * Extensions are per-database in PostgreSQL, so they must be installed in
  * each database that needs them.
  *
- * NOTE: pg_cron is NOT installed here. It must live in the postgres database
- * (the cron.database_name). See setup_extensions_postgres.sql.
- *
  * REQUIRED EXTENSIONS:
  *   - btree_gist: GiST index support for temporal exclusion constraints
  *   - unaccent: Accent-insensitive text search for normalised name generation
  *
  * OPTIONAL EXTENSIONS:
  *   - pgtap: Unit testing framework for pgTAP SQL tests (recommended)
- *   - pgmq: Lightweight message queue for async workflows (recommended)
- *     If not available, message-queue-based features will not function.
  *   - timescaledb: Time-series database for session analytics (recommended)
  *     If not available, sessions table will use regular PostgreSQL tables.
- *
- * PREREQUISITES FOR PGMQ (optional):
- *   - pgmq must be installed on the system:
- *       Debian/Ubuntu: apt install postgresql-NN-pgmq
- *       (or via PGXN / build from source)
  *
  * PREREQUISITES FOR TIMESCALEDB (optional):
  *   - TimescaleDB must be installed on the system:
@@ -107,27 +97,6 @@ begin
     end if;
 end $$;
 
--- pgmq: Lightweight message queue extension (OPTIONAL)
--- Provides pgmq.create(), pgmq.send(), pgmq.read(), pgmq.delete(), etc.
--- Required for async message-queue-based workflows.
--- If not available, queue-based features will not function.
-do $$
-declare
-    pgmq_available boolean;
-begin
-    select exists (
-        select 1 from pg_available_extensions where name = 'pgmq'
-    ) into pgmq_available;
-
-    if pgmq_available then
-        create extension if not exists pgmq;
-        raise notice 'Installed: pgmq';
-    else
-        raise notice 'pgmq not available - message queue features will not function';
-        raise notice '(Install with: apt install postgresql-NN-pgmq)';
-    end if;
-end $$;
-
 -- TimescaleDB: Time-series database extension (OPTIONAL)
 -- Provides hypertables, compression, continuous aggregates, and retention policies
 -- If not available, sessions will use regular tables instead.
@@ -172,7 +141,7 @@ end $$;
 -- Show what was installed
 \echo 'Installed extensions:'
 select extname, extversion from pg_extension
-where extname in ('btree_gist', 'unaccent', 'pgtap', 'pgmq', 'timescaledb')
+where extname in ('btree_gist', 'unaccent', 'pgtap', 'timescaledb')
 order by extname;
 
 \echo ''

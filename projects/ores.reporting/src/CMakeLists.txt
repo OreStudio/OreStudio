@@ -40,7 +40,7 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.comms.lib
         ores.scheduler.lib
-        ores.refdata.lib
+        ores.mq.lib
         ores.utility.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx

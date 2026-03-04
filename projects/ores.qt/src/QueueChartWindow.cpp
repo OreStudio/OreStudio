@@ -36,10 +36,12 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-QueueChartWindow::QueueChartWindow(const QString& queueName,
+QueueChartWindow::QueueChartWindow(const QString& queueId,
+                                   const QString& queueName,
                                    ClientManager* clientManager,
                                    QWidget* parent)
     : QWidget(parent),
+      queueId_(queueId),
       queueName_(queueName),
       clientManager_(clientManager),
       toolbar_(nullptr),
@@ -144,19 +146,19 @@ void QueueChartWindow::reload() {
     rangeCombo_->setEnabled(false);
     emit statusChanged(tr("Loading chart for '%1'…").arg(queueName_));
 
-    const QString queueName = queueName_;
+    const QString queueId = queueId_;
     const auto from = fromForRange();
     QPointer<QueueChartWindow> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self, queueName, from]() -> FetchResult {
+    QFuture<FetchResult> future = QtConcurrent::run([self, queueId, from]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
             if (!self || !self->clientManager_) {
                 return {.success = false, .samples = {},
                         .error_message = "Window was destroyed", .error_details = {}};
             }
 
-            mq::messaging::get_queue_metric_samples_request request;
-            request.queue_name = queueName.toStdString();
+            mq::messaging::get_queue_stats_samples_request request;
+            request.queue_id = queueId.toStdString();
             request.from = from;
 
             auto result = self->clientManager_->process_authenticated_request(
@@ -176,7 +178,7 @@ void QueueChartWindow::reload() {
 
             return {.success = true, .samples = std::move(result->samples),
                     .error_message = {}, .error_details = {}};
-        }, "queue metric samples");
+        }, "queue stats samples");
     });
 
     watcher_->setFuture(future);
@@ -198,8 +200,7 @@ void QueueChartWindow::onDataLoaded() {
     }
 
     if (result.samples.empty()) {
-        clearChart(tr("Queue '%1' — no samples recorded yet\n"
-                      "Samples are collected every minute by the metrics scraper.")
+        clearChart(tr("Queue '%1' — no samples recorded yet.")
                    .arg(queueName_));
         emit statusChanged(tr("No data for '%1'").arg(queueName_));
         return;
@@ -219,36 +220,36 @@ void QueueChartWindow::clearChart(const QString& message) {
 }
 
 void QueueChartWindow::populateChart(
-    const std::vector<mq::pgmq::metrics_sample>& samples) {
+    const std::vector<mq::domain::queue_stats>& samples) {
 
     auto* chart = chartView_->chart();
     chart->removeAllSeries();
     for (auto* axis : chart->axes())
         chart->removeAxis(axis);
 
-    auto* length_series = new QLineSeries();
-    length_series->setName(tr("Queue Depth"));
+    auto* pending_series = new QLineSeries();
+    pending_series->setName(tr("Pending"));
 
-    auto* total_series = new QLineSeries();
-    total_series->setName(tr("Total Sent"));
+    auto* archived_series = new QLineSeries();
+    archived_series->setName(tr("Total Archived"));
 
-    qreal max_length = 0;
-    qreal max_total  = 0;
+    qreal max_pending  = 0;
+    qreal max_archived = 0;
 
     for (const auto& s : samples) {
         const qreal t = static_cast<qreal>(
             std::chrono::duration_cast<std::chrono::milliseconds>(
-                s.sample_time.time_since_epoch()).count());
-        const qreal ql = static_cast<qreal>(s.queue_length);
-        const qreal tm = static_cast<qreal>(s.total_messages);
-        length_series->append(t, ql);
-        total_series->append(t, tm);
-        max_length = std::max(max_length, ql);
-        max_total  = std::max(max_total, tm);
+                s.recorded_at.time_since_epoch()).count());
+        const qreal pending  = static_cast<qreal>(s.pending_count);
+        const qreal archived = static_cast<qreal>(s.total_archived);
+        pending_series->append(t, pending);
+        archived_series->append(t, archived);
+        max_pending  = std::max(max_pending,  pending);
+        max_archived = std::max(max_archived, archived);
     }
 
-    chart->addSeries(length_series);
-    chart->addSeries(total_series);
+    chart->addSeries(pending_series);
+    chart->addSeries(archived_series);
 
     // X axis: datetime
     auto* x_axis = new QDateTimeAxis();
@@ -258,26 +259,26 @@ void QueueChartWindow::populateChart(
     x_axis->setTitleText(tr("Time (UTC)"));
     x_axis->setTickCount(8);
     chart->addAxis(x_axis, Qt::AlignBottom);
-    length_series->attachAxis(x_axis);
-    total_series->attachAxis(x_axis);
+    pending_series->attachAxis(x_axis);
+    archived_series->attachAxis(x_axis);
 
-    // Left Y axis: queue depth
+    // Left Y axis: pending count
     auto* y_left = new QValueAxis();
-    y_left->setTitleText(tr("Queue Depth"));
+    y_left->setTitleText(tr("Pending"));
     y_left->setLabelFormat("%d");
     y_left->setMin(0);
-    y_left->setMax(std::max(max_length * 1.1, 1.0));
+    y_left->setMax(std::max(max_pending * 1.1, 1.0));
     chart->addAxis(y_left, Qt::AlignLeft);
-    length_series->attachAxis(y_left);
+    pending_series->attachAxis(y_left);
 
-    // Right Y axis: total messages sent
+    // Right Y axis: total archived
     auto* y_right = new QValueAxis();
-    y_right->setTitleText(tr("Total Sent"));
+    y_right->setTitleText(tr("Total Archived"));
     y_right->setLabelFormat("%d");
     y_right->setMin(0);
-    y_right->setMax(std::max(max_total * 1.1, 1.0));
+    y_right->setMax(std::max(max_archived * 1.1, 1.0));
     chart->addAxis(y_right, Qt::AlignRight);
-    total_series->attachAxis(y_right);
+    archived_series->attachAxis(y_right);
 
     chart->setTitle(tr("Queue: %1  (%2 samples)")
                     .arg(queueName_).arg(static_cast<int>(samples.size())));

@@ -49,7 +49,6 @@ void write_job_definition(std::vector<std::byte>& buffer,
     writer::write_string(buffer, jd.description);
     writer::write_string(buffer, jd.command);
     writer::write_string(buffer, jd.schedule_expression.to_string());
-    writer::write_string(buffer, jd.database_name);
     writer::write_bool(buffer, jd.is_active);
     writer::write_string(buffer, jd.modified_by);
     writer::write_string(buffer, jd.performed_by);
@@ -88,10 +87,6 @@ read_job_definition(std::span<const std::byte>& data) {
     auto cron_expr = domain::cron_expression::from_string(*schedule_expression_result);
     if (!cron_expr) return std::unexpected(error_code::invalid_request);
     jd.schedule_expression = std::move(*cron_expr);
-
-    auto database_name_result = reader::read_string(data);
-    if (!database_name_result) return std::unexpected(database_name_result.error());
-    jd.database_name = *database_name_result;
 
     auto is_active_result = reader::read_bool(data);
     if (!is_active_result) return std::unexpected(is_active_result.error());

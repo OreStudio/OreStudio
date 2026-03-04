@@ -19,8 +19,8 @@
  */
 #pragma once
 
+#include <optional>
 #include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.scheduler/domain/job_definition.hpp"
 
 namespace ores::scheduler::generators {
@@ -31,12 +31,12 @@ namespace ores::scheduler::generators {
  * Produces a valid job_definition with deterministic-but-unique values using
  * faker-cxx. The generated job runs a no-op SQL comment on a daily schedule.
  *
- * @param tenant_id Tenant to assign the generated definition to.
- * @param party_id  Party to assign the generated definition to.
+ * @param tenant_id Tenant to assign the generated definition to (nullopt = system job).
+ * @param party_id  Party to assign the generated definition to (nullopt = system job).
  */
 [[nodiscard]] domain::job_definition
 generate_synthetic_job_definition(
-    const utility::uuid::tenant_id& tenant_id,
-    const boost::uuids::uuid& party_id);
+    const std::optional<boost::uuids::uuid>& tenant_id = std::nullopt,
+    const std::optional<boost::uuids::uuid>& party_id = std::nullopt);
 
 } // namespace ores::scheduler::generators

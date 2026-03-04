@@ -62,7 +62,7 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void viewChartRequested(const QString& queueId, const QString& queueName);
-    void openDetailsRequested(const QString& queueName);
+    void openDetailsRequested(const QString& queueId, const QString& queueName);
     void createQueueRequested();
     void deleteQueueRequested(const QString& queueName);
     void purgeQueueRequested(const QString& queueName);

@@ -170,13 +170,15 @@ void QueueMonitorController::showChartWindow(const QString& queueId,
                                << queueName.toStdString();
 }
 
-void QueueMonitorController::onOpenDetailsRequested(const QString& queueName) {
+void QueueMonitorController::onOpenDetailsRequested(
+    const QString& queueId, const QString& queueName) {
     BOOST_LOG_SEV(lg(), debug) << "Open details requested for: "
                                << queueName.toStdString();
-    showDetailWindow(queueName);
+    showDetailWindow(queueId, queueName);
 }
 
-void QueueMonitorController::showDetailWindow(const QString& queueName) {
+void QueueMonitorController::showDetailWindow(
+    const QString& queueId, const QString& queueName) {
     const QString key = build_window_key("details", queueName);
     if (try_reuse_window(key)) {
         BOOST_LOG_SEV(lg(), debug) << "Reusing existing detail window for: "
@@ -184,7 +186,7 @@ void QueueMonitorController::showDetailWindow(const QString& queueName) {
         return;
     }
 
-    auto* detailWidget = new QueueDetailDialog(queueName, clientManager_);
+    auto* detailWidget = new QueueDetailDialog(queueId, queueName, clientManager_);
 
     connect(detailWidget, &QueueDetailDialog::statusChanged,
             this, &QueueMonitorController::statusMessage);

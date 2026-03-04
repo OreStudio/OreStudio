@@ -56,7 +56,8 @@ private:
     }
 
 public:
-    explicit QueueDetailDialog(const QString& queueName,
+    explicit QueueDetailDialog(const QString& queueId,
+                               const QString& queueName,
                                ClientManager* clientManager,
                                QWidget* parent = nullptr);
     ~QueueDetailDialog() override = default;
@@ -100,6 +101,7 @@ private:
         const std::vector<mq::messaging::queue_message>& messages);
     void updateDeleteAction();
 
+    QString queueId_;
     QString queueName_;
     ClientManager* clientManager_;
 

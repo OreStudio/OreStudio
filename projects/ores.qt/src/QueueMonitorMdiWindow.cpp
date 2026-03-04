@@ -179,7 +179,9 @@ void QueueMonitorMdiWindow::onSelectionChanged() {
 void QueueMonitorMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
     const auto sourceIndex = proxyModel_->mapToSource(index);
     if (const auto* row = model_->getRow(sourceIndex.row())) {
-        emit openDetailsRequested(QString::fromStdString(row->name));
+        emit openDetailsRequested(
+            QString::fromStdString(boost::uuids::to_string(row->id)),
+            QString::fromStdString(row->name));
     }
 }
 

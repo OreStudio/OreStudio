@@ -18,11 +18,10 @@
  *
  */
 
--- =============================================================================
--- Scheduler Tables
--- =============================================================================
--- OreStudio built-in scheduler job definitions and execution history.
-
-\ir ./scheduler_job_definitions_create.sql
-\ir ./scheduler_job_definitions_notify_trigger_create.sql
-\ir ./scheduler_job_instances_create.sql
+-- STUB: populated by chat feature. Structure documented here for schema awareness.
+-- ores_mq_channel_messages_tbl will store persistent multi-reader messages.
+-- Trigger will NOTIFY ores_mq_channel_{queue_id} for real-time delivery.
+-- Schema: id bigserial, queue_id uuid, sender_id uuid, sender_type text (human/system/llm),
+--   message_type text (CHAT_MSG/SYSTEM_ALERT/RICH_DATA), payload jsonb, raw_payload bytea,
+--   created_at timestamptz, PRIMARY KEY (id, created_at).
+-- Hypertable + retention policy added when chat feature is implemented.

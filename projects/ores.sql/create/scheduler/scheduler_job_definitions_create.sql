@@ -21,40 +21,42 @@
 /**
  * Scheduler Job Definitions Table
  *
- * OreStudio's metadata overlay for pg_cron jobs. Each row is the OreStudio
- * "shadow" of a cron.job entry, adding tenant/party isolation, human-readable
- * description, audit trail, and a soft-pause mechanism (is_active).
+ * Stores job definitions for OreStudio's built-in scheduler. Each row
+ * represents a versioned, auditable job definition with tenant/party
+ * isolation, human-readable description, and a soft-pause mechanism
+ * (is_active).
  *
- * The cron_job_id column links to cron.job.jobid and is set by the
- * cron_scheduler service after calling cron.schedule(). It is NULL when the
- * job has not been scheduled yet or has been paused (unscheduled from pg_cron
- * while the definition is retained).
+ * Jobs can be system-scoped (tenant_id IS NULL, party_id IS NULL),
+ * tenant-scoped (tenant_id set, party_id IS NULL), or party-scoped
+ * (both tenant_id and party_id set).
  *
- * Hand-crafted: the cron_job_id bigint column and is_active integer cannot be
- * expressed by the standard domain_entity template.
+ * The action_type column controls how the scheduler executes the job:
+ *   - 'execute_sql'    : run the SQL in the command column directly.
+ *   - 'send_mq_message': publish a message; action_payload carries the
+ *                        routing key and body.
  */
 
 create table if not exists "ores_scheduler_job_definitions_tbl" (
-    "id" uuid not null,
-    "tenant_id" uuid not null,
-    "version" integer not null,
-    "party_id" uuid not null,
-    "cron_job_id" bigint null,
-    "job_name" text not null,
-    "description" text not null default '',
-    "command" text not null,
+    "id"                  uuid not null,
+    "tenant_id"           uuid,
+    "version"             integer not null,
+    "party_id"            uuid,
+    "job_name"            text not null,
+    "description"         text not null default '',
+    "command"             text not null,
     "schedule_expression" text not null,
-    "database_name" text not null,
-    "is_active" integer not null default 1,
-    "modified_by" text not null,
-    "performed_by" text not null,
-    "change_reason_code" text not null,
-    "change_commentary" text not null,
-    "valid_from" timestamp with time zone not null,
-    "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    "action_type"         text not null default 'execute_sql'
+                          check (action_type in ('execute_sql','send_mq_message')),
+    "action_payload"      jsonb not null default '{}'::jsonb,
+    "is_active"           integer not null default 1,
+    "modified_by"         text not null,
+    "performed_by"        text not null,
+    "change_reason_code"  text not null,
+    "change_commentary"   text not null,
+    "valid_from"          timestamp with time zone not null,
+    "valid_to"            timestamp with time zone not null,
+    primary key (id, valid_from, valid_to),
     exclude using gist (
-        tenant_id WITH =,
         id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
@@ -65,24 +67,24 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
     check ("schedule_expression" <> '')
 );
 
--- Unique cron_job_id among active records (NULL allowed for paused/unscheduled)
-create unique index if not exists ores_scheduler_job_definitions_cron_job_id_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (cron_job_id)
-where valid_to = ores_utility_infinity_timestamp_fn() and cron_job_id is not null;
-
--- Unique job_name per tenant among active records
-create unique index if not exists ores_scheduler_job_definitions_name_uniq_idx
+-- Unique job_name per tenant among active records.
+-- System jobs (tenant_id IS NULL) are handled by a separate partial index.
+create unique index if not exists ores_scheduler_job_definitions_name_tenant_uniq_idx
 on "ores_scheduler_job_definitions_tbl" (tenant_id, job_name)
-where valid_to = ores_utility_infinity_timestamp_fn();
+where valid_to = ores_utility_infinity_timestamp_fn() and tenant_id is not null;
+
+create unique index if not exists ores_scheduler_job_definitions_name_system_uniq_idx
+on "ores_scheduler_job_definitions_tbl" (job_name)
+where valid_to = ores_utility_infinity_timestamp_fn() and tenant_id is null;
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists ores_scheduler_job_definitions_version_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (tenant_id, id, version)
+on "ores_scheduler_job_definitions_tbl" (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Current record uniqueness
 create unique index if not exists ores_scheduler_job_definitions_id_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (tenant_id, id)
+on "ores_scheduler_job_definitions_tbl" (id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Tenant index
@@ -100,26 +102,30 @@ returns trigger as $$
 declare
     current_version integer;
 begin
-    -- Validate tenant_id
-    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+    -- Validate tenant_id only when set (system jobs have NULL tenant_id)
+    if NEW.tenant_id is not null then
+        NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+    end if;
 
-    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
-    if not exists (
-        select 1 from ores_refdata_parties_tbl
-        where tenant_id = NEW.tenant_id
-          and id = NEW.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.',
-            NEW.party_id
-            using errcode = '23503';
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl) only when set
+    if NEW.party_id is not null then
+        if not exists (
+            select 1 from ores_refdata_parties_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.party_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid party_id: %. No active party found with this id.',
+                NEW.party_id
+                using errcode = '23503';
+        end if;
     end if;
 
     -- Version management
     select version into current_version
     from "ores_scheduler_job_definitions_tbl"
-    where tenant_id = NEW.tenant_id
-      and id = NEW.id
+    where id = NEW.id
+      and (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -133,8 +139,8 @@ begin
 
         update "ores_scheduler_job_definitions_tbl"
         set valid_to = current_timestamp
-        where tenant_id = NEW.tenant_id
-          and id = NEW.id
+        where id = NEW.id
+          and (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < current_timestamp;
     else
@@ -161,6 +167,6 @@ create or replace rule ores_scheduler_job_definitions_delete_rule as
 on delete to "ores_scheduler_job_definitions_tbl" do instead
     update "ores_scheduler_job_definitions_tbl"
     set valid_to = current_timestamp
-    where tenant_id = OLD.tenant_id
-      and id = OLD.id
+    where id = OLD.id
+      and (tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
       and valid_to = ores_utility_infinity_timestamp_fn();

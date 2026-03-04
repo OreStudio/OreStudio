@@ -188,8 +188,10 @@ begin
             raise exception 'codename must match ^[a-z][a-z_]+$ got: %', NEW.codename
                 using errcode = '23514';
         end if;
-        -- Provision the per-party report event queue (transactional DDL).
-        perform pgmq.create(NEW.codename || '_report_events');
+        -- Provision the per-party report event queue.
+        perform ores_mq_queues_create_fn(
+            NEW.tenant_id, NEW.id, 'party', 'task',
+            'report_events', 'Per-party report scheduling queue', current_user);
     end if;
 
     NEW.valid_from = current_timestamp;

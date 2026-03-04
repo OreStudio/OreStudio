@@ -18,11 +18,21 @@
  *
  */
 
--- =============================================================================
--- Scheduler Tables
--- =============================================================================
--- OreStudio built-in scheduler job definitions and execution history.
-
-\ir ./scheduler_job_definitions_create.sql
-\ir ./scheduler_job_definitions_notify_trigger_create.sql
-\ir ./scheduler_job_instances_create.sql
+-- Seed the MQ stats scrape job (system scope, runs every minute)
+insert into ores_scheduler_job_definitions_tbl (
+    id, tenant_id, party_id, job_name, description, command,
+    schedule_expression, action_type, action_payload, is_active,
+    modified_by, performed_by, change_reason_code, change_commentary,
+    valid_from, valid_to
+) values (
+    gen_random_uuid(), NULL, NULL,
+    'ores.mq.metrics_scrape',
+    'Scrape MQ queue stats every minute',
+    'SELECT ores_mq_queue_stats_scrape_fn()',
+    '* * * * *',
+    'execute_sql',
+    '{}',
+    1,
+    'system', 'system', 'system.new_record', '',
+    current_timestamp, ores_utility_infinity_timestamp_fn()
+);

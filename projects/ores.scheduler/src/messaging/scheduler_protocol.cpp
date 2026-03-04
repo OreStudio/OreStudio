@@ -65,17 +65,20 @@ job_status_from_uint8(std::uint8_t v) {
 void write_job_definition(std::vector<std::byte>& buffer,
     const domain::job_definition& def) {
     writer::write_uuid(buffer, def.id);
-    writer::write_tenant_id(buffer, def.tenant_id);
-    writer::write_uuid(buffer, def.party_id);
-    writer::write_bool(buffer, def.cron_job_id.has_value());
-    if (def.cron_job_id.has_value()) {
-        writer::write_int64(buffer, *def.cron_job_id);
+    writer::write_bool(buffer, def.tenant_id.has_value());
+    if (def.tenant_id.has_value()) {
+        writer::write_uuid(buffer, *def.tenant_id);
+    }
+    writer::write_bool(buffer, def.party_id.has_value());
+    if (def.party_id.has_value()) {
+        writer::write_uuid(buffer, *def.party_id);
     }
     writer::write_string(buffer, def.job_name);
     writer::write_string(buffer, def.description);
     writer::write_string(buffer, def.command);
     writer::write_string(buffer, def.schedule_expression.to_string());
-    writer::write_string(buffer, def.database_name);
+    writer::write_string(buffer, def.action_type);
+    writer::write_string(buffer, def.action_payload);
     writer::write_bool(buffer, def.is_active);
     writer::write_uint32(buffer, static_cast<std::uint32_t>(def.version));
     writer::write_string(buffer, def.modified_by);
@@ -86,19 +89,22 @@ read_job_definition(std::span<const std::byte>& data) {
     auto id_result = reader::read_uuid(data);
     if (!id_result) return std::unexpected(id_result.error());
 
-    auto tenant_id_result = reader::read_tenant_id(data);
-    if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
+    auto has_tenant_id_result = reader::read_bool(data);
+    if (!has_tenant_id_result) return std::unexpected(has_tenant_id_result.error());
+    std::optional<boost::uuids::uuid> tenant_id;
+    if (*has_tenant_id_result) {
+        auto tenant_id_result = reader::read_uuid(data);
+        if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
+        tenant_id = *tenant_id_result;
+    }
 
-    auto party_id_result = reader::read_uuid(data);
-    if (!party_id_result) return std::unexpected(party_id_result.error());
-
-    auto has_cron_job_id_result = reader::read_bool(data);
-    if (!has_cron_job_id_result) return std::unexpected(has_cron_job_id_result.error());
-    std::optional<std::int64_t> cron_job_id;
-    if (*has_cron_job_id_result) {
-        auto cron_job_id_result = reader::read_int64(data);
-        if (!cron_job_id_result) return std::unexpected(cron_job_id_result.error());
-        cron_job_id = *cron_job_id_result;
+    auto has_party_id_result = reader::read_bool(data);
+    if (!has_party_id_result) return std::unexpected(has_party_id_result.error());
+    std::optional<boost::uuids::uuid> party_id;
+    if (*has_party_id_result) {
+        auto party_id_result = reader::read_uuid(data);
+        if (!party_id_result) return std::unexpected(party_id_result.error());
+        party_id = *party_id_result;
     }
 
     auto job_name_result = reader::read_string(data);
@@ -116,8 +122,11 @@ read_job_definition(std::span<const std::byte>& data) {
     auto expr_result = domain::cron_expression::from_string(*schedule_expr_result);
     if (!expr_result) return std::unexpected(error_code::invalid_request);
 
-    auto database_name_result = reader::read_string(data);
-    if (!database_name_result) return std::unexpected(database_name_result.error());
+    auto action_type_result = reader::read_string(data);
+    if (!action_type_result) return std::unexpected(action_type_result.error());
+
+    auto action_payload_result = reader::read_string(data);
+    if (!action_payload_result) return std::unexpected(action_payload_result.error());
 
     auto is_active_result = reader::read_bool(data);
     if (!is_active_result) return std::unexpected(is_active_result.error());
@@ -130,14 +139,14 @@ read_job_definition(std::span<const std::byte>& data) {
 
     return domain::job_definition{
         .id = *id_result,
-        .tenant_id = *tenant_id_result,
-        .party_id = *party_id_result,
-        .cron_job_id = cron_job_id,
+        .tenant_id = tenant_id,
+        .party_id = party_id,
         .job_name = std::move(*job_name_result),
         .description = std::move(*description_result),
         .command = std::move(*command_result),
         .schedule_expression = std::move(*expr_result),
-        .database_name = std::move(*database_name_result),
+        .action_type = std::move(*action_type_result),
+        .action_payload = std::move(*action_payload_result),
         .is_active = *is_active_result,
         .version = static_cast<int>(*version_result),
         .modified_by = std::move(*modified_by_result),
@@ -150,39 +159,65 @@ read_job_definition(std::span<const std::byte>& data) {
 
 void write_job_instance(std::vector<std::byte>& buffer,
     const domain::job_instance& inst) {
-    writer::write_int64(buffer, inst.instance_id);
-    writer::write_int64(buffer, inst.cron_job_id);
-    writer::write_uuid(buffer, inst.parent_job_id);
-    writer::write_uint8(buffer, job_status_to_uint8(inst.status));
-    writer::write_string(buffer, inst.return_message);
-    writer::write_string(buffer,
-        ores::platform::time::datetime::format_time_point(inst.start_time));
-    writer::write_bool(buffer, inst.end_time.has_value());
-    if (inst.end_time.has_value()) {
-        writer::write_string(buffer,
-            ores::platform::time::datetime::format_time_point(*inst.end_time));
+    writer::write_int64(buffer, inst.id);
+    writer::write_bool(buffer, inst.tenant_id.has_value());
+    if (inst.tenant_id.has_value()) {
+        writer::write_uuid(buffer, *inst.tenant_id);
     }
+    writer::write_bool(buffer, inst.party_id.has_value());
+    if (inst.party_id.has_value()) {
+        writer::write_uuid(buffer, *inst.party_id);
+    }
+    writer::write_uuid(buffer, inst.job_definition_id);
+    writer::write_string(buffer, inst.action_type);
+    writer::write_uint8(buffer, job_status_to_uint8(inst.status));
+    writer::write_string(buffer,
+        ores::platform::time::datetime::format_time_point(inst.triggered_at));
+    writer::write_string(buffer,
+        ores::platform::time::datetime::format_time_point(inst.started_at));
+    writer::write_bool(buffer, inst.completed_at.has_value());
+    if (inst.completed_at.has_value()) {
+        writer::write_string(buffer,
+            ores::platform::time::datetime::format_time_point(*inst.completed_at));
+    }
+    writer::write_bool(buffer, inst.duration_ms.has_value());
+    if (inst.duration_ms.has_value()) {
+        writer::write_int64(buffer, *inst.duration_ms);
+    }
+    writer::write_string(buffer, inst.error_message);
 }
 
 std::expected<domain::job_instance, error_code>
 read_job_instance(std::span<const std::byte>& data) {
-    domain::job_instance inst{
-        .instance_id = 0,
-        .cron_job_id = 0,
-        .parent_job_id = {},
-    };
+    domain::job_instance inst;
 
-    auto instance_id_result = reader::read_int64(data);
-    if (!instance_id_result) return std::unexpected(instance_id_result.error());
-    inst.instance_id = *instance_id_result;
+    auto id_result = reader::read_int64(data);
+    if (!id_result) return std::unexpected(id_result.error());
+    inst.id = *id_result;
 
-    auto cron_job_id_result = reader::read_int64(data);
-    if (!cron_job_id_result) return std::unexpected(cron_job_id_result.error());
-    inst.cron_job_id = *cron_job_id_result;
+    auto has_tenant_id_result = reader::read_bool(data);
+    if (!has_tenant_id_result) return std::unexpected(has_tenant_id_result.error());
+    if (*has_tenant_id_result) {
+        auto tenant_id_result = reader::read_uuid(data);
+        if (!tenant_id_result) return std::unexpected(tenant_id_result.error());
+        inst.tenant_id = *tenant_id_result;
+    }
 
-    auto parent_job_id_result = reader::read_uuid(data);
-    if (!parent_job_id_result) return std::unexpected(parent_job_id_result.error());
-    inst.parent_job_id = *parent_job_id_result;
+    auto has_party_id_result = reader::read_bool(data);
+    if (!has_party_id_result) return std::unexpected(has_party_id_result.error());
+    if (*has_party_id_result) {
+        auto party_id_result = reader::read_uuid(data);
+        if (!party_id_result) return std::unexpected(party_id_result.error());
+        inst.party_id = *party_id_result;
+    }
+
+    auto job_def_id_result = reader::read_uuid(data);
+    if (!job_def_id_result) return std::unexpected(job_def_id_result.error());
+    inst.job_definition_id = *job_def_id_result;
+
+    auto action_type_result = reader::read_string(data);
+    if (!action_type_result) return std::unexpected(action_type_result.error());
+    inst.action_type = std::move(*action_type_result);
 
     auto status_result = reader::read_uint8(data);
     if (!status_result) return std::unexpected(status_result.error());
@@ -190,31 +225,48 @@ read_job_instance(std::span<const std::byte>& data) {
     if (!job_status) return std::unexpected(job_status.error());
     inst.status = *job_status;
 
-    auto return_message_result = reader::read_string(data);
-    if (!return_message_result) return std::unexpected(return_message_result.error());
-    inst.return_message = std::move(*return_message_result);
-
-    auto start_time_result = reader::read_string(data);
-    if (!start_time_result) return std::unexpected(start_time_result.error());
+    auto triggered_at_result = reader::read_string(data);
+    if (!triggered_at_result) return std::unexpected(triggered_at_result.error());
     try {
-        inst.start_time =
-            ores::platform::time::datetime::parse_time_point(*start_time_result);
+        inst.triggered_at =
+            ores::platform::time::datetime::parse_time_point(*triggered_at_result);
     } catch (const std::invalid_argument&) {
         return std::unexpected(error_code::invalid_request);
     }
 
-    auto has_end_time_result = reader::read_bool(data);
-    if (!has_end_time_result) return std::unexpected(has_end_time_result.error());
-    if (*has_end_time_result) {
-        auto end_time_result = reader::read_string(data);
-        if (!end_time_result) return std::unexpected(end_time_result.error());
+    auto started_at_result = reader::read_string(data);
+    if (!started_at_result) return std::unexpected(started_at_result.error());
+    try {
+        inst.started_at =
+            ores::platform::time::datetime::parse_time_point(*started_at_result);
+    } catch (const std::invalid_argument&) {
+        return std::unexpected(error_code::invalid_request);
+    }
+
+    auto has_completed_at_result = reader::read_bool(data);
+    if (!has_completed_at_result) return std::unexpected(has_completed_at_result.error());
+    if (*has_completed_at_result) {
+        auto completed_at_result = reader::read_string(data);
+        if (!completed_at_result) return std::unexpected(completed_at_result.error());
         try {
-            inst.end_time =
-                ores::platform::time::datetime::parse_time_point(*end_time_result);
+            inst.completed_at =
+                ores::platform::time::datetime::parse_time_point(*completed_at_result);
         } catch (const std::invalid_argument&) {
             return std::unexpected(error_code::invalid_request);
         }
     }
+
+    auto has_duration_ms_result = reader::read_bool(data);
+    if (!has_duration_ms_result) return std::unexpected(has_duration_ms_result.error());
+    if (*has_duration_ms_result) {
+        auto duration_ms_result = reader::read_int64(data);
+        if (!duration_ms_result) return std::unexpected(duration_ms_result.error());
+        inst.duration_ms = *duration_ms_result;
+    }
+
+    auto error_message_result = reader::read_string(data);
+    if (!error_message_result) return std::unexpected(error_message_result.error());
+    inst.error_message = std::move(*error_message_result);
 
     return inst;
 }

@@ -36,9 +36,13 @@ job_definition_mapper::map(const job_definition_entity& v) {
 
     domain::job_definition r;
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
-    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
-    r.cron_job_id = v.cron_job_id;
+
+    if (v.tenant_id)
+        r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(*v.tenant_id);
+
+    if (v.party_id)
+        r.party_id = boost::lexical_cast<boost::uuids::uuid>(*v.party_id);
+
     r.job_name = v.job_name;
     r.description = v.description.value_or("");
     r.command = v.command;
@@ -46,7 +50,8 @@ job_definition_mapper::map(const job_definition_entity& v) {
     if (!expr)
         throw std::logic_error("Invalid cron expression in database: " + expr.error());
     r.schedule_expression = std::move(*expr);
-    r.database_name = v.database_name;
+    r.action_type = v.action_type;
+    r.action_payload = v.action_payload;
     r.is_active = (v.is_active != 0);
     r.version = v.version;
     r.modified_by = v.modified_by;
@@ -67,15 +72,21 @@ job_definition_mapper::map(const domain::job_definition& v) {
 
     job_definition_entity r;
     r.id = boost::uuids::to_string(v.id);
-    r.tenant_id = v.tenant_id.to_string();
+
+    if (v.tenant_id)
+        r.tenant_id = boost::uuids::to_string(*v.tenant_id);
+
     r.version = v.version;
-    r.party_id = boost::uuids::to_string(v.party_id);
-    r.cron_job_id = v.cron_job_id;
+
+    if (v.party_id)
+        r.party_id = boost::uuids::to_string(*v.party_id);
+
     r.job_name = v.job_name;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.command = v.command;
     r.schedule_expression = v.schedule_expression.to_string();
-    r.database_name = v.database_name;
+    r.action_type = v.action_type;
+    r.action_payload = v.action_payload;
     r.is_active = v.is_active ? 1 : 0;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

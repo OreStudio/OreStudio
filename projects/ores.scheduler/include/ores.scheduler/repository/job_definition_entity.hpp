@@ -20,7 +20,6 @@
 #ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
 #define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_ENTITY_HPP
 
-#include <cstdint>
 #include <string>
 #include <optional>
 #include <ostream>
@@ -37,15 +36,15 @@ struct job_definition_entity {
     constexpr static const char* tablename = "ores_scheduler_job_definitions_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
-    std::string tenant_id;
+    std::optional<std::string> tenant_id;
     int version = 0;
-    std::string party_id;
-    std::optional<std::int64_t> cron_job_id;
+    std::optional<std::string> party_id;
     std::string job_name;
     std::optional<std::string> description;
     std::string command;
     std::string schedule_expression;
-    std::string database_name;
+    std::string action_type = "execute_sql";
+    std::string action_payload = "{}";
     int is_active = 1;
     std::string modified_by;
     std::string performed_by;

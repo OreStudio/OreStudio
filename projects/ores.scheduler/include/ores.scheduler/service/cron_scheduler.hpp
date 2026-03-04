@@ -26,21 +26,21 @@
 #include "ores.scheduler/domain/job_definition.hpp"
 #include "ores.scheduler/domain/job_instance.hpp"
 #include "ores.scheduler/repository/job_definition_repository.hpp"
+#include "ores.scheduler/repository/job_instance_repository.hpp"
 
 namespace ores::scheduler::service {
 
 /**
- * @brief Coordinator between OreStudio job definitions and pg_cron.
+ * @brief Coordinator for OreStudio in-process job scheduling.
  *
- * Translates C++ job_definition objects into pg_cron SQL calls and keeps the
- * ores_scheduler_job_definitions_tbl in sync with cron.job.
+ * Provides CRUD operations for job definitions and access to job execution
+ * history. The actual scheduling is performed by scheduler_loop; this class
+ * handles the management plane only.
  *
  * Lifecycle:
- *   1. Registration — schedule() calls cron.schedule() then persists the
- *      returned cron_job_id into our table.
- *   2. Execution    — pg_cron fires independently; no C++ involvement.
- *   3. Observation  — get_all_definitions() / get_job_history() query our
- *      table and cron.job_run_details respectively.
+ *   1. Registration — schedule() persists the job_definition with is_active=true.
+ *   2. Execution    — scheduler_loop fires jobs independently.
+ *   3. Observation  — get_all_definitions() / get_job_history() query our tables.
  *
  * Thread safety: not thread-safe. Each request should create its own instance
  * (or use a per-request database context).
@@ -56,23 +56,21 @@ public:
     // -------------------------------------------------------------------------
 
     /**
-     * @brief Register a job with pg_cron and persist the definition.
+     * @brief Persist a job definition and mark it as active.
      *
-     * Executes: SELECT cron.schedule(job_name, schedule_expression, command)
-     * Stores the returned bigint as cron_job_id in our table.
-     * If a job with this name already exists in pg_cron, pg_cron updates it
-     * in-place and returns the existing jobid.
+     * Writes the job_definition to ores_scheduler_job_definitions_tbl with
+     * is_active=true. The in-process scheduler_loop will pick it up on the
+     * next reload.
      */
     domain::job_definition schedule(domain::job_definition def,
                                     const std::string& change_reason_code,
                                     const std::string& change_commentary);
 
     /**
-     * @brief Remove a job from pg_cron and mark it as inactive.
+     * @brief Mark a job as inactive (paused).
      *
-     * Executes: SELECT cron.unschedule(job_name)
-     * Sets cron_job_id to NULL in our table (definition is retained for
-     * history; set is_active = false).
+     * Sets is_active=false on the current active record. The scheduler_loop
+     * will skip the job after the next reload.
      */
     void unschedule(const boost::uuids::uuid& job_definition_id,
                     const std::string& modified_by,
@@ -100,6 +98,7 @@ public:
 private:
     context ctx_;
     repository::job_definition_repository repo_;
+    repository::job_instance_repository inst_repo_;
 };
 
 } // namespace ores::scheduler::service

@@ -25,8 +25,8 @@
 namespace ores::scheduler::generators {
 
 domain::job_definition generate_synthetic_job_definition(
-    const utility::uuid::tenant_id& tenant_id,
-    const boost::uuids::uuid& party_id) {
+    const std::optional<boost::uuids::uuid>& tenant_id,
+    const std::optional<boost::uuids::uuid>& party_id) {
     static int counter = 0;
 
     utility::uuid::uuid_v7_generator gen;
@@ -42,12 +42,10 @@ domain::job_definition generate_synthetic_job_definition(
         .id = gen(),
         .tenant_id = tenant_id,
         .party_id = party_id,
-        .cron_job_id = std::nullopt,
         .job_name = job_name,
         .description = "Synthetic job: " + noun,
         .command = "SELECT 1; -- synthetic no-op",
         .schedule_expression = std::move(*schedule),
-        .database_name = "ores_default",
         .is_active = true,
         .version = 0,
         .modified_by = "test_generator",

@@ -17,27 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
-#define ORES_SCHEDULER_REPOSITORY_JOB_DEFINITION_REPOSITORY_HPP
+#pragma once
 
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
-#include <sqlgen/postgres.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.scheduler/domain/job_definition.hpp"
+#include "ores.scheduler/domain/job_instance.hpp"
+#include "ores.scheduler/domain/job_status.hpp"
 
 namespace ores::scheduler::repository {
 
 /**
- * @brief Reads and writes job definitions to data storage.
+ * @brief Reads and writes job instance records to ores_scheduler_job_instances_tbl.
  */
-class job_definition_repository {
+class job_instance_repository final {
 private:
     inline static std::string_view logger_name =
-        "ores.scheduler.repository.job_definition_repository";
+        "ores.scheduler.repository.job_instance_repository";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -48,30 +49,29 @@ private:
 public:
     using context = ores::database::context;
 
-    std::string sql();
-
-    void write(context ctx, const domain::job_definition& v);
-    void write(context ctx, const std::vector<domain::job_definition>& v);
-
-    std::vector<domain::job_definition> read_latest(context ctx);
-    std::vector<domain::job_definition>
-    read_latest(context ctx, const std::string& id);
-    std::vector<domain::job_definition>
-    read_all(context ctx, const std::string& id);
+    /**
+     * @brief Inserts a new job instance row with status='started' and returns the new id.
+     */
+    std::int64_t write_started(context ctx, const domain::job_instance& inst);
 
     /**
-     * @brief Returns all active job definitions regardless of tenant.
-     *
-     * Used by the scheduler_loop to load all jobs it needs to fire.
+     * @brief Updates completed_at, duration_ms, status and error_message for the given id.
      */
-    std::vector<domain::job_definition> read_all_active(context ctx);
+    void write_completed(context ctx, std::int64_t id,
+        const std::chrono::system_clock::time_point& triggered_at,
+        domain::job_status status, const std::string& error = "");
 
-    std::optional<domain::job_definition>
-    find_by_id(context ctx, const boost::uuids::uuid& id);
+    /**
+     * @brief Returns the most recent job instances for a given job_definition_id.
+     */
+    std::vector<domain::job_instance> read_latest(context ctx,
+        const boost::uuids::uuid& job_definition_id, std::size_t limit = 100);
 
-    void remove(context ctx, const std::string& id);
+    /**
+     * @brief Returns the triggered_at of the most recent run for a job definition, if any.
+     */
+    std::optional<std::chrono::system_clock::time_point> last_run_at(
+        context ctx, const boost::uuids::uuid& job_definition_id);
 };
 
-}
-
-#endif
+} // namespace ores::scheduler::repository

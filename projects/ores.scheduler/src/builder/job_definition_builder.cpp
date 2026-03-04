@@ -57,15 +57,7 @@ job_definition_builder::with_cron_schedule(std::string_view expr) {
 }
 
 job_definition_builder&
-job_definition_builder::with_database(std::string_view database_name) {
-    if (database_name.empty() && error_.empty())
-        error_ = "database name must not be empty";
-    database_name_ = std::string(database_name);
-    return *this;
-}
-
-job_definition_builder&
-job_definition_builder::with_tenant(const utility::uuid::tenant_id& tenant_id) {
+job_definition_builder::with_tenant(const boost::uuids::uuid& tenant_id) {
     tenant_id_ = tenant_id;
     return *this;
 }
@@ -95,8 +87,6 @@ job_definition_builder::build() const {
         return std::unexpected("command is required");
     if (!schedule_expression_)
         return std::unexpected("schedule expression is required");
-    if (database_name_.empty())
-        return std::unexpected("database name is required");
     if (modified_by_.empty())
         return std::unexpected("modified_by is required");
 
@@ -105,12 +95,10 @@ job_definition_builder::build() const {
         .id = gen(),
         .tenant_id = tenant_id_,
         .party_id = party_id_,
-        .cron_job_id = std::nullopt,
         .job_name = name_,
         .description = description_,
         .command = command_,
         .schedule_expression = *schedule_expression_,
-        .database_name = database_name_,
         .is_active = true,
         .version = 0,
         .modified_by = modified_by_,

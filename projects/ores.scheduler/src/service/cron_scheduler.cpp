@@ -43,47 +43,14 @@ cron_scheduler::cron_scheduler(context ctx)
 
 domain::job_definition
 cron_scheduler::schedule(domain::job_definition def,
-                         const std::string& change_reason_code,
-                         const std::string& change_commentary) {
+                         const std::string& /*change_reason_code*/,
+                         const std::string& /*change_commentary*/) {
     BOOST_LOG_SEV(lg(), info) << "Scheduling job: " << def.job_name;
 
-    // Persist the definition first (sets our UUID, version etc.)
+    def.is_active = true;
     repo_.write(ctx_, def);
 
-    // Call pg_cron via the postgres database (where the extension lives).
-    // cron.schedule_in_database() (pg_cron 1.4+) schedules the job to execute
-    // in the application database while storing metadata in the shared postgres
-    // cron.job catalog. This allows multiple OreStudio environments on the same
-    // PostgreSQL cluster to each have independent job schedules.
-    //
-    // Remaining limitation: job names share the cron.job namespace across all
-    // environments. See product backlog "Replace pg_cron with native OreStudio
-    // scheduler" for the long-term solution.
-    const std::string app_db = ctx_.credentials().dbname;
-    auto pg_creds = ctx_.credentials();
-    pg_creds.dbname = "postgres";
-
-    const std::string sql = "SELECT cron.schedule_in_database($1, $2, $3, $4)";
-    const auto rows = execute_parameterized_string_query(
-        pg_creds, sql,
-        {def.job_name,
-         def.schedule_expression.to_string(),
-         def.command,
-         app_db},
-        lg(), "calling cron.schedule_in_database");
-
-    if (rows.empty()) {
-        BOOST_LOG_SEV(lg(), error) << "cron.schedule returned no rows";
-        throw std::runtime_error("cron.schedule() returned no result");
-    }
-
-    const std::int64_t cron_job_id = std::stoll(rows.front());
-    BOOST_LOG_SEV(lg(), debug) << "pg_cron assigned jobid: " << cron_job_id;
-
-    // Link pg_cron's jobid back to our definition.
-    repo_.update_cron_job_id(ctx_, def.id, cron_job_id);
-    def.cron_job_id = cron_job_id;
-
+    BOOST_LOG_SEV(lg(), info) << "Job definition persisted: " << def.job_name;
     return def;
 }
 
@@ -100,16 +67,20 @@ void cron_scheduler::unschedule(const boost::uuids::uuid& job_definition_id,
                                  + boost::uuids::to_string(job_definition_id));
     }
 
-    // Remove from pg_cron. cron.unschedule() resolves the job name from the
-    // shared cron.job catalog in postgres, so we connect there directly.
-    auto pg_creds = ctx_.credentials();
-    pg_creds.dbname = "postgres";
-    const std::string sql = "SELECT cron.unschedule($1)";
-    execute_parameterized_string_query(pg_creds, sql, {def->job_name},
-        lg(), "calling cron.unschedule");
+    // Mark is_active = 0 on the current active record without creating a new
+    // bitemporal version.
+    const auto id_str = boost::uuids::to_string(job_definition_id);
 
-    // Mark definition as inactive (clears cron_job_id, sets is_active=false).
-    repo_.clear_cron_job_id(ctx_, job_definition_id);
+    const std::string sql =
+        "UPDATE ores_scheduler_job_definitions_tbl "
+        "SET is_active = 0 "
+        "WHERE id = $1::uuid "
+        "AND valid_to = ores_utility_infinity_timestamp_fn()";
+
+    execute_parameterized_command(ctx_, sql, {id_str},
+        lg(), "Marking job definition as inactive.");
+
+    BOOST_LOG_SEV(lg(), info) << "Job marked inactive: " << job_definition_id;
 }
 
 std::vector<domain::job_definition>
@@ -120,7 +91,7 @@ cron_scheduler::get_all_definitions() {
 std::vector<domain::job_instance>
 cron_scheduler::get_job_history(const boost::uuids::uuid& job_definition_id,
                                 std::size_t limit) {
-    return repo_.get_job_history(ctx_, job_definition_id, limit);
+    return inst_repo_.read_latest(ctx_, job_definition_id, limit);
 }
 
 } // namespace ores::scheduler::service

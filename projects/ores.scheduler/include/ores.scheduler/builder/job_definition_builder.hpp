@@ -24,14 +24,13 @@
 #include <string>
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.scheduler/domain/cron_expression.hpp"
 #include "ores.scheduler/domain/job_definition.hpp"
 
 namespace ores::scheduler::builder {
 
 /**
- * @brief Fluent builder for job_definition (Quartz.NET-style API).
+ * @brief Fluent builder for job_definition.
  *
  * Validates each field on set and accumulates errors. Call build() at the end
  * to obtain either a valid job_definition or an error string.
@@ -43,8 +42,7 @@ namespace ores::scheduler::builder {
  *       .with_description("Aggregate daily stats")
  *       .with_command("SELECT ores_telemetry_aggregate_fn()")
  *       .with_cron_schedule("0 0 * * *")
- *       .with_database("ores_default")
- *       .with_tenant(tenant_id)
+ *       .with_tenant(tenant_uuid)
  *       .with_party(party_id)
  *       .with_modified_by("alice")
  *       .build();
@@ -54,25 +52,22 @@ class job_definition_builder final {
 public:
     job_definition_builder() = default;
 
-    /// Unique name passed to cron.schedule() as the job identifier.
+    /// Unique name for the job.
     job_definition_builder& with_name(std::string_view name);
 
     /// Human-readable label shown in the job management UI.
     job_definition_builder& with_description(std::string_view description);
 
-    /// The SQL command pg_cron will execute.
+    /// The SQL command to execute on each firing.
     job_definition_builder& with_command(std::string_view command);
 
     /// Cron expression string (e.g. "0 0 * * *"). Validated immediately.
     job_definition_builder& with_cron_schedule(std::string_view expr);
 
-    /// Target PostgreSQL database name for pg_cron.
-    job_definition_builder& with_database(std::string_view database_name);
+    /// Tenant that owns this job (null = system job).
+    job_definition_builder& with_tenant(const boost::uuids::uuid& tenant_id);
 
-    /// Tenant that owns this job.
-    job_definition_builder& with_tenant(const utility::uuid::tenant_id& tenant_id);
-
-    /// Party within the tenant that owns this job.
+    /// Party within the tenant that owns this job (null = system job).
     job_definition_builder& with_party(const boost::uuids::uuid& party_id);
 
     /// Username of the user creating or modifying this job.
@@ -92,9 +87,8 @@ private:
     std::string command_;
     std::optional<domain::cron_expression> schedule_expression_; ///< Validated on with_cron_schedule().
     std::string error_;               ///< First validation error, if any.
-    std::string database_name_;
-    utility::uuid::tenant_id tenant_id_ = utility::uuid::tenant_id::system();
-    boost::uuids::uuid party_id_;
+    std::optional<boost::uuids::uuid> tenant_id_;
+    std::optional<boost::uuids::uuid> party_id_;
     std::string modified_by_;
 };
 

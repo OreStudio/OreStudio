@@ -30,7 +30,7 @@ CreateQueueDialog::CreateQueueDialog(QWidget* parent)
     : QDialog(parent) {
 
     setWindowTitle(tr("Create Queue"));
-    setMinimumWidth(360);
+    setMinimumWidth(400);
 
     auto* layout = new QVBoxLayout(this);
 
@@ -41,8 +41,21 @@ CreateQueueDialog::CreateQueueDialog(QWidget* parent)
     nameEdit_->setMaxLength(64);
     formLayout->addRow(tr("Queue name:"), nameEdit_);
 
-    unloggedCheck_ = new QCheckBox(tr("Unlogged (faster, not crash-safe)"), this);
-    formLayout->addRow(QString{}, unloggedCheck_);
+    scopeCombo_ = new QComboBox(this);
+    scopeCombo_->addItem(tr("Party"),  QStringLiteral("party"));
+    scopeCombo_->addItem(tr("Tenant"), QStringLiteral("tenant"));
+    scopeCombo_->addItem(tr("System"), QStringLiteral("system"));
+    formLayout->addRow(tr("Scope:"), scopeCombo_);
+
+    typeCombo_ = new QComboBox(this);
+    typeCombo_->addItem(tr("Task"),    QStringLiteral("task"));
+    typeCombo_->addItem(tr("Channel"), QStringLiteral("channel"));
+    formLayout->addRow(tr("Type:"), typeCombo_);
+
+    descriptionEdit_ = new QLineEdit(this);
+    descriptionEdit_->setPlaceholderText(tr("Optional description"));
+    descriptionEdit_->setMaxLength(255);
+    formLayout->addRow(tr("Description:"), descriptionEdit_);
 
     layout->addLayout(formLayout);
 
@@ -69,8 +82,16 @@ QString CreateQueueDialog::queueName() const {
     return nameEdit_->text().trimmed();
 }
 
-bool CreateQueueDialog::isUnlogged() const {
-    return unloggedCheck_->isChecked();
+QString CreateQueueDialog::scopeType() const {
+    return scopeCombo_->currentData().toString();
+}
+
+QString CreateQueueDialog::queueType() const {
+    return typeCombo_->currentData().toString();
+}
+
+QString CreateQueueDialog::description() const {
+    return descriptionEdit_->text().trimmed();
 }
 
 void CreateQueueDialog::onNameChanged(const QString& text) {

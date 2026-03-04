@@ -85,7 +85,7 @@ QVariant ClientJobDefinitionModel::data(
         case Schedule:
             return QString::fromStdString(definition.schedule_expression.to_string());
         case DatabaseName:
-            return QString::fromStdString(definition.database_name);
+            return QString::fromStdString(definition.action_type);
         case Active:
             return definition.is_active ? tr("Active") : tr("Inactive");
         case Version:

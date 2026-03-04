@@ -151,7 +151,7 @@ void JobDefinitionDetailDialog::updateUiFromDefinition() {
     ui_->commandEdit->setPlainText(QString::fromStdString(definition_.command));
     ui_->cronWidget->setCronExpression(
         QString::fromStdString(definition_.schedule_expression.to_string()));
-    ui_->databaseNameEdit->setText(QString::fromStdString(definition_.database_name));
+    ui_->databaseNameEdit->setText(QString::fromStdString(definition_.action_type));
 
     populateProvenance(definition_.version,
                        definition_.modified_by,
@@ -174,7 +174,7 @@ void JobDefinitionDetailDialog::updateDefinitionFromUi() {
     if (auto result = scheduler::domain::cron_expression::from_string(cron_str)) {
         definition_.schedule_expression = *result;
     }
-    definition_.database_name = ui_->databaseNameEdit->text().trimmed().toStdString();
+    definition_.action_type = ui_->databaseNameEdit->text().trimmed().toStdString();
     definition_.modified_by = username_;
 }
 
@@ -196,9 +196,7 @@ void JobDefinitionDetailDialog::updateSaveButtonState() {
 bool JobDefinitionDetailDialog::validateInput() {
     const QString job_name_val = ui_->jobNameEdit->text().trimmed();
     const QString command_val = ui_->commandEdit->toPlainText().trimmed();
-    const QString database_name_val = ui_->databaseNameEdit->text().trimmed();
-
-    if (job_name_val.isEmpty() || command_val.isEmpty() || database_name_val.isEmpty())
+    if (job_name_val.isEmpty() || command_val.isEmpty())
         return false;
 
     return ui_->cronWidget->isValid();

@@ -31,12 +31,11 @@
 namespace ores::qt {
 
 /**
- * @brief MDI window for monitoring and managing pgmq queues.
+ * @brief MDI window for monitoring and managing message queues.
  *
- * Shows a merged view of queue metadata (from list_queues) and live metrics
- * (from metrics_all) in a sortable table. Supports create, delete, and purge
- * queue operations, opening a detail dialog for message publish/read, and a
- * chart window for time-series metrics.
+ * Shows a merged view of queue definitions and statistics in a sortable table.
+ * Supports create, delete, and purge queue operations, opening a detail dialog
+ * for message publish/read, and a chart window for time-series metrics.
  */
 class QueueMonitorMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -62,7 +61,7 @@ public slots:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
-    void viewChartRequested(const QString& queueName);
+    void viewChartRequested(const QString& queueId, const QString& queueName);
     void openDetailsRequested(const QString& queueName);
     void createQueueRequested();
     void deleteQueueRequested(const QString& queueName);

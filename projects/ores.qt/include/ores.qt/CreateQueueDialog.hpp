@@ -21,14 +21,17 @@
 #define ORES_QT_CREATE_QUEUE_DIALOG_HPP
 
 #include <QDialog>
+#include <QComboBox>
 #include <QLineEdit>
-#include <QCheckBox>
 #include <QPushButton>
 
 namespace ores::qt {
 
 /**
- * @brief Simple dialog for creating a new pgmq queue.
+ * @brief Dialog for creating a new message queue.
+ *
+ * Collects queue name, scope type (party/tenant/system), queue type
+ * (task/channel), and an optional description.
  */
 class CreateQueueDialog final : public QDialog {
     Q_OBJECT
@@ -36,15 +39,19 @@ class CreateQueueDialog final : public QDialog {
 public:
     explicit CreateQueueDialog(QWidget* parent = nullptr);
 
-    QString queueName() const;
-    bool isUnlogged() const;
+    QString queueName()   const;
+    QString scopeType()   const;  // "party", "tenant", or "system"
+    QString queueType()   const;  // "task" or "channel"
+    QString description() const;
 
 private slots:
     void onNameChanged(const QString& text);
 
 private:
-    QLineEdit* nameEdit_;
-    QCheckBox* unloggedCheck_;
+    QLineEdit*   nameEdit_;
+    QComboBox*   scopeCombo_;
+    QComboBox*   typeCombo_;
+    QLineEdit*   descriptionEdit_;
     QPushButton* createButton_;
 };
 

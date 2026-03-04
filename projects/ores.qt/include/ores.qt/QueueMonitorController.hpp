@@ -73,14 +73,14 @@ protected:
     EntityListMdiWindow* listWindow() const override;
 
 private slots:
-    void onViewChartRequested(const QString& queueName);
+    void onViewChartRequested(const QString& queueId, const QString& queueName);
     void onOpenDetailsRequested(const QString& queueName);
     void onCreateQueueRequested();
     void onDeleteQueueRequested(const QString& queueName);
     void onPurgeQueueRequested(const QString& queueName);
 
 private:
-    void showChartWindow(const QString& queueName);
+    void showChartWindow(const QString& queueId, const QString& queueName);
     void showDetailWindow(const QString& queueName);
 
     QueueMonitorMdiWindow* listWindow_;

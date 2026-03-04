@@ -21,43 +21,49 @@
 #define ORES_QT_CLIENT_QUEUE_MODEL_HPP
 
 #include <vector>
+#include <optional>
+#include <chrono>
+#include <cstdint>
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.mq/pgmq/queue_info.hpp"
-#include "ores.mq/pgmq/queue_metrics.hpp"
+#include "ores.mq/domain/queue_definition.hpp"
+#include "ores.mq/domain/queue_stats.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Combined queue metadata and metrics row for the monitor table.
+ * @brief Combined queue definition and statistics row for the monitor table.
  *
- * Merges a queue_info and its corresponding queue_metrics by queue_name.
- * Metrics fields are absent when the server returns no metrics for a queue.
+ * Merges a queue_definition and its corresponding queue_stats by queue id.
+ * Stats fields are absent when the server returns no stats for a queue yet.
  */
 struct queue_row {
-    /// From queue_info
-    std::string queue_name;
+    // From queue_definition
+    boost::uuids::uuid id;
+    std::string name;
+    std::string description;
+    std::string scope_type;  // "party" | "tenant" | "system"
+    std::string queue_type;  // "task" | "channel"
     std::chrono::system_clock::time_point created_at;
-    bool is_unlogged{false};
-    bool is_partitioned{false};
+    bool is_active{true};
 
-    /// From queue_metrics (may be absent if queue has no metrics yet)
-    int64_t queue_length{0};
-    int64_t total_messages{0};
-    std::optional<int32_t> newest_msg_age_sec;
-    std::optional<int32_t> oldest_msg_age_sec;
-    std::optional<std::chrono::system_clock::time_point> scrape_time;
+    // From queue_stats (may be absent if no stats scraped yet)
+    std::int64_t pending_count{0};
+    std::int64_t processing_count{0};
+    std::int64_t total_archived{0};
+    std::optional<std::chrono::system_clock::time_point> stats_recorded_at;
 };
 
 /**
- * @brief Table model that fetches and merges queue info and metrics.
+ * @brief Table model that fetches and merges queue definitions and statistics.
  *
- * Issues get_queues_request and get_queue_metrics_request in sequence on a
- * background thread, joins on queue_name, and presents the merged data as a
+ * Issues get_queues_request and get_queue_stats_request in sequence on a
+ * background thread, joins on queue id, and presents the merged data as a
  * read-only table. There are no create/edit/delete operations.
  */
 class ClientQueueModel final : public QAbstractTableModel {
@@ -75,28 +81,28 @@ private:
 public:
     enum Column {
         QueueName,
-        QueueLength,
-        TotalMessages,
-        NewestMsgAge,
-        OldestMsgAge,
-        IsUnlogged,
-        IsPartitioned,
+        Description,
+        ScopeType,
+        QueueType,
+        PendingCount,
+        ProcessingCount,
+        TotalArchived,
         CreatedAt,
-        ScrapeTime,
+        StatsRecordedAt,
         ColumnCount
     };
 
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
     static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        { .column = QueueName,     .header = "Queue Name",    .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = QueueLength,   .header = "Length",        .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
-        { .column = TotalMessages, .header = "Total Sent",    .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
-        { .column = NewestMsgAge,  .header = "Newest (s)",    .style = column_style::mono_center, .hidden_by_default = false, .default_width = 85  },
-        { .column = OldestMsgAge,  .header = "Oldest (s)",    .style = column_style::mono_center, .hidden_by_default = false, .default_width = 85  },
-        { .column = IsUnlogged,    .header = "Unlogged",      .style = column_style::mono_center, .hidden_by_default = true,  .default_width = 75  },
-        { .column = IsPartitioned, .header = "Partitioned",   .style = column_style::mono_center, .hidden_by_default = true,  .default_width = 90  },
-        { .column = CreatedAt,     .header = "Created",       .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = ScrapeTime,    .header = "Last Scraped",  .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = QueueName,       .header = "Queue Name",    .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = Description,     .header = "Description",   .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = ScopeType,       .header = "Scope",         .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
+        { .column = QueueType,       .header = "Type",          .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
+        { .column = PendingCount,    .header = "Pending",       .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
+        { .column = ProcessingCount, .header = "Processing",    .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
+        { .column = TotalArchived,   .header = "Archived",      .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
+        { .column = CreatedAt,       .header = "Created",       .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = StatsRecordedAt, .header = "Last Stats",    .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
     }};
 
     inline static const QSize kDefaultWindowSize = {900, 400};

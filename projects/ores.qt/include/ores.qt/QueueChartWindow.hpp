@@ -30,16 +30,15 @@
 #include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.mq/pgmq/metrics_sample.hpp"
+#include "ores.mq/domain/queue_stats.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief MDI window showing time-series charts for a single pgmq queue.
+ * @brief MDI window showing time-series charts for a single queue.
  *
- * Displays queue_length and total_messages over a configurable time window.
- * Fetches data from ores_mq_metrics_samples_tbl via the
- * get_queue_metric_samples_request protocol message.
+ * Displays pending_count and total_archived over a configurable time window.
+ * Fetches data via the get_queue_stats_samples_request protocol message.
  */
 class QueueChartWindow final : public QWidget {
     Q_OBJECT
@@ -62,11 +61,13 @@ private:
     };
 
 public:
-    explicit QueueChartWindow(const QString& queueName,
+    explicit QueueChartWindow(const QString& queueId,
+                              const QString& queueName,
                               ClientManager* clientManager,
                               QWidget* parent = nullptr);
     ~QueueChartWindow() override = default;
 
+    [[nodiscard]] const QString& queueId()   const { return queueId_;   }
     [[nodiscard]] const QString& queueName() const { return queueName_; }
 
     QSize sizeHint() const override { return {900, 500}; }
@@ -86,18 +87,19 @@ private:
     void setupToolbar();
     void setupChart();
 
-    void populateChart(const std::vector<mq::pgmq::metrics_sample>& samples);
+    void populateChart(const std::vector<mq::domain::queue_stats>& samples);
     void clearChart(const QString& message);
 
     std::optional<std::chrono::system_clock::time_point> fromForRange() const;
 
     struct FetchResult {
         bool success{false};
-        std::vector<mq::pgmq::metrics_sample> samples;
+        std::vector<mq::domain::queue_stats> samples;
         QString error_message;
         QString error_details;
     };
 
+    QString queueId_;
     QString queueName_;
     ClientManager* clientManager_;
     TimeRange currentRange_{TimeRange::LastHour};

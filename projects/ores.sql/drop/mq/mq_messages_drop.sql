@@ -18,6 +18,11 @@
  *
  */
 
-\ir ./scheduler_job_instances_drop.sql
-\ir ./scheduler_job_definitions_notify_trigger_drop.sql
-\ir ./scheduler_job_definitions_drop.sql
+drop function if exists ores_mq_messages_send_fn;
+drop function if exists ores_mq_messages_send_binary_fn;
+drop function if exists ores_mq_messages_read_fn;
+drop function if exists ores_mq_messages_ack_fn;
+drop function if exists ores_mq_messages_nack_fn;
+drop function if exists ores_mq_messages_purge_fn;
+drop index if exists ores_mq_messages_queue_status_idx;
+drop table if exists ores_mq_messages_tbl cascade;

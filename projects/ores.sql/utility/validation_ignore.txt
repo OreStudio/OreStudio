@@ -124,6 +124,38 @@ TENANT_001 ores_database_info_tbl
 TENANT_001 ores_mq_metrics_samples_tbl
 
 # =============================================================================
+# MQ queues table - supports party/tenant/system scopes with nullable tenant_id.
+# For system-scope queues tenant_id is intentionally NULL; a non-null tenant_id
+# column check is not applicable.
+# =============================================================================
+TENANT_001 ores_mq_queues_tbl
+
+# =============================================================================
+# MQ messages, archive, and stats tables - tenant_id not in PK by design.
+# PKs are bigserial (messages) or (queue_id, timestamp) for hypertables.
+# Isolation is enforced via RLS policies on the parent queue.
+# =============================================================================
+TENANT_002 ores_mq_messages_tbl
+TENANT_002 ores_mq_message_archive_tbl
+TENANT_002 ores_mq_queue_stats_tbl
+
+# =============================================================================
+# Scheduler job definitions table - tenant_id nullable for system-level jobs.
+# System-scope jobs have tenant_id = NULL; EXCLUDE constraint uses nullable
+# (tenant_id, party_id) scope which cannot include tenant_id in the
+# standard non-null PK/EXCLUDE form.
+# =============================================================================
+TENANT_002 ores_scheduler_job_definitions_tbl
+TENANT_003 ores_scheduler_job_definitions_tbl
+
+# =============================================================================
+# Scheduler job instances table - TimescaleDB hypertable on triggered_at.
+# tenant_id present for RLS but excluded from PK by the same rationale as
+# other hypertables; the serial PK is globally unique.
+# =============================================================================
+TENANT_002 ores_scheduler_job_instances_tbl
+
+# =============================================================================
 # Reporting junction tables - tenant_id not in PK/EXCLUDE by design.
 # risk_report_config_id is a globally unique UUID that already implies a single
 # tenant; tenant isolation is enforced via RLS rather than PK membership.

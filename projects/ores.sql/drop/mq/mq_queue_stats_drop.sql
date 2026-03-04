@@ -18,6 +18,5 @@
  *
  */
 
-\ir ./scheduler_job_instances_drop.sql
-\ir ./scheduler_job_definitions_notify_trigger_drop.sql
-\ir ./scheduler_job_definitions_drop.sql
+drop function if exists ores_mq_queue_stats_scrape_fn;
+drop table if exists ores_mq_queue_stats_tbl cascade;

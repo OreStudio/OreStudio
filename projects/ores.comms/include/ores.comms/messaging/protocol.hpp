@@ -353,7 +353,13 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // Version 47.0 adds codename field to party wire format after short_code.
 // The codename is a globally unique adjective_noun pair used as the per-party
 // pgmq queue prefix. Breaking change.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 47;
+//
+// Version 48.0 replaces pgmq + pg_cron extensions with custom ores_mq_* tables
+// and in-process scheduler_loop. MQ wire types updated: queue_definition uses
+// id/scope_type/queue_type/description; stats use pending_count/processing_count
+// instead of queue_length/total_messages. Scheduler job_definition loses
+// cron_job_id/database_name, gains action_type/action_payload. Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 48;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

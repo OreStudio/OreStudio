@@ -71,7 +71,9 @@
 #include "ores.scheduler/messaging/registrar.hpp"
 #include "ores.reporting/messaging/registrar.hpp"
 #include "ores.mq/messaging/registrar.hpp"
-#include "ores.mq/service/mq_job_initializer.hpp"
+#include "ores.scheduler/service/scheduler_loop.hpp"
+#include "ores.scheduler/service/sql_action_handler.hpp"
+#include "ores.scheduler/service/mq_action_handler.hpp"
 #include "ores.reporting/eventing/report_type_changed_event.hpp"
 #include "ores.reporting/eventing/concurrency_policy_changed_event.hpp"
 #include "ores.reporting/eventing/report_definition_changed_event.hpp"
@@ -695,15 +697,20 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::reporting::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::mq::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
 
-    {
-        const auto system_tenant =
-            utility::uuid::tenant_id::system().to_string();
-        refdata::repository::party_repository party_repo(ctx);
-        const auto parties = party_repo.read_system_party(system_tenant);
-        if (parties.empty())
-            throw std::runtime_error("System party not found for system tenant");
-        ores::mq::service::mq_job_initializer::initialise(ctx, parties.front().id);
-    }
+    // Start the in-process scheduler loop
+    std::vector<std::unique_ptr<ores::scheduler::service::action_handler>> sched_handlers;
+    sched_handlers.push_back(
+        std::make_unique<ores::scheduler::service::sql_action_handler>());
+    sched_handlers.push_back(
+        std::make_unique<ores::scheduler::service::mq_action_handler>());
+    auto scheduler_loop_ptr = std::make_shared<
+        ores::scheduler::service::scheduler_loop>(ctx, std::move(sched_handlers));
+    boost::asio::co_spawn(io_ctx,
+        [scheduler_loop_ptr, &io_ctx]() -> boost::asio::awaitable<void> {
+            co_await scheduler_loop_ptr->run(io_ctx);
+        },
+        boost::asio::detached);
+    BOOST_LOG_SEV(lg(), info) << "Scheduler loop started.";
 
     // Register system info handler for get_system_info_request (no auth required)
     auto si_handler =

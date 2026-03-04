@@ -236,8 +236,7 @@ void ClientQueueModel::refresh() {
             // --- Merge: index stats by queue_id, keeping latest per queue ---
             using uuid = boost::uuids::uuid;
             std::unordered_map<uuid,
-                const mq::domain::queue_stats*,
-                boost::hash<uuid>> stats_map;
+                const mq::domain::queue_stats*> stats_map;
             for (const auto& s : stats_resp->stats) {
                 auto it = stats_map.find(s.queue_id);
                 if (it == stats_map.end() ||

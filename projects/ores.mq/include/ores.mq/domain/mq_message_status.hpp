@@ -17,18 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_QUEUE_METRICS_JSON_IO_HPP
-#define ORES_MQ_PGMQ_QUEUE_METRICS_JSON_IO_HPP
+#ifndef ORES_MQ_DOMAIN_MQ_MESSAGE_STATUS_HPP
+#define ORES_MQ_DOMAIN_MQ_MESSAGE_STATUS_HPP
 
-#include <iosfwd>
-#include "ores.mq/pgmq/queue_metrics.hpp"
+namespace ores::mq::domain {
 
-namespace ores::mq::pgmq {
-
-/**
- * @brief Dumps the queue_metrics object to a stream in JSON format.
- */
-std::ostream& operator<<(std::ostream& s, const queue_metrics& v);
+enum class mq_message_status { pending, processing, done, failed };
 
 }
 

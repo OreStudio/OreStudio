@@ -17,17 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.mq/pgmq/queue_info_json_io.hpp"
+#ifndef ORES_MQ_DOMAIN_QUEUE_DEFINITION_HPP
+#define ORES_MQ_DOMAIN_QUEUE_DEFINITION_HPP
 
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <chrono>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.mq/domain/queue_scope_type.hpp"
+#include "ores.mq/domain/queue_type.hpp"
 
-namespace ores::mq::pgmq {
+namespace ores::mq::domain {
 
-std::ostream& operator<<(std::ostream& s, const queue_info& v) {
-    rfl::json::write(v, s);
-    return s;
+/**
+ * @brief Definition of a message queue.
+ *
+ * Mirrors a row in ores_mq_queues_tbl.
+ */
+struct queue_definition final {
+    boost::uuids::uuid id;
+    std::optional<boost::uuids::uuid> tenant_id;
+    std::optional<boost::uuids::uuid> party_id;
+    queue_scope_type scope_type = queue_scope_type::party;
+    queue_type queue_type = queue_type::task;
+    std::string name;
+    std::string description;
+    std::chrono::system_clock::time_point created_at;
+    bool is_active = true;
+};
+
 }
 
-}
+#endif

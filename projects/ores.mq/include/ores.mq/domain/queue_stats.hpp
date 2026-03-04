@@ -17,18 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_QUEUE_INFO_JSON_IO_HPP
-#define ORES_MQ_PGMQ_QUEUE_INFO_JSON_IO_HPP
+#ifndef ORES_MQ_DOMAIN_QUEUE_STATS_HPP
+#define ORES_MQ_DOMAIN_QUEUE_STATS_HPP
 
-#include <iosfwd>
-#include "ores.mq/pgmq/queue_info.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
+#include <boost/uuid/uuid.hpp>
 
-namespace ores::mq::pgmq {
+namespace ores::mq::domain {
 
 /**
- * @brief Dumps the queue_info object to a stream in JSON format.
+ * @brief Statistics snapshot for a queue.
+ *
+ * Mirrors a row returned by queue statistics queries.
  */
-std::ostream& operator<<(std::ostream& s, const queue_info& v);
+struct queue_stats final {
+    std::chrono::system_clock::time_point recorded_at;
+    boost::uuids::uuid queue_id;
+    std::optional<boost::uuids::uuid> tenant_id;
+    std::optional<boost::uuids::uuid> party_id;
+    std::int64_t pending_count = 0;
+    std::int64_t processing_count = 0;
+    std::int64_t total_archived = 0;
+};
 
 }
 

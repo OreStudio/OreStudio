@@ -32,7 +32,7 @@ domain::queue_message_event generate_synthetic_queue_message_event(
 
     domain::queue_message_event ev;
     ev.queue_name = queue_name.empty()
-        ? "pgmq.q_" + ctx.alphanumeric(8)
+        ? "ores.mq.q_" + ctx.alphanumeric(8)
         : queue_name;
     ev.msg_id = ctx.random_int(1, 1000000);
     ev.timestamp = ctx.past_timepoint(1);

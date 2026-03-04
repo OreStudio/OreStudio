@@ -33,19 +33,19 @@ namespace ores::mq::domain {
  * @brief Encoding of the message payload bytes.
  */
 enum class payload_encoding : std::uint8_t {
-    json = 0, ///< JSON-encoded payload (pgmq default: JSONB).
+    json = 0, ///< JSON-encoded payload.
     bson = 1  ///< BSON-encoded payload.
 };
 
 /**
- * @brief Domain event representing a message popped from a pgmq queue.
+ * @brief Domain event representing a message popped from a queue.
  *
- * Published by queue_listener when it pops a message from a monitored
- * pgmq queue. Consumers subscribe to this event on the event_bus and
+ * Published by queue_listener when it reads and acks a message from a
+ * monitored queue. Consumers subscribe to this event on the event_bus and
  * may forward the payload to remote subscribers via subscription_manager.
  */
 struct queue_message_event final {
-    /// Name of the pgmq queue this message came from.
+    /// Name of the queue this message came from.
     std::string queue_name;
 
     /// Unique monotonically increasing message ID within the queue.
@@ -54,7 +54,7 @@ struct queue_message_event final {
     /// Timestamp when the message was enqueued (UTC).
     std::chrono::system_clock::time_point timestamp;
 
-    /// Encoding of the payload bytes (always json for pgmq JSONB queues).
+    /// Encoding of the payload bytes (always json for JSON payloads).
     payload_encoding encoding{payload_encoding::json};
 
     /// Raw message payload bytes.

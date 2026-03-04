@@ -17,25 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_MQ_EXCEPTION_HPP
-#define ORES_MQ_PGMQ_MQ_EXCEPTION_HPP
+#ifndef ORES_MQ_DOMAIN_QUEUE_TYPE_HPP
+#define ORES_MQ_DOMAIN_QUEUE_TYPE_HPP
 
-#include <string>
-#include <stdexcept>
+namespace ores::mq::domain {
 
-namespace ores::mq::pgmq {
-
-/**
- * @brief Exception thrown by pgmq client operations.
- *
- * Wraps any error returned by the pgmq PostgreSQL extension or encountered
- * while communicating with the database for queue operations.
- */
-class mq_exception : public std::runtime_error {
-public:
-    explicit mq_exception(const std::string& message)
-        : std::runtime_error(message) {}
-};
+enum class queue_type { task, channel };
 
 }
 

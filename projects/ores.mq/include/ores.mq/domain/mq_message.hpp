@@ -17,31 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_PGMQ_QUEUE_INFO_HPP
-#define ORES_MQ_PGMQ_QUEUE_INFO_HPP
+#ifndef ORES_MQ_DOMAIN_MQ_MESSAGE_HPP
+#define ORES_MQ_DOMAIN_MQ_MESSAGE_HPP
 
 #include <chrono>
+#include <cstdint>
+#include <optional>
 #include <string>
+#include <vector>
+#include <boost/uuid/uuid.hpp>
+#include "ores.mq/domain/mq_message_status.hpp"
 
-namespace ores::mq::pgmq {
+namespace ores::mq::domain {
 
 /**
- * @brief Metadata about a pgmq queue.
+ * @brief A message stored in a queue.
  *
- * Mirrors the pgmq.queue_record composite type returned by pgmq.list_queues().
+ * Mirrors a row in ores_mq_messages_tbl.
  */
-struct queue_info final {
-    /// Name of the queue.
-    std::string queue_name;
-
-    /// Timestamp when the queue was created (UTC).
+struct mq_message final {
+    std::int64_t id = 0;
+    boost::uuids::uuid queue_id;
+    std::optional<boost::uuids::uuid> tenant_id;
+    std::optional<boost::uuids::uuid> party_id;
+    std::string message_type;
+    std::string payload_type;  // "json" or "binary"
+    std::optional<std::string> payload;    // JSON text when payload_type == "json"
+    std::vector<std::byte> raw_payload;    // when payload_type == "binary"
+    mq_message_status status = mq_message_status::pending;
+    std::chrono::system_clock::time_point visible_after;
     std::chrono::system_clock::time_point created_at;
-
-    /// True if the queue was created as UNLOGGED (no WAL, faster but non-durable).
-    bool is_unlogged{false};
-
-    /// True if the queue is partitioned.
-    bool is_partitioned{false};
+    int read_count = 0;
+    std::string error_message;
 };
 
 }

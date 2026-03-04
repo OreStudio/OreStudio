@@ -17,17 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.mq/pgmq/queue_metrics_json_io.hpp"
+#ifndef ORES_MQ_DOMAIN_QUEUE_SCOPE_TYPE_HPP
+#define ORES_MQ_DOMAIN_QUEUE_SCOPE_TYPE_HPP
 
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+namespace ores::mq::domain {
 
-namespace ores::mq::pgmq {
-
-std::ostream& operator<<(std::ostream& s, const queue_metrics& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+enum class queue_scope_type { party, tenant, system };
 
 }
+
+#endif

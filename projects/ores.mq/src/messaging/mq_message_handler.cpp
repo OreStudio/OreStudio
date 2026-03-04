@@ -222,7 +222,7 @@ mq_message_handler::handle_create_queue_request(
         else
             def.scope_type = domain::queue_scope_type::party;
 
-        def.queue_type = (request.queue_type == "channel")
+        def.type = (request.queue_type == "channel")
             ? domain::queue_type::channel : domain::queue_type::task;
 
         // Populate tenant/party from the session context.

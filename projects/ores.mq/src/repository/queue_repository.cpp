@@ -131,7 +131,7 @@ domain::queue_definition parse_queue_row(
     }
 
     def.scope_type  = parse_scope_type(row[3].value_or("party"));
-    def.queue_type  = parse_queue_type(row[4].value_or("task"));
+    def.type  = parse_queue_type(row[4].value_or("task"));
     def.name        = row[5].value_or("");
     def.description = row[6].value_or("");
     def.created_at  = parse_pg_timestamp(row[7].value_or(""));
@@ -166,7 +166,7 @@ boost::uuids::uuid queue_repository::create_queue(context ctx,
          tenant_str,
          party_str,
          to_string(def.scope_type),
-         to_string(def.queue_type),
+         to_string(def.type),
          def.name,
          def.description,
          modified_by},

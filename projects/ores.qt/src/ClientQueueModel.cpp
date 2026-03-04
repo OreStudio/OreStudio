@@ -253,7 +253,7 @@ void ClientQueueModel::refresh() {
                 r.name        = qd.name;
                 r.description = qd.description;
                 r.scope_type  = to_string(qd.scope_type);
-                r.queue_type  = to_string(qd.queue_type);
+                r.queue_type  = to_string(qd.type);
                 r.created_at  = qd.created_at;
                 r.is_active   = qd.is_active;
 

@@ -39,7 +39,7 @@ struct queue_definition final {
     std::optional<boost::uuids::uuid> tenant_id;
     std::optional<boost::uuids::uuid> party_id;
     queue_scope_type scope_type = queue_scope_type::party;
-    queue_type queue_type = queue_type::task;
+    queue_type type = queue_type::task;
     std::string name;
     std::string description;
     std::chrono::system_clock::time_point created_at;

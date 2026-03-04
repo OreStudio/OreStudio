@@ -71,7 +71,7 @@ void write_queue_definition(std::vector<std::byte>& buffer,
     writer::write_string(buffer, scope_str);
 
     // queue_type as string
-    std::string qtype_str = (qd.queue_type == domain::queue_type::channel)
+    std::string qtype_str = (qd.type == domain::queue_type::channel)
         ? "channel" : "task";
     writer::write_string(buffer, qtype_str);
 
@@ -133,7 +133,7 @@ read_queue_definition(std::span<const std::byte>& data) {
     // queue_type
     auto qtype_result = reader::read_string(data);
     if (!qtype_result) return std::unexpected(qtype_result.error());
-    qd.queue_type = (*qtype_result == "channel")
+    qd.type = (*qtype_result == "channel")
         ? domain::queue_type::channel : domain::queue_type::task;
 
     auto name_result = reader::read_string(data);

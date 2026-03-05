@@ -1,0 +1,94 @@
+#+TITLE: JWT Migration to ores.security + RS256
+#+DATE: 2026-03-05
+#+AUTHOR: ORE Studio Team
+
+* Context
+
+JWT support currently lives in =ores.http= as a private implementation detail for
+HTTP authentication. With the broker architecture requiring JWT in every binary
+protocol frame, JWT needs to become a shared infrastructure primitive. =ores.security=
+is the correct home — it already provides OpenSSL-backed crypto primitives and is
+consumed by =ores.iam=, =ores.http=, =ores.qt=, and others.
+
+Additionally, RS256 (asymmetric signing) is currently a =// TODO= in the
+implementation. For distributed services each independently validating tokens,
+RS256 is the right algorithm: only the IAM service holds the private key; all
+other services validate with the public key only.
+
+* Files to Create
+
+New in =ores.security=:
+- =include/ores.security/jwt/jwt_claims.hpp= — moved + extended from =ores.http/domain/=
+- =include/ores.security/jwt/jwt_error.hpp= — moved from =ores.http/domain/=
+- =include/ores.security/jwt/boost_json_traits.hpp= — moved from =ores.http/middleware/=
+- =include/ores.security/jwt/jwt_authenticator.hpp= — moved + RS256 implemented
+- =src/jwt/jwt_authenticator.cpp= — implementation with RS256 signing and verification
+- =tests/jwt_authenticator_tests.cpp= — existing tests moved + new RS256 tests
+
+* Files to Modify
+
+** =ores.security/src/CMakeLists.txt=
+- Add =find_package(jwt-cpp CONFIG REQUIRED)= and link =jwt-cpp::jwt-cpp= (private)
+- Add =find_package(Boost REQUIRED COMPONENTS json)= (already transitive but make explicit)
+
+** =ores.security/include/ores.security/ores.security.hpp=
+- Add include for =ores.security/jwt/jwt_authenticator.hpp=
+
+** =ores.http/src/CMakeLists.txt=
+- Add =ores.security.lib= as a PUBLIC dependency
+- Remove =jwt-cpp::jwt-cpp= (now comes via ores.security transitively)
+
+** =ores.http= — update includes in:
+- =include/ores.http/middleware/jwt_authenticator.hpp= — forward to ores.security
+- =include/ores.http/domain/jwt_claims.hpp= — forward to ores.security
+- =src/middleware/jwt_authenticator.cpp= — update includes
+- =src/net/http_session.cpp= — update includes
+- =tests/jwt_authenticator_tests.cpp= — remove (tests now live in ores.security)
+
+* jwt_claims Changes
+
+Add fields needed for the broker/service auth path:
+
+#+begin_src cpp
+struct jwt_claims {
+    // existing fields...
+    std::optional<std::string> tenant_id;   // UUID string
+    std::optional<std::string> party_id;    // UUID string (nil if no party)
+    // NOTE: visible_party_ids NOT in JWT — loaded from DB session record by
+    // services on first request, cached by session_id. Avoids large tokens.
+};
+#+end_src
+
+* RS256 Implementation
+
+=jwt_authenticator= gains two factory methods:
+- =create_rs256_signer(private_key_pem, issuer, audience)= — used by IAM to mint tokens
+- =create_rs256_verifier(public_key_pem, issuer, audience)= — used by all services to validate
+
+Private key stays in IAM config only. Public key distributed to all services via config.
+IAM uses the signer; the router and all domain services use the verifier.
+
+* IAM Login Handler
+
+Update =ores.iam/src/messaging/accounts_message_handler.cpp=:
+- After session creation, mint a JWT using the RS256 signer
+- Claims: =subject=account_id=, =tenant_id=, =party_id=, =roles=, =session_id=,
+  =issued_at=now=, =expires_at=now+1h=
+- Return JWT string in =login_response= (new field)
+
+This is part of Plan 1 because minting requires the new infrastructure.
+
+* Protocol Version Bump
+
+Bump to *49.0* in =ores.comms/include/ores.comms/messaging/protocol.hpp=.
+Change log entry: "Add JWT token to login_response."
+
+* Verification
+
+1. =cmake --build --preset linux-clang-debug= — build passes
+2. =cmake --build --preset linux-clang-debug --target ores.security.tests= — all existing
+   security tests pass, new JWT tests pass
+3. =cmake --build --preset linux-clang-debug --target ores.http.tests= — HTTP JWT tests pass
+4. RS256 round-trip: sign with private key, verify with public key — token validates
+5. RS256 tamper test: modify payload, verify fails with =invalid_signature=
+6. Expired token test: token with past =expires_at= returns =expired_token= error

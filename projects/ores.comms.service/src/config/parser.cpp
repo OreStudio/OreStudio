@@ -40,6 +40,7 @@ const std::string usage_error_msg("Usage error: ");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
+const std::string jwt_secret_arg("jwt-secret");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -66,8 +67,14 @@ options_description make_options_description() {
             55555, 10, "ores-service-v1", true));
     const auto dod(database_configuration::make_options_description());
 
+    options_description jwt_opts("JWT options");
+    jwt_opts.add_options()
+        (jwt_secret_arg.c_str(),
+         value<std::string>()->value_name("SECRET"),
+         "HS256 shared secret for JWT signing and validation (enables JWT mode)");
+
     options_description r;
-    r.add(god).add(lod).add(sod).add(dod);
+    r.add(god).add(lod).add(sod).add(dod).add(jwt_opts);
     return r;
 }
 
@@ -143,6 +150,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.server = server_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
+    if (vm.count(jwt_secret_arg))
+        r.jwt_secret = vm[jwt_secret_arg].as<std::string>();
 
     return r;
 }

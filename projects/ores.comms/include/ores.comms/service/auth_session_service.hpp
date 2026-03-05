@@ -261,23 +261,49 @@ public:
     void remove_client_info(const std::string& remote_address);
 
     /**
+     * @brief Result returned by the JWT validator function.
+     *
+     * Carries the two UUID strings extracted from a successfully decoded
+     * token. Using a plain struct (no ores.security types) keeps the header
+     * free of ores.security to avoid the circular dependency:
+     * ores.comms ← ores.variability ← ores.comms.
+     */
+    struct jwt_validation_result {
+        std::string account_id;  ///< UUID as string (JWT subject claim)
+        std::string session_id;  ///< UUID as string (JWT session_id claim), empty if absent
+    };
+
+    /**
      * @brief Type alias for the JWT validation function.
      *
-     * Takes a JWT string and returns the account UUID string on success,
-     * or empty string on failure. Used to break the compile-time dependency
+     * Takes a JWT string and returns a jwt_validation_result on success,
+     * or nullopt on failure. Used to break the compile-time dependency
      * on ores.security from this header (ores.comms ← ores.variability ←
      * ores.comms would form a cycle if ores.security were linked directly).
      */
-    using jwt_validator_fn = std::function<std::string(const std::string&)>;
+    using jwt_validator_fn = std::function<std::optional<jwt_validation_result>(const std::string&)>;
 
     /**
      * @brief Set the JWT validator used to validate bearer tokens in frames.
      *
-     * The function receives a raw JWT string and returns the account_id
-     * (UUID as string) on success, or empty string on failure.
+     * The function receives a raw JWT string and returns a jwt_validation_result
+     * on success, or nullopt on failure.
      * Optional: if not set, JWT validation is skipped (legacy mode).
      */
     void set_jwt_validator(jwt_validator_fn validator);
+
+    /**
+     * @brief Look up a session by its UUID session_id.
+     *
+     * Sessions are indexed by session_id when they are stored via
+     * store_session_data() and when validate_jwt() succeeds. Returns nullopt
+     * if the session_id is not found.
+     *
+     * @param session_id The session UUID (from the JWT session_id claim)
+     * @return Session info if found, nullopt otherwise
+     */
+    [[nodiscard]] std::optional<session_info>
+    get_session_by_session_id(const boost::uuids::uuid& session_id) const;
 
     /**
      * @brief Validate a JWT bearer token and refresh the session for remote_address.
@@ -322,6 +348,7 @@ private:
 
     mutable std::mutex session_mutex_;
     std::map<std::string, std::shared_ptr<session_data>> sessions_;
+    std::map<boost::uuids::uuid, std::string> session_id_index_; ///< session_id → remote_address
 
     mutable std::mutex client_info_mutex_;
     std::map<std::string, client_info> client_infos_;

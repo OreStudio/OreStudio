@@ -98,6 +98,7 @@
 #include "ores.dq/service/dataset_bundle_service.hpp"
 #include "ores.comms.service/app/application_exception.hpp"
 #include "ores.comms.service/messaging/system_info_handler.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::comms::service::app {
 using namespace ores::logging;
@@ -665,6 +666,28 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     // Wire sessions service into subscription manager for tenant-aware filtering
     subscription_mgr->set_sessions_service(srv->sessions());
 
+    // Optionally set up JWT signing/validation (HS256 shared secret)
+    std::shared_ptr<security::jwt::jwt_authenticator> jwt_auth;
+    if (cfg.jwt_secret && !cfg.jwt_secret->empty()) {
+        auto auth = std::make_shared<security::jwt::jwt_authenticator>(
+            security::jwt::jwt_authenticator::create_hs256(*cfg.jwt_secret));
+        BOOST_LOG_SEV(lg(), info) << "JWT HS256 mode enabled";
+        // Wire validator into auth session service so frames carrying a JWT
+        // are verified on every authenticated request
+        srv->sessions()->set_jwt_validator(
+            [auth](const std::string& token)
+                -> std::optional<comms::service::auth_session_service::jwt_validation_result> {
+                auto result = auth->validate(token);
+                if (!result)
+                    return std::nullopt;
+                return comms::service::auth_session_service::jwt_validation_result{
+                    .account_id = result->subject,
+                    .session_id = result->session_id.value_or("")
+                };
+            });
+        jwt_auth = std::move(auth);
+    }
+
     // Create geolocation service using PostgreSQL geoip tables
     auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 
@@ -686,7 +709,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
     ores::refdata::messaging::registrar::register_handlers(*srv, ctx, system_flags,
         srv->sessions());
     ores::iam::messaging::registrar::register_handlers(*srv, ctx, system_flags, auth_service,
-        geo_service, bundle_provider);
+        geo_service, bundle_provider, jwt_auth);
     ores::variability::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::assets::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());
     ores::telemetry::messaging::registrar::register_handlers(*srv, ctx, srv->sessions());

@@ -174,6 +174,8 @@ begin
 
         -- Auto-generate codename using existing whimsical name infrastructure.
         if NEW.codename = '' or NEW.codename is null then
+            -- Serialize concurrent codename generation to prevent TOCTOU race.
+            perform pg_advisory_xact_lock(hashtext('ores_refdata_parties'), hashtext('codename_gen'));
             loop
                 NEW.codename := ores_utility_generate_whimsical_name_fn();
                 exit when not exists (

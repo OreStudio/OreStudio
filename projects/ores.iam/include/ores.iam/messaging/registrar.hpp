@@ -28,6 +28,7 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/messaging/accounts_message_handler.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::iam::messaging {
 
@@ -59,7 +60,8 @@ public:
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<service::authorization_service> auth_service,
         std::shared_ptr<geo::service::geolocation_service> geo_service,
-        bundle_provider_fn bundle_provider = nullptr);
+        bundle_provider_fn bundle_provider = nullptr,
+        std::shared_ptr<security::jwt::jwt_authenticator> jwt_signer = nullptr);
 };
 
 }

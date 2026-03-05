@@ -364,7 +364,14 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // successful login containing subject (account_id), tenant_id, party_id, roles,
 // session_id, issued_at, and expires_at (now+1h). JWT infrastructure moves to
 // ores.security as a shared primitive. Breaking change.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 49;
+//
+// Version 50.0 embeds JWT in every frame. The reserved2 header field (bytes 28-31)
+// is repurposed as jwt_size (uint32): after the 32-byte header, jwt_size bytes of
+// the bearer JWT precede the payload. Unauthenticated messages set jwt_size = 0.
+// CRC now covers header + jwt_bytes + payload. Adds broker subsystem (0xC000-0xC00F)
+// with register_service_request/response (0xC000/C001) and
+// token_refresh_request/response (0xC002/C003). Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 50;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges
@@ -392,6 +399,8 @@ constexpr std::uint16_t REPORTING_SUBSYSTEM_MIN = 0xA000;
 constexpr std::uint16_t REPORTING_SUBSYSTEM_MAX = 0xAFFF;
 constexpr std::uint16_t MQ_SUBSYSTEM_MIN = 0xB000;
 constexpr std::uint16_t MQ_SUBSYSTEM_MAX = 0xBFFF;
+constexpr std::uint16_t BROKER_SUBSYSTEM_MIN = 0xC000;
+constexpr std::uint16_t BROKER_SUBSYSTEM_MAX = 0xC00F;
 
 }
 

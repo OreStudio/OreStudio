@@ -74,7 +74,7 @@ frame::frame() : header_{}, payload_{} {
     header_.sequence = 0;
     header_.crc = 0;
     header_.correlation_id = 0;
-    header_.reserved2.fill(0);
+    header_.jwt_size = 0;
 }
 
 frame::frame(message_type type,
@@ -90,7 +90,7 @@ frame::frame(message_type type,
     header_.sequence = sequence;
     header_.crc = 0; // Will be calculated during serialization
     header_.correlation_id = 0;
-    header_.reserved2.fill(0);
+    header_.jwt_size = 0;
 
     init_payload(std::move(payload), compression);
 }
@@ -108,7 +108,7 @@ frame::frame(message_type type, std::uint32_t sequence,
     header_.sequence = sequence;
     header_.crc = 0; // Will be calculated during serialization
     header_.correlation_id = correlation_id;
-    header_.reserved2.fill(0);
+    header_.jwt_size = 0;
 
     init_payload(std::move(payload), compression);
 }
@@ -163,8 +163,7 @@ void frame::serialize_header(frame_header header, std::span<std::byte> buffer) c
     write32(header.sequence);
     write32(header.crc);
     write32(header.correlation_id);
-    std::memcpy(buffer.data() + offset, header.reserved2.data(),
-        header.reserved2.size());
+    write32(header.jwt_size);
 }
 
 std::uint32_t frame::calculate_crc() const {
@@ -174,10 +173,15 @@ std::uint32_t frame::calculate_crc() const {
     std::array<std::byte, frame_header::size> header_bytes;
     frame_header temp_header = header_;
     temp_header.crc = 0;
+    temp_header.jwt_size = static_cast<std::uint32_t>(jwt_.size());
     serialize_header(temp_header, header_bytes);
 
     // Process header
     crc.process_bytes(header_bytes.data(), header_bytes.size());
+
+    // Process JWT if present
+    if (!jwt_.empty())
+        crc.process_bytes(jwt_.data(), jwt_.size());
 
     // Process payload if present
     if (!payload_.empty())
@@ -188,13 +192,18 @@ std::uint32_t frame::calculate_crc() const {
 
 std::vector<std::byte> frame::serialize() const {
     frame_header header_with_crc = header_;
+    header_with_crc.jwt_size = static_cast<std::uint32_t>(jwt_.size());
     header_with_crc.crc = calculate_crc();
 
     std::vector<std::byte> result;
-    result.resize(frame_header::size + payload_.size());
+    result.resize(frame_header::size + jwt_.size() + payload_.size());
     serialize_header(header_with_crc, result);
+    if (!jwt_.empty()) {
+        std::memcpy(result.data() + frame_header::size, jwt_.data(), jwt_.size());
+    }
     if (!payload_.empty()) {
-        std::memcpy(result.data() + frame_header::size, payload_.data(), payload_.size());
+        std::memcpy(result.data() + frame_header::size + jwt_.size(),
+            payload_.data(), payload_.size());
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Serialised frame " << header_with_crc.type
@@ -251,9 +260,7 @@ frame::deserialize_header(std::span<const std::byte> data, bool skip_version_che
     header.sequence = read32();
     header.crc = read32();
     header.correlation_id = read32();
-
-    std::memcpy(header.reserved2.data(), data.data() + offset, header.reserved2.size());
-    offset += header.reserved2.size();
+    header.jwt_size = read32();
 
     // Validate header fields (but not CRC yet, as we don't have the payload)
     if (header.magic != PROTOCOL_MAGIC) {
@@ -272,10 +279,9 @@ frame::deserialize_header(std::span<const std::byte> data, bool skip_version_che
         BOOST_LOG_SEV(lg(), error) << "Invalid compression_flags field (must be 0)";
         return std::unexpected(error_code::invalid_message_type);
     }
-    if (std::ranges::any_of(header.reserved2,
-            [](std::uint8_t v) { return v != 0; })) {
-        BOOST_LOG_SEV(lg(), error) << "Invalid reserved2 field";
-        return std::unexpected(error_code::invalid_message_type);
+    if (header.jwt_size > MAX_PAYLOAD_SIZE) {
+        BOOST_LOG_SEV(lg(), error) << "JWT size too large: " << header.jwt_size;
+        return std::unexpected(error_code::payload_too_large);
     }
     if (header.payload_size > MAX_PAYLOAD_SIZE) {
         BOOST_LOG_SEV(lg(), error) << "Payload size too large: "
@@ -292,20 +298,26 @@ deserialize(const frame_header& header, std::span<const std::byte> data) {
     BOOST_LOG_SEV(lg(), debug) << "Deserializing frame with payload. Total data size: "
                                << data.size();
 
-    // Check we have enough data for the complete frame
-    const auto expected_size = frame_header::size + header.payload_size;
+    // Check we have enough data for the complete frame (header + jwt + payload)
+    const auto expected_size = frame_header::size + header.jwt_size + header.payload_size;
     if (data.size() < expected_size) {
         BOOST_LOG_SEV(lg(), error) << "Insufficient data for complete frame. Got: "
                                    << data.size() << " Expected: " << expected_size;
         return std::unexpected(error_code::invalid_message_type);
     }
 
-    // Build the frame with payload
+    // Build the frame: extract JWT then payload
     frame f;
     f.header_ = header;
+    if (header.jwt_size > 0) {
+        const char* jwt_ptr = reinterpret_cast<const char*>(
+            data.data() + frame_header::size);
+        f.jwt_.assign(jwt_ptr, header.jwt_size);
+    }
     if (header.payload_size > 0) {
-        f.payload_.assign(data.begin() + frame_header::size,
-            data.begin() + frame_header::size + header.payload_size);
+        const auto payload_start = frame_header::size + header.jwt_size;
+        f.payload_.assign(data.begin() + payload_start,
+            data.begin() + payload_start + header.payload_size);
     }
 
     // Validate CRC

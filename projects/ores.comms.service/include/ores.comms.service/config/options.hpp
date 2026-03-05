@@ -44,6 +44,25 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+
+    /**
+     * @brief Shared secret used for HS256 JWT signing and validation.
+     *
+     * When set, the service mints JWT tokens on successful login and validates
+     * them on every authenticated request. If not set, JWT is disabled and the
+     * service falls back to session-by-remote-address mode.
+     */
+    std::optional<std::string> jwt_secret;
+
+    /**
+     * @brief NNG backend endpoint of the message broker to register with.
+     *
+     * When set, the service connects to the broker backend socket at startup,
+     * sends a register_service_request for all handled message type ranges,
+     * and proceeds only after receiving a successful response.
+     * If not set, standalone mode is used (no broker registration).
+     */
+    std::optional<std::string> broker_backend;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

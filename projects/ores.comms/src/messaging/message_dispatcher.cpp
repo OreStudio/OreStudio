@@ -41,6 +41,14 @@ message_dispatcher::dispatch(const frame& request_frame, std::uint32_t sequence,
     const auto msg_type = request_frame.header().type;
     BOOST_LOG_SEV(lg(), debug) << "Dispatching message type " << msg_type;
 
+    // If a JWT is present in the frame, validate it and refresh the session.
+    // Fall back to remote_address session map if no JWT is present.
+    if (sessions_ && !request_frame.jwt().empty()) {
+        // Validate JWT; ignore return value — purpose is to confirm account identity
+        // against the existing remote_address session. Authorization check follows.
+        (void)sessions_->validate_jwt(request_frame.jwt(), remote_address);
+    }
+
     // Check authorization before routing to handler
     if (sessions_) {
         auto auth_result = sessions_->authorize_request(msg_type, remote_address);

@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "ores.iam/messaging/accounts_message_handler.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::iam::messaging {
 
@@ -32,13 +33,14 @@ void registrar::register_handlers(comms::net::server& server,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<service::authorization_service> auth_service,
     std::shared_ptr<geo::service::geolocation_service> geo_service,
-    bundle_provider_fn bundle_provider) {
+    bundle_provider_fn bundle_provider,
+    std::shared_ptr<security::jwt::jwt_authenticator> jwt_signer) {
     BOOST_LOG_SEV(lg(), debug) << "Registering message handlers.";
 
     auto handler = std::make_shared<accounts_message_handler>(
         std::move(ctx), std::move(system_flags), server.sessions(),
         std::move(auth_service), std::move(geo_service),
-        std::move(bundle_provider));
+        std::move(bundle_provider), std::move(jwt_signer));
 
     comms::messaging::message_type_range accounts_range{
         .min = comms::messaging::IAM_SUBSYSTEM_MIN,

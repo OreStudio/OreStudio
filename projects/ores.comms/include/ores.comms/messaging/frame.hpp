@@ -21,7 +21,7 @@
 #define ORES_COMMS_MESSAGING_FRAME_HPP
 
 #include <span>
-#include <array>
+#include <string>
 #include <vector>
 #include <iosfwd>
 #include <cstdint>
@@ -38,7 +38,7 @@ constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000;
 /**
  * @brief Frame header structure for the ORES protocol.
  *
- * Frame layout (32 bytes header):
+ * Frame layout (32 bytes header, followed by optional JWT, then payload):
  * +0:  magic (4 bytes)          - Protocol identifier (0x4F524553 = "ORES")
  * +4:  version_major (2 bytes)  - Protocol major version
  * +6:  version_minor (2 bytes)  - Protocol minor version
@@ -47,15 +47,18 @@ constexpr size_t MAX_PAYLOAD_SIZE = 1'000'000;
  * +11: compression_flags (1 byte) - Reserved compression flags (must be 0)
  * +12: payload_size (4 bytes)   - Size of payload in bytes (compressed size if compressed)
  * +16: sequence (4 bytes)       - Sequence number for ordering
- * +20: crc (4 bytes)            - CRC32 checksum of header + compressed payload
+ * +20: crc (4 bytes)            - CRC32 checksum of header + jwt + compressed payload
  * +24: correlation_id (4 bytes) - Matches requests to responses
- * +28: reserved2 (4 bytes)      - Reserved for future use
- * +32: payload (N bytes)        - Message payload (compressed if compression != none)
+ * +28: jwt_size (4 bytes)       - Size of JWT bytes following the header (0 if none)
+ * +32: jwt (jwt_size bytes)     - Bearer JWT (UTF-8, omitted if jwt_size = 0)
+ * +32+jwt_size: payload (N bytes) - Message payload (compressed if compression != none)
  *
  * When compression is enabled (compression != none):
  * - payload_size contains the compressed size
  * - The payload is the compressed data
- * - CRC is calculated over header + compressed payload
+ * - CRC is calculated over header + jwt + compressed payload
+ *
+ * Unauthenticated messages (ping, handshake, login_request) set jwt_size = 0.
  */
 struct frame_header final {
     std::uint32_t magic;
@@ -68,7 +71,7 @@ struct frame_header final {
     std::uint32_t sequence;
     std::uint32_t crc;
     std::uint32_t correlation_id;
-    std::array<std::uint8_t, 4> reserved2;
+    std::uint32_t jwt_size = 0;
 
     static constexpr size_t size = 32;
 };
@@ -108,6 +111,19 @@ public:
      * @brief Get the raw payload (compressed if compression is enabled).
      */
     const std::vector<std::byte>& payload() const { return payload_; }
+
+    /**
+     * @brief Get the JWT bearer token, empty if not present.
+     */
+    const std::string& jwt() const { return jwt_; }
+
+    /**
+     * @brief Set the JWT bearer token.
+     *
+     * The jwt_size field in the header is populated automatically during
+     * serialization from this string's length.
+     */
+    void set_jwt(std::string jwt) { jwt_ = std::move(jwt); }
 
     /**
      * @brief Get the compression type used for the payload.
@@ -164,6 +180,7 @@ public:
 
 private:
     frame_header header_;
+    std::string jwt_;
     std::vector<std::byte> payload_;
 
     /**

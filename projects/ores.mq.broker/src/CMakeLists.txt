@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.comms.service")
+set(name "ores.mq.broker")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -26,7 +26,6 @@ file(GLOB_RECURSE files RELATIVE
 
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
-# Removed telemetry repository files as they are now in ores.telemetry.database.lib
 
 add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
@@ -34,35 +33,18 @@ set_target_properties(${lib_target_name} PROPERTIES
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
-find_package(nng CONFIG REQUIRED)
-
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.comms.service/include
-    # Include telemetry headers for repository files compiled here
-    ${CMAKE_SOURCE_DIR}/projects/ores.telemetry/include
-    # Include database headers needed by telemetry repository
-    ${CMAKE_SOURCE_DIR}/projects/ores.database/include)
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+find_package(nng CONFIG REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.iam.lib
-        ores.refdata.lib
-        ores.variability.lib
-        ores.assets.lib
-        ores.eventing.lib
-        ores.comms.lib
-        ores.telemetry.lib
-        ores.telemetry.database.lib  # New library containing telemetry repository
-        ores.database.lib  # Still required for database access
-        ores.utility.lib
-        ores.geo.lib
-        ores.dq.lib
-        ores.synthetic.lib
-        ores.trading.lib
-        ores.scheduler.lib
-        ores.reporting.lib
         ores.mq.lib
+        ores.database.lib
+        ores.logging.lib
     PRIVATE
+        ores.utility.lib
         nng::nng)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
@@ -77,13 +59,9 @@ add_executable(${exe_target_name} ${exe_files})
 set_target_properties(${exe_target_name} PROPERTIES
     OUTPUT_NAME ${exe_binary_name})
 
-target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.comms.service/include)
-
 target_link_libraries(${exe_target_name}
     PRIVATE
         ${lib_target_name}
-        ores.openssl_cleanup
         ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

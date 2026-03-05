@@ -33,7 +33,8 @@
         "faker-cxx",
         "catch2",
         "libfort",
-        "croncpp"
+        "croncpp",
+        "nng"
     ],
     "default-features": [ "wt" ],
     "features": {

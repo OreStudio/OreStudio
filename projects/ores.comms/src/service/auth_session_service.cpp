@@ -20,11 +20,71 @@
 #include "ores.comms/service/auth_session_service.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 
 namespace ores::comms::service {
 
 using namespace ores::logging;
+
+void auth_session_service::set_jwt_validator(jwt_validator_fn validator) {
+    jwt_validator_ = std::move(validator);
+}
+
+std::optional<session_info>
+auth_session_service::validate_jwt(const std::string& jwt_string,
+    const std::string& remote_address) {
+    if (!jwt_validator_ || jwt_string.empty())
+        return std::nullopt;
+
+    // Invoke the caller-supplied validator; returns account_id + session_id on success.
+    const auto validation = jwt_validator_(jwt_string);
+    if (!validation) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT validation failed for " << remote_address;
+        return std::nullopt;
+    }
+
+    // Look up the existing session by remote_address and confirm account_id matches
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it == sessions_.end() || !it->second)
+        return std::nullopt;
+
+    const auto& sess = it->second;
+    boost::uuids::string_generator gen;
+    boost::uuids::uuid claimed_account_id;
+    try {
+        claimed_account_id = gen(validation->account_id);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT subject is not a valid UUID: "
+                                  << validation->account_id << " (" << e.what() << ")";
+        return std::nullopt;
+    }
+
+    if (sess->account_id != claimed_account_id) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT account_id mismatch for " << remote_address;
+        return std::nullopt;
+    }
+
+    // Index by session_id if provided in the token
+    if (!validation->session_id.empty()) {
+        try {
+            const auto sid = gen(validation->session_id);
+            session_id_index_[sid] = remote_address;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn) << "JWT session_id is not a valid UUID: "
+                                      << validation->session_id << " (" << e.what() << ")";
+        }
+    }
+
+    return session_info{
+        .account_id = sess->account_id,
+        .tenant_id  = sess->tenant_id,
+        .party_id   = sess->party_id,
+        .visible_party_ids = sess->visible_party_ids,
+        .username   = sess->username
+    };
+}
 
 std::optional<session_info>
 auth_session_service::get_session(const std::string& remote_address) const {
@@ -52,6 +112,24 @@ auth_session_service::get_session_data(const std::string& remote_address) const 
     return nullptr;
 }
 
+std::optional<session_info>
+auth_session_service::get_session_by_session_id(const boost::uuids::uuid& session_id) const {
+    std::lock_guard lock(session_mutex_);
+    auto idx_it = session_id_index_.find(session_id);
+    if (idx_it == session_id_index_.end())
+        return std::nullopt;
+    auto it = sessions_.find(idx_it->second);
+    if (it == sessions_.end() || !it->second)
+        return std::nullopt;
+    return session_info{
+        .account_id = it->second->account_id,
+        .tenant_id  = it->second->tenant_id,
+        .party_id   = it->second->party_id,
+        .visible_party_ids = it->second->visible_party_ids,
+        .username   = it->second->username
+    };
+}
+
 bool auth_session_service::is_authenticated(const std::string& remote_address) const {
     std::lock_guard lock(session_mutex_);
     return sessions_.contains(remote_address);
@@ -76,6 +154,9 @@ void auth_session_service::store_session_data(const std::string& remote_address,
     BOOST_LOG_SEV(lg(), info) << "Storing session for " << remote_address
                               << " session_id=" << session->id
                               << " account_id=" << session->account_id;
+    // Index by session_id so callers can look up by JWT session_id claim
+    if (!session->id.is_nil())
+        session_id_index_[session->id] = remote_address;
     sessions_[remote_address] = std::move(session);
 }
 
@@ -185,6 +266,9 @@ auth_session_service::remove_session(const std::string& remote_address) {
         BOOST_LOG_SEV(lg(), info) << "Removing session for " << remote_address
                                   << " session_id=" << session->id
                                   << " account_id=" << session->account_id;
+        // Remove from session_id index
+        if (!session->id.is_nil())
+            session_id_index_.erase(session->id);
         sessions_.erase(it);
         return session;
     }

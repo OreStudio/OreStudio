@@ -17,16 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http/middleware/jwt_authenticator.hpp"
-#include "ores.http/middleware/boost_json_traits.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/jwt/boost_json_traits.hpp"
 
 #include <jwt-cpp/jwt.h>
 #include <boost/json.hpp>
 
-namespace ores::http::middleware {
+namespace ores::security::jwt {
 
-using json_traits = jwt::traits::boost_json;
-
+using json_traits = ::jwt::traits::boost_json;
 using namespace ores::logging;
 
 jwt_authenticator jwt_authenticator::create_hs256(const std::string& secret,
@@ -37,7 +36,7 @@ jwt_authenticator jwt_authenticator::create_hs256(const std::string& secret,
     auth.secret_ = secret;
     auth.issuer_ = issuer;
     auth.audience_ = audience;
-    auth.use_rsa_ = false;
+    auth.algorithm_ = algorithm_type::hs256;
     auth.configured_ = !secret.empty();
 
     BOOST_LOG_SEV(lg(), info) << "JWT authenticator configured with HS256"
@@ -47,7 +46,27 @@ jwt_authenticator jwt_authenticator::create_hs256(const std::string& secret,
     return auth;
 }
 
-jwt_authenticator jwt_authenticator::create_rs256(const std::string& public_key_pem,
+jwt_authenticator jwt_authenticator::create_rs256_signer(
+    const std::string& private_key_pem,
+    const std::string& issuer,
+    const std::string& audience) {
+
+    jwt_authenticator auth;
+    auth.private_key_ = private_key_pem;
+    auth.issuer_ = issuer;
+    auth.audience_ = audience;
+    auth.algorithm_ = algorithm_type::rs256_signer;
+    auth.configured_ = !private_key_pem.empty();
+
+    BOOST_LOG_SEV(lg(), info) << "JWT authenticator configured with RS256 signer"
+        << ", issuer: " << (issuer.empty() ? "(none)" : issuer)
+        << ", audience: " << (audience.empty() ? "(none)" : audience);
+
+    return auth;
+}
+
+jwt_authenticator jwt_authenticator::create_rs256_verifier(
+    const std::string& public_key_pem,
     const std::string& issuer,
     const std::string& audience) {
 
@@ -55,17 +74,17 @@ jwt_authenticator jwt_authenticator::create_rs256(const std::string& public_key_
     auth.public_key_ = public_key_pem;
     auth.issuer_ = issuer;
     auth.audience_ = audience;
-    auth.use_rsa_ = true;
+    auth.algorithm_ = algorithm_type::rs256_verifier;
     auth.configured_ = !public_key_pem.empty();
 
-    BOOST_LOG_SEV(lg(), info) << "JWT authenticator configured with RS256"
+    BOOST_LOG_SEV(lg(), info) << "JWT authenticator configured with RS256 verifier"
         << ", issuer: " << (issuer.empty() ? "(none)" : issuer)
         << ", audience: " << (audience.empty() ? "(none)" : audience);
 
     return auth;
 }
 
-std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
+std::expected<jwt_claims, jwt_error> jwt_authenticator::validate(
     const std::string& token) const {
 
     if (!configured_) {
@@ -76,34 +95,38 @@ std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
     BOOST_LOG_SEV(lg(), trace) << "Validating JWT token";
 
     try {
-        auto decoded = jwt::decode<json_traits>(token);
+        auto decoded = ::jwt::decode<json_traits>(token);
 
-        // Build verifier
-        auto verifier = jwt::verify<json_traits>();
+        auto verifier = ::jwt::verify<json_traits>();
 
-        if (use_rsa_) {
-            verifier = verifier.allow_algorithm(jwt::algorithm::rs256(public_key_, "", "", ""));
-        } else {
-            verifier = verifier.allow_algorithm(jwt::algorithm::hs256{secret_});
+        switch (algorithm_) {
+        case algorithm_type::hs256:
+            verifier = verifier.allow_algorithm(::jwt::algorithm::hs256{secret_});
+            break;
+        case algorithm_type::rs256_signer:
+            // Signer can also verify (public key is derivable from private key)
+            verifier = verifier.allow_algorithm(
+                ::jwt::algorithm::rs256(public_key_, private_key_, "", ""));
+            break;
+        case algorithm_type::rs256_verifier:
+            verifier = verifier.allow_algorithm(
+                ::jwt::algorithm::rs256(public_key_, "", "", ""));
+            break;
         }
 
-        // Add issuer verification if configured
         if (!issuer_.empty()) {
             verifier = verifier.with_issuer(issuer_);
         }
 
-        // Add audience verification if configured
         if (!audience_.empty()) {
             verifier = verifier.with_audience(audience_);
         }
 
-        // Verify token
         verifier.verify(decoded);
 
         BOOST_LOG_SEV(lg(), trace) << "JWT token verified successfully";
 
-        // Extract claims
-        domain::jwt_claims claims;
+        jwt_claims claims;
 
         if (decoded.has_subject()) {
             claims.subject = decoded.get_subject();
@@ -128,7 +151,6 @@ std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
             claims.issued_at = decoded.get_issued_at();
         }
 
-        // Extract custom claims
         if (decoded.has_payload_claim("roles")) {
             auto roles_claim = decoded.get_payload_claim("roles");
             auto roles_array = roles_claim.as_array();
@@ -151,18 +173,26 @@ std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
 
         if (decoded.has_payload_claim("session_start")) {
             auto start_ts = decoded.get_payload_claim("session_start").as_integer();
-            claims.session_start_time = std::chrono::system_clock::from_time_t(start_ts);
+            claims.session_start_time =
+                std::chrono::system_clock::from_time_t(start_ts);
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "JWT claims extracted, subject: " << claims.subject
-            << ", roles: " << claims.roles.size();
+        if (decoded.has_payload_claim("tenant_id")) {
+            claims.tenant_id = decoded.get_payload_claim("tenant_id").as_string();
+        }
+
+        if (decoded.has_payload_claim("party_id")) {
+            claims.party_id = decoded.get_payload_claim("party_id").as_string();
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "JWT claims extracted, subject: "
+            << claims.subject << ", roles: " << claims.roles.size();
 
         return claims;
 
-    } catch (const jwt::error::token_verification_exception& e) {
+    } catch (const ::jwt::error::token_verification_exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "JWT verification failed: " << e.what();
 
-        // Determine specific error type
         std::string msg = e.what();
         if (msg.find("expired") != std::string::npos) {
             return std::unexpected(jwt_error::expired_token);
@@ -182,17 +212,24 @@ std::expected<domain::jwt_claims, jwt_error> jwt_authenticator::validate(
 }
 
 std::optional<std::string> jwt_authenticator::create_token(
-    const domain::jwt_claims& claims) const {
+    const jwt_claims& claims) const {
 
-    if (!configured_ || use_rsa_) {
-        BOOST_LOG_SEV(lg(), error) << "Token creation only supported with HS256";
+    if (!configured_) {
+        BOOST_LOG_SEV(lg(), error) << "JWT authenticator not configured";
         return std::nullopt;
     }
 
-    BOOST_LOG_SEV(lg(), trace) << "Creating JWT token for subject: " << claims.subject;
+    if (algorithm_ == algorithm_type::rs256_verifier) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Token creation not supported on RS256 verifier instance";
+        return std::nullopt;
+    }
+
+    BOOST_LOG_SEV(lg(), trace) << "Creating JWT token for subject: "
+        << claims.subject;
 
     try {
-        auto token = jwt::create<json_traits>()
+        auto token = ::jwt::create<json_traits>()
             .set_type("JWT")
             .set_subject(claims.subject)
             .set_issued_at(claims.issued_at)
@@ -210,38 +247,56 @@ std::optional<std::string> jwt_authenticator::create_token(
             token = token.set_audience(audience_);
         }
 
-        // Add custom claims
         if (!claims.roles.empty()) {
             boost::json::array roles_array;
             for (const auto& role : claims.roles) {
                 roles_array.push_back(boost::json::value(role));
             }
             token = token.set_payload_claim("roles",
-                jwt::basic_claim<json_traits>(roles_array));
+                ::jwt::basic_claim<json_traits>(roles_array));
         }
 
         if (claims.username) {
             token = token.set_payload_claim("username",
-                jwt::basic_claim<json_traits>(std::string(*claims.username)));
+                ::jwt::basic_claim<json_traits>(std::string(*claims.username)));
         }
 
         if (claims.email) {
             token = token.set_payload_claim("email",
-                jwt::basic_claim<json_traits>(std::string(*claims.email)));
+                ::jwt::basic_claim<json_traits>(std::string(*claims.email)));
         }
 
         if (claims.session_id) {
             token = token.set_payload_claim("session_id",
-                jwt::basic_claim<json_traits>(std::string(*claims.session_id)));
+                ::jwt::basic_claim<json_traits>(std::string(*claims.session_id)));
         }
 
         if (claims.session_start_time) {
-            auto start_ts = std::chrono::system_clock::to_time_t(*claims.session_start_time);
+            auto start_ts = std::chrono::system_clock::to_time_t(
+                *claims.session_start_time);
             token = token.set_payload_claim("session_start",
-                jwt::basic_claim<json_traits>(boost::json::value(start_ts)));
+                ::jwt::basic_claim<json_traits>(
+                    boost::json::value(start_ts)));
         }
 
-        auto signed_token = token.sign(jwt::algorithm::hs256{secret_});
+        if (claims.tenant_id) {
+            token = token.set_payload_claim("tenant_id",
+                ::jwt::basic_claim<json_traits>(std::string(*claims.tenant_id)));
+        }
+
+        if (claims.party_id) {
+            token = token.set_payload_claim("party_id",
+                ::jwt::basic_claim<json_traits>(std::string(*claims.party_id)));
+        }
+
+        std::string signed_token;
+        if (algorithm_ == algorithm_type::hs256) {
+            signed_token = token.sign(::jwt::algorithm::hs256{secret_});
+        } else {
+            // rs256_signer
+            signed_token = token.sign(
+                ::jwt::algorithm::rs256("", private_key_, "", ""));
+        }
 
         BOOST_LOG_SEV(lg(), debug) << "JWT token created successfully";
         return signed_token;
@@ -254,13 +309,13 @@ std::optional<std::string> jwt_authenticator::create_token(
 
 std::string to_string(jwt_error error) {
     switch (error) {
-        case jwt_error::invalid_token: return "Invalid token";
-        case jwt_error::expired_token: return "Token has expired";
-        case jwt_error::invalid_signature: return "Invalid signature";
-        case jwt_error::missing_claims: return "Missing required claims";
-        case jwt_error::invalid_issuer: return "Invalid issuer";
-        case jwt_error::invalid_audience: return "Invalid audience";
-        default: return "Unknown error";
+    case jwt_error::invalid_token:     return "Invalid token";
+    case jwt_error::expired_token:     return "Token has expired";
+    case jwt_error::invalid_signature: return "Invalid signature";
+    case jwt_error::missing_claims:    return "Missing required claims";
+    case jwt_error::invalid_issuer:    return "Invalid issuer";
+    case jwt_error::invalid_audience:  return "Invalid audience";
+    default:                           return "Unknown error";
     }
 }
 

@@ -20,74 +20,13 @@
 #ifndef ORES_HTTP_DOMAIN_JWT_CLAIMS_HPP
 #define ORES_HTTP_DOMAIN_JWT_CLAIMS_HPP
 
-#include <string>
-#include <vector>
-#include <chrono>
-#include <optional>
+// JWT claims have moved to ores.security. This header is retained for
+// backward compatibility.
+#include "ores.security/jwt/jwt_claims.hpp"
 
 namespace ores::http::domain {
 
-/**
- * @brief Represents the claims extracted from a JWT token.
- */
-struct jwt_claims final {
-    /**
-     * @brief Subject claim - typically the user ID.
-     */
-    std::string subject;
-
-    /**
-     * @brief Issuer of the token.
-     */
-    std::string issuer;
-
-    /**
-     * @brief Intended audience for the token.
-     */
-    std::string audience;
-
-    /**
-     * @brief Time when the token expires.
-     */
-    std::chrono::system_clock::time_point expires_at;
-
-    /**
-     * @brief Time when the token was issued.
-     */
-    std::chrono::system_clock::time_point issued_at;
-
-    /**
-     * @brief User roles/permissions.
-     */
-    std::vector<std::string> roles;
-
-    /**
-     * @brief Optional username claim.
-     */
-    std::optional<std::string> username;
-
-    /**
-     * @brief Optional email claim.
-     */
-    std::optional<std::string> email;
-
-    /**
-     * @brief Optional session ID for tracking HTTP sessions.
-     *
-     * When present, this identifies the database session record
-     * created during login, allowing proper session termination on logout.
-     */
-    std::optional<std::string> session_id;
-
-    /**
-     * @brief Optional session start time for efficient database updates.
-     *
-     * The sessions table uses (id, start_time) as composite primary key
-     * for TimescaleDB hypertable partitioning. Including start_time in the
-     * token allows efficient UPDATE queries without full table scans.
-     */
-    std::optional<std::chrono::system_clock::time_point> session_start_time;
-};
+using jwt_claims = ores::security::jwt::jwt_claims;
 
 }
 

@@ -34,13 +34,18 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
+find_package(jwt-cpp CONFIG REQUIRED)
+find_package(Boost REQUIRED COMPONENTS json)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.variability.lib
         OpenSSL::SSL
         OpenSSL::Crypto
+        Boost::json
     PRIVATE
         ores.utility.lib
-        Boost::boost)
+        Boost::boost
+        jwt-cpp::jwt-cpp)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

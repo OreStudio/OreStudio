@@ -20,84 +20,16 @@
 #ifndef ORES_HTTP_MIDDLEWARE_JWT_AUTHENTICATOR_HPP
 #define ORES_HTTP_MIDDLEWARE_JWT_AUTHENTICATOR_HPP
 
-#include <string>
-#include <optional>
-#include <expected>
-#include "ores.http/domain/jwt_claims.hpp"
-#include "ores.logging/make_logger.hpp"
+// JWT authenticator has moved to ores.security. This header is retained for
+// backward compatibility.
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_error.hpp"
 
 namespace ores::http::middleware {
 
-/**
- * @brief Error type for JWT validation failures.
- */
-enum class jwt_error {
-    invalid_token,
-    expired_token,
-    invalid_signature,
-    missing_claims,
-    invalid_issuer,
-    invalid_audience
-};
-
-/**
- * @brief JWT authentication middleware.
- */
-class jwt_authenticator final {
-public:
-    /**
-     * @brief Creates an authenticator using a symmetric secret (HS256).
-     */
-    static jwt_authenticator create_hs256(const std::string& secret,
-        const std::string& issuer = "",
-        const std::string& audience = "");
-
-    /**
-     * @brief Creates an authenticator using an RSA public key (RS256).
-     */
-    static jwt_authenticator create_rs256(const std::string& public_key_pem,
-        const std::string& issuer = "",
-        const std::string& audience = "");
-
-    /**
-     * @brief Validates a JWT token and extracts claims.
-     */
-    std::expected<domain::jwt_claims, jwt_error> validate(
-        const std::string& token) const;
-
-    /**
-     * @brief Creates a new JWT token with the given claims (HS256 only).
-     */
-    std::optional<std::string> create_token(const domain::jwt_claims& claims) const;
-
-    /**
-     * @brief Checks if the authenticator is properly configured.
-     */
-    bool is_configured() const { return configured_; }
-
-private:
-    jwt_authenticator() = default;
-
-    inline static std::string_view logger_name = "ores.http.middleware.jwt_authenticator";
-
-    static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
-    bool configured_ = false;
-    bool use_rsa_ = false;
-    std::string secret_;
-    std::string public_key_;
-    std::string issuer_;
-    std::string audience_;
-};
-
-/**
- * @brief Returns a string description for a JWT error.
- */
-std::string to_string(jwt_error error);
+using jwt_authenticator = ores::security::jwt::jwt_authenticator;
+using jwt_error         = ores::security::jwt::jwt_error;
+using ores::security::jwt::to_string;
 
 }
 

@@ -17,11 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_MIDDLEWARE_BOOST_JSON_TRAITS_HPP
-#define ORES_HTTP_MIDDLEWARE_BOOST_JSON_TRAITS_HPP
+#ifndef ORES_SECURITY_JWT_JWT_ERROR_HPP
+#define ORES_SECURITY_JWT_JWT_ERROR_HPP
 
-// boost_json_traits has moved to ores.security. This header is retained for
-// backward compatibility.
-#include "ores.security/jwt/boost_json_traits.hpp"
+#include <string>
+
+namespace ores::security::jwt {
+
+/**
+ * @brief Error type for JWT validation and signing failures.
+ */
+enum class jwt_error {
+    invalid_token,
+    expired_token,
+    invalid_signature,
+    missing_claims,
+    invalid_issuer,
+    invalid_audience
+};
+
+/**
+ * @brief Returns a string description for a JWT error.
+ */
+std::string to_string(jwt_error error);
+
+}
 
 #endif

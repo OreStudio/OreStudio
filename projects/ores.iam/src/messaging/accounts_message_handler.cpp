@@ -92,12 +92,14 @@ accounts_message_handler::accounts_message_handler(database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<service::authorization_service> auth_service,
     std::shared_ptr<geo::service::geolocation_service> geo_service,
-    bundle_provider_fn bundle_provider)
+    bundle_provider_fn bundle_provider,
+    std::shared_ptr<security::jwt::jwt_authenticator> jwt_signer)
     : service_(ctx), ctx_(ctx), system_flags_(std::move(system_flags)),
       sessions_(std::move(sessions)), auth_service_(auth_service),
       setup_service_(service_, auth_service_),
       session_repo_(ctx), tenant_repo_(ctx), geo_service_(std::move(geo_service)),
-      bundle_provider_(std::move(bundle_provider)) {
+      bundle_provider_(std::move(bundle_provider)),
+      jwt_signer_(std::move(jwt_signer)) {
     // Close sessions left open by a previous server run. Without this, sessions
     // appear as "Active" indefinitely after a crash or restart, and their chart
     // shows "no data yet" because in-memory samples were lost.
@@ -693,6 +695,37 @@ handle_login_request(std::span<const std::byte> payload,
             .selected_party_id = response_selected_party_id,
             .available_parties = std::move(response_available_parties)
         };
+
+        if (jwt_signer_ && jwt_signer_->is_configured() && sess) {
+            try {
+                security::jwt::jwt_claims claims;
+                claims.subject = boost::uuids::to_string(account.id);
+                claims.issued_at = std::chrono::system_clock::now();
+                claims.expires_at = claims.issued_at + std::chrono::hours(1);
+                claims.session_id = boost::uuids::to_string(sess->id);
+                claims.session_start_time = sess->start_time;
+                claims.tenant_id = tenant_id.to_string();
+                claims.username = account.username;
+                claims.email = account.email;
+                if (!response_selected_party_id.is_nil()) {
+                    claims.party_id = boost::uuids::to_string(response_selected_party_id);
+                }
+                auto account_roles = auth_service_->get_account_roles(account.id);
+                for (const auto& role : account_roles) {
+                    claims.roles.push_back(role.name);
+                }
+                auto jwt_token = jwt_signer_->create_token(claims);
+                if (jwt_token) {
+                    response.jwt = std::move(*jwt_token);
+                    BOOST_LOG_SEV(lg(), debug) << "JWT minted for account "
+                        << boost::uuids::to_string(account.id);
+                }
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), warn) << "Failed to mint JWT: " << e.what();
+                // Graceful degradation: continue without JWT
+            }
+        }
+
         co_return response.serialize();
 
     } catch (const std::exception& e) {

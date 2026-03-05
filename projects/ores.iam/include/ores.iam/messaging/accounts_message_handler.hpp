@@ -34,6 +34,7 @@
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::iam::messaging {
 
@@ -117,7 +118,8 @@ public:
         std::shared_ptr<comms::service::auth_session_service> sessions,
         std::shared_ptr<service::authorization_service> auth_service,
         std::shared_ptr<geo::service::geolocation_service> geo_service,
-        bundle_provider_fn bundle_provider = nullptr);
+        bundle_provider_fn bundle_provider = nullptr,
+        std::shared_ptr<security::jwt::jwt_authenticator> jwt_signer = nullptr);
 
     using handler_result = boost::asio::awaitable<
         std::expected<std::vector<std::byte>, ores::utility::serialization::error_code>
@@ -677,6 +679,7 @@ private:
     repository::tenant_repository tenant_repo_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;
     bundle_provider_fn bundle_provider_;
+    std::shared_ptr<security::jwt::jwt_authenticator> jwt_signer_;
 };
 
 }

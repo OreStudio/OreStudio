@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID: A7E3F8C2-4B91-4D5E-8F3A-1C6D9E2B5A7F
+:ID: D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A
 :END:
 #+title: ORE Studio Data Quality Component
 #+author: Marco Craveiro

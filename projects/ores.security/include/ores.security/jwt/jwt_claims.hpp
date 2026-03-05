@@ -104,6 +104,22 @@ struct jwt_claims final {
      * from the DB session record on first request and cache by session_id.
      */
     std::optional<std::string> party_id;
+
+    /**
+     * @brief Create a claims object with issued_at set to now and
+     *        expires_at set to now + ttl.
+     *
+     * @param ttl Token lifetime. The caller is responsible for choosing an
+     *            appropriate duration; this function does not apply any
+     *            default — it only captures the current clock and computes
+     *            the expiry.
+     */
+    static jwt_claims with_ttl(std::chrono::seconds ttl) {
+        jwt_claims c;
+        c.issued_at = std::chrono::system_clock::now();
+        c.expires_at = c.issued_at + ttl;
+        return c;
+    }
 };
 
 }

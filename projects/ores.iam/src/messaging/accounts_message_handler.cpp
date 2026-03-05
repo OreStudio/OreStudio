@@ -698,10 +698,8 @@ handle_login_request(std::span<const std::byte> payload,
 
         if (jwt_signer_ && jwt_signer_->is_configured() && sess) {
             try {
-                security::jwt::jwt_claims claims;
+                auto claims = security::jwt::jwt_claims::with_ttl(std::chrono::hours(1));
                 claims.subject = boost::uuids::to_string(account.id);
-                claims.issued_at = std::chrono::system_clock::now();
-                claims.expires_at = claims.issued_at + std::chrono::hours(1);
                 claims.session_id = boost::uuids::to_string(sess->id);
                 claims.session_start_time = sess->start_time;
                 claims.tenant_id = tenant_id.to_string();

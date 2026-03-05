@@ -23,9 +23,11 @@
 #include <map>
 #include <mutex>
 #include <memory>
+#include <string>
 #include <vector>
 #include <optional>
 #include <expected>
+#include <functional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -259,6 +261,41 @@ public:
     void remove_client_info(const std::string& remote_address);
 
     /**
+     * @brief Type alias for the JWT validation function.
+     *
+     * Takes a JWT string and returns the account UUID string on success,
+     * or empty string on failure. Used to break the compile-time dependency
+     * on ores.security from this header (ores.comms ← ores.variability ←
+     * ores.comms would form a cycle if ores.security were linked directly).
+     */
+    using jwt_validator_fn = std::function<std::string(const std::string&)>;
+
+    /**
+     * @brief Set the JWT validator used to validate bearer tokens in frames.
+     *
+     * The function receives a raw JWT string and returns the account_id
+     * (UUID as string) on success, or empty string on failure.
+     * Optional: if not set, JWT validation is skipped (legacy mode).
+     */
+    void set_jwt_validator(jwt_validator_fn validator);
+
+    /**
+     * @brief Validate a JWT bearer token and refresh the session for remote_address.
+     *
+     * If the token is valid and a session for the extracted session_id is found,
+     * the remote_address session entry is updated with the JWT-derived identity.
+     * This allows JWT-carrying frames to re-hydrate their session from the token
+     * rather than relying solely on the TCP remote address.
+     *
+     * @param jwt_string Raw JWT string from the frame
+     * @param remote_address The client's remote address (used as session key)
+     * @return session_info on success, nullopt if validation fails or no verifier set
+     */
+    [[nodiscard]] std::optional<session_info>
+    validate_jwt(const std::string& jwt_string,
+                 const std::string& remote_address);
+
+    /**
      * @brief Check if a request is authorized based on message type and session.
      *
      * Centralizes authentication logic for all message types:
@@ -288,6 +325,8 @@ private:
 
     mutable std::mutex client_info_mutex_;
     std::map<std::string, client_info> client_infos_;
+
+    jwt_validator_fn jwt_validator_;
 };
 
 }

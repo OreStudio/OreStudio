@@ -73,15 +73,18 @@ connection::read_frame(bool skip_version_check, boost::asio::cancellation_slot c
         BOOST_LOG_SEV(lg(), debug) << "Header payload size: "
                                  << header.payload_size;
 
-        // Read payload if any.
-        if (header.payload_size > 0) {
-            buffer.resize(messaging::frame_header::size + header.payload_size);
+        // Read JWT + payload bytes (jwt comes before payload in the wire format).
+        const auto after_header = header.jwt_size + header.payload_size;
+        if (after_header > 0) {
+            buffer.resize(messaging::frame_header::size + after_header);
             co_await boost::asio::async_read(socket_,
                 boost::asio::buffer(buffer.data() + messaging::frame_header::size,
-                    header.payload_size),
+                    after_header),
                 boost::asio::bind_cancellation_slot(cancel_slot, boost::asio::use_awaitable));
 
-            BOOST_LOG_SEV(lg(), debug) << "Read payload of size: " << header.payload_size;
+            BOOST_LOG_SEV(lg(), debug) << "Read jwt+payload of size: " << after_header
+                                      << " (jwt=" << header.jwt_size
+                                      << " payload=" << header.payload_size << ")";
         }
 
         // Deserialize the complete frame (validates CRC)

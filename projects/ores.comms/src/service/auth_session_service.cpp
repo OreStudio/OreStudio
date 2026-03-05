@@ -20,11 +20,59 @@
 #include "ores.comms/service/auth_session_service.hpp"
 
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 
 namespace ores::comms::service {
 
 using namespace ores::logging;
+
+void auth_session_service::set_jwt_validator(jwt_validator_fn validator) {
+    jwt_validator_ = std::move(validator);
+}
+
+std::optional<session_info>
+auth_session_service::validate_jwt(const std::string& jwt_string,
+    const std::string& remote_address) {
+    if (!jwt_validator_ || jwt_string.empty())
+        return std::nullopt;
+
+    // Invoke the caller-supplied validator; returns account_id string on success.
+    const auto account_id_str = jwt_validator_(jwt_string);
+    if (account_id_str.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT validation failed for " << remote_address;
+        return std::nullopt;
+    }
+
+    // Look up the existing session by remote_address and confirm account_id matches
+    std::lock_guard lock(session_mutex_);
+    auto it = sessions_.find(remote_address);
+    if (it == sessions_.end() || !it->second)
+        return std::nullopt;
+
+    const auto& sess = it->second;
+    boost::uuids::string_generator gen;
+    boost::uuids::uuid claimed_account_id;
+    try {
+        claimed_account_id = gen(account_id_str);
+    } catch (...) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT subject is not a valid UUID: " << account_id_str;
+        return std::nullopt;
+    }
+
+    if (sess->account_id != claimed_account_id) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT account_id mismatch for " << remote_address;
+        return std::nullopt;
+    }
+
+    return session_info{
+        .account_id = sess->account_id,
+        .tenant_id  = sess->tenant_id,
+        .party_id   = sess->party_id,
+        .visible_party_ids = sess->visible_party_ids,
+        .username   = sess->username
+    };
+}
 
 std::optional<session_info>
 auth_session_service::get_session(const std::string& remote_address) const {

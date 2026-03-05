@@ -678,6 +678,11 @@ enum class message_type : std::uint16_t {
     ack_messages_response             = 0xB019,
     nack_message_request              = 0xB01A,
     nack_message_response             = 0xB01B,
+    // Broker subsystem (0xC000-0xC00F)
+    register_service_request          = 0xC000,
+    register_service_response         = 0xC001,
+    token_refresh_request             = 0xC002,
+    token_refresh_response            = 0xC003,
     // Sentinel value - must remain after the highest message type value
     last_value,
 };

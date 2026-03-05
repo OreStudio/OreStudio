@@ -28,7 +28,7 @@
 #include "ores.http/net/router.hpp"
 #include "ores.http/net/http_session.hpp"
 #include "ores.http/net/http_server_options.hpp"
-#include "ores.http/middleware/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -55,7 +55,7 @@ public:
     /**
      * @brief Returns the JWT authenticator for token generation/validation.
      */
-    std::shared_ptr<middleware::jwt_authenticator> get_authenticator() { return authenticator_; }
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> get_authenticator() { return authenticator_; }
 
     /**
      * @brief Sets the session bytes callback for tracking request/response sizes.
@@ -98,7 +98,7 @@ private:
     boost::asio::io_context& io_ctx_;
     http_server_options options_;
     std::shared_ptr<router> router_;
-    std::shared_ptr<middleware::jwt_authenticator> authenticator_;
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator_;
     std::shared_ptr<openapi::endpoint_registry> registry_;
     std::unique_ptr<boost::asio::ip::tcp::acceptor> acceptor_;
     std::atomic<bool> running_{false};

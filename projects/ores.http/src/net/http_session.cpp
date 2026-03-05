@@ -35,7 +35,7 @@ namespace asio = boost::asio;
 
 http_session::http_session(asio::ip::tcp::socket socket,
     std::shared_ptr<router> router,
-    std::shared_ptr<middleware::jwt_authenticator> authenticator,
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
     const http_server_options& options,
     session_bytes_callback bytes_callback)
     : stream_(std::move(socket))
@@ -155,9 +155,9 @@ asio::awaitable<void> http_session::handle_request(
             if (!claims_result) {
                 BOOST_LOG_SEV(lg(), warn) << "Invalid token for " << matched->pattern
                     << " from " << remote_address_
-                    << ": " << middleware::to_string(claims_result.error());
+                    << ": " << ores::security::jwt::to_string(claims_result.error());
                 auto unauthorized = domain::http_response::unauthorized(
-                    middleware::to_string(claims_result.error()));
+                    ores::security::jwt::to_string(claims_result.error()));
                 auto beast_resp = convert_response(unauthorized, req.version(), req.keep_alive());
                 co_await http::async_write(stream_, beast_resp, asio::use_awaitable);
                 co_return;

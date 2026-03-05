@@ -17,22 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_DOMAIN_JWT_CLAIMS_HPP
-#define ORES_HTTP_DOMAIN_JWT_CLAIMS_HPP
+#ifndef ORES_SECURITY_JWT_JWT_CLAIMS_HPP
+#define ORES_SECURITY_JWT_JWT_CLAIMS_HPP
 
 #include <string>
 #include <vector>
 #include <chrono>
 #include <optional>
 
-namespace ores::http::domain {
+namespace ores::security::jwt {
 
 /**
  * @brief Represents the claims extracted from a JWT token.
  */
 struct jwt_claims final {
     /**
-     * @brief Subject claim - typically the user ID.
+     * @brief Subject claim - typically the account ID.
      */
     std::string subject;
 
@@ -72,10 +72,11 @@ struct jwt_claims final {
     std::optional<std::string> email;
 
     /**
-     * @brief Optional session ID for tracking HTTP sessions.
+     * @brief Optional session ID for tracking sessions.
      *
-     * When present, this identifies the database session record
-     * created during login, allowing proper session termination on logout.
+     * When present, identifies the database session record created during
+     * login, allowing proper session termination on logout and LRU-caching
+     * of session state by services.
      */
     std::optional<std::string> session_id;
 
@@ -87,6 +88,38 @@ struct jwt_claims final {
      * token allows efficient UPDATE queries without full table scans.
      */
     std::optional<std::chrono::system_clock::time_point> session_start_time;
+
+    /**
+     * @brief Optional tenant ID (UUID string).
+     *
+     * Identifies the tenant context for the authenticated account.
+     */
+    std::optional<std::string> tenant_id;
+
+    /**
+     * @brief Optional party ID (UUID string, nil UUID if no party selected).
+     *
+     * Identifies the active party for the session. NOTE: visible_party_ids
+     * are NOT included in the JWT to keep tokens small; services load them
+     * from the DB session record on first request and cache by session_id.
+     */
+    std::optional<std::string> party_id;
+
+    /**
+     * @brief Create a claims object with issued_at set to now and
+     *        expires_at set to now + ttl.
+     *
+     * @param ttl Token lifetime. The caller is responsible for choosing an
+     *            appropriate duration; this function does not apply any
+     *            default — it only captures the current clock and computes
+     *            the expiry.
+     */
+    static jwt_claims with_ttl(std::chrono::seconds ttl) {
+        jwt_claims c;
+        c.issued_at = std::chrono::system_clock::now();
+        c.expires_at = c.issued_at + ttl;
+        return c;
+    }
 };
 
 }

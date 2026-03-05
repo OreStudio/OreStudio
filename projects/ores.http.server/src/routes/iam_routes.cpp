@@ -22,7 +22,7 @@
 #include <algorithm>
 #include <sstream>
 #include <rfl/json.hpp>
-#include "ores.http/domain/jwt_claims.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.iam/domain/account_json.hpp"
 #include "ores.database/domain/change_reason_constants.hpp"
@@ -87,7 +87,7 @@ iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions,
     std::shared_ptr<iam::service::authorization_service> auth_service,
-    std::shared_ptr<http::middleware::jwt_authenticator> authenticator,
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
     std::shared_ptr<geo::service::geolocation_service> geo_service)
     : ctx_(std::move(ctx))
     , account_service_(ctx_)
@@ -519,7 +519,7 @@ asio::awaitable<http_response> iam_routes::handle_login(const http_request& req)
             }
 
             // Create JWT claims with session ID and start time
-            http::domain::jwt_claims claims;
+            ores::security::jwt::jwt_claims claims;
             claims.subject = boost::uuids::to_string(account.id);
             claims.username = account.username;
             claims.email = account.email;

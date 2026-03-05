@@ -41,8 +41,8 @@ http_server::http_server(asio::io_context& io_ctx, const http_server_options& op
     // Configure JWT authenticator if secret or public key provided
     if (!options_.jwt_secret.empty()) {
         BOOST_LOG_SEV(lg(), info) << "Configuring JWT authenticator with HS256";
-        authenticator_ = std::make_shared<middleware::jwt_authenticator>(
-            middleware::jwt_authenticator::create_hs256(
+        authenticator_ = std::make_shared<ores::security::jwt::jwt_authenticator>(
+            ores::security::jwt::jwt_authenticator::create_hs256(
                 options_.jwt_secret, options_.jwt_issuer, options_.jwt_audience));
     } else if (!options_.jwt_public_key_file.empty()) {
         BOOST_LOG_SEV(lg(), info) << "Configuring JWT authenticator with RS256";

@@ -359,7 +359,12 @@ constexpr std::uint32_t PROTOCOL_MAGIC = 0x4F524553;
 // id/scope_type/queue_type/description; stats use pending_count/processing_count
 // instead of queue_length/total_messages. Scheduler job_definition loses
 // cron_job_id/database_name, gains action_type/action_payload. Breaking change.
-constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 48;
+//
+// Version 49.0 adds jwt field to login_response. IAM now mints an RS256 JWT on
+// successful login containing subject (account_id), tenant_id, party_id, roles,
+// session_id, issued_at, and expires_at (now+1h). JWT infrastructure moves to
+// ores.security as a shared primitive. Breaking change.
+constexpr std::uint16_t PROTOCOL_VERSION_MAJOR = 49;
 constexpr std::uint16_t PROTOCOL_VERSION_MINOR = 0;
 
 // Subsystem message type ranges

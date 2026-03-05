@@ -35,7 +35,14 @@
  *
  * All cryptographic operations use OpenSSL and follow current OWASP
  * security recommendations.
+ *
+ * - JWT support (ores::security::jwt namespace):
+ *   - JWT claims structure with tenant/party/session fields
+ *   - HS256 symmetric signing and verification
+ *   - RS256 asymmetric signing (IAM only) and verification (all services)
  */
+#include "ores.security/jwt/jwt_authenticator.hpp"
+
 namespace ores::security {}
 
 #endif

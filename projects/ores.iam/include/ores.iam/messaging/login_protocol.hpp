@@ -109,6 +109,16 @@ struct login_response final {
     std::vector<party_summary> available_parties;  ///< always includes auto-selected party; empty only if 0 parties (rejected)
 
     /**
+     * @brief RS256 JWT issued on successful login.
+     *
+     * Claims: subject=account_id, tenant_id, party_id, roles, session_id,
+     * issued_at=now, expires_at=now+1h. Empty on failure or if RS256 is not
+     * configured (graceful degradation: server still accepts clients without JWT
+     * during migration).
+     */
+    std::string jwt;
+
+    /**
      * @brief Serialize response to bytes.
      *
      * Format:
@@ -131,6 +141,8 @@ struct login_response final {
      *   - 16 bytes: id (UUID)
      *   -  2 bytes: name length + N bytes: name (UTF-8)
      *   -  2 bytes: party_category length + N bytes: party_category (UTF-8)
+     * - 4 bytes: jwt length
+     * - N bytes: jwt (ASCII)
      */
     std::vector<std::byte> serialize() const;
 

@@ -79,6 +79,7 @@ std::vector<std::byte> login_response::serialize() const {
         writer::write_string(buffer, p.name);
         writer::write_string(buffer, p.party_category);
     }
+    writer::write_string(buffer, jwt);
     return buffer;
 }
 
@@ -150,6 +151,13 @@ login_response::deserialize(std::span<const std::byte> data) {
         ps.party_category = *category_result;
 
         response.available_parties.push_back(std::move(ps));
+    }
+
+    // jwt is optional for backward compatibility (empty if not present)
+    if (!data.empty()) {
+        auto jwt_result = reader::read_string(data);
+        if (!jwt_result) return std::unexpected(jwt_result.error());
+        response.jwt = *jwt_result;
     }
 
     return response;

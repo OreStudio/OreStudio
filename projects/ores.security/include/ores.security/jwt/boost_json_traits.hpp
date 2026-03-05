@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_MIDDLEWARE_BOOST_JSON_TRAITS_HPP
-#define ORES_HTTP_MIDDLEWARE_BOOST_JSON_TRAITS_HPP
+#ifndef ORES_SECURITY_JWT_BOOST_JSON_TRAITS_HPP
+#define ORES_SECURITY_JWT_BOOST_JSON_TRAITS_HPP
 
 #include <boost/json.hpp>
 #include <jwt-cpp/jwt.h>
@@ -47,7 +47,6 @@ struct boost_json {
         if (val.is_double()) return type::number;
         if (val.is_string()) return type::string;
         if (val.is_array()) return type::array;
-        // Default to object for null and other types
         return type::object;
     }
 

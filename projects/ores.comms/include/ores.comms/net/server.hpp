@@ -90,6 +90,16 @@ public:
     }
 
     /**
+     * @brief Get the shared message dispatcher.
+     *
+     * Allows external components (e.g. NNG service runner adapter) to dispatch
+     * messages through the same handler registry used by WebSocket sessions.
+     */
+    [[nodiscard]] std::shared_ptr<messaging::message_dispatcher> dispatcher() const {
+        return dispatcher_;
+    }
+
+    /**
      * @brief Run the server.
      *
      * Accepts connections and spawns sessions until stopped.

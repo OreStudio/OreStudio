@@ -25,7 +25,7 @@
 #include <optional>
 #include <unordered_map>
 #include "ores.http/domain/http_method.hpp"
-#include "ores.http/domain/jwt_claims.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
 
 namespace ores::http::domain {
 
@@ -81,7 +81,7 @@ struct http_request final {
     /**
      * @brief Authenticated user claims, if present.
      */
-    std::optional<jwt_claims> authenticated_user;
+    std::optional<ores::security::jwt::jwt_claims> authenticated_user;
 
     /**
      * @brief Returns header value or empty string if not found.

@@ -30,7 +30,7 @@
 #include <boost/beast/http.hpp>
 #include "ores.http/net/router.hpp"
 #include "ores.http/net/http_server_options.hpp"
-#include "ores.http/middleware/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::http::net {
@@ -59,7 +59,7 @@ class http_session final : public std::enable_shared_from_this<http_session> {
 public:
     explicit http_session(boost::asio::ip::tcp::socket socket,
         std::shared_ptr<router> router,
-        std::shared_ptr<middleware::jwt_authenticator> authenticator,
+        std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
         const http_server_options& options,
         session_bytes_callback bytes_callback = nullptr);
 
@@ -93,7 +93,7 @@ private:
     boost::beast::tcp_stream stream_;
     boost::beast::flat_buffer buffer_;
     std::shared_ptr<router> router_;
-    std::shared_ptr<middleware::jwt_authenticator> authenticator_;
+    std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator_;
     http_server_options options_;
     std::string remote_address_;
     session_bytes_callback bytes_callback_;

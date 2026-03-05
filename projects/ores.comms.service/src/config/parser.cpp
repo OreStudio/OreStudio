@@ -41,6 +41,7 @@ const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string jwt_secret_arg("jwt-secret");
+const std::string broker_backend_arg("broker-backend");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -73,8 +74,14 @@ options_description make_options_description() {
          value<std::string>()->value_name("SECRET"),
          "HS256 shared secret for JWT signing and validation (enables JWT mode)");
 
+    options_description broker_opts("Broker options");
+    broker_opts.add_options()
+        (broker_backend_arg.c_str(),
+         value<std::string>()->value_name("URL"),
+         "NNG backend endpoint of the message broker to register with (e.g. tcp://localhost:7002)");
+
     options_description r;
-    r.add(god).add(lod).add(sod).add(dod).add(jwt_opts);
+    r.add(god).add(lod).add(sod).add(dod).add(jwt_opts).add(broker_opts);
     return r;
 }
 
@@ -152,6 +159,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.database = database_configuration::read_options(vm);
     if (vm.count(jwt_secret_arg))
         r.jwt_secret = vm[jwt_secret_arg].as<std::string>();
+    if (vm.count(broker_backend_arg))
+        r.broker_backend = vm[broker_backend_arg].as<std::string>();
 
     return r;
 }

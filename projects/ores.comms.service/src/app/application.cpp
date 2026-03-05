@@ -99,6 +99,9 @@
 #include "ores.comms.service/app/application_exception.hpp"
 #include "ores.comms.service/messaging/system_info_handler.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <nng/nng.h>
+#include <nng/protocol/reqrep0/req.h>
+#include "ores.mq/messaging/broker_protocol.hpp"
 
 namespace ores::comms::service::app {
 using namespace ores::logging;
@@ -766,6 +769,79 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
             co_await db_health_monitor.run(io_ctx);
         },
         boost::asio::detached);
+
+    // Register with broker (if configured)
+    if (cfg.broker_backend && !cfg.broker_backend->empty()) {
+        BOOST_LOG_SEV(lg(), info) << "Registering with broker: " << *cfg.broker_backend;
+        nng_socket req_sock = NNG_SOCKET_INITIALIZER;
+        int rv = nng_req0_open(&req_sock);
+        if (rv != 0) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to open NNG REQ socket: "
+                                       << nng_strerror(rv);
+            co_return;
+        }
+        rv = nng_dial(req_sock, cfg.broker_backend->c_str(), nullptr, 0);
+        if (rv != 0) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to connect to broker: "
+                                       << nng_strerror(rv);
+            nng_close(req_sock);
+            co_return;
+        }
+
+        using namespace ores::comms::messaging;
+        ores::mq::messaging::register_service_request reg_req;
+        reg_req.service_name = "ores.comms.service";
+        reg_req.handled_ranges = {
+            { CORE_SUBSYSTEM_MIN,       CORE_SUBSYSTEM_MAX      },
+            { IAM_SUBSYSTEM_MIN,        IAM_SUBSYSTEM_MAX       },
+            { VARIABILITY_SUBSYSTEM_MIN,VARIABILITY_SUBSYSTEM_MAX},
+            { ASSETS_SUBSYSTEM_MIN,     ASSETS_SUBSYSTEM_MAX    },
+            { TELEMETRY_SUBSYSTEM_MIN,  TELEMETRY_SUBSYSTEM_MAX },
+            { DQ_SUBSYSTEM_MIN,         DQ_SUBSYSTEM_MAX        },
+            { SYNTHETIC_SUBSYSTEM_MIN,  SYNTHETIC_SUBSYSTEM_MAX },
+            { TRADE_SUBSYSTEM_MIN,      TRADE_SUBSYSTEM_MAX     },
+            { SCHEDULER_SUBSYSTEM_MIN,  SCHEDULER_SUBSYSTEM_MAX },
+            { REPORTING_SUBSYSTEM_MIN,  REPORTING_SUBSYSTEM_MAX },
+            { MQ_SUBSYSTEM_MIN,         MQ_SUBSYSTEM_MAX        }
+        };
+
+        const auto payload = reg_req.serialize();
+        nng_msg* msg = nullptr;
+        nng_msg_alloc(&msg, 0);
+        nng_msg_append(msg, payload.data(), payload.size());
+
+        rv = nng_sendmsg(req_sock, msg, 0);
+        if (rv != 0) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send register_service_request: "
+                                       << nng_strerror(rv);
+            nng_close(req_sock);
+            co_return;
+        }
+
+        nng_msg* resp_msg = nullptr;
+        rv = nng_recvmsg(req_sock, &resp_msg, 0);
+        if (rv != 0) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to receive register_service_response: "
+                                       << nng_strerror(rv);
+            nng_close(req_sock);
+            co_return;
+        }
+
+        const auto* resp_data = static_cast<const std::byte*>(nng_msg_body(resp_msg));
+        const auto  resp_size = nng_msg_len(resp_msg);
+        const auto  resp = ores::mq::messaging::register_service_response::deserialize(
+            {resp_data, resp_size});
+        nng_msg_free(resp_msg);
+        nng_close(req_sock);
+
+        if (!resp || !resp->success) {
+            const auto err = resp ? resp->error_message : "deserialisation failed";
+            BOOST_LOG_SEV(lg(), error) << "Broker registration failed: " << err;
+            co_return;
+        }
+        BOOST_LOG_SEV(lg(), info) << "Registered with broker, assigned_id="
+                                   << resp->assigned_id;
+    }
 
     co_await srv->run(io_ctx);
 

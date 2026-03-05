@@ -24,17 +24,16 @@
 #include <stdexcept>
 #include <nng/protocol/reqrep0/rep.h>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.comms/messaging/message_type.hpp"
 #include "ores.mq/messaging/broker_protocol.hpp"
 
 namespace ores::mq::broker {
 
 using namespace ores::logging;
-using comms::messaging::message_type;
 
-// Offset of the 2-byte message type field in a binary protocol frame.
-// Frame layout (little-endian): [version u8][protocol_id u8][msg_type u16]...
-static constexpr std::size_t MSG_TYPE_OFFSET = 2;
+// Offset of the 2-byte message type field in an ores.comms binary frame.
+// Frame layout: [magic u32][version_major u16][version_minor u16][type u16]...
+// magic=4, version_major=2, version_minor=2 → type starts at byte 8.
+static constexpr std::size_t MSG_TYPE_OFFSET = 8;
 
 // ============================================================================
 // Helpers
@@ -145,42 +144,20 @@ void nng_broker::run() {
             const nng_pipe pipe_id = nng_msg_get_pipe(msg);
             const auto* data = static_cast<const std::byte*>(nng_msg_body(msg));
             const auto size  = nng_msg_len(msg);
-            const auto mt    = parse_msg_type(data, size);
 
-            // Strip raw header before interpreting payload
-            auto payload_offset = nng_msg_header_len(msg);
-            const auto* payload_data =
-                static_cast<const std::byte*>(nng_msg_header(msg)) + payload_offset;
-            (void)payload_data;
+            // The backend socket carries broker control messages (register_service_request,
+            // etc.) serialised directly by broker_protocol — no ores.comms frame wrapper.
+            // The entire NNG message body IS the serialised payload.
+            std::span<const std::byte> payload_span(data, size);
+            auto resp_bytes = handle_register_service(payload_span, pipe_id);
 
-            // The body of the message IS the raw frame.
-            // For register_service_request the entire body is the serialised payload.
-            // We must skip the 32-byte frame header to reach the message payload.
-            constexpr std::size_t FRAME_HEADER_SIZE = 32;
-            std::span<const std::byte> body_span(data, size);
-            std::span<const std::byte> payload_span =
-                size > FRAME_HEADER_SIZE ? body_span.subspan(FRAME_HEADER_SIZE)
-                                        : std::span<const std::byte>{};
-
-            const auto type_val = mt.value_or(0xFFFF);
-            if (type_val == static_cast<std::uint16_t>(message_type::register_service_request)) {
-                auto resp_bytes = handle_register_service(payload_span, pipe_id);
-
-                // Build a response frame in the same raw format.
-                // For simplicity reuse the incoming message buffer.
-                nng_msg_clear(msg);
-                nng_msg_append(msg, resp_bytes.data(), resp_bytes.size());
-                nng_msg_set_pipe(msg, pipe_id);
-                int send_rv = nng_sendmsg(backend_sock_, msg, 0);
-                if (send_rv != 0) {
-                    BOOST_LOG_SEV(lg(), warn) << "Backend send error: "
-                                             << nng_strerror(send_rv);
-                    nng_msg_free(msg);
-                }
-            } else {
-                // Unexpected message on backend; discard.
-                BOOST_LOG_SEV(lg(), warn) << "Unexpected message type 0x"
-                                         << std::hex << type_val << " on backend";
+            nng_msg_clear(msg);
+            nng_msg_append(msg, resp_bytes.data(), resp_bytes.size());
+            nng_msg_set_pipe(msg, pipe_id);
+            int send_rv = nng_sendmsg(backend_sock_, msg, 0);
+            if (send_rv != 0) {
+                BOOST_LOG_SEV(lg(), warn) << "Backend send error: "
+                                         << nng_strerror(send_rv);
                 nng_msg_free(msg);
             }
         }

@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ.BROKER_HPP
-#define ORES_MQ.BROKER_HPP
+#ifndef ORES_MQ_BROKER_HPP
+#define ORES_MQ_BROKER_HPP
 
 /**
  * @brief NNG-based message broker executable
  *
- * Standalone broker process that routes binary protocol frames by message type range to registered backend services. Supports durable delivery via pgmq for sensitive workflows.
+ * Standalone broker process that routes binary protocol frames by message type
+ * range to registered backend services. Supports durable delivery via pgmq for
+ * sensitive workflows.
  */
-namespace ores::mq.broker {}
+namespace ores::mq::broker {}
 
 #endif

@@ -55,8 +55,9 @@ auth_session_service::validate_jwt(const std::string& jwt_string,
     boost::uuids::uuid claimed_account_id;
     try {
         claimed_account_id = gen(validation->account_id);
-    } catch (...) {
-        BOOST_LOG_SEV(lg(), warn) << "JWT subject is not a valid UUID: " << validation->account_id;
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT subject is not a valid UUID: "
+                                  << validation->account_id << " (" << e.what() << ")";
         return std::nullopt;
     }
 
@@ -70,9 +71,9 @@ auth_session_service::validate_jwt(const std::string& jwt_string,
         try {
             const auto sid = gen(validation->session_id);
             session_id_index_[sid] = remote_address;
-        } catch (...) {
+        } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "JWT session_id is not a valid UUID: "
-                                      << validation->session_id;
+                                      << validation->session_id << " (" << e.what() << ")";
         }
     }
 

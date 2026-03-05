@@ -22,6 +22,8 @@
 #include <csignal>
 #include <cstdlib>
 #include "ores.logging/lifecycle_manager.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "ores.utility/version/version.hpp"
 #include "ores.mq/broker/broker_config.hpp"
 #include "ores.mq/broker/nng_broker.hpp"
 #include "ores.mq.broker/config/parser.hpp"
@@ -44,7 +46,10 @@ int host::execute(const std::vector<std::string>& args,
     // Initialise logging before anything else.
     lifecycle_manager lm(cfg.logging);
 
-    BOOST_LOG_SEV(lg(), info) << "Starting OreStudio MQ Broker";
+    BOOST_LOG_SEV(lg(), info)  << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
+    BOOST_LOG_SEV(lg(), info)  << utility::version::format_startup_message(
+        "ORE Studio MQ Broker");
 
     // Build broker_config from CLI options.
     ores::mq::broker::broker_config broker_cfg;

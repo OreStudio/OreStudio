@@ -99,9 +99,11 @@
 #include "ores.comms.service/app/application_exception.hpp"
 #include "ores.comms.service/messaging/system_info_handler.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include <nng/nng.h>
-#include <nng/protocol/reqrep0/req.h>
-#include "ores.mq/messaging/broker_protocol.hpp"
+#include <thread>
+#include <future>
+#include <boost/asio/use_future.hpp>
+#include "ores.mq/service/nng_service_runner.hpp"
+#include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::comms::service::app {
 using namespace ores::logging;
@@ -770,80 +772,96 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         },
         boost::asio::detached);
 
-    // Register with broker (if configured)
+    // Set up persistent NNG service runner (if broker is configured)
+    std::shared_ptr<ores::mq::service::nng_service_runner> nng_runner;
+    std::thread nng_thread;
     if (cfg.broker_backend && !cfg.broker_backend->empty()) {
-        BOOST_LOG_SEV(lg(), info) << "Registering with broker: " << *cfg.broker_backend;
-        nng_socket req_sock = NNG_SOCKET_INITIALIZER;
-        int rv = nng_req0_open(&req_sock);
-        if (rv != 0) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to open NNG REQ socket: "
-                                       << nng_strerror(rv);
-            co_return;
-        }
-        rv = nng_dial(req_sock, cfg.broker_backend->c_str(), nullptr, 0);
-        if (rv != 0) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to connect to broker: "
-                                       << nng_strerror(rv);
-            nng_close(req_sock);
-            co_return;
-        }
+        auto disp = srv->dispatcher();
 
-        using namespace ores::comms::messaging;
-        ores::mq::messaging::register_service_request reg_req;
-        reg_req.service_name = "ores.comms.service";
-        reg_req.handled_ranges = {
-            { CORE_SUBSYSTEM_MIN,       CORE_SUBSYSTEM_MAX      },
-            { IAM_SUBSYSTEM_MIN,        IAM_SUBSYSTEM_MAX       },
-            { VARIABILITY_SUBSYSTEM_MIN,VARIABILITY_SUBSYSTEM_MAX},
-            { ASSETS_SUBSYSTEM_MIN,     ASSETS_SUBSYSTEM_MAX    },
-            { TELEMETRY_SUBSYSTEM_MIN,  TELEMETRY_SUBSYSTEM_MAX },
-            { DQ_SUBSYSTEM_MIN,         DQ_SUBSYSTEM_MAX        },
-            { SYNTHETIC_SUBSYSTEM_MIN,  SYNTHETIC_SUBSYSTEM_MAX },
-            { TRADE_SUBSYSTEM_MIN,      TRADE_SUBSYSTEM_MAX     },
-            { SCHEDULER_SUBSYSTEM_MIN,  SCHEDULER_SUBSYSTEM_MAX },
-            { REPORTING_SUBSYSTEM_MIN,  REPORTING_SUBSYSTEM_MAX },
-            { MQ_SUBSYSTEM_MIN,         MQ_SUBSYSTEM_MAX        }
+        // Build a minimal error response frame when frame parsing fails.
+        // Extracts the correlation_id from raw bytes at offset 24-27 (big-endian).
+        auto make_nng_error_frame = [](
+            std::span<const std::byte> raw,
+            ores::utility::serialization::error_code code) -> std::vector<std::byte>
+        {
+            std::uint32_t corr_id = 0;
+            constexpr std::size_t corr_id_offset = 24;
+            if (raw.size() >= corr_id_offset + 4) {
+                const auto* p = reinterpret_cast<const std::uint8_t*>(
+                    raw.data() + corr_id_offset);
+                corr_id = (static_cast<std::uint32_t>(p[0]) << 24)
+                        | (static_cast<std::uint32_t>(p[1]) << 16)
+                        | (static_cast<std::uint32_t>(p[2]) <<  8)
+                        |  static_cast<std::uint32_t>(p[3]);
+            }
+            auto f = ores::comms::messaging::create_error_response_frame(
+                0, corr_id, code,
+                ores::utility::serialization::to_string(code));
+            return f.serialize();
         };
 
-        const auto payload = reg_req.serialize();
-        nng_msg* msg = nullptr;
-        nng_msg_alloc(&msg, 0);
-        nng_msg_append(msg, payload.data(), payload.size());
+        // Async adapter: deserialises raw NNG bytes, dispatches through
+        // message_dispatcher, and returns the serialised response bytes.
+        auto dispatch_coro = [disp, make_nng_error_frame](
+            std::vector<std::byte> raw, std::string remote_addr)
+            -> boost::asio::awaitable<std::vector<std::byte>>
+        {
+            auto hdr = ores::comms::messaging::frame::deserialize_header(raw);
+            if (!hdr)
+                co_return make_nng_error_frame(raw, hdr.error());
+            auto frm = ores::comms::messaging::frame::deserialize(*hdr, raw);
+            if (!frm)
+                co_return make_nng_error_frame(raw, frm.error());
+            auto resp = co_await disp->dispatch(*frm, frm->header().sequence,
+                                                remote_addr);
+            if (!resp)
+                co_return make_nng_error_frame(raw, resp.error());
+            co_return resp->serialize();
+        };
 
-        rv = nng_sendmsg(req_sock, msg, 0);
-        if (rv != 0) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send register_service_request: "
-                                       << nng_strerror(rv);
-            nng_close(req_sock);
-            co_return;
-        }
+        // Synchronous dispatcher passed to the runner: posts dispatch_coro onto
+        // io_ctx and blocks the NNG thread until the response arrives.
+        auto nng_disp = [&io_ctx, dispatch_coro](
+            std::span<const std::byte> raw, std::uint32_t pipe_id)
+            -> std::vector<std::byte>
+        {
+            auto remote = "nng:pipe:" + std::to_string(pipe_id);
+            auto vec = std::vector<std::byte>(raw.begin(), raw.end());
+            return boost::asio::co_spawn(io_ctx,
+                dispatch_coro(std::move(vec), std::move(remote)),
+                boost::asio::use_future).get();
+        };
 
-        nng_msg* resp_msg = nullptr;
-        rv = nng_recvmsg(req_sock, &resp_msg, 0);
-        if (rv != 0) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to receive register_service_response: "
-                                       << nng_strerror(rv);
-            nng_close(req_sock);
-            co_return;
-        }
+        using namespace ores::comms::messaging;
+        ores::mq::service::nng_service_runner::config runner_cfg;
+        runner_cfg.broker_backend = *cfg.broker_backend;
+        runner_cfg.service_name   = "ores.comms.service";
+        runner_cfg.ranges = {
+            { .min = CORE_SUBSYSTEM_MIN,        .max = CORE_SUBSYSTEM_MAX        },
+            { .min = IAM_SUBSYSTEM_MIN,         .max = IAM_SUBSYSTEM_MAX         },
+            { .min = VARIABILITY_SUBSYSTEM_MIN, .max = VARIABILITY_SUBSYSTEM_MAX },
+            { .min = ASSETS_SUBSYSTEM_MIN,      .max = ASSETS_SUBSYSTEM_MAX      },
+            { .min = TELEMETRY_SUBSYSTEM_MIN,   .max = TELEMETRY_SUBSYSTEM_MAX   },
+            { .min = DQ_SUBSYSTEM_MIN,          .max = DQ_SUBSYSTEM_MAX          },
+            { .min = SYNTHETIC_SUBSYSTEM_MIN,   .max = SYNTHETIC_SUBSYSTEM_MAX   },
+            { .min = TRADE_SUBSYSTEM_MIN,       .max = TRADE_SUBSYSTEM_MAX       },
+            { .min = SCHEDULER_SUBSYSTEM_MIN,   .max = SCHEDULER_SUBSYSTEM_MAX   },
+            { .min = REPORTING_SUBSYSTEM_MIN,   .max = REPORTING_SUBSYSTEM_MAX   },
+            { .min = MQ_SUBSYSTEM_MIN,          .max = MQ_SUBSYSTEM_MAX          }
+        };
 
-        const auto* resp_data = static_cast<const std::byte*>(nng_msg_body(resp_msg));
-        const auto  resp_size = nng_msg_len(resp_msg);
-        const auto  resp = ores::mq::messaging::register_service_response::deserialize(
-            {resp_data, resp_size});
-        nng_msg_free(resp_msg);
-        nng_close(req_sock);
-
-        if (!resp || !resp->success) {
-            const auto err = resp ? resp->error_message : "deserialisation failed";
-            BOOST_LOG_SEV(lg(), error) << "Broker registration failed: " << err;
-            co_return;
-        }
-        BOOST_LOG_SEV(lg(), info) << "Registered with broker, assigned_id="
-                                   << resp->assigned_id;
+        nng_runner = std::make_shared<ores::mq::service::nng_service_runner>(
+            std::move(runner_cfg), std::move(nng_disp));
+        nng_thread = std::thread([nng_runner]() { nng_runner->run(); });
     }
 
     co_await srv->run(io_ctx);
+
+    if (nng_runner) {
+        nng_runner->stop();
+        if (nng_thread.joinable())
+            nng_thread.join();
+    }
 
     // Stop the database health monitor
     db_health_monitor.stop();

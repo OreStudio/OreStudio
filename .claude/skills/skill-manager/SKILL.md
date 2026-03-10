@@ -95,7 +95,7 @@ MA 02110-1301, USA.
 ```
 
 -   Update the file `doc/skills/claude_code_skills.org` in section "Available Skills" with a link to new skill, following the pattern of the previous skills.
--   Update the skill dependencies diagram `doc/skills/modeling/skill_dependencies.puml` to add the new skill and its dependencies on other skills. See [Skill dependencies diagram](#org217bf97) for details.
+-   Update the skill dependencies diagram `doc/skills/modeling/skill_dependencies.puml` to add the new skill and its dependencies on other skills. See [Skill dependencies diagram](#org5f111cc) for details.
 
 
 ## Skill dependencies diagram
@@ -135,7 +135,7 @@ alias --> other_skill
 1.  Regenerate the diagram:
 
 ```sh
-cmake --build --preset linux-clang-debug --target generate_skill_dependencies_diagram
+cmake --build --preset linux-clang-debug-ninja --target generate_skill_dependencies_diagram
 ```
 
 
@@ -153,8 +153,8 @@ To update an existing skill:
 After creating or updating a skill, run both CMake targets to verify the changes don't break any builds:
 
 ```sh
-cmake --build --preset linux-clang-debug --target deploy_skills
-cmake --build --preset linux-clang-debug --target deploy_site
+cmake --build --preset linux-clang-debug-ninja --target deploy_skills
+cmake --build --preset linux-clang-debug-ninja --target deploy_site
 ```
 
 The `deploy_skills` target generates the Claude Code skills under `.claude/skills`. The `deploy_site` target generates the documentation website and can break if there are issues with org-mode links or formatting in skill files.

@@ -145,7 +145,7 @@ Using the [CMake Runner Skill](../cmake-runner/SKILL.md):
 1.  Build and run the new component's tests:
     
     ```bash
-    cmake --build --preset linux-clang-debug --target ores.COMPONENT.tests
+    cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.tests
     ```
 2.  Run the tests and confirm the stub test passes.
 3.  Commit all your changes:

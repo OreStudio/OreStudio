@@ -36,35 +36,6 @@ set(CMAKE_TOOLCHAIN_FILE
 # Log CMake version. Useful for debugging CMake problems.
 message(STATUS "CMake Version: ${CMAKE_VERSION}")
 
-#
-# Parallel build configuration check.
-# CMAKE_BUILD_PARALLEL_LEVEL controls cmake --build concurrency.
-# CTEST_PARALLEL_LEVEL controls ctest concurrency.
-# Set them in ~/.bashrc for per-machine configuration (see cmake-runner skill).
-#
-cmake_host_system_information(RESULT ORES_CPU_CORES QUERY NUMBER_OF_LOGICAL_CORES)
-if(ORES_CPU_CORES GREATER 2)
-    math(EXPR ORES_DEFAULT_JOBS "${ORES_CPU_CORES} - 2")
-else()
-    set(ORES_DEFAULT_JOBS 1)
-endif()
-if("$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CMAKE_BUILD_PARALLEL_LEVEL}" STREQUAL "1")
-    set(ENV{CMAKE_BUILD_PARALLEL_LEVEL} ${ORES_DEFAULT_JOBS})
-    message(STATUS "CMAKE_BUILD_PARALLEL_LEVEL auto-set to ${ORES_DEFAULT_JOBS} "
-        "(logical cores: ${ORES_CPU_CORES}; set in ~/.bashrc to make permanent)")
-else()
-    message(STATUS "CMAKE_BUILD_PARALLEL_LEVEL: $ENV{CMAKE_BUILD_PARALLEL_LEVEL} "
-        "(logical cores: ${ORES_CPU_CORES})")
-endif()
-if("$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "" OR "$ENV{CTEST_PARALLEL_LEVEL}" STREQUAL "1")
-    set(ENV{CTEST_PARALLEL_LEVEL} ${ORES_DEFAULT_JOBS})
-    message(STATUS "CTEST_PARALLEL_LEVEL auto-set to ${ORES_DEFAULT_JOBS} "
-        "(logical cores: ${ORES_CPU_CORES}; set in ~/.bashrc to make permanent)")
-else()
-    message(STATUS "CTEST_PARALLEL_LEVEL: $ENV{CTEST_PARALLEL_LEVEL} "
-        "(logical cores: ${ORES_CPU_CORES})")
-endif()
-
 # ctest support
 enable_testing()
 configure_file(CTestCustom.cmake CTestCustom.cmake COPYONLY)

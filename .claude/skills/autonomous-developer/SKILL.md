@@ -212,7 +212,7 @@ For each task in your plan:
 -   B. Compile the Code
 
     ```sh
-    cmake --build --preset linux-clang-debug
+    cmake --build --preset linux-clang-debug-ninja
     ```
     
     If compilation fails:
@@ -228,11 +228,11 @@ For each task in your plan:
     
     ```sh
     # For specific component tests
-    cmake --build --preset linux-clang-debug --target ores.COMPONENT.tests
-    ./build/output/linux-clang-debug/publish/bin/ores.COMPONENT.tests
+    cmake --build --preset linux-clang-debug-ninja --target ores.COMPONENT.tests
+    ./build/output/linux-clang-debug-ninja/publish/bin/ores.COMPONENT.tests
     
     # For all tests (if time permits and changes are broad)
-    cmake --build --preset linux-clang-debug --target rat
+    cmake --build --preset linux-clang-debug-ninja --target rat
     ```
     
     If tests fail:

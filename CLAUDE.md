@@ -11,9 +11,9 @@ The project is implemented in C++ 23 and uses CMake as the build system.
 See `doc/skills/cmake-runner/skill.org` for details on how to run CMake. Key
 commands:
 
-- `cmake --preset linux-clang-debug` - Configure project in debug and install dependencies.
-- `cmake --build --preset linux-clang-debug` - Build project in debug.
-- `cmake --build --preset linux-clang-release --target rat` - Run all tests
+- `cmake --preset linux-clang-debug-ninja` - Configure project in debug and install dependencies.
+- `cmake --build --preset linux-clang-debug-ninja` - Build project in debug.
+- `cmake --build --preset linux-clang-release-ninja --target rat` - Run all tests
 
 ## Code Style
 

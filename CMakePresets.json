@@ -10,7 +10,6 @@
             "name": "base-configuration",
             "description": "Base class for common configuration options.",
             "hidden": true,
-            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/output/${presetName}",
             "cacheVariables": {
                 "CMAKE_POSITION_INDEPENDENT_CODE": true,
@@ -96,44 +95,108 @@
             "description": "Setup the Clang MSVC C++ compiler."
         },
         {
-            "name": "linux-clang-debug",
-            "displayName": "Linux Clang Debug",
+            "name": "ninja",
+            "hidden": true,
+            "generator": "Ninja",
+            "description": "Build using the Ninja build tool."
+        },
+        {
+            "name": "make",
+            "hidden": true,
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CMAKE_COLOR_DIAGNOSTICS": "OFF",
+                "CMAKE_COLOR_MAKEFILE": "OFF"
+            },
+            "description": "Build using Unix Make."
+        },
+        {
+            "name": "linux-clang-debug-ninja",
+            "displayName": "Linux Clang Debug (Ninja)",
             "inherits": [
                 "base-configuration",
                 "clang",
-                "debug-build"
+                "debug-build",
+                "ninja"
             ],
-            "description": "OreStudio debug build for Linux Clang."
+            "description": "OreStudio debug build for Linux Clang using Ninja."
         },
         {
-            "name": "linux-clang-release",
-            "displayName": "Linux Clang Release",
+            "name": "linux-clang-debug-make",
+            "displayName": "Linux Clang Debug (Make)",
             "inherits": [
                 "base-configuration",
                 "clang",
-                "release-build"
+                "debug-build",
+                "make"
             ],
-            "description": "OreStudio release build for Linux Clang."
+            "description": "OreStudio debug build for Linux Clang using Make."
         },
         {
-            "name": "linux-gcc-debug",
-            "displayName": "Linux GCC debug",
+            "name": "linux-clang-release-ninja",
+            "displayName": "Linux Clang Release (Ninja)",
+            "inherits": [
+                "base-configuration",
+                "clang",
+                "release-build",
+                "ninja"
+            ],
+            "description": "OreStudio release build for Linux Clang using Ninja."
+        },
+        {
+            "name": "linux-clang-release-make",
+            "displayName": "Linux Clang Release (Make)",
+            "inherits": [
+                "base-configuration",
+                "clang",
+                "release-build",
+                "make"
+            ],
+            "description": "OreStudio release build for Linux Clang using Make."
+        },
+        {
+            "name": "linux-gcc-debug-ninja",
+            "displayName": "Linux GCC Debug (Ninja)",
             "inherits": [
                 "base-configuration",
                 "gcc",
-                "debug-build"
+                "debug-build",
+                "ninja"
             ],
-            "description": "OreStudio debug build for Linux GCC."
+            "description": "OreStudio debug build for Linux GCC using Ninja."
         },
         {
-            "name": "linux-gcc-release",
-            "displayName": "Linux GCC Release",
+            "name": "linux-gcc-debug-make",
+            "displayName": "Linux GCC Debug (Make)",
             "inherits": [
                 "base-configuration",
                 "gcc",
-                "release-build"
+                "debug-build",
+                "make"
             ],
-            "description": "OreStudio release build for Linux GCC."
+            "description": "OreStudio debug build for Linux GCC using Make."
+        },
+        {
+            "name": "linux-gcc-release-ninja",
+            "displayName": "Linux GCC Release (Ninja)",
+            "inherits": [
+                "base-configuration",
+                "gcc",
+                "release-build",
+                "ninja"
+            ],
+            "description": "OreStudio release build for Linux GCC using Ninja."
+        },
+        {
+            "name": "linux-gcc-release-make",
+            "displayName": "Linux GCC Release (Make)",
+            "inherits": [
+                "base-configuration",
+                "gcc",
+                "release-build",
+                "make"
+            ],
+            "description": "OreStudio release build for Linux GCC using Make."
         },
         {
             "name": "windows-arch-x64",
@@ -169,24 +232,26 @@
             "description": "Setup the MSVC C++ compiler for Windows."
         },
         {
-            "name": "windows-msvc-debug",
-            "displayName": "Windows x64 Debug",
+            "name": "windows-msvc-debug-ninja",
+            "displayName": "Windows x64 Debug (Ninja)",
             "inherits": [
                 "base-configuration",
                 "windows-msvc",
-                "debug-build"
+                "debug-build",
+                "ninja"
             ],
-            "description": "OreStudio debug build for Windows MSVC."
+            "description": "OreStudio debug build for Windows MSVC using Ninja."
         },
         {
-            "name": "windows-msvc-release",
-            "displayName": "Windows x64 Release",
+            "name": "windows-msvc-release-ninja",
+            "displayName": "Windows x64 Release (Ninja)",
             "inherits": [
                 "base-configuration",
                 "windows-msvc",
-                "release-build"
+                "release-build",
+                "ninja"
             ],
-            "description": "OreStudio release build for Windows MSVC."
+            "description": "OreStudio release build for Windows MSVC using Ninja."
         },
         {
             "name": "windows-msvc-clang-cl",
@@ -206,24 +271,26 @@
             "description": "Setup the Clang MSVC C++ compiler for Windows."
         },
         {
-            "name": "windows-msvc-clang-cl-debug",
-            "displayName": "Windows x64 Debug",
+            "name": "windows-msvc-clang-cl-debug-ninja",
+            "displayName": "Windows x64 Debug (Ninja)",
             "inherits": [
                 "base-configuration",
                 "windows-msvc-clang-cl",
-                "debug-build"
+                "debug-build",
+                "ninja"
             ],
-            "description": "OreStudio debug build for Windows Clang MSVC."
+            "description": "OreStudio debug build for Windows Clang MSVC using Ninja."
         },
         {
-            "name": "windows-msvc-clang-cl-release",
-            "displayName": "Windows x64 Release",
+            "name": "windows-msvc-clang-cl-release-ninja",
+            "displayName": "Windows x64 Release (Ninja)",
             "inherits": [
                 "base-configuration",
                 "windows-msvc-clang-cl",
-                "release-build"
+                "release-build",
+                "ninja"
             ],
-            "description": "OreStudio release build for Windows Clang MSVC."
+            "description": "OreStudio release build for Windows Clang MSVC using Ninja."
         },
         {
             "name": "windows-clang",
@@ -243,92 +310,163 @@
             "description": "Setup the Clang C++ compiler for Windows."
         },
         {
-            "name": "windows-clang-debug",
-            "displayName": "Windows x64 Debug",
+            "name": "windows-clang-debug-ninja",
+            "displayName": "Windows x64 Debug (Ninja)",
             "inherits": [
                 "base-configuration",
                 "windows-clang",
-                "debug-build"
+                "debug-build",
+                "ninja"
             ],
-            "description": "OreStudio debug build for Windows Clang."
+            "description": "OreStudio debug build for Windows Clang using Ninja."
         },
         {
-            "name": "windows-clang-release",
-            "displayName": "Windows x64 Release",
+            "name": "windows-clang-release-ninja",
+            "displayName": "Windows x64 Release (Ninja)",
             "inherits": [
                 "base-configuration",
                 "windows-clang",
-                "release-build"
+                "release-build",
+                "ninja"
             ],
-            "description": "OreStudio release build for Windows Clang."
+            "description": "OreStudio release build for Windows Clang using Ninja."
         },
         {
-            "name": "macos-clang-debug",
-            "displayName": "Mac OSX Debug",
+            "name": "macos-clang-debug-ninja",
+            "displayName": "Mac OSX Debug (Ninja)",
             "inherits": [
                 "base-configuration",
-                "debug-build"
+                "debug-build",
+                "ninja"
             ],
-            "description": "OreStudio debug build for MacOSX Clang."
+            "description": "OreStudio debug build for MacOSX Clang using Ninja."
         },
         {
-            "name": "macos-clang-release",
-            "displayName": "Mac OSX Release",
+            "name": "macos-clang-debug-make",
+            "displayName": "Mac OSX Debug (Make)",
             "inherits": [
                 "base-configuration",
-                "release-build"
+                "debug-build",
+                "make"
             ],
-            "description": "OreStudio release build for MacOSX Clang."
+            "description": "OreStudio debug build for MacOSX Clang using Make."
+        },
+        {
+            "name": "macos-clang-release-ninja",
+            "displayName": "Mac OSX Release (Ninja)",
+            "inherits": [
+                "base-configuration",
+                "release-build",
+                "ninja"
+            ],
+            "description": "OreStudio release build for MacOSX Clang using Ninja."
+        },
+        {
+            "name": "macos-clang-release-make",
+            "displayName": "Mac OSX Release (Make)",
+            "inherits": [
+                "base-configuration",
+                "release-build",
+                "make"
+            ],
+            "description": "OreStudio release build for MacOSX Clang using Make."
         }
     ],
     "buildPresets": [
         {
-            "name": "windows-msvc-debug",
-            "configurePreset": "windows-msvc-debug"
+            "name": "base-build",
+            "hidden": true,
+            "description": "Base build preset inherited by all build presets."
         },
         {
-            "name": "windows-msvc-release",
-            "configurePreset": "windows-msvc-release"
+            "name": "windows-msvc-debug-ninja",
+            "configurePreset": "windows-msvc-debug-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "windows-msvc-clang-cl-debug",
-            "configurePreset": "windows-msvc-debug"
+            "name": "windows-msvc-release-ninja",
+            "configurePreset": "windows-msvc-release-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "windows-msvc-clang-cl-release",
-            "configurePreset": "windows-msvc-release"
+            "name": "windows-msvc-clang-cl-debug-ninja",
+            "configurePreset": "windows-msvc-clang-cl-debug-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "windows-clang-debug",
-            "configurePreset": "windows-clang-debug"
+            "name": "windows-msvc-clang-cl-release-ninja",
+            "configurePreset": "windows-msvc-clang-cl-release-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "windows-clang-release",
-            "configurePreset": "windows-clang-release"
+            "name": "windows-clang-debug-ninja",
+            "configurePreset": "windows-clang-debug-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "linux-clang-debug",
-            "configurePreset": "linux-clang-debug"
+            "name": "windows-clang-release-ninja",
+            "configurePreset": "windows-clang-release-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "linux-clang-release",
-            "configurePreset": "linux-clang-release"
+            "name": "linux-clang-debug-ninja",
+            "configurePreset": "linux-clang-debug-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "linux-gcc-debug",
-            "configurePreset": "linux-gcc-debug"
+            "name": "linux-clang-debug-make",
+            "configurePreset": "linux-clang-debug-make",
+            "inherits": ["base-build"]
         },
         {
-            "name": "linux-gcc-release",
-            "configurePreset": "linux-gcc-release"
+            "name": "linux-clang-release-ninja",
+            "configurePreset": "linux-clang-release-ninja",
+            "inherits": ["base-build"]
         },
         {
-            "name": "macos-clang-debug",
-            "configurePreset": "macos-clang-debug"
+            "name": "linux-clang-release-make",
+            "configurePreset": "linux-clang-release-make",
+            "inherits": ["base-build"]
         },
         {
-            "name": "macos-clang-release",
-            "configurePreset": "macos-clang-release"
+            "name": "linux-gcc-debug-ninja",
+            "configurePreset": "linux-gcc-debug-ninja",
+            "inherits": ["base-build"]
+        },
+        {
+            "name": "linux-gcc-debug-make",
+            "configurePreset": "linux-gcc-debug-make",
+            "inherits": ["base-build"]
+        },
+        {
+            "name": "linux-gcc-release-ninja",
+            "configurePreset": "linux-gcc-release-ninja",
+            "inherits": ["base-build"]
+        },
+        {
+            "name": "linux-gcc-release-make",
+            "configurePreset": "linux-gcc-release-make",
+            "inherits": ["base-build"]
+        },
+        {
+            "name": "macos-clang-debug-ninja",
+            "configurePreset": "macos-clang-debug-ninja",
+            "inherits": ["base-build"]
+        },
+        {
+            "name": "macos-clang-debug-make",
+            "configurePreset": "macos-clang-debug-make",
+            "inherits": ["base-build"]
+        },
+        {
+            "name": "macos-clang-release-ninja",
+            "configurePreset": "macos-clang-release-ninja",
+            "inherits": ["base-build"]
+        },
+        {
+            "name": "macos-clang-release-make",
+            "configurePreset": "macos-clang-release-make",
+            "inherits": ["base-build"]
         }
     ],
     "testPresets": [
@@ -344,85 +482,127 @@
             }
         },
         {
-            "name": "windows-msvc-release",
-            "configurePreset": "windows-msvc-release",
+            "name": "windows-msvc-release-ninja",
+            "configurePreset": "windows-msvc-release-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "windows-msvc-debug",
-            "configurePreset": "windows-msvc-debug",
+            "name": "windows-msvc-debug-ninja",
+            "configurePreset": "windows-msvc-debug-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "windows-msvc-clang-cl-release",
-            "configurePreset": "windows-msvc-clang-cl-release",
+            "name": "windows-msvc-clang-cl-release-ninja",
+            "configurePreset": "windows-msvc-clang-cl-release-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "windows-msvc-clang-cl-debug",
-            "configurePreset": "windows-msvc-clang-cl-debug",
+            "name": "windows-msvc-clang-cl-debug-ninja",
+            "configurePreset": "windows-msvc-clang-cl-debug-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "windows-clang-release",
-            "configurePreset": "windows-clang-release",
+            "name": "windows-clang-release-ninja",
+            "configurePreset": "windows-clang-release-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "windows-clang-debug",
-            "configurePreset": "windows-clang-debug",
+            "name": "windows-clang-debug-ninja",
+            "configurePreset": "windows-clang-debug-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "linux-gcc-release",
-            "configurePreset": "linux-gcc-release",
+            "name": "linux-gcc-release-ninja",
+            "configurePreset": "linux-gcc-release-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "linux-gcc-debug",
-            "configurePreset": "linux-gcc-debug",
+            "name": "linux-gcc-release-make",
+            "configurePreset": "linux-gcc-release-make",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "linux-clang-release",
-            "configurePreset": "linux-clang-release",
+            "name": "linux-gcc-debug-ninja",
+            "configurePreset": "linux-gcc-debug-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "linux-clang-debug",
-            "configurePreset": "linux-clang-debug",
+            "name": "linux-gcc-debug-make",
+            "configurePreset": "linux-gcc-debug-make",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "macos-clang-release",
-            "configurePreset": "macos-clang-release",
+            "name": "linux-clang-release-ninja",
+            "configurePreset": "linux-clang-release-ninja",
             "inherits": [
                 "test-default"
             ]
         },
         {
-            "name": "macos-clang-debug",
-            "configurePreset": "macos-clang-debug",
+            "name": "linux-clang-release-make",
+            "configurePreset": "linux-clang-release-make",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "linux-clang-debug-ninja",
+            "configurePreset": "linux-clang-debug-ninja",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "linux-clang-debug-make",
+            "configurePreset": "linux-clang-debug-make",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "macos-clang-release-ninja",
+            "configurePreset": "macos-clang-release-ninja",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "macos-clang-release-make",
+            "configurePreset": "macos-clang-release-make",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "macos-clang-debug-ninja",
+            "configurePreset": "macos-clang-debug-ninja",
+            "inherits": [
+                "test-default"
+            ]
+        },
+        {
+            "name": "macos-clang-debug-make",
+            "configurePreset": "macos-clang-debug-make",
             "inherits": [
                 "test-default"
             ]
@@ -430,11 +610,11 @@
     ],
     "packagePresets": [
         {
-            "name": "linux-gcc-release",
+            "name": "linux-gcc-release-ninja",
             "packageName": "OreStudio",
             "packageVersion": "0.0.2",
             "displayName": "Distribute Release",
-            "configurePreset": "linux-gcc-release",
+            "configurePreset": "linux-gcc-release-ninja",
             "generators": [
                 "DEB"
             ],
@@ -443,11 +623,37 @@
             ]
         },
         {
-            "name": "linux-clang-release",
+            "name": "linux-gcc-release-make",
             "packageName": "OreStudio",
             "packageVersion": "0.0.2",
             "displayName": "Distribute Release",
-            "configurePreset": "linux-clang-release",
+            "configurePreset": "linux-gcc-release-make",
+            "generators": [
+                "DEB"
+            ],
+            "configurations": [
+                "Release"
+            ]
+        },
+        {
+            "name": "linux-clang-release-ninja",
+            "packageName": "OreStudio",
+            "packageVersion": "0.0.2",
+            "displayName": "Distribute Release",
+            "configurePreset": "linux-clang-release-ninja",
+            "generators": [
+                "DEB"
+            ],
+            "configurations": [
+                "Release"
+            ]
+        },
+        {
+            "name": "linux-clang-release-make",
+            "packageName": "OreStudio",
+            "packageVersion": "0.0.2",
+            "displayName": "Distribute Release",
+            "configurePreset": "linux-clang-release-make",
             "generators": [
                 "DEB"
             ],
@@ -459,73 +665,217 @@
     "workflowPresets": [
         {
             "description": "Developer workflow without installation",
-            "name": "linux-clang-debug",
+            "name": "linux-clang-debug-ninja",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "linux-clang-debug"
+                    "name": "linux-clang-debug-ninja"
                 },
                 {
                     "type": "build",
-                    "name": "linux-clang-debug"
+                    "name": "linux-clang-debug-ninja"
                 },
                 {
                     "type": "test",
-                    "name": "linux-clang-debug"
+                    "name": "linux-clang-debug-ninja"
                 }
             ]
         },
         {
             "description": "Developer workflow without installation",
-            "name": "linux-clang-release",
+            "name": "linux-clang-debug-make",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "linux-clang-release"
+                    "name": "linux-clang-debug-make"
                 },
                 {
                     "type": "build",
-                    "name": "linux-clang-release"
+                    "name": "linux-clang-debug-make"
                 },
                 {
                     "type": "test",
-                    "name": "linux-clang-release"
+                    "name": "linux-clang-debug-make"
                 }
             ]
         },
         {
             "description": "Developer workflow without installation",
-            "name": "linux-gcc-debug",
+            "name": "linux-clang-release-ninja",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "linux-gcc-debug"
+                    "name": "linux-clang-release-ninja"
                 },
                 {
                     "type": "build",
-                    "name": "linux-gcc-debug"
+                    "name": "linux-clang-release-ninja"
                 },
                 {
                     "type": "test",
-                    "name": "linux-gcc-debug"
+                    "name": "linux-clang-release-ninja"
                 }
             ]
         },
         {
             "description": "Developer workflow without installation",
-            "name": "linux-gcc-release",
+            "name": "linux-clang-release-make",
             "steps": [
                 {
                     "type": "configure",
-                    "name": "linux-gcc-release"
+                    "name": "linux-clang-release-make"
                 },
                 {
                     "type": "build",
-                    "name": "linux-gcc-release"
+                    "name": "linux-clang-release-make"
                 },
                 {
                     "type": "test",
-                    "name": "linux-gcc-release"
+                    "name": "linux-clang-release-make"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "linux-gcc-debug-ninja",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-gcc-debug-ninja"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-gcc-debug-ninja"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-gcc-debug-ninja"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "linux-gcc-debug-make",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-gcc-debug-make"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-gcc-debug-make"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-gcc-debug-make"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "linux-gcc-release-ninja",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-gcc-release-ninja"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-gcc-release-ninja"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-gcc-release-ninja"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "linux-gcc-release-make",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-gcc-release-make"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-gcc-release-make"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-gcc-release-make"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "macos-clang-debug-ninja",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "macos-clang-debug-ninja"
+                },
+                {
+                    "type": "build",
+                    "name": "macos-clang-debug-ninja"
+                },
+                {
+                    "type": "test",
+                    "name": "macos-clang-debug-ninja"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "macos-clang-debug-make",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "macos-clang-debug-make"
+                },
+                {
+                    "type": "build",
+                    "name": "macos-clang-debug-make"
+                },
+                {
+                    "type": "test",
+                    "name": "macos-clang-debug-make"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "macos-clang-release-ninja",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "macos-clang-release-ninja"
+                },
+                {
+                    "type": "build",
+                    "name": "macos-clang-release-ninja"
+                },
+                {
+                    "type": "test",
+                    "name": "macos-clang-release-ninja"
+                }
+            ]
+        },
+        {
+            "description": "Developer workflow without installation",
+            "name": "macos-clang-release-make",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "macos-clang-release-make"
+                },
+                {
+                    "type": "build",
+                    "name": "macos-clang-release-make"
+                },
+                {
+                    "type": "test",
+                    "name": "macos-clang-release-make"
                 }
             ]
         }

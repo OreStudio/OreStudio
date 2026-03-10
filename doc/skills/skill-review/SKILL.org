@@ -112,13 +112,13 @@ When duplication is found, replace inline instructions with a reference:
 1. Reconfigure CMake:
 
 ,#+begin_src sh
-cmake --preset linux-clang-debug
+cmake --preset linux-clang-debug-ninja
 ,#+end_src
 
 2. Build the project:
 
 ,#+begin_src sh
-cmake --build --preset linux-clang-debug --target COMPONENT.lib
+cmake --build --preset linux-clang-debug-ninja --target COMPONENT.lib
 ,#+end_src
 #+end_example
 

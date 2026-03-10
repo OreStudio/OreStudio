@@ -699,7 +699,7 @@ history), stale indicator, and pagination support.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test manually that the model compiles and list window displays correctly.
 3.  Commit all changes.
 4.  Push branch and raise PR.
@@ -1225,7 +1225,7 @@ Connect double-click and edit action to emit show details signal.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test that detail dialog opens and displays entity data.
 3.  Test create/edit/view-only modes.
 4.  Test save and delete operations.
@@ -1504,7 +1504,7 @@ Connect history action to emit show history signal.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test that history dialog opens and shows version list.
 3.  Test version selection shows diff and full details.
 4.  Test open and revert functionality.
@@ -2039,7 +2039,7 @@ Add class diagrams for Client<Entity>Model, <Entity>MdiWindow,
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Run full end-to-end test of the entity.
 3.  Verify UML diagrams generate correctly.
 4.  Commit all changes.

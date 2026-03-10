@@ -40,10 +40,10 @@ Quick reference for enabling logging:
 
 ```sh
 # Enable logging at debug level
-cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
 
 # Or trace level for more detail
-cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
 ```
 
 
@@ -53,13 +53,13 @@ Run only the specific test suite(s) under investigation to minimise noise:
 
 ```sh
 # Run a specific test suite
-cmake --build --target test_COMPONENT.tests --preset linux-clang-debug
+cmake --build --target test_COMPONENT.tests --preset linux-clang-debug-ninja
 
 # Example: run accounts tests
-cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+cmake --build --target test_ores.accounts.tests --preset linux-clang-debug-ninja
 
 # Or run all tests
-cmake --build --preset linux-clang-debug --target rat
+cmake --build --preset linux-clang-debug-ninja --target rat
 ```
 
 Replace `COMPONENT` with the actual component name (e.g. `ores.accounts`, `ores.refdata`).
@@ -70,7 +70,7 @@ Replace `COMPONENT` with the actual component name (e.g. `ores.accounts`, `ores.
 After running tests, use the `parse_test_results.py` script to get a summary of failures:
 
 ```sh
-./scripts/parse_test_results.py build/output/linux-clang-debug/publish/bin
+./scripts/parse_test_results.py build/output/linux-clang-debug-ninja/publish/bin
 ```
 
 
@@ -82,11 +82,11 @@ The script produces output in three sections:
 
     ```
     Found 3 test-results files:
-      - build/output/linux-clang-debug/publish/bin/test-results-ores.accounts.tests.xml
-      - build/output/linux-clang-debug/publish/bin/test-results-ores.cli.tests.xml
-      - build/output/linux-clang-debug/publish/bin/test-results-ores.refdata.tests.xml
+      - build/output/linux-clang-debug-ninja/publish/bin/test-results-ores.accounts.tests.xml
+      - build/output/linux-clang-debug-ninja/publish/bin/test-results-ores.cli.tests.xml
+      - build/output/linux-clang-debug-ninja/publish/bin/test-results-ores.refdata.tests.xml
     
-    Looking for logs in: build/output/linux-clang-debug/publish/log
+    Looking for logs in: build/output/linux-clang-debug-ninja/publish/log
     ```
 
 -   2. Per-suite results
@@ -107,7 +107,7 @@ The script produces output in three sections:
     Skipped: 0
     Total Duration: 1.234s
     
-      Test Suite Log: build/output/linux-clang-debug/publish/log/ores.accounts.tests/ores.accounts.tests.log
+      Test Suite Log: build/output/linux-clang-debug-ninja/publish/log/ores.accounts.tests/ores.accounts.tests.log
       Errors/Warnings in test suite log:
         Line 156: [2025-01-26 10:30:44.123] [ERROR] Database connection failed
         Line 234: [2025-01-26 10:30:45.456] [WARN] Retry attempt 3 of 5
@@ -122,7 +122,7 @@ The script produces output in three sections:
       Duration: 0.023s
       Exception: [/path/to/file.cpp:42] Expected: valid currency code, Got: "XXX"
     
-      Test Case Log: build/output/linux-clang-debug/publish/log/ores.accounts.tests/domain_account_tests/account_creation_with_invalid_currency.log
+      Test Case Log: build/output/linux-clang-debug-ninja/publish/log/ores.accounts.tests/domain_account_tests/account_creation_with_invalid_currency.log
       Errors/Warnings in test case log:
         Line 12: [ERROR] Currency lookup failed for code: XXX
         Line 15: [WARN] Falling back to default currency handling
@@ -173,7 +173,7 @@ The script produces output in three sections:
 For deeper investigation, read the specific test case log file directly. Log files are organised as follows (see [CMake Runner Skill](../cmake-runner/SKILL.md) section "Output directory layout" for details):
 
 ```
-build/output/linux-clang-debug/publish/log/
+build/output/linux-clang-debug-ninja/publish/log/
   COMPONENT.tests/                    <- Test suite directory
     COMPONENT.tests.log               <- Suite-level log
     TEST_CATEGORY/                    <- Test category from filename
@@ -183,7 +183,7 @@ build/output/linux-clang-debug/publish/log/
 Example path for a specific test:
 
 ```
-build/output/linux-clang-debug/publish/log/ores.accounts.tests/domain_account_tests/account_serialization_to_json.log
+build/output/linux-clang-debug-ninja/publish/log/ores.accounts.tests/domain_account_tests/account_serialization_to_json.log
 ```
 
 
@@ -205,5 +205,5 @@ Follow this systematic approach:
 After investigation, disable logging to improve test performance:
 
 ```sh
-cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=OFF
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
 ```

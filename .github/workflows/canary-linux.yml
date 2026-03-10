@@ -30,7 +30,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   build:
-    name: linux-gcc-debug
+    name: linux-gcc-debug-ninja
     concurrency:
       group: canary-${{github.ref}}-${{github.job}}
       cancel-in-progress: true
@@ -55,7 +55,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.20
         with:
           variant: sccache
-          key: linux-gcc-debug
+          key: linux-gcc-debug-ninja
           max-size: 1000M
 
       - name: Install dev packages
@@ -122,9 +122,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ github.workspace }}/vcpkg-cache
-          key: vcpkg-linux-gcc-debug-${{ hashFiles('vcpkg.json') }}
+          key: vcpkg-linux-gcc-debug-ninja-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            vcpkg-linux-gcc-debug-
+            vcpkg-linux-gcc-debug-ninja-
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11
@@ -144,6 +144,6 @@ jobs:
           export ORES_TEST_DB_DATABASE=ores_ci
           export ORES_TEST_DB_DDL_PASSWORD=${{ steps.db_passwords.outputs.test_ddl_password }}
           export ORES_TEST_DB_PASSWORD=${{ steps.db_passwords.outputs.test_dml_password }}
-          export preset=linux-gcc-debug
+          export preset=linux-gcc-debug-ninja
           export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"

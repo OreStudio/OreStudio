@@ -15,7 +15,7 @@ When you need to configure, build, test, or deploy ORE Studio using CMake.
 1.  Identify what operation you need to perform (configure, build, test, deploy, generate diagrams).
 2.  All commands must be executed from the top-level project directory.
 3.  Follow the appropriate command from the Detailed instructions section below.
-4.  Default to `linux-clang-debug-ninja-ninja` preset when on Linux unless otherwise specified.
+4.  Default to `linux-clang-debug-ninja` preset when on Linux unless otherwise specified.
 5.  If you need to inspect the output of the build, see section Output directory layout.
 
 
@@ -30,7 +30,7 @@ To see all available CMake presets:
 cmake --list-presets
 ```
 
-The default preset for Linux is `linux-clang-debug-ninja-ninja`. For release builds, use `linux-clang-release-ninja-ninja`.
+The default preset for Linux is `linux-clang-debug-ninja`. For release builds, use `linux-clang-release-ninja`.
 
 
 ## Configuring the project
@@ -65,14 +65,14 @@ cmake --build --preset linux-clang-release-ninja
 
 ## Parallel builds and tests
 
-CMake presets do not set a job count, so by default builds run single-threaded. To enable parallel builds and tests persistently on your machine, add these environment variables to `~/.bashrc` (or equivalent):
+Ninja auto-detects the number of CPU cores and builds in parallel by default. Make does not — it requires `CMAKE_BUILD_PARALLEL_LEVEL` to be set in the environment. Add the following to `~/.bashrc` (or equivalent) for parallel Make builds:
 
 ```sh
-export CMAKE_BUILD_PARALLEL_LEVEL=6   # parallel jobs for cmake --build
-export CTEST_PARALLEL_LEVEL=6        # parallel jobs for ctest
+export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
+export CTEST_PARALLEL_LEVEL=$(nproc)
 ```
 
-Replace `6` with the number of CPU cores you want to use. These variables act as a fallback: they apply when no `jobs` value is set in the CMake preset (which is the current state of `CMakePresets.json`). They do **not** override an explicit `jobs` setting in a preset.
+GitHub CI workflows already set these variables automatically via `$(nproc)`.
 
 
 ## Running tests

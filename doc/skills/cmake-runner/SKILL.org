@@ -25,7 +25,7 @@ When you need to configure, build, test, or deploy ORE Studio using CMake.
    deploy, generate diagrams).
 2. All commands must be executed from the top-level project directory.
 3. Follow the appropriate command from the Detailed instructions section below.
-4. Default to =linux-clang-debug-ninja-ninja= preset when on Linux unless otherwise
+4. Default to =linux-clang-debug-ninja= preset when on Linux unless otherwise
    specified.
 5. If you need to inspect the output of the build, see section Output directory
    layout.
@@ -41,7 +41,7 @@ To see all available CMake presets:
 cmake --list-presets
 #+end_src
 
-The default preset for Linux is =linux-clang-debug-ninja-ninja=. For release builds, use =linux-clang-release-ninja-ninja=.
+The default preset for Linux is =linux-clang-debug-ninja=. For release builds, use =linux-clang-release-ninja=.
 
 ** Configuring the project
 

@@ -318,7 +318,7 @@ row actions (edit, delete).
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Verify the widget compiles correctly.
 3.  Commit all changes.
 4.  Push branch and raise PR.
@@ -600,7 +600,7 @@ Create dialog with form fields, validation, and add/edit mode support.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Verify the dialog compiles correctly.
 3.  Commit all changes.
 4.  Push branch and raise PR.
@@ -882,7 +882,7 @@ and widget to main navigation.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Run full end-to-end test of the entity.
 3.  Test add, edit, and delete operations.
 4.  Commit all changes.

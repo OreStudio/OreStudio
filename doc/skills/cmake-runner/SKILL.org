@@ -25,7 +25,7 @@ When you need to configure, build, test, or deploy ORE Studio using CMake.
    deploy, generate diagrams).
 2. All commands must be executed from the top-level project directory.
 3. Follow the appropriate command from the Detailed instructions section below.
-4. Default to =linux-clang-debug= preset when on Linux unless otherwise
+4. Default to =linux-clang-debug-ninja= preset when on Linux unless otherwise
    specified.
 5. If you need to inspect the output of the build, see section Output directory
    layout.
@@ -41,20 +41,20 @@ To see all available CMake presets:
 cmake --list-presets
 #+end_src
 
-The default preset for Linux is =linux-clang-debug=. For release builds, use =linux-clang-release=.
+The default preset for Linux is =linux-clang-debug-ninja=. For release builds, use =linux-clang-release-ninja=.
 
 ** Configuring the project
 
 To configure the project with a specific preset:
 
 #+begin_src sh
-cmake --preset linux-clang-debug
+cmake --preset linux-clang-debug-ninja
 #+end_src
 
 For release configuration:
 
 #+begin_src sh
-cmake --preset linux-clang-release
+cmake --preset linux-clang-release-ninja
 #+end_src
 
 ** Building the project
@@ -62,30 +62,28 @@ cmake --preset linux-clang-release
 To build the entire project:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug
+cmake --build --preset linux-clang-debug-ninja
 #+end_src
 
 For release builds:
 
 #+begin_src sh
-cmake --build --preset linux-clang-release
+cmake --build --preset linux-clang-release-ninja
 #+end_src
 
 ** Parallel builds and tests
 
-CMake presets do not set a job count, so by default builds run single-threaded.
-To enable parallel builds and tests persistently on your machine, add these
-environment variables to =~/.bashrc= (or equivalent):
+Ninja auto-detects the number of CPU cores and builds in parallel by default.
+Make does not — it requires =CMAKE_BUILD_PARALLEL_LEVEL= to be set in the
+environment. Add the following to =~/.bashrc= (or equivalent) for parallel
+Make builds:
 
 #+begin_src sh
-export CMAKE_BUILD_PARALLEL_LEVEL=6   # parallel jobs for cmake --build
-export CTEST_PARALLEL_LEVEL=6        # parallel jobs for ctest
+export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
+export CTEST_PARALLEL_LEVEL=$(nproc)
 #+end_src
 
-Replace =6= with the number of CPU cores you want to use. These variables act
-as a fallback: they apply when no =jobs= value is set in the CMake preset (which
-is the current state of =CMakePresets.json=). They do *not* override an explicit
-=jobs= setting in a preset.
+GitHub CI workflows already set these variables automatically via =$(nproc)=.
 
 ** Running tests
 
@@ -94,7 +92,7 @@ is the current state of =CMakePresets.json=). They do *not* override an explicit
 To run all tests (target name: =rat=):
 
 #+begin_src sh
-cmake --build --preset linux-clang-release --target rat
+cmake --build --preset linux-clang-release-ninja --target rat
 #+end_src
 
 *** Running specific component tests
@@ -102,7 +100,7 @@ cmake --build --preset linux-clang-release --target rat
 To run tests for a specific component, use the pattern =test_COMPONENT_NAME=. For example, to run tests for =ores.accounts.tests=:
 
 #+begin_src sh
-cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+cmake --build --target test_ores.accounts.tests --preset linux-clang-debug-ninja
 #+end_src
 
 Replace =ores.accounts.tests= with the desired component name.
@@ -118,16 +116,16 @@ Configure the project with logging enabled:
 
 #+begin_src sh
 # Enable logging at debug level (logs to files only)
-cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
 
 # Enable logging at trace level with console output
-cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
 #+end_src
 
 Then run tests as normal:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target rat
+cmake --build --preset linux-clang-debug-ninja --target rat
 #+end_src
 
 Available CMake options:
@@ -137,7 +135,7 @@ Available CMake options:
 To disable logging again, reconfigure with:
 
 #+begin_src sh
-cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=OFF
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=OFF
 #+end_src
 
 **** Using environment variables
@@ -146,13 +144,13 @@ Alternatively, set environment variables directly when running tests:
 
 #+begin_src sh
 # Enable logging to files
-ORES_TEST_LOG_ENABLED=true cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+ORES_TEST_LOG_ENABLED=true cmake --build --target test_ores.accounts.tests --preset linux-clang-debug-ninja
 
 # Enable logging with console output
-ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_CONSOLE=true cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_CONSOLE=true cmake --build --target test_ores.accounts.tests --preset linux-clang-debug-ninja
 
 # Change log level (default: trace, options: trace, debug, info, warn, error)
-ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_LEVEL=debug cmake --build --target test_ores.accounts.tests --preset linux-clang-debug
+ORES_TEST_LOG_ENABLED=true ORES_TEST_LOG_LEVEL=debug cmake --build --target test_ores.accounts.tests --preset linux-clang-debug-ninja
 #+end_src
 
 Available environment variables:
@@ -167,11 +165,11 @@ failed tests and relevant log entries. It requires test logging to be enabled.
 
 #+begin_src sh
 # First, enable logging and run tests
-cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
-cmake --build --preset linux-clang-debug --target rat
+cmake --preset linux-clang-debug-ninja -DORES_TEST_LOG_LEVEL=debug
+cmake --build --preset linux-clang-debug-ninja --target rat
 
 # Then analyse the results
-./scripts/parse_test_results.py build/output/linux-clang-debug/publish/bin
+./scripts/parse_test_results.py build/output/linux-clang-debug-ninja/publish/bin
 #+end_src
 
 The script:
@@ -186,7 +184,7 @@ The script:
 To deploy Claude Code skills:
 
 #+begin_src sh
-cmake --build --target deploy_skills --preset linux-clang-debug
+cmake --build --target deploy_skills --preset linux-clang-debug-ninja
 #+end_src
 
 ** Generating PlantUML Diagrams
@@ -196,7 +194,7 @@ cmake --build --target deploy_skills --preset linux-clang-debug
 To generate all PlantUML diagrams for the project:
 
 #+begin_src sh
-cmake --build --target mad --preset linux-clang-debug
+cmake --build --target mad --preset linux-clang-debug-ninja
 #+end_src
 
 *** Generating individual component diagrams
@@ -207,13 +205,13 @@ To generate a diagram for a specific component, use the pattern
 For example, to generate the ores.refdata diagram:
 
 #+begin_src sh
-cmake --build --target generate_ores.refdata_diagram --preset linux-clang-debug
+cmake --build --target generate_ores.refdata_diagram --preset linux-clang-debug-ninja
 #+end_src
 
 To generate the ores.comms diagram:
 
 #+begin_src sh
-cmake --build --target generate_ores.comms_diagram --preset linux-clang-debug
+cmake --build --target generate_ores.comms_diagram --preset linux-clang-debug-ninja
 #+end_src
 
 Other available diagram targets include:
@@ -226,14 +224,14 @@ Other available diagram targets include:
 To deploy the project website:
 
 #+begin_src sh
-cmake --build --target deploy_site --preset linux-clang-debug
+cmake --build --target deploy_site --preset linux-clang-debug-ninja
 #+end_src
 
 
 * Output directory layout
 
 The build output directory lives under =build/output=. There is a top-level
-directory for the presets (e.g. =linux-clang-debug=, etc) and a top-level
+directory for the presets (e.g. =linux-clang-debug-ninja=, etc) and a top-level
 directory for the site called =site=.
 
 Within the preset directory:

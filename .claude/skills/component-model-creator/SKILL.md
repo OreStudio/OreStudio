@@ -209,9 +209,9 @@ namespace ores #F2F2F2 {
 | Element    | Stereotype              | Color   | Description                        |
 |---------- |----------------------- |------- |---------------------------------- |
 | Domain     | (none)                  | #F7E5FF | Core domain entities               |
-| ORM        | <a id="orgc2c2e98"></a> | #99CB99 | Repository entities/mappers        |
+| ORM        | <a id="org2d8687e"></a> | #99CB99 | Repository entities/mappers        |
 | Generators | (none)                  | #FFFACD | Test data generators               |
-| Tests      | <a id="org8e05fd6"></a> | #C5E1A5 | Test suite classes                 |
+| Tests      | <a id="org17e2d6e"></a> | #C5E1A5 | Test suite classes                 |
 | Namespaces | (none)                  | #F2F2F2 | All namespaces use this background |
 
 
@@ -228,7 +228,7 @@ namespace ores #F2F2F2 {
 Generate the PNG using CMake:
 
 ```sh
-cmake --build --preset linux-clang-debug --target generate_SHORTNAME_diagram
+cmake --build --preset linux-clang-debug-ninja --target generate_SHORTNAME_diagram
 ```
 
 Where `SHORTNAME` is the component's short name without the `ores.` prefix (e.g., `assets`, `iam`, `risk`).
@@ -253,7 +253,7 @@ If this is a new component, update the system model:
 3.  Regenerate the system diagram:
 
 ```sh
-cmake --build --preset linux-clang-debug --target generate_ores_diagram
+cmake --build --preset linux-clang-debug-ninja --target generate_ores_diagram
 ```
 
 See the [PlantUML Class Modeler](../plantuml-class-modeler/SKILL.md) skill for detailed PlantUML conventions.
@@ -264,7 +264,7 @@ See the [PlantUML Class Modeler](../plantuml-class-modeler/SKILL.md) skill for d
 After creating or updating component models, run the `deploy_site` target to regenerate the documentation website. This ensures the new org-mode files are properly published and linked:
 
 ```sh
-cmake --build --preset linux-clang-debug --target deploy_site
+cmake --build --preset linux-clang-debug-ninja --target deploy_site
 ```
 
 This step is necessary because the org-mode component models are published to the documentation website and need to be included in the site generation.

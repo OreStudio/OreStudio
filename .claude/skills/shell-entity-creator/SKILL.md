@@ -450,7 +450,7 @@ Add <entity> commands to shell menu hierarchy.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test manually that commands appear in shell help.
 3.  Test get and add operations work correctly.
 4.  Commit all changes.
@@ -694,7 +694,7 @@ Implement delete and single-entity retrieval operations.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test history command with existing entity.
 3.  Test any additional operations added.
 4.  Commit all changes.

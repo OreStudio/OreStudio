@@ -33,9 +33,9 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   build:
-    name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+    name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
     concurrency:
-      group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+      group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
       cancel-in-progress: true
     runs-on: windows-latest
     environment: CI
@@ -60,7 +60,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.20
         with:
           variant: sccache
-          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           max-size: 1000M
 
       - name: Install Clang
@@ -144,9 +144,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ github.workspace }}/vcpkg-cache
-          key: vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-${{ hashFiles('vcpkg.json') }}
+          key: vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-
+            vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11
@@ -163,12 +163,12 @@ jobs:
           $env:ORES_TEST_DB_DATABASE="ores_ci"
           $env:ORES_TEST_DB_DDL_PASSWORD="${{ steps.db_passwords.outputs.test_ddl_password }}"
           $env:ORES_TEST_DB_PASSWORD="${{ steps.db_passwords.outputs.test_dml_password }}"
-          $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}"
+          $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja"
           $cmake_args="build_group=Continuous,preset=$preset"
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7.0.0
         with:
-          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.14-win64.*
+          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-0.0.14-win64.*

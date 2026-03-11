@@ -90,7 +90,7 @@ claude. First regenerate them then ask Claude to reload and list the available
 skills. To regenerate, run the =deploy_skills= target:
 
 #+begin_src sh :dir ../../ :noweb yes :results output :wrap example :exports both
-cmake --build --preset linux-clang-debug --target deploy_skills
+cmake --build --preset linux-clang-debug-ninja --target deploy_skills
 #+end_src
 
 #+RESULTS:

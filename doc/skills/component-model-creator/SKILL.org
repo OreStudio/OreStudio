@@ -233,7 +233,7 @@ namespace ores #F2F2F2 {
 Generate the PNG using CMake:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target generate_SHORTNAME_diagram
+cmake --build --preset linux-clang-debug-ninja --target generate_SHORTNAME_diagram
 #+end_src
 
 Where =SHORTNAME= is the component's short name without the =ores.= prefix (e.g.,
@@ -259,7 +259,7 @@ If this is a new component, update the system model:
 3. Regenerate the system diagram:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target generate_ores_diagram
+cmake --build --preset linux-clang-debug-ninja --target generate_ores_diagram
 #+end_src
 
 See the [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][PlantUML Class Modeler]] skill for detailed PlantUML conventions.
@@ -271,7 +271,7 @@ regenerate the documentation website. This ensures the new org-mode files are
 properly published and linked:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target deploy_site
+cmake --build --preset linux-clang-debug-ninja --target deploy_site
 #+end_src
 
 This step is necessary because the org-mode component models are published to

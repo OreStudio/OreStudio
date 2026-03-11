@@ -160,7 +160,7 @@ alias --> other_skill
 3. Regenerate the diagram:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target generate_skill_dependencies_diagram
+cmake --build --preset linux-clang-debug-ninja --target generate_skill_dependencies_diagram
 #+end_src
 
 ** Updating existing skills
@@ -178,8 +178,8 @@ After creating or updating a skill, run both CMake targets to verify the changes
 don't break any builds:
 
 #+begin_src sh
-cmake --build --preset linux-clang-debug --target deploy_skills
-cmake --build --preset linux-clang-debug --target deploy_site
+cmake --build --preset linux-clang-debug-ninja --target deploy_skills
+cmake --build --preset linux-clang-debug-ninja --target deploy_site
 #+end_src
 
 The =deploy_skills= target generates the Claude Code skills under =.claude/skills=.

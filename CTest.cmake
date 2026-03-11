@@ -74,7 +74,7 @@ message(STATUS "Memory Check: ${with_memcheck}")
 string(TOLOWER "${preset}" preset_lower)
 string(REPLACE "-" ";" preset_list ${preset_lower})
 list(LENGTH preset_list pl_length)
-if (NOT pl_length EQUAL 3)
+if (NOT pl_length EQUAL 4)
     message(FATAL_ERROR "Invalid preset: ${preset}")
 endif()
 
@@ -128,6 +128,22 @@ else()
     message(FATAL_ERROR "Configuration not supported: ${configuration}")
 endif()
 
+# Setup the build tool.
+list(GET preset_list 3 build_tool)
+if(NOT DEFINED build_tool)
+    message(FATAL_ERROR "Build tool not supplied.")
+endif()
+
+if(build_tool STREQUAL "ninja")
+    message(STATUS "Build tool: Ninja")
+    set(CTEST_CMAKE_GENERATOR "Ninja")
+elseif(build_tool STREQUAL "make")
+    message(STATUS "Build tool: Unix Makefiles")
+    set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+else()
+    message(FATAL_ERROR "Unsupported build tool: ${build_tool}")
+endif()
+
 # Setup the build group.
 if(build_group STREQUAL "Nightly")
     message(STATUS "CDash build_group: Nightly")
@@ -155,10 +171,6 @@ endif()
 # Setup the build name
 #
 set(CTEST_BUILD_NAME "${build_name}")
-
-# Set the generator. This will override the presets, but we have no option as
-# CTest refuses to configure unless there is a generator.
-set(CTEST_CMAKE_GENERATOR "Ninja")
 
 # Note that we expect CTest to be executed at the top-level directory.
 set(CTEST_SOURCE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

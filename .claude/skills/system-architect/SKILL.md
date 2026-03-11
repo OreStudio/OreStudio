@@ -178,7 +178,7 @@ For each architectural change, plan diagram updates:
     -   Update component relationships
     -   Add new components
     -   Update layer assignments
-    -   Regenerate with: `cmake --build --target generate_ores_diagram --preset linux-clang-debug`
+    -   Regenerate with: `cmake --build --target generate_ores_diagram --preset linux-clang-debug-ninja`
 
 -   Component Diagrams
 
@@ -186,7 +186,7 @@ For each architectural change, plan diagram updates:
     -   Update affected component diagrams
     -   Add new classes, relationships, or namespaces
     -   Update stereotypes and colors as needed
-    -   Regenerate with: `cmake --build --target generate_COMPONENT_diagram --preset linux-clang-debug`
+    -   Regenerate with: `cmake --build --target generate_COMPONENT_diagram --preset linux-clang-debug-ninja`
 
 -   Diagram Update Timing
 

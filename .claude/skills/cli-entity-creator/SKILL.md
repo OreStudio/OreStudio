@@ -93,7 +93,7 @@ enum class entity {
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test manually: `./ores.cli <entities> --help`
 3.  Test list: `./ores.cli <entities> list --format table`
 4.  Commit all changes.
@@ -468,7 +468,7 @@ delete command for removing <entities> by key.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test add: `./ores.cli <entities> add --<key-field> test --modified-by admin`
 3.  Test delete: `./ores.cli <entities> delete --key test`
 4.  Commit all changes.

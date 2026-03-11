@@ -445,7 +445,7 @@ Add <entity> endpoints to HTTP server.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test endpoints using curl or HTTP client.
 3.  Verify OpenAPI documentation is generated.
 4.  Commit all changes.
@@ -643,7 +643,7 @@ Implement version history retrieval by <entity> ID.
 
 At this point:
 
-1.  Build and verify: `cmake --build --preset linux-clang-debug`
+1.  Build and verify: `cmake --build --preset linux-clang-debug-ninja`
 2.  Test delete and history endpoints.
 3.  Commit all changes.
 4.  Push branch and raise PR.

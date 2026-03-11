@@ -33,9 +33,9 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   build:
-    name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+    name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
     concurrency:
-      group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+      group: ci-${{github.ref}}-${{github.job}}-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
       cancel-in-progress: true
     runs-on: macos-latest
     environment: CI
@@ -57,7 +57,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.20
         with:
           variant: sccache
-          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           max-size: 1000M
 
       - name: Install Qt
@@ -124,9 +124,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ github.workspace }}/vcpkg-cache
-          key: vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-${{ hashFiles('vcpkg.json') }}
+          key: vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-
+            vcpkg-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
 
       - name: run-vcpkg
         uses: lukka/run-vcpkg@v11
@@ -146,12 +146,12 @@ jobs:
           export ORES_TEST_DB_DATABASE=ores_ci
           export ORES_TEST_DB_DDL_PASSWORD=${{ steps.db_passwords.outputs.test_ddl_password }}
           export ORES_TEST_DB_PASSWORD=${{ steps.db_passwords.outputs.test_dml_password }}
-          export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
+          export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           export cmake_args="build_group=Continuous,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.0
         with:
-          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}/packages/OreStudio-0.0.14-Darwin.dmg
+          name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-0.0.14-Darwin.dmg

@@ -25,6 +25,7 @@
 #include <atomic>
 #include <memory>
 #include <cstddef>
+#include <span>
 #include <nng/nng.h>
 #include "ores.logging/make_logger.hpp"
 #include "ores.mq/broker/broker_config.hpp"

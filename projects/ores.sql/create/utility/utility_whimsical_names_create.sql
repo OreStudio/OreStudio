@@ -65,11 +65,14 @@ declare
     result text := '';
     alphabet constant text := 'abcdefghijklmnopqrstuvwxyz';
 begin
+    if n <= 0 then
+        raise exception 'Input to ores_utility_to_base26_fn must be a positive integer, but was %', n;
+    end if;
     while n > 0 loop
         result := substr(alphabet, ((n - 1) % 26)::int + 1, 1) || result;
         n := (n - 1) / 26;
     end loop;
-    return coalesce(nullif(result, ''), 'a');
+    return result;
 end;
 $$ language plpgsql immutable;
 

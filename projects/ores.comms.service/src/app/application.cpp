@@ -774,25 +774,32 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Set up persistent NNG service runner (if broker is configured)
     std::shared_ptr<ores::mq::service::nng_service_runner> nng_runner;
-    std::thread nng_thread;
+    std::jthread nng_thread;
     if (cfg.broker_backend && !cfg.broker_backend->empty()) {
         auto disp = srv->dispatcher();
 
-        // Build a minimal error response frame when frame parsing fails.
-        // Extracts the correlation_id from raw bytes at offset 24-27 (big-endian).
+        // Build a minimal error response frame. Uses the supplied correlation_id
+        // when available (header already parsed); falls back to extracting it
+        // from raw bytes at offset 24-27 (big-endian) when the header parse failed.
         auto make_nng_error_frame = [](
             std::span<const std::byte> raw,
-            ores::utility::serialization::error_code code) -> std::vector<std::byte>
+            ores::utility::serialization::error_code code,
+            std::optional<std::uint32_t> correlation_id = std::nullopt)
+            -> std::vector<std::byte>
         {
             std::uint32_t corr_id = 0;
-            constexpr std::size_t corr_id_offset = 24;
-            if (raw.size() >= corr_id_offset + 4) {
-                const auto* p = reinterpret_cast<const std::uint8_t*>(
-                    raw.data() + corr_id_offset);
-                corr_id = (static_cast<std::uint32_t>(p[0]) << 24)
-                        | (static_cast<std::uint32_t>(p[1]) << 16)
-                        | (static_cast<std::uint32_t>(p[2]) <<  8)
-                        |  static_cast<std::uint32_t>(p[3]);
+            if (correlation_id) {
+                corr_id = *correlation_id;
+            } else {
+                constexpr std::size_t corr_id_offset = 24;
+                if (raw.size() >= corr_id_offset + 4) {
+                    const auto* p = reinterpret_cast<const std::uint8_t*>(
+                        raw.data() + corr_id_offset);
+                    corr_id = (static_cast<std::uint32_t>(p[0]) << 24)
+                            | (static_cast<std::uint32_t>(p[1]) << 16)
+                            | (static_cast<std::uint32_t>(p[2]) <<  8)
+                            |  static_cast<std::uint32_t>(p[3]);
+                }
             }
             auto f = ores::comms::messaging::create_error_response_frame(
                 0, corr_id, code,
@@ -811,11 +818,11 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 co_return make_nng_error_frame(raw, hdr.error());
             auto frm = ores::comms::messaging::frame::deserialize(*hdr, raw);
             if (!frm)
-                co_return make_nng_error_frame(raw, frm.error());
+                co_return make_nng_error_frame(raw, frm.error(), hdr->correlation_id);
             auto resp = co_await disp->dispatch(*frm, frm->header().sequence,
                                                 remote_addr);
             if (!resp)
-                co_return make_nng_error_frame(raw, resp.error());
+                co_return make_nng_error_frame(raw, resp.error(), hdr->correlation_id);
             co_return resp->serialize();
         };
 
@@ -852,15 +859,14 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
         nng_runner = std::make_shared<ores::mq::service::nng_service_runner>(
             std::move(runner_cfg), std::move(nng_disp));
-        nng_thread = std::thread([nng_runner]() { nng_runner->run(); });
+        nng_thread = std::jthread([nng_runner]() { nng_runner->run(); });
     }
 
     co_await srv->run(io_ctx);
 
     if (nng_runner) {
         nng_runner->stop();
-        if (nng_thread.joinable())
-            nng_thread.join();
+        // nng_thread auto-joins via jthread destructor
     }
 
     // Stop the database health monitor

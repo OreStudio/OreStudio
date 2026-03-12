@@ -774,7 +774,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Set up persistent NNG service runner (if broker is configured)
     std::shared_ptr<ores::mq::service::nng_service_runner> nng_runner;
-    std::jthread nng_thread;
+    std::thread nng_thread;
     if (cfg.broker_backend && !cfg.broker_backend->empty()) {
         auto disp = srv->dispatcher();
 
@@ -859,14 +859,15 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
         nng_runner = std::make_shared<ores::mq::service::nng_service_runner>(
             std::move(runner_cfg), std::move(nng_disp));
-        nng_thread = std::jthread([nng_runner]() { nng_runner->run(); });
+        nng_thread = std::thread([nng_runner]() { nng_runner->run(); });
     }
 
     co_await srv->run(io_ctx);
 
     if (nng_runner) {
         nng_runner->stop();
-        // nng_thread auto-joins via jthread destructor
+        if (nng_thread.joinable())
+            nng_thread.join();
     }
 
     // Stop the database health monitor

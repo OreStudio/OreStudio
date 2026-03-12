@@ -20,8 +20,11 @@
 #ifndef ORES_MQ_BROKER_NNG_BROKER_HPP
 #define ORES_MQ_BROKER_NNG_BROKER_HPP
 
+#include <span>
+#include <vector>
 #include <atomic>
 #include <memory>
+#include <cstddef>
 #include <nng/nng.h>
 #include "ores.logging/make_logger.hpp"
 #include "ores.mq/broker/broker_config.hpp"

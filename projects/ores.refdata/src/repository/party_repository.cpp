@@ -56,8 +56,16 @@ void party_repository::write(
     const std::vector<domain::party>& parties) {
     BOOST_LOG_SEV(lg(), debug) << "Writing parties to database. Count: "
                                << parties.size();
-    execute_write_query(ctx_, party_mapper::map(parties),
-        lg(), "writing parties to database");
+    // Write one party at a time rather than a single multi-row INSERT.
+    // The codename trigger uses a NOT EXISTS check that relies on a
+    // statement-level snapshot (READ COMMITTED): in a multi-row INSERT,
+    // row N's trigger cannot see row N-1's codename (same statement),
+    // so two rows can independently generate the same whimsical name and
+    // then collide on the unique index.  Sequential single-row inserts
+    // avoid this because each INSERT gets a fresh snapshot that includes
+    // all previously committed codenames.
+    for (const auto& p : parties)
+        write(p);
 }
 
 std::vector<domain::party>

@@ -102,6 +102,13 @@ create unique index if not exists ores_refdata_parties_codename_uniq_idx
 on "ores_refdata_parties_tbl" (codename)
 where valid_to = ores_utility_infinity_timestamp_fn() and codename <> '';
 
+-- Sequence used to generate a unique base-26 suffix for auto-generated
+-- codenames.  nextval() is outside MVCC: it advances even within a
+-- multi-row INSERT statement, so every row in a batch gets a different
+-- suffix, avoiding duplicate-key collisions that a NOT EXISTS loop cannot
+-- prevent due to the statement-level snapshot in READ COMMITTED.
+create sequence if not exists ores_refdata_party_codename_seq;
+
 create or replace function ores_refdata_parties_insert_fn()
 returns trigger as $$
 declare
@@ -172,18 +179,14 @@ begin
     else
         NEW.version = 1;
 
-        -- Auto-generate codename using existing whimsical name infrastructure.
+        -- Auto-generate codename using whimsical name + sequence suffix.
+        -- The sequence suffix is outside MVCC (nextval always advances),
+        -- so every row in a multi-row INSERT gets a distinct suffix, making
+        -- the codename globally unique without relying on a NOT EXISTS
+        -- check that cannot see sibling rows in the same statement.
         if NEW.codename = '' or NEW.codename is null then
-            -- Serialize concurrent codename generation to prevent TOCTOU race.
-            perform pg_advisory_xact_lock(hashtext('ores_refdata_parties'), hashtext('codename_gen'));
-            loop
-                NEW.codename := ores_utility_generate_whimsical_name_fn();
-                exit when not exists (
-                    select 1 from "ores_refdata_parties_tbl"
-                    where codename = NEW.codename
-                      and valid_to = ores_utility_infinity_timestamp_fn()
-                );
-            end loop;
+            NEW.codename := ores_utility_generate_whimsical_name_fn() || '_' ||
+                ores_utility_to_base26_fn(nextval('ores_refdata_party_codename_seq'));
         end if;
         -- Validate the final codename.
         if NEW.codename !~ '^[a-z][a-z_]+$' then

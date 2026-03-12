@@ -56,6 +56,23 @@ returns text[] as $$
     ];
 $$ language sql immutable;
 
+-- Encodes a positive integer as a lowercase base-26 string (a=1, b=2, ..., z=26,
+-- aa=27, ...).  Used to create letter-only unique suffixes for codenames.
+-- The output satisfies the codename regex constraint (^[a-z][a-z_]+$).
+create or replace function ores_utility_to_base26_fn(n bigint)
+returns text as $$
+declare
+    result text := '';
+    alphabet constant text := 'abcdefghijklmnopqrstuvwxyz';
+begin
+    while n > 0 loop
+        result := substr(alphabet, ((n - 1) % 26)::int + 1, 1) || result;
+        n := (n - 1) / 26;
+    end loop;
+    return coalesce(nullif(result, ''), 'a');
+end;
+$$ language plpgsql immutable;
+
 -- Generates a random whimsical name without any prefix or suffix.
 -- Returns names like: "silent_meadow", "autumn_frost"
 create or replace function ores_utility_generate_whimsical_name_fn()

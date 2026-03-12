@@ -25,3 +25,4 @@ drop function if exists ores_utility_generate_whimsical_name_fn(boolean);
 drop function if exists ores_utility_generate_whimsical_name_fn();
 drop function if exists ores_utility_whimsical_nouns_fn();
 drop function if exists ores_utility_whimsical_adjectives_fn();
+drop function if exists ores_utility_to_base26_fn(bigint);

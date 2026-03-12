@@ -22,3 +22,4 @@ drop rule if exists ores_refdata_parties_delete_rule on "ores_refdata_parties_tb
 drop trigger if exists ores_refdata_parties_insert_trg on "ores_refdata_parties_tbl";
 drop function if exists ores_refdata_parties_insert_fn;
 drop table if exists "ores_refdata_parties_tbl";
+drop sequence if exists ores_refdata_party_codename_seq;

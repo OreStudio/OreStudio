@@ -38,6 +38,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.reporting.lib
     ores.mq.lib
     ores.comms.lib
+    ores.nats.lib
     ores.comms.shell.lib
     ores.dq.lib
     ores.synthetic.lib

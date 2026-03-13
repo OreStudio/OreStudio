@@ -40,6 +40,7 @@
 #include <boost/asio/io_context.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.eventing/service/event_bus.hpp"
+#include "ores.comms/net/client_base.hpp"
 #include "ores.comms/net/client_options.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/net/connection.hpp"
@@ -64,64 +65,13 @@ enum class connection_state {
 std::ostream& operator<<(std::ostream& s, connection_state v);
 
 /**
- * @brief Callback invoked when client detects server disconnect.
- *
- * Called from the heartbeat coroutine when ping fails or times out.
- * The callback is invoked on the client's internal executor and should not
- * perform blocking operations. Any UI updates must be dispatched to the
- * appropriate UI thread.
- */
-using disconnect_callback_t = std::function<void()>;
-
-/**
- * @brief Callback invoked when client starts reconnection attempts.
- *
- * Called when connection is lost and auto-reconnect is enabled.
- * Allows UI to show reconnecting state to the user.
- * The callback is invoked on the client's internal executor and should not
- * perform blocking operations. Any UI updates must be dispatched to the
- * appropriate UI thread.
- */
-using reconnecting_callback_t = std::function<void()>;
-
-/**
- * @brief Callback invoked when client successfully reconnects.
- *
- * Called after auto-reconnect succeeds.
- * Allows UI to restore connected state display.
- * The callback is invoked on the client's internal executor and should not
- * perform blocking operations. Any UI updates must be dispatched to the
- * appropriate UI thread.
- */
-using reconnected_callback_t = std::function<void()>;
-
-/**
- * @brief Callback invoked when client receives a notification from server.
- *
- * Called when the server pushes a notification for a subscribed event type.
- * The callback is invoked on the client's internal executor and should not
- * perform blocking operations. Any UI updates must be dispatched to the
- * appropriate UI thread.
- *
- * @param event_type The fully qualified event type name (e.g., "ores.refdata.currency_changed_event")
- * @param timestamp When the event occurred (UTC)
- * @param entity_ids Identifiers of specific entities that changed (e.g., currency ISO codes)
- * @param tenant_id The tenant that owns the changed entities
- */
-using notification_callback_t = std::function<void(
-    const std::string& event_type,
-    std::chrono::system_clock::time_point timestamp,
-    const std::vector<std::string>& entity_ids,
-    const std::string& tenant_id,
-    messaging::payload_type pt,
-    const std::optional<std::vector<std::byte>>& payload)>;
-
-/**
- * @brief ORES protocol client.
+ * @brief ORES protocol client (ASIO SSL transport).
  *
  * Connects to server via SSL, performs handshake, and manages communication.
+ * Implements the client_base interface; use client_base where the concrete
+ * transport type does not matter.
  */
-class client final {
+class client final : public client_base {
 private:
     inline static std::string_view logger_name = "ores.comms.net.client";
 
@@ -279,7 +229,7 @@ public:
      * Does not wait for coroutines to complete - call await_shutdown()
      * after disconnect() to wait for safe cleanup.
      */
-    void disconnect();
+    void disconnect() override;
 
     /**
      * @brief Wait for all coroutines to complete after disconnect.
@@ -298,7 +248,7 @@ public:
      *
      * Returns true only when in the connected state, not during reconnection.
      */
-    bool is_connected() const;
+    bool is_connected() const noexcept override;
 
     /**
      * @brief Get the current connection state.
@@ -310,14 +260,14 @@ public:
      *
      * Returns 0 if not connected.
      */
-    std::uint64_t bytes_sent() const;
+    std::uint64_t bytes_sent() const override;
 
     /**
      * @brief Total bytes received on the current connection.
      *
      * Returns 0 if not connected.
      */
-    std::uint64_t bytes_received() const;
+    std::uint64_t bytes_received() const override;
 
     /**
      * @brief Last measured round-trip time, in milliseconds.
@@ -325,7 +275,7 @@ public:
      * Updated after each successful heartbeat ping/pong exchange.
      * Returns 0 before the first heartbeat completes.
      */
-    std::uint64_t last_rtt_ms() const;
+    std::uint64_t last_rtt_ms() const override;
 
     /**
      * @brief Set callback to be invoked when disconnect is detected.
@@ -335,7 +285,7 @@ public:
      *
      * @param callback Function to call on disconnect (may be empty to disable)
      */
-    void set_disconnect_callback(disconnect_callback_t callback);
+    void set_disconnect_callback(disconnect_callback_t callback) override;
 
     /**
      * @brief Set callback to be invoked when reconnection starts.
@@ -345,7 +295,7 @@ public:
      *
      * @param callback Function to call on reconnection start (may be empty to disable)
      */
-    void set_reconnecting_callback(reconnecting_callback_t callback);
+    void set_reconnecting_callback(reconnecting_callback_t callback) override;
 
     /**
      * @brief Set callback to be invoked when reconnection succeeds.
@@ -355,7 +305,7 @@ public:
      *
      * @param callback Function to call on reconnection success (may be empty to disable)
      */
-    void set_reconnected_callback(reconnected_callback_t callback);
+    void set_reconnected_callback(reconnected_callback_t callback) override;
 
     /**
      * @brief Set callback to be invoked when a notification is received.
@@ -365,7 +315,7 @@ public:
      *
      * @param callback Function to call on notification (may be empty to disable)
      */
-    void set_notification_callback(notification_callback_t callback);
+    void set_notification_callback(notification_callback_t callback) override;
 
     /**
      * @brief Disable auto-reconnect.
@@ -377,7 +327,7 @@ public:
      * This sets the shutdown_requested flag without closing the connection,
      * allowing pending requests to complete.
      */
-    void disable_auto_reconnect();
+    void disable_auto_reconnect() override;
 
     // =========================================================================
     // Session Recording
@@ -431,7 +381,7 @@ public:
      * @return Expected containing response frame, or error_code
      */
     std::expected<messaging::frame, ores::utility::serialization::error_code>
-    send_request_sync(messaging::frame request_frame);
+    send_request_sync(messaging::frame request_frame) override;
 
     /**
      * @brief Send typed request and receive typed response (blocking version).

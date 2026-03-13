@@ -18,6 +18,7 @@
  *
  */
 #include "ores.comms/net/client_session.hpp"
+#include "ores.comms/net/client.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
 
 namespace ores::comms::net {
@@ -49,12 +50,13 @@ client_session::connect(client_options options) {
     }
 
     try {
-        client_ = std::make_shared<client>(std::move(options));
-        client_->connect_sync();
+        auto ssl_client = std::make_shared<client>(std::move(options));
+        ssl_client->connect_sync();
+        client_ = ssl_client;  // Upcast to client_base
         external_client_ = false;  // We own this client
 
         // Create the event adapter which handles subscriptions
-        event_adapter_ = std::make_unique<service::remote_event_adapter>(client_);
+        event_adapter_ = std::make_unique<service::remote_event_adapter>(ssl_client);
 
         // Register notification callback to queue notifications for display
         event_adapter_->set_notification_callback(
@@ -82,7 +84,7 @@ client_session::connect(client_options options) {
 }
 
 std::expected<void, session_error>
-client_session::attach_client(std::shared_ptr<client> external_client) {
+client_session::attach_client(std::shared_ptr<client_base> external_client) {
     if (!external_client) {
         BOOST_LOG_SEV(lg(), error) << "Cannot attach null client";
         return std::unexpected(session_error(
@@ -107,20 +109,23 @@ client_session::attach_client(std::shared_ptr<client> external_client) {
     client_ = std::move(external_client);
     external_client_ = true;  // We don't own this client
 
-    // Create the event adapter which handles subscriptions
-    event_adapter_ = std::make_unique<service::remote_event_adapter>(client_);
+    // Create the event adapter for SSL clients that support subscriptions.
+    // NATS clients (and other transports) do not support push subscriptions yet.
+    if (auto ssl_client = std::dynamic_pointer_cast<client>(client_)) {
+        event_adapter_ = std::make_unique<service::remote_event_adapter>(ssl_client);
 
-    // Register notification callback to queue notifications for display
-    event_adapter_->set_notification_callback(
-        [this](const std::string& event_type,
-               std::chrono::system_clock::time_point timestamp,
-               const std::vector<std::string>& entity_ids,
-               const std::string& tenant_id,
-               messaging::payload_type pt,
-               const std::optional<std::vector<std::byte>>& payload) {
-            on_notification(event_type, timestamp, entity_ids, tenant_id,
-                pt, payload);
-        });
+        // Register notification callback to queue notifications for display
+        event_adapter_->set_notification_callback(
+            [this](const std::string& event_type,
+                   std::chrono::system_clock::time_point timestamp,
+                   const std::vector<std::string>& entity_ids,
+                   const std::string& tenant_id,
+                   messaging::payload_type pt,
+                   const std::optional<std::vector<std::byte>>& payload) {
+                on_notification(event_type, timestamp, entity_ids, tenant_id,
+                    pt, payload);
+            });
+    }
 
     BOOST_LOG_SEV(lg(), info) << "External client attached successfully";
     return {};

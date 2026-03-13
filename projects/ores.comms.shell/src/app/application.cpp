@@ -25,11 +25,13 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/protocol.hpp"
+#include "ores.comms/net/client.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
 #include "ores.comms.shell/app/repl.hpp"
 #include "ores.comms.shell/app/commands/compression_commands.hpp"
+#include "ores.nats/service/nats_client.hpp"
 
 namespace ores::comms::shell::app {
 
@@ -58,32 +60,33 @@ auto& anon_lg() {
 
 bool auto_connect(client_session& session, std::ostream& out,
     const std::optional<comms::net::client_options>& connection_config) {
-    comms::net::client_options config = connection_config
-        .transform([](const auto& cfg) {
-            return comms::net::client_options{
-                .host = cfg.host,
-                .port = cfg.port,
-                .client_identifier = cfg.client_identifier,
-                .verify_certificate = false // FIXME: for now
-            };
-        })
-        .value_or(comms::net::client_options{
-                .host = "localhost",
-                .port = 55555,
-                .client_identifier = "ores-shell" });
 
-    // Disable heartbeat for shell - it's synchronous request-response
-    config.heartbeat_enabled = false;
-    // Use compression setting from compression_commands
-    config.supported_compression =
-        commands::compression_commands::get_supported_compression();
+    // Build NATS URL from connection config (host:port) or use default
+    std::string host = "localhost";
+    std::uint16_t port = 4222;
+    if (connection_config) {
+        host = connection_config->host;
+        port = connection_config->port;
+    }
 
-    auto result = session.connect(std::move(config));
-    if (result) {
-        out << "✓ Connected to " << config.host << ":" << config.port << std::endl;
-        return true;
-    } else {
-        out << "✗ Auto-connect failed: " << to_string(result.error()) << std::endl;
+    const std::string nats_url = "nats://" + host + ":" + std::to_string(port);
+
+    try {
+        ores::nats::config::nats_options opts;
+        opts.url = nats_url;
+        auto nats_client = std::make_shared<ores::nats::service::nats_client>(opts);
+        nats_client->connect_sync();
+
+        auto result = session.attach_client(nats_client);
+        if (result) {
+            out << "✓ Connected to " << nats_url << std::endl;
+            return true;
+        } else {
+            out << "✗ Auto-connect failed: " << to_string(result.error()) << std::endl;
+            return false;
+        }
+    } catch (const std::exception& e) {
+        out << "✗ Auto-connect failed: " << e.what() << std::endl;
         return false;
     }
 }
@@ -164,11 +167,18 @@ void application::run() {
                         << "Starting telemetry streaming for: "
                         << streaming_options_->source_name;
                     try {
-                        streaming_service =
-                            std::make_unique<comms::service::telemetry_streaming_service>(
-                                session.get_client(), *streaming_options_);
-                        streaming_service->start();
-                        std::cout << "✓ Telemetry streaming enabled" << std::endl;
+                        auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(
+                            session.get_client());
+                        if (ssl_client) {
+                            streaming_service =
+                                std::make_unique<comms::service::telemetry_streaming_service>(
+                                    ssl_client, *streaming_options_);
+                            streaming_service->start();
+                            std::cout << "✓ Telemetry streaming enabled" << std::endl;
+                        } else {
+                            BOOST_LOG_SEV(lg(), debug)
+                                << "Telemetry streaming not supported with NATS transport";
+                        }
                     } catch (const std::exception& e) {
                         BOOST_LOG_SEV(lg(), error)
                             << "Failed to start telemetry streaming: " << e.what();

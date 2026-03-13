@@ -25,19 +25,15 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <thread>
 #include <filesystem>
-#include <boost/asio/io_context.hpp>
-#include <boost/asio/executor_work_guard.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <QObject>
 #include <QDateTime>
-#include "ores.comms/net/client.hpp"
+#include "ores.comms/net/client_base.hpp"
 #include "ores.comms/messaging/system_info_protocol.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
-#include "ores.comms/recording/session_recorder.hpp"
 #include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -474,14 +470,7 @@ public:
     /**
      * @brief Get the current client (internal use only).
      */
-    std::shared_ptr<comms::net::client> getClient() const { return client_; }
-
-    /**
-     * @brief Get the IO context executor.
-     */
-    boost::asio::any_io_executor getExecutor() {
-        return io_context_->get_executor();
-    }
+    std::shared_ptr<comms::net::client_base> getClient() const { return client_; }
 
     /**
      * @brief Get the system information entries received from the server after login.
@@ -667,18 +656,8 @@ signals:
     void streamingStopped();
 
 private:
-    void setupIO();
-    void cleanupIO();
-
-private:
-    // Persistent IO infrastructure
-    std::unique_ptr<boost::asio::io_context> io_context_;
-    std::unique_ptr<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>> work_guard_;
-    std::unique_ptr<std::thread> io_thread_;
-
     // Transient client (owned by ClientManager, attached to session_)
-    std::shared_ptr<comms::net::client> client_;
+    std::shared_ptr<comms::net::client_base> client_;
 
     // Client session for auth-aware request handling and session state
     comms::net::client_session session_;

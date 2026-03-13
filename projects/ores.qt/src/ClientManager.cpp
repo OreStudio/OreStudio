@@ -23,14 +23,15 @@
 #include <QFuture>
 #include <QThreadPool>
 #include <QTimeZone>
+#include "ores.comms/net/client.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
 #include "ores.iam/messaging/protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.nats/service/nats_client.hpp"
 
 namespace ores::qt {
 
@@ -40,42 +41,11 @@ ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event
                              QObject* parent)
     : QObject(parent), event_bus_(std::move(event_bus)) {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager created";
-    setupIO();
 }
 
 ClientManager::~ClientManager() {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager destroyed";
     disconnect();
-    cleanupIO();
-}
-
-void ClientManager::setupIO() {
-    if (io_context_) return;
-
-    BOOST_LOG_SEV(lg(), debug) << "Setting up persistent IO context";
-    io_context_ = std::make_unique<boost::asio::io_context>();
-    work_guard_ = std::make_unique<boost::asio::executor_work_guard<
-        boost::asio::io_context::executor_type>>(
-        boost::asio::make_work_guard(*io_context_)
-    );
-
-    io_thread_ = std::make_unique<std::thread>([this]() {
-        BOOST_LOG_SEV(lg(), debug) << "IO thread started";
-        io_context_->run();
-        BOOST_LOG_SEV(lg(), debug) << "IO thread finished";
-    });
-}
-
-void ClientManager::cleanupIO() {
-    work_guard_.reset();
-    if (io_context_) {
-        io_context_->stop();
-    }
-    if (io_thread_ && io_thread_->joinable()) {
-        io_thread_->join();
-    }
-    io_thread_.reset();
-    io_context_.reset();
 }
 
 LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) {
@@ -90,19 +60,14 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
     }
 
     try {
-        comms::net::client_options config{
-            .host = host,
-            .port = port,
-            .client_identifier = "ores-qt-client",
-            .verify_certificate = false,
-            .supported_compression = supported_compression_
-        };
+        // Build NATS URL from host and port supplied by the UI.
+        const std::string nats_url =
+            "nats://" + host + ":" + std::to_string(port);
 
-        // Create new client using persistent IO executor.
-        // Note: We don't pass event_bus here because we don't want connected_event
-        // published until login succeeds. We'll publish events manually after login.
-        auto new_client = std::make_shared<comms::net::client>(
-            config, io_context_->get_executor(), nullptr);
+        nats::config::nats_options nats_opts;
+        nats_opts.url = nats_url;
+
+        auto new_client = std::make_shared<nats::service::nats_client>(nats_opts);
 
         // Synchronous connect (blocking but called from async thread usually)
         new_client->connect_sync();
@@ -446,37 +411,51 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         bytes_sent_at_login_.store(client_->bytes_sent(), std::memory_order_relaxed);
         bytes_received_at_login_.store(client_->bytes_received(), std::memory_order_relaxed);
 
-        // Enable recording if it was requested before connection
+        // Enable recording if it was requested before connection.
+        // Only supported by the ASIO SSL transport (net::client).
         if (recording_enabled_ && !recording_directory_.empty()) {
-            BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured recording to: "
-                                      << recording_directory_;
-            auto result = client_->enable_recording(recording_directory_);
-            if (result) {
-                BOOST_LOG_SEV(lg(), info) << "Recording started: " << result->string();
-                QMetaObject::invokeMethod(this, [this, path = result->string()]() {
-                    emit recordingStarted(QString::fromStdString(path));
-                }, Qt::QueuedConnection);
+            if (auto ssl_client =
+                    std::dynamic_pointer_cast<comms::net::client>(client_)) {
+                BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured recording to: "
+                                          << recording_directory_;
+                auto result = ssl_client->enable_recording(recording_directory_);
+                if (result) {
+                    BOOST_LOG_SEV(lg(), info) << "Recording started: " << result->string();
+                    QMetaObject::invokeMethod(this, [this, path = result->string()]() {
+                        emit recordingStarted(QString::fromStdString(path));
+                    }, Qt::QueuedConnection);
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to enable recording: "
+                                               << static_cast<int>(result.error());
+                }
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Failed to enable recording: "
-                                           << static_cast<int>(result.error());
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Recording not supported by current transport";
             }
         }
 
-        // Enable telemetry streaming if it was requested before connection
+        // Enable telemetry streaming if it was requested before connection.
+        // Only supported by the ASIO SSL transport (net::client).
         if (streaming_enabled_ && pending_streaming_options_) {
-            BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured telemetry streaming for: "
-                                      << pending_streaming_options_->source_name;
-            try {
-                telemetry_streaming_ =
-                    std::make_unique<comms::service::telemetry_streaming_service>(
-                        client_, *pending_streaming_options_);
-                telemetry_streaming_->start();
-                BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";
-                QMetaObject::invokeMethod(this, [this]() {
-                    emit streamingStarted();
-                }, Qt::QueuedConnection);
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to enable streaming: " << e.what();
+            if (auto ssl_client =
+                    std::dynamic_pointer_cast<comms::net::client>(client_)) {
+                BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured telemetry streaming for: "
+                                          << pending_streaming_options_->source_name;
+                try {
+                    telemetry_streaming_ =
+                        std::make_unique<comms::service::telemetry_streaming_service>(
+                            ssl_client, *pending_streaming_options_);
+                    telemetry_streaming_->start();
+                    BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";
+                    QMetaObject::invokeMethod(this, [this]() {
+                        emit streamingStarted();
+                    }, Qt::QueuedConnection);
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to enable streaming: " << e.what();
+                }
+            } else {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Telemetry streaming not supported by current transport";
             }
         }
 
@@ -630,17 +609,10 @@ LoginResult ClientManager::testConnection(
     BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host << ":" << port;
 
     try {
-        comms::net::client_options config{
-            .host = host,
-            .port = port,
-            .client_identifier = "ores-qt-client",
-            .verify_certificate = false,
-            .supported_compression = supported_compression_
-        };
-
-        // Create temporary client for testing (not stored in client_)
-        auto temp_client = std::make_shared<comms::net::client>(
-            config, io_context_->get_executor(), nullptr);
+        // Create temporary NATS client for testing (not stored in client_)
+        nats::config::nats_options nats_opts;
+        nats_opts.url = "nats://" + host + ":" + std::to_string(port);
+        auto temp_client = std::make_shared<nats::service::nats_client>(nats_opts);
 
         // Synchronous connect
         temp_client->connect_sync();
@@ -723,17 +695,10 @@ SignupResult ClientManager::signup(
                               << " for username: " << username;
 
     try {
-        comms::net::client_options config{
-            .host = host,
-            .port = port,
-            .client_identifier = "ores-qt-client",
-            .verify_certificate = false,
-            .supported_compression = supported_compression_
-        };
-
-        // Create temporary client for signup (not stored in client_)
-        auto temp_client = std::make_shared<comms::net::client>(
-            config, io_context_->get_executor(), nullptr);
+        // Create temporary NATS client for signup (not stored in client_)
+        nats::config::nats_options nats_opts;
+        nats_opts.url = "nats://" + host + ":" + std::to_string(port);
+        auto temp_client = std::make_shared<nats::service::nats_client>(nats_opts);
 
         // Synchronous connect
         temp_client->connect_sync();
@@ -873,12 +838,13 @@ void ClientManager::disconnect() {
         // to ensure proper cleanup on the client side
         client_->disconnect();
 
-        // Wait for all client coroutines to complete before destroying
-        // This prevents use-after-free crashes during rapid disconnect
-        // Use a short timeout to avoid blocking the UI thread too long
-        if (!client_->await_shutdown(std::chrono::milliseconds{500})) {
-            BOOST_LOG_SEV(lg(), warn) << "Timeout waiting for client shutdown, "
-                                      << "proceeding with cleanup anyway";
+        // For ASIO SSL clients, wait for all coroutines to complete before destroying
+        // to prevent use-after-free crashes during rapid disconnect.
+        if (auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_)) {
+            if (!ssl_client->await_shutdown(std::chrono::milliseconds{500})) {
+                BOOST_LOG_SEV(lg(), warn) << "Timeout waiting for client shutdown, "
+                                          << "proceeding with cleanup anyway";
+            }
         }
 
         client_.reset();
@@ -1232,7 +1198,13 @@ bool ClientManager::enableRecording(const std::filesystem::path& outputDirectory
 
     BOOST_LOG_SEV(lg(), info) << "Enabling session recording to: " << outputDirectory;
 
-    auto result = client_->enable_recording(outputDirectory);
+    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
+    if (!ssl_client) {
+        BOOST_LOG_SEV(lg(), debug) << "Recording not supported by current transport";
+        return false;
+    }
+
+    auto result = ssl_client->enable_recording(outputDirectory);
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to enable recording: "
                                    << static_cast<int>(result.error());
@@ -1254,14 +1226,15 @@ void ClientManager::disableRecording() {
         return;
     }
 
-    if (!client_->is_recording()) {
+    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
+    if (!ssl_client || !ssl_client->is_recording()) {
         BOOST_LOG_SEV(lg(), debug) << "Recording not active on client";
         emit recordingStopped();
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Disabling session recording";
-    client_->disable_recording();
+    ssl_client->disable_recording();
     emit recordingStopped();
 }
 
@@ -1270,12 +1243,10 @@ bool ClientManager::isRecording() const {
 }
 
 std::filesystem::path ClientManager::recordingFilePath() const {
-    if (!client_ || !client_->is_recording()) {
+    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
+    if (!ssl_client || !ssl_client->is_recording()) {
         return {};
     }
-    // The client stores the recording file path in its session_recorder
-    // We need to get it from there. For now, return empty since
-    // client doesn't expose this directly. The signal contains the path.
     return {};
 }
 
@@ -1302,14 +1273,22 @@ void ClientManager::enableStreaming(
         return;
     }
 
-    // Already connected - start streaming now
+    // Already connected - start streaming now.
+    // Only supported by the ASIO SSL transport.
     BOOST_LOG_SEV(lg(), info) << "Enabling telemetry streaming for: "
                               << options.source_name;
+
+    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
+    if (!ssl_client) {
+        BOOST_LOG_SEV(lg(), debug)
+            << "Telemetry streaming not supported by current transport";
+        return;
+    }
 
     try {
         telemetry_streaming_ =
             std::make_unique<comms::service::telemetry_streaming_service>(
-                client_, options);
+                ssl_client, options);
         telemetry_streaming_->start();
 
         BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";

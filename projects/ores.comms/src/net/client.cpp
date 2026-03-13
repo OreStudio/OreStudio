@@ -679,7 +679,7 @@ void client::notify_shutdown_if_complete() {
     }
 }
 
-bool client::is_connected() const {
+bool client::is_connected() const noexcept {
     return state_.load(std::memory_order_acquire) == connection_state::connected;
 }
 

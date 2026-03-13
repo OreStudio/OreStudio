@@ -38,7 +38,7 @@
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/error_protocol.hpp"
-#include "ores.comms/net/client.hpp"
+#include "ores.comms/net/client_base.hpp"
 #include "ores.comms/net/client_options.hpp"
 
 namespace ores::comms::service {
@@ -171,7 +171,7 @@ public:
      * @return Empty expected on success, error on failure
      */
     std::expected<void, session_error>
-    attach_client(std::shared_ptr<client> external_client);
+    attach_client(std::shared_ptr<client_base> external_client);
 
     /**
      * @brief Disconnect from the server.
@@ -202,7 +202,7 @@ public:
      * Provides access to the client for advanced use cases like telemetry
      * streaming. Returns nullptr if not connected.
      */
-    [[nodiscard]] std::shared_ptr<client> get_client() const noexcept {
+    [[nodiscard]] std::shared_ptr<client_base> get_client() const noexcept {
         return client_;
     }
 
@@ -570,7 +570,7 @@ private:
         messaging::payload_type pt,
         const std::optional<std::vector<std::byte>>& payload);
 
-    std::shared_ptr<client> client_;
+    std::shared_ptr<client_base> client_;
     std::unique_ptr<service::remote_event_adapter> event_adapter_;
     std::optional<client_session_info> session_info_;
     mutable std::mutex notifications_mutex_;

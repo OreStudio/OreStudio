@@ -23,9 +23,8 @@
 #include <functional>
 #include <cli/cli.h>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/messaging/message_type.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
-#include "ores.comms.shell/app/commands/compression_commands.hpp"
+#include "ores.nats/service/nats_client.hpp"
 
 namespace ores::comms::shell::app::commands {
 
@@ -83,41 +82,39 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 
 void connection_commands::
 process_connect(std::ostream& out, client_session& session,
-    std::string host, std::string port, std::string identifier) {
+    std::string host, std::string port, std::string /*identifier*/) {
 
-    comms::net::client_options config;
-
-    // Use provided values or defaults
-    config.host = host.empty() ? "localhost" : std::move(host);
+    const std::string resolved_host = host.empty() ? "localhost" : std::move(host);
+    std::uint16_t resolved_port = 4222;
 
     if (!port.empty()) {
         try {
-            config.port = static_cast<std::uint16_t>(std::stoi(port));
+            resolved_port = static_cast<std::uint16_t>(std::stoi(port));
         } catch (...) {
             out << "✗ Invalid port number: " << port << std::endl;
             return;
         }
     }
 
-    if (!identifier.empty()) {
-        config.client_identifier = std::move(identifier);
-    } else {
-        config.client_identifier = "ores-shell";
-    }
+    const std::string nats_url =
+        "nats://" + resolved_host + ":" + std::to_string(resolved_port);
 
-    config.verify_certificate = false; // FIXME: for now
-    config.heartbeat_enabled = true;   // Enable to receive async notifications
-    config.supported_compression = compression_commands::get_supported_compression();
+    try {
+        ores::nats::config::nats_options opts;
+        opts.url = nats_url;
+        auto nats_client = std::make_shared<ores::nats::service::nats_client>(opts);
+        nats_client->connect_sync();
 
-    auto result = session.connect(std::move(config));
-    if (result) {
-        out << "✓ Connected to " << config.host << ":" << config.port << std::endl;
-
-        // Check bootstrap status after successful connection
-        check_bootstrap_status(session, out);
-    } else {
-        out << "✗ Connection failed: "
-            << comms::net::to_string(result.error()) << std::endl;
+        auto result = session.attach_client(nats_client);
+        if (result) {
+            out << "✓ Connected to " << nats_url << std::endl;
+            check_bootstrap_status(session, out);
+        } else {
+            out << "✗ Connection failed: "
+                << comms::net::to_string(result.error()) << std::endl;
+        }
+    } catch (const std::exception& e) {
+        out << "✗ Connection failed: " << e.what() << std::endl;
     }
 }
 

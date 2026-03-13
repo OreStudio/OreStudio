@@ -311,6 +311,84 @@
           "output": "projects/{component_full}/tests/stub_tests.cpp"
         }
       ]
+    },
+    "service": {
+      "description": "Service executable scaffold (app, config, parser, main + lib/exe CMake)",
+      "model_types": ["component"],
+      "templates": [
+        {
+          "template": "cmake_component_root.mustache",
+          "output": "projects/{component_full}/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_service_src.mustache",
+          "output": "projects/{component_full}/src/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_tests.mustache",
+          "output": "projects/{component_full}/tests/CMakeLists.txt"
+        },
+        {
+          "template": "cmake_component_modeling.mustache",
+          "output": "projects/{component_full}/modeling/CMakeLists.txt"
+        },
+        {
+          "template": "cpp_component_header.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/{component_full}.hpp"
+        },
+        {
+          "template": "cpp_service_app_application_exception.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/app/application_exception.hpp"
+        },
+        {
+          "template": "cpp_service_app_application.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/app/application.hpp"
+        },
+        {
+          "template": "cpp_service_app_host.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/app/host.hpp"
+        },
+        {
+          "template": "cpp_service_config_options.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/config/options.hpp"
+        },
+        {
+          "template": "cpp_service_config_parser.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/config/parser.hpp"
+        },
+        {
+          "template": "cpp_service_config_parser_exception.hpp.mustache",
+          "output": "projects/{component_full}/include/{component_full}/config/parser_exception.hpp"
+        },
+        {
+          "template": "cpp_service_app_application.cpp.mustache",
+          "output": "projects/{component_full}/src/app/application.cpp"
+        },
+        {
+          "template": "cpp_service_app_host.cpp.mustache",
+          "output": "projects/{component_full}/src/app/host.cpp"
+        },
+        {
+          "template": "cpp_service_config_options.cpp.mustache",
+          "output": "projects/{component_full}/src/config/options.cpp"
+        },
+        {
+          "template": "cpp_service_config_parser.cpp.mustache",
+          "output": "projects/{component_full}/src/config/parser.cpp"
+        },
+        {
+          "template": "cpp_service_main.cpp.mustache",
+          "output": "projects/{component_full}/src/main.cpp"
+        },
+        {
+          "template": "cpp_component_test_main.cpp.mustache",
+          "output": "projects/{component_full}/tests/main.cpp"
+        },
+        {
+          "template": "cpp_component_stub_test.cpp.mustache",
+          "output": "projects/{component_full}/tests/stub_tests.cpp"
+        }
+      ]
     }
   }
 }

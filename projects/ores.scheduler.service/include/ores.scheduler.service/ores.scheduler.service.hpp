@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting scheduler handlers and running the in-process scheduler loop with SQL and message queue action handlers.
  */
-namespace ores::scheduler::service {}
+namespace ores::scheduler.service {}
 
 #endif

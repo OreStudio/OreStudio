@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting variability handlers: feature flag management and system-wide runtime configuration.
  */
-namespace ores::variability::service {}
+namespace ores::variability.service {}
 
 #endif

@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting message queue handlers: pgmq queue management, message publishing and consuming, and queue event bridging to NATS subjects.
  */
-namespace ores::mq::service {}
+namespace ores::mq.service {}
 
 #endif

@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting synthetic data handlers: generation of realistic test data for development and QA purposes.
  */
-namespace ores::synthetic::service {}
+namespace ores::synthetic.service {}
 
 #endif

@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting telemetry handlers: system metrics collection, distributed tracing, and log record streaming to clients.
  */
-namespace ores::telemetry::service {}
+namespace ores::telemetry.service {}
 
 #endif

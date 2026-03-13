@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting reference data handlers: currencies, countries, parties, counterparties, books, business units, and portfolios.
  */
-namespace ores::refdata::service {}
+namespace ores::refdata.service {}
 
 #endif

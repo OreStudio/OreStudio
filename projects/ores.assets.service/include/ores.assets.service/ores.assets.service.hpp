@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting asset handlers: binary image storage, hierarchical tagging, and currency-to-image linking.
  */
-namespace ores::assets::service {}
+namespace ores::assets.service {}
 
 #endif

@@ -25,6 +25,6 @@
  *
  * Standalone NATS microservice hosting data quality handlers: change reasons, change reason categories, origin/nature/treatment dimensions, catalogs, datasets, methodologies, coding schemes, data domains, and subject areas.
  */
-namespace ores::dq::service {}
+namespace ores::dq.service {}
 
 #endif

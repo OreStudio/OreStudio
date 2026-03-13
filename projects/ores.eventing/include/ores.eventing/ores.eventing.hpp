@@ -20,22 +20,27 @@
 #define ORES_EVENTING_ORES_EVENTING_HPP
 
 /**
- * @brief Event-driven architecture infrastructure for decoupled component communication.
+ * @brief In-process event bus — decoupled communication within a single process.
  *
- * Provides a publish/subscribe event bus for decoupled communication between
- * components without direct dependencies. Key features:
+ * Provides type-safe publish/subscribe between components running in the same
+ * process (e.g. handlers inside ores.comms.service, or between service layers).
+ * Does not cross process boundaries and has no network dependency.
  *
- * - Event Bus: In-process publish/subscribe with type-safe callbacks
- * - Event Traits: Type-to-name mapping for protocol integration
- * - Subscriptions: RAII-based subscription management with auto-unsubscribe
- * - PostgreSQL Events: LISTEN/NOTIFY bridge for database change notifications
- * - Entity Change Events: Domain-agnostic change notification with timestamps
- * - Thread Safety: All event bus operations are thread-safe
+ * - @b domain sub-namespace: event_traits<T> — compile-time mapping from a
+ *   C++ event type to its string name (e.g. "ores.refdata.currency_changed").
+ *   Also defines entity_change_event, the common payload for all domain
+ *   change notifications.
  *
- * The domain namespace defines event types, traits, and entity change events.
- * The service namespace provides the event_bus implementation and PostgreSQL
- * integration via postgres_event_source (which uses postgres_listener_service
- * from ores.database for the low-level LISTEN/NOTIFY transport).
+ * - @b service sub-namespace: event_bus — thread-safe in-process pub/sub.
+ *   postgres_event_source bridges PostgreSQL LISTEN/NOTIFY into the event bus
+ *   so that database-side changes (triggers, pg_notify) raise in-process
+ *   events without polling.
+ *
+ * The event_traits string names defined here are reused as NATS subject
+ * suffixes by ores.nats when publishing events to external subscribers.
+ *
+ * Contrast with ores.nats (external NATS bus, cross-process) and
+ * ores.mq (durable PostgreSQL-backed queues, persistent across restarts).
  */
 namespace ores::eventing {}
 

@@ -21,9 +21,38 @@
 #define ORES_NATS_HPP
 
 /**
- * @brief NATS messaging foundation library
+ * @brief NATS transport layer — external message bus, cross-process connectivity.
  *
- * Provides RAII wrappers around the cnats C library, a service base class for domain microservices, a client session for the Qt application, and JetStream consumer support. All other components that communicate over NATS depend on this library rather than on cnats directly.
+ * Provides RAII wrappers around the cnats C library and higher-level
+ * facilities for domain services, the Qt client, and JetStream consumers.
+ * All components that communicate over NATS depend on this library rather
+ * than on cnats directly.
+ *
+ * Subject naming conventions:
+ * - Request/reply:         @c ores.<domain>.<operation>
+ *   (e.g. @c ores.iam.login)
+ * - Pub/sub events:        @c <tenant_id>.ores.<domain>.<event_name>
+ *   (e.g. @c 499d2aaa.ores.refdata.currency_changed)
+ * - JetStream streams:     @c ores.<domain>.js.<stream>
+ *   (e.g. @c ores.trading.js.trades)
+ *
+ * Sub-namespaces (planned):
+ * - @b connection: RAII wrappers for natsConnection and natsOptions; TLS
+ *   configuration; connection lifecycle management.
+ * - @b service: base class for domain microservices; binds a NATS subject
+ *   and dispatches incoming requests to handler coroutines.
+ * - @b client: Qt-side session; sends requests and receives replies via
+ *   unique per-request _INBOX subjects (fully concurrent, no serialisation).
+ * - @b messaging: typed request/reply message helpers built on top of the
+ *   cnats publish/subscribe primitives.
+ * - @b jetstream: JetStream consumer support; durable subscriptions for
+ *   chart history replay and work-queue delivery to grid nodes.
+ *
+ * Transport security: TLS (@c tls+tcp://) for encryption and server
+ * authentication; JWT RS256 tokens in message headers for client identity.
+ *
+ * Contrast with ores.eventing (in-process pub/sub only, no network) and
+ * ores.mq (durable PostgreSQL-backed queues, persistent across restarts).
  */
 namespace ores::nats {}
 

@@ -20,9 +20,12 @@
 #define ORES_MQ_HPP
 
 /**
- * @brief Message queue support for OreStudio, built on custom MQ tables.
+ * @brief Durable PostgreSQL-backed message queues — persistent, transactional.
  *
- * This component provides two layers of message queue functionality:
+ * Provides reliable, durable message queuing built on custom PostgreSQL MQ
+ * tables. Messages survive process restarts and are delivered exactly once
+ * under transactional guarantees. Suitable for work that must not be lost
+ * (e.g. audit trails, deferred jobs, cross-service task dispatch).
  *
  * - @b domain sub-namespace: domain types for queue definitions, messages
  *   and statistics (queue_definition, mq_message, queue_stats, etc.).
@@ -38,6 +41,9 @@
  *   request/response messages so that Qt UI components can query queue state
  *   on demand. The registrar registers the mq_message_handler with the comms
  *   server.
+ *
+ * Contrast with ores.nats (external NATS bus, cross-process, no persistence
+ * guarantee) and ores.eventing (in-process pub/sub only, no network).
  */
 namespace ores::mq {}
 

@@ -27,7 +27,7 @@ namespace ores::synthetic::messaging {
 
 using namespace ores::logging;
 
-void registrar::register_handlers(comms::net::server& server,
+void registrar::register_handlers(comms::messaging::message_server& server,
     database::context ctx,
     std::shared_ptr<iam::service::authorization_service> auth_service) {
     BOOST_LOG_SEV(lg(), debug) << "Registering Synthetic message handlers.";

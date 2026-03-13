@@ -26,7 +26,7 @@ namespace ores::telemetry::messaging {
 
 using namespace ores::logging;
 
-void registrar::register_handlers(comms::net::server& server,
+void registrar::register_handlers(comms::messaging::message_server& server,
     ::ores::database::context ctx,
     std::shared_ptr<comms::service::auth_session_service> sessions) {
 

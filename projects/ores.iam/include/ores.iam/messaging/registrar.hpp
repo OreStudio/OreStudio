@@ -21,7 +21,7 @@
 #define ORES_IAM_MESSAGING_REGISTRAR_HPP
 
 #include <memory>
-#include "ores.comms/net/server.hpp"
+#include "ores.comms/messaging/message_server.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
@@ -55,7 +55,7 @@ private:
     }
 
 public:
-    static void register_handlers(comms::net::server& server,
+    static void register_handlers(comms::messaging::message_server& server,
         database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
         std::shared_ptr<service::authorization_service> auth_service,

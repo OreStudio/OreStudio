@@ -24,7 +24,7 @@
 #include <optional>
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
-#include "ores.comms/net/server_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
 
 namespace ores::comms::service::config {
 
@@ -37,9 +37,9 @@ struct options final {
      */
     std::optional<ores::logging::logging_options> logging;
     /**
-     * @brief Configuration related to server operations.
+     * @brief Configuration related to NATS transport.
      */
-    comms::net::server_options server;
+    ores::nats::config::nats_options nats;
     /**
      * @brief Configuration related to database operations.
      */

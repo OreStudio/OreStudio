@@ -35,6 +35,7 @@
 #include "ores.comms/net/server_options.hpp"
 #include "ores.comms/messaging/message_dispatcher.hpp"
 #include "ores.comms/messaging/message_handler.hpp"
+#include "ores.comms/messaging/message_server.hpp"
 #include "ores.comms/service/auth_session_service.hpp"
 
 namespace ores::comms::net { class server_session; }
@@ -50,7 +51,9 @@ namespace ssl = boost::asio::ssl;
  *
  * Accepts SSL connections, performs handshake, and manages client sessions.
  */
-class server final : public std::enable_shared_from_this<server> {
+class server final
+    : public std::enable_shared_from_this<server>
+    , public messaging::message_server {
 private:
     inline static std::string_view logger_name =
         "ores.comms.net.server";
@@ -77,7 +80,7 @@ public:
      * Must be called before run() to register subsystem handlers.
      */
     void register_handler(messaging::message_type_range range,
-        std::shared_ptr<messaging::message_handler> handler);
+        std::shared_ptr<messaging::message_handler> handler) override;
 
     /**
      * @brief Get the shared auth session service.
@@ -85,7 +88,7 @@ public:
      * Use this to pass the auth session service to handlers that need it
      * (e.g., accounts_message_handler for login/logout management).
      */
-    [[nodiscard]] std::shared_ptr<service::auth_session_service> sessions() const {
+    [[nodiscard]] std::shared_ptr<service::auth_session_service> sessions() const override {
         return sessions_;
     }
 
@@ -126,7 +129,8 @@ public:
      * @param available Whether the database is available.
      * @param error_message Error message if unavailable, empty otherwise.
      */
-    void broadcast_database_status(bool available, const std::string& error_message);
+    void broadcast_database_status(bool available,
+        const std::string& error_message) override;
 
 private:
     /**

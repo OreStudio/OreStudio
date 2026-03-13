@@ -17,28 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.mq/messaging/registrar.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-#include "ores.mq/messaging/mq_message_handler.hpp"
+#ifndef ORES_NATS_CONFIG_NATS_OPTIONS_HPP
+#define ORES_NATS_CONFIG_NATS_OPTIONS_HPP
 
-namespace ores::mq::messaging {
+#include <string>
 
-using namespace ores::logging;
+namespace ores::nats::config {
 
-void registrar::register_handlers(comms::messaging::message_server& server,
-    database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions) {
-    BOOST_LOG_SEV(lg(), info) << "Registering MQ subsystem message handlers.";
+/**
+ * @brief Configuration for a NATS connection.
+ */
+struct nats_options final {
+    /**
+     * @brief NATS server URL (e.g. "nats://localhost:4222" or
+     *        "tls+tcp://localhost:4222" for TLS).
+     */
+    std::string url = "nats://localhost:4222";
 
-    auto handler = std::make_shared<mq_message_handler>(
-        std::move(ctx), std::move(sessions));
-    comms::messaging::message_type_range mq_range{
-        .min = comms::messaging::MQ_SUBSYSTEM_MIN,
-        .max = comms::messaging::MQ_SUBSYSTEM_MAX
-    };
-    server.register_handler(mq_range, std::move(handler));
+    /**
+     * @brief Subject on which the service listens for requests.
+     *
+     * All client requests are sent to this subject and the service
+     * publishes responses to the per-request NATS reply subject.
+     */
+    std::string subject = "ores.comms.service";
+};
 
-    BOOST_LOG_SEV(lg(), info) << "MQ subsystem message handlers registered successfully.";
 }
 
-}
+#endif

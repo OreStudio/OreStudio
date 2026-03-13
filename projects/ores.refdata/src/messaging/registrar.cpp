@@ -26,7 +26,7 @@ namespace ores::refdata::messaging {
 
 using namespace ores::logging;
 
-void registrar::register_handlers(comms::net::server& server,
+void registrar::register_handlers(comms::messaging::message_server& server,
     database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
     std::shared_ptr<comms::service::auth_session_service> sessions) {

@@ -20,7 +20,7 @@
 #ifndef ORES_DQ_MESSAGING_REGISTRAR_HPP
 #define ORES_DQ_MESSAGING_REGISTRAR_HPP
 
-#include "ores.comms/net/server.hpp"
+#include "ores.comms/messaging/message_server.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam/service/authorization_service.hpp"
@@ -47,7 +47,7 @@ private:
     }
 
 public:
-    static void register_handlers(comms::net::server& server,
+    static void register_handlers(comms::messaging::message_server& server,
         database::context ctx,
         std::shared_ptr<iam::service::authorization_service> auth_service);
 };

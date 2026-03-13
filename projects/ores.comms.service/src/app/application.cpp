@@ -91,9 +91,9 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/health_monitor.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.comms/net/server.hpp"
 #include "ores.comms/service/subscription_manager.hpp"
 #include "ores.comms/service/subscription_handler.hpp"
+#include "ores.nats/service/nats_server.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.dq/service/dataset_bundle_service.hpp"
 #include "ores.comms.service/app/application_exception.hpp"
@@ -661,11 +661,8 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
                 std::make_optional(e.payload));
         });
 
-    // Create server with subscription manager
-    auto srv = std::make_shared<ores::comms::net::server>(cfg.server, subscription_mgr);
-
-    // Wire sessions service into subscription manager for tenant-aware filtering
-    subscription_mgr->set_sessions_service(srv->sessions());
+    // Create NATS server
+    auto srv = std::make_shared<ores::nats::service::nats_server>(cfg.nats);
 
     // Optionally set up JWT signing/validation (HS256 shared secret)
     std::shared_ptr<security::jwt::jwt_authenticator> jwt_auth;

@@ -23,8 +23,6 @@
 #include <cstdint>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
-#include "ores.comms/net/server_options.hpp"
-#include "ores.comms/config/ores.comms.config.hpp"
 #include "ores.comms.service/config/parser_exception.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/program_options/common_configuration.hpp"
@@ -41,13 +39,14 @@ const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string jwt_secret_arg("jwt-secret");
+const std::string nats_url_arg("nats-url");
+const std::string nats_subject_arg("nats-subject");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::parsed_options;
 using boost::program_options::options_description;
 
-using ores::comms::net::server_options;
 using ores::comms::service::config::options;
 using ores::comms::service::config::parser_exception;
 
@@ -58,14 +57,20 @@ options_description make_options_description() {
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
     using ores::utility::program_options::common_configuration;
-    using ores::comms::config::server_configuration;
 
     const auto god(common_configuration::make_options_description());
     const auto lod(logging_configuration::make_options_description(
             "ores.comms.service.log"));
-    const auto sod(server_configuration::make_options_description(
-            55555, 10, "ores-service-v1", true));
     const auto dod(database_configuration::make_options_description());
+
+    options_description nats_opts("NATS options");
+    nats_opts.add_options()
+        (nats_url_arg.c_str(),
+         value<std::string>()->value_name("URL")->default_value("nats://localhost:4222"),
+         "NATS server URL")
+        (nats_subject_arg.c_str(),
+         value<std::string>()->value_name("SUBJECT")->default_value("ores.comms.service"),
+         "NATS subject on which the service listens for requests");
 
     options_description jwt_opts("JWT options");
     jwt_opts.add_options()
@@ -74,7 +79,7 @@ options_description make_options_description() {
          "HS256 shared secret for JWT signing and validation (enables JWT mode)");
 
     options_description r;
-    r.add(god).add(lod).add(sod).add(dod).add(jwt_opts);
+    r.add(god).add(lod).add(dod).add(nats_opts).add(jwt_opts);
     return r;
 }
 
@@ -118,7 +123,6 @@ std::optional<options>
 parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
-    using ores::comms::config::server_configuration;
 
     const auto od(make_options_description());
     using ores::utility::program_options::environment_mapper_factory;
@@ -148,7 +152,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     // Parse configuration
     options r;
     r.logging = logging_configuration::read_options(vm);
-    r.server = server_configuration::read_options(vm);
+    r.nats.url = vm[nats_url_arg].as<std::string>();
+    r.nats.subject = vm[nats_subject_arg].as<std::string>();
     r.database = database_configuration::read_options(vm);
     if (vm.count(jwt_secret_arg))
         r.jwt_secret = vm[jwt_secret_arg].as<std::string>();

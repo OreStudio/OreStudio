@@ -17,46 +17,48 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-12 Thu 23:10], for Thursday, March 12, 2026.
+#+CAPTION: Clock summary at [2026-03-12 Thu 23:58], for Thursday, March 12, 2026.
 |       | <75>                                           |        |      |      |       |
 | Tags  | Headline                                       | Time   |      |      |     % |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                   | *3:33* |      |      | 100.0 |
+|       | *Total time*                                   | *4:20* |      |      | 100.0 |
 |-------+------------------------------------------------+--------+------+------+-------|
-|       | Stories                                        | 3:33   |      |      | 100.0 |
-|       | Active                                         |        | 3:33 |      | 100.0 |
-| agile | Sprint and product backlog refinement          |        |      | 1:48 |  50.7 |
-| code  | Implement NNG message broker                   |        |      | 1:00 |  28.2 |
-| code  | Fix codename with sequence-based unique suffix |        |      | 0:45 |  21.1 |
+|       | Stories                                        | 4:20   |      |      | 100.0 |
+|       | Active                                         |        | 4:20 |      | 100.0 |
+| agile | Sprint and product backlog refinement          |        |      | 1:48 |  41.5 |
+| code  | Implement NNG message broker                   |        |      | 1:00 |  23.1 |
+| code  | Fix codename with sequence-based unique suffix |        |      | 0:45 |  17.3 |
+| code  | Hook up broker and comms service               |        |      | 0:47 |  18.1 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-12 Thu 23:10]
+#+CAPTION: Clock summary at [2026-03-12 Thu 23:58]
 |       | <75>                                                    |         |       |      |       |
 | Tags  | Headline                                                | Time    |       |      |     % |
 |-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                            | *50:29* |       |      | 100.0 |
+|       | *Total time*                                            | *51:16* |       |      | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                 | 50:29   |       |      | 100.0 |
-|       | Active                                                  |         | 50:29 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       | 3:23 |   6.7 |
+|       | Stories                                                 | 51:16   |       |      | 100.0 |
+|       | Active                                                  |         | 51:16 |      | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       | 3:23 |   6.6 |
 | code  | Add ORE Import Wizard                                   |         |       | 3:00 |   5.9 |
-| code  | Add reporting component design document                 |         |       | 1:30 |   3.0 |
+| code  | Add reporting component design document                 |         |       | 1:30 |   2.9 |
 | code  | Add ores.reporting SQL schema                           |         |       | 1:20 |   2.6 |
 | code  | Reporting: Add domain types, messaging and repository   |         |       | 1:50 |   3.6 |
 | code  | Trading: Implement trade status state machine           |         |       | 0:59 |   1.9 |
 | code  | Cli: Add domain sub-menu layer to CLI command syntax    |         |       | 1:35 |   3.1 |
 | code  | Add pgmq queue management and messaging UI              |         |       | 0:34 |   1.1 |
-| code  | Reporting UI: cron widget, and party codename plan      |         |       | 8:19 |  16.5 |
-| code  | Add party codename and report scheduling UI             |         |       | 7:19 |  14.5 |
+| code  | Reporting UI: cron widget, and party codename plan      |         |       | 8:19 |  16.2 |
+| code  | Add party codename and report scheduling UI             |         |       | 7:19 |  14.3 |
 | code  | Replace pgmq + pg_cron with custom tables and scheduler |         |       | 2:54 |   5.7 |
 | code  | Fix TOCTOU race in party codename generation trigger    |         |       | 1:10 |   2.3 |
 | code  | Migrate JWT to ores.security with RS256 support         |         |       | 0:07 |   0.2 |
-| code  | Implement NNG message broker                            |         |       | 8:55 |  17.7 |
-| code  | Add build tool suffix to all CMake presets              |         |       | 2:10 |   4.3 |
+| code  | Implement NNG message broker                            |         |       | 8:55 |  17.4 |
+| code  | Add build tool suffix to all CMake presets              |         |       | 2:10 |   4.2 |
 | code  | Fix codename with sequence-based unique suffix          |         |       | 0:45 |   1.5 |
-| code  | Add trade import mapping dialog to Qt UI                |         |       | 4:39 |   9.2 |
+| code  | Add trade import mapping dialog to Qt UI                |         |       | 4:39 |   9.1 |
+| code  | Hook up broker and comms service                        |         |       | 0:47 |   1.5 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -845,7 +847,10 @@ Acceptance criteria:
 - Successful import creates trades in the selected book.
 - Trades appear in the trade list after import.
 
-*** Hook up broker and comms service                                   :code:
+*** STARTED Hook up broker and comms service                           :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-12 Thu 23:11]--[2026-03-12 Thu 23:58] =>  0:47
+    :END:
 
 We have introduced the broker but we did not validate that the infrastructure
 works as expected.

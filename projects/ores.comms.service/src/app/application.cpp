@@ -99,10 +99,6 @@
 #include "ores.comms.service/app/application_exception.hpp"
 #include "ores.comms.service/messaging/system_info_handler.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include <thread>
-#include <future>
-#include <boost/asio/use_future.hpp>
-#include "ores.mq/service/nng_service_runner.hpp"
 #include "ores.comms/messaging/error_protocol.hpp"
 
 namespace ores::comms::service::app {
@@ -772,103 +768,7 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
         },
         boost::asio::detached);
 
-    // Set up persistent NNG service runner (if broker is configured)
-    std::shared_ptr<ores::mq::service::nng_service_runner> nng_runner;
-    std::thread nng_thread;
-    if (cfg.broker_backend && !cfg.broker_backend->empty()) {
-        auto disp = srv->dispatcher();
-
-        // Build a minimal error response frame. Uses the supplied correlation_id
-        // when available (header already parsed); falls back to extracting it
-        // from raw bytes at offset 24-27 (big-endian) when the header parse failed.
-        auto make_nng_error_frame = [](
-            std::span<const std::byte> raw,
-            ores::utility::serialization::error_code code,
-            std::optional<std::uint32_t> correlation_id = std::nullopt)
-            -> std::vector<std::byte>
-        {
-            std::uint32_t corr_id = 0;
-            if (correlation_id) {
-                corr_id = *correlation_id;
-            } else {
-                constexpr std::size_t corr_id_offset = 24;
-                if (raw.size() >= corr_id_offset + 4) {
-                    const auto* p = reinterpret_cast<const std::uint8_t*>(
-                        raw.data() + corr_id_offset);
-                    corr_id = (static_cast<std::uint32_t>(p[0]) << 24)
-                            | (static_cast<std::uint32_t>(p[1]) << 16)
-                            | (static_cast<std::uint32_t>(p[2]) <<  8)
-                            |  static_cast<std::uint32_t>(p[3]);
-                }
-            }
-            auto f = ores::comms::messaging::create_error_response_frame(
-                0, corr_id, code,
-                ores::utility::serialization::to_string(code));
-            return f.serialize();
-        };
-
-        // Async adapter: deserialises raw NNG bytes, dispatches through
-        // message_dispatcher, and returns the serialised response bytes.
-        auto dispatch_coro = [disp, make_nng_error_frame](
-            std::vector<std::byte> raw, std::string remote_addr)
-            -> boost::asio::awaitable<std::vector<std::byte>>
-        {
-            auto hdr = ores::comms::messaging::frame::deserialize_header(raw);
-            if (!hdr)
-                co_return make_nng_error_frame(raw, hdr.error());
-            auto frm = ores::comms::messaging::frame::deserialize(*hdr, raw);
-            if (!frm)
-                co_return make_nng_error_frame(raw, frm.error(), hdr->correlation_id);
-            auto resp = co_await disp->dispatch(*frm, frm->header().sequence,
-                                                remote_addr);
-            if (!resp)
-                co_return make_nng_error_frame(raw, resp.error(), hdr->correlation_id);
-            co_return resp->serialize();
-        };
-
-        // Synchronous dispatcher passed to the runner: posts dispatch_coro onto
-        // io_ctx and blocks the NNG thread until the response arrives.
-        auto nng_disp = [&io_ctx, dispatch_coro](
-            std::span<const std::byte> raw, std::uint32_t pipe_id)
-            -> std::vector<std::byte>
-        {
-            auto remote = "nng:pipe:" + std::to_string(pipe_id);
-            auto vec = std::vector<std::byte>(raw.begin(), raw.end());
-            return boost::asio::co_spawn(io_ctx,
-                dispatch_coro(std::move(vec), std::move(remote)),
-                boost::asio::use_future).get();
-        };
-
-        using namespace ores::comms::messaging;
-        ores::mq::service::nng_service_runner::config runner_cfg;
-        runner_cfg.broker_backend = *cfg.broker_backend;
-        runner_cfg.service_name   = "ores.comms.service";
-        runner_cfg.ranges = {
-            { .min = CORE_SUBSYSTEM_MIN,        .max = CORE_SUBSYSTEM_MAX        },
-            { .min = IAM_SUBSYSTEM_MIN,         .max = IAM_SUBSYSTEM_MAX         },
-            { .min = VARIABILITY_SUBSYSTEM_MIN, .max = VARIABILITY_SUBSYSTEM_MAX },
-            { .min = ASSETS_SUBSYSTEM_MIN,      .max = ASSETS_SUBSYSTEM_MAX      },
-            { .min = TELEMETRY_SUBSYSTEM_MIN,   .max = TELEMETRY_SUBSYSTEM_MAX   },
-            { .min = DQ_SUBSYSTEM_MIN,          .max = DQ_SUBSYSTEM_MAX          },
-            { .min = SYNTHETIC_SUBSYSTEM_MIN,   .max = SYNTHETIC_SUBSYSTEM_MAX   },
-            { .min = TRADE_SUBSYSTEM_MIN,       .max = TRADE_SUBSYSTEM_MAX       },
-            { .min = SCHEDULER_SUBSYSTEM_MIN,   .max = SCHEDULER_SUBSYSTEM_MAX   },
-            { .min = REPORTING_SUBSYSTEM_MIN,   .max = REPORTING_SUBSYSTEM_MAX   },
-            { .min = MQ_SUBSYSTEM_MIN,          .max = MQ_SUBSYSTEM_MAX          }
-        };
-
-        nng_runner = std::make_shared<ores::mq::service::nng_service_runner>(
-            std::move(runner_cfg), std::move(nng_disp));
-        nng_thread = std::thread([nng_runner]() { nng_runner->run(); });
-    }
-
     co_await srv->run(io_ctx);
-
-    if (nng_runner) {
-        nng_runner->stop();
-        if (nng_thread.joinable())
-            nng_thread.join();
-    }
 
     // Stop the database health monitor
     db_health_monitor.stop();

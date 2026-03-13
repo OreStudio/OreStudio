@@ -1,8 +1,0 @@
-{
-  "component": {
-    "name": "mq.broker",
-    "full_name": "ores.mq.broker",
-    "brief": "NNG-based message broker executable",
-    "description": "Standalone broker process that routes binary protocol frames by message type range to registered backend services. Supports durable delivery via pgmq for sensitive workflows."
-  }
-}

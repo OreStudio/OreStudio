@@ -80,7 +80,7 @@
 
 (defun ores/get-port (service-type build-type)
   "Return the port for SERVICE-TYPE and BUILD-TYPE in the current checkout.
-SERVICE-TYPE is one of 'http, 'wt, 'binary, 'broker-frontend, or 'broker-backend.
+SERVICE-TYPE is one of 'http, 'wt, or 'binary.
 BUILD-TYPE is one of 'debug or 'release."
   (let* ((base (alist-get ores/checkout-label ores/port-bases 50000 nil #'string=))
          (offset (cond
@@ -90,10 +90,6 @@ BUILD-TYPE is one of 'debug or 'release."
                   ((and (eq service-type 'wt) (eq build-type 'release)) 3)
                   ((and (eq service-type 'binary) (eq build-type 'debug)) 4)
                   ((and (eq service-type 'binary) (eq build-type 'release)) 5)
-                  ((and (eq service-type 'broker-frontend) (eq build-type 'debug)) 6)
-                  ((and (eq service-type 'broker-backend) (eq build-type 'debug)) 7)
-                  ((and (eq service-type 'broker-frontend) (eq build-type 'release)) 8)
-                  ((and (eq service-type 'broker-backend) (eq build-type 'release)) 9)
                   (t 0))))
     (+ base offset)))
 
@@ -159,7 +155,6 @@ and combines with configured database name."
 (prodigy-define-tag :name ores/checkout-tag)
 
 (prodigy-define-tag :name 'comms-service)
-(prodigy-define-tag :name 'mq-broker)
 
 (defun ores/setup-http-server-environment ()
   "Set up environment variables for the HTTP server.
@@ -272,27 +267,6 @@ Includes database credentials and JWT secret from auth-source."
   :stop-signal 'sigint
   :kill-process-buffer-on-stop t)
 
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio MQ Broker" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--frontend" ,(format "tcp://0.0.0.0:%d" (ores/get-port 'broker-frontend 'debug))
-          "--backend"  ,(format "tcp://0.0.0.0:%d" (ores/get-port 'broker-backend 'debug)))
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.mq.broker")
-  :tags `(ores debug mq-broker ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio MQ Broker" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--frontend" ,(format "tcp://0.0.0.0:%d" (ores/get-port 'broker-frontend 'release))
-          "--backend"  ,(format "tcp://0.0.0.0:%d" (ores/get-port 'broker-backend 'release)))
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.mq.broker")
-  :tags `(ores release mq-broker ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
 
 (prodigy-define-service
   :name (ores/service-name "ORE Studio HTTP Server" 'debug)

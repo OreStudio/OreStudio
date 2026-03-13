@@ -54,15 +54,7 @@ struct options final {
      */
     std::optional<std::string> jwt_secret;
 
-    /**
-     * @brief NNG backend endpoint of the message broker to register with.
-     *
-     * When set, the service connects to the broker backend socket at startup,
-     * sends a register_service_request for all handled message type ranges,
-     * and proceeds only after receiving a successful response.
-     * If not set, standalone mode is used (no broker registration).
-     */
-    std::optional<std::string> broker_backend;
+
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

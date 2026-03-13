@@ -34,8 +34,6 @@ set_target_properties(${lib_target_name} PROPERTIES
 set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
-find_package(nng CONFIG REQUIRED)
-
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.comms.service/include
     # Include telemetry headers for repository files compiled here
@@ -61,9 +59,7 @@ target_link_libraries(${lib_target_name}
         ores.trading.lib
         ores.scheduler.lib
         ores.reporting.lib
-        ores.mq.lib
-    PRIVATE
-        nng::nng)
+        ores.mq.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

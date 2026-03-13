@@ -34,8 +34,6 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/ores.mq/include)
 
-find_package(nng CONFIG REQUIRED)
-
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
@@ -46,7 +44,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.logging.lib
         ores.platform.lib
-        faker-cxx::faker-cxx
-        nng::nng)
+        faker-cxx::faker-cxx)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

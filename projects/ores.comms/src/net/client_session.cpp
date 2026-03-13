@@ -19,6 +19,7 @@
  */
 #include "ores.comms/net/client_session.hpp"
 #include "ores.comms/net/client.hpp"
+#include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.comms/service/remote_event_adapter.hpp"
 
 namespace ores::comms::net {
@@ -109,13 +110,24 @@ client_session::attach_client(std::shared_ptr<client_base> external_client) {
     client_ = std::move(external_client);
     external_client_ = true;  // We don't own this client
 
-    // Create the event adapter for SSL clients that support subscriptions.
-    // NATS clients (and other transports) do not support push subscriptions yet.
     if (auto ssl_client = std::dynamic_pointer_cast<client>(client_)) {
+        // SSL path: create event adapter to track subscriptions and route
+        // incoming notifications from the persistent TCP connection.
         event_adapter_ = std::make_unique<service::remote_event_adapter>(ssl_client);
-
-        // Register notification callback to queue notifications for display
         event_adapter_->set_notification_callback(
+            [this](const std::string& event_type,
+                   std::chrono::system_clock::time_point timestamp,
+                   const std::vector<std::string>& entity_ids,
+                   const std::string& tenant_id,
+                   messaging::payload_type pt,
+                   const std::optional<std::vector<std::byte>>& payload) {
+                on_notification(event_type, timestamp, entity_ids, tenant_id,
+                    pt, payload);
+            });
+    } else {
+        // NATS (and future transports): route push notifications directly from
+        // the client's inbox subscription to on_notification.
+        client_->set_notification_callback(
             [this](const std::string& event_type,
                    std::chrono::system_clock::time_point timestamp,
                    const std::vector<std::string>& entity_ids,
@@ -139,6 +151,7 @@ void client_session::detach_client() {
 
     // Clear session state
     session_info_.reset();
+    nats_subscriptions_.clear();
     {
         std::lock_guard lock(notifications_mutex_);
         pending_notifications_.clear();
@@ -176,6 +189,7 @@ void client_session::disconnect() {
 
     // Clear session state
     session_info_.reset();
+    nats_subscriptions_.clear();
     {
         std::lock_guard lock(notifications_mutex_);
         pending_notifications_.clear();
@@ -187,35 +201,63 @@ bool client_session::is_connected() const noexcept {
 }
 
 bool client_session::subscribe(const std::string& event_type) {
-    if (!event_adapter_) {
+    if (event_adapter_) {
+        return event_adapter_->subscribe_sync(event_type);
+    }
+
+    // NATS path: send subscribe_request with notification inbox
+    if (!client_ || !client_->is_connected()) {
         BOOST_LOG_SEV(lg(), error) << "Cannot subscribe: not connected";
         return false;
     }
 
-    return event_adapter_->subscribe_sync(event_type);
+    messaging::subscribe_request req;
+    req.event_type = event_type;
+    req.notification_inbox = client_->notification_inbox();
+    auto result = process_request(req);
+    if (!result || !result->success) {
+        BOOST_LOG_SEV(lg(), error) << "Subscribe failed for " << event_type;
+        return false;
+    }
+    nats_subscriptions_.insert(event_type);
+    return true;
 }
 
 bool client_session::unsubscribe(const std::string& event_type) {
-    if (!event_adapter_) {
+    if (event_adapter_) {
+        return event_adapter_->unsubscribe_sync(event_type);
+    }
+
+    // NATS path
+    if (!client_ || !client_->is_connected()) {
         BOOST_LOG_SEV(lg(), error) << "Cannot unsubscribe: not connected";
         return false;
     }
 
-    return event_adapter_->unsubscribe_sync(event_type);
+    messaging::unsubscribe_request req;
+    req.event_type = event_type;
+    req.notification_inbox = client_->notification_inbox();
+    auto result = process_request(req);
+    if (!result || !result->success) {
+        BOOST_LOG_SEV(lg(), error) << "Unsubscribe failed for " << event_type;
+        return false;
+    }
+    nats_subscriptions_.erase(event_type);
+    return true;
 }
 
 bool client_session::is_subscribed(const std::string& event_type) const {
-    if (!event_adapter_) {
-        return false;
+    if (event_adapter_) {
+        return event_adapter_->is_subscribed(event_type);
     }
-    return event_adapter_->is_subscribed(event_type);
+    return nats_subscriptions_.contains(event_type);
 }
 
 std::set<std::string> client_session::get_subscriptions() const {
-    if (!event_adapter_) {
-        return {};
+    if (event_adapter_) {
+        return event_adapter_->get_subscriptions();
     }
-    return event_adapter_->get_subscriptions();
+    return nats_subscriptions_;
 }
 
 std::vector<pending_notification> client_session::take_pending_notifications() {

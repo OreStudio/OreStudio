@@ -51,11 +51,22 @@ struct subscribe_request final {
     std::string event_type;
 
     /**
+     * @brief NATS inbox subject for push delivery (empty for SSL clients).
+     *
+     * When non-empty the server registers a NATS publish callback for this
+     * inbox so that matching events are delivered as NATS messages rather
+     * than over a persistent TCP connection.
+     */
+    std::string notification_inbox;
+
+    /**
      * @brief Serialize request to bytes.
      *
      * Format:
      * - 2 bytes: event_type length
      * - N bytes: event_type (UTF-8)
+     * - 2 bytes: notification_inbox length  (new; old senders omit this field)
+     * - N bytes: notification_inbox (UTF-8) (empty string if not a NATS client)
      */
     std::vector<std::byte> serialize() const;
 
@@ -104,11 +115,20 @@ struct unsubscribe_request final {
     std::string event_type;
 
     /**
+     * @brief NATS inbox subject that identifies the session (empty for SSL).
+     *
+     * Must match the inbox supplied in the corresponding subscribe_request.
+     */
+    std::string notification_inbox;
+
+    /**
      * @brief Serialize request to bytes.
      *
      * Format:
      * - 2 bytes: event_type length
      * - N bytes: event_type (UTF-8)
+     * - 2 bytes: notification_inbox length  (new; old senders omit this field)
+     * - N bytes: notification_inbox (UTF-8)
      */
     std::vector<std::byte> serialize() const;
 

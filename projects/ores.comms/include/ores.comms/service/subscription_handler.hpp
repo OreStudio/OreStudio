@@ -21,6 +21,7 @@
 #define ORES_COMMS_SERVICE_SUBSCRIPTION_HANDLER_HPP
 
 #include <memory>
+#include <functional>
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.eventing/service/event_channel_registry.hpp"
@@ -28,6 +29,17 @@
 #include "ores.comms/service/subscription_manager.hpp"
 
 namespace ores::comms::service {
+
+/**
+ * @brief Factory that creates a notification_callback for a NATS inbox.
+ *
+ * When provided, the subscription_handler auto-registers NATS sessions and
+ * delivers notifications by publishing serialized notification_message bytes
+ * directly to the client's NATS inbox. Injected at construction time to keep
+ * ores.comms independent of the NATS transport library.
+ */
+using nats_session_factory_t =
+    std::function<notification_callback(const std::string& notification_inbox)>;
 
 /**
  * @brief Message handler for subscription protocol messages.
@@ -54,10 +66,15 @@ public:
      *
      * @param manager Shared subscription manager for tracking subscriptions.
      * @param registry Shared event channel registry for channel discovery.
+     * @param nats_factory Optional factory for NATS session callbacks. When
+     *        provided, NATS clients that include a notification_inbox in their
+     *        subscribe_request are auto-registered and receive notifications
+     *        via NATS publish rather than over a persistent TCP connection.
      */
     subscription_handler(
         std::shared_ptr<subscription_manager> manager,
-        std::shared_ptr<eventing::service::event_channel_registry> registry);
+        std::shared_ptr<eventing::service::event_channel_registry> registry,
+        nats_session_factory_t nats_factory = {});
 
     /**
      * @brief Handle a subscription protocol message.
@@ -96,6 +113,7 @@ private:
 
     std::shared_ptr<subscription_manager> manager_;
     std::shared_ptr<eventing::service::event_channel_registry> registry_;
+    nats_session_factory_t nats_factory_;
 };
 
 }

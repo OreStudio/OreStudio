@@ -70,6 +70,9 @@ public:
     /**
      * @brief Connect to the NATS server (blocking).
      *
+     * Establishes the NATS connection, allocates a unique inbox subject, and
+     * subscribes to it for push notification delivery.
+     *
      * @throws std::runtime_error if the connection fails
      */
     void connect_sync();
@@ -89,6 +92,14 @@ public:
 
     std::expected<comms::messaging::frame, ores::utility::serialization::error_code>
     send_request_sync(comms::messaging::frame request) override;
+
+    /**
+     * @brief Returns the NATS inbox subject allocated at connect time.
+     *
+     * The server publishes event notifications to this subject for clients
+     * that register with a notification_inbox in their subscribe_request.
+     */
+    [[nodiscard]] std::string notification_inbox() const override;
 
     /**
      * @brief Returns 0; cnats does not expose per-connection byte counters.
@@ -134,9 +145,20 @@ private:
      */
     static void on_reconnected(natsConnection* conn, void* closure);
 
+    /**
+     * @brief cnats subscription callback for push notification delivery.
+     *
+     * Deserializes the received notification_message and invokes the stored
+     * notification_cb_. Called on a cnats internal thread.
+     */
+    static void on_notification_message(natsConnection* conn,
+        natsSubscription* sub, natsMsg* msg, void* closure);
+
 private:
     config::nats_options options_;
     natsConnection* conn_{nullptr};
+    natsSubscription* notification_sub_{nullptr};
+    std::string inbox_subject_;
     std::atomic<bool> connected_{false};
 
     mutable std::mutex callbacks_mutex_;

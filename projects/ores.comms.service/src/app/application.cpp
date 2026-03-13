@@ -743,8 +743,33 @@ run(boost::asio::io_context& io_ctx, const config::options& cfg) const {
 
     // Register subscription handler for subscribe/unsubscribe/list_event_channels messages
     // Range starts at 0x0009 to avoid overlapping with the system_info handler (0x0007-0x0008)
+    //
+    // Inject a NATS session factory so that NATS clients that supply a
+    // notification_inbox in their subscribe_request receive push notifications
+    // via NATS publish rather than over a persistent TCP connection.
     auto subscription_handler =
-        std::make_shared<comms::service::subscription_handler>(subscription_mgr, channel_registry);
+        std::make_shared<comms::service::subscription_handler>(
+            subscription_mgr, channel_registry,
+            [srv](const std::string& inbox) -> comms::service::notification_callback {
+                return [srv, inbox](
+                    const std::string& event_type,
+                    std::chrono::system_clock::time_point timestamp,
+                    const std::vector<std::string>& entity_ids,
+                    const std::string& tenant_id,
+                    comms::messaging::payload_type pt,
+                    const std::optional<std::vector<std::byte>>& payload) -> bool {
+                        comms::messaging::notification_message notif;
+                        notif.event_type = event_type;
+                        notif.timestamp = timestamp;
+                        notif.entity_ids = entity_ids;
+                        notif.tenant_id = tenant_id;
+                        notif.pt = pt;
+                        notif.payload = payload;
+                        const auto bytes = notif.serialize();
+                        srv->publish_to_subject(inbox, bytes);
+                        return true;
+                };
+            });
     srv->register_handler(
         {0x0009, comms::messaging::CORE_SUBSYSTEM_MAX},
         subscription_handler);

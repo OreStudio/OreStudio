@@ -21,6 +21,7 @@
 
 #include <stdexcept>
 #include <boost/throw_exception.hpp>
+#include "ores.comms/messaging/subscription_protocol.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 
 namespace ores::nats::service {
@@ -61,6 +62,31 @@ void nats_client::connect_sync() {
 
     connected_.store(true, std::memory_order_release);
     BOOST_LOG_SEV(lg(), info) << "Connected to NATS";
+
+    // Allocate a unique inbox subject for push notification delivery
+    natsInbox* raw_inbox = nullptr;
+    const natsStatus inbox_s = natsInbox_Create(&raw_inbox);
+    if (inbox_s == NATS_OK && raw_inbox) {
+        inbox_subject_ = raw_inbox;
+        natsInbox_Destroy(raw_inbox);
+
+        // Subscribe to the inbox so the server can push notifications here
+        const natsStatus sub_s = natsConnection_Subscribe(
+            &notification_sub_, conn_,
+            inbox_subject_.c_str(), on_notification_message, this);
+        if (sub_s != NATS_OK) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to subscribe to notification inbox: "
+                << natsStatus_GetText(sub_s);
+            notification_sub_ = nullptr;
+            inbox_subject_.clear();
+        } else {
+            BOOST_LOG_SEV(lg(), info)
+                << "Subscribed to notification inbox: " << inbox_subject_;
+        }
+    } else {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to create NATS inbox";
+    }
 }
 
 bool nats_client::is_connected() const noexcept {
@@ -73,6 +99,13 @@ void nats_client::disconnect() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Disconnecting from NATS";
+
+    if (notification_sub_) {
+        natsSubscription_Unsubscribe(notification_sub_);
+        natsSubscription_Destroy(notification_sub_);
+        notification_sub_ = nullptr;
+    }
+    inbox_subject_.clear();
 
     if (conn_) {
         natsConnection_Close(conn_);
@@ -145,6 +178,10 @@ nats_client::send_request_sync(comms::messaging::frame request) {
     return std::move(*frame_result);
 }
 
+std::string nats_client::notification_inbox() const {
+    return inbox_subject_;
+}
+
 std::uint64_t nats_client::bytes_sent() const {
     return 0;
 }
@@ -201,6 +238,45 @@ void nats_client::on_reconnected(natsConnection*, void* closure) {
         cb = self->reconnected_cb_;
     }
     if (cb) cb();
+}
+
+// static
+void nats_client::on_notification_message(natsConnection*, natsSubscription*,
+    natsMsg* msg, void* closure) {
+    auto* self = static_cast<nats_client*>(closure);
+
+    // Copy body before destroying the cnats message
+    const int data_len = natsMsg_GetDataLength(msg);
+    std::vector<std::byte> body;
+    if (data_len > 0) {
+        const auto* data_ptr =
+            reinterpret_cast<const std::byte*>(natsMsg_GetData(msg));
+        body.assign(data_ptr, data_ptr + data_len);
+    }
+    natsMsg_Destroy(msg);
+
+    if (body.empty()) return;
+
+    // Deserialize as a notification_message (raw payload, no ORES frame wrapper)
+    auto notification =
+        comms::messaging::notification_message::deserialize(body);
+    if (!notification) {
+        BOOST_LOG_SEV(self->lg(), warn)
+            << "Failed to deserialize push notification";
+        return;
+    }
+
+    comms::net::notification_callback_t cb;
+    {
+        std::lock_guard lock(self->callbacks_mutex_);
+        cb = self->notification_cb_;
+    }
+
+    if (cb) {
+        cb(notification->event_type, notification->timestamp,
+           notification->entity_ids, notification->tenant_id,
+           notification->pt, notification->payload);
+    }
 }
 
 }

@@ -257,6 +257,11 @@ std::size_t subscription_manager::session_count() const {
     return sessions_.size();
 }
 
+bool subscription_manager::has_session(const session_id& id) const {
+    std::lock_guard lock(mutex_);
+    return sessions_.contains(id);
+}
+
 std::vector<std::string> subscription_manager::get_subscriptions(
     const session_id& id) const {
     std::lock_guard lock(mutex_);

@@ -197,6 +197,14 @@ public:
     [[nodiscard]] std::size_t session_count() const;
 
     /**
+     * @brief Check if a session is registered.
+     *
+     * @param id The session identifier.
+     * @return True if the session is registered.
+     */
+    [[nodiscard]] bool has_session(const session_id& id) const;
+
+    /**
      * @brief Get the event types a session is subscribed to.
      *
      * @param id The session identifier.

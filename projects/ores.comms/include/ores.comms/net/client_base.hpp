@@ -140,6 +140,15 @@ public:
     [[nodiscard]] virtual std::uint64_t last_rtt_ms() const { return 0; }
 
     /**
+     * @brief Returns the NATS inbox subject for push notifications.
+     *
+     * Non-empty only for NATS transports. The server publishes event
+     * notifications to this subject; the client subscribes at connect time.
+     * SSL clients return empty string (notifications arrive on the TCP conn).
+     */
+    [[nodiscard]] virtual std::string notification_inbox() const { return {}; }
+
+    /**
      * @brief Set callback to be invoked when disconnect is detected.
      *
      * @param callback Function to call on disconnect (nullptr to disable)

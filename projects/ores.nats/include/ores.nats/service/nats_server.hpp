@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <memory>
+#include <span>
 #include <string>
 #include <vector>
 #include <cstddef>
@@ -83,6 +84,19 @@ public:
 
     void broadcast_database_status(bool available,
         const std::string& error_message) override;
+
+    /**
+     * @brief Publish raw bytes to a NATS subject.
+     *
+     * Used by the NATS session factory injected into subscription_handler to
+     * deliver serialized notification_message payloads to client inboxes.
+     * Safe to call from any thread.
+     *
+     * @param subject NATS subject (typically a client inbox)
+     * @param data Serialized notification_message bytes
+     */
+    void publish_to_subject(const std::string& subject,
+        std::span<const std::byte> data);
 
     /**
      * @brief Run the server.

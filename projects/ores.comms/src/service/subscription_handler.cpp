@@ -26,8 +26,11 @@ using namespace ores::logging;
 
 subscription_handler::subscription_handler(
     std::shared_ptr<subscription_manager> manager,
-    std::shared_ptr<eventing::service::event_channel_registry> registry)
-    : manager_(std::move(manager)), registry_(std::move(registry)) {
+    std::shared_ptr<eventing::service::event_channel_registry> registry,
+    nats_session_factory_t nats_factory)
+    : manager_(std::move(manager))
+    , registry_(std::move(registry))
+    , nats_factory_(std::move(nats_factory)) {
     BOOST_LOG_SEV(lg(), debug) << "Subscription handler created.";
 }
 
@@ -71,21 +74,36 @@ subscription_handler::handle_subscribe_request(std::span<const std::byte> payloa
 
     BOOST_LOG_SEV(lg(), info)
         << "Processing subscribe request from " << remote_address
-        << " for event type '" << request->event_type << "'";
+        << " for event type '" << request->event_type << "'"
+        << (request->notification_inbox.empty() ? "" :
+            " (inbox: " + request->notification_inbox + ")");
+
+    // For NATS clients: use inbox as session ID and auto-register the session.
+    // For SSL clients: use remote_address (session was registered at handshake).
+    std::string session_id = remote_address;
+    if (!request->notification_inbox.empty() && nats_factory_) {
+        session_id = request->notification_inbox;
+        if (!manager_->has_session(session_id)) {
+            auto cb = nats_factory_(request->notification_inbox);
+            manager_->register_session(session_id, std::move(cb));
+            BOOST_LOG_SEV(lg(), info)
+                << "Auto-registered NATS session for inbox: " << session_id;
+        }
+    }
 
     messaging::subscribe_response response;
 
-    if (manager_->subscribe(remote_address, request->event_type)) {
+    if (manager_->subscribe(session_id, request->event_type)) {
         response.success = true;
         response.message = "Successfully subscribed to " + request->event_type;
         BOOST_LOG_SEV(lg(), info)
-            << "Subscribe succeeded for " << remote_address
+            << "Subscribe succeeded for " << session_id
             << " to '" << request->event_type << "'";
     } else {
         response.success = false;
         response.message = "Failed to subscribe - session not registered";
         BOOST_LOG_SEV(lg(), warn)
-            << "Subscribe failed for " << remote_address
+            << "Subscribe failed for " << session_id
             << " to '" << request->event_type << "' - session not registered";
     }
 
@@ -108,19 +126,22 @@ subscription_handler::handle_unsubscribe_request(std::span<const std::byte> payl
         << "Processing unsubscribe request from " << remote_address
         << " for event type '" << request->event_type << "'";
 
+    const std::string session_id = request->notification_inbox.empty()
+        ? remote_address : request->notification_inbox;
+
     messaging::unsubscribe_response response;
 
-    if (manager_->unsubscribe(remote_address, request->event_type)) {
+    if (manager_->unsubscribe(session_id, request->event_type)) {
         response.success = true;
         response.message = "Successfully unsubscribed from " + request->event_type;
         BOOST_LOG_SEV(lg(), info)
-            << "Unsubscribe succeeded for " << remote_address
+            << "Unsubscribe succeeded for " << session_id
             << " from '" << request->event_type << "'";
     } else {
         response.success = false;
         response.message = "Not subscribed to " + request->event_type;
         BOOST_LOG_SEV(lg(), debug)
-            << "Unsubscribe for " << remote_address
+            << "Unsubscribe for " << session_id
             << " from '" << request->event_type << "' - was not subscribed";
     }
 

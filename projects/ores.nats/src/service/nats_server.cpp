@@ -57,6 +57,22 @@ void nats_server::register_handler(comms::messaging::message_type_range range,
     dispatcher_->register_handler(range, std::move(handler));
 }
 
+void nats_server::publish_to_subject(const std::string& subject,
+    std::span<const std::byte> data) {
+    if (!conn_) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot publish to subject: not connected";
+        return;
+    }
+    const natsStatus s = natsConnection_Publish(conn_,
+        subject.c_str(),
+        data.data(),
+        static_cast<int>(data.size()));
+    if (s != NATS_OK) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to publish to subject '" << subject
+                                  << "': " << natsStatus_GetText(s);
+    }
+}
+
 void nats_server::broadcast_database_status(bool available,
     const std::string& error_message) {
     // No persistent client connections in NATS mode; DB status changes are

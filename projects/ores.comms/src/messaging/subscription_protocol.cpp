@@ -33,6 +33,7 @@ using ores::utility::serialization::writer;
 std::vector<std::byte> subscribe_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_string(buffer, event_type);
+    writer::write_string(buffer, notification_inbox);
     return buffer;
 }
 
@@ -44,11 +45,22 @@ subscribe_request::deserialize(std::span<const std::byte> data) {
     if (!event_type) return std::unexpected(event_type.error());
     req.event_type = *event_type;
 
+    // notification_inbox is optional (backward compat: old senders omit it)
+    if (!data.empty()) {
+        auto inbox = reader::read_string(data);
+        if (!inbox) return std::unexpected(inbox.error());
+        req.notification_inbox = *inbox;
+    }
+
     return req;
 }
 
 std::ostream& operator<<(std::ostream& s, const subscribe_request& v) {
-    return s << "subscribe_request{event_type=" << v.event_type << "}";
+    s << "subscribe_request{event_type=" << v.event_type;
+    if (!v.notification_inbox.empty()) {
+        s << ", notification_inbox=" << v.notification_inbox;
+    }
+    return s << "}";
 }
 
 // subscribe_response
@@ -85,6 +97,7 @@ std::ostream& operator<<(std::ostream& s, const subscribe_response& v) {
 std::vector<std::byte> unsubscribe_request::serialize() const {
     std::vector<std::byte> buffer;
     writer::write_string(buffer, event_type);
+    writer::write_string(buffer, notification_inbox);
     return buffer;
 }
 
@@ -96,11 +109,22 @@ unsubscribe_request::deserialize(std::span<const std::byte> data) {
     if (!event_type) return std::unexpected(event_type.error());
     req.event_type = *event_type;
 
+    // notification_inbox is optional (backward compat: old senders omit it)
+    if (!data.empty()) {
+        auto inbox = reader::read_string(data);
+        if (!inbox) return std::unexpected(inbox.error());
+        req.notification_inbox = *inbox;
+    }
+
     return req;
 }
 
 std::ostream& operator<<(std::ostream& s, const unsubscribe_request& v) {
-    return s << "unsubscribe_request{event_type=" << v.event_type << "}";
+    s << "unsubscribe_request{event_type=" << v.event_type;
+    if (!v.notification_inbox.empty()) {
+        s << ", notification_inbox=" << v.notification_inbox;
+    }
+    return s << "}";
 }
 
 // unsubscribe_response

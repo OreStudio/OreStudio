@@ -582,6 +582,9 @@ private:
     // True when client is externally managed (attached via attach_client).
     // In this mode, disconnect() will not call client_->disconnect().
     bool external_client_{false};
+
+    // Active subscriptions for NATS transport (event_adapter_ is null in this case).
+    std::set<std::string> nats_subscriptions_;
 };
 
 /**

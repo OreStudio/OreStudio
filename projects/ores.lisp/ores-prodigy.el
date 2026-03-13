@@ -24,19 +24,17 @@
 ;;; Code:
 (require 'project)
 (require 'cl-lib)
+(require 'json)
+(require 'transient)
 (require 'prodigy)
-
-(setq prodigy-list-format
-      [("Marked" 6 t :right-align t)
-       ("Name" 35 t)
-       ("Port" 8 t)
-       ("Env" 8 t)
-       ("Config" 8 t)
-       ("Status" 10 t)])
 
 (autoload 'prodigy-define-tag "prodigy")
 (autoload 'prodigy-define-service "prodigy")
 (defvar prodigy-services)
+
+;; =============================================================================
+;; Checkout identification
+;; =============================================================================
 
 (defconst ores/checkout-label
   (let* ((pr (project-current t))
@@ -50,426 +48,335 @@
 (defconst ores/checkout-tag (intern ores/checkout-label)
   "The tag symbol for the current checkout.")
 
-(defun ores/prodigy ()
-  "Open Prodigy buffer for current project's checkout label."
-  (interactive)
-  (let ((label ores/checkout-label))
-    (if label
-        (cunene/prodigy-filter-by-tag (intern label))
-      (user-error "Not in an OreStudio project?"))))
+(defconst ores/project-root
+  (expand-file-name (project-root (project-current t)))
+  "The root directory of the current project.")
 
-;; Optional: bind to a key
-(define-key global-map (kbd "C-x p 8") #'ores/prodigy)
+;; =============================================================================
+;; CMake preset parsing
+;; =============================================================================
 
-;; Remove existing services for THIS checkout only, to allow reloading without
-;; duplicates while preserving services from other checkouts.
-(when (boundp 'prodigy-services)
-  (setq prodigy-services
-        (cl-delete-if (lambda (service)
-                        (memq ores/checkout-tag (plist-get service :tags)))
-                      prodigy-services)))
+(defun ores/parse-cmake-presets ()
+  "Return list of non-hidden configure preset names from CMakePresets.json."
+  (let* ((json-object-type 'alist)
+         (json-array-type 'list)
+         (data (with-temp-buffer
+                 (insert-file-contents (concat ores/project-root "CMakePresets.json"))
+                 (json-read)))
+         (presets (alist-get 'configurePresets data)))
+    (delq nil
+          (mapcar (lambda (p)
+                    (unless (eq (alist-get 'hidden p) t)
+                      (alist-get 'name p)))
+                  presets))))
+
+;; =============================================================================
+;; Preset utilities
+;; =============================================================================
+
+(defun ores/preset-build-type (preset)
+  "Return 'debug or 'release from PRESET name string."
+  (cond ((string-match-p "debug" preset) 'debug)
+        ((string-match-p "release" preset) 'release)
+        (t 'debug)))
+
+(defun ores/preset-code (preset)
+  "Return 3-char code for PRESET, e.g. 'cdn' for linux-clang-debug-ninja."
+  (let* ((parts (split-string (replace-regexp-in-string "^linux-" "" preset) "-"))
+         (compiler (pcase (car parts) ("clang" "c") ("gcc" "g") (_ "?")))
+         (build    (cond ((member "debug"   parts) "d")
+                         ((member "release" parts) "r")
+                         (t "?")))
+         (tool     (cond ((member "ninja" parts) "n")
+                         ((member "make"  parts) "m")
+                         (t "?"))))
+    (concat compiler build tool)))
+
+(defun ores/preset-output-path (preset)
+  "Return path to build output directory for PRESET."
+  (concat ores/project-root "build/output/" preset))
+
+(defun ores/preset-publish-path (preset)
+  "Return path to publish directory for PRESET."
+  (concat (ores/preset-output-path preset) "/publish"))
+
+(defun ores/preset-wt-resources (preset)
+  "Return path to Wt resources directory for PRESET."
+  (concat (ores/preset-output-path preset)
+          "/vcpkg_installed/x64-linux/share/Wt/resources"))
+
+;; =============================================================================
+;; Port allocation
+;; =============================================================================
 
 (defconst ores/port-bases
-  '( ("remote" . 50000)
-     ("local1" . 51000)
-     ("local2" . 52000)
-     ("local3" . 53000)
-     ("local4" . 54000)
-     ("local5" . 55000))
+  '(("remote" . 50000)
+    ("local1" . 51000)
+    ("local2" . 52000)
+    ("local3" . 53000)
+    ("local4" . 54000)
+    ("local5" . 55000))
   "Alist mapping checkout labels to base port numbers.")
 
 (defun ores/get-port (service-type build-type)
-  "Return the port for SERVICE-TYPE and BUILD-TYPE in the current checkout.
-SERVICE-TYPE is one of 'http, 'wt, or 'binary.
-BUILD-TYPE is one of 'debug or 'release."
+  "Return port for SERVICE-TYPE and BUILD-TYPE in the current checkout."
   (let* ((base (alist-get ores/checkout-label ores/port-bases 50000 nil #'string=))
          (offset (cond
-                  ((and (eq service-type 'http) (eq build-type 'debug)) 0)
-                  ((and (eq service-type 'http) (eq build-type 'release)) 1)
-                  ((and (eq service-type 'wt) (eq build-type 'debug)) 2)
-                  ((and (eq service-type 'wt) (eq build-type 'release)) 3)
-                  ((and (eq service-type 'binary) (eq build-type 'debug)) 4)
-                  ((and (eq service-type 'binary) (eq build-type 'release)) 5)
+                  ((and (eq service-type 'http)            (eq build-type 'debug))   0)
+                  ((and (eq service-type 'http)            (eq build-type 'release)) 1)
+                  ((and (eq service-type 'wt)              (eq build-type 'debug))   2)
+                  ((and (eq service-type 'wt)              (eq build-type 'release)) 3)
+                  ((and (eq service-type 'binary)          (eq build-type 'debug))   4)
+                  ((and (eq service-type 'binary)          (eq build-type 'release)) 5)
                   (t 0))))
     (+ base offset)))
 
-(defun ores--get-build-output-path (build-type)
-  "Return the path to the build output directory for BUILD-TYPE.
-BUILD-TYPE should be either 'debug or 'release.
-This is an internal helper function."
-  (let* ((pr (project-current t))
-         (root (expand-file-name (project-root pr)))
-         (build-dir (if (eq build-type 'release)
-                        "linux-clang-release-make"
-                      "linux-clang-debug-make")))
-    (concat root "build/output/" build-dir)))
-
-(defun ores/path-to-publish (build-type)
-  "Return the path to the publish directory for BUILD-TYPE.
-BUILD-TYPE should be either 'debug or 'release."
-  (concat (ores--get-build-output-path build-type) "/publish"))
-
-(defun ores/path-to-wt-resources (build-type)
-  "Return the path to the Wt resources directory for BUILD-TYPE.
-BUILD-TYPE should be either 'debug or 'release."
-  (concat (ores--get-build-output-path build-type)
-          "/vcpkg_installed/x64-linux/share/Wt/resources"))
+;; =============================================================================
+;; Database and environment setup
+;; =============================================================================
 
 (defconst ores/database-name
   (concat "ores_dev_" ores/checkout-label)
-  "Database name for ORES services.
-Automatically derived from the checkout label (e.g., ores_dev_local2).
-Each environment gets its own isolated database.")
+  "Database name derived from the checkout label.")
 
 (defconst ores/database-users
-  '(("SERVICE" . "ores_comms_user")
+  '(("SERVICE"     . "ores_comms_user")
     ("HTTP_SERVER" . "ores_http_user")
-    ("WT" . "ores_wt_user"))
-  "Alist mapping application prefixes to their database users.
-Each service has its own dedicated database user for fine-grained access control.")
+    ("WT"          . "ores_wt_user"))
+  "Alist mapping application prefixes to database users.")
 
 (defun ores/get-database-user (app-prefix)
-  "Get the database user for APP-PREFIX.
-Returns the service-specific user or falls back to ores_cli_user."
+  "Get the database user for APP-PREFIX."
   (or (cdr (assoc app-prefix ores/database-users))
       "ores_cli_user"))
 
 (defun ores/setup-environment (app-prefix)
-  "Set up environment variables for ORES services.
-APP-PREFIX is the application prefix (e.g., \"SERVICE\", \"HTTP_SERVER\", \"WT\").
-Retrieves database password from auth-source using the service-specific user
-and combines with configured database name."
+  "Set up environment variables for APP-PREFIX."
   (let* ((db-user (ores/get-database-user app-prefix))
          (pwd (auth-source-pick-first-password
                :host "localhost"
                :user db-user)))
     (list
-     (list (concat "ORES_" app-prefix "_DB_USER") db-user)
+     (list (concat "ORES_" app-prefix "_DB_USER")     db-user)
      (list (concat "ORES_" app-prefix "_DB_PASSWORD") pwd)
      (list (concat "ORES_" app-prefix "_DB_DATABASE") ores/database-name))))
 
-(prodigy-define-tag :name 'ores)
-(prodigy-define-tag :name 'ui)
-(prodigy-define-tag :name 'debug)
-(prodigy-define-tag :name 'release)
-(prodigy-define-tag :name ores/checkout-tag)
-
-(prodigy-define-tag :name 'comms-service)
-
 (defun ores/setup-http-server-environment ()
-  "Set up environment variables for the HTTP server.
-Includes database credentials and JWT secret from auth-source."
+  "Set up environment variables for the HTTP server."
   (let ((jwt-secret (auth-source-pick-first-password
                      :host "ores-jwt"
                      :user "http-server")))
     `(("ORES_HTTP_SERVER_JWT_SECRET" ,jwt-secret)
       ,@(ores/setup-environment "HTTP_SERVER"))))
 
+;; =============================================================================
+;; Tags
+;; =============================================================================
+
+(prodigy-define-tag :name 'ores)
+(prodigy-define-tag :name 'ui)
+(prodigy-define-tag :name 'debug)
+(prodigy-define-tag :name 'release)
+(prodigy-define-tag :name ores/checkout-tag)
+(prodigy-define-tag :name 'comms-service)
 (prodigy-define-tag :name 'http-server)
 (prodigy-define-tag :name 'wt-server)
 
-(defun ores/service-name (base config)
-  "Generate unique service name from BASE, CONFIG (debug/release) and checkout."
-  (let ((cfg-char (if (eq config 'debug) "D" "R")))
-    (format "%s [%s:%s]" base cfg-char ores/checkout-label)))
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags `(ores ui debug ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--compression-enabled")
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags `(ores ui release ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT Blue" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Debug" "--instance-color" "2196F3")
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags `(ores ui debug ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT Blue" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.blue.log" "--compression-enabled" "--instance-name" "Blue Release" "--instance-color" "2196F3")
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags `(ores ui release ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT Red" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Debug" "--instance-color" "F44336")
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags `(ores ui debug ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT Red" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.red.log" "--compression-enabled" "--instance-name" "Red Release" "--instance-color" "F44336")
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags `(ores ui release ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT Green" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Debug" "--instance-color" "4CAF50")
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.qt")
-  :tags `(ores ui debug ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio QT Green" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log" "--log-filename" "ores.qt.green.log" "--compression-enabled" "--instance-name" "Green Release" "--instance-color" "4CAF50")
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.qt")
-  :tags `(ores ui release ,ores/checkout-tag)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio Comms Service" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--port" ,(number-to-string (ores/get-port 'binary 'debug)))
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.comms.service")
-  :tags `(ores debug comms-service ,ores/checkout-tag)
-  :env (ores/setup-environment "SERVICE")
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio Comms Service" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--port" ,(number-to-string (ores/get-port 'binary 'release)))
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.comms.service")
-  :tags `(ores release comms-service ,ores/checkout-tag)
-  :env (ores/setup-environment "SERVICE")
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio HTTP Server" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--port" ,(number-to-string (ores/get-port 'http 'debug)))
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.http.server")
-  :tags `(ores debug http-server ,ores/checkout-tag)
-  :env (ores/setup-http-server-environment)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio HTTP Server" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--port" ,(number-to-string (ores/get-port 'http 'release)))
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.http.server")
-  :tags `(ores release http-server ,ores/checkout-tag)
-  :env (ores/setup-http-server-environment)
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio WT Server" 'debug)
-  :cwd (concat (ores/path-to-publish 'debug) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--http-address" "0.0.0.0" "--docroot" "."
-          "--http-port" ,(number-to-string (ores/get-port 'wt 'debug)))
-  :command (concat (ores/path-to-publish 'debug) "/bin/ores.wt")
-  :tags `(ores debug wt-server ,ores/checkout-tag)
-  :env `(("WT_RESOURCES_DIR" ,(ores/path-to-wt-resources 'debug))
-         ,@(ores/setup-environment "WT"))
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
-(prodigy-define-service
-  :name (ores/service-name "ORE Studio WT Server" 'release)
-  :cwd (concat (ores/path-to-publish 'release) "/bin")
-  :args `("--log-enabled" "--log-level" "trace" "--log-directory" "../log"
-          "--http-address" "0.0.0.0" "--docroot" "."
-          "--http-port" ,(number-to-string (ores/get-port 'wt 'release)))
-  :command (concat (ores/path-to-publish 'release) "/bin/ores.wt")
-  :tags `(ores release wt-server ,ores/checkout-tag)
-  :env `(("WT_RESOURCES_DIR" ,(ores/path-to-wt-resources 'release))
-         ,@(ores/setup-environment "WT"))
-  :stop-signal 'sigint
-  :kill-process-buffer-on-stop t)
-
 ;; =============================================================================
-;; Color-code services by checkout in prodigy buffer
+;; Dynamic service registration
 ;; =============================================================================
 
-;; Clean up any stale hooks from previous loads
-(remove-hook 'prodigy-mode-hook #'ores/prodigy-setup-font-lock)
-(remove-hook 'prodigy-mode-hook #'ores/prodigy-add-font-lock)
+(defun ores/service-name (base preset)
+  "Generate unique service name from BASE and PRESET.
+Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
+  (format "%s [%s:%s]" base ores/checkout-label (ores/preset-code preset)))
 
-;; Environment faces - proced-inspired color scheme
-;; Using face-spec-set with face-defface-spec to ensure colors update on reload
-(defface ores/prodigy-local1-face '((t)) "Face for local1." :group 'ores)
-(face-spec-set 'ores/prodigy-local1-face '((t :foreground "#8a2be2")) 'face-defface-spec)
+(defun ores/define-services-for-preset (preset)
+  "Register all prodigy services for PRESET."
+  (let* ((build-type  (ores/preset-build-type preset))
+         (build-tag   (if (eq build-type 'debug) 'debug 'release))
+         (preset-tag  (intern preset))
+         (bin         (concat (ores/preset-publish-path preset) "/bin"))
+         (common-tags `(ores ,build-tag ,ores/checkout-tag ,preset-tag))
+         (common-args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")))
+    (prodigy-define-tag :name preset-tag)
 
-(defface ores/prodigy-local2-face '((t)) "Face for local2." :group 'ores)
-(face-spec-set 'ores/prodigy-local2-face '((t :foreground "#5085ef")) 'face-defface-spec)
+    ;; QT
+    (prodigy-define-service
+      :name    (ores/service-name "ORE Studio QT" preset)
+      :cwd     bin
+      :command (concat bin "/ores.qt")
+      :args    `(,@common-args "--compression-enabled")
+      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+      :stop-signal 'sigint
+      :kill-process-buffer-on-stop t)
 
-(defface ores/prodigy-local3-face '((t)) "Face for local3." :group 'ores)
-(face-spec-set 'ores/prodigy-local3-face '((t :foreground "#ded93e")) 'face-defface-spec)
+    ;; QT Blue
+    (prodigy-define-service
+      :name    (ores/service-name "ORE Studio QT Blue" preset)
+      :cwd     bin
+      :command (concat bin "/ores.qt")
+      :args    `(,@common-args "--compression-enabled"
+                 "--log-filename" "ores.qt.blue.log"
+                 "--instance-name" "Blue" "--instance-color" "2196F3")
+      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+      :stop-signal 'sigint
+      :kill-process-buffer-on-stop t)
 
-(defface ores/prodigy-local4-face '((t)) "Face for local4." :group 'ores)
-(face-spec-set 'ores/prodigy-local4-face '((t :foreground "#6d5cc3")) 'face-defface-spec)
+    ;; QT Red
+    (prodigy-define-service
+      :name    (ores/service-name "ORE Studio QT Red" preset)
+      :cwd     bin
+      :command (concat bin "/ores.qt")
+      :args    `(,@common-args "--compression-enabled"
+                 "--log-filename" "ores.qt.red.log"
+                 "--instance-name" "Red" "--instance-color" "F44336")
+      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+      :stop-signal 'sigint
+      :kill-process-buffer-on-stop t)
 
-(defface ores/prodigy-local5-face '((t)) "Face for local5." :group 'ores)
-(face-spec-set 'ores/prodigy-local5-face '((t :foreground "#1e90ff")) 'face-defface-spec)
+    ;; QT Green
+    (prodigy-define-service
+      :name    (ores/service-name "ORE Studio QT Green" preset)
+      :cwd     bin
+      :command (concat bin "/ores.qt")
+      :args    `(,@common-args "--compression-enabled"
+                 "--log-filename" "ores.qt.green.log"
+                 "--instance-name" "Green" "--instance-color" "4CAF50")
+      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+      :stop-signal 'sigint
+      :kill-process-buffer-on-stop t)
 
-(defface ores/prodigy-remote-face '((t)) "Face for remote." :group 'ores)
-(face-spec-set 'ores/prodigy-remote-face '((t :foreground "DeepSkyBlue")) 'face-defface-spec)
+    ;; Comms Service
+    (prodigy-define-service
+      :name    (ores/service-name "ORE Studio Comms Service" preset)
+      :cwd     bin
+      :command (concat bin "/ores.comms.service")
+      :args    `(,@common-args
+                 "--nats-url" "nats://localhost:4222")
+      :tags    `(,@common-tags comms-service)
+      :env     (ores/setup-environment "SERVICE")
+      :stop-signal 'sigint
+      :kill-process-buffer-on-stop t)
 
-;; Configuration faces - proced-inspired
-(defface ores/prodigy-debug-face '((t)) "Face for debug." :group 'ores)
-(face-spec-set 'ores/prodigy-debug-face '((t :foreground "#5085ef")) 'face-defface-spec)
+    ;; HTTP Server
+    (prodigy-define-service
+      :name    (ores/service-name "ORE Studio HTTP Server" preset)
+      :cwd     bin
+      :command (concat bin "/ores.http.server")
+      :args    `(,@common-args
+                 "--port" ,(number-to-string (ores/get-port 'http build-type)))
+      :tags    `(,@common-tags http-server)
+      :env     (ores/setup-http-server-environment)
+      :stop-signal 'sigint
+      :kill-process-buffer-on-stop t)
 
-(defface ores/prodigy-release-face '((t)) "Face for release." :group 'ores)
-(face-spec-set 'ores/prodigy-release-face '((t :foreground "#5085bf")) 'face-defface-spec)
+    ;; WT Server
+    (prodigy-define-service
+      :name    (ores/service-name "ORE Studio WT Server" preset)
+      :cwd     bin
+      :command (concat bin "/ores.wt")
+      :args    `(,@common-args
+                 "--http-address" "0.0.0.0" "--docroot" "."
+                 "--http-port" ,(number-to-string (ores/get-port 'wt build-type)))
+      :tags    `(,@common-tags wt-server)
+      :env     `(("WT_RESOURCES_DIR" ,(ores/preset-wt-resources preset))
+                 ,@(ores/setup-environment "WT"))
+      :stop-signal 'sigint
+      :kill-process-buffer-on-stop t)))
 
-;; Name and port faces - proced-inspired
-(defface ores/prodigy-name-face '((t)) "Face for name." :group 'ores)
-(face-spec-set 'ores/prodigy-name-face '((t :foreground "DeepSkyBlue")) 'face-defface-spec)
+(defun ores/remove-preset-services (preset)
+  "Remove all prodigy services registered for PRESET."
+  (let ((preset-tag (intern preset)))
+    (setq prodigy-services
+          (cl-delete-if (lambda (svc)
+                          (memq preset-tag (plist-get svc :tags)))
+                        prodigy-services))))
 
-(defface ores/prodigy-port-face '((t)) "Face for port." :group 'ores)
-(face-spec-set 'ores/prodigy-port-face '((t :foreground "#40e0d0")) 'face-defface-spec)
+;; =============================================================================
+;; Active preset tracking
+;; =============================================================================
 
-;; Force recalculation of all faces
-(dolist (face '(ores/prodigy-local1-face ores/prodigy-local2-face ores/prodigy-local3-face
-                ores/prodigy-local4-face ores/prodigy-local5-face ores/prodigy-remote-face
-                ores/prodigy-debug-face ores/prodigy-release-face
-                ores/prodigy-name-face ores/prodigy-port-face))
-  (face-spec-recalc face nil))
+(defun ores/active-presets ()
+  "Return list of preset names currently registered as services for this checkout."
+  (let (active)
+    (dolist (preset (ores/parse-cmake-presets))
+      (when (cl-find-if (lambda (svc)
+                          (memq (intern preset) (plist-get svc :tags)))
+                        prodigy-services)
+        (push preset active)))
+    (nreverse active)))
 
-(defvar ores/prodigy-env-faces
-  '((local1 . ores/prodigy-local1-face)
-    (local2 . ores/prodigy-local2-face)
-    (local3 . ores/prodigy-local3-face)
-    (local4 . ores/prodigy-local4-face)
-    (local5 . ores/prodigy-local5-face)
-    (remote . ores/prodigy-remote-face))
-  "Alist mapping environment tags to faces.")
+;; =============================================================================
+;; Interactive commands
+;; =============================================================================
 
-(defvar ores/prodigy-config-faces
-  '((debug . ores/prodigy-debug-face)
-    (release . ores/prodigy-release-face))
-  "Alist mapping configuration tags to faces.")
+(defun ores/add-presets-interactive ()
+  "Interactively select presets to add services for."
+  (interactive)
+  (let* ((all       (ores/parse-cmake-presets))
+         (active    (ores/active-presets))
+         (available (cl-set-difference all active :test #'string=)))
+    (if (null available)
+        (user-error "All available presets are already active")
+      (let ((choices (completing-read-multiple "Add presets: " available nil t)))
+        (dolist (preset choices)
+          (ores/define-services-for-preset preset))
+        (message "Added services for: %s" (mapconcat #'identity choices ", "))))))
 
-(defun ores/prodigy-get-env (service)
-  "Extract environment (local1, local2, etc.) from SERVICE tags."
-  (let ((tags (plist-get service :tags)))
-    (cl-find-if (lambda (tag)
-                  (assq tag ores/prodigy-env-faces))
-                tags)))
+(defun ores/remove-presets-interactive ()
+  "Interactively select presets to remove services for."
+  (interactive)
+  (let ((active (ores/active-presets)))
+    (if (null active)
+        (user-error "No active presets to remove")
+      (let ((choices (completing-read-multiple "Remove presets: " active nil t)))
+        (dolist (preset choices)
+          (ores/remove-preset-services preset))
+        (message "Removed services for: %s" (mapconcat #'identity choices ", "))))))
 
-(defun ores/prodigy-get-config (service)
-  "Extract configuration (debug, release) from SERVICE tags."
-  (let ((tags (plist-get service :tags)))
-    (cond ((memq 'debug tags) 'debug)
-          ((memq 'release tags) 'release)
-          (t nil))))
+(defun ores/prodigy ()
+  "Open Prodigy buffer filtered to the current checkout."
+  (interactive)
+  (cunene/prodigy-filter-by-tag ores/checkout-tag))
 
-(defun ores/prodigy-colorize-env (env)
-  "Return colorized string for ENV."
-  (if env
-      (let ((face (alist-get env ores/prodigy-env-faces)))
-        (propertize (symbol-name env) 'face face))
-    ""))
+;; =============================================================================
+;; Transient menu
+;; =============================================================================
 
-(defun ores/prodigy-colorize-config (config)
-  "Return colorized string for CONFIG."
-  (if config
-      (let ((face (alist-get config ores/prodigy-config-faces)))
-        (propertize (symbol-name config) 'face face))
-    ""))
+(defun ores/services-menu--header ()
+  "Return a dynamic header string showing the currently active presets."
+  (let ((active (ores/active-presets)))
+    (if active
+        (format "Active [%s]: %s"
+                ores/checkout-label
+                (mapconcat #'identity active ", "))
+      (format "No active presets [%s]" ores/checkout-label))))
 
-(defun ores/prodigy-get-port (service)
-  "Extract port number from SERVICE args.
-Looks for --port or --http-port arguments and returns the following value.
-Returns \"-\" if no port is found."
-  (let ((args (plist-get service :args)))
-    (if args
-        (let ((port-idx (or (cl-position "--port" args :test #'string=)
-                            (cl-position "--http-port" args :test #'string=))))
-          (if port-idx
-              (nth (1+ port-idx) args)
-            "N/A"))
-      "N/A")))
+(transient-define-prefix ores/services-menu ()
+  "Manage ORE Studio prodigy services."
+  [:description ores/services-menu--header
+   ("a" "Add services"    ores/add-presets-interactive)
+   ("r" "Remove services" ores/remove-presets-interactive)
+   ("s" "Show Prodigy"    ores/prodigy)])
 
-(defun ores/prodigy-normalize-name (name)
-  "Normalize NAME to prodigy's internal ID format.
-Converts to lowercase and replaces spaces with hyphens."
-  (downcase (replace-regexp-in-string " " "-" name)))
+(define-key global-map (kbd "C-x p 8") #'ores/services-menu)
 
-(defun ores/prodigy-find-service-by-id (id)
-  "Find service plist by ID (normalized name)."
-  (cl-find-if (lambda (s)
-                (string= (ores/prodigy-normalize-name (plist-get s :name)) id))
-              prodigy-services))
+;; =============================================================================
+;; Startup: restore prodigy defaults and clean stale services
+;; =============================================================================
 
-(defun ores/prodigy-strip-name-suffix (name)
-  "Strip the [D:env] or [R:env] suffix from NAME for display."
-  (if (string-match "\\(.+\\) \\[.+\\]$" name)
-      (match-string 1 name)
-    name))
+;; Restore prodigy-list-format and prodigy-list-entries to their defaults.
+;; A previous version of this file overrode both; resetting here ensures a
+;; clean state after reloading without needing an Emacs restart.
+(setq prodigy-list-format
+      [("Marked" 6 t :right-align t)
+       ("Name" 35 t)
+       ("Status" 15 t)
+       ("Tags" 25 nil)])
 
-;; Custom column functions for our extended format
-;; These use propertize like prodigy-status-col does
-
-(defun ores/prodigy-name-col (service)
-  "Return SERVICE name column with suffix stripped and color."
-  (let ((name (ores/prodigy-strip-name-suffix (plist-get service :name))))
-    (propertize name 'face 'ores/prodigy-name-face)))
-
-(defun ores/prodigy-port-col (service)
-  "Return SERVICE port column with color."
-  (let ((port (ores/prodigy-get-port service)))
-    (propertize port 'face 'ores/prodigy-port-face)))
-
-(defun ores/prodigy-env-col (service)
-  "Return SERVICE env column with color."
-  (let ((env (ores/prodigy-get-env service)))
-    (if env
-        (let ((face (alist-get env ores/prodigy-env-faces)))
-          (propertize (symbol-name env) 'face face))
-      "")))
-
-(defun ores/prodigy-config-col (service)
-  "Return SERVICE config column with color."
-  (let ((config (ores/prodigy-get-config service)))
-    (if config
-        (let ((face (alist-get config ores/prodigy-config-faces)))
-          (propertize (symbol-name config) 'face face))
-      "")))
-
-;; Override prodigy-list-entries to add our custom columns
-;; Uses same pattern as original prodigy to preserve text properties
 (defun prodigy-list-entries ()
-  "Create entries for the service list with ORES custom columns."
+  "Create the entries for the service list."
   (-map
    (lambda (service)
      (list
@@ -478,12 +385,18 @@ Converts to lowercase and replaces spaces with hyphens."
              (--map
               (funcall it service)
               '(prodigy-marked-col
-                ores/prodigy-name-col
-                ores/prodigy-port-col
-                ores/prodigy-env-col
-                ores/prodigy-config-col
-                prodigy-status-col)))))
+                prodigy-name-col
+                prodigy-status-col
+                prodigy-tags-col)))))
    (prodigy-services)))
+
+;; Remove any services for this checkout registered in a prior load,
+;; so reloading the file does not produce duplicates.
+(when (boundp 'prodigy-services)
+  (setq prodigy-services
+        (cl-delete-if (lambda (svc)
+                        (memq ores/checkout-tag (plist-get svc :tags)))
+                      prodigy-services)))
 
 (provide 'ores-prodigy)
 ;;; ores-prodigy.el ends here

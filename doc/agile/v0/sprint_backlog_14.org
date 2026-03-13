@@ -816,6 +816,14 @@ classes.
 If a user changes an entity but does not save it, we should alert the user.
 Also, we probably should add a cancel button to all detail dialogs.
 
+*** CANCELLED Hook up broker and comms service                         :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-12 Thu 23:11]--[2026-03-12 Thu 23:58] =>  0:47
+    :END:
+
+We have introduced the broker but we did not validate that the infrastructure
+works as expected.
+
 *** STARTED Add trade import mapping dialog to Qt UI                   :code:
     :LOGBOOK:
     CLOCK: [2026-03-01 Sun 10:52]--[2026-03-01 Sun 13:41] =>  2:49
@@ -847,13 +855,14 @@ Acceptance criteria:
 - Successful import creates trades in the selected book.
 - Trades appear in the trade list after import.
 
-*** STARTED Hook up broker and comms service                           :code:
+*** STARTED Implement NATS support                                     :code:
     :LOGBOOK:
-    CLOCK: [2026-03-12 Thu 23:11]--[2026-03-12 Thu 23:58] =>  0:47
+    CLOCK: [2026-03-13 Fri 11:24]
+    CLOCK: [2026-03-13 Fri 11:15]--[2026-03-13 Fri 11:24] =>  0:09
+    CLOCK: [2026-03-13 Fri 09:30]--[2026-03-13 Fri 11:15] =>  1:45
     :END:
 
-We have introduced the broker but we did not validate that the infrastructure
-works as expected.
+NNG seems like a lot of work. Let's try NATS first.
 
 *** Improvements to detail dialogs                                    :code:
 

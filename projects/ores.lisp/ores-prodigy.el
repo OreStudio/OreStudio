@@ -104,8 +104,8 @@ This is an internal helper function."
   (let* ((pr (project-current t))
          (root (expand-file-name (project-root pr)))
          (build-dir (if (eq build-type 'release)
-                        "linux-clang-release"
-                      "linux-clang-debug")))
+                        "linux-clang-release-make"
+                      "linux-clang-debug-make")))
     (concat root "build/output/" build-dir)))
 
 (defun ores/path-to-publish (build-type)

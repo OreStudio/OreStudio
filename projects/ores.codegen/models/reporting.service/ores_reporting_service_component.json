@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "reporting.service",
+    "full_name": "ores.reporting.service",
+    "brief": "Reporting service",
+    "description": "Standalone NATS microservice hosting reporting handlers: report type definitions, report definitions, report instances, and concurrency policies."
+  }
+}

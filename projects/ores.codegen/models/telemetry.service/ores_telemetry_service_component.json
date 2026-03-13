@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "telemetry.service",
+    "full_name": "ores.telemetry.service",
+    "brief": "Telemetry and metrics streaming service",
+    "description": "Standalone NATS microservice hosting telemetry handlers: system metrics collection, distributed tracing, and log record streaming to clients."
+  }
+}

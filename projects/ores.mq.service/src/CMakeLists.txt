@@ -16,9 +16,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-find_package(cnats CONFIG REQUIRED)
-
-set(name "ores.nats")
+set(name "ores.mq.service")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -38,12 +36,14 @@ target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
-    PUBLIC
-        cnats::nats_static
-        ores.comms.lib
-        Boost::program_options
     PRIVATE
+        ores.database.lib
+        ores.comms.lib
         ores.utility.lib
+        sqlgen::sqlgen
+        faker-cxx::faker-cxx
+        libfort::fort
         Boost::boost)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

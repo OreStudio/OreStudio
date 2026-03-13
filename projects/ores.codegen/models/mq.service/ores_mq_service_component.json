@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "mq.service",
+    "full_name": "ores.mq.service",
+    "brief": "Message queue service",
+    "description": "Standalone NATS microservice hosting message queue handlers: pgmq queue management, message publishing and consuming, and queue event bridging to NATS subjects."
+  }
+}

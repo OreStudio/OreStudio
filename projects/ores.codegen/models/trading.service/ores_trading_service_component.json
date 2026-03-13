@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "trading.service",
+    "full_name": "ores.trading.service",
+    "brief": "Trade booking and lifecycle service",
+    "description": "Standalone NATS microservice hosting trading handlers: trade booking, FSM-enforced status transitions, activity type taxonomy, and temporal versioning."
+  }
+}

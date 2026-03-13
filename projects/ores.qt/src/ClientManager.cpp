@@ -23,7 +23,6 @@
 #include <QFuture>
 #include <QThreadPool>
 #include <QTimeZone>
-#include "ores.comms/net/client.hpp"
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/eventing/connection_events.hpp"
@@ -411,51 +410,21 @@ LoginResult ClientManager::login(const std::string& username, const std::string&
         bytes_sent_at_login_.store(client_->bytes_sent(), std::memory_order_relaxed);
         bytes_received_at_login_.store(client_->bytes_received(), std::memory_order_relaxed);
 
-        // Enable recording if it was requested before connection.
-        // Only supported by the ASIO SSL transport (net::client).
-        if (recording_enabled_ && !recording_directory_.empty()) {
-            if (auto ssl_client =
-                    std::dynamic_pointer_cast<comms::net::client>(client_)) {
-                BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured recording to: "
-                                          << recording_directory_;
-                auto result = ssl_client->enable_recording(recording_directory_);
-                if (result) {
-                    BOOST_LOG_SEV(lg(), info) << "Recording started: " << result->string();
-                    QMetaObject::invokeMethod(this, [this, path = result->string()]() {
-                        emit recordingStarted(QString::fromStdString(path));
-                    }, Qt::QueuedConnection);
-                } else {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to enable recording: "
-                                               << static_cast<int>(result.error());
-                }
-            } else {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Recording not supported by current transport";
-            }
-        }
-
         // Enable telemetry streaming if it was requested before connection.
-        // Only supported by the ASIO SSL transport (net::client).
         if (streaming_enabled_ && pending_streaming_options_) {
-            if (auto ssl_client =
-                    std::dynamic_pointer_cast<comms::net::client>(client_)) {
-                BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured telemetry streaming for: "
-                                          << pending_streaming_options_->source_name;
-                try {
-                    telemetry_streaming_ =
-                        std::make_unique<comms::service::telemetry_streaming_service>(
-                            ssl_client, *pending_streaming_options_);
-                    telemetry_streaming_->start();
-                    BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";
-                    QMetaObject::invokeMethod(this, [this]() {
-                        emit streamingStarted();
-                    }, Qt::QueuedConnection);
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to enable streaming: " << e.what();
-                }
-            } else {
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Telemetry streaming not supported by current transport";
+            BOOST_LOG_SEV(lg(), info) << "Enabling pre-configured telemetry streaming for: "
+                                      << pending_streaming_options_->source_name;
+            try {
+                telemetry_streaming_ =
+                    std::make_unique<comms::service::telemetry_streaming_service>(
+                        client_, *pending_streaming_options_);
+                telemetry_streaming_->start();
+                BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";
+                QMetaObject::invokeMethod(this, [this]() {
+                    emit streamingStarted();
+                }, Qt::QueuedConnection);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to enable streaming: " << e.what();
             }
         }
 
@@ -837,16 +806,6 @@ void ClientManager::disconnect() {
         // The server closes the connection after logout, but we call disconnect
         // to ensure proper cleanup on the client side
         client_->disconnect();
-
-        // For ASIO SSL clients, wait for all coroutines to complete before destroying
-        // to prevent use-after-free crashes during rapid disconnect.
-        if (auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_)) {
-            if (!ssl_client->await_shutdown(std::chrono::milliseconds{500})) {
-                BOOST_LOG_SEV(lg(), warn) << "Timeout waiting for client shutdown, "
-                                          << "proceeding with cleanup anyway";
-            }
-        }
-
         client_.reset();
 
         // Disconnected event is now published by the client directly
@@ -1196,45 +1155,13 @@ bool ClientManager::enableRecording(const std::filesystem::path& outputDirectory
         return true;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Enabling session recording to: " << outputDirectory;
-
-    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
-    if (!ssl_client) {
-        BOOST_LOG_SEV(lg(), debug) << "Recording not supported by current transport";
-        return false;
-    }
-
-    auto result = ssl_client->enable_recording(outputDirectory);
-    if (!result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to enable recording: "
-                                   << static_cast<int>(result.error());
-        recording_enabled_ = false;
-        return false;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Recording started: " << result->string();
-    emit recordingStarted(QString::fromStdString(result->string()));
-    return true;
+    BOOST_LOG_SEV(lg(), debug) << "Recording not supported by current transport";
+    recording_enabled_ = false;
+    return false;
 }
 
 void ClientManager::disableRecording() {
     recording_enabled_ = false;
-
-    if (!client_) {
-        BOOST_LOG_SEV(lg(), debug) << "Recording disabled (was pending)";
-        emit recordingStopped();
-        return;
-    }
-
-    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
-    if (!ssl_client || !ssl_client->is_recording()) {
-        BOOST_LOG_SEV(lg(), debug) << "Recording not active on client";
-        emit recordingStopped();
-        return;
-    }
-
-    BOOST_LOG_SEV(lg(), info) << "Disabling session recording";
-    ssl_client->disable_recording();
     emit recordingStopped();
 }
 
@@ -1243,10 +1170,6 @@ bool ClientManager::isRecording() const {
 }
 
 std::filesystem::path ClientManager::recordingFilePath() const {
-    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
-    if (!ssl_client || !ssl_client->is_recording()) {
-        return {};
-    }
     return {};
 }
 
@@ -1274,21 +1197,13 @@ void ClientManager::enableStreaming(
     }
 
     // Already connected - start streaming now.
-    // Only supported by the ASIO SSL transport.
     BOOST_LOG_SEV(lg(), info) << "Enabling telemetry streaming for: "
                               << options.source_name;
-
-    auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(client_);
-    if (!ssl_client) {
-        BOOST_LOG_SEV(lg(), debug)
-            << "Telemetry streaming not supported by current transport";
-        return;
-    }
 
     try {
         telemetry_streaming_ =
             std::make_unique<comms::service::telemetry_streaming_service>(
-                ssl_client, options);
+                client_, options);
         telemetry_streaming_->start();
 
         BOOST_LOG_SEV(lg(), info) << "Telemetry streaming started";

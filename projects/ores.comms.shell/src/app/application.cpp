@@ -25,12 +25,10 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.comms/messaging/protocol.hpp"
-#include "ores.comms/net/client.hpp"
 #include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
 #include "ores.comms.shell/app/repl.hpp"
-#include "ores.comms.shell/app/commands/compression_commands.hpp"
 #include "ores.nats/service/nats_client.hpp"
 
 namespace ores::comms::shell::app {
@@ -39,7 +37,7 @@ using namespace ores::logging;
 using comms::net::client_session;
 
 application::application(
-    std::optional<comms::net::client_options> connection_config,
+    std::optional<nats::config::nats_options> connection_config,
     std::optional<config::login_options> login_config,
     std::optional<telemetry::domain::telemetry_context> telemetry_ctx,
     std::optional<comms::service::telemetry_streaming_options> streaming_options)
@@ -59,27 +57,18 @@ auto& anon_lg() {
 }
 
 bool auto_connect(client_session& session, std::ostream& out,
-    const std::optional<comms::net::client_options>& connection_config) {
+    const std::optional<nats::config::nats_options>& connection_config) {
 
-    // Build NATS URL from connection config (host:port) or use default
-    std::string host = "localhost";
-    std::uint16_t port = 4222;
-    if (connection_config) {
-        host = connection_config->host;
-        port = connection_config->port;
-    }
-
-    const std::string nats_url = "nats://" + host + ":" + std::to_string(port);
+    const nats::config::nats_options opts =
+        connection_config.value_or(nats::config::nats_options{.url = "nats://localhost:4222"});
 
     try {
-        ores::nats::config::nats_options opts;
-        opts.url = nats_url;
-        auto nats_client = std::make_shared<ores::nats::service::nats_client>(opts);
+        auto nats_client = std::make_shared<nats::service::nats_client>(opts);
         nats_client->connect_sync();
 
         auto result = session.attach_client(nats_client);
         if (result) {
-            out << "✓ Connected to " << nats_url << std::endl;
+            out << "✓ Connected to " << opts.url << std::endl;
             return true;
         } else {
             out << "✗ Auto-connect failed: " << to_string(result.error()) << std::endl;
@@ -167,18 +156,11 @@ void application::run() {
                         << "Starting telemetry streaming for: "
                         << streaming_options_->source_name;
                     try {
-                        auto ssl_client = std::dynamic_pointer_cast<comms::net::client>(
-                            session.get_client());
-                        if (ssl_client) {
-                            streaming_service =
-                                std::make_unique<comms::service::telemetry_streaming_service>(
-                                    ssl_client, *streaming_options_);
-                            streaming_service->start();
-                            std::cout << "✓ Telemetry streaming enabled" << std::endl;
-                        } else {
-                            BOOST_LOG_SEV(lg(), debug)
-                                << "Telemetry streaming not supported with NATS transport";
-                        }
+                        streaming_service =
+                            std::make_unique<comms::service::telemetry_streaming_service>(
+                                session.get_client(), *streaming_options_);
+                        streaming_service->start();
+                        std::cout << "✓ Telemetry streaming enabled" << std::endl;
                     } catch (const std::exception& e) {
                         BOOST_LOG_SEV(lg(), error)
                             << "Failed to start telemetry streaming: " << e.what();

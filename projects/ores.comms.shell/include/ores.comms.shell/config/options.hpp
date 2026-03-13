@@ -23,7 +23,7 @@
 #include <iosfwd>
 #include <optional>
 #include "ores.comms.shell/config/login_options.hpp"
-#include "ores.comms/net/client_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.logging/logging_options.hpp"
 #include "ores.telemetry/exporting/telemetry_options.hpp"
 
@@ -41,7 +41,7 @@ struct options final {
     /**
      * @brief Configuration options for connecting to the server.
      */
-    std::optional<comms::net::client_options> connection;
+    std::optional<nats::config::nats_options> connection;
 
     /**
      * @brief Configuration options for logging in to the server.

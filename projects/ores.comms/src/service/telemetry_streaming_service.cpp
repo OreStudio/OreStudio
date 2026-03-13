@@ -20,7 +20,7 @@
 #include "ores.comms/service/telemetry_streaming_service.hpp"
 
 #include <boost/make_shared.hpp>
-#include "ores.comms/net/client.hpp"
+#include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/message_type.hpp"
 #include "ores.telemetry/messaging/log_records_protocol.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
@@ -30,7 +30,7 @@ namespace ores::comms::service {
 using namespace ores::logging;
 
 telemetry_streaming_service::telemetry_streaming_service(
-    std::shared_ptr<net::client> client,
+    std::shared_ptr<net::client_base> client,
     telemetry_streaming_options options)
     : client_(std::move(client))
     , options_(std::move(options))
@@ -233,15 +233,27 @@ bool telemetry_streaming_service::send_batch(
         telemetry::messaging::submit_log_records_request request;
         request.records = std::move(records);
 
-        auto result = client_->process_request<
-            telemetry::messaging::submit_log_records_request,
-            telemetry::messaging::submit_telemetry_response,
-            messaging::message_type::submit_log_records_request>(
-                std::move(request));
+        auto payload = request.serialize();
+        messaging::frame req_frame(
+            messaging::message_type::submit_log_records_request,
+            0, std::move(payload));
 
+        auto raw = client_->send_request_sync(std::move(req_frame));
+        if (!raw) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to send telemetry batch";
+            return false;
+        }
+
+        auto decompressed = raw->decompressed_payload();
+        if (!decompressed) {
+            BOOST_LOG_SEV(lg(), warn) << "Failed to decompress telemetry response";
+            return false;
+        }
+
+        auto result = telemetry::messaging::submit_telemetry_response::deserialize(
+            *decompressed);
         if (!result) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to send telemetry batch: "
-                                      << static_cast<int>(result.error());
+            BOOST_LOG_SEV(lg(), warn) << "Failed to deserialize telemetry response";
             return false;
         }
 

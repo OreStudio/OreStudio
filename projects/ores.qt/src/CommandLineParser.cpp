@@ -21,7 +21,6 @@
 
 #include <optional>
 #include <QSettings>
-#include "ores.comms/messaging/handshake_protocol.hpp"
 #include "ores.qt/TelemetrySettingsDialog.hpp"
 
 namespace ores::qt {
@@ -73,19 +72,6 @@ void CommandLineParser::setupOptions() {
         "Include the process ID in the log filename."
     });
 
-    // Compression options
-    parser_.addOption({
-        {"c", "compression-enabled"},
-        "Enable compression for network communication."
-    });
-
-    parser_.addOption({
-        "compression-algorithm",
-        "Compression algorithm to use. Valid values: auto, zlib, gzip, bzip2.",
-        "algorithm",
-        "auto"
-    });
-
     // Instance identification options
     parser_.addOption({
         {"n", "instance-name"},
@@ -122,15 +108,6 @@ void CommandLineParser::saveToSettings() {
         settings.endGroup();
     }
 
-    // If compression options provided via CLI, persist them to QSettings
-    if (isCompressionEnabled()) {
-        settings.beginGroup(TelemetrySettingsDialog::settingsPrefix());
-        settings.beginGroup("compression");
-        settings.setValue("enabled", true);
-        settings.setValue("algorithm", parser_.value("compression-algorithm"));
-        settings.endGroup();
-        settings.endGroup();
-    }
 }
 
 bool CommandLineParser::isLoggingEnabled() const {
@@ -169,47 +146,6 @@ std::optional<logging::logging_options> CommandLineParser::loggingOptions() cons
     return TelemetrySettingsDialog::loadLoggingSettings();
 }
 
-bool CommandLineParser::isCompressionEnabled() const {
-    return parser_.isSet("compression-enabled");
-}
-
-std::uint8_t CommandLineParser::supportedCompression() const {
-    using namespace comms::messaging;
-
-    // Command line takes precedence over QSettings
-    if (isCompressionEnabled()) {
-        const auto algorithm = parser_.value("compression-algorithm").toLower().toStdString();
-
-        if (algorithm == "zlib") {
-            return COMPRESSION_SUPPORT_ZLIB;
-        } else if (algorithm == "gzip") {
-            return COMPRESSION_SUPPORT_GZIP;
-        } else if (algorithm == "bzip2") {
-            return COMPRESSION_SUPPORT_BZIP2;
-        } else {
-            // "auto" or any unrecognized value defaults to all supported
-            return COMPRESSION_SUPPORT_ALL;
-        }
-    }
-
-    // Fall back to QSettings from TelemetrySettingsDialog
-    if (!TelemetrySettingsDialog::isCompressionEnabled()) {
-        return 0;
-    }
-
-    const auto algorithm = TelemetrySettingsDialog::compressionAlgorithm().toLower().toStdString();
-
-    if (algorithm == "zlib") {
-        return COMPRESSION_SUPPORT_ZLIB;
-    } else if (algorithm == "gzip") {
-        return COMPRESSION_SUPPORT_GZIP;
-    } else if (algorithm == "bzip2") {
-        return COMPRESSION_SUPPORT_BZIP2;
-    } else {
-        // "auto" or any unrecognized value defaults to all supported
-        return COMPRESSION_SUPPORT_ALL;
-    }
-}
 
 QString CommandLineParser::instanceName() const {
     return parser_.value("instance-name");

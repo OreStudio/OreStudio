@@ -20,7 +20,6 @@
 #ifndef ORES_QT_COMMAND_LINE_PARSER_HPP
 #define ORES_QT_COMMAND_LINE_PARSER_HPP
 
-#include <cstdint>
 #include <optional>
 #include <QCoreApplication>
 #include <QCommandLineParser>
@@ -63,23 +62,6 @@ public:
      * @brief Check if logging is enabled.
      */
     [[nodiscard]] bool isLoggingEnabled() const;
-
-    /**
-     * @brief Check if compression is enabled.
-     */
-    [[nodiscard]] bool isCompressionEnabled() const;
-
-    /**
-     * @brief Get the supported compression bitmask based on parsed options.
-     *
-     * Returns the bitmask value for use in client_options.supported_compression.
-     * If compression is disabled, returns 0.
-     * If a specific algorithm is selected, returns just that bit.
-     * If "all" is selected (default), returns COMPRESSION_SUPPORT_ALL.
-     *
-     * @return Compression support bitmask
-     */
-    [[nodiscard]] std::uint8_t supportedCompression() const;
 
     /**
      * @brief Get the instance name for identifying this application instance.

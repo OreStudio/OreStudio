@@ -95,7 +95,6 @@ int main(int argc, char *argv[]) {
     splash.setProgressDuration(splashDuration);
 
     ores::qt::MainWindow mainWindow;
-    mainWindow.getClientManager()->setSupportedCompression(parser.supportedCompression());
 
     // Set instance identification info if provided
     const QString instanceName = parser.instanceName();

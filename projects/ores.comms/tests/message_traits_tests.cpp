@@ -21,7 +21,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.comms/messaging/message_traits.hpp"
 #include "ores.comms/messaging/subscription_protocol.hpp"
-#include "ores.comms/messaging/handshake_protocol.hpp"
 
 namespace {
 
@@ -43,11 +42,6 @@ TEST_CASE("has_message_traits concept is satisfied for subscribe_request",
 TEST_CASE("has_message_traits concept is satisfied for unsubscribe_request",
           tags.c_str()) {
     STATIC_REQUIRE(has_message_traits<unsubscribe_request>);
-}
-
-TEST_CASE("has_message_traits concept is satisfied for handshake_request",
-          tags.c_str()) {
-    STATIC_REQUIRE(has_message_traits<handshake_request>);
 }
 
 TEST_CASE("has_message_traits concept is NOT satisfied for types without traits",
@@ -79,15 +73,6 @@ TEST_CASE("message_traits for unsubscribe_request provides correct types",
     STATIC_REQUIRE(traits::request_message_type == message_type::unsubscribe_request);
 }
 
-TEST_CASE("message_traits for handshake_request provides correct types",
-          tags.c_str()) {
-    using traits = message_traits<handshake_request>;
-
-    STATIC_REQUIRE(std::is_same_v<traits::request_type, handshake_request>);
-    STATIC_REQUIRE(std::is_same_v<traits::response_type, handshake_response>);
-    STATIC_REQUIRE(traits::request_message_type == message_type::handshake_request);
-}
-
 // =============================================================================
 // Response type convention test
 // =============================================================================
@@ -107,9 +92,4 @@ TEST_CASE("Response message_type follows request + 1 convention",
         static_cast<std::uint16_t>(message_type::unsubscribe_response);
     STATIC_REQUIRE(unsubscribe_resp_value == unsubscribe_req_value + 1);
 
-    constexpr auto handshake_req_value =
-        static_cast<std::uint16_t>(message_type::handshake_request);
-    constexpr auto handshake_resp_value =
-        static_cast<std::uint16_t>(message_type::handshake_response);
-    STATIC_REQUIRE(handshake_resp_value == handshake_req_value + 1);
 }

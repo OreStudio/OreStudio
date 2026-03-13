@@ -33,13 +33,10 @@
 #include <boost/log/core.hpp>
 #include <boost/log/sinks/sync_frontend.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.comms/net/client_base.hpp"
 #include "ores.telemetry/domain/log_record.hpp"
 #include "ores.telemetry/domain/resource.hpp"
 #include "ores.telemetry/log/telemetry_sink_backend.hpp"
-
-namespace ores::comms::net {
-class client;
-}
 
 namespace ores::comms::service {
 
@@ -139,7 +136,7 @@ public:
      * @param options Configuration options for streaming
      */
     explicit telemetry_streaming_service(
-        std::shared_ptr<net::client> client,
+        std::shared_ptr<net::client_base> client,
         telemetry_streaming_options options);
 
     /**
@@ -216,7 +213,7 @@ private:
      */
     bool send_batch(std::vector<telemetry::domain::log_record>& records);
 
-    std::shared_ptr<net::client> client_;
+    std::shared_ptr<net::client_base> client_;
     telemetry_streaming_options options_;
     std::shared_ptr<telemetry::domain::resource> resource_;
 

@@ -25,7 +25,7 @@
 #include <QTextCharFormat>
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.comms/net/client_options.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.iam/client/auth_helpers.hpp"
 
 namespace ores::qt {
@@ -183,21 +183,29 @@ void ShellMdiWindow::start_shell() {
     // Create the shell's own client session and connect
     shell_session_ = std::make_unique<comms::net::client_session>();
 
-    comms::net::client_options opts;
-    opts.host = client_manager_->connectedHost();
-    opts.port = client_manager_->connectedPort();
-    opts.client_identifier = "ores-qt-shell";
-    opts.verify_certificate = false;
-    // Heartbeat disabled: the shell session is short-lived and tied to the
-    // main connection's lifetime. If the main connection drops, the shell
-    // window is closed as part of disconnect cleanup.
-    opts.heartbeat_enabled = false;
+    const std::string nats_url = "nats://" + client_manager_->connectedHost()
+        + ":" + std::to_string(client_manager_->connectedPort());
 
-    auto connect_result = shell_session_->connect(opts);
-    if (!connect_result) {
-        const auto& err = connect_result.error();
+    try {
+        nats::config::nats_options opts;
+        opts.url = nats_url;
+        auto nats_client = std::make_shared<nats::service::nats_client>(opts);
+        nats_client->connect_sync();
+
+        auto attach_result = shell_session_->attach_client(nats_client);
+        if (!attach_result) {
+            auto msg = QString("Shell: Failed to connect to server: %1")
+                .arg(QString::fromStdString(
+                    comms::net::to_string(attach_result.error())));
+            BOOST_LOG_SEV(lg(), error) << msg.toStdString();
+            output_area_->appendPlainText(msg);
+            input_line_->setEnabled(false);
+            shell_session_.reset();
+            return;
+        }
+    } catch (const std::exception& e) {
         auto msg = QString("Shell: Failed to connect to server: %1")
-            .arg(QString::fromStdString(err.message));
+            .arg(QString::fromStdString(e.what()));
         BOOST_LOG_SEV(lg(), error) << msg.toStdString();
         output_area_->appendPlainText(msg);
         input_line_->setEnabled(false);

@@ -33,7 +33,6 @@
 #include "ores.comms/messaging/system_info_protocol.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.comms/net/client_session.hpp"
-#include "ores.comms/service/remote_event_adapter.hpp"
 #include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -502,18 +501,6 @@ public:
      */
     void unsubscribeFromEvent(const std::string& eventType);
 
-    /**
-     * @brief Set the supported compression bitmask for client connections.
-     *
-     * Should be called before connectAndLogin(). The value is used when
-     * creating client_options for the handshake negotiation.
-     *
-     * @param compression Bitmask of supported compression types (0 = disabled)
-     */
-    void setSupportedCompression(std::uint8_t compression) {
-        supported_compression_ = compression;
-    }
-
     // =========================================================================
     // Session Recording
     // =========================================================================
@@ -668,9 +655,6 @@ private:
     // Connection details for event publishing
     std::string connected_host_;
     std::uint16_t connected_port_{0};
-
-    // Compression support bitmask (default: all compression types)
-    std::uint8_t supported_compression_{0x07}; // COMPRESSION_SUPPORT_ALL
 
     // Session recording output directory
     std::filesystem::path recording_directory_;

@@ -23,7 +23,7 @@
 #include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/domain/telemetry_context.hpp"
-#include "ores.comms/net/client_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.comms.shell/config/login_options.hpp"
 
@@ -53,7 +53,7 @@ public:
      * @param streaming_options Optional telemetry streaming options.
      */
     explicit application(
-        std::optional<comms::net::client_options> connection_config = std::nullopt,
+        std::optional<nats::config::nats_options> connection_config = std::nullopt,
         std::optional<config::login_options> login_config = std::nullopt,
         std::optional<telemetry::domain::telemetry_context> telemetry_ctx = std::nullopt,
         std::optional<comms::service::telemetry_streaming_options> streaming_options = std::nullopt);
@@ -69,7 +69,7 @@ public:
     void run();
 
 private:
-    std::optional<comms::net::client_options> connection_config_;
+    std::optional<nats::config::nats_options> connection_config_;
     std::optional<config::login_options> login_config_;
     std::optional<telemetry::domain::telemetry_context> telemetry_ctx_;
     std::optional<comms::service::telemetry_streaming_options> streaming_options_;

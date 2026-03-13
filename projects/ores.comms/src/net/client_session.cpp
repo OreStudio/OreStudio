@@ -18,9 +18,7 @@
  *
  */
 #include "ores.comms/net/client_session.hpp"
-#include "ores.comms/net/client.hpp"
 #include "ores.comms/messaging/subscription_protocol.hpp"
-#include "ores.comms/service/remote_event_adapter.hpp"
 
 namespace ores::comms::net {
 
@@ -31,56 +29,6 @@ client_session::client_session() = default;
 client_session::~client_session() {
     if (is_connected()) {
         disconnect();
-    }
-}
-
-std::expected<void, session_error>
-client_session::connect(client_options options) {
-    BOOST_LOG_SEV(lg(), info) << "Connecting to " << options.host << ":"
-                              << options.port << " (identifier: "
-                              << options.client_identifier << ")";
-
-    if (client_ && client_->is_connected()) {
-        BOOST_LOG_SEV(lg(), info) << "Disconnecting existing connection";
-        if (!external_client_) {
-            client_->disconnect();
-        }
-        event_adapter_.reset();
-        session_info_.reset();
-        external_client_ = false;
-    }
-
-    try {
-        auto ssl_client = std::make_shared<client>(std::move(options));
-        ssl_client->connect_sync();
-        client_ = ssl_client;  // Upcast to client_base
-        external_client_ = false;  // We own this client
-
-        // Create the event adapter which handles subscriptions
-        event_adapter_ = std::make_unique<service::remote_event_adapter>(ssl_client);
-
-        // Register notification callback to queue notifications for display
-        event_adapter_->set_notification_callback(
-            [this](const std::string& event_type,
-                   std::chrono::system_clock::time_point timestamp,
-                   const std::vector<std::string>& entity_ids,
-                   const std::string& tenant_id,
-                   messaging::payload_type pt,
-                   const std::optional<std::vector<std::byte>>& payload) {
-                on_notification(event_type, timestamp, entity_ids, tenant_id,
-                    pt, payload);
-            });
-
-        BOOST_LOG_SEV(lg(), info) << "Successfully connected.";
-        return {};
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Connection failed: " << e.what();
-        event_adapter_.reset();
-        client_.reset();
-        external_client_ = false;
-        return std::unexpected(session_error(
-            client_session_error::not_connected,
-            std::string("Connection failed: ") + e.what()));
     }
 }
 
@@ -110,34 +58,17 @@ client_session::attach_client(std::shared_ptr<client_base> external_client) {
     client_ = std::move(external_client);
     external_client_ = true;  // We don't own this client
 
-    if (auto ssl_client = std::dynamic_pointer_cast<client>(client_)) {
-        // SSL path: create event adapter to track subscriptions and route
-        // incoming notifications from the persistent TCP connection.
-        event_adapter_ = std::make_unique<service::remote_event_adapter>(ssl_client);
-        event_adapter_->set_notification_callback(
-            [this](const std::string& event_type,
-                   std::chrono::system_clock::time_point timestamp,
-                   const std::vector<std::string>& entity_ids,
-                   const std::string& tenant_id,
-                   messaging::payload_type pt,
-                   const std::optional<std::vector<std::byte>>& payload) {
-                on_notification(event_type, timestamp, entity_ids, tenant_id,
-                    pt, payload);
-            });
-    } else {
-        // NATS (and future transports): route push notifications directly from
-        // the client's inbox subscription to on_notification.
-        client_->set_notification_callback(
-            [this](const std::string& event_type,
-                   std::chrono::system_clock::time_point timestamp,
-                   const std::vector<std::string>& entity_ids,
-                   const std::string& tenant_id,
-                   messaging::payload_type pt,
-                   const std::optional<std::vector<std::byte>>& payload) {
-                on_notification(event_type, timestamp, entity_ids, tenant_id,
-                    pt, payload);
-            });
-    }
+    // Route push notifications directly from the client's inbox subscription.
+    client_->set_notification_callback(
+        [this](const std::string& event_type,
+               std::chrono::system_clock::time_point timestamp,
+               const std::vector<std::string>& entity_ids,
+               const std::string& tenant_id,
+               messaging::payload_type pt,
+               const std::optional<std::vector<std::byte>>& payload) {
+            on_notification(event_type, timestamp, entity_ids, tenant_id,
+                pt, payload);
+        });
 
     BOOST_LOG_SEV(lg(), info) << "External client attached successfully";
     return {};
@@ -145,9 +76,6 @@ client_session::attach_client(std::shared_ptr<client_base> external_client) {
 
 void client_session::detach_client() {
     BOOST_LOG_SEV(lg(), debug) << "Detaching client";
-
-    // Clear event adapter first
-    event_adapter_.reset();
 
     // Clear session state
     session_info_.reset();
@@ -167,9 +95,6 @@ void client_session::disconnect() {
         BOOST_LOG_SEV(lg(), warn) << "No client instance.";
         return;
     }
-
-    // Reset adapter before disconnecting (clears notification callback)
-    event_adapter_.reset();
 
     if (external_client_) {
         // External client: just detach, don't disconnect
@@ -201,11 +126,7 @@ bool client_session::is_connected() const noexcept {
 }
 
 bool client_session::subscribe(const std::string& event_type) {
-    if (event_adapter_) {
-        return event_adapter_->subscribe_sync(event_type);
-    }
-
-    // NATS path: send subscribe_request with notification inbox
+    // Send subscribe_request with notification inbox
     if (!client_ || !client_->is_connected()) {
         BOOST_LOG_SEV(lg(), error) << "Cannot subscribe: not connected";
         return false;
@@ -224,11 +145,6 @@ bool client_session::subscribe(const std::string& event_type) {
 }
 
 bool client_session::unsubscribe(const std::string& event_type) {
-    if (event_adapter_) {
-        return event_adapter_->unsubscribe_sync(event_type);
-    }
-
-    // NATS path
     if (!client_ || !client_->is_connected()) {
         BOOST_LOG_SEV(lg(), error) << "Cannot unsubscribe: not connected";
         return false;
@@ -247,16 +163,10 @@ bool client_session::unsubscribe(const std::string& event_type) {
 }
 
 bool client_session::is_subscribed(const std::string& event_type) const {
-    if (event_adapter_) {
-        return event_adapter_->is_subscribed(event_type);
-    }
     return nats_subscriptions_.contains(event_type);
 }
 
 std::set<std::string> client_session::get_subscriptions() const {
-    if (event_adapter_) {
-        return event_adapter_->get_subscriptions();
-    }
     return nats_subscriptions_;
 }
 

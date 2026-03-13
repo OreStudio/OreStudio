@@ -39,13 +39,6 @@
 #include "ores.comms/messaging/frame.hpp"
 #include "ores.comms/messaging/error_protocol.hpp"
 #include "ores.comms/net/client_base.hpp"
-#include "ores.comms/net/client_options.hpp"
-
-namespace ores::comms::service {
-
-class remote_event_adapter;
-
-}
 
 namespace ores::comms::net {
 
@@ -148,17 +141,6 @@ public:
     client_session& operator=(const client_session&) = delete;
     client_session(client_session&&) = delete;
     client_session& operator=(client_session&&) = delete;
-
-    /**
-     * @brief Connect to the server.
-     *
-     * Creates a new client internally and connects. Use this for standalone
-     * usage (e.g., in ores.comms.shell).
-     *
-     * @param options Connection options
-     * @return Empty expected on success, error on failure
-     */
-    std::expected<void, session_error> connect(client_options options);
 
     /**
      * @brief Attach an external client to this session.
@@ -483,7 +465,7 @@ public:
     /**
      * @brief Subscribe to notifications for an event type.
      *
-     * Delegates to remote_event_adapter to send a SUBSCRIBE protocol message.
+     * Sends a SUBSCRIBE protocol message to the server.
      * Received notifications are queued for retrieval via take_pending_notifications().
      *
      * @param event_type The fully qualified event type name (e.g., "ores.refdata.currency_changed")
@@ -494,7 +476,7 @@ public:
     /**
      * @brief Unsubscribe from notifications for an event type.
      *
-     * Delegates to remote_event_adapter to send an UNSUBSCRIBE protocol message.
+     * Sends an UNSUBSCRIBE protocol message to the server.
      *
      * @param event_type The fully qualified event type name
      * @return True if unsubscription succeeded, false otherwise
@@ -560,7 +542,7 @@ private:
     /**
      * @brief Handle incoming notification from the adapter.
      *
-     * Called by the notification callback registered on the remote_event_adapter.
+     * Called by the notification callback registered on the client.
      * Queues notifications for later retrieval.
      */
     void on_notification(const std::string& event_type,
@@ -571,7 +553,6 @@ private:
         const std::optional<std::vector<std::byte>>& payload);
 
     std::shared_ptr<client_base> client_;
-    std::unique_ptr<service::remote_event_adapter> event_adapter_;
     std::optional<client_session_info> session_info_;
     mutable std::mutex notifications_mutex_;
     std::deque<pending_notification> pending_notifications_;
@@ -583,7 +564,7 @@ private:
     // In this mode, disconnect() will not call client_->disconnect().
     bool external_client_{false};
 
-    // Active subscriptions for NATS transport (event_adapter_ is null in this case).
+    // Active subscriptions tracked locally (mirroring server-side state).
     std::set<std::string> nats_subscriptions_;
 };
 

@@ -118,18 +118,47 @@
     ("local5" . 55000))
   "Alist mapping checkout labels to base port numbers.")
 
+(defconst ores/nats-ports
+  '(("remote" . 4222)
+    ("local1" . 4223)
+    ("local2" . 4224)
+    ("local3" . 4225)
+    ("local4" . 4226)
+    ("local5" . 4227))
+  "Alist mapping checkout labels to NATS server ports.")
+
 (defun ores/get-port (service-type build-type)
   "Return port for SERVICE-TYPE and BUILD-TYPE in the current checkout."
   (let* ((base (alist-get ores/checkout-label ores/port-bases 50000 nil #'string=))
          (offset (cond
-                  ((and (eq service-type 'http)            (eq build-type 'debug))   0)
-                  ((and (eq service-type 'http)            (eq build-type 'release)) 1)
-                  ((and (eq service-type 'wt)              (eq build-type 'debug))   2)
-                  ((and (eq service-type 'wt)              (eq build-type 'release)) 3)
-                  ((and (eq service-type 'binary)          (eq build-type 'debug))   4)
-                  ((and (eq service-type 'binary)          (eq build-type 'release)) 5)
+                  ((and (eq service-type 'http)    (eq build-type 'debug))   0)
+                  ((and (eq service-type 'http)    (eq build-type 'release)) 1)
+                  ((and (eq service-type 'wt)      (eq build-type 'debug))   2)
+                  ((and (eq service-type 'wt)      (eq build-type 'release)) 3)
                   (t 0))))
     (+ base offset)))
+
+(defun ores/get-nats-url ()
+  "Return NATS URL for the current checkout."
+  (let ((port (alist-get ores/checkout-label ores/nats-ports 4222 nil #'string=)))
+    (format "nats://localhost:%d" port)))
+
+;; =============================================================================
+;; NATS domain service registry
+;; =============================================================================
+
+(defconst ores/nats-domain-services
+  '(("ores.iam.service"        . "IAM Service")
+    ("ores.refdata.service"    . "Reference Data Service")
+    ("ores.dq.service"         . "Data Quality Service")
+    ("ores.variability.service". "Variability Service")
+    ("ores.assets.service"     . "Assets Service")
+    ("ores.synthetic.service"  . "Synthetic Service")
+    ("ores.scheduler.service"  . "Scheduler Service")
+    ("ores.reporting.service"  . "Reporting Service")
+    ("ores.telemetry.service"  . "Telemetry Service")
+    ("ores.trading.service"    . "Trading Service"))
+  "Alist of (binary-name . display-name) for all NATS domain services.")
 
 ;; =============================================================================
 ;; Database and environment setup
@@ -178,7 +207,8 @@
 (prodigy-define-tag :name 'debug)
 (prodigy-define-tag :name 'release)
 (prodigy-define-tag :name ores/checkout-tag)
-(prodigy-define-tag :name 'comms-service)
+(prodigy-define-tag :name 'nats-server)
+(prodigy-define-tag :name 'nats-service)
 (prodigy-define-tag :name 'http-server)
 (prodigy-define-tag :name 'wt-server)
 
@@ -247,17 +277,28 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)
 
-    ;; Comms Service
+    ;; NATS Server
     (prodigy-define-service
-      :name    (ores/service-name "ORE Studio Comms Service" preset)
+      :name    (ores/service-name "ORE Studio NATS Server" preset)
       :cwd     bin
-      :command (concat bin "/ores.comms.service")
-      :args    `(,@common-args
-                 "--nats-url" "nats://localhost:4222")
-      :tags    `(,@common-tags comms-service)
-      :env     (ores/setup-environment "SERVICE")
+      :command "nats-server"
+      :args    `("--port" ,(number-to-string
+                             (alist-get ores/checkout-label ores/nats-ports 4222 nil #'string=)))
+      :tags    `(,@common-tags nats-server)
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)
+
+    ;; NATS domain services
+    (dolist (svc ores/nats-domain-services)
+      (prodigy-define-service
+        :name    (ores/service-name (format "ORE Studio %s" (cdr svc)) preset)
+        :cwd     bin
+        :command (concat bin "/" (car svc))
+        :args    `(,@common-args "--nats-url" ,(ores/get-nats-url))
+        :tags    `(,@common-tags nats-service)
+        :env     (ores/setup-environment "SERVICE")
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t))
 
     ;; HTTP Server
     (prodigy-define-service

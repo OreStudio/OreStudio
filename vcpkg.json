@@ -7,7 +7,7 @@
         "openssl",
         {
             "name": "reflectcpp",
-            "features": [ "xml", "bson" ]
+            "features": [ "xml", "bson", "msgpack" ]
         },
         {
             "name": "sqlgen",

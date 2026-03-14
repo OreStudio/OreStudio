@@ -33,14 +33,6 @@ struct nats_options final {
      *        "tls+tcp://localhost:4222" for TLS).
      */
     std::string url = "nats://localhost:4222";
-
-    /**
-     * @brief Subject on which the service listens for requests.
-     *
-     * All client requests are sent to this subject and the service
-     * publishes responses to the per-request NATS reply subject.
-     */
-    std::string subject = "ores.comms.service";
 };
 
 }

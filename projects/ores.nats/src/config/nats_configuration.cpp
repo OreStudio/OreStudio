@@ -24,13 +24,11 @@ namespace ores::nats::config {
 namespace {
 
 const std::string nats_url_arg("nats-url");
-const std::string nats_subject_arg("nats-subject");
 
 }
 
 boost::program_options::options_description
-nats_configuration::make_options_description(
-    const std::string& default_subject) {
+nats_configuration::make_options_description() {
     using boost::program_options::value;
     using boost::program_options::options_description;
 
@@ -38,10 +36,7 @@ nats_configuration::make_options_description(
     r.add_options()
         (nats_url_arg.c_str(),
             value<std::string>()->default_value("nats://localhost:4222"),
-            "NATS server URL.")
-        (nats_subject_arg.c_str(),
-            value<std::string>()->default_value(default_subject),
-            "NATS subject on which the service listens for requests.");
+            "NATS server URL.");
 
     return r;
 }
@@ -50,7 +45,6 @@ nats_options nats_configuration::read_options(
     const boost::program_options::variables_map& vm) {
     nats_options r;
     r.url = vm[nats_url_arg].as<std::string>();
-    r.subject = vm[nats_subject_arg].as<std::string>();
     return r;
 }
 

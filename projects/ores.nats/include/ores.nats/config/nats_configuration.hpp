@@ -20,7 +20,6 @@
 #ifndef ORES_NATS_CONFIG_NATS_CONFIGURATION_HPP
 #define ORES_NATS_CONFIG_NATS_CONFIGURATION_HPP
 
-#include <string>
 #include <boost/program_options.hpp>
 #include "ores.nats/config/nats_options.hpp"
 
@@ -35,7 +34,6 @@ namespace ores::nats::config {
  *
  * Standard options:
  *   --nats-url      NATS server URL (default: nats://localhost:4222)
- *   --nats-subject  Subject on which the service listens (default: provided)
  */
 class nats_configuration final {
 public:
@@ -45,12 +43,10 @@ public:
      * @brief Creates the boost::program_options description for NATS CLI
      * arguments.
      *
-     * @param default_subject Default NATS subject for this service
-     *        (e.g. "ores.iam.service").
      * @return options_description for NATS configuration.
      */
     static boost::program_options::options_description
-    make_options_description(const std::string& default_subject);
+    make_options_description();
 
     /**
      * @brief Reads NATS options from parsed variables map.

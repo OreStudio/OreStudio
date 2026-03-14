@@ -40,7 +40,6 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         cnats::nats_static
-        ores.comms.lib
         Boost::program_options
     PRIVATE
         ores.utility.lib

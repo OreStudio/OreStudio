@@ -19,16 +19,65 @@
  */
 #include "ores.telemetry/messaging/registrar.hpp"
 
+#include <span>
+#include <string_view>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp"
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.nats/service/client.hpp"
+#include "ores.telemetry/messaging/telemetry_protocol.hpp"
+
 namespace ores::telemetry::messaging {
+
+namespace {
+
+template<typename Resp>
+void reply(ores::nats::service::client& nats,
+           const ores::nats::message& msg,
+           const Resp& resp) {
+    if (msg.reply_subject.empty())
+        return;
+    const auto json = rfl::json::write(resp);
+    const auto* p = reinterpret_cast<const std::byte*>(json.data());
+    nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
+}
+
+template<typename Req>
+std::optional<Req> decode(const ores::nats::message& msg) {
+    const std::string_view sv(
+        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+    auto r = rfl::json::read<Req>(sv);
+    if (!r)
+        return std::nullopt;
+    return *r;
+}
+
+} // namespace
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context /*ctx*/) {
     std::vector<ores::nats::service::subscription> subs;
+
     subs.push_back(nats.queue_subscribe(
         "telemetry.v1.>", "ores.telemetry.service",
-        [](ores::nats::message /*msg*/) {}));
+        [&nats](ores::nats::message msg) mutable {
+            const auto& subj = msg.subject;
+
+            // ----------------------------------------------------------------
+            // Telemetry logs — list
+            // ----------------------------------------------------------------
+            if (subj.ends_with(".logs.list")) {
+                // No telemetry query service implemented yet; return empty.
+                if (decode<get_telemetry_logs_request>(msg)) {
+                    reply(nats, msg, get_telemetry_logs_response{
+                        .success = true});
+                }
+            }
+        }));
+
     return subs;
 }
 
-}
+} // namespace ores::telemetry::messaging

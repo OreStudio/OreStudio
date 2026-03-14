@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_currency_market_tiers_request {
     using response_type = struct get_currency_market_tiers_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currency-market-tiers.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_currency_market_tiers_response {
 
 struct save_currency_market_tier_request {
     using response_type = struct save_currency_market_tier_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currency-market-tiers.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.save";
     ores::refdata::domain::currency_market_tier data;
 };
 
@@ -51,7 +51,7 @@ struct save_currency_market_tier_response {
 
 struct delete_currency_market_tier_request {
     using response_type = struct delete_currency_market_tier_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currency-market-tiers.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.delete";
     std::string tier;
 };
 
@@ -62,7 +62,7 @@ struct delete_currency_market_tier_response {
 
 struct get_currency_market_tier_history_request {
     using response_type = struct get_currency_market_tier_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currency-market-tiers.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.currency-market-tiers.history";
     std::string tier;
 };
 

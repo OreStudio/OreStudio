@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_monetary_natures_request {
     using response_type = struct get_monetary_natures_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.monetary-natures.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_monetary_natures_response {
 
 struct save_monetary_nature_request {
     using response_type = struct save_monetary_nature_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.monetary-natures.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.save";
     ores::refdata::domain::monetary_nature data;
 };
 
@@ -51,7 +51,7 @@ struct save_monetary_nature_response {
 
 struct delete_monetary_nature_request {
     using response_type = struct delete_monetary_nature_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.monetary-natures.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.delete";
     std::string nature;
 };
 
@@ -62,7 +62,7 @@ struct delete_monetary_nature_response {
 
 struct get_monetary_nature_history_request {
     using response_type = struct get_monetary_nature_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.monetary-natures.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.history";
     std::string nature;
 };
 

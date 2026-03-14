@@ -32,7 +32,7 @@ struct currency_version_history {
 
 struct get_currency_history_request {
     using response_type = struct get_currency_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currencies.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.history";
     std::string iso_code;
 };
 

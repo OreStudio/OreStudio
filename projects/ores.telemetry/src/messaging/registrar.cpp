@@ -26,7 +26,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context /*ctx*/) {
     std::vector<ores::nats::service::subscription> subs;
     subs.push_back(nats.queue_subscribe(
-        "ores.telemetry.v1.>", "ores.telemetry.service",
+        "telemetry.v1.>", "ores.telemetry.service",
         [](ores::nats::message /*msg*/) {}));
     return subs;
 }

@@ -29,7 +29,7 @@ namespace ores::dq::messaging {
 
 struct get_dataset_bundles_request {
     using response_type = struct get_dataset_bundles_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.dataset-bundles.list";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.list";
     int offset = 0;
     int limit = 100;
 };
@@ -41,7 +41,7 @@ struct get_dataset_bundles_response {
 
 struct save_dataset_bundle_request {
     using response_type = struct save_dataset_bundle_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.dataset-bundles.save";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.save";
     std::vector<ores::dq::domain::dataset_bundle> bundles;
 };
 
@@ -52,7 +52,7 @@ struct save_dataset_bundle_response {
 
 struct delete_dataset_bundle_request {
     using response_type = struct delete_dataset_bundle_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.dataset-bundles.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.delete";
     std::vector<std::string> ids;
 };
 
@@ -63,7 +63,7 @@ struct delete_dataset_bundle_response {
 
 struct get_dataset_bundle_history_request {
     using response_type = struct get_dataset_bundle_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.dataset-bundles.history";
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.history";
     std::string id;
 };
 

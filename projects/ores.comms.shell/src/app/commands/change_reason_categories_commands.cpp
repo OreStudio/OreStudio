@@ -108,7 +108,7 @@ process_get_categories(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reason categories request.";
 
     auto result = do_request<dq::messaging::get_change_reason_categories_response>(
-        out, session, "ores.dq.v1.change-reason-categories.list",
+        out, session, "dq.v1.change-reason-categories.list",
         rfl::json::write(dq::messaging::get_change_reason_categories_request{}));
     if (!result) return;
 
@@ -141,7 +141,7 @@ process_add_category(std::ostream& out, nats_session& session,
         });
 
     auto result = do_auth_request<dq::messaging::save_change_reason_category_response>(
-        out, session, "ores.dq.v1.change-reason-categories.save", rfl::json::write(req));
+        out, session, "dq.v1.change-reason-categories.save", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -170,7 +170,7 @@ process_delete_category(std::ostream& out, nats_session& session,
     req.codes = {code};
 
     auto result = do_auth_request<dq::messaging::delete_change_reason_category_response>(
-        out, session, "ores.dq.v1.change-reason-categories.delete", rfl::json::write(req));
+        out, session, "dq.v1.change-reason-categories.delete", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -198,7 +198,7 @@ process_get_category_history(std::ostream& out, nats_session& session,
     req.code = std::move(code);
 
     auto result = do_auth_request<dq::messaging::get_change_reason_category_history_response>(
-        out, session, "ores.dq.v1.change-reason-categories.history", rfl::json::write(req));
+        out, session, "dq.v1.change-reason-categories.history", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {

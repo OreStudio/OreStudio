@@ -132,7 +132,7 @@ process_get_currencies(std::ostream& out, nats_session& session,
     req.limit = pagination.page_size();
 
     auto result = do_request<refdata::messaging::get_currencies_response>(
-        out, session, "ores.refdata.v1.currencies.list", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.list", rfl::json::write(req));
     if (!result) return;
 
     state.total_count = result->total_available_count;
@@ -201,7 +201,7 @@ process_add_currency(std::ostream& out, nats_session& session,
         });
 
     auto result = do_auth_request<refdata::messaging::save_currency_response>(
-        out, session, "ores.refdata.v1.currencies.save", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.save", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -230,7 +230,7 @@ process_delete_currency(std::ostream& out, nats_session& session,
     req.iso_codes = {iso_code};
 
     auto result = do_auth_request<refdata::messaging::delete_currency_response>(
-        out, session, "ores.refdata.v1.currencies.delete", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.delete", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -258,7 +258,7 @@ process_get_currency_history(std::ostream& out, nats_session& session,
     req.iso_code = std::move(iso_code);
 
     auto result = do_auth_request<refdata::messaging::get_currency_history_response>(
-        out, session, "ores.refdata.v1.currencies.history", rfl::json::write(req));
+        out, session, "refdata.v1.currencies.history", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {

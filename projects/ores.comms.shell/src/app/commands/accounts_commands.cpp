@@ -265,7 +265,7 @@ process_list_accounts(std::ostream& out, nats_session& session,
     req.limit = pagination.page_size();
 
     auto result = do_auth_request<iam::messaging::get_accounts_response>(
-        out, session, "ores.iam.v1.accounts.list", rfl::json::write(req));
+        out, session, "iam.v1.accounts.list", rfl::json::write(req));
     if (!result) return;
 
     state.total_count = result->total_available_count;
@@ -293,7 +293,7 @@ process_login(std::ostream& out, nats_session& session,
     req.password = std::move(password);
 
     auto result = do_request<iam::messaging::login_response>(
-        out, session, "ores.iam.v1.auth.login", rfl::json::write(req));
+        out, session, "iam.v1.auth.login", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {
@@ -333,7 +333,7 @@ process_lock_account(std::ostream& out, nats_session& session,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::lock_account_response>(
-        out, session, "ores.iam.v1.accounts.lock", rfl::json::write(req));
+        out, session, "iam.v1.accounts.lock", rfl::json::write(req));
     if (!result) return;
 
     if (result->results.empty()) {
@@ -371,7 +371,7 @@ process_unlock_account(std::ostream& out, nats_session& session,
     req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::unlock_account_response>(
-        out, session, "ores.iam.v1.accounts.unlock", rfl::json::write(req));
+        out, session, "iam.v1.accounts.unlock", rfl::json::write(req));
     if (!result) return;
 
     if (result->results.empty()) {
@@ -403,7 +403,7 @@ void accounts_commands::process_create_account(std::ostream& out,
     req.email = std::move(email);
 
     auto result = do_auth_request<iam::messaging::save_account_response>(
-        out, session, "ores.iam.v1.accounts.save", rfl::json::write(req));
+        out, session, "iam.v1.accounts.save", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {
@@ -422,7 +422,7 @@ process_list_login_info(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 
     auto result = do_auth_request<iam::messaging::list_login_info_response>(
-        out, session, "ores.iam.v1.accounts.list-logins",
+        out, session, "iam.v1.accounts.list-logins",
         rfl::json::write(iam::messaging::list_login_info_request{}));
     if (!result) return;
 
@@ -439,7 +439,7 @@ process_logout(std::ostream& out, nats_session& session) {
     }
 
     try {
-        auto reply = session.authenticated_request("ores.iam.v1.auth.logout",
+        auto reply = session.authenticated_request("iam.v1.auth.logout",
             rfl::json::write(iam::messaging::logout_request{}));
         auto data_str = std::string(
             reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
@@ -467,7 +467,7 @@ process_bootstrap(std::ostream& out, nats_session& session,
     req.email = std::move(email);
 
     auto result = do_request<iam::messaging::create_initial_admin_response>(
-        out, session, "ores.iam.v1.auth.bootstrap", rfl::json::write(req));
+        out, session, "iam.v1.auth.bootstrap", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -505,7 +505,7 @@ process_list_sessions(std::ostream& out, nats_session& session,
     }
 
     auto result = do_auth_request<iam::messaging::list_sessions_response>(
-        out, session, "ores.iam.v1.sessions.list", rfl::json::write(req));
+        out, session, "iam.v1.sessions.list", rfl::json::write(req));
     if (!result) return;
 
     const auto& sessions = result->sessions;
@@ -555,7 +555,7 @@ process_active_sessions(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
 
     auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
-        out, session, "ores.iam.v1.sessions.active",
+        out, session, "iam.v1.sessions.active",
         rfl::json::write(iam::messaging::get_active_sessions_request{}));
     if (!result) return;
 
@@ -604,7 +604,7 @@ process_session_stats(std::ostream& out, nats_session& session, int days) {
     req.end_time = end_date;
 
     auto result = do_auth_request<iam::messaging::get_session_statistics_response>(
-        out, session, "ores.iam.v1.sessions.statistics", rfl::json::write(req));
+        out, session, "iam.v1.sessions.statistics", rfl::json::write(req));
     if (!result) return;
 
     const auto& stats = result->statistics;
@@ -673,7 +673,7 @@ process_get_account_history(std::ostream& out, nats_session& session,
     req.username = std::move(username);
 
     auto result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "ores.iam.v1.accounts.history", rfl::json::write(req));
+        out, session, "iam.v1.accounts.history", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {
@@ -710,7 +710,7 @@ process_account_info(std::ostream& out, nats_session& session,
     hist_req.username = username;
 
     auto history_result = do_auth_request<iam::messaging::get_account_history_response>(
-        out, session, "ores.iam.v1.accounts.history", rfl::json::write(hist_req));
+        out, session, "iam.v1.accounts.history", rfl::json::write(hist_req));
     if (!history_result) return;
 
     if (!history_result->success) {
@@ -754,7 +754,7 @@ process_account_info(std::ostream& out, nats_session& session,
     out << "-----" << std::endl;
 
     auto roles_result = do_auth_request<iam::messaging::get_account_roles_response>(
-        out, session, "ores.iam.v1.roles.for-account", rfl::json::write(roles_req));
+        out, session, "iam.v1.roles.for-account", rfl::json::write(roles_req));
     if (!roles_result) {
         out << "  (failed to retrieve roles)" << std::endl;
     } else if (roles_result->roles.empty()) {
@@ -778,7 +778,7 @@ process_account_info(std::ostream& out, nats_session& session,
     out << "---------------------" << std::endl;
 
     auto perms_result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, "ores.iam.v1.permissions.for-account", rfl::json::write(perms_req));
+        out, session, "iam.v1.permissions.for-account", rfl::json::write(perms_req));
     if (!perms_result) {
         out << "  (failed to retrieve permissions)" << std::endl;
     } else if (perms_result->permission_codes.empty()) {

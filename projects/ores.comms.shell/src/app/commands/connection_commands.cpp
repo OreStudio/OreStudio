@@ -24,6 +24,7 @@
 #include <rfl/json.hpp>
 #include <cli/cli.h>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 
 namespace ores::comms::shell::app::commands {
@@ -43,7 +44,7 @@ auto& anon_lg() {
 
 void check_bootstrap_status(nats_session& session, std::ostream& out) {
     try {
-        auto reply = session.request("ores.iam.v1.auth.bootstrap-status",
+        auto reply = session.request("iam.v1.auth.bootstrap-status",
             rfl::json::write(iam::messaging::bootstrap_status_request{}));
         auto data_str = std::string(
             reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
@@ -99,7 +100,9 @@ process_connect(std::ostream& out, nats_session& session,
         "nats://" + resolved_host + ":" + std::to_string(resolved_port);
 
     try {
-        session.connect(nats_url);
+        nats::config::nats_options opts;
+        opts.url = nats_url;
+        session.connect(std::move(opts));
         out << "✓ Connected to " << nats_url << std::endl;
         check_bootstrap_status(session, out);
     } catch (const std::exception& e) {

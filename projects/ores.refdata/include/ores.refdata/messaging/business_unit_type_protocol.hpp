@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_business_unit_types_request {
     using response_type = struct get_business_unit_types_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.business-unit-types.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_business_unit_types_response {
 
 struct save_business_unit_type_request {
     using response_type = struct save_business_unit_type_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.business-unit-types.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.save";
     ores::refdata::domain::business_unit_type data;
 };
 
@@ -51,7 +51,7 @@ struct save_business_unit_type_response {
 
 struct delete_business_unit_type_request {
     using response_type = struct delete_business_unit_type_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.business-unit-types.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.delete";
     std::string type;
 };
 
@@ -62,7 +62,7 @@ struct delete_business_unit_type_response {
 
 struct get_business_unit_type_history_request {
     using response_type = struct get_business_unit_type_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.business-unit-types.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.history";
     std::string type;
 };
 

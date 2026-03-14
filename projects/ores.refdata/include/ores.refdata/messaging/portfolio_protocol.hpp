@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_portfolios_request {
     using response_type = struct get_portfolios_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.portfolios.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_portfolios_response {
 
 struct save_portfolio_request {
     using response_type = struct save_portfolio_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.portfolios.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.save";
     ores::refdata::domain::portfolio data;
 };
 
@@ -51,7 +51,7 @@ struct save_portfolio_response {
 
 struct delete_portfolio_request {
     using response_type = struct delete_portfolio_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.portfolios.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.delete";
     std::vector<std::string> ids;
 };
 
@@ -62,7 +62,7 @@ struct delete_portfolio_response {
 
 struct get_portfolio_history_request {
     using response_type = struct get_portfolio_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.portfolios.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.portfolios.history";
     std::string id;
 };
 

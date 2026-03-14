@@ -26,7 +26,7 @@ namespace ores::iam::messaging {
 
 struct signup_request {
     using response_type = struct signup_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.auth.signup";
+    static constexpr std::string_view nats_subject = "iam.v1.auth.signup";
     std::string principal;
     std::string password;
     std::string email;

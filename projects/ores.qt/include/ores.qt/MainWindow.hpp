@@ -163,6 +163,15 @@ public:
     void setInstanceInfo(const QString& name, const QColor& color = QColor());
 
     /**
+     * @brief Set the NATS subject prefix used for all outbound messages.
+     *
+     * Forwards to the internal ClientManager. Must be called before the
+     * first connection attempt. Format: "ores.{tier}.{instance}",
+     * e.g. "ores.dev.local1".
+     */
+    void setNatsSubjectPrefix(const QString& prefix);
+
+    /**
      * @brief Update the window title to reflect current state.
      *
      * Title format: "ORE Studio v{version} - {username}@{server} [Instance Name]"

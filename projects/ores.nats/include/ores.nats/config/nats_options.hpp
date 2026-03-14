@@ -33,6 +33,17 @@ struct nats_options final {
      *        "tls+tcp://localhost:4222" for TLS).
      */
     std::string url = "nats://localhost:4222";
+
+    /**
+     * @brief Subject prefix applied to every outbound subject.
+     *
+     * Format: "ores.{tier}.{instance}", e.g. "ores.dev.local1".
+     * When set, all pub/sub/request subjects become
+     * "{subject_prefix}.{relative_subject}". Leave empty to use
+     * subjects as-is (e.g. in tests or scripts that manage prefixes
+     * externally).
+     */
+    std::string subject_prefix;
 };
 
 }

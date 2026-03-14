@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_party_types_request {
     using response_type = struct get_party_types_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-types.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-types.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_party_types_response {
 
 struct save_party_type_request {
     using response_type = struct save_party_type_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-types.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-types.save";
     ores::refdata::domain::party_type data;
 };
 
@@ -51,7 +51,7 @@ struct save_party_type_response {
 
 struct delete_party_type_request {
     using response_type = struct delete_party_type_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-types.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-types.delete";
     std::string type;
 };
 
@@ -62,7 +62,7 @@ struct delete_party_type_response {
 
 struct get_party_type_history_request {
     using response_type = struct get_party_type_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-types.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-types.history";
     std::string type;
 };
 

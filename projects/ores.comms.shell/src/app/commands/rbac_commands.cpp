@@ -146,7 +146,7 @@ process_list_permissions(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list permissions request.";
 
     auto result = do_auth_request<iam::messaging::list_permissions_response>(
-        out, session, "ores.iam.v1.permissions.list",
+        out, session, "iam.v1.permissions.list",
         rfl::json::write(iam::messaging::list_permissions_request{}));
     if (!result) return;
 
@@ -160,7 +160,7 @@ process_list_roles(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list roles request.";
 
     auto result = do_auth_request<iam::messaging::list_roles_response>(
-        out, session, "ores.iam.v1.roles.list",
+        out, session, "iam.v1.roles.list",
         rfl::json::write(iam::messaging::list_roles_request{}));
     if (!result) return;
 
@@ -179,7 +179,7 @@ process_get_role(std::ostream& out, nats_session& session,
     req.identifier = role_identifier;
 
     auto result = do_auth_request<iam::messaging::get_role_response>(
-        out, session, "ores.iam.v1.roles.get", rfl::json::write(req));
+        out, session, "iam.v1.roles.get", rfl::json::write(req));
     if (!result) return;
 
     if (!result->found || !result->role) {
@@ -227,7 +227,7 @@ process_assign_role(std::ostream& out, nats_session& session,
         req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
-            out, session, "ores.iam.v1.roles.assign", rfl::json::write(req));
+            out, session, "iam.v1.roles.assign", rfl::json::write(req));
         if (!result) return;
 
         if (result->success) {
@@ -247,7 +247,7 @@ process_assign_role(std::ostream& out, nats_session& session,
         req.role_name = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
-            out, session, "ores.iam.v1.roles.assign-by-name", rfl::json::write(req));
+            out, session, "iam.v1.roles.assign-by-name", rfl::json::write(req));
         if (!result) return;
 
         if (result->success) {
@@ -276,7 +276,7 @@ process_revoke_role(std::ostream& out, nats_session& session,
         req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
-            out, session, "ores.iam.v1.roles.revoke", rfl::json::write(req));
+            out, session, "iam.v1.roles.revoke", rfl::json::write(req));
         if (!result) return;
 
         if (result->success) {
@@ -296,7 +296,7 @@ process_revoke_role(std::ostream& out, nats_session& session,
         req.role_name = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
-            out, session, "ores.iam.v1.roles.revoke-by-name", rfl::json::write(req));
+            out, session, "iam.v1.roles.revoke-by-name", rfl::json::write(req));
         if (!result) return;
 
         if (result->success) {
@@ -323,7 +323,7 @@ process_get_account_roles(std::ostream& out, nats_session& session,
     req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_roles_response>(
-        out, session, "ores.iam.v1.roles.for-account", rfl::json::write(req));
+        out, session, "iam.v1.roles.for-account", rfl::json::write(req));
     if (!result) return;
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
@@ -349,7 +349,7 @@ process_get_account_permissions(std::ostream& out, nats_session& session,
     req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_permissions_response>(
-        out, session, "ores.iam.v1.permissions.for-account", rfl::json::write(req));
+        out, session, "iam.v1.permissions.for-account", rfl::json::write(req));
     if (!result) return;
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
@@ -380,7 +380,7 @@ process_suggest_role_commands(std::ostream& out, nats_session& session,
     }
 
     auto result = do_auth_request<iam::messaging::suggest_role_commands_response>(
-        out, session, "ores.iam.v1.roles.suggest-commands", rfl::json::write(req));
+        out, session, "iam.v1.roles.suggest-commands", rfl::json::write(req));
     if (!result) return;
 
     BOOST_LOG_SEV(lg(), info) << "Generated " << result->commands.size()

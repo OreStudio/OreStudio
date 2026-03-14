@@ -56,9 +56,12 @@ public:
     };
 
     /**
-     * @brief Connect to NATS at the given URL. Throws on failure.
+     * @brief Connect to NATS using the given options. Throws on failure.
+     *
+     * The options include the server URL and the optional subject prefix
+     * (see @c nats_options::subject_prefix).
      */
-    void connect(std::string_view url);
+    void connect(nats::config::nats_options opts);
 
     /**
      * @brief Disconnect from NATS.

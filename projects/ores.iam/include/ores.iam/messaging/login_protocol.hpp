@@ -33,7 +33,7 @@ struct party_summary {
 
 struct login_request {
     using response_type = struct login_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.auth.login";
+    static constexpr std::string_view nats_subject = "iam.v1.auth.login";
     std::string principal;
     std::string password;
 };
@@ -56,7 +56,7 @@ struct login_response {
 
 struct logout_request {
     using response_type = struct logout_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.auth.logout";
+    static constexpr std::string_view nats_subject = "iam.v1.auth.logout";
 };
 
 struct logout_response {

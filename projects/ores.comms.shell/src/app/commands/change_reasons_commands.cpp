@@ -109,7 +109,7 @@ process_get_change_reasons(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reasons request.";
 
     auto result = do_request<dq::messaging::get_change_reasons_response>(
-        out, session, "ores.dq.v1.change-reasons.list",
+        out, session, "dq.v1.change-reasons.list",
         rfl::json::write(dq::messaging::get_change_reasons_request{}));
     if (!result) return;
 
@@ -148,7 +148,7 @@ process_add_change_reason(std::ostream& out, nats_session& session,
         });
 
     auto result = do_auth_request<dq::messaging::save_change_reason_response>(
-        out, session, "ores.dq.v1.change-reasons.save", rfl::json::write(req));
+        out, session, "dq.v1.change-reasons.save", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -177,7 +177,7 @@ process_delete_change_reason(std::ostream& out, nats_session& session,
     req.codes = {code};
 
     auto result = do_auth_request<dq::messaging::delete_change_reason_response>(
-        out, session, "ores.dq.v1.change-reasons.delete", rfl::json::write(req));
+        out, session, "dq.v1.change-reasons.delete", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -206,7 +206,7 @@ process_get_change_reason_history(std::ostream& out, nats_session& session,
     req.code = std::move(code);
 
     auto result = do_auth_request<dq::messaging::get_change_reason_history_response>(
-        out, session, "ores.dq.v1.change-reasons.history", rfl::json::write(req));
+        out, session, "dq.v1.change-reasons.history", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {

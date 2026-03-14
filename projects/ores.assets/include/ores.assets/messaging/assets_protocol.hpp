@@ -46,7 +46,7 @@ struct image_info {
 
 struct get_images_request {
     using response_type = struct get_images_response;
-    static constexpr std::string_view nats_subject = "ores.assets.v1.images.get";
+    static constexpr std::string_view nats_subject = "assets.v1.images.get";
     std::vector<std::string> image_ids;
 };
 
@@ -56,7 +56,7 @@ struct get_images_response {
 
 struct list_images_request {
     using response_type = struct list_images_response;
-    static constexpr std::string_view nats_subject = "ores.assets.v1.images.list";
+    static constexpr std::string_view nats_subject = "assets.v1.images.list";
     std::optional<std::chrono::system_clock::time_point> modified_since;
 };
 
@@ -71,7 +71,7 @@ struct list_images_response {
 
 struct save_image_request {
     using response_type = struct save_image_response;
-    static constexpr std::string_view nats_subject = "ores.assets.v1.images.save";
+    static constexpr std::string_view nats_subject = "assets.v1.images.save";
     ores::assets::domain::image data;
 };
 

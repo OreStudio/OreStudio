@@ -49,9 +49,11 @@ auto& anon_lg() {
 
 bool auto_connect(service::nats_session& session, std::ostream& out,
     const std::optional<nats::config::nats_options>& cfg) {
-    const auto url = cfg ? cfg->url : "nats://localhost:4222";
+    nats::config::nats_options opts;
+    if (cfg) opts = *cfg;
+    const auto& url = opts.url;
     try {
-        session.connect(url);
+        session.connect(opts);
         out << "✓ Connected to " << url << std::endl;
         return true;
     } catch (const std::exception& e) {
@@ -62,7 +64,7 @@ bool auto_connect(service::nats_session& session, std::ostream& out,
 
 void check_bootstrap_status(service::nats_session& session, std::ostream& out) {
     try {
-        auto reply = session.request("ores.iam.v1.auth.bootstrap-status",
+        auto reply = session.request("iam.v1.auth.bootstrap-status",
             rfl::json::write(iam::messaging::bootstrap_status_request{}));
         auto data_str = std::string(
             reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
@@ -84,7 +86,7 @@ bool auto_login(service::nats_session& session, std::ostream& out,
         iam::messaging::login_request req;
         req.principal = login_config.username;
         req.password = login_config.password;
-        auto reply = session.request("ores.iam.v1.auth.login", rfl::json::write(req));
+        auto reply = session.request("iam.v1.auth.login", rfl::json::write(req));
         auto data_str = std::string(
             reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
         auto result = rfl::json::read<iam::messaging::login_response>(data_str);

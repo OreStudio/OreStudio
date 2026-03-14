@@ -29,7 +29,7 @@ namespace ores::trading::messaging {
 
 struct get_trades_request {
     using response_type = struct get_trades_response;
-    static constexpr std::string_view nats_subject = "ores.trading.v1.trades.list";
+    static constexpr std::string_view nats_subject = "trading.v1.trades.list";
     int offset = 0;
     int limit = 100;
     std::string book_id;
@@ -42,7 +42,7 @@ struct get_trades_response {
 
 struct save_trade_request {
     using response_type = struct save_trade_response;
-    static constexpr std::string_view nats_subject = "ores.trading.v1.trades.save";
+    static constexpr std::string_view nats_subject = "trading.v1.trades.save";
     std::vector<ores::trading::domain::trade> trades;
 
     static save_trade_request from(std::vector<ores::trading::domain::trade> trades) {
@@ -57,7 +57,7 @@ struct save_trade_response {
 
 struct delete_trade_request {
     using response_type = struct delete_trade_response;
-    static constexpr std::string_view nats_subject = "ores.trading.v1.trades.delete";
+    static constexpr std::string_view nats_subject = "trading.v1.trades.delete";
     std::vector<std::string> ids;
 };
 
@@ -68,7 +68,7 @@ struct delete_trade_response {
 
 struct get_trade_history_request {
     using response_type = struct get_trade_history_response;
-    static constexpr std::string_view nats_subject = "ores.trading.v1.trades.history";
+    static constexpr std::string_view nats_subject = "trading.v1.trades.history";
     std::string id;
 };
 

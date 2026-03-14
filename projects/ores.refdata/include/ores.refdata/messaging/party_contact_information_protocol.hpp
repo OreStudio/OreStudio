@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_party_contact_informations_request {
     using response_type = struct get_party_contact_informations_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-contacts.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-contacts.list";
     std::string party_id;
 };
 
@@ -38,7 +38,7 @@ struct get_party_contact_informations_response {
 
 struct save_party_contact_information_request {
     using response_type = struct save_party_contact_information_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-contacts.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-contacts.save";
     ores::refdata::domain::party_contact_information data;
 };
 
@@ -49,7 +49,7 @@ struct save_party_contact_information_response {
 
 struct delete_party_contact_information_request {
     using response_type = struct delete_party_contact_information_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-contacts.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-contacts.delete";
     std::vector<std::string> ids;
 };
 

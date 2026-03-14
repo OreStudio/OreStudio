@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_currencies_request {
     using response_type = struct get_currencies_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currencies.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_currencies_response {
 
 struct save_currency_request {
     using response_type = struct save_currency_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currencies.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.save";
     ores::refdata::domain::currency data;
 
     static save_currency_request from(ores::refdata::domain::currency c) {
@@ -55,7 +55,7 @@ struct save_currency_response {
 
 struct delete_currency_request {
     using response_type = struct delete_currency_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.currencies.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.currencies.delete";
     std::vector<std::string> iso_codes;
 };
 

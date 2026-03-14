@@ -40,6 +40,7 @@ const std::string help_arg("help");
 const std::string version_arg("version");
 
 const std::string nats_url_arg("nats-url");
+const std::string nats_subject_prefix_arg("nats-subject-prefix");
 const std::string login_username_arg("login-username");
 const std::string login_password_arg("login-password");
 
@@ -73,7 +74,10 @@ options_description make_options_description() {
     options_description cod("Connection");
     cod.add_options()
         (nats_url_arg.c_str(), value<std::string>(),
-            "NATS server URL (e.g., nats://localhost:4222)");
+            "NATS server URL (e.g., nats://localhost:4222)")
+        (nats_subject_prefix_arg.c_str(), value<std::string>(),
+            "Subject prefix prepended to every NATS subject "
+            "(format: ores.{tier}.{instance}, e.g. ores.dev.local1)");
 
     options_description lod2("Login");
     lod2.add_options()
@@ -124,11 +128,14 @@ void version(std::ostream& info) {
  */
 std::optional<nats_options>
 read_connection_configuration(const variables_map& vm) {
-    if (vm.count(nats_url_arg) == 0)
+    if (vm.count(nats_url_arg) == 0 && vm.count(nats_subject_prefix_arg) == 0)
         return {};
 
     nats_options r;
-    r.url = vm[nats_url_arg].as<std::string>();
+    if (vm.count(nats_url_arg) != 0)
+        r.url = vm[nats_url_arg].as<std::string>();
+    if (vm.count(nats_subject_prefix_arg) != 0)
+        r.subject_prefix = vm[nats_subject_prefix_arg].as<std::string>();
     return r;
 }
 

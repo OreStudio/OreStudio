@@ -29,7 +29,7 @@ namespace ores::iam::messaging {
 
 struct get_tenants_request {
     using response_type = struct get_tenants_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.list";
+    static constexpr std::string_view nats_subject = "iam.v1.tenants.list";
     bool include_deleted = false;
 };
 
@@ -39,7 +39,7 @@ struct get_tenants_response {
 
 struct save_tenant_request {
     using response_type = struct save_tenant_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.save";
+    static constexpr std::string_view nats_subject = "iam.v1.tenants.save";
     ores::iam::domain::tenant data;
 
     static save_tenant_request from(ores::iam::domain::tenant t) {
@@ -54,7 +54,7 @@ struct save_tenant_response {
 
 struct delete_tenant_request {
     using response_type = struct delete_tenant_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.delete";
+    static constexpr std::string_view nats_subject = "iam.v1.tenants.delete";
     std::vector<std::string> ids;
 };
 
@@ -65,7 +65,7 @@ struct delete_tenant_response {
 
 struct get_tenant_history_request {
     using response_type = struct get_tenant_history_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.history";
+    static constexpr std::string_view nats_subject = "iam.v1.tenants.history";
     std::string id;
 };
 

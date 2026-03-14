@@ -33,7 +33,7 @@ struct account_party_key {
 
 struct get_account_parties_request {
     using response_type = struct get_account_parties_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.account-parties.list";
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.list";
     int offset = 0;
     int limit = 100;
 };
@@ -45,7 +45,7 @@ struct get_account_parties_response {
 
 struct get_account_parties_by_account_request {
     using response_type = struct get_account_parties_by_account_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.account-parties.by-account";
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.by-account";
     std::string account_id;
 };
 
@@ -55,7 +55,7 @@ struct get_account_parties_by_account_response {
 
 struct save_account_party_request {
     using response_type = struct save_account_party_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.account-parties.save";
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.save";
     std::vector<ores::iam::domain::account_party> account_parties;
 };
 
@@ -66,7 +66,7 @@ struct save_account_party_response {
 
 struct delete_account_party_request {
     using response_type = struct delete_account_party_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.account-parties.delete";
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.delete";
     std::vector<account_party_key> keys;
 };
 

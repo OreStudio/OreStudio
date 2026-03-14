@@ -111,7 +111,7 @@ process_list_feature_flags(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list feature flags request.";
 
     auto result = do_request<variability::messaging::get_feature_flags_response>(
-        out, session, "ores.variability.v1.flags.list",
+        out, session, "variability.v1.flags.list",
         rfl::json::write(variability::messaging::get_feature_flags_request{}));
     if (!result) return;
 
@@ -150,7 +150,7 @@ process_add_feature_flag(std::ostream& out, nats_session& session,
         });
 
     auto result = do_auth_request<variability::messaging::save_feature_flag_response>(
-        out, session, "ores.variability.v1.flags.save", rfl::json::write(req));
+        out, session, "variability.v1.flags.save", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -179,7 +179,7 @@ process_delete_feature_flag(std::ostream& out, nats_session& session,
     req.name = std::move(name);
 
     auto result = do_auth_request<variability::messaging::delete_feature_flag_response>(
-        out, session, "ores.variability.v1.flags.delete", rfl::json::write(req));
+        out, session, "variability.v1.flags.delete", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -210,7 +210,7 @@ process_get_feature_flag_history(std::ostream& out, nats_session& session,
     req.name = std::move(name);
 
     auto result = do_auth_request<variability::messaging::get_feature_flag_history_response>(
-        out, session, "ores.variability.v1.flags.history", rfl::json::write(req));
+        out, session, "variability.v1.flags.history", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {

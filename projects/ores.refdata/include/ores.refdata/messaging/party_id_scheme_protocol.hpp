@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_party_id_schemes_request {
     using response_type = struct get_party_id_schemes_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-id-schemes.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_party_id_schemes_response {
 
 struct save_party_id_scheme_request {
     using response_type = struct save_party_id_scheme_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-id-schemes.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.save";
     ores::refdata::domain::party_id_scheme data;
 };
 
@@ -51,7 +51,7 @@ struct save_party_id_scheme_response {
 
 struct delete_party_id_scheme_request {
     using response_type = struct delete_party_id_scheme_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-id-schemes.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.delete";
     std::string scheme;
 };
 
@@ -62,7 +62,7 @@ struct delete_party_id_scheme_response {
 
 struct get_party_id_scheme_history_request {
     using response_type = struct get_party_id_scheme_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.party-id-schemes.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.history";
     std::string scheme;
 };
 

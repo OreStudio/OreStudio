@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_books_request {
     using response_type = struct get_books_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.books.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.books.list";
     int offset = 0;
     int limit = 100;
 };
@@ -40,7 +40,7 @@ struct get_books_response {
 
 struct save_book_request {
     using response_type = struct save_book_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.books.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.books.save";
     ores::refdata::domain::book data;
 };
 
@@ -51,7 +51,7 @@ struct save_book_response {
 
 struct delete_book_request {
     using response_type = struct delete_book_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.books.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.books.delete";
     std::vector<std::string> ids;
 };
 
@@ -62,7 +62,7 @@ struct delete_book_response {
 
 struct get_book_history_request {
     using response_type = struct get_book_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.books.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.books.history";
     std::string id;
 };
 

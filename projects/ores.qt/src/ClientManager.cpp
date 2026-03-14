@@ -22,6 +22,7 @@
 #include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -53,10 +54,11 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
     }
 
     try {
-        const std::string nats_url =
-            "nats://" + host + ":" + std::to_string(port);
+        nats::config::nats_options opts;
+        opts.url = "nats://" + host + ":" + std::to_string(port);
+        opts.subject_prefix = subject_prefix_;
 
-        session_.connect(nats_url);
+        session_.connect(std::move(opts));
 
         // Check bootstrap status
         BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap status...";
@@ -220,9 +222,10 @@ LoginResult ClientManager::testConnection(
 
     try {
         comms::shell::service::nats_session temp_session;
-        const std::string nats_url =
-            "nats://" + host + ":" + std::to_string(port);
-        temp_session.connect(nats_url);
+        nats::config::nats_options opts;
+        opts.url = "nats://" + host + ":" + std::to_string(port);
+        opts.subject_prefix = subject_prefix_;
+        temp_session.connect(std::move(opts));
 
         // Attempt login
         iam::messaging::login_request request{
@@ -260,9 +263,10 @@ SignupResult ClientManager::signup(
 
     try {
         comms::shell::service::nats_session temp_session;
-        const std::string nats_url =
-            "nats://" + host + ":" + std::to_string(port);
-        temp_session.connect(nats_url);
+        nats::config::nats_options opts;
+        opts.url = "nats://" + host + ":" + std::to_string(port);
+        opts.subject_prefix = subject_prefix_;
+        temp_session.connect(std::move(opts));
 
         iam::messaging::signup_request request{
             .principal = username,

@@ -84,6 +84,13 @@ void CommandLineParser::setupOptions() {
         "Color for the window title bar as RGB hex (e.g., FF0000 for red).",
         "color"
     });
+
+    parser_.addOption({
+        "nats-subject-prefix",
+        "Subject prefix prepended to every NATS subject "
+        "(format: ores.{tier}.{instance}, e.g. ores.dev.local1).",
+        "prefix"
+    });
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -149,6 +156,10 @@ std::optional<logging::logging_options> CommandLineParser::loggingOptions() cons
 
 QString CommandLineParser::instanceName() const {
     return parser_.value("instance-name");
+}
+
+QString CommandLineParser::natsSubjectPrefix() const {
+    return parser_.value("nats-subject-prefix");
 }
 
 QColor CommandLineParser::instanceColor() const {

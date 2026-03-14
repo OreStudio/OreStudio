@@ -26,7 +26,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context /*ctx*/) {
     std::vector<ores::nats::service::subscription> subs;
     subs.push_back(nats.queue_subscribe(
-        "ores.variability.v1.>", "ores.variability.service",
+        "variability.v1.>", "ores.variability.service",
         [](ores::nats::message /*msg*/) {}));
     return subs;
 }

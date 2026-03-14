@@ -116,6 +116,19 @@ public:
     ~ClientManager() override;
 
     /**
+     * @brief Set the NATS subject prefix used for all outbound messages.
+     *
+     * Must be called before @c connect(). Format: "ores.{tier}.{instance}",
+     * e.g. "ores.dev.local1". Leave empty to use subjects without a prefix.
+     */
+    void setSubjectPrefix(const std::string& prefix) { subject_prefix_ = prefix; }
+
+    /**
+     * @brief Get the current NATS subject prefix.
+     */
+    const std::string& subjectPrefix() const { return subject_prefix_; }
+
+    /**
      * @brief Connect to the NATS server without logging in.
      */
     LoginResult connect(const std::string& host, std::uint16_t port);
@@ -401,6 +414,9 @@ signals:
 private:
     // NATS session for connection and authentication
     comms::shell::service::nats_session session_;
+
+    // Subject prefix applied to all outbound NATS messages
+    std::string subject_prefix_;
 
     // Event bus for publishing connection events
     std::shared_ptr<eventing::service::event_bus> event_bus_;

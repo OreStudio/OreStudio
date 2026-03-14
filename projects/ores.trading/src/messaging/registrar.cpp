@@ -26,7 +26,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context /*ctx*/) {
     std::vector<ores::nats::service::subscription> subs;
     subs.push_back(nats.queue_subscribe(
-        "ores.trading.v1.>", "ores.trading.service",
+        "trading.v1.>", "ores.trading.service",
         [](ores::nats::message /*msg*/) {}));
     return subs;
 }

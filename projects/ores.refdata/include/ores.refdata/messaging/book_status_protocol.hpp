@@ -28,7 +28,7 @@ namespace ores::refdata::messaging {
 
 struct get_book_statuses_request {
     using response_type = struct get_book_statuses_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.book-statuses.list";
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.list";
 };
 
 struct get_book_statuses_response {
@@ -37,7 +37,7 @@ struct get_book_statuses_response {
 
 struct save_book_status_request {
     using response_type = struct save_book_status_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.book-statuses.save";
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.save";
     ores::refdata::domain::book_status data;
 };
 
@@ -48,7 +48,7 @@ struct save_book_status_response {
 
 struct delete_book_status_request {
     using response_type = struct delete_book_status_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.book-statuses.delete";
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.delete";
     std::string status;
 };
 
@@ -59,7 +59,7 @@ struct delete_book_status_response {
 
 struct get_book_status_history_request {
     using response_type = struct get_book_status_history_response;
-    static constexpr std::string_view nats_subject = "ores.refdata.v1.book-statuses.history";
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.history";
     std::string status;
 };
 

@@ -211,6 +211,21 @@ public:
      */
     void drain();
 
+    // -------------------------------------------------------------------------
+    // Subject helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Prepend the configured subject prefix to a relative subject.
+     *
+     * If @c nats_options::subject_prefix is non-empty, returns
+     * @c "{prefix}.{relative}"; otherwise returns @c relative unchanged.
+     *
+     * All pub/sub/request methods call this internally, so callers always
+     * pass relative subjects (e.g. @c "iam.v1.accounts.list").
+     */
+    [[nodiscard]] std::string make_subject(std::string_view relative) const;
+
 private:
     struct impl;
     std::unique_ptr<impl> impl_;

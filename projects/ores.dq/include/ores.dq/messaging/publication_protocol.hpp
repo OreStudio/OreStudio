@@ -29,7 +29,7 @@ namespace ores::dq::messaging {
 
 struct get_publications_request {
     using response_type = struct get_publications_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.publications.list";
+    static constexpr std::string_view nats_subject = "dq.v1.publications.list";
     std::string dataset_id;
     int offset = 0;
     int limit = 100;

@@ -39,7 +39,7 @@ struct get_accounts_response {
 
 struct save_account_request {
     using response_type = struct save_account_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.save";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.save";
     std::string principal;
     std::string password;
     std::string totp_secret;
@@ -49,7 +49,7 @@ struct save_account_request {
 
 struct update_account_request {
     using response_type = struct update_account_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.update";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.update";
     std::string account_id;
     std::string email;
     std::string change_reason_code;
@@ -69,7 +69,7 @@ struct save_account_response {
 
 struct delete_account_request {
     using response_type = struct delete_account_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.delete";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.delete";
     std::string account_id;
 };
 
@@ -85,7 +85,7 @@ struct account_operation_result {
 
 struct lock_account_request {
     using response_type = struct lock_account_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.lock";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.lock";
     std::vector<std::string> account_ids;
 };
 
@@ -95,7 +95,7 @@ struct lock_account_response {
 
 struct unlock_account_request {
     using response_type = struct unlock_account_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.unlock";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.unlock";
     std::vector<std::string> account_ids;
 };
 
@@ -105,7 +105,7 @@ struct unlock_account_response {
 
 struct list_login_info_request {
     using response_type = struct list_login_info_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.login-info";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.login-info";
 };
 
 struct list_login_info_response {
@@ -114,7 +114,7 @@ struct list_login_info_response {
 
 struct reset_password_request {
     using response_type = struct reset_password_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.reset-password";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.reset-password";
     std::vector<std::string> account_ids;
     std::string new_password;
 };
@@ -137,7 +137,7 @@ struct change_password_response {
 
 struct update_my_email_request {
     using response_type = struct update_my_email_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.update-email";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.update-email";
     std::string email;
 };
 
@@ -148,7 +148,7 @@ struct update_my_email_response {
 
 struct select_party_request {
     using response_type = struct select_party_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.select-party";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.select-party";
     std::string party_id;
 };
 
@@ -159,14 +159,14 @@ struct select_party_response {
 
 struct get_accounts_request_typed {
     using response_type = struct get_accounts_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.list";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.list";
     int offset = 0;
     int limit = 100;
 };
 
 struct change_password_request_typed {
     using response_type = struct change_password_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.change-password";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.change-password";
     std::string current_password;
     std::string new_password;
 };

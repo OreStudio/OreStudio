@@ -98,6 +98,13 @@ int main(int argc, char *argv[]) {
                                 << (instanceColor.isValid() ? instanceColor.name().toStdString() : "none");
     }
 
+    // Set NATS subject prefix if provided
+    const QString subjectPrefix = parser.natsSubjectPrefix();
+    if (!subjectPrefix.isEmpty()) {
+        mainWindow.setNatsSubjectPrefix(subjectPrefix);
+        BOOST_LOG_SEV(lg, info) << "NATS subject prefix: " << subjectPrefix.toStdString();
+    }
+
     QTimer::singleShot(splashDuration, &splash, SLOT(close()));
     QTimer::singleShot(splashDuration, &mainWindow, SLOT(show()));
 

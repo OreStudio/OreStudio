@@ -110,7 +110,7 @@ process_get_tenants(std::ostream& out, nats_session& session,
     req.include_deleted = include_deleted;
 
     auto result = do_auth_request<iam::messaging::get_tenants_response>(
-        out, session, "ores.iam.v1.tenants.list", rfl::json::write(req));
+        out, session, "iam.v1.tenants.list", rfl::json::write(req));
     if (!result) return;
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
@@ -152,7 +152,7 @@ process_add_tenant(std::ostream& out, nats_session& session,
     });
 
     auto result = do_auth_request<iam::messaging::save_tenant_response>(
-        out, session, "ores.iam.v1.tenants.save", rfl::json::write(req));
+        out, session, "iam.v1.tenants.save", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -186,7 +186,7 @@ process_tenant_history(std::ostream& out, nats_session& session,
     req.id = tenant_id;
 
     auto result = do_auth_request<iam::messaging::get_tenant_history_response>(
-        out, session, "ores.iam.v1.tenants.history", rfl::json::write(req));
+        out, session, "iam.v1.tenants.history", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {
@@ -253,7 +253,7 @@ process_delete_tenant(std::ostream& out, nats_session& session,
     req.ids = {tenant_id};
 
     auto result = do_auth_request<iam::messaging::delete_tenant_response>(
-        out, session, "ores.iam.v1.tenants.delete", rfl::json::write(req));
+        out, session, "iam.v1.tenants.delete", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {

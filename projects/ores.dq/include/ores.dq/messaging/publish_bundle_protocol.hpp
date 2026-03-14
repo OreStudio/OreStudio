@@ -53,7 +53,7 @@ struct bundle_dataset_result {
 
 struct publish_bundle_request {
     using response_type = struct publish_bundle_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.bundles.publish";
+    static constexpr std::string_view nats_subject = "dq.v1.bundles.publish";
     std::string bundle_code;
     ores::dq::domain::publication_mode mode =
         ores::dq::domain::publication_mode::upsert;

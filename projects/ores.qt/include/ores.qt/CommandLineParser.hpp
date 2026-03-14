@@ -83,6 +83,16 @@ public:
      */
     [[nodiscard]] QColor instanceColor() const;
 
+    /**
+     * @brief Get the NATS subject prefix for this instance.
+     *
+     * Format: "ores.{tier}.{instance}", e.g. "ores.dev.local1".
+     * Returns empty string if not specified.
+     *
+     * @return Subject prefix or empty string
+     */
+    [[nodiscard]] QString natsSubjectPrefix() const;
+
 private:
     void setupOptions();
     void saveToSettings();

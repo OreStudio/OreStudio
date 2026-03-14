@@ -31,7 +31,7 @@ namespace ores::iam::messaging {
 
 struct list_roles_request {
     using response_type = struct list_roles_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.roles.list";
+    static constexpr std::string_view nats_subject = "iam.v1.roles.list";
 };
 
 struct list_roles_response {
@@ -56,7 +56,7 @@ struct get_role_response {
 
 struct assign_role_request {
     using response_type = struct assign_role_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.roles.assign";
+    static constexpr std::string_view nats_subject = "iam.v1.roles.assign";
     std::string account_id;
     std::string role_id;
 };
@@ -73,7 +73,7 @@ struct assign_role_by_name_request {
 
 struct revoke_role_request {
     using response_type = struct revoke_role_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.roles.revoke";
+    static constexpr std::string_view nats_subject = "iam.v1.roles.revoke";
     std::string account_id;
     std::string role_id;
 };
@@ -90,7 +90,7 @@ struct revoke_role_by_name_request {
 
 struct get_account_roles_request {
     using response_type = struct get_account_roles_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.roles.by-account";
+    static constexpr std::string_view nats_subject = "iam.v1.roles.by-account";
     std::string account_id;
 };
 

@@ -118,15 +118,6 @@
     ("local5" . 55000))
   "Alist mapping checkout labels to base port numbers.")
 
-(defconst ores/nats-ports
-  '(("remote" . 4222)
-    ("local1" . 4223)
-    ("local2" . 4224)
-    ("local3" . 4225)
-    ("local4" . 4226)
-    ("local5" . 4227))
-  "Alist mapping checkout labels to NATS server ports.")
-
 (defun ores/get-port (service-type build-type)
   "Return port for SERVICE-TYPE and BUILD-TYPE in the current checkout."
   (let* ((base (alist-get ores/checkout-label ores/port-bases 50000 nil #'string=))
@@ -137,11 +128,6 @@
                   ((and (eq service-type 'wt)      (eq build-type 'release)) 3)
                   (t 0))))
     (+ base offset)))
-
-(defun ores/get-nats-url ()
-  "Return NATS URL for the current checkout."
-  (let ((port (alist-get ores/checkout-label ores/nats-ports 4222 nil #'string=)))
-    (format "nats://localhost:%d" port)))
 
 ;; =============================================================================
 ;; NATS domain service registry
@@ -231,72 +217,83 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
          (common-args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")))
     (prodigy-define-tag :name preset-tag)
 
-    ;; QT
-    (prodigy-define-service
-      :name    (ores/service-name "ORE Studio QT" preset)
-      :cwd     bin
-      :command (concat bin "/ores.qt")
-      :args    `(,@common-args "--compression-enabled")
-      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-      :stop-signal 'sigint
-      :kill-process-buffer-on-stop t)
-
-    ;; QT Blue
-    (prodigy-define-service
-      :name    (ores/service-name "ORE Studio QT Blue" preset)
-      :cwd     bin
-      :command (concat bin "/ores.qt")
-      :args    `(,@common-args "--compression-enabled"
-                 "--log-filename" "ores.qt.blue.log"
-                 "--instance-name" "Blue" "--instance-color" "2196F3")
-      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-      :stop-signal 'sigint
-      :kill-process-buffer-on-stop t)
-
-    ;; QT Red
-    (prodigy-define-service
-      :name    (ores/service-name "ORE Studio QT Red" preset)
-      :cwd     bin
-      :command (concat bin "/ores.qt")
-      :args    `(,@common-args "--compression-enabled"
-                 "--log-filename" "ores.qt.red.log"
-                 "--instance-name" "Red" "--instance-color" "F44336")
-      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-      :stop-signal 'sigint
-      :kill-process-buffer-on-stop t)
-
-    ;; QT Green
-    (prodigy-define-service
-      :name    (ores/service-name "ORE Studio QT Green" preset)
-      :cwd     bin
-      :command (concat bin "/ores.qt")
-      :args    `(,@common-args "--compression-enabled"
-                 "--log-filename" "ores.qt.green.log"
-                 "--instance-name" "Green" "--instance-color" "4CAF50")
-      :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-      :stop-signal 'sigint
-      :kill-process-buffer-on-stop t)
-
-    ;; NATS Server
+    ;; NATS Server — single shared instance on the standard port.
+    ;; Environment isolation is achieved via subject prefixes, not ports.
     (prodigy-define-service
       :name    (ores/service-name "ORE Studio NATS Server" preset)
       :cwd     bin
       :command "nats-server"
-      :args    `("--port" ,(number-to-string
-                             (alist-get ores/checkout-label ores/nats-ports 4222 nil #'string=)))
+      :args    '("--port" "4222")
       :tags    `(,@common-tags nats-server)
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)
 
-    ;; NATS domain services
-    (dolist (svc ores/nats-domain-services)
+    ;; All services receive a subject prefix of the form "ores.dev.{checkout}"
+    ;; so that multiple checkouts can share one NATS server without collisions.
+    (let ((subject-prefix (format "ores.dev.%s" ores/checkout-label))
+          (nats-args `("--nats-url" "nats://localhost:4222"
+                       "--nats-subject-prefix"
+                       ,(format "ores.dev.%s" ores/checkout-label))))
+
+      ;; NATS domain services
+      (dolist (svc ores/nats-domain-services)
+        (prodigy-define-service
+          :name    (ores/service-name (format "ORE Studio %s" (cdr svc)) preset)
+          :cwd     bin
+          :command (concat bin "/" (car svc))
+          :args    `(,@common-args ,@nats-args)
+          :tags    `(,@common-tags nats-service)
+          :env     (ores/setup-environment "SERVICE")
+          :stop-signal 'sigint
+          :kill-process-buffer-on-stop t))
+
+      ;; QT — also needs the subject prefix so it routes requests correctly
       (prodigy-define-service
-        :name    (ores/service-name (format "ORE Studio %s" (cdr svc)) preset)
+        :name    (ores/service-name "ORE Studio QT" preset)
         :cwd     bin
-        :command (concat bin "/" (car svc))
-        :args    `(,@common-args "--nats-url" ,(ores/get-nats-url))
-        :tags    `(,@common-tags nats-service)
-        :env     (ores/setup-environment "SERVICE")
+        :command (concat bin "/ores.qt")
+        :args    `(,@common-args "--compression-enabled"
+                   "--nats-subject-prefix" ,subject-prefix)
+        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t)
+
+      ;; QT Blue
+      (prodigy-define-service
+        :name    (ores/service-name "ORE Studio QT Blue" preset)
+        :cwd     bin
+        :command (concat bin "/ores.qt")
+        :args    `(,@common-args "--compression-enabled"
+                   "--nats-subject-prefix" ,subject-prefix
+                   "--log-filename" "ores.qt.blue.log"
+                   "--instance-name" "Blue" "--instance-color" "2196F3")
+        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t)
+
+      ;; QT Red
+      (prodigy-define-service
+        :name    (ores/service-name "ORE Studio QT Red" preset)
+        :cwd     bin
+        :command (concat bin "/ores.qt")
+        :args    `(,@common-args "--compression-enabled"
+                   "--nats-subject-prefix" ,subject-prefix
+                   "--log-filename" "ores.qt.red.log"
+                   "--instance-name" "Red" "--instance-color" "F44336")
+        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t)
+
+      ;; QT Green
+      (prodigy-define-service
+        :name    (ores/service-name "ORE Studio QT Green" preset)
+        :cwd     bin
+        :command (concat bin "/ores.qt")
+        :args    `(,@common-args "--compression-enabled"
+                   "--nats-subject-prefix" ,subject-prefix
+                   "--log-filename" "ores.qt.green.log"
+                   "--instance-name" "Green" "--instance-color" "4CAF50")
+        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
         :stop-signal 'sigint
         :kill-process-buffer-on-stop t))
 

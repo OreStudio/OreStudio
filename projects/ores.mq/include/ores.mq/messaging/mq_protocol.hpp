@@ -42,7 +42,7 @@ struct queue_message {
 
 struct send_message_request {
     using response_type = struct send_message_response;
-    static constexpr std::string_view nats_subject = "ores.mq.v1.messages.send";
+    static constexpr std::string_view nats_subject = "mq.v1.messages.send";
     std::string queue_id;
     std::string payload;
     int delay_seconds = 0;
@@ -56,7 +56,7 @@ struct send_message_response {
 
 struct read_messages_request {
     using response_type = struct read_messages_response;
-    static constexpr std::string_view nats_subject = "ores.mq.v1.messages.read";
+    static constexpr std::string_view nats_subject = "mq.v1.messages.read";
     std::string queue_id;
     int count = 10;
     int vt_seconds = 30;
@@ -70,7 +70,7 @@ struct read_messages_response {
 
 struct pop_messages_request {
     using response_type = struct pop_messages_response;
-    static constexpr std::string_view nats_subject = "ores.mq.v1.messages.pop";
+    static constexpr std::string_view nats_subject = "mq.v1.messages.pop";
     std::string queue_id;
     int count = 10;
 };
@@ -83,7 +83,7 @@ struct pop_messages_response {
 
 struct delete_messages_request {
     using response_type = struct delete_messages_response;
-    static constexpr std::string_view nats_subject = "ores.mq.v1.messages.delete";
+    static constexpr std::string_view nats_subject = "mq.v1.messages.delete";
     std::string queue_name;
     std::vector<std::int64_t> msg_ids;
 };
@@ -96,7 +96,7 @@ struct delete_messages_response {
 
 struct get_queues_request {
     using response_type = struct get_queues_response;
-    static constexpr std::string_view nats_subject = "ores.mq.v1.queues.list";
+    static constexpr std::string_view nats_subject = "mq.v1.queues.list";
     int offset = 0;
     int limit = 100;
 };
@@ -109,7 +109,7 @@ struct get_queues_response {
 
 struct get_queue_stats_request {
     using response_type = struct get_queue_stats_response;
-    static constexpr std::string_view nats_subject = "ores.mq.v1.queues.stats";
+    static constexpr std::string_view nats_subject = "mq.v1.queues.stats";
     int offset = 0;
     int limit = 100;
 };

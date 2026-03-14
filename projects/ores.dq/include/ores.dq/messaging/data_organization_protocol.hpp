@@ -39,7 +39,7 @@ namespace ores::dq::messaging {
 
 struct get_catalogs_request {
     using response_type = struct get_catalogs_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.catalogs.list";
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.list";
     int offset = 0;
     int limit = 100;
 };
@@ -51,7 +51,7 @@ struct get_catalogs_response {
 
 struct save_catalog_request {
     using response_type = struct save_catalog_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.catalogs.save";
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.save";
     ores::dq::domain::catalog data;
 };
 
@@ -62,7 +62,7 @@ struct save_catalog_response {
 
 struct delete_catalog_request {
     using response_type = struct delete_catalog_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.catalogs.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.delete";
     std::vector<std::string> codes;
 };
 
@@ -73,7 +73,7 @@ struct delete_catalog_response {
 
 struct get_catalog_history_request {
     using response_type = struct get_catalog_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.catalogs.history";
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.history";
     std::string code;
 };
 
@@ -89,7 +89,7 @@ struct get_catalog_history_response {
 
 struct get_data_domains_request {
     using response_type = struct get_data_domains_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.data-domains.list";
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.list";
     int offset = 0;
     int limit = 100;
 };
@@ -101,7 +101,7 @@ struct get_data_domains_response {
 
 struct save_data_domain_request {
     using response_type = struct save_data_domain_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.data-domains.save";
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.save";
     ores::dq::domain::data_domain data;
 };
 
@@ -112,7 +112,7 @@ struct save_data_domain_response {
 
 struct delete_data_domain_request {
     using response_type = struct delete_data_domain_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.data-domains.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.delete";
     std::vector<std::string> names;
 };
 
@@ -123,7 +123,7 @@ struct delete_data_domain_response {
 
 struct get_data_domain_history_request {
     using response_type = struct get_data_domain_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.data-domains.history";
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.history";
     std::string name;
 };
 
@@ -139,7 +139,7 @@ struct get_data_domain_history_response {
 
 struct get_methodologies_request {
     using response_type = struct get_methodologies_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.methodologies.list";
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.list";
     int offset = 0;
     int limit = 100;
 };
@@ -151,7 +151,7 @@ struct get_methodologies_response {
 
 struct save_methodology_request {
     using response_type = struct save_methodology_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.methodologies.save";
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.save";
     ores::dq::domain::methodology data;
 };
 
@@ -162,7 +162,7 @@ struct save_methodology_response {
 
 struct delete_methodology_request {
     using response_type = struct delete_methodology_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.methodologies.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.delete";
     std::vector<std::string> codes;
 };
 
@@ -173,7 +173,7 @@ struct delete_methodology_response {
 
 struct get_methodology_history_request {
     using response_type = struct get_methodology_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.methodologies.history";
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.history";
     std::string code;
 };
 
@@ -194,7 +194,7 @@ struct subject_area_key {
 
 struct get_subject_areas_request {
     using response_type = struct get_subject_areas_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.subject-areas.list";
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.list";
     int offset = 0;
     int limit = 100;
 };
@@ -206,7 +206,7 @@ struct get_subject_areas_response {
 
 struct save_subject_area_request {
     using response_type = struct save_subject_area_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.subject-areas.save";
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.save";
     ores::dq::domain::subject_area data;
 };
 
@@ -217,7 +217,7 @@ struct save_subject_area_response {
 
 struct delete_subject_area_request {
     using response_type = struct delete_subject_area_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.subject-areas.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.delete";
     std::vector<subject_area_key> keys;
 };
 
@@ -228,7 +228,7 @@ struct delete_subject_area_response {
 
 struct get_subject_area_history_request {
     using response_type = struct get_subject_area_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.subject-areas.history";
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.history";
     subject_area_key key;
 };
 
@@ -244,7 +244,7 @@ struct get_subject_area_history_response {
 
 struct get_nature_dimensions_request {
     using response_type = struct get_nature_dimensions_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.nature-dimensions.list";
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.list";
     int offset = 0;
     int limit = 100;
 };
@@ -256,7 +256,7 @@ struct get_nature_dimensions_response {
 
 struct save_nature_dimension_request {
     using response_type = struct save_nature_dimension_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.nature-dimensions.save";
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.save";
     ores::dq::domain::nature_dimension data;
 };
 
@@ -267,7 +267,7 @@ struct save_nature_dimension_response {
 
 struct delete_nature_dimension_request {
     using response_type = struct delete_nature_dimension_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.nature-dimensions.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.delete";
     std::vector<std::string> codes;
 };
 
@@ -278,7 +278,7 @@ struct delete_nature_dimension_response {
 
 struct get_nature_dimension_history_request {
     using response_type = struct get_nature_dimension_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.nature-dimensions.history";
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.history";
     std::string code;
 };
 
@@ -294,7 +294,7 @@ struct get_nature_dimension_history_response {
 
 struct get_origin_dimensions_request {
     using response_type = struct get_origin_dimensions_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.origin-dimensions.list";
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.list";
     int offset = 0;
     int limit = 100;
 };
@@ -306,7 +306,7 @@ struct get_origin_dimensions_response {
 
 struct save_origin_dimension_request {
     using response_type = struct save_origin_dimension_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.origin-dimensions.save";
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.save";
     ores::dq::domain::origin_dimension data;
 };
 
@@ -317,7 +317,7 @@ struct save_origin_dimension_response {
 
 struct delete_origin_dimension_request {
     using response_type = struct delete_origin_dimension_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.origin-dimensions.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.delete";
     std::vector<std::string> codes;
 };
 
@@ -328,7 +328,7 @@ struct delete_origin_dimension_response {
 
 struct get_origin_dimension_history_request {
     using response_type = struct get_origin_dimension_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.origin-dimensions.history";
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.history";
     std::string code;
 };
 
@@ -344,7 +344,7 @@ struct get_origin_dimension_history_response {
 
 struct get_treatment_dimensions_request {
     using response_type = struct get_treatment_dimensions_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.treatment-dimensions.list";
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.list";
     int offset = 0;
     int limit = 100;
 };
@@ -356,7 +356,7 @@ struct get_treatment_dimensions_response {
 
 struct save_treatment_dimension_request {
     using response_type = struct save_treatment_dimension_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.treatment-dimensions.save";
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.save";
     ores::dq::domain::treatment_dimension data;
 };
 
@@ -367,7 +367,7 @@ struct save_treatment_dimension_response {
 
 struct delete_treatment_dimension_request {
     using response_type = struct delete_treatment_dimension_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.treatment-dimensions.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.delete";
     std::vector<std::string> codes;
 };
 
@@ -378,7 +378,7 @@ struct delete_treatment_dimension_response {
 
 struct get_treatment_dimension_history_request {
     using response_type = struct get_treatment_dimension_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.treatment-dimensions.history";
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.history";
     std::string code;
 };
 

@@ -33,7 +33,7 @@ struct account_version_history {
 
 struct get_account_history_request {
     using response_type = struct get_account_history_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.history";
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.history";
     std::string username;
 };
 

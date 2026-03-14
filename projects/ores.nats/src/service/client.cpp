@@ -217,11 +217,17 @@ bool client::is_connected() const noexcept {
     return impl_->connected.load(std::memory_order_acquire);
 }
 
+std::string client::make_subject(std::string_view relative) const {
+    if (impl_->opts.subject_prefix.empty())
+        return std::string(relative);
+    return impl_->opts.subject_prefix + '.' + std::string(relative);
+}
+
 void client::publish(std::string_view subject,
     std::span<const std::byte> data,
     std::unordered_map<std::string, std::string> headers) {
 
-    natsMsg* msg = make_msg(subject, data, headers);
+    natsMsg* msg = make_msg(make_subject(subject), data, headers);
     const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg);
     natsMsg_Destroy(msg);
     if (s != NATS_OK)
@@ -234,7 +240,7 @@ message client::request_sync(std::string_view subject,
     std::unordered_map<std::string, std::string> headers,
     std::chrono::milliseconds timeout) {
 
-    natsMsg* req = make_msg(subject, data, headers);
+    natsMsg* req = make_msg(make_subject(subject), data, headers);
     natsMsg* reply = nullptr;
     const natsStatus s = natsConnection_RequestMsg(
         &reply, impl_->conn, req, static_cast<int64_t>(timeout.count()));
@@ -293,7 +299,7 @@ subscription client::subscribe(std::string_view subject, message_handler handler
 
     natsSubscription* sub = nullptr;
     const natsStatus s = natsConnection_Subscribe(
-        &sub, impl_->conn, std::string(subject).c_str(), on_msg, cl.get());
+        &sub, impl_->conn, make_subject(subject).c_str(), on_msg, cl.get());
 
     if (s != NATS_OK)
         throw std::runtime_error(
@@ -315,7 +321,7 @@ subscription client::queue_subscribe(std::string_view subject,
     natsSubscription* sub = nullptr;
     const natsStatus s = natsConnection_QueueSubscribe(
         &sub, impl_->conn,
-        std::string(subject).c_str(),
+        make_subject(subject).c_str(),
         std::string(queue_group).c_str(),
         on_msg, cl.get());
 
@@ -333,7 +339,7 @@ void client::js_publish(std::string_view subject,
     std::span<const std::byte> data,
     std::unordered_map<std::string, std::string> headers) {
 
-    natsMsg* msg = make_msg(subject, data, headers);
+    natsMsg* msg = make_msg(make_subject(subject), data, headers);
     jsPubAck* ack = nullptr;
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
     const natsStatus s = js_PublishMsg(&ack, impl_->js, msg, nullptr, nullptr);
@@ -353,7 +359,7 @@ subscription client::js_subscribe(std::string_view subject,
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
 
-    const std::string subj_str(subject);
+    const std::string subj_str(make_subject(subject));
     const std::string durable_str(durable_name);
 
     jsSubOptions sub_opts;
@@ -384,7 +390,7 @@ subscription client::js_queue_subscribe(std::string_view subject,
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
 
-    const std::string subj_str(subject);
+    const std::string subj_str(make_subject(subject));
     const std::string durable_str(durable_name);
     const std::string queue_str(queue_group);
 

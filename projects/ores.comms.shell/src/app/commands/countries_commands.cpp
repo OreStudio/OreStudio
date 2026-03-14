@@ -130,7 +130,7 @@ process_get_countries(std::ostream& out, nats_session& session,
     req.limit = pagination.page_size();
 
     auto result = do_request<refdata::messaging::get_countries_response>(
-        out, session, "ores.refdata.v1.countries.list", rfl::json::write(req));
+        out, session, "refdata.v1.countries.list", rfl::json::write(req));
     if (!result) return;
 
     state.total_count = result->total_available_count;
@@ -182,7 +182,7 @@ process_add_country(std::ostream& out, nats_session& session,
         });
 
     auto result = do_auth_request<refdata::messaging::save_country_response>(
-        out, session, "ores.refdata.v1.countries.save", rfl::json::write(req));
+        out, session, "refdata.v1.countries.save", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -211,7 +211,7 @@ process_delete_country(std::ostream& out, nats_session& session,
     req.alpha2_codes = {alpha2_code};
 
     auto result = do_auth_request<refdata::messaging::delete_country_response>(
-        out, session, "ores.refdata.v1.countries.delete", rfl::json::write(req));
+        out, session, "refdata.v1.countries.delete", rfl::json::write(req));
     if (!result) return;
 
     if (result->success) {
@@ -239,7 +239,7 @@ process_get_country_history(std::ostream& out, nats_session& session,
     req.alpha2_code = std::move(alpha2_code);
 
     auto result = do_auth_request<refdata::messaging::get_country_history_response>(
-        out, session, "ores.refdata.v1.countries.history", rfl::json::write(req));
+        out, session, "refdata.v1.countries.history", rfl::json::write(req));
     if (!result) return;
 
     if (!result->success) {

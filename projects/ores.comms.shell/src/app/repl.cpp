@@ -101,7 +101,7 @@ void repl::cleanup() {
     if (session_.is_logged_in()) {
         BOOST_LOG_SEV(lg(), debug) << "Sending logout request before exit.";
         try {
-            std::ignore = session_.authenticated_request("ores.iam.v1.auth.logout",
+            std::ignore = session_.authenticated_request("iam.v1.auth.logout",
                 rfl::json::write(iam::messaging::logout_request{}));
             BOOST_LOG_SEV(lg(), info) << "Logged out successfully.";
         } catch (const std::exception& e) {

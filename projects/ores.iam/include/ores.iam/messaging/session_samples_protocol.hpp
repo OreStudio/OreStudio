@@ -37,7 +37,7 @@ struct session_sample_dto {
 
 struct get_session_samples_request {
     using response_type = struct get_session_samples_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.sessions.samples";
+    static constexpr std::string_view nats_subject = "iam.v1.sessions.samples";
     std::string session_id;
 };
 

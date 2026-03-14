@@ -26,6 +26,7 @@
 #include <rfl/json.hpp>
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 
 namespace ores::qt {
@@ -181,11 +182,13 @@ void ShellMdiWindow::start_shell() {
     in_stream_ = std::make_unique<std::istream>(input_buf_.get());
 
     // Connect the shell's own NATS session
-    const std::string nats_url = "nats://" + client_manager_->connectedHost()
+    nats::config::nats_options shell_opts;
+    shell_opts.url = "nats://" + client_manager_->connectedHost()
         + ":" + std::to_string(client_manager_->connectedPort());
+    shell_opts.subject_prefix = client_manager_->subjectPrefix();
 
     try {
-        shell_session_.connect(nats_url);
+        shell_session_.connect(std::move(shell_opts));
     } catch (const std::exception& e) {
         auto msg = QString("Shell: Failed to connect to server: %1")
             .arg(QString::fromStdString(e.what()));

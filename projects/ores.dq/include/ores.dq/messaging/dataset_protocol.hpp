@@ -31,7 +31,7 @@ namespace ores::dq::messaging {
 
 struct get_datasets_request {
     using response_type = struct get_datasets_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.datasets.list";
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.list";
     int offset = 0;
     int limit = 100;
 };
@@ -43,7 +43,7 @@ struct get_datasets_response {
 
 struct save_dataset_request {
     using response_type = struct save_dataset_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.datasets.save";
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.save";
     std::vector<ores::dq::domain::dataset> datasets;
 };
 
@@ -54,7 +54,7 @@ struct save_dataset_response {
 
 struct delete_dataset_request {
     using response_type = struct delete_dataset_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.datasets.delete";
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.delete";
     std::vector<std::string> ids;
 };
 
@@ -65,7 +65,7 @@ struct delete_dataset_response {
 
 struct get_dataset_history_request {
     using response_type = struct get_dataset_history_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.datasets.history";
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.history";
     std::string id;
 };
 
@@ -77,7 +77,7 @@ struct get_dataset_history_response {
 
 struct publish_datasets_request {
     using response_type = struct publish_datasets_response;
-    static constexpr std::string_view nats_subject = "ores.dq.v1.datasets.publish";
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.publish";
     std::vector<std::string> dataset_ids;
     ores::dq::domain::publication_mode mode =
         ores::dq::domain::publication_mode::upsert;

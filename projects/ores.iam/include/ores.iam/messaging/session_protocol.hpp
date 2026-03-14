@@ -29,7 +29,7 @@ namespace ores::iam::messaging {
 
 struct list_sessions_request {
     using response_type = struct list_sessions_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.sessions.list";
+    static constexpr std::string_view nats_subject = "iam.v1.sessions.list";
     std::string account_id;
     int limit = 50;
     int offset = 0;
@@ -42,7 +42,7 @@ struct list_sessions_response {
 
 struct get_active_sessions_request {
     using response_type = struct get_active_sessions_response;
-    static constexpr std::string_view nats_subject = "ores.iam.v1.sessions.active";
+    static constexpr std::string_view nats_subject = "iam.v1.sessions.active";
 };
 
 struct get_active_sessions_response {

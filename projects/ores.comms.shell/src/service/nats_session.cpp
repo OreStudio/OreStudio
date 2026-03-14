@@ -27,10 +27,9 @@ namespace ores::comms::shell::service {
 
 using namespace ores::logging;
 
-void nats_session::connect(std::string_view url) {
-    ores::nats::config::nats_options opts;
-    opts.url = std::string(url);
-    client_ = std::make_shared<ores::nats::service::client>(opts);
+void nats_session::connect(nats::config::nats_options opts) {
+    const std::string url = opts.url;
+    client_ = std::make_shared<ores::nats::service::client>(std::move(opts));
     try {
         client_->connect();
     } catch (...) {

@@ -18,31 +18,17 @@
  *
  */
 #include "ores.synthetic/messaging/registrar.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-
-#include <memory>
-#include "ores.synthetic/messaging/synthetic_message_handler.hpp"
 
 namespace ores::synthetic::messaging {
 
-using namespace ores::logging;
-
-void registrar::register_handlers(comms::messaging::message_server& server,
-    database::context ctx,
-    std::shared_ptr<iam::service::authorization_service> auth_service) {
-    BOOST_LOG_SEV(lg(), debug) << "Registering Synthetic message handlers.";
-
-    auto handler = std::make_shared<synthetic_message_handler>(
-        std::move(ctx), server.sessions(), std::move(auth_service));
-
-    comms::messaging::message_type_range synthetic_range{
-        .min = comms::messaging::SYNTHETIC_SUBSYSTEM_MIN,
-        .max = comms::messaging::SYNTHETIC_SUBSYSTEM_MAX
-    };
-    server.register_handler(synthetic_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg(), debug)
-        << "Synthetic message handlers registered successfully.";
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& nats,
+    ores::database::context /*ctx*/) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(
+        "ores.synthetic.v1.>", "ores.synthetic.service",
+        [](ores::nats::message /*msg*/) {}));
+    return subs;
 }
 
 }

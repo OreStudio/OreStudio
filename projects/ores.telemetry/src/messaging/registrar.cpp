@@ -17,22 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_DOMAIN_QUEUE_MESSAGE_EVENT_JSON_IO_HPP
-#define ORES_MQ_DOMAIN_QUEUE_MESSAGE_EVENT_JSON_IO_HPP
+#include "ores.telemetry/messaging/registrar.hpp"
 
-#include <iosfwd>
-#include "ores.mq/domain/queue_message_event.hpp"
+namespace ores::telemetry::messaging {
 
-namespace ores::mq::domain {
-
-/**
- * @brief Dumps a queue_message_event to a stream in a JSON-like format.
- *
- * The payload is represented as its byte count rather than raw bytes to
- * keep log output readable.
- */
-std::ostream& operator<<(std::ostream& s, const queue_message_event& v);
-
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& nats,
+    ores::database::context /*ctx*/) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(
+        "ores.telemetry.v1.>", "ores.telemetry.service",
+        [](ores::nats::message /*msg*/) {}));
+    return subs;
 }
 
-#endif
+}

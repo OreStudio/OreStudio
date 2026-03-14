@@ -20,32 +20,18 @@
 #ifndef ORES_SYNTHETIC_MESSAGING_REGISTRAR_HPP
 #define ORES_SYNTHETIC_MESSAGING_REGISTRAR_HPP
 
-#include "ores.comms/messaging/message_server.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.iam/service/authorization_service.hpp"
 
 namespace ores::synthetic::messaging {
 
-/**
- * @brief Register Synthetic subsystem message handlers with the server.
- *
- * Registers handlers for all Synthetic subsystem messages (0x7000-0x7FFF).
- * Must be called before server.run().
- */
 class registrar {
-private:
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(
-            "ores.synthetic.messaging.registrar");
-        return instance;
-    }
-
 public:
-    static void register_handlers(comms::messaging::message_server& server,
-        database::context ctx,
-        std::shared_ptr<iam::service::authorization_service> auth_service);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+        ores::database::context ctx);
 };
 
 }

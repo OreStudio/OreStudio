@@ -41,7 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.geo.lib
         ores.platform.lib
         ores.security.lib
-        ores.comms.lib
+        ores.nats.lib
     PRIVATE
         ores.utility.lib
         faker-cxx::faker-cxx

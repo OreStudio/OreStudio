@@ -36,11 +36,12 @@ target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
-    PRIVATE
+    PUBLIC
         ores.database.lib
-        ores.comms.lib
+        ores.logging.lib
+        ores.nats.lib
+    PRIVATE
         ores.scheduler.lib
-        ores.mq.lib
         ores.utility.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx

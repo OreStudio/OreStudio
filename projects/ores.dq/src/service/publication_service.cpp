@@ -423,7 +423,7 @@ domain::publication_result publication_service::call_populate_function(
     return result;
 }
 
-messaging::publish_bundle_response publication_service::publish_bundle(
+publish_bundle_result publication_service::publish_bundle(
     const std::string& bundle_code,
     domain::publication_mode mode,
     const std::string& published_by,
@@ -436,7 +436,7 @@ messaging::publish_bundle_response publication_service::publish_bundle(
         << ", published_by: " << published_by
         << ", params_json: " << (params_json.empty() ? "(empty)" : params_json);
 
-    messaging::publish_bundle_response response;
+    publish_bundle_result response;
     const std::string mode_str = to_string(mode);
     const std::string effective_params = params_json.empty() ? "{}" : params_json;
 
@@ -456,7 +456,7 @@ messaging::publish_bundle_response publication_service::publish_bundle(
         //   error_message) rows
         for (const auto& row : rows) {
             if (row.size() >= 8) {
-                messaging::bundle_dataset_result dataset_result;
+                bundle_dataset_result dataset_result;
                 dataset_result.dataset_code = row[0].value_or("");
                 dataset_result.dataset_name = row[1].value_or("");
                 dataset_result.status = row[2].value_or("");

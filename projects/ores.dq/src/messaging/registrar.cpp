@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,30 +18,17 @@
  *
  */
 #include "ores.dq/messaging/registrar.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-
-#include <memory>
-#include "ores.dq/messaging/dq_message_handler.hpp"
 
 namespace ores::dq::messaging {
 
-using namespace ores::logging;
-
-void registrar::register_handlers(comms::messaging::message_server& server,
-    database::context ctx,
-    std::shared_ptr<iam::service::authorization_service> auth_service) {
-    BOOST_LOG_SEV(lg(), debug) << "Registering DQ message handlers.";
-
-    auto handler = std::make_shared<dq_message_handler>(
-        std::move(ctx), server.sessions(), std::move(auth_service));
-
-    comms::messaging::message_type_range dq_range{
-        .min = comms::messaging::DQ_SUBSYSTEM_MIN,
-        .max = comms::messaging::DQ_SUBSYSTEM_MAX
-    };
-    server.register_handler(dq_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg(), debug) << "DQ message handlers registered successfully.";
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& nats,
+    ores::database::context /*ctx*/) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(
+        "ores.dq.v1.>", "ores.dq.service",
+        [](ores::nats::message /*msg*/) {}));
+    return subs;
 }
 
 }

@@ -18,27 +18,17 @@
  *
  */
 #include "ores.reporting/messaging/registrar.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-#include "ores.reporting/messaging/reporting_message_handler.hpp"
 
 namespace ores::reporting::messaging {
 
-using namespace ores::logging;
-
-void registrar::register_handlers(comms::messaging::message_server& server,
-    database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions) {
-    BOOST_LOG_SEV(lg(), info) << "Registering reporting subsystem message handlers.";
-
-    auto handler = std::make_shared<reporting_message_handler>(
-        std::move(ctx), std::move(sessions));
-    comms::messaging::message_type_range reporting_range{
-        .min = comms::messaging::REPORTING_SUBSYSTEM_MIN,
-        .max = comms::messaging::REPORTING_SUBSYSTEM_MAX
-    };
-    server.register_handler(reporting_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg(), info) << "Reporting subsystem message handlers registered successfully.";
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& nats,
+    ores::database::context /*ctx*/) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(
+        "ores.reporting.v1.>", "ores.reporting.service",
+        [](ores::nats::message /*msg*/) {}));
+    return subs;
 }
 
 }

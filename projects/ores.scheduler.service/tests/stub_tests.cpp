@@ -27,7 +27,7 @@ const std::string tags("[domain]");
 
 }
 
-using namespace ores::scheduler.service::domain;
+using namespace ores::scheduler::service::domain;
 
 TEST_CASE("create_stub", tags) {
     REQUIRE(stub_function() == "STUB code to be removed");

@@ -18,27 +18,17 @@
  *
  */
 #include "ores.trading/messaging/registrar.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-#include "ores.trading/messaging/trade_message_handler.hpp"
 
 namespace ores::trading::messaging {
 
-using namespace ores::logging;
-
-void registrar::register_handlers(comms::messaging::message_server& server,
-    database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions) {
-    BOOST_LOG_SEV(lg(), info) << "Registering trade subsystem message handlers.";
-
-    auto handler = std::make_shared<trade_message_handler>(
-        std::move(ctx), std::move(sessions));
-    comms::messaging::message_type_range trade_range{
-        .min = comms::messaging::TRADE_SUBSYSTEM_MIN,
-        .max = comms::messaging::TRADE_SUBSYSTEM_MAX
-    };
-    server.register_handler(trade_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg(), info) << "Trade subsystem message handlers registered successfully.";
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& nats,
+    ores::database::context /*ctx*/) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(
+        "ores.trading.v1.>", "ores.trading.service",
+        [](ores::nats::message /*msg*/) {}));
+    return subs;
 }
 
 }

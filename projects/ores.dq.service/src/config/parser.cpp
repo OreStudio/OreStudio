@@ -56,7 +56,7 @@ options_description make_options_description() {
     r.add(common_configuration::make_options_description());
     r.add(logging_configuration::make_options_description("ores.dq.service.log"));
     r.add(database_configuration::make_options_description());
-    r.add(nats_configuration::make_options_description("ores.dq.service"));
+    r.add(nats_configuration::make_options_description());
     return r;
 }
 

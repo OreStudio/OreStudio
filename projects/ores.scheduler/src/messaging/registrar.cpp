@@ -18,27 +18,17 @@
  *
  */
 #include "ores.scheduler/messaging/registrar.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-#include "ores.scheduler/messaging/scheduler_message_handler.hpp"
 
 namespace ores::scheduler::messaging {
 
-using namespace ores::logging;
-
-void registrar::register_handlers(comms::messaging::message_server& server,
-    database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions) {
-    BOOST_LOG_SEV(lg(), info) << "Registering scheduler subsystem message handlers.";
-
-    auto handler = std::make_shared<scheduler_message_handler>(
-        std::move(ctx), std::move(sessions));
-    comms::messaging::message_type_range scheduler_range{
-        .min = comms::messaging::SCHEDULER_SUBSYSTEM_MIN,
-        .max = comms::messaging::SCHEDULER_SUBSYSTEM_MAX
-    };
-    server.register_handler(scheduler_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg(), info) << "Scheduler subsystem message handlers registered successfully.";
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& nats,
+    ores::database::context /*ctx*/) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(
+        "ores.scheduler.v1.>", "ores.scheduler.service",
+        [](ores::nats::message /*msg*/) {}));
+    return subs;
 }
 
 }

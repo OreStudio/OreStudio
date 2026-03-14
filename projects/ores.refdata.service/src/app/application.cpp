@@ -23,6 +23,8 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.refdata.service/app/application_exception.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.refdata/messaging/registrar.hpp"
 
 namespace ores::refdata::service::app {
 
@@ -51,11 +53,15 @@ application::run(boost::asio::io_context& /*io_ctx*/,
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
         "ores.refdata.service", 0, 1);
 
-    auto ctx = make_context(cfg.database);
-    (void)ctx;
+    ores::nats::service::client nats(cfg.nats);
+    nats.connect();
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url;
 
-    // TODO: register domain handlers and run NATS server
-    BOOST_LOG_SEV(lg(), warn) << "ores.refdata.service service is not yet implemented.";
+    auto ctx = make_context(cfg.database);
+    auto subs = ores::refdata::messaging::registrar::register_handlers(nats, std::move(ctx));
+    BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
+
+    nats.drain();
     co_return;
 }
 

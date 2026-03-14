@@ -48,7 +48,6 @@ target_link_libraries(${lib_target_name}
         ores.dq.lib
         ores.ore.lib
         ores.refdata.lib
-        ores.comms.lib
         ores.security.lib
         magic_enum::magic_enum
         cli::cli)

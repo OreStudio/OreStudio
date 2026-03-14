@@ -31,13 +31,37 @@
 #include "ores.dq/domain/publication.hpp"
 #include "ores.dq/domain/publication_mode.hpp"
 #include "ores.dq/domain/publication_result.hpp"
-#include "ores.dq/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq/repository/dataset_repository.hpp"
 #include "ores.dq/repository/dataset_dependency_repository.hpp"
 #include "ores.dq/repository/publication_repository.hpp"
 #include "ores.dq/repository/artefact_type_repository.hpp"
 
 namespace ores::dq::service {
+
+struct bundle_dataset_result {
+    std::string dataset_code;
+    std::string dataset_name;
+    std::string status;
+    std::string error_message;
+    std::uint64_t records_inserted = 0;
+    std::uint64_t records_updated = 0;
+    std::uint64_t records_skipped = 0;
+    std::uint64_t records_deleted = 0;
+};
+
+struct publish_bundle_result {
+    bool success = false;
+    std::string error_message;
+    std::uint32_t datasets_processed = 0;
+    std::uint32_t datasets_succeeded = 0;
+    std::uint32_t datasets_failed = 0;
+    std::uint32_t datasets_skipped = 0;
+    std::uint64_t total_records_inserted = 0;
+    std::uint64_t total_records_updated = 0;
+    std::uint64_t total_records_skipped = 0;
+    std::uint64_t total_records_deleted = 0;
+    std::vector<bundle_dataset_result> dataset_results;
+};
 
 /**
  * @brief Service for publishing datasets to production tables.
@@ -108,7 +132,7 @@ public:
      * @param params_json JSON object with per-dataset parameters, keyed by artefact_type.
      * @return Publication result with per-dataset details.
      */
-    messaging::publish_bundle_response publish_bundle(
+    publish_bundle_result publish_bundle(
         const std::string& bundle_code,
         domain::publication_mode mode,
         const std::string& published_by,

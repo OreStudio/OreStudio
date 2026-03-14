@@ -45,11 +45,11 @@ organisation_publisher_service::organisation_publisher_service(
     database::context ctx)
     : ctx_(std::move(ctx)) {}
 
-messaging::generate_organisation_response
+generate_organisation_result
 organisation_publisher_service::publish(
     const domain::generated_organisation& org) {
 
-    messaging::generate_organisation_response response;
+    generate_organisation_result response;
 
     try {
         BOOST_LOG_SEV(lg(), info) << "Publishing generated organisation "

@@ -37,7 +37,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.variability.lib
-        ores.comms.lib
+        ores.nats.lib
     PRIVATE
         ores.telemetry.lib
         ores.utility.lib
@@ -45,6 +45,5 @@ target_link_libraries(${lib_target_name}
         faker-cxx::faker-cxx
         libfort::fort
         Boost::boost)
-# Note: OpenSSL comes transitively through ores.comms.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

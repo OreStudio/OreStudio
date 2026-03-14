@@ -20,39 +20,18 @@
 #ifndef ORES_TRADING_MESSAGING_REGISTRAR_HPP
 #define ORES_TRADING_MESSAGING_REGISTRAR_HPP
 
-#include <memory>
-#include "ores.comms/messaging/message_server.hpp"
-#include "ores.comms/service/auth_session_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
 
 namespace ores::trading::messaging {
 
-/**
- * @brief Register trade subsystem message handlers with the server.
- *
- * Registers handlers for all trade subsystem messages (0x8000-0x8FFF).
- * Must be called before server.run().
- *
- * @param server The server to register handlers with
- * @param ctx Database context for repository access
- * @param sessions Session service for authentication verification
- */
 class registrar {
-private:
-    inline static std::string_view logger_name =
-        "ores.trading.messaging.registrar";
-
-    static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
-    static void register_handlers(comms::messaging::message_server& server,
-        database::context ctx,
-        std::shared_ptr<comms::service::auth_session_service> sessions);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+        ores::database::context ctx);
 };
 
 }

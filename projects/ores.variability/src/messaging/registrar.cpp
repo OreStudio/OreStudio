@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -18,28 +18,17 @@
  *
  */
 #include "ores.variability/messaging/registrar.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-
-#include "ores.variability/messaging/variability_message_handler.hpp"
 
 namespace ores::variability::messaging {
 
-using namespace ores::logging;
-
-void registrar::register_handlers(comms::messaging::message_server& server,
-    database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions) {
-    BOOST_LOG_SEV(lg(), info) << "Registering variability subsystem message handlers.";
-
-    auto handler = std::make_shared<variability_message_handler>(
-        std::move(ctx), std::move(sessions));
-    comms::messaging::message_type_range variability_range{
-        .min = comms::messaging::VARIABILITY_SUBSYSTEM_MIN,
-        .max = comms::messaging::VARIABILITY_SUBSYSTEM_MAX
-    };
-    server.register_handler(variability_range, std::move(handler));
-
-    BOOST_LOG_SEV(lg(), info) << "Variability subsystem message handlers registered successfully.";
+std::vector<ores::nats::service::subscription>
+registrar::register_handlers(ores::nats::service::client& nats,
+    ores::database::context /*ctx*/) {
+    std::vector<ores::nats::service::subscription> subs;
+    subs.push_back(nats.queue_subscribe(
+        "ores.variability.v1.>", "ores.variability.service",
+        [](ores::nats::message /*msg*/) {}));
+    return subs;
 }
 
 }

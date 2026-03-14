@@ -27,6 +27,8 @@
 namespace ores::refdata::messaging {
 
 struct get_countries_request {
+    using response_type = struct get_countries_response;
+    static constexpr std::string_view nats_subject = "ores.refdata.v1.countries.list";
     int offset = 0;
     int limit = 100;
 };
@@ -37,6 +39,8 @@ struct get_countries_response {
 };
 
 struct save_country_request {
+    using response_type = struct save_country_response;
+    static constexpr std::string_view nats_subject = "ores.refdata.v1.countries.save";
     ores::refdata::domain::country data;
 
     static save_country_request from(ores::refdata::domain::country c) {
@@ -50,6 +54,8 @@ struct save_country_response {
 };
 
 struct delete_country_request {
+    using response_type = struct delete_country_response;
+    static constexpr std::string_view nats_subject = "ores.refdata.v1.countries.delete";
     std::vector<std::string> alpha2_codes;
 };
 
@@ -59,6 +65,8 @@ struct delete_country_response {
 };
 
 struct get_country_history_request {
+    using response_type = struct get_country_history_response;
+    static constexpr std::string_view nats_subject = "ores.refdata.v1.countries.history";
     std::string alpha2_code;
 };
 

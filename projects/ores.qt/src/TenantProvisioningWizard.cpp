@@ -101,7 +101,7 @@ void TenantProvisioningWizard::clearBootstrapFlag() {
     flag.change_reason_code = std::string(reason::codes::new_record);
     flag.change_commentary = "Tenant setup wizard completed";
     variability::messaging::save_feature_flag_request req;
-    req.flags.push_back(std::move(flag));
+    req.data = std::move(flag);
 
     auto result = clientManager_->process_authenticated_request(std::move(req));
     if (!result) {
@@ -773,9 +773,6 @@ void OrganisationSetupPage::startBundlePublish() {
         dq::messaging::publish_bundle_params leiParams;
         leiParams.lei_parties = dq::messaging::lei_parties_params{rootLei};
         const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
-        if (!datasetSize.empty()) {
-            leiParams.lei_dataset_size = datasetSize;
-        }
         // Opt in the LEI party and counterparty datasets
         const std::string size = datasetSize.empty() ? "small" : datasetSize;
         leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);

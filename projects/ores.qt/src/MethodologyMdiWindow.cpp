@@ -29,8 +29,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/dataset_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.dq/messaging/data_organization_protocol.hpp"
 
 namespace ores::qt {
 
@@ -177,42 +176,32 @@ void MethodologyMdiWindow::onDeleteClicked() {
     auto selected = tableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) return;
 
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> names;
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* methodology = model_->getMethodology(sourceIndex.row())) {
-            ids.push_back(methodology->id);
+            names.push_back(methodology->name);
         }
     }
 
-    QString message = ids.size() == 1
+    QString message = names.size() == 1
         ? tr("Delete selected methodology?")
-        : tr("Delete %1 methodologies?").arg(ids.size());
+        : tr("Delete %1 methodologies?").arg(names.size());
 
     auto reply = MessageBoxHelper::question(this, tr("Confirm Delete"), message,
                                             QMessageBox::Yes | QMessageBox::No);
     if (reply != QMessageBox::Yes) return;
 
     QPointer<MethodologyMdiWindow> self = this;
-    auto task = [self, ids = std::move(ids)]() -> bool {
+    auto task = [self, names = std::move(names)]() -> bool {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_methodology_request request;
-        request.ids = ids;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_methodology_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.codes = names;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return false;
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return false;
-
-        auto response = dq::messaging::delete_methodology_response::deserialize(*payload_result);
-        return response && response->success;
+        return response_result->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);
@@ -248,7 +237,7 @@ void MethodologyMdiWindow::onHistoryClicked() {
 
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* methodology = model_->getMethodology(sourceIndex.row())) {
-        emit showMethodologyHistory(methodology->id);
+        emit showMethodologyHistory(methodology->name);
     }
 }
 

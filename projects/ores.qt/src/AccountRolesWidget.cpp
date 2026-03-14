@@ -32,7 +32,6 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
-#include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
@@ -162,7 +161,7 @@ void AccountRolesWidget::load() {
                 auto accountRolesFuture = std::async(std::launch::async,
                     [&self, &accountId]() {
                         iam::messaging::get_account_roles_request request;
-                        request.account_id = accountId;
+                        request.account_id = boost::uuids::to_string(accountId);
                         return self->clientManager_->
                             process_authenticated_request(std::move(request));
                     });
@@ -179,12 +178,12 @@ void AccountRolesWidget::load() {
 
                 if (!accountRolesResult) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch account roles: "
-                                               << comms::net::to_string(accountRolesResult.error());
+                                               << accountRolesResult.error();
                     return {.success = false};
                 }
                 if (!allRolesResult) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch all roles: "
-                                               << comms::net::to_string(allRolesResult.error());
+                                               << allRolesResult.error();
                     return {.success = false};
                 }
                 return {.success = true,
@@ -200,7 +199,7 @@ void AccountRolesWidget::load() {
             if (!result) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to fetch roles: "
-                    << comms::net::to_string(result.error());
+                    << result.error();
                 return {.success = false};
             }
             return {.success = true, .allRoles = std::move(result->roles)};

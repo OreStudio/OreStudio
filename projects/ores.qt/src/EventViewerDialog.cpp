@@ -42,7 +42,6 @@
 #include <QDialogButtonBox>
 
 // Event types to subscribe to
-#include "ores.comms/eventing/connection_events.hpp"
 #include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
@@ -257,94 +256,48 @@ void EventViewerWindow::subscribeToEvents() {
         return;
     }
 
-    // Subscribe to connection events
-    subscriptions_.push_back(
-        eventBus_->subscribe<comms::eventing::connected_event>(
-            [this](const comms::eventing::connected_event& e) {
-                QJsonObject json;
-                json["host"] = QString::fromStdString(e.host);
-                json["port"] = e.port;
-                json["timestamp"] = formatTimestamp(e.timestamp);
+    // Subscribe to connection events via ClientManager signals
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::connected, this, [this]() {
+            const auto now = QDateTime::currentDateTime();
+            QJsonObject json;
+            json["address"] = QString::fromStdString(clientManager_->serverAddress());
+            EventRecord record{
+                now, "connected", "local",
+                QString("Connected to %1")
+                    .arg(QString::fromStdString(clientManager_->serverAddress())),
+                QString::fromUtf8(QJsonDocument(json).toJson(QJsonDocument::Indented))
+            };
+            addEvent(std::move(record));
+        });
 
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        comms::eventing::connected_event>::name),
-                    "local",
-                    QString("Connected to %1:%2")
-                        .arg(QString::fromStdString(e.host))
-                        .arg(e.port),
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
+        connect(clientManager_, &ClientManager::disconnected, this, [this]() {
+            const auto now = QDateTime::currentDateTime();
+            EventRecord record{
+                now, "disconnected", "local",
+                "Disconnected from server", "{}"
+            };
+            addEvent(std::move(record));
+        });
 
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
+        connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
+            const auto now = QDateTime::currentDateTime();
+            EventRecord record{
+                now, "reconnecting", "local",
+                "Attempting to reconnect...", "{}"
+            };
+            addEvent(std::move(record));
+        });
 
-    subscriptions_.push_back(
-        eventBus_->subscribe<comms::eventing::disconnected_event>(
-            [this](const comms::eventing::disconnected_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        comms::eventing::disconnected_event>::name),
-                    "local",
-                    "Disconnected from server",
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
-
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
-
-    subscriptions_.push_back(
-        eventBus_->subscribe<comms::eventing::reconnecting_event>(
-            [this](const comms::eventing::reconnecting_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        comms::eventing::reconnecting_event>::name),
-                    "local",
-                    "Attempting to reconnect...",
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
-
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
-
-    subscriptions_.push_back(
-        eventBus_->subscribe<comms::eventing::reconnected_event>(
-            [this](const comms::eventing::reconnected_event& e) {
-                QJsonObject json;
-                json["timestamp"] = formatTimestamp(e.timestamp);
-
-                EventRecord record{
-                    toQDateTime(e.timestamp),
-                    QString::fromUtf8(eventing::domain::event_traits<
-                        comms::eventing::reconnected_event>::name),
-                    "local",
-                    "Reconnected to server",
-                    QString::fromUtf8(
-                        QJsonDocument(json).toJson(QJsonDocument::Indented))
-                };
-
-                QMetaObject::invokeMethod(this, [this, r = std::move(record)]() {
-                    addEvent(std::move(r));
-                }, Qt::QueuedConnection);
-            }));
+        connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+            const auto now = QDateTime::currentDateTime();
+            EventRecord record{
+                now, "reconnected", "local",
+                "Reconnected to server", "{}"
+            };
+            addEvent(std::move(record));
+        });
+    }
 
     // Subscribe to currency changed events
     subscriptions_.push_back(

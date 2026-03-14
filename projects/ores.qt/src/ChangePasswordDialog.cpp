@@ -27,9 +27,7 @@
 #include <QFutureWatcher>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/messaging/account_protocol.hpp"
 
 namespace ores::qt {
 
@@ -197,51 +195,19 @@ void ChangePasswordDialog::onChangeClicked() {
     QFuture<std::pair<bool, QString>> future = QtConcurrent::run(
         [this, new_password]() -> std::pair<bool, QString> {
             try {
-                iam::messaging::change_password_request request{
+                iam::messaging::change_password_request_typed request{
                     .new_password = new_password.toStdString()
                 };
 
-                auto payload = request.serialize();
-                comms::messaging::frame request_frame(
-                    comms::messaging::message_type::change_password_request,
-                    0,
-                    std::move(payload)
-                );
+                auto result = clientManager_->process_authenticated_request(
+                    std::move(request));
 
-                auto response_result = clientManager_->sendRequest(std::move(request_frame));
-
-                if (!response_result) {
-                    return {false, QString("Network error during password change")};
+                if (!result) {
+                    return {false, QString::fromStdString(result.error())};
                 }
 
-                const auto& header = response_result->header();
-
-                // Check for error response
-                if (header.type == comms::messaging::message_type::error_response) {
-                    auto payload_result = response_result->decompressed_payload();
-                    if (payload_result) {
-                        auto error_resp = comms::messaging::error_response::deserialize(*payload_result);
-                        if (error_resp) {
-                            return {false, QString::fromStdString(error_resp->message)};
-                        }
-                    }
-                    return {false, QString("Unknown server error")};
-                }
-
-                // Decompress payload
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    return {false, QString("Failed to decompress server response")};
-                }
-
-                auto response = iam::messaging::change_password_response::deserialize(*payload_result);
-
-                if (!response) {
-                    return {false, QString("Invalid response from server")};
-                }
-
-                if (!response->success) {
-                    return {false, QString::fromStdString(response->message)};
+                if (!result->success) {
+                    return {false, QString::fromStdString(result->message)};
                 }
 
                 return {true, QString()};

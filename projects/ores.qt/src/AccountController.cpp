@@ -35,12 +35,9 @@
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 namespace {
@@ -473,31 +470,17 @@ void AccountController::onRevertAccount(const iam::domain::account& account) {
             BOOST_LOG_SEV(lg(), debug) << "Sending update account request for revert: "
                                        << boost::uuids::to_string(account_id);
 
-            iam::messaging::save_account_request request;
-            request.account_id = account_id;
+            iam::messaging::update_account_request request;
+            request.account_id = boost::uuids::to_string(account_id);
             request.email = email;
 
-            auto payload = request.serialize();
-            frame request_frame(message_type::save_account_request,
-                0, std::move(payload));
-
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result)
                 return {false, "Failed to communicate with server"};
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result)
-                return {false, "Failed to decompress server response"};
-
-            auto response = iam::messaging::save_account_response::
-                deserialize(*payload_result);
-
-            if (!response)
-                return {false, "Invalid server response"};
-
-            return {response->success, response->message};
+            return {response_result->success, response_result->message};
         });
 
     auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);

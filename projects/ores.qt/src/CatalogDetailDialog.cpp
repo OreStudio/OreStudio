@@ -27,7 +27,6 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -141,28 +140,13 @@ void CatalogDetailDialog::onSaveClicked() {
             return {false, "Dialog closed"};
 
         dq::messaging::save_catalog_request request;
-        request.catalogs.push_back(catalog);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_catalog_request,
-            0, std::move(payload));
-
+        request.data = catalog;
         auto response_result =
-            self->clientManager_->sendRequest(std::move(request_frame));
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server"};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result)
-            return {false, "Failed to decompress response"};
-
-        auto response =
-            dq::messaging::save_catalog_response::deserialize(*payload_result);
-        if (!response)
-            return {false, "Invalid server response"};
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(this);
@@ -216,28 +200,13 @@ void CatalogDetailDialog::onDeleteClicked() {
             return {false, "Dialog closed"};
 
         dq::messaging::delete_catalog_request request;
-        request.names.push_back(catalogName);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_catalog_request,
-            0, std::move(payload));
-
+        request.codes.push_back(catalogName);
         auto response_result =
-            self->clientManager_->sendRequest(std::move(request_frame));
+            self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server"};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result)
-            return {false, "Failed to decompress response"};
-
-        auto response =
-            dq::messaging::delete_catalog_response::deserialize(*payload_result);
-        if (!response)
-            return {false, "Invalid server response"};
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(this);

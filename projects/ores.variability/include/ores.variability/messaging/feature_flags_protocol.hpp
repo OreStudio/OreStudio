@@ -21,18 +21,24 @@
 #define ORES_VARIABILITY_MESSAGING_FEATURE_FLAGS_PROTOCOL_HPP
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include "ores.variability/domain/feature_flags.hpp"
 
 namespace ores::variability::messaging {
 
-struct get_feature_flags_request {};
+struct get_feature_flags_request {
+    using response_type = struct get_feature_flags_response;
+    static constexpr std::string_view nats_subject = "ores.variability.v1.feature-flags.list";
+};
 
 struct get_feature_flags_response {
     std::vector<ores::variability::domain::feature_flags> feature_flags;
 };
 
 struct save_feature_flag_request {
+    using response_type = struct save_feature_flag_response;
+    static constexpr std::string_view nats_subject = "ores.variability.v1.feature-flags.save";
     ores::variability::domain::feature_flags data;
 
     static save_feature_flag_request from(ores::variability::domain::feature_flags ff) {
@@ -46,6 +52,8 @@ struct save_feature_flag_response {
 };
 
 struct delete_feature_flag_request {
+    using response_type = struct delete_feature_flag_response;
+    static constexpr std::string_view nats_subject = "ores.variability.v1.feature-flags.delete";
     std::string name;
 };
 
@@ -55,6 +63,8 @@ struct delete_feature_flag_response {
 };
 
 struct get_feature_flag_history_request {
+    using response_type = struct get_feature_flag_history_response;
+    static constexpr std::string_view nats_subject = "ores.variability.v1.feature-flags.history";
     std::string name;
 };
 

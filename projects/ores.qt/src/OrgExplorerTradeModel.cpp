@@ -23,7 +23,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -209,10 +208,10 @@ void OrgExplorerTradeModel::fetch_trades(
                 }
 
                 trading::messaging::get_trades_request request;
-                request.offset = offset;
-                request.limit = limit;
-                request.book_id = book_id;
-                request.business_unit_id = business_unit_id;
+                request.offset = static_cast<int>(offset);
+                request.limit = static_cast<int>(limit);
+                if (book_id)
+                    request.book_id = boost::uuids::to_string(*book_id);
 
                 auto result = self->clientManager_->
                     process_authenticated_request(std::move(request));
@@ -222,13 +221,13 @@ void OrgExplorerTradeModel::fetch_trades(
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch trades: " +
-                                comms::net::to_string(result.error())),
+                                result.error()),
                             .error_details = {}};
                 }
 
                 return {.success = true,
                         .trades = std::move(result->trades),
-                        .total_available_count = result->total_available_count,
+                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
             }, "org trades");
         });

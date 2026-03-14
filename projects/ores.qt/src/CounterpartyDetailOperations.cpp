@@ -27,7 +27,6 @@
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_identifier_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_contact_information_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -59,53 +58,24 @@ operation_result counterparty_detail_operations::save_entity(
     cpty.change_commentary = data.change_commentary;
 
     refdata::messaging::save_counterparty_request request;
-    request.counterparties.push_back(cpty);
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::save_counterparty_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.data = cpty;
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {false, "Failed to communicate with server"};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result)
-        return {false, "Failed to decompress response"};
-
-    auto response = refdata::messaging::save_counterparty_response::
-        deserialize(*payload_result);
-    if (!response)
-        return {false, "Invalid server response"};
-
-    return {response->success, response->message};
+    return {response_result->success, response_result->message};
 }
 
 operation_result counterparty_detail_operations::delete_entity(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_request request;
-    request.ids.push_back({id});
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::delete_counterparty_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.ids.push_back(boost::uuids::to_string(id));
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {false, "Failed to communicate with server"};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result)
-        return {false, "Failed to decompress response"};
-
-    auto response = refdata::messaging::delete_counterparty_response::
-        deserialize(*payload_result);
-    if (!response) return {false, "Invalid server response"};
-
-    return {response->success, response->message};
+    return {response_result->success, response_result->message};
 }
 
 load_all_entities_result counterparty_detail_operations::load_all_entities(
@@ -114,25 +84,12 @@ load_all_entities_result counterparty_detail_operations::load_all_entities(
     refdata::messaging::get_counterparties_request request;
     request.offset = 0;
     request.limit = 1000;
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::get_counterparties_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result) return {{}, false};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result) return {{}, false};
-
-    auto response = refdata::messaging::get_counterparties_response::
-        deserialize(*payload_result);
-    if (!response) return {{}, false};
-
     std::vector<parent_entity_entry> entries;
-    entries.reserve(response->counterparties.size());
-    for (const auto& cpty : response->counterparties) {
+    entries.reserve(response_result->counterparties.size());
+    for (const auto& cpty : response_result->counterparties) {
         entries.push_back({
             cpty.id, cpty.short_code, cpty.full_name, cpty.status,
             cpty.parent_counterparty_id
@@ -146,26 +103,13 @@ load_identifiers_result counterparty_detail_operations::load_identifiers(
     ClientManager* cm, const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_counterparty_identifiers_request request;
-    request.counterparty_id = entity_id;
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::get_counterparty_identifiers_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.counterparty_id = boost::uuids::to_string(entity_id);
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result) return {{}, false};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result) return {{}, false};
-
-    auto response = refdata::messaging::get_counterparty_identifiers_response::
-        deserialize(*payload_result);
-    if (!response) return {{}, false};
-
     std::vector<identifier_entry> entries;
-    entries.reserve(response->counterparty_identifiers.size());
-    for (const auto& ident : response->counterparty_identifiers) {
+    entries.reserve(response_result->identifiers.size());
+    for (const auto& ident : response_result->identifiers) {
         entries.push_back({
             ident.id, ident.counterparty_id,
             ident.id_scheme, ident.id_value, ident.description,
@@ -189,79 +133,37 @@ operation_result counterparty_detail_operations::save_identifier(
     ident.performed_by = entry.performed_by;
 
     refdata::messaging::save_counterparty_identifier_request request;
-    request.counterparty_identifiers.push_back(ident);
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::save_counterparty_identifier_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.data = ident;
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {false, "Failed to communicate with server"};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result)
-        return {false, "Failed to decompress response"};
-
-    auto response = refdata::messaging::save_counterparty_identifier_response::
-        deserialize(*payload_result);
-    if (!response)
-        return {false, "Invalid server response"};
-
-    return {response->success, response->message};
+    return {response_result->success, response_result->message};
 }
 
 operation_result counterparty_detail_operations::delete_identifier(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_identifier_request request;
-    request.ids.push_back({id});
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::delete_counterparty_identifier_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.ids.push_back(boost::uuids::to_string(id));
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {false, "Failed to communicate with server"};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result)
-        return {false, "Failed to decompress response"};
-
-    auto response = refdata::messaging::delete_counterparty_identifier_response::
-        deserialize(*payload_result);
-    if (!response) return {false, "Invalid server response"};
-
-    return {response->success, response->message};
+    return {response_result->success, response_result->message};
 }
 
 load_contacts_result counterparty_detail_operations::load_contacts(
     ClientManager* cm, const boost::uuids::uuid& entity_id) const {
 
     refdata::messaging::get_counterparty_contact_informations_request request;
-    request.counterparty_id = entity_id;
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::get_counterparty_contact_informations_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.counterparty_id = boost::uuids::to_string(entity_id);
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result) return {{}, false};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result) return {{}, false};
-
-    auto response = refdata::messaging::get_counterparty_contact_informations_response::
-        deserialize(*payload_result);
-    if (!response) return {{}, false};
-
     std::vector<contact_entry> entries;
-    entries.reserve(response->counterparty_contact_informations.size());
-    for (const auto& c : response->counterparty_contact_informations) {
+    entries.reserve(response_result->contact_informations.size());
+    for (const auto& c : response_result->contact_informations) {
         entries.push_back({
             c.id, c.counterparty_id, c.contact_type,
             c.street_line_1, c.street_line_2, c.city, c.state,
@@ -293,53 +195,24 @@ operation_result counterparty_detail_operations::save_contact(
     contact.performed_by = entry.performed_by;
 
     refdata::messaging::save_counterparty_contact_information_request request;
-    request.counterparty_contact_informations.push_back(contact);
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::save_counterparty_contact_information_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.data = contact;
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {false, "Failed to communicate with server"};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result)
-        return {false, "Failed to decompress response"};
-
-    auto response = refdata::messaging::save_counterparty_contact_information_response::
-        deserialize(*payload_result);
-    if (!response)
-        return {false, "Invalid server response"};
-
-    return {response->success, response->message};
+    return {response_result->success, response_result->message};
 }
 
 operation_result counterparty_detail_operations::delete_contact(
     ClientManager* cm, const boost::uuids::uuid& id) const {
 
     refdata::messaging::delete_counterparty_contact_information_request request;
-    request.ids.push_back({id});
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::delete_counterparty_contact_information_request,
-        0, std::move(payload));
-
-    auto response_result = cm->sendRequest(std::move(request_frame));
+    request.ids.push_back(boost::uuids::to_string(id));
+    auto response_result = cm->process_authenticated_request(std::move(request));
     if (!response_result)
         return {false, "Failed to communicate with server"};
 
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result)
-        return {false, "Failed to decompress response"};
-
-    auto response = refdata::messaging::delete_counterparty_contact_information_response::
-        deserialize(*payload_result);
-    if (!response) return {false, "Invalid server response"};
-
-    return {response->success, response->message};
+    return {response_result->success, response_result->message};
 }
 
 }

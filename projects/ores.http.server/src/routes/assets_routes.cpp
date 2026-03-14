@@ -70,13 +70,8 @@ asio::awaitable<http_response> assets_routes::handle_get_images(const http_reque
             co_return http_response::bad_request("Maximum 100 images per request");
         }
 
-        std::vector<std::string> id_strings;
-        id_strings.reserve(get_req->image_ids.size());
-        for (const auto& uuid : get_req->image_ids)
-            id_strings.push_back(boost::uuids::to_string(uuid));
-
         assets::service::assets_service service(ctx_);
-        auto images = service.get_images(id_strings);
+        auto images = service.get_images(get_req->image_ids);
 
         assets::messaging::get_images_response resp;
         resp.images = images;

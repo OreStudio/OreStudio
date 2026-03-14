@@ -48,7 +48,6 @@
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/ImportCurrencyDialog.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 #include "ores.refdata/csv/exporter.hpp"
 #include "ores.ore/xml/exporter.hpp"
 #include "ores.ore/xml/importer.hpp"
@@ -60,7 +59,6 @@
 
 namespace ores::qt {
 
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 namespace {
@@ -499,20 +497,13 @@ void CurrencyMdiWindow::deleteSelected() {
 
         // Create batch request with all ISO codes
         refdata::messaging::delete_currency_request request{iso_codes};
-        auto payload = request.serialize();
 
-        comms::messaging::frame request_frame(
-            message_type::delete_currency_request,
-            0, std::move(payload)
-        );
+        auto response = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
-        // Send single batch request via ClientManager
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            // If network fails, mark all as failed
+        if (!response) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request: "
+                                       << response.error();
             for (const auto& iso_code : iso_codes) {
                 results.push_back({iso_code,
                     {false, "Failed to communicate with server"}});
@@ -521,31 +512,6 @@ void CurrencyMdiWindow::deleteSelected() {
         }
 
         BOOST_LOG_SEV(lg(), debug) << "Received batch delete_currency_response";
-
-        // Decompress payload
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
-            for (const auto& iso_code : iso_codes) {
-                results.push_back({iso_code,
-                    {false, "Failed to decompress server response"}});
-            }
-            return results;
-        }
-
-        // Deserialize batch response
-        auto response = refdata::messaging::delete_currency_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
-            // If deserialize fails, mark all as failed
-            for (const auto& iso_code : iso_codes) {
-                results.push_back({iso_code,
-                    {false, "Invalid server response"}});
-            }
-            return results;
-        }
 
         for (const auto& iso_code : iso_codes) {
             results.push_back({iso_code,

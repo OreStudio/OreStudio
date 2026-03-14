@@ -27,7 +27,6 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ores.dq/messaging/lei_entity_summary_protocol.hpp"
-#include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
@@ -207,7 +206,7 @@ void LeiEntityPicker::load() {
 
             if (!result) {
                 return {false,
-                    comms::net::to_string(result.error()), {}};
+                    result.error(), {}};
             }
 
             if (!result->success) {
@@ -294,7 +293,7 @@ void LeiEntityPicker::loadEntitiesForCountry(const QString& country) {
 
             if (!result) {
                 return {false,
-                    comms::net::to_string(result.error()), {}};
+                    result.error(), {}};
             }
 
             if (!result->success) {

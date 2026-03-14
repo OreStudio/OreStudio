@@ -33,7 +33,6 @@
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -81,23 +80,12 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_catalogs_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_catalogs_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_catalogs_response::deserialize(*payload_result);
-        if (!response) return {};
 
         std::vector<std::string> names;
         names.push_back(""); // Empty option
-        for (const auto& c : response->catalogs) {
+        for (const auto& c : response_result->catalogs) {
             names.push_back(c.name);
         }
         return names;
@@ -122,22 +110,11 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_subject_areas_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_subject_areas_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_subject_areas_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> names;
-        for (const auto& sa : response->subject_areas) {
+        for (const auto& sa : response_result->subject_areas) {
             names.push_back(sa.name);
         }
         return names;
@@ -162,22 +139,11 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_data_domains_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_data_domains_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_data_domains_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> names;
-        for (const auto& dd : response->domains) {
+        for (const auto& dd : response_result->domains) {
             names.push_back(dd.name);
         }
         return names;
@@ -202,22 +168,11 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_origin_dimensions_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_origin_dimensions_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_origin_dimensions_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> codes;
-        for (const auto& od : response->dimensions) {
+        for (const auto& od : response_result->origin_dimensions) {
             codes.push_back(od.code);
         }
         return codes;
@@ -242,22 +197,11 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_nature_dimensions_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_nature_dimensions_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_nature_dimensions_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> codes;
-        for (const auto& nd : response->dimensions) {
+        for (const auto& nd : response_result->nature_dimensions) {
             codes.push_back(nd.code);
         }
         return codes;
@@ -282,22 +226,11 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_treatment_dimensions_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_treatment_dimensions_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_treatment_dimensions_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> codes;
-        for (const auto& td : response->dimensions) {
+        for (const auto& td : response_result->treatment_dimensions) {
             codes.push_back(td.code);
         }
         return codes;
@@ -322,23 +255,12 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_coding_schemes_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_coding_schemes_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_coding_schemes_response::deserialize(*payload_result);
-        if (!response) return {};
 
         std::vector<std::string> codes;
         codes.push_back(""); // Empty option
-        for (const auto& cs : response->schemes) {
+        for (const auto& cs : response_result->coding_schemes) {
             codes.push_back(cs.code);
         }
         return codes;
@@ -363,22 +285,11 @@ void DatasetDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_methodologies_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_methodologies_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_methodologies_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::pair<boost::uuids::uuid, std::string>> methodologies;
-        for (const auto& m : response->methodologies) {
+        for (const auto& m : response_result->methodologies) {
             methodologies.push_back({m.id, m.name});
         }
         return methodologies;
@@ -560,22 +471,10 @@ void DatasetDetailDialog::onSaveClicked() {
 
         dq::messaging::save_dataset_request request;
         request.datasets.push_back(dataset);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_dataset_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {false, "Failed to communicate with server"};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = dq::messaging::save_dataset_response::deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response"};
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(this);
@@ -611,21 +510,11 @@ void DatasetDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_dataset_request request;
-        request.ids.push_back({datasetId});
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_dataset_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.ids.push_back(boost::uuids::to_string(datasetId));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return false;
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return false;
-
-        auto response = dq::messaging::delete_dataset_response::deserialize(*payload_result);
-        return response && response->success;
+        return response_result->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

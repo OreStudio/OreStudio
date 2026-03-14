@@ -28,7 +28,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.refdata/messaging/contact_type_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -311,48 +310,15 @@ void ContactTypeMdiWindow::deleteSelected() {
         BOOST_LOG_SEV(lg(), debug) << "Making batch delete request for "
                                    << codes.size() << " contact types";
 
-        refdata::messaging::delete_contact_type_request request;
-        request.codes = codes;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_contact_type_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Failed to communicate with server"}});
-            }
-            return results;
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Failed to decompress server response"}});
-            }
-            return results;
-        }
-
-        auto response = refdata::messaging::delete_contact_type_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Invalid server response"}});
-            }
-            return results;
-        }
-
         for (const auto& code : codes) {
-            results.push_back({code, {response->success, response->message}});
+            refdata::messaging::delete_contact_type_request request;
+            request.type = code;
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+            if (!response_result) {
+                results.push_back({code, {false, "Failed to communicate with server"}});
+            } else {
+                results.push_back({code, {response_result->success, response_result->message}});
+            }
         }
 
         return results;

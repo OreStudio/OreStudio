@@ -41,11 +41,9 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 CountryMdiWindow::
@@ -398,15 +396,7 @@ void CountryMdiWindow::deleteSelected() {
                                    << alpha2_codes.size() << " countries";
 
         refdata::messaging::delete_country_request request{alpha2_codes};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            message_type::delete_country_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -419,31 +409,9 @@ void CountryMdiWindow::deleteSelected() {
 
         BOOST_LOG_SEV(lg(), debug) << "Received batch delete_country_response";
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
-            for (const auto& alpha2_code : alpha2_codes) {
-                results.push_back({alpha2_code,
-                    {false, "Failed to decompress server response"}});
-            }
-            return results;
-        }
-
-        auto response = refdata::messaging::delete_country_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
-            for (const auto& alpha2_code : alpha2_codes) {
-                results.push_back({alpha2_code,
-                    {false, "Invalid server response"}});
-            }
-            return results;
-        }
-
         for (const auto& alpha2_code : alpha2_codes) {
             results.push_back({alpha2_code,
-                {response->success, response->message}});
+                {response_result->success, response_result->message}});
         }
 
         return results;

@@ -20,18 +20,64 @@
 #ifndef ORES_ASSETS_MESSAGING_ASSETS_PROTOCOL_HPP
 #define ORES_ASSETS_MESSAGING_ASSETS_PROTOCOL_HPP
 
+#include <chrono>
+#include <cstddef>
+#include <optional>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.assets/domain/image.hpp"
 
 namespace ores::assets::messaging {
 
+/**
+ * @brief Maximum number of images to request in a single batch.
+ */
+constexpr std::size_t MAX_IMAGES_PER_REQUEST = 50;
+
+/**
+ * @brief Lightweight image metadata (no SVG data) for list responses.
+ */
+struct image_info {
+    std::string image_id;
+    std::string key;
+    std::string description;
+};
+
 struct get_images_request {
-    std::vector<boost::uuids::uuid> image_ids;
+    using response_type = struct get_images_response;
+    static constexpr std::string_view nats_subject = "ores.assets.v1.images.get";
+    std::vector<std::string> image_ids;
 };
 
 struct get_images_response {
     std::vector<ores::assets::domain::image> images;
+};
+
+struct list_images_request {
+    using response_type = struct list_images_response;
+    static constexpr std::string_view nats_subject = "ores.assets.v1.images.list";
+    std::optional<std::chrono::system_clock::time_point> modified_since;
+};
+
+/**
+ * @brief Response for list_images_request.
+ *
+ * Returns lightweight metadata. Use get_images_request to fetch SVG data.
+ */
+struct list_images_response {
+    std::vector<image_info> images;
+};
+
+struct save_image_request {
+    using response_type = struct save_image_response;
+    static constexpr std::string_view nats_subject = "ores.assets.v1.images.save";
+    ores::assets::domain::image data;
+};
+
+struct save_image_response {
+    bool success = false;
+    std::string message;
 };
 
 }

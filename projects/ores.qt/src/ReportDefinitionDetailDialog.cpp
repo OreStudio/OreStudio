@@ -25,6 +25,7 @@
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_ReportDefinitionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -34,7 +35,6 @@
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
 #include "ores.reporting/messaging/report_type_protocol.hpp"
 #include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -406,33 +406,14 @@ void ReportDefinitionDetailDialog::onSaveClicked() {
 
         reporting::messaging::save_report_definition_request request;
         request.definition = definition;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_report_definition_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
 
-        auto response = reporting::messaging::save_report_definition_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -491,34 +472,14 @@ void ReportDefinitionDetailDialog::onDeleteClicked() {
         }
 
         reporting::messaging::delete_report_definition_request request;
-        request.ids = {id};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_report_definition_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.ids.push_back(boost::uuids::to_string(id));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = reporting::messaging::delete_report_definition_response::
-            deserialize(*payload_result);
-
-        if (!response || response->results.empty()) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->results[0].success, response->results[0].message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

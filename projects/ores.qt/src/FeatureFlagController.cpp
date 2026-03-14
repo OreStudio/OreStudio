@@ -28,7 +28,6 @@
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 
 namespace ores::qt {
@@ -461,46 +460,15 @@ void FeatureFlagController::onRevertFeatureFlag(
 
     // Save the flag (which creates a new version with the old data)
     variability::messaging::save_feature_flag_request request;
-    request.flags.push_back(flag);
-    auto payload = request.serialize();
-
-    comms::messaging::frame request_frame(
-        comms::messaging::message_type::save_feature_flag_request,
-        0, std::move(payload)
-    );
-
-    auto response_result = clientManager_->sendRequest(std::move(request_frame));
+    request.data = flag;
+    auto response_result = clientManager_->process_authenticated_request(std::move(request));
     if (!response_result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to send revert request";
         emit errorMessage("Failed to communicate with server");
         return;
     }
 
-    // Check for error response
-    if (auto err = exception_helper::check_error_response(*response_result)) {
-        BOOST_LOG_SEV(lg(), error) << "Server returned error for revert request: "
-                                   << err->message.toStdString();
-        emit errorMessage(err->message);
-        return;
-    }
-
-    auto payload_result = response_result->decompressed_payload();
-    if (!payload_result) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-        emit errorMessage("Failed to decompress server response");
-        return;
-    }
-
-    auto response = variability::messaging::save_feature_flag_response::
-        deserialize(*payload_result);
-
-    if (!response) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-        emit errorMessage("Invalid server response");
-        return;
-    }
-
-    if (response->success) {
+    if (response_result->success) {
         BOOST_LOG_SEV(lg(), info) << "Feature flag reverted successfully";
         emit statusMessage(QString("Feature flag '%1' reverted successfully")
             .arg(QString::fromStdString(flag.name)));
@@ -510,7 +478,7 @@ void FeatureFlagController::onRevertFeatureFlag(
             listWindow_->markAsStale();
         }
     } else {
-        const std::string msg = response->message;
+        const std::string msg = response_result->message;
         BOOST_LOG_SEV(lg(), error) << "Revert failed: " << msg;
         emit errorMessage(QString("Failed to revert feature flag: %1")
             .arg(QString::fromStdString(msg)));

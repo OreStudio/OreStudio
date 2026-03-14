@@ -23,7 +23,6 @@
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -208,20 +207,20 @@ void ClientPartyIdSchemeModel::fetch_schemes(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch party ID schemes: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .schemes = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch party ID schemes: " + comms::net::to_string(result.error())),
+                                "Failed to fetch party ID schemes: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->schemes.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->party_id_schemes.size()
                                            << " party ID schemes";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->schemes.size());
+                    static_cast<std::uint32_t>(result->party_id_schemes.size());
                 return {.success = true,
-                        .schemes = std::move(result->schemes),
+                        .schemes = std::move(result->party_id_schemes),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "party ID schemes");

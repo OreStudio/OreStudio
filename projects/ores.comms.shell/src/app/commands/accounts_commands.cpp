@@ -317,9 +317,9 @@ process_login(std::ostream& out, nats_session& session,
 void accounts_commands::
 process_lock_account(std::ostream& out, nats_session& session,
     std::string account_id) {
-    boost::uuids::uuid parsed_id;
+    // Validate UUID format
     try {
-        parsed_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+        boost::lexical_cast<boost::uuids::uuid>(account_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
         out << "✗ Invalid account ID format. Expected UUID." << std::endl;
@@ -330,7 +330,7 @@ process_lock_account(std::ostream& out, nats_session& session,
                                << account_id;
 
     iam::messaging::lock_account_request req;
-    req.account_ids = {parsed_id};
+    req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::lock_account_response>(
         out, session, "ores.iam.v1.accounts.lock", rfl::json::write(req));
@@ -355,9 +355,9 @@ process_lock_account(std::ostream& out, nats_session& session,
 void accounts_commands::
 process_unlock_account(std::ostream& out, nats_session& session,
     std::string account_id) {
-    boost::uuids::uuid parsed_id;
+    // Validate UUID format
     try {
-        parsed_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+        boost::lexical_cast<boost::uuids::uuid>(account_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
         out << "✗ Invalid account ID format. Expected UUID." << std::endl;
@@ -368,7 +368,7 @@ process_unlock_account(std::ostream& out, nats_session& session,
                                << account_id;
 
     iam::messaging::unlock_account_request req;
-    req.account_ids = {parsed_id};
+    req.account_ids = {account_id};
 
     auto result = do_auth_request<iam::messaging::unlock_account_response>(
         out, session, "ores.iam.v1.accounts.unlock", rfl::json::write(req));
@@ -496,7 +496,7 @@ process_list_sessions(std::ostream& out, nats_session& session,
 
     if (!account_id.empty()) {
         try {
-            req.account_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+            req.account_id = account_id;
         } catch (const boost::bad_lexical_cast&) {
             BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
             out << "✗ Invalid account ID format. Expected UUID." << std::endl;
@@ -599,7 +599,7 @@ process_session_stats(std::ostream& out, nats_session& session, int days) {
     auto start_time = end_date - std::chrono::hours(24 * days);
 
     iam::messaging::get_session_statistics_request req;
-    req.account_id = boost::uuids::nil_uuid();
+    req.account_id = "";
     req.start_time = start_time;
     req.end_time = end_date;
 
@@ -747,7 +747,7 @@ process_account_info(std::ostream& out, nats_session& session,
 
     // Step 2: Get roles for this account
     iam::messaging::get_account_roles_request roles_req;
-    roles_req.account_id = account.id;
+    roles_req.account_id = boost::uuids::to_string(account.id);
 
     out << std::endl;
     out << "Roles" << std::endl;
@@ -771,7 +771,7 @@ process_account_info(std::ostream& out, nats_session& session,
 
     // Step 3: Get effective permissions for this account
     iam::messaging::get_account_permissions_request perms_req;
-    perms_req.account_id = account.id;
+    perms_req.account_id = boost::uuids::to_string(account.id);
 
     out << std::endl;
     out << "Effective Permissions" << std::endl;

@@ -333,7 +333,7 @@ void EntityDetailDialog::loadIdSchemes() {
         refdata::messaging::get_party_id_schemes_request request;
         auto response = cm->process_authenticated_request(std::move(request));
         if (!response) return {{}, false};
-        return {std::move(response->schemes), true};
+        return {std::move(response->party_id_schemes), true};
     };
 
     auto* watcher = new QFutureWatcher<SchemesResult>(self);

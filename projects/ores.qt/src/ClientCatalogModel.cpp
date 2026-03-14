@@ -25,7 +25,6 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -138,14 +137,8 @@ void ClientCatalogModel::loadData() {
             }
 
             dq::messaging::get_catalogs_request request;
-            auto payload = request.serialize();
-
-            comms::messaging::frame request_frame(
-                comms::messaging::message_type::get_catalogs_request,
-                0, std::move(payload));
-
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send request";
                 return {.success = false, .catalogs = {},
@@ -153,35 +146,9 @@ void ClientCatalogModel::loadData() {
                         .error_details = {}};
             }
 
-            // Check for server error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .catalogs = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .catalogs = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response =
-                dq::messaging::get_catalogs_response::deserialize(*payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .catalogs = {},
-                        .error_message = "Invalid server response",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->catalogs.size()
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->catalogs.size()
                                        << " catalogs";
-            return {.success = true, .catalogs = std::move(response->catalogs),
+            return {.success = true, .catalogs = std::move(response_result->catalogs),
                     .error_message = {}, .error_details = {}};
         }, "catalogs");
     };

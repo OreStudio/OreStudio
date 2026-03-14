@@ -173,9 +173,9 @@ process_tenant_history(std::ostream& out, nats_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Initiating tenant history request for: "
                                << tenant_id;
 
-    boost::uuids::uuid parsed_id;
+    // Validate UUID format
     try {
-        parsed_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id);
+        boost::lexical_cast<boost::uuids::uuid>(tenant_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid tenant ID format: " << tenant_id;
         out << "✗ Invalid tenant ID format. Expected UUID." << std::endl;
@@ -183,7 +183,7 @@ process_tenant_history(std::ostream& out, nats_session& session,
     }
 
     iam::messaging::get_tenant_history_request req;
-    req.id = parsed_id;
+    req.id = tenant_id;
 
     auto result = do_auth_request<iam::messaging::get_tenant_history_response>(
         out, session, "ores.iam.v1.tenants.history", rfl::json::write(req));
@@ -240,9 +240,9 @@ process_delete_tenant(std::ostream& out, nats_session& session,
         return;
     }
 
-    boost::uuids::uuid parsed_id;
+    // Validate UUID format
     try {
-        parsed_id = boost::lexical_cast<boost::uuids::uuid>(tenant_id);
+        boost::lexical_cast<boost::uuids::uuid>(tenant_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid tenant ID format: " << tenant_id;
         out << "✗ Invalid tenant ID format. Expected UUID." << std::endl;
@@ -250,7 +250,7 @@ process_delete_tenant(std::ostream& out, nats_session& session,
     }
 
     iam::messaging::delete_tenant_request req;
-    req.ids = {parsed_id};
+    req.ids = {tenant_id};
 
     auto result = do_auth_request<iam::messaging::delete_tenant_response>(
         out, session, "ores.iam.v1.tenants.delete", rfl::json::write(req));

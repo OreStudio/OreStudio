@@ -32,12 +32,9 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
@@ -243,32 +240,17 @@ void FeatureFlagDetailDialog::onSaveClicked() {
                                        << flagToSave.name;
 
             variability::messaging::save_feature_flag_request request;
-            request.flags.push_back(flagToSave);
-
-            auto payload = request.serialize();
-            frame request_frame(message_type::save_feature_flag_request,
-                0, std::move(payload));
+            request.data = flagToSave;
 
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 return {false, "Failed to communicate with server"};
             }
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                return {false, "Failed to decompress server response"};
-            }
 
-            auto response = variability::messaging::save_feature_flag_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                return {false, "Invalid server response"};
-            }
-
-            return {response->success, response->message};
+            return {response_result->success, response_result->message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
@@ -337,31 +319,15 @@ void FeatureFlagDetailDialog::onDeleteClicked() {
                                        << name;
 
             variability::messaging::delete_feature_flag_request request{name};
-            auto payload = request.serialize();
-
-            frame request_frame(message_type::delete_feature_flag_request,
-                0, std::move(payload));
-
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 return {false, "Failed to communicate with server"};
             }
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                return {false, "Failed to decompress server response"};
-            }
 
-            auto response = variability::messaging::delete_feature_flag_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                return {false, "Invalid server response"};
-            }
-
-            return {response->success, response->error_message};
+            return {response_result->success, response_result->error_message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);

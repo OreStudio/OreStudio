@@ -19,16 +19,18 @@
  */
 #ifndef ORES_IAM_MESSAGING_SESSION_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_SESSION_PROTOCOL_HPP
+#include <string>
 
 #include <chrono>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.iam/domain/session.hpp"
 
 namespace ores::iam::messaging {
 
 struct list_sessions_request {
-    boost::uuids::uuid account_id;
+    using response_type = struct list_sessions_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.sessions.list";
+    std::string account_id;
     int limit = 50;
     int offset = 0;
 };
@@ -38,14 +40,17 @@ struct list_sessions_response {
     int total_count = 0;
 };
 
-struct get_active_sessions_request {};
+struct get_active_sessions_request {
+    using response_type = struct get_active_sessions_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.sessions.active";
+};
 
 struct get_active_sessions_response {
     std::vector<ores::iam::domain::session> sessions;
 };
 
 struct get_session_statistics_request {
-    boost::uuids::uuid account_id;
+    std::string account_id;
     std::chrono::system_clock::time_point start_time;
     std::chrono::system_clock::time_point end_time;
 };

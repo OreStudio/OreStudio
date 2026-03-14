@@ -922,7 +922,8 @@ asio::awaitable<http_response> iam_routes::handle_lock_accounts(const http_reque
     try {
         std::vector<iam::messaging::account_operation_result> results;
         for (const auto& id : lock_req->account_ids) {
-            bool success = account_service_.lock_account(id);
+            auto uuid = boost::uuids::string_generator()(id);
+            bool success = account_service_.lock_account(uuid);
             iam::messaging::account_operation_result result;
             result.success = success;
             result.message = success ? "" : "Failed to lock";
@@ -955,7 +956,8 @@ asio::awaitable<http_response> iam_routes::handle_unlock_accounts(const http_req
     try {
         std::vector<iam::messaging::account_operation_result> results;
         for (const auto& id : unlock_req->account_ids) {
-            bool success = account_service_.unlock_account(id);
+            auto uuid = boost::uuids::string_generator()(id);
+            bool success = account_service_.unlock_account(uuid);
             iam::messaging::account_operation_result result;
             result.success = success;
             result.message = success ? "" : "Failed to unlock";
@@ -1011,7 +1013,8 @@ asio::awaitable<http_response> iam_routes::handle_reset_password(const http_requ
         bool all_success = true;
         std::string error_message;
         for (const auto& id : reset_req->account_ids) {
-            bool success = account_service_.set_password_reset_required(id);
+            auto uuid = boost::uuids::string_generator()(id);
+            bool success = account_service_.set_password_reset_required(uuid);
             if (!success) {
                 all_success = false;
                 error_message = "Failed to reset password for one or more accounts";
@@ -1160,7 +1163,8 @@ asio::awaitable<http_response> iam_routes::handle_assign_role(const http_request
 
     try {
         auto uuid = boost::uuids::string_generator()(account_id);
-        auth_service_->assign_role(uuid, assign_req->role_id,
+        auto role_uuid = boost::uuids::string_generator()(assign_req->role_id);
+        auth_service_->assign_role(uuid, role_uuid,
             req.authenticated_user->username.value_or("system"));
 
         iam::messaging::assign_role_response resp;

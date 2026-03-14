@@ -21,13 +21,15 @@
 #define ORES_IAM_MESSAGING_TENANT_PROTOCOL_HPP
 
 #include <string>
+#include <string_view>
 #include <vector>
-#include <boost/uuid/uuid.hpp>
 #include "ores.iam/domain/tenant.hpp"
 
 namespace ores::iam::messaging {
 
 struct get_tenants_request {
+    using response_type = struct get_tenants_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.list";
     bool include_deleted = false;
 };
 
@@ -36,6 +38,8 @@ struct get_tenants_response {
 };
 
 struct save_tenant_request {
+    using response_type = struct save_tenant_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.save";
     ores::iam::domain::tenant data;
 
     static save_tenant_request from(ores::iam::domain::tenant t) {
@@ -49,7 +53,9 @@ struct save_tenant_response {
 };
 
 struct delete_tenant_request {
-    std::vector<boost::uuids::uuid> ids;
+    using response_type = struct delete_tenant_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.delete";
+    std::vector<std::string> ids;
 };
 
 struct delete_tenant_response {
@@ -58,7 +64,9 @@ struct delete_tenant_response {
 };
 
 struct get_tenant_history_request {
-    boost::uuids::uuid id;
+    using response_type = struct get_tenant_history_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.tenants.history";
+    std::string id;
 };
 
 struct get_tenant_history_response {

@@ -24,7 +24,10 @@
 
 namespace ores::iam::messaging {
 
-struct bootstrap_status_request {};
+struct bootstrap_status_request {
+    using response_type = struct bootstrap_status_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.bootstrap.status";
+};
 
 struct bootstrap_status_response {
     bool is_in_bootstrap_mode = false;
@@ -32,6 +35,8 @@ struct bootstrap_status_response {
 };
 
 struct create_initial_admin_request {
+    using response_type = struct create_initial_admin_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.bootstrap.create-admin";
     std::string principal;
     std::string password;
     std::string email;

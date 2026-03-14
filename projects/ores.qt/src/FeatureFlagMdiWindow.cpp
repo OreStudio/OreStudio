@@ -31,11 +31,9 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 FeatureFlagMdiWindow::
@@ -304,15 +302,7 @@ void FeatureFlagMdiWindow::deleteSelected() {
 
             variability::messaging::delete_feature_flag_request request;
             request.name = name;
-            auto payload = request.serialize();
-
-            comms::messaging::frame request_frame(
-                message_type::delete_feature_flag_request,
-                0, std::move(payload)
-            );
-
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
@@ -321,32 +311,7 @@ void FeatureFlagMdiWindow::deleteSelected() {
                 continue;
             }
 
-            // Check for error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
-                                           << err->message.toStdString();
-                results.push_back({name, {false, err->message.toStdString()}});
-                continue;
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                results.push_back({name,
-                    {false, "Failed to decompress server response"}});
-                continue;
-            }
-
-            auto response = variability::messaging::delete_feature_flag_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                results.push_back({name, {false, "Invalid server response"}});
-                continue;
-            }
-
-            results.push_back({name, {response->success, response->error_message}});
+            results.push_back({name, {response_result->success, response_result->error_message}});
         }
 
         return results;

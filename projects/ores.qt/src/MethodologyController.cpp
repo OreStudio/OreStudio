@@ -132,9 +132,9 @@ void MethodologyController::onAddNewRequested() {
     showAddWindow();
 }
 
-void MethodologyController::onShowHistory(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << id;
-    showHistoryWindow(id);
+void MethodologyController::onShowHistory(const std::string& name) {
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << name;
+    showHistoryWindow(name);
 }
 
 void MethodologyController::showAddWindow() {
@@ -226,20 +226,20 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
     show_managed_window(detailWindow, listMdiSubWindow_);
 }
 
-void MethodologyController::showHistoryWindow(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), info) << "Opening history window for methodology: " << id;
+void MethodologyController::showHistoryWindow(const std::string& name) {
+    BOOST_LOG_SEV(lg(), info) << "Opening history window for methodology: " << name;
 
-    const QString idStr = QString::fromStdString(boost::uuids::to_string(id));
-    const QString windowKey = build_window_key("history", idStr);
+    const QString nameStr = QString::fromStdString(name);
+    const QString windowKey = build_window_key("history", nameStr);
 
     if (try_reuse_window(windowKey)) {
-        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << id;
+        BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: " << name;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << name;
 
-    auto* historyDialog = new MethodologyHistoryDialog(id, clientManager_, mainWindow_);
+    auto* historyDialog = new MethodologyHistoryDialog(name, clientManager_, mainWindow_);
 
     connect(historyDialog, &MethodologyHistoryDialog::statusChanged,
             this, [self = QPointer<MethodologyController>(this)](const QString& message) {
@@ -261,7 +261,7 @@ void MethodologyController::showHistoryWindow(const boost::uuids::uuid& id) {
     auto* historyWindow = new DetachableMdiSubWindow(mainWindow_);
     historyWindow->setAttribute(Qt::WA_DeleteOnClose);
     historyWindow->setWidget(historyDialog);
-    historyWindow->setWindowTitle(QString("Methodology History: %1").arg(idStr));
+    historyWindow->setWindowTitle(QString("Methodology History: %1").arg(nameStr));
     historyWindow->setWindowIcon(IconUtils::createRecoloredIcon(
         Icon::History, IconUtils::DefaultIconColor));
 

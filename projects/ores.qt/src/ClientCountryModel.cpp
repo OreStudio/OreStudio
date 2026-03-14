@@ -26,7 +26,6 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 
 namespace ores::qt {
@@ -228,10 +227,10 @@ void ClientCountryModel::fetch_countries(std::uint32_t offset,
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .countries = {}, .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch countries: " + comms::net::to_string(result.error())),
+                                "Failed to fetch countries: " + result.error()),
                             .error_details = {}};
                 }
 
@@ -240,7 +239,7 @@ void ClientCountryModel::fetch_countries(std::uint32_t offset,
                                            << result->total_available_count;
 
                 return {.success = true, .countries = std::move(result->countries),
-                        .total_available_count = result->total_available_count,
+                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
             }, "countries");
         });

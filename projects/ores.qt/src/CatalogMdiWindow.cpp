@@ -29,7 +29,6 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -212,28 +211,13 @@ void CatalogMdiWindow::onDeleteClicked() {
             return {false, "Window closed"};
 
         dq::messaging::delete_catalog_request request;
-        request.names.push_back(name);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_catalog_request,
-            0, std::move(payload));
-
+        request.codes.push_back(name);
         auto response_result =
-            self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server"};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result)
-            return {false, "Failed to decompress response"};
-
-        auto response =
-            dq::messaging::delete_catalog_response::deserialize(*payload_result);
-        if (!response)
-            return {false, "Invalid server response"};
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(this);

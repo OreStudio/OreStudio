@@ -107,7 +107,6 @@
 #include "ores.qt/DataLibrarianWindow.hpp"
 #include "ores.qt/MasterPasswordDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.comms/eventing/connection_events.hpp"
 #include "ores.connections/service/connection_manager.hpp"
 #include "ores.utility/version/version.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -942,68 +941,41 @@ MainWindow::MainWindow(QWidget* parent) :
                 }
             });
 
-        // Subscribe to connection events for tray notifications
-        eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::eventing::connected_event>(
-                [this](const comms::eventing::connected_event& e) {
-                    if (systemTrayIcon_) {
-                        QString message = QString("Connected to %1:%2")
-                            .arg(QString::fromStdString(e.host))
-                            .arg(e.port);
-                        QMetaObject::invokeMethod(this, [this, message]() {
-                            systemTrayIcon_->showMessage(
-                                "ORE Studio",
-                                message,
-                                QSystemTrayIcon::Information,
-                                3000);
-                        }, Qt::QueuedConnection);
-                    }
-                }));
+        // Connect to ClientManager signals for tray notifications
+        connect(clientManager_, &ClientManager::connected, this, [this]() {
+            if (systemTrayIcon_) {
+                QString message = QString("Connected to %1")
+                    .arg(QString::fromStdString(clientManager_->serverAddress()));
+                systemTrayIcon_->showMessage("ORE Studio", message,
+                    QSystemTrayIcon::Information, 3000);
+            }
+        });
 
-        eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::eventing::disconnected_event>(
-                [this](const comms::eventing::disconnected_event&) {
-                    if (systemTrayIcon_) {
-                        QMetaObject::invokeMethod(this, [this]() {
-                            systemTrayIcon_->showMessage(
-                                "ORE Studio",
-                                "Disconnected from server",
-                                QSystemTrayIcon::Warning,
-                                3000);
-                        }, Qt::QueuedConnection);
-                    }
-                }));
+        connect(clientManager_, &ClientManager::disconnected, this, [this]() {
+            if (systemTrayIcon_) {
+                systemTrayIcon_->showMessage("ORE Studio",
+                    "Disconnected from server",
+                    QSystemTrayIcon::Warning, 3000);
+            }
+        });
 
-        eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::eventing::reconnecting_event>(
-                [this](const comms::eventing::reconnecting_event&) {
-                    if (systemTrayIcon_) {
-                        QMetaObject::invokeMethod(this, [this]() {
-                            systemTrayIcon_->showMessage(
-                                "ORE Studio",
-                                "Reconnecting to server...",
-                                QSystemTrayIcon::Information,
-                                2000);
-                        }, Qt::QueuedConnection);
-                    }
-                }));
+        connect(clientManager_, &ClientManager::reconnecting, this, [this]() {
+            if (systemTrayIcon_) {
+                systemTrayIcon_->showMessage("ORE Studio",
+                    "Reconnecting to server...",
+                    QSystemTrayIcon::Information, 2000);
+            }
+        });
 
-        eventSubscriptions_.push_back(
-            eventBus_->subscribe<comms::eventing::reconnected_event>(
-                [this](const comms::eventing::reconnected_event&) {
-                    if (systemTrayIcon_) {
-                        QMetaObject::invokeMethod(this, [this]() {
-                            systemTrayIcon_->showMessage(
-                                "ORE Studio",
-                                "Reconnected to server",
-                                QSystemTrayIcon::Information,
-                                3000);
-                        }, Qt::QueuedConnection);
-                    }
-                }));
+        connect(clientManager_, &ClientManager::reconnected, this, [this]() {
+            if (systemTrayIcon_) {
+                systemTrayIcon_->showMessage("ORE Studio",
+                    "Reconnected to server",
+                    QSystemTrayIcon::Information, 3000);
+            }
+        });
 
-        BOOST_LOG_SEV(lg(), info) << "System tray initialized with "
-                                  << eventSubscriptions_.size() << " event subscriptions";
+        BOOST_LOG_SEV(lg(), info) << "System tray initialized";
     } else {
         BOOST_LOG_SEV(lg(), warn) << "System tray is not available on this system";
     }

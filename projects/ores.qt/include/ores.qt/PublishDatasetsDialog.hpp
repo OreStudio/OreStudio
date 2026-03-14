@@ -101,7 +101,7 @@ public:
     const QString& username() const { return username_; }
     const std::vector<dq::domain::dataset>& datasets() const { return datasets_; }
     std::vector<dq::domain::dataset>& resolvedDatasets() { return resolvedDatasets_; }
-    std::vector<boost::uuids::uuid>& requestedIds() { return requestedIds_; }
+    std::vector<std::string>& requestedIds() { return requestedIds_; }
     std::vector<dq::domain::publication_result>& results() { return results_; }
     QString& lastError() { return lastError_; }
 
@@ -116,7 +116,7 @@ private:
     QString username_;
     std::vector<dq::domain::dataset> datasets_;  // Originally selected
     std::vector<dq::domain::dataset> resolvedDatasets_;  // Full list including deps
-    std::vector<boost::uuids::uuid> requestedIds_;  // IDs explicitly requested
+    std::vector<std::string> requestedIds_;  // IDs explicitly requested
     std::vector<dq::domain::publication_result> results_;  // Publication results
     QString lastError_;  // Error message from failed publication attempt
 };

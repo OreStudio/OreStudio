@@ -29,7 +29,7 @@
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.iam/domain/account_version.hpp"
-#include "ores.iam/domain/account_version_history.hpp"
+#include "ores.iam/messaging/account_history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_AccountHistoryDialog.h"
 
@@ -126,7 +126,7 @@ private:
     std::unique_ptr<Ui::AccountHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString username_;
-    iam::domain::account_version_history history_;
+    iam::messaging::account_version_history history_;
 
     QToolBar* toolBar_;
     QAction* reloadAction_;

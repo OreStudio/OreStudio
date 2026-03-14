@@ -52,15 +52,12 @@
 #include "ores.refdata/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
-#include "ores.comms/messaging/frame.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/feature_flags_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 namespace reason = dq::domain::change_reason_constants;
@@ -472,35 +469,15 @@ void CurrencyDetailDialog::onSaveClicked() {
 
                 // Use single save_currency message for both create and update
                 auto request = refdata::messaging::save_currency_request::from(currency);
-                auto payload = request.serialize();
-                frame request_frame = frame(message_type::save_currency_request,
-                    0, std::move(payload));
-
                 auto response_result =
-                    self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!response_result)
                     return {false, "Failed to communicate with server"};
 
                 BOOST_LOG_SEV(lg(), debug) << "Received save currency response.";
 
-                // Decompress payload
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result)
-                    return {false, "Failed to decompress server response"};
-
-                using refdata::messaging::save_currency_response;
-                auto response = save_currency_response::
-                    deserialize(*payload_result);
-
-                bool result = false;
-                std::string message = "Invalid server response";
-                if (response) {
-                    result = response->success;
-                    message = response->message;
-                }
-
-                return {result, message};
+                return {response_result->success, response_result->message};
             });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
@@ -581,13 +558,8 @@ void CurrencyDetailDialog::onDeleteClicked() {
 
             // Create batch request with single ISO code
             refdata::messaging::delete_currency_request request{{iso_code}};
-            auto payload = request.serialize();
-
-            frame request_frame(message_type::delete_currency_request,
-                    0, std::move(payload));
-
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to communicate with server.";
@@ -596,22 +568,7 @@ void CurrencyDetailDialog::onDeleteClicked() {
 
             BOOST_LOG_SEV(lg(), debug) << "Received delete currency response.";
 
-            // Decompress payload
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress server response";
-                return {false, "Failed to decompress server response"};
-            }
-
-            auto response = refdata::messaging::delete_currency_response::deserialize(
-                *payload_result);
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Invalid server response";
-                return {false, "Invalid server response"};
-            }
-
-            return {response->success, response->message};
+            return {response_result->success, response_result->message};
         });
 
 
@@ -876,7 +833,7 @@ void CurrencyDetailDialog::showVersionNavActions(bool visible) {
 }
 
 void CurrencyDetailDialog::setHistory(
-    const refdata::domain::currency_version_history& history, int versionNumber) {
+    const refdata::messaging::currency_version_history& history, int versionNumber) {
     BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.versions.size()
                                << " versions, displaying version " << versionNumber;
 
@@ -1138,30 +1095,12 @@ void CurrencyDetailDialog::populateRoundingTypeCombo() {
         }
 
         refdata::messaging::get_rounding_types_request request;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_rounding_types_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) {
             return {false, {}};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
-
-        auto response = refdata::messaging::get_rounding_types_response::
-            deserialize(*payload_result);
-        if (!response) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response->types)};
+        return {true, std::move(response_result->rounding_types)};
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
@@ -1242,30 +1181,12 @@ void CurrencyDetailDialog::populateMonetaryNatureCombo() {
         }
 
         refdata::messaging::get_monetary_natures_request request;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_monetary_natures_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) {
             return {false, {}};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
-
-        auto response = refdata::messaging::get_monetary_natures_response::
-            deserialize(*payload_result);
-        if (!response) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response->types)};
+        return {true, std::move(response_result->monetary_natures)};
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
@@ -1342,30 +1263,12 @@ void CurrencyDetailDialog::populateMarketTierCombo() {
         }
 
         refdata::messaging::get_currency_market_tiers_request request;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_currency_market_tiers_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) {
             return {false, {}};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, {}};
-        }
-
-        auto response = refdata::messaging::get_currency_market_tiers_response::
-            deserialize(*payload_result);
-        if (!response) {
-            return {false, {}};
-        }
-
-        return {true, std::move(response->types)};
+        return {true, std::move(response_result->currency_market_tiers)};
     });
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);

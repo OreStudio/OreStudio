@@ -22,8 +22,6 @@
 #include <algorithm>
 #include <QtConcurrent>
 #include "ores.dq/messaging/change_management_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/error_protocol.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.dq/eventing/change_reason_changed_event.hpp"
 #include "ores.dq/eventing/change_reason_category_changed_event.hpp"
@@ -31,8 +29,6 @@
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     constexpr std::string_view reason_event_name =
@@ -111,50 +107,17 @@ void ChangeReasonCache::loadReasons() {
             return {false, {}};
         }
 
-        dq::messaging::get_change_reasons_request request;
-        auto payload = request.serialize();
-
-        frame request_frame(
-            message_type::get_change_reasons_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send reasons request";
+        auto result = self->clientManager_->process_authenticated_request(
+            dq::messaging::get_change_reasons_request{});
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reasons: "
+                                       << result.error();
             return {false, {}};
         }
 
-        // Check for error response
-        if (response_result->header().type == message_type::error_response) {
-            auto err_payload = response_result->decompressed_payload();
-            if (err_payload) {
-                auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
-                if (err_resp) {
-                    BOOST_LOG_SEV(lg(), error) << "Server returned error for reasons request: "
-                                               << err_resp->message;
-                }
-            }
-            return {false, {}};
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress reasons response";
-            return {false, {}};
-        }
-
-        auto response = dq::messaging::get_change_reasons_response::
-            deserialize(*payload_result);
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize reasons response";
-            return {false, {}};
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->reasons.size()
+        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->reasons.size()
                                    << " change reasons";
-        return {true, std::move(response->reasons)};
+        return {true, std::move(result->reasons)};
     });
 
     reasons_watcher_->setFuture(future);
@@ -168,50 +131,17 @@ void ChangeReasonCache::loadCategories() {
             return {false, {}};
         }
 
-        dq::messaging::get_change_reason_categories_request request;
-        auto payload = request.serialize();
-
-        frame request_frame(
-            message_type::get_change_reason_categories_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send categories request";
+        auto result = self->clientManager_->process_authenticated_request(
+            dq::messaging::get_change_reason_categories_request{});
+        if (!result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch change reason categories: "
+                                       << result.error();
             return {false, {}};
         }
 
-        // Check for error response
-        if (response_result->header().type == message_type::error_response) {
-            auto err_payload = response_result->decompressed_payload();
-            if (err_payload) {
-                auto err_resp = comms::messaging::error_response::deserialize(*err_payload);
-                if (err_resp) {
-                    BOOST_LOG_SEV(lg(), error) << "Server returned error for categories request: "
-                                               << err_resp->message;
-                }
-            }
-            return {false, {}};
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress categories response";
-            return {false, {}};
-        }
-
-        auto response = dq::messaging::get_change_reason_categories_response::
-            deserialize(*payload_result);
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize categories response";
-            return {false, {}};
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->categories.size()
+        BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->categories.size()
                                    << " change reason categories";
-        return {true, std::move(response->categories)};
+        return {true, std::move(result->categories)};
     });
 
     categories_watcher_->setFuture(future);

@@ -27,7 +27,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.ore/xml/importer.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -389,13 +388,7 @@ void ImportCurrencyDialog::onImportClicked() {
                     currency_to_import.modified_by = self->username_.toStdString();
 
                     auto request = save_currency_request::from(currency_to_import);
-                    auto payload = request.serialize();
-                    comms::messaging::frame request_frame(
-                        comms::messaging::message_type::save_currency_request,
-                        0, std::move(payload));
-
-                    auto response_result = self->clientManager_->sendRequest(
-                        std::move(request_frame));
+                    auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
                     if (!response_result) {
                         BOOST_LOG_SEV(lg(), warn)
@@ -404,19 +397,7 @@ void ImportCurrencyDialog::onImportClicked() {
                         continue;
                     }
 
-                    // Decompress payload
-                    auto payload_result = response_result->decompressed_payload();
-                    if (!payload_result) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Failed to decompress import response for: "
-                            << currency.iso_code;
-                        continue;
-                    }
-
-                    auto response = save_currency_response::
-                        deserialize(*payload_result);
-
-                    if (response && response->success) {
+                    if (response_result->success) {
                         success_count++;
                         BOOST_LOG_SEV(lg(), debug)
                             << "Successfully imported: " << currency.iso_code;

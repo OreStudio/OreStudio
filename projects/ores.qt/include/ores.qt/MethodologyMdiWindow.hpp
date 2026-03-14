@@ -20,10 +20,10 @@
 #ifndef ORES_QT_METHODOLOGY_MDI_WINDOW_HPP
 #define ORES_QT_METHODOLOGY_MDI_WINDOW_HPP
 
+#include <string>
 #include <QTableView>
 #include <QToolBar>
 #include <QSortFilterProxyModel>
-#include <boost/uuid/uuid.hpp>
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientMethodologyModel.hpp"
@@ -58,7 +58,7 @@ signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showMethodologyDetails(const dq::domain::methodology& methodology);
-    void showMethodologyHistory(const boost::uuids::uuid& id);
+    void showMethodologyHistory(const std::string& name);
     void addNewRequested();
 
 private slots:

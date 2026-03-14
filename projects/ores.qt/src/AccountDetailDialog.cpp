@@ -43,14 +43,10 @@
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
@@ -469,30 +465,20 @@ void AccountDetailDialog::onSaveClicked() {
                 request.email = email;
                 request.totp_secret = "";
 
-                auto payload = request.serialize();
-                frame request_frame(message_type::save_account_request,
-                    0, std::move(payload));
-
                 auto response_result =
-                    self->clientManager_->sendRequest(std::move(request_frame));
+                    self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!response_result) {
                     return {false, "Failed to communicate with server"};
                 }
 
-                auto payload_result = response_result->decompressed_payload();
-                if (!payload_result) {
-                    return {false, "Failed to decompress server response"};
+                if (!response_result->success) {
+                    return {false, response_result->message};
                 }
 
-                auto response = iam::messaging::save_account_response::
-                    deserialize(*payload_result);
-
-                if (!response) {
-                    return {false, "Invalid server response"};
-                }
-
-                const boost::uuids::uuid account_id = response->account_id;
+                const std::string account_id_str = response_result->account_id;
+                const boost::uuids::uuid account_id =
+                    boost::uuids::string_generator()(account_id_str);
 
                 // Commit any staged party additions
                 for (const auto& partyId : pendingPartyAdds) {
@@ -510,7 +496,7 @@ void AccountDetailDialog::onSaveClicked() {
                         process_authenticated_request(std::move(party_req));
                     if (!result)
                         return {false, "Account created but party assignment failed: "
-                                       + comms::net::to_string(result.error())};
+                                       + result.error()};
                     if (!result->success)
                         return {false, "Account created but party assignment failed: "
                                        + result->message};
@@ -519,20 +505,20 @@ void AccountDetailDialog::onSaveClicked() {
                 // Commit any staged role additions
                 for (const auto& roleId : pendingRoleAdds) {
                     iam::messaging::assign_role_request role_req;
-                    role_req.account_id = account_id;
-                    role_req.role_id    = roleId;
+                    role_req.account_id = account_id_str;
+                    role_req.role_id    = boost::uuids::to_string(roleId);
 
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(role_req));
                     if (!result)
                         return {false, "Account created but role assignment failed: "
-                                       + comms::net::to_string(result.error())};
+                                       + result.error()};
                     if (!result->success)
                         return {false, "Account created but role assignment failed: "
                                        + result->error_message};
                 }
 
-                return {true, boost::uuids::to_string(account_id)};
+                return {true, account_id_str};
             });
 
         auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);
@@ -631,28 +617,17 @@ void AccountDetailDialog::onSaveClicked() {
                     BOOST_LOG_SEV(lg(), debug) << "Saving account fields: "
                                                << boost::uuids::to_string(account_id);
 
-                    iam::messaging::save_account_request request;
-                    request.account_id = account_id;
+                    iam::messaging::update_account_request request;
+                    request.account_id = boost::uuids::to_string(account_id);
                     request.email = email;
 
-                    auto payload = request.serialize();
-                    frame request_frame(message_type::save_account_request,
-                        0, std::move(payload));
-
                     auto response_result =
-                        self->clientManager_->sendRequest(std::move(request_frame));
+                        self->clientManager_->process_authenticated_request(std::move(request));
 
                     if (!response_result)
                         return {false, "Failed to communicate with server"};
 
-                    auto payload_result = response_result->decompressed_payload();
-                    if (!payload_result)
-                        return {false, "Failed to decompress server response"};
-
-                    auto response = iam::messaging::save_account_response::
-                        deserialize(*payload_result);
-                    if (!response) return {false, "Invalid server response"};
-                    if (!response->success) return {false, response->message};
+                    if (!response_result->success) return {false, response_result->message};
                 }
 
                 // Commit party additions
@@ -670,7 +645,7 @@ void AccountDetailDialog::onSaveClicked() {
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(request));
                     if (!result)
-                        return {false, comms::net::to_string(result.error())};
+                        return {false, result.error()};
                     if (!result->success)
                         return {false, result->message};
                 }
@@ -679,14 +654,14 @@ void AccountDetailDialog::onSaveClicked() {
                 for (const auto& partyId : pendingPartyRemoves) {
                     iam::messaging::delete_account_party_request request;
                     iam::messaging::account_party_key key;
-                    key.account_id = account_id;
-                    key.party_id   = partyId;
+                    key.account_id = boost::uuids::to_string(account_id);
+                    key.party_id   = boost::uuids::to_string(partyId);
                     request.keys.push_back(key);
 
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(request));
                     if (!result)
-                        return {false, comms::net::to_string(result.error())};
+                        return {false, result.error()};
                     if (!result->success) {
                         return {false, result->message};
                     }
@@ -695,26 +670,26 @@ void AccountDetailDialog::onSaveClicked() {
                 // Commit role additions
                 for (const auto& roleId : pendingRoleAdds) {
                     iam::messaging::assign_role_request request;
-                    request.account_id = account_id;
-                    request.role_id    = roleId;
+                    request.account_id = boost::uuids::to_string(account_id);
+                    request.role_id    = boost::uuids::to_string(roleId);
 
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(request));
                     if (!result)
-                        return {false, comms::net::to_string(result.error())};
+                        return {false, result.error()};
                     if (!result->success) return {false, result->error_message};
                 }
 
                 // Commit role removals
                 for (const auto& roleId : pendingRoleRemoves) {
                     iam::messaging::revoke_role_request request;
-                    request.account_id = account_id;
-                    request.role_id    = roleId;
+                    request.account_id = boost::uuids::to_string(account_id);
+                    request.role_id    = boost::uuids::to_string(roleId);
 
                     auto result = self->clientManager_->
                         process_authenticated_request(std::move(request));
                     if (!result)
-                        return {false, comms::net::to_string(result.error())};
+                        return {false, result.error()};
                     if (!result->success) return {false, result->error_message};
                 }
 
@@ -798,32 +773,16 @@ void AccountDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending delete account request for: "
                                        << boost::uuids::to_string(account_id);
 
-            iam::messaging::delete_account_request request{account_id};
-            auto payload = request.serialize();
-
-            frame request_frame(message_type::delete_account_request,
-                0, std::move(payload));
-
+            iam::messaging::delete_account_request request;
+            request.account_id = boost::uuids::to_string(account_id);
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 return {false, "Failed to communicate with server"};
             }
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                return {false, "Failed to decompress server response"};
-            }
-
-            auto response = iam::messaging::delete_account_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                return {false, "Invalid server response"};
-            }
-
-            return {response->success, response->message};
+            return {response_result->success, response_result->message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);

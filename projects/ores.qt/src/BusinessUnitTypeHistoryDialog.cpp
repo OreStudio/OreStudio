@@ -27,7 +27,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.refdata/messaging/business_unit_type_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -133,41 +132,21 @@ void BusinessUnitTypeHistoryDialog::loadHistory() {
         std::vector<refdata::domain::business_unit_type> versions;
     };
 
-    auto task = [self, id = id_]() -> HistoryResult {
+    auto task = [self, code = code_.toStdString()]() -> HistoryResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed", {}};
         }
 
         refdata::messaging::get_business_unit_type_history_request request;
-        request.id = id;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_business_unit_type_history_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.type = code;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server", {}};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response", {}};
-        }
-
-        auto response = refdata::messaging::get_business_unit_type_history_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response", {}};
-        }
-
-        return {response->success, response->message,
-                std::move(response->versions)};
+        return {response_result->success, response_result->message,
+                std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);

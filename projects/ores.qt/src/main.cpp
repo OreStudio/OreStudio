@@ -26,14 +26,10 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.telemetry/log/lifecycle_manager.hpp"
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/protocol.hpp"
-#include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.qt/CommandLineParser.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MainWindow.hpp"
 #include "ores.qt/SplashScreen.hpp"
-#include "ores.qt/TelemetrySettingsDialog.hpp"
 
 namespace {
 
@@ -59,9 +55,7 @@ int main(int argc, char *argv[]) {
     auto lg(make_logger(logger_name));
 
     BOOST_LOG_SEV(lg, info) << ores::utility::version::format_startup_message(
-        "ORE Studio Qt",
-        ores::comms::messaging::PROTOCOL_VERSION_MAJOR,
-        ores::comms::messaging::PROTOCOL_VERSION_MINOR);
+        "ORE Studio Qt");
 
     // Set Fusion style for consistent cross-platform appearance.
     // This is especially important for WSL where Qt may detect a different
@@ -86,11 +80,9 @@ int main(int argc, char *argv[]) {
 
     // Start progress bar animation
     const int splashDuration = 2000; // in milliseconds
-    QString buildInfo = QString("v%1 %2 Protocol %3.%4")
+    QString buildInfo = QString("v%1 %2")
                             .arg(ORES_VERSION)
-                            .arg(ORES_BUILD_INFO)
-                            .arg(ores::comms::messaging::PROTOCOL_VERSION_MAJOR)
-                            .arg(ores::comms::messaging::PROTOCOL_VERSION_MINOR);
+                            .arg(ORES_BUILD_INFO);
     splash.setMessage(buildInfo);
     splash.setProgressDuration(splashDuration);
 
@@ -104,20 +96,6 @@ int main(int argc, char *argv[]) {
         BOOST_LOG_SEV(lg, info) << "Instance info: name='" << instanceName.toStdString()
                                 << "', color="
                                 << (instanceColor.isValid() ? instanceColor.name().toStdString() : "none");
-    }
-
-    // Enable telemetry streaming if configured in settings
-    if (ores::qt::TelemetrySettingsDialog::isStreamingEnabled()) {
-        BOOST_LOG_SEV(lg, info) << "Telemetry streaming is enabled in settings";
-        ores::comms::service::telemetry_streaming_options streaming_opts{
-            .source_name = "ores.qt",
-            .source_version = ORES_VERSION,
-            .batch_size = static_cast<std::size_t>(
-                ores::qt::TelemetrySettingsDialog::streamingBatchSize()),
-            .flush_interval = std::chrono::seconds(
-                ores::qt::TelemetrySettingsDialog::streamingFlushInterval())
-        };
-        mainWindow.getClientManager()->enableStreaming(streaming_opts);
     }
 
     QTimer::singleShot(splashDuration, &splash, SLOT(close()));

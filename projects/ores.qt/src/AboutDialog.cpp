@@ -24,7 +24,6 @@
 #include <QTreeWidget>
 #include <QHeaderView>
 #include "ores.utility/version/version.hpp"
-#include "ores.comms/messaging/protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
@@ -73,11 +72,9 @@ void AboutDialog::showEvent(QShowEvent* e) {
 
         logoLabel_->setPixmap(std::move(scaledLogo));
 
-        const QString text = QString("v%1 %2 Protocol %3.%4")
+        const QString text = QString("v%1 %2")
                                  .arg(ORES_VERSION)
-                                 .arg(ORES_BUILD_INFO)
-                                 .arg(ores::comms::messaging::PROTOCOL_VERSION_MAJOR)
-                                 .arg(ores::comms::messaging::PROTOCOL_VERSION_MINOR);
+                                 .arg(ORES_BUILD_INFO);
         logoLabel_->setTextOverlay(text);
 
         BOOST_LOG_SEV(lg(), debug) << "Scaled successfully.";
@@ -91,61 +88,28 @@ void AboutDialog::showEvent(QShowEvent* e) {
 void AboutDialog::populateSystemInfo() {
     ui_.systemInfoTree->clear();
 
-    // Helper: extract value from KVP entries by key prefix
-    const auto& entries = clientManager_
-        ? clientManager_->systemInfoEntries()
-        : std::vector<comms::messaging::system_info_entry>{};
-
-    auto get = [&entries](const std::string& key) -> QString {
-        for (const auto& e : entries) {
-            if (e.key == key) {
-                return QString::fromStdString(e.value);
-            }
-        }
-        return {};
-    };
-
     // Database row
     {
         auto* item = new QTreeWidgetItem(ui_.systemInfoTree);
         item->setText(0, "Database");
-
-        const auto schema  = get("database.schema_version");
-        const auto env     = get("database.build_environment");
-        const auto commit  = get("database.git_commit");
-        const auto date    = get("database.git_date");
-
-        if (schema.isEmpty()) {
-            item->setText(1, "(not connected)");
-        } else {
-            item->setText(1, QString("v%1 (%2 %3 %4)").arg(schema, env, commit, date));
-        }
+        item->setText(1, "(not connected)");
     }
 
     // Server row
     {
         auto* item = new QTreeWidgetItem(ui_.systemInfoTree);
         item->setText(0, "Server");
-
-        const auto version  = get("server.version");
-        const auto protocol = get("server.protocol_version");
-        const auto build    = get("server.build_info");
-
-        if (version.isEmpty()) {
-            item->setText(1, "(not connected)");
-        } else {
-            item->setText(1, QString("v%1 Protocol %2 (%3)").arg(version, protocol, build));
-        }
+        item->setText(1, clientManager_ && clientManager_->isConnected()
+            ? QString::fromStdString(clientManager_->serverAddress())
+            : "(not connected)");
     }
 
     // Client row — always available (compile-time constants)
     {
         auto* item = new QTreeWidgetItem(ui_.systemInfoTree);
         item->setText(0, "Client");
-        item->setText(1, QString("v%1 Protocol %2.%3 (%4)")
+        item->setText(1, QString("v%1 (%2)")
             .arg(ORES_VERSION)
-            .arg(ores::comms::messaging::PROTOCOL_VERSION_MAJOR)
-            .arg(ores::comms::messaging::PROTOCOL_VERSION_MINOR)
             .arg(ORES_BUILD_INFO));
     }
 

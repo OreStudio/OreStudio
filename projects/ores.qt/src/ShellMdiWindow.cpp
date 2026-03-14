@@ -23,10 +23,10 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QTextCharFormat>
+#include <rfl/json.hpp>
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.nats/service/nats_client.hpp"
-#include "ores.iam/client/auth_helpers.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
 
 namespace ores::qt {
 
@@ -180,58 +180,61 @@ void ShellMdiWindow::start_shell() {
     out_stream_ = std::make_unique<std::ostream>(output_buf_.get());
     in_stream_ = std::make_unique<std::istream>(input_buf_.get());
 
-    // Create the shell's own client session and connect
-    shell_session_ = std::make_unique<comms::net::client_session>();
-
+    // Connect the shell's own NATS session
     const std::string nats_url = "nats://" + client_manager_->connectedHost()
         + ":" + std::to_string(client_manager_->connectedPort());
 
     try {
-        nats::config::nats_options opts;
-        opts.url = nats_url;
-        auto nats_client = std::make_shared<nats::service::nats_client>(opts);
-        nats_client->connect_sync();
-
-        auto attach_result = shell_session_->attach_client(nats_client);
-        if (!attach_result) {
-            auto msg = QString("Shell: Failed to connect to server: %1")
-                .arg(QString::fromStdString(
-                    comms::net::to_string(attach_result.error())));
-            BOOST_LOG_SEV(lg(), error) << msg.toStdString();
-            output_area_->appendPlainText(msg);
-            input_line_->setEnabled(false);
-            shell_session_.reset();
-            return;
-        }
+        shell_session_.connect(nats_url);
     } catch (const std::exception& e) {
         auto msg = QString("Shell: Failed to connect to server: %1")
             .arg(QString::fromStdString(e.what()));
         BOOST_LOG_SEV(lg(), error) << msg.toStdString();
         output_area_->appendPlainText(msg);
         input_line_->setEnabled(false);
-        shell_session_.reset();
         return;
     }
 
-    // Login using stored credentials
-    auto login_result = iam::client::login(
-        *shell_session_,
-        client_manager_->storedUsername(),
-        client_manager_->storedPassword());
-
-    if (!login_result.success) {
-        auto msg = QString("Shell: Login failed: %1")
-            .arg(QString::fromStdString(login_result.error_message));
-        BOOST_LOG_SEV(lg(), error) << msg.toStdString();
-        output_area_->appendPlainText(msg);
+    // Login using stored credentials via NATS request
+    try {
+        iam::messaging::login_request req{
+            .principal = client_manager_->storedUsername(),
+            .password  = client_manager_->storedPassword()
+        };
+        const auto json_body = rfl::json::write(req);
+        auto msg = shell_session_.request(
+            iam::messaging::login_request::nats_subject, json_body);
+        const std::string_view data(
+            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        auto resp = rfl::json::read<iam::messaging::login_response>(data);
+        if (!resp || !resp->success) {
+            const std::string err = resp ? resp->error_message : "Invalid response";
+            auto qmsg = QString("Shell: Login failed: %1")
+                .arg(QString::fromStdString(err));
+            BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
+            output_area_->appendPlainText(qmsg);
+            input_line_->setEnabled(false);
+            shell_session_.disconnect();
+            return;
+        }
+        shell_session_.set_auth(comms::shell::service::nats_session::login_info{
+            .jwt         = resp->token,
+            .username    = resp->username,
+            .tenant_id   = resp->tenant_id,
+            .tenant_name = resp->tenant_name
+        });
+    } catch (const std::exception& e) {
+        auto qmsg = QString("Shell: Login failed: %1")
+            .arg(QString::fromStdString(e.what()));
+        BOOST_LOG_SEV(lg(), error) << qmsg.toStdString();
+        output_area_->appendPlainText(qmsg);
         input_line_->setEnabled(false);
-        shell_session_->disconnect();
-        shell_session_.reset();
+        shell_session_.disconnect();
         return;
     }
 
     // Create REPL and run on worker thread
-    shell_repl_ = std::make_unique<comms::shell::app::repl>(*shell_session_);
+    shell_repl_ = std::make_unique<comms::shell::app::repl>(shell_session_);
 
     auto* in = in_stream_.get();
     auto* out = out_stream_.get();
@@ -259,7 +262,8 @@ void ShellMdiWindow::stop_shell() {
 
     worker_thread_.reset();
     shell_repl_.reset();
-    shell_session_.reset();
+    if (shell_session_.is_connected())
+        shell_session_.disconnect();
     in_stream_.reset();
     out_stream_.reset();
     input_buf_.reset();

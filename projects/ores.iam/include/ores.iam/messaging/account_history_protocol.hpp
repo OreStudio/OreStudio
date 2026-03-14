@@ -21,6 +21,7 @@
 #define ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include "ores.iam/domain/account_version.hpp"
 
@@ -31,6 +32,8 @@ struct account_version_history {
 };
 
 struct get_account_history_request {
+    using response_type = struct get_account_history_response;
+    static constexpr std::string_view nats_subject = "ores.iam.v1.accounts.history";
     std::string username;
 };
 

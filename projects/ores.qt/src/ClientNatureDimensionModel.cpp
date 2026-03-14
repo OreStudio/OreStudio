@@ -23,14 +23,11 @@
 #include "ores.dq/messaging/dimension_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string nature_dimension_key_extractor(const dq::domain::nature_dimension& e) {
@@ -152,15 +149,7 @@ void ClientNatureDimensionModel::refresh() {
             }
 
             dq::messaging::get_nature_dimensions_request request;
-            auto payload = request.serialize();
-
-            frame request_frame(
-                message_type::get_nature_dimensions_request,
-                0, std::move(payload)
-            );
-
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send request";
                 return {.success = false, .dimensions = {},
@@ -168,35 +157,9 @@ void ClientNatureDimensionModel::refresh() {
                         .error_details = {}};
             }
 
-            // Check for server error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .dimensions = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .dimensions = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response = dq::messaging::get_nature_dimensions_response::
-                deserialize(*payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .dimensions = {},
-                        .error_message = "Failed to deserialize response",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->dimensions.size()
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->nature_dimensions.size()
                                        << " nature dimensions";
-            return {.success = true, .dimensions = std::move(response->dimensions),
+            return {.success = true, .dimensions = std::move(response_result->nature_dimensions),
                     .error_message = {}, .error_details = {}};
         }, "nature dimensions");
     });

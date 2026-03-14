@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 #include "ores.refdata/domain/currency.hpp"
-#include "ores.refdata/domain/currency_version_history.hpp"
+#include "ores.refdata/messaging/currency_history_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
@@ -94,7 +94,7 @@ public:
      * @param history All versions ordered newest-first (index 0 is latest)
      * @param versionNumber The version number to initially display
      */
-    void setHistory(const refdata::domain::currency_version_history& history,
+    void setHistory(const refdata::messaging::currency_version_history& history,
         int versionNumber);
 
     /**
@@ -188,7 +188,7 @@ private:
     static constexpr const char* max_timestamp = "9999-12-31 23:59:59";
 
     // Version navigation members
-    refdata::domain::currency_version_history history_;
+    refdata::messaging::currency_version_history history_;
     int currentHistoryIndex_;
     QAction* firstVersionAction_;
     QAction* prevVersionAction_;

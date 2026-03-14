@@ -223,8 +223,8 @@ process_assign_role(std::ostream& out, nats_session& session,
                                    << account_id_or_principal;
 
         iam::messaging::assign_role_request req;
-        req.account_id = *parsed_account_id;
-        req.role_id = *parsed_role_id;
+        req.account_id = account_id_or_principal;
+        req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::assign_role_response>(
             out, session, "ores.iam.v1.roles.assign", rfl::json::write(req));
@@ -272,8 +272,8 @@ process_revoke_role(std::ostream& out, nats_session& session,
                                    << account_id_or_principal;
 
         iam::messaging::revoke_role_request req;
-        req.account_id = *parsed_account_id;
-        req.role_id = *parsed_role_id;
+        req.account_id = account_id_or_principal;
+        req.role_id = role_id_or_name;
 
         auto result = do_auth_request<iam::messaging::revoke_role_response>(
             out, session, "ores.iam.v1.roles.revoke", rfl::json::write(req));
@@ -320,7 +320,7 @@ process_get_account_roles(std::ostream& out, nats_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Getting roles for account " << account_id;
 
     iam::messaging::get_account_roles_request req;
-    req.account_id = *parsed_account_id;
+    req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_roles_response>(
         out, session, "ores.iam.v1.roles.for-account", rfl::json::write(req));
@@ -346,7 +346,7 @@ process_get_account_permissions(std::ostream& out, nats_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Getting permissions for account " << account_id;
 
     iam::messaging::get_account_permissions_request req;
-    req.account_id = *parsed_account_id;
+    req.account_id = account_id;
 
     auto result = do_auth_request<iam::messaging::get_account_permissions_response>(
         out, session, "ores.iam.v1.permissions.for-account", rfl::json::write(req));

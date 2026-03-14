@@ -41,7 +41,6 @@
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.trading/eventing/trade_changed_event.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -167,34 +166,20 @@ void TradeController::onImportTradesRequested() {
     refdata::messaging::get_books_request booksReq;
     booksReq.offset = 0;
     booksReq.limit = 10000;
-    auto booksPayload = booksReq.serialize();
-    comms::messaging::frame booksFrame(
-        comms::messaging::message_type::get_books_request,
-        0, std::move(booksPayload));
-
-    auto booksResult = clientManager_->sendRequest(std::move(booksFrame));
+    auto booksResult = clientManager_->process_authenticated_request(std::move(booksReq));
     if (!booksResult) {
         MessageBoxHelper::critical(mainWindow_, tr("Error"),
             tr("Failed to fetch books from server."));
         return;
     }
 
-    auto booksDecompressed = booksResult->decompressed_payload();
-    if (!booksDecompressed) {
-        MessageBoxHelper::critical(mainWindow_, tr("Error"),
-            tr("Failed to decompress books response."));
-        return;
-    }
-
-    auto booksResponse = refdata::messaging::get_books_response::deserialize(
-        *booksDecompressed);
-    if (!booksResponse || booksResponse->books.empty()) {
+    if (booksResult->books.empty()) {
         MessageBoxHelper::warning(mainWindow_, tr("No Books"),
             tr("No books found. Please create a book before importing trades."));
         return;
     }
 
-    const auto& books = booksResponse->books;
+    const auto& books = booksResult->books;
 
     // Show a book-selection dialog
     auto* picker = new QDialog(mainWindow_);

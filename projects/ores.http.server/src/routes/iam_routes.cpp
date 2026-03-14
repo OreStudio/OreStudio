@@ -85,7 +85,7 @@ namespace reason = database::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
     std::shared_ptr<variability::service::system_flags_service> system_flags,
-    std::shared_ptr<comms::service::auth_session_service> sessions,
+    std::shared_ptr<iam::service::auth_session_service> sessions,
     std::shared_ptr<iam::service::authorization_service> auth_service,
     std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
     std::shared_ptr<geo::service::geolocation_service> geo_service)
@@ -632,7 +632,7 @@ asio::awaitable<http_response> iam_routes::handle_signup(const http_request& req
     try {
         iam::service::signup_service signup_svc(ctx_, system_flags_, auth_service_);
         auto result = signup_svc.register_user(
-            signup_req->username, signup_req->email, signup_req->password);
+            signup_req->principal, signup_req->email, signup_req->password);
 
         if (!result.success) {
             co_return http_response::bad_request(result.error_message);
@@ -640,8 +640,7 @@ asio::awaitable<http_response> iam_routes::handle_signup(const http_request& req
 
         iam::messaging::signup_response resp;
         resp.success = true;
-        resp.account_id = result.account_id;
-        resp.username = result.username;
+        resp.account_id = boost::uuids::to_string(result.account_id);
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -728,7 +727,7 @@ asio::awaitable<http_response> iam_routes::handle_create_initial_admin(const htt
 
         iam::messaging::create_initial_admin_response resp;
         resp.success = true;
-        resp.account_id = account.id;
+        resp.account_id = boost::uuids::to_string(account.id);
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -788,7 +787,8 @@ asio::awaitable<http_response> iam_routes::handle_create_account(const http_requ
             create_req->password, req.authenticated_user->username.value_or("system"));
 
         iam::messaging::save_account_response resp;
-        resp.account_id = account.id;
+        resp.success = true;
+        resp.account_id = boost::uuids::to_string(account.id);
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -846,8 +846,7 @@ asio::awaitable<http_response> iam_routes::handle_update_account(const http_requ
         auto uuid = boost::uuids::string_generator()(account_id);
         bool success = account_service_.update_account(uuid, update_req->email,
             req.authenticated_user->username.value_or("system"),
-            update_req->change_reason_code,
-            update_req->change_commentary);
+            "update", "");
 
         iam::messaging::save_account_response resp;
         resp.success = success;
@@ -886,7 +885,6 @@ asio::awaitable<http_response> iam_routes::handle_get_account_history(const http
 
         resp.success = true;
         resp.message = "History retrieved successfully";
-        resp.history.username = username;
 
         for (const auto& account : accounts) {
             iam::domain::account_version ver;
@@ -922,11 +920,10 @@ asio::awaitable<http_response> iam_routes::handle_lock_accounts(const http_reque
     }
 
     try {
-        std::vector<iam::messaging::lock_account_result> results;
+        std::vector<iam::messaging::account_operation_result> results;
         for (const auto& id : lock_req->account_ids) {
             bool success = account_service_.lock_account(id);
-            iam::messaging::lock_account_result result;
-            result.account_id = id;
+            iam::messaging::account_operation_result result;
             result.success = success;
             result.message = success ? "" : "Failed to lock";
             results.push_back(result);
@@ -956,11 +953,10 @@ asio::awaitable<http_response> iam_routes::handle_unlock_accounts(const http_req
     }
 
     try {
-        std::vector<iam::messaging::unlock_account_result> results;
+        std::vector<iam::messaging::account_operation_result> results;
         for (const auto& id : unlock_req->account_ids) {
             bool success = account_service_.unlock_account(id);
-            iam::messaging::unlock_account_result result;
-            result.account_id = id;
+            iam::messaging::account_operation_result result;
             result.success = success;
             result.message = success ? "" : "Failed to unlock";
             results.push_back(result);
@@ -1012,18 +1008,19 @@ asio::awaitable<http_response> iam_routes::handle_reset_password(const http_requ
     }
 
     try {
-        std::vector<iam::messaging::reset_password_result> results;
+        bool all_success = true;
+        std::string error_message;
         for (const auto& id : reset_req->account_ids) {
             bool success = account_service_.set_password_reset_required(id);
-            iam::messaging::reset_password_result result;
-            result.account_id = id;
-            result.success = success;
-            result.message = success ? "" : "Failed to reset password";
-            results.push_back(result);
+            if (!success) {
+                all_success = false;
+                error_message = "Failed to reset password for one or more accounts";
+            }
         }
 
         iam::messaging::reset_password_response resp;
-        resp.results = results;
+        resp.success = all_success;
+        resp.message = all_success ? "Password reset required" : error_message;
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
@@ -1073,7 +1070,7 @@ asio::awaitable<http_response> iam_routes::handle_update_my_email(const http_req
     }
 
     try {
-        auto error = account_service_.update_my_email(auth->account_id, update_req->new_email);
+        auto error = account_service_.update_my_email(auth->account_id, update_req->email);
 
         iam::messaging::update_my_email_response resp;
         resp.success = error.empty();

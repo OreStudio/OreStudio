@@ -17,23 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMMS_SHELL_APP_APPLICATION_HPP
-#define ORES_COMMS_SHELL_APP_APPLICATION_HPP
+#ifndef ORES_IAM_SERVICE_AUTH_SESSION_SERVICE_HPP
+#define ORES_IAM_SERVICE_AUTH_SESSION_SERVICE_HPP
 
+#include <mutex>
 #include <optional>
+#include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
+#include "ores.iam/domain/session.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.nats/config/nats_options.hpp"
-#include "ores.comms.shell/config/login_options.hpp"
 
-namespace ores::comms::shell::app {
+namespace ores::iam::service {
 
 /**
- * @brief Entry point for the ores client application.
+ * @brief In-memory JWT session tracker.
+ *
+ * Maps Bearer tokens to session data for fast in-process auth checks.
  */
-class application final {
+class auth_session_service {
+public:
+    void add_session(const std::string& token, ores::iam::domain::session session);
+    void remove_session(const std::string& token);
+    std::optional<ores::iam::domain::session>
+    find_session(const std::string& token) const;
+    std::vector<ores::iam::domain::session> get_all_sessions() const;
+
 private:
     inline static std::string_view logger_name =
-        "ores.comms.shell.app.application";
+        "ores.iam.service.auth_session_service";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -41,30 +54,8 @@ private:
         return instance;
     }
 
-public:
-    /**
-     * @brief Construct application with configuration.
-     *
-     * @param connection_config Optional connection configuration for auto-connect.
-     * @param login_config Optional login credentials for auto-login.
-     */
-    explicit application(
-        std::optional<nats::config::nats_options> connection_config = std::nullopt,
-        std::optional<config::login_options> login_config = std::nullopt);
-
-    application(const application&) = delete;
-    application& operator=(const application&) = delete;
-
-    /**
-     * @brief Executes the application.
-     *
-     * Starts the REPL and blocks until the user exits.
-     */
-    void run();
-
-private:
-    std::optional<nats::config::nats_options> connection_config_;
-    std::optional<config::login_options> login_config_;
+    mutable std::mutex mutex_;
+    std::unordered_map<std::string, ores::iam::domain::session> sessions_;
 };
 
 }

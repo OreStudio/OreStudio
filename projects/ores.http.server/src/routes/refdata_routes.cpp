@@ -33,7 +33,7 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 risk_routes::risk_routes(database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions)
+    std::shared_ptr<iam::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
     , sessions_(std::move(sessions)) {
     BOOST_LOG_SEV(lg(), debug) << "Risk routes initialized";
@@ -131,8 +131,7 @@ asio::awaitable<http_response> risk_routes::handle_save_currency(const http_requ
         }
 
         refdata::service::currency_service service(ctx_);
-        if (!save_req->currencies.empty())
-            service.save_currencies(save_req->currencies);
+        service.save_currency(save_req->data);
 
         refdata::messaging::save_currency_response resp;
         resp.success = true;
@@ -194,7 +193,7 @@ asio::awaitable<http_response> risk_routes::handle_get_currency_history(const ht
         } else {
             resp.success = true;
             resp.message = "History retrieved successfully";
-            resp.history = std::move(*history_opt);
+            resp.history.versions = std::move(history_opt->versions);
         }
 
         co_return http_response::json(rfl::json::write(resp));

@@ -21,22 +21,20 @@
 
 #include <ostream>
 #include <functional>
+#include <rfl/json.hpp>
 #include <boost/lexical_cast.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <cli/cli.h>
 #include "ores.platform/time/datetime.hpp"
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.iam/domain/tenant_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
 
 using namespace logging;
-using comms::messaging::message_type;
-using comms::net::client_session;
-namespace reason = database::domain::change_reason_constants;
+using service::nats_session;
 
 namespace {
 
@@ -44,13 +42,30 @@ std::string format_time(std::chrono::system_clock::time_point tp) {
     return ores::platform::time::datetime::format_time_point(tp);
 }
 
+template<typename Response>
+std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+    const std::string& subject, const std::string& body) {
+    try {
+        auto reply = session.authenticated_request(subject, body);
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<Response>(data_str);
+        if (!result) {
+            out << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        out << "✗ Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
 }  // anonymous namespace
 
 void tenants_commands::
-register_commands(cli::Menu& root_menu, client_session& session,
+register_commands(cli::Menu& root_menu, nats_session& session,
                   pagination_context& /*pagination*/) {
-    // Note: Tenant protocol doesn't support pagination yet, so pagination_context
-    // is unused but passed for API consistency.
     auto tenants_menu =
         std::make_unique<cli::Menu>("tenants");
 
@@ -86,22 +101,17 @@ register_commands(cli::Menu& root_menu, client_session& session,
 }
 
 void tenants_commands::
-process_get_tenants(std::ostream& out, client_session& session,
+process_get_tenants(std::ostream& out, nats_session& session,
     bool include_deleted) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request. "
                                << "include_deleted=" << include_deleted;
 
-    using iam::messaging::get_tenants_request;
-    using iam::messaging::get_tenants_response;
-    auto result = session.process_authenticated_request<get_tenants_request,
-                                                        get_tenants_response,
-                                                        message_type::get_tenants_request>
-        (get_tenants_request{.include_deleted = include_deleted});
+    iam::messaging::get_tenants_request req;
+    req.include_deleted = include_deleted;
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::get_tenants_response>(
+        out, session, "ores.iam.v1.tenants.list", rfl::json::write(req));
+    if (!result) return;
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << result->tenants.size() << " tenants.";
@@ -109,64 +119,56 @@ process_get_tenants(std::ostream& out, client_session& session,
 }
 
 void tenants_commands::
-process_add_tenant(std::ostream& out, client_session& session,
+process_add_tenant(std::ostream& out, nats_session& session,
     std::string code, std::string name, std::string type,
     std::string hostname, std::string description) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add tenant request for code: "
                                << code;
 
     // Get modified_by from logged-in user
-    const auto& session_info = session.session_info();
-    if (!session_info) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to add a tenant." << std::endl;
         return;
     }
-    const auto& modified_by = session_info->username;
+    const auto& modified_by = session.auth().username;
 
     // Generate a new UUID for the tenant
     boost::uuids::random_generator gen;
     auto new_id = gen();
 
-    using iam::messaging::save_tenant_request;
-    using iam::messaging::save_tenant_response;
-    auto result = session.process_authenticated_request<save_tenant_request,
-                                                        save_tenant_response,
-                                                        message_type::save_tenant_request>
-        (save_tenant_request::from(iam::domain::tenant{
-            .version = 0,
-            .id = new_id,
-            .code = std::move(code),
-            .name = std::move(name),
-            .type = std::move(type),
-            .description = std::move(description),
-            .hostname = std::move(hostname),
-            .status = "active",
-            .modified_by = modified_by,
-            .change_reason_code = std::string{reason::codes::new_record},
-            .change_commentary = "Created via shell",
-            .recorded_at = std::chrono::system_clock::now()
-        }));
+    auto req = iam::messaging::save_tenant_request::from(iam::domain::tenant{
+        .version = 0,
+        .id = new_id,
+        .code = std::move(code),
+        .name = std::move(name),
+        .type = std::move(type),
+        .description = std::move(description),
+        .hostname = std::move(hostname),
+        .status = "active",
+        .modified_by = modified_by,
+        .change_reason_code = "new_record",
+        .change_commentary = "Created via shell",
+        .recorded_at = std::chrono::system_clock::now()
+    });
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::save_tenant_response>(
+        out, session, "ores.iam.v1.tenants.save", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added tenant with ID: "
                                   << new_id;
         out << "✓ Tenant added successfully!" << std::endl;
         out << "  ID: " << new_id << std::endl;
     } else {
-        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add tenant: " << msg;
         out << "✗ Failed to add tenant: " << msg << std::endl;
     }
 }
 
 void tenants_commands::
-process_tenant_history(std::ostream& out, client_session& session,
+process_tenant_history(std::ostream& out, nats_session& session,
     std::string tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating tenant history request for: "
                                << tenant_id;
@@ -180,27 +182,21 @@ process_tenant_history(std::ostream& out, client_session& session,
         return;
     }
 
-    using iam::messaging::get_tenant_history_request;
-    using iam::messaging::get_tenant_history_response;
-    auto result = session.process_authenticated_request<get_tenant_history_request,
-                                                        get_tenant_history_response,
-                                                        message_type::get_tenant_history_request>
-        (get_tenant_history_request{.id = parsed_id});
+    iam::messaging::get_tenant_history_request req;
+    req.id = parsed_id;
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::get_tenant_history_response>(
+        out, session, "ores.iam.v1.tenants.history", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (!response.success) {
+    if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get tenant history: "
-                                  << response.message;
-        out << "✗ " << response.message << std::endl;
+                                  << result->message;
+        out << "✗ " << result->message << std::endl;
         return;
     }
 
-    const auto& versions = response.versions;
+    const auto& versions = result->versions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << versions.size() << " history entries.";
 
@@ -234,13 +230,12 @@ process_tenant_history(std::ostream& out, client_session& session,
 }
 
 void tenants_commands::
-process_delete_tenant(std::ostream& out, client_session& session,
+process_delete_tenant(std::ostream& out, nats_session& session,
     std::string tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete tenant request for: "
                                << tenant_id;
 
-    const auto& session_info = session.session_info();
-    if (!session_info) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to delete a tenant." << std::endl;
         return;
     }
@@ -254,25 +249,19 @@ process_delete_tenant(std::ostream& out, client_session& session,
         return;
     }
 
-    using iam::messaging::delete_tenant_request;
-    using iam::messaging::delete_tenant_response;
-    auto result = session.process_authenticated_request<delete_tenant_request,
-                                                        delete_tenant_response,
-                                                        message_type::delete_tenant_request>
-        (delete_tenant_request{.ids = {parsed_id}});
+    iam::messaging::delete_tenant_request req;
+    req.ids = {parsed_id};
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::delete_tenant_response>(
+        out, session, "ores.iam.v1.tenants.delete", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted tenant: " << tenant_id;
         out << "✓ Tenant deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << response.message;
-        out << "✗ Failed to delete tenant: " << response.message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete tenant: " << result->message;
+        out << "✗ Failed to delete tenant: " << result->message << std::endl;
     }
 }
 

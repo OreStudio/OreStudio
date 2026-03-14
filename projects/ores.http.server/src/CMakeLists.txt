@@ -46,8 +46,7 @@ target_link_libraries(${lib_target_name}
         ores.geo.lib
         ores.telemetry.lib
         ores.utility.lib
-        ores.database.lib
-        ores.comms.lib)
+        ores.database.lib)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

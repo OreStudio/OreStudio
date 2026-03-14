@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -23,7 +23,7 @@
 #include <iosfwd>
 #include <memory>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/service/nats_session.hpp"
 #include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -55,11 +55,11 @@ private:
 
 public:
     /**
-     * @brief Construct a REPL instance with configuration.
+     * @brief Construct a REPL instance with a NATS session.
      *
-     * @param session Reference to a client session.
+     * @param session Reference to a nats_session.
      */
-    explicit repl(comms::net::client_session& session);
+    explicit repl(service::nats_session& session);
 
     repl(const repl&) = delete;
     repl& operator=(const repl&) = delete;
@@ -68,9 +68,6 @@ public:
 
     /**
      * @brief Run the REPL session using std::cin and std::cout.
-     *
-     * Starts the I/O thread, displays the welcome message, and enters
-     * the interactive command loop. Blocks until the user exits.
      */
     void run();
 
@@ -85,29 +82,20 @@ public:
 private:
     /**
      * @brief Setup the command menu structure.
-     *
-     * Creates the root menu and all submenus, wiring them together.
-     *
-     * @return The configured CLI instance
      */
     std::unique_ptr<::cli::Cli> setup_menus();
 
     /**
      * @brief Display the welcome message.
-     *
-     * @param out Output stream to write to.
      */
     void display_welcome(std::ostream& out) const;
 
     /**
      * @brief Perform cleanup on REPL exit.
-     *
-     * Sends a logout request if logged in and disconnects cleanly from
-     * the server to avoid abrupt connection termination.
      */
     void cleanup();
 
-    comms::net::client_session& session_;
+    service::nats_session& session_;
     pagination_context pagination_;
     ::cli::CliSession* active_session_{nullptr};
 };

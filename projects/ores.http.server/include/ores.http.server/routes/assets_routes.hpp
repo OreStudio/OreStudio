@@ -24,7 +24,7 @@
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.comms/service/auth_session_service.hpp"
+#include "ores.iam/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::http_server::routes {
@@ -40,7 +40,7 @@ namespace ores::http_server::routes {
 class assets_routes final {
 public:
     assets_routes(database::context ctx,
-        std::shared_ptr<comms::service::auth_session_service> sessions);
+        std::shared_ptr<iam::service::auth_session_service> sessions);
 
     /**
      * @brief Registers all Assets routes with the router.
@@ -61,7 +61,7 @@ private:
     handle_get_images(const http::domain::http_request& req);
 
     database::context ctx_;
-    std::shared_ptr<comms::service::auth_session_service> sessions_;
+    std::shared_ptr<iam::service::auth_session_service> sessions_;
 };
 
 }

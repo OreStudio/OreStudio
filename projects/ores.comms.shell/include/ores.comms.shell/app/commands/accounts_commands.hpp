@@ -22,7 +22,7 @@
 
 #include <string>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/service/nats_session.hpp"
 #include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -54,7 +54,7 @@ public:
      * Creates the accounts submenu and adds account operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session,
+        service::nats_session& session,
         pagination_context& pagination);
 
     /**
@@ -71,7 +71,7 @@ public:
      * @param email Account email
      */
     static void process_create_account(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string principal, std::string password, std::string totp_secret,
         std::string email);
 
@@ -85,7 +85,7 @@ public:
      * @param pagination Pagination context for state management.
      */
     static void process_list_accounts(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         pagination_context& pagination);
 
     /**
@@ -100,7 +100,7 @@ public:
      * @param password Account password
      */
     static void process_login(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string principal, std::string password);
 
     /**
@@ -113,7 +113,7 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_lock_account(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string account_id);
 
     /**
@@ -126,7 +126,7 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_unlock_account(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string account_id);
 
     /**
@@ -138,7 +138,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_list_login_info(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Process a logout request.
@@ -149,7 +149,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_logout(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Process a bootstrap request.
@@ -165,7 +165,7 @@ public:
      * @param email Admin account email
      */
     static void process_bootstrap(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string principal, std::string password, std::string email);
 
     /**
@@ -178,7 +178,7 @@ public:
      * @param account_id Optional account ID (empty for own sessions)
      */
     static void process_list_sessions(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string account_id = "");
 
     /**
@@ -190,7 +190,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_active_sessions(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Process a session statistics request.
@@ -202,7 +202,7 @@ public:
      * @param days Number of days to retrieve statistics for (default 30)
      */
     static void process_session_stats(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         int days = 30);
 
     /**
@@ -215,7 +215,7 @@ public:
      * @param username Username of the account
      */
     static void process_get_account_history(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string username);
 
     /**
@@ -231,7 +231,7 @@ public:
      * @param username Username of the account to display
      */
     static void process_account_info(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string username);
 };
 

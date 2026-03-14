@@ -20,6 +20,7 @@
 #include "ores.http.server/routes/assets_routes.hpp"
 
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.assets/service/assets_service.hpp"
@@ -31,7 +32,7 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 assets_routes::assets_routes(database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions)
+    std::shared_ptr<iam::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
     , sessions_(std::move(sessions)) {
     BOOST_LOG_SEV(lg(), debug) << "Assets routes initialized";
@@ -69,8 +70,13 @@ asio::awaitable<http_response> assets_routes::handle_get_images(const http_reque
             co_return http_response::bad_request("Maximum 100 images per request");
         }
 
+        std::vector<std::string> id_strings;
+        id_strings.reserve(get_req->image_ids.size());
+        for (const auto& uuid : get_req->image_ids)
+            id_strings.push_back(boost::uuids::to_string(uuid));
+
         assets::service::assets_service service(ctx_);
-        auto images = service.get_images(get_req->image_ids);
+        auto images = service.get_images(id_strings);
 
         assets::messaging::get_images_response resp;
         resp.images = images;

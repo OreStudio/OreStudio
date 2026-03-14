@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,8 +21,9 @@
 
 #include <ostream>
 #include <functional>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.comms/messaging/message_type.hpp"
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/currency_history_protocol.hpp"
 #include "ores.refdata/domain/currency_table_io.hpp" // IWYU pragma: keep.
@@ -31,11 +32,52 @@
 namespace ores::comms::shell::app::commands {
 
 using namespace logging;
-using comms::messaging::message_type;
-using comms::net::client_session;
+using service::nats_session;
+
+namespace {
+
+template<typename Response>
+std::optional<Response> do_request(std::ostream& out, nats_session& session,
+    const std::string& subject, const std::string& body) {
+    try {
+        auto reply = session.request(subject, body);
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<Response>(data_str);
+        if (!result) {
+            out << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        out << "✗ Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+template<typename Response>
+std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+    const std::string& subject, const std::string& body) {
+    try {
+        auto reply = session.authenticated_request(subject, body);
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<Response>(data_str);
+        if (!result) {
+            out << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        out << "✗ Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+} // anonymous namespace
 
 void currencies_commands::
-register_commands(cli::Menu& root_menu, client_session& session,
+register_commands(cli::Menu& root_menu, nats_session& session,
                   pagination_context& pagination) {
     auto currencies_menu =
         std::make_unique<cli::Menu>("currencies");
@@ -79,22 +121,19 @@ register_commands(cli::Menu& root_menu, client_session& session,
 }
 
 void currencies_commands::
-process_get_currencies(std::ostream& out, client_session& session,
+process_get_currencies(std::ostream& out, nats_session& session,
                        pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get currencies request.";
 
     auto& state = pagination.state_for("currencies");
 
-    using refdata::messaging::get_currencies_request;
-    auto result = session.process_request(get_currencies_request{
-        .offset = state.current_offset,
-        .limit = pagination.page_size()
-    });
+    refdata::messaging::get_currencies_request req;
+    req.offset = state.current_offset;
+    req.limit = pagination.page_size();
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_request<refdata::messaging::get_currencies_response>(
+        out, session, "ores.refdata.v1.currencies.list", rfl::json::write(req));
+    if (!result) return;
 
     state.total_count = result->total_available_count;
     pagination.set_last_entity("currencies");
@@ -114,7 +153,7 @@ process_get_currencies(std::ostream& out, client_session& session,
 }
 
 void currencies_commands::
-process_add_currency(std::ostream& out, client_session& session,
+process_add_currency(std::ostream& out, nats_session& session,
     std::string iso_code, std::string name,
     std::string numeric_code, std::string symbol,
     std::string fractions_per_unit, std::string change_reason_code,
@@ -123,12 +162,11 @@ process_add_currency(std::ostream& out, client_session& session,
                                << iso_code;
 
     // Get modified_by from logged-in user
-    const auto& session_info = session.session_info();
-    if (!session_info) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to add a currency." << std::endl;
         return;
     }
-    const auto& modified_by = session_info->username;
+    const auto& modified_by = session.auth().username;
 
     // Parse fractions_per_unit with default
     int fractions = 100;
@@ -142,12 +180,8 @@ process_add_currency(std::ostream& out, client_session& session,
         }
     }
 
-    using refdata::messaging::save_currency_request;
-    using refdata::messaging::save_currency_response;
-    auto result = session.process_authenticated_request<save_currency_request,
-                                                        save_currency_response,
-                                                        message_type::save_currency_request>
-        (save_currency_request::from(refdata::domain::currency{
+    auto req = refdata::messaging::save_currency_request::from(
+        refdata::domain::currency{
             .version = 0,
             .iso_code = std::move(iso_code),
             .name = std::move(name),
@@ -164,99 +198,85 @@ process_add_currency(std::ostream& out, client_session& session,
             .change_reason_code = std::move(change_reason_code),
             .change_commentary = std::move(change_commentary),
             .recorded_at = std::chrono::system_clock::now()
-        }));
+        });
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<refdata::messaging::save_currency_response>(
+        out, session, "ores.refdata.v1.currencies.save", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added currency.";
         out << "✓ Currency added successfully!" << std::endl;
     } else {
-        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add currency: " << msg;
         out << "✗ Failed to add currency: " << msg << std::endl;
     }
 }
 
 void currencies_commands::
-process_delete_currency(std::ostream& out, client_session& session,
+process_delete_currency(std::ostream& out, nats_session& session,
     std::string iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete currency request for: "
                                << iso_code;
 
     // Check if logged in
-    if (!session.session_info()) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to delete a currency." << std::endl;
         return;
     }
 
-    using refdata::messaging::delete_currency_request;
-    using refdata::messaging::delete_currency_response;
-    auto result = session.process_authenticated_request<delete_currency_request,
-                                                        delete_currency_response,
-                                                        message_type::delete_currency_request>
-        (delete_currency_request{.iso_codes = {iso_code}});
+    refdata::messaging::delete_currency_request req;
+    req.iso_codes = {iso_code};
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<refdata::messaging::delete_currency_response>(
+        out, session, "ores.refdata.v1.currencies.delete", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted currency: " << iso_code;
         out << "✓ Currency " << iso_code << " deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: " << response.message;
-        out << "✗ Failed to delete currency: " << response.message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete currency: " << result->message;
+        out << "✗ Failed to delete currency: " << result->message << std::endl;
     }
 }
 
 void currencies_commands::
-process_get_currency_history(std::ostream& out, client_session& session,
+process_get_currency_history(std::ostream& out, nats_session& session,
     std::string iso_code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get currency history for: "
                                << iso_code;
 
     // Check if logged in
-    if (!session.session_info()) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to get currency history." << std::endl;
         return;
     }
 
-    using refdata::messaging::get_currency_history_request;
-    using refdata::messaging::get_currency_history_response;
-    auto result = session.process_authenticated_request<get_currency_history_request,
-                                                        get_currency_history_response,
-                                                        message_type::get_currency_history_request>
-        (get_currency_history_request{.iso_code = std::move(iso_code)});
+    refdata::messaging::get_currency_history_request req;
+    req.iso_code = std::move(iso_code);
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<refdata::messaging::get_currency_history_response>(
+        out, session, "ores.refdata.v1.currencies.history", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (!response.success) {
+    if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get currency history: "
-                                  << response.message;
-        out << "✗ " << response.message << std::endl;
+                                  << result->message;
+        out << "✗ " << result->message << std::endl;
         return;
     }
 
-    if (response.history.versions.empty()) {
+    if (result->history.versions.empty()) {
         out << "No history found for this currency." << std::endl;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << response.history.versions.size()
+                              << result->history.versions.size()
                               << " history records.";
-    out << response.history.versions << std::endl;
+    out << result->history.versions << std::endl;
 }
 
 }

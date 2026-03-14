@@ -28,7 +28,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
-#include "ores.comms/service/auth_session_service.hpp"
+#include "ores.iam/service/auth_session_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.http.server/routes/iam_routes.hpp"
@@ -69,7 +69,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     auto system_flags = std::make_shared<variability::service::system_flags_service>(
         ctx, database::service::tenant_context::system_tenant_id);
     system_flags->refresh();
-    auto sessions = std::make_shared<comms::service::auth_session_service>();
+    auto sessions = std::make_shared<iam::service::auth_session_service>();
     auto auth_service = std::make_shared<iam::service::authorization_service>(ctx);
     auto geo_service = std::make_shared<geo::service::geolocation_service>(ctx);
 

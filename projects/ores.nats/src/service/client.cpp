@@ -220,6 +220,10 @@ bool client::is_connected() const noexcept {
 std::string client::make_subject(std::string_view relative) const {
     if (impl_->opts.subject_prefix.empty())
         return std::string(relative);
+    // NATS inbox subjects (_INBOX.*) are created by the server for
+    // request/reply and must never carry a user-defined prefix.
+    if (relative.starts_with("_INBOX"))
+        return std::string(relative);
     return impl_->opts.subject_prefix + '.' + std::string(relative);
 }
 

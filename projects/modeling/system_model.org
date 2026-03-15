@@ -55,9 +55,9 @@ The system is organised into four architectural layers:
 
 ** Infrastructure Layer
 
-- [[id:361A6093-D24C-9BC4-0543-6540461EDBB6][ores.comms]]: Binary protocol over SSL/TLS for client-server messaging.
-  Publishes connection lifecycle events (connected, disconnected, reconnecting,
-  reconnected) to event bus.
+- ores.nats: NATS-based messaging for all inter-service and client-server
+  communication. Provides request/reply, pub/sub, and JetStream (durable
+  persistent messaging). Replaced the old ores.comms binary protocol stack.
 - [[id:7F58FF13-5A85-49C4-09BB-EED86B874ABB][ores.testing]]: Catch2 integration with database isolation and logging
   listeners.
 - [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]]: Event-driven architecture with in-process publish/subscribe

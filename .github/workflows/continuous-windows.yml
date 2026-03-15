@@ -75,7 +75,13 @@ jobs:
         run: choco install nsis
 
       - name: Install NATS Server
-        run: choco install nats-server
+        run: |
+          $version = "v2.10.24"
+          $url = "https://github.com/nats-io/nats-server/releases/download/$version/nats-server-$version-windows-amd64.zip"
+          Invoke-WebRequest -Uri $url -OutFile nats-server.zip
+          Expand-Archive -Path nats-server.zip -DestinationPath "$env:ProgramFiles\nats-server" -Force
+          $dir = Get-ChildItem "$env:ProgramFiles\nats-server" -Directory | Select-Object -First 1
+          echo "$($dir.FullName)" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1.13.0

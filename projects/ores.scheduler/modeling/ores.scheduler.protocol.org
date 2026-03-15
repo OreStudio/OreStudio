@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 220199A4-5460-491F-AF48-6264D721C25D
+:END:
+#+title: ores.scheduler Messaging Reference
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: overview
+
+NATS messaging reference for [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]]. All subjects use the
+=scheduler.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
+
+* Job Definitions
+
+| Subject | Description |
+|---------+-------------|
+| =scheduler.v1.job-definitions.list= | Retrieve all job definitions |
+| =scheduler.v1.job-definitions.schedule= | Create or update a job definition and activate scheduling |
+| =scheduler.v1.job-definitions.unschedule= | Deactivate scheduling for a job definition |
+| =scheduler.v1.job-definitions.history= | Retrieve execution history for a job definition |
+
+* Useful Pages
+
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] — all services overview
+- [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]] — component documentation

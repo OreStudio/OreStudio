@@ -1,0 +1,24 @@
+:PROPERTIES:
+:ID: D65B6932-7A33-471C-98C6-6AC345D4684C
+:END:
+#+title: ores.reporting
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+Reporting infrastructure for [[id:D773166D-0C91-8CB4-3323-42166BC07687][ORE Studio]]. Manages report types,
+report definitions, report instances, and concurrency policies for
+executing ORE risk report runs.
+
+* Facets
+
+The component is organised into the following facets:
+
+| Facet | Description |
+|-------+-------------|
+| domain | Report type, definition, instance, and concurrency policy types |
+| service | Business logic for report management and execution |
+| repository | Persistence layer for reports and run history |
+| messaging | NATS request/reply handlers — see [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] |
+
+| Top: [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][Documentation]] | Previous: [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] |

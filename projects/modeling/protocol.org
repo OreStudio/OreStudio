@@ -6,38 +6,29 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
 #+startup: overview
 
-This document provides a reference for the ORE Studio messaging protocol.
-All inter-service and client-server communication uses [[https://nats.io][NATS]] with JSON
-payloads. The binary protocol stack (=ores.comms=) has been replaced entirely
-by NATS request/reply and pub/sub.
+All inter-service and client-server communication in [[id:D773166D-0C91-8CB4-3323-42166BC07687][ORE Studio]] uses
+[[https://nats.io][NATS]] with JSON payloads. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details (request/reply
+pattern, subject naming convention, queue groups, JetStream).
 
-* Messaging Transport
+* Services
 
-ORE Studio uses NATS as the sole messaging transport:
+Each domain service owns a subject namespace. Click a protocol reference
+for the full list of subjects and message types.
 
-- *Request/reply*: synchronous operations (queries, mutations) use
-  =nats::service::client::request()=.
-- *Pub/sub*: asynchronous notifications use JetStream durable subjects.
-- *Subject prefix*: in multi-instance deployments, subjects are prefixed with
-  =ores.{tier}.{instance}= (e.g. =ores.dev.local1=). Leave empty for single
-  instance or when subjects are managed externally.
-
-Payloads are JSON, serialised with =rfl::json=.
-
-* Subsystems
-
-Each domain service owns a subject namespace and documents its messages in
-a component-specific protocol reference:
-
-| Subsystem | Subject Prefix | Component | Protocol Reference |
-|-----------+----------------+-----------+--------------------|
-| IAM | =ores.iam.v1.*= | [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] | [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Protocol Reference]] |
-| Refdata | =ores.refdata.v1.*= | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] | [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Protocol Reference]] |
-| Variability | =ores.variability.v1.*= | [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]] | [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][ores.variability Protocol Reference]] |
-| Assets | =ores.assets.v1.*= | [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]] | [[id:F5E6A7B8-C9D0-1234-EFAB-345678901234][ores.assets Protocol Reference]] |
-| Telemetry | =ores.telemetry.v1.*= | [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]] | [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Protocol Reference]] |
+| Service | Subject Namespace | Protocol Reference |
+|---------+-------------------+--------------------|
+| [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam]] | =iam.v1.>= | [[id:D3C4E5F6-A7B8-9012-CDEF-123456789012][ores.iam Messaging Reference]] |
+| [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata]] | =refdata.v1.>= | [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] |
+| [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]] | =variability.v1.>= | [[id:E4D5F6A7-B8C9-0123-DEFA-234567890123][ores.variability Messaging Reference]] |
+| [[id:DF32FBB0-84E3-4679-A4ED-1E2A9FD9CADF][ores.assets]] | =assets.v1.>= | [[id:F5E6A7B8-C9D0-1234-EFAB-345678901234][ores.assets Messaging Reference]] |
+| [[id:8A2B3C4D-5E6F-7A8B-9C0D-1E2F3A4B5C6D][ores.telemetry]] | =telemetry.v1.>= | [[id:A6B7C8D9-E0F1-2345-ABCD-456789012345][ores.telemetry Messaging Reference]] |
+| [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] | =dq.v1.>= | [[id:65D59476-A8DA-4461-9D82-A39B74F72316][ores.dq Messaging Reference]] |
+| [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] | =trading.v1.>= | [[id:0D9D09ED-2FD1-402A-9624-31E26D10812E][ores.trading Messaging Reference]] |
+| [[id:2F7E5268-1ECF-4F5B-B90F-EC916559DE54][ores.scheduler]] | =scheduler.v1.>= | [[id:220199A4-5460-491F-AF48-6264D721C25D][ores.scheduler Messaging Reference]] |
+| [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] | =synthetic.v1.>= | [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] |
+| [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]] | =reporting.v1.>= | [[id:B1A5C952-B709-444B-8A63-5FD834D87D52][ores.reporting Messaging Reference]] |
 
 * Useful Pages
 
-- For system architecture, see the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]].
-- For the NATS transport library, see =ores.nats=.
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — overall system architecture

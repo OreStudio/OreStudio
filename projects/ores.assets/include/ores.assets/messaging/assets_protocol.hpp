@@ -51,6 +51,8 @@ struct get_images_request {
 };
 
 struct get_images_response {
+    bool success = true;
+    std::string message;
     std::vector<ores::assets::domain::image> images;
 };
 
@@ -66,6 +68,8 @@ struct list_images_request {
  * Returns lightweight metadata. Use get_images_request to fetch SVG data.
  */
 struct list_images_response {
+    bool success = true;
+    std::string message;
     std::vector<image_info> images;
 };
 

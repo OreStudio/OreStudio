@@ -26,6 +26,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
@@ -35,7 +36,15 @@
 
 namespace ores::assets::messaging {
 
+using namespace ores::logging;
+
 namespace {
+
+inline static std::string_view logger_name = "ores.assets.messaging.registrar";
+static auto& lg() {
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
 
 template<typename Resp>
 void reply(ores::nats::service::client& nats,
@@ -60,15 +69,16 @@ void handle_get_images(ores::nats::service::client& nats,
     ores::database::context ctx) {
     auto req = decode<get_images_request>(msg);
     if (!req) {
-        reply(nats, msg, get_images_response{});
+        reply(nats, msg, get_images_response{false, "Failed to decode request"});
         return;
     }
     try {
         service::assets_service svc(std::move(ctx));
         const auto images = svc.get_images(req->image_ids);
-        reply(nats, msg, get_images_response{images});
+        reply(nats, msg, get_images_response{true, {}, images});
     } catch (const std::exception& e) {
-        reply(nats, msg, get_images_response{});
+        BOOST_LOG_SEV(lg(), error) << "Error handling get_images: " << e.what();
+        reply(nats, msg, get_images_response{false, e.what()});
     }
 }
 
@@ -77,7 +87,7 @@ void handle_list_images(ores::nats::service::client& nats,
     ores::database::context ctx) {
     auto req = decode<list_images_request>(msg);
     if (!req) {
-        reply(nats, msg, list_images_response{});
+        reply(nats, msg, list_images_response{false, "Failed to decode request"});
         return;
     }
     try {
@@ -89,6 +99,7 @@ void handle_list_images(ores::nats::service::client& nats,
             images = repo.read_latest(ctx);
         }
         list_images_response resp;
+        resp.success = true;
         resp.images.reserve(images.size());
         for (const auto& img : images) {
             image_info info;
@@ -99,7 +110,8 @@ void handle_list_images(ores::nats::service::client& nats,
         }
         reply(nats, msg, resp);
     } catch (const std::exception& e) {
-        reply(nats, msg, list_images_response{});
+        BOOST_LOG_SEV(lg(), error) << "Error handling list_images: " << e.what();
+        reply(nats, msg, list_images_response{false, e.what()});
     }
 }
 
@@ -117,6 +129,7 @@ void handle_save_image(ores::nats::service::client& nats,
         repo.write(ctx, req->data);
         reply(nats, msg, save_image_response{true, "Image saved successfully"});
     } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Error handling save_image: " << e.what();
         reply(nats, msg, save_image_response{false, e.what()});
     }
 }

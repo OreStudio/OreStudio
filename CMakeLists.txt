@@ -160,6 +160,9 @@ if(WIN32)
     get_win_hex(winver)
     add_compile_definitions(_WIN32_WINNT=${winver})
     add_compile_definitions(BOOST_USE_WINAPI_VERSION=${winver})
+    # Prevent Windows.h from including the legacy WinSock.h header, which
+    # conflicts with WinSock2.h pulled in by Boost.ASIO (socket_types.hpp).
+    add_compile_definitions(WIN32_LEAN_AND_MEAN)
 endif()
 
 find_package(Boost 1.88 REQUIRED COMPONENTS

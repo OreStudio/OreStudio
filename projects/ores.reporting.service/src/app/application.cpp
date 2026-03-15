@@ -73,6 +73,7 @@ application::run(boost::asio::io_context& io_ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
     nats.drain();
+    BOOST_LOG_SEV(lg(), info) << "Shutdown complete: ores.reporting.service";
     co_return;
 }
 

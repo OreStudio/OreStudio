@@ -21,7 +21,6 @@
 
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -180,7 +179,7 @@ void QueueMonitorMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
     const auto sourceIndex = proxyModel_->mapToSource(index);
     if (const auto* row = model_->getRow(sourceIndex.row())) {
         emit openDetailsRequested(
-            QString::fromStdString(boost::uuids::to_string(row->id)),
+            QString::fromStdString(row->id),
             QString::fromStdString(row->name));
     }
 }
@@ -192,7 +191,7 @@ void QueueMonitorMdiWindow::onViewChart() {
     const auto sourceIndex = proxyModel_->mapToSource(selection.first());
     if (const auto* row = model_->getRow(sourceIndex.row())) {
         emit viewChartRequested(
-            QString::fromStdString(boost::uuids::to_string(row->id)),
+            QString::fromStdString(row->id),
             QString::fromStdString(row->name));
     }
 }

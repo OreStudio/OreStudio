@@ -17,15 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_DOMAIN_QUEUE_SCOPE_TYPE_HPP
-#define ORES_MQ_DOMAIN_QUEUE_SCOPE_TYPE_HPP
+#ifndef ORES_NATS_DOMAIN_STREAM_MESSAGE_HPP
+#define ORES_NATS_DOMAIN_STREAM_MESSAGE_HPP
 
-namespace ores::mq::domain {
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-enum class queue_scope_type {
-    party,
-    tenant,
-    system
+namespace ores::nats::domain {
+
+/**
+ * @brief A message stored in a JetStream stream.
+ *
+ * Returned by jetstream_admin::peek_message() and peek_last_message().
+ * The payload is raw bytes; callers interpret as UTF-8 JSON or binary.
+ */
+struct stream_message {
+    std::string subject;
+    std::uint64_t sequence = 0;
+    std::chrono::system_clock::time_point timestamp;
+    std::vector<std::byte> data;
+    std::unordered_map<std::string, std::string> headers;
 };
 
 }

@@ -30,7 +30,6 @@
 #include "ores.qt/QueueDetailDialog.hpp"
 #include "ores.qt/QueueMonitorMdiWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.mq/messaging/mq_protocol.hpp"
 
 namespace ores::qt {
 

@@ -24,47 +24,38 @@
 #include <optional>
 #include <chrono>
 #include <cstdint>
+#include <string>
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
-#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.mq/domain/queue_definition.hpp"
-#include "ores.mq/domain/queue_stats.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Combined queue definition and statistics row for the monitor table.
+ * @brief A row in the JetStream stream monitor table.
  *
- * Merges a queue_definition and its corresponding queue_stats by queue id.
- * Stats fields are absent when the server returns no stats for a queue yet.
+ * Populated from nats::service::jetstream_admin::list_streams() and
+ * list_consumers().
  */
 struct queue_row {
-    // From queue_definition
-    boost::uuids::uuid id;
-    std::string name;
-    std::string description;
-    std::string scope_type;  // "party" | "tenant" | "system"
-    std::string queue_type;  // "task" | "channel"
+    std::string id;           // stream name (used as identifier)
+    std::string name;         // stream name
+    std::string subjects;     // subjects joined with ", "
+    std::uint64_t message_count{0};
+    std::uint64_t byte_count{0};
+    std::uint64_t consumer_count{0};
     std::chrono::system_clock::time_point created_at;
-    bool is_active{true};
-
-    // From queue_stats (may be absent if no stats scraped yet)
-    std::int64_t pending_count{0};
-    std::int64_t processing_count{0};
-    std::int64_t total_archived{0};
-    std::optional<std::chrono::system_clock::time_point> stats_recorded_at;
+    std::optional<std::chrono::system_clock::time_point> last_message_at;
 };
 
 /**
- * @brief Table model that fetches and merges queue definitions and statistics.
+ * @brief Table model that lists JetStream streams and their statistics.
  *
- * Issues get_queues_request and get_queue_stats_request in sequence on a
- * background thread, joins on queue id, and presents the merged data as a
- * read-only table. There are no create/edit/delete operations.
+ * Calls jetstream_admin::list_streams() on a background thread and presents
+ * the results as a read-only table.
  */
 class ClientQueueModel final : public QAbstractTableModel {
     Q_OBJECT
@@ -80,29 +71,25 @@ private:
 
 public:
     enum Column {
-        QueueName,
-        Description,
-        ScopeType,
-        QueueType,
-        PendingCount,
-        ProcessingCount,
-        TotalArchived,
+        StreamName,
+        Subjects,
+        Messages,
+        Bytes,
+        Consumers,
         CreatedAt,
-        StatsRecordedAt,
+        LastMessageAt,
         ColumnCount
     };
 
     static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
     static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        { .column = QueueName,       .header = "Queue Name",    .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = Description,     .header = "Description",   .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = ScopeType,       .header = "Scope",         .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
-        { .column = QueueType,       .header = "Type",          .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
-        { .column = PendingCount,    .header = "Pending",       .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
-        { .column = ProcessingCount, .header = "Processing",    .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
-        { .column = TotalArchived,   .header = "Archived",      .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
-        { .column = CreatedAt,       .header = "Created",       .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
-        { .column = StatsRecordedAt, .header = "Last Stats",    .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = StreamName,    .header = "Stream",        .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = Subjects,      .header = "Subjects",      .style = column_style::text_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = Messages,      .header = "Messages",      .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
+        { .column = Bytes,         .header = "Bytes",         .style = column_style::mono_center, .hidden_by_default = false, .default_width = 90  },
+        { .column = Consumers,     .header = "Consumers",     .style = column_style::mono_center, .hidden_by_default = false, .default_width = 80  },
+        { .column = CreatedAt,     .header = "Created",       .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
+        { .column = LastMessageAt, .header = "Last Message",  .style = column_style::mono_left,   .hidden_by_default = false, .default_width = kColumnWidthAuto },
     }};
 
     inline static const QSize kDefaultWindowSize = {900, 400};

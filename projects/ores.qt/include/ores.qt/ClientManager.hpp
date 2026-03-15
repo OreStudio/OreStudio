@@ -34,6 +34,7 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QDateTime>
 #include "ores.comms.shell/service/nats_session.hpp"
+#include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
@@ -191,6 +192,13 @@ public:
      * @brief Check if currently logged in.
      */
     bool isLoggedIn() const { return session_.is_logged_in(); }
+
+    /**
+     * @brief Create a JetStream admin handle for managing streams and consumers.
+     *
+     * Throws std::runtime_error if not connected.
+     */
+    [[nodiscard]] nats::service::jetstream_admin admin();
 
     /**
      * @brief Get the current logged-in user's username.

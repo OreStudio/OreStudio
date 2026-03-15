@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -410,6 +411,13 @@ ClientManager::getActiveSessions() {
         BOOST_LOG_SEV(lg(), error) << "getActiveSessions failed: " << e.what();
         return std::nullopt;
     }
+}
+
+nats::service::jetstream_admin ClientManager::admin() {
+    auto cl = session_.get_client();
+    if (!cl)
+        throw std::runtime_error("Not connected to NATS");
+    return cl->make_admin();
 }
 
 std::optional<std::vector<iam::messaging::session_sample_dto>>

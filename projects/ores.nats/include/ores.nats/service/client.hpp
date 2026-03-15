@@ -30,6 +30,7 @@
 #include <boost/asio/awaitable.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/subscription.hpp"
 
 namespace ores::nats::service {
@@ -197,6 +198,15 @@ public:
         std::string_view durable_name,
         std::string_view queue_group,
         message_handler handler);
+
+    /**
+     * @brief Create a JetStream admin handle for managing streams and
+     *        consumers.
+     *
+     * The returned @c jetstream_admin is lightweight and borrows this
+     * client's JetStream context. The client must outlive the admin handle.
+     */
+    [[nodiscard]] jetstream_admin make_admin();
 
     // -------------------------------------------------------------------------
     // Shutdown

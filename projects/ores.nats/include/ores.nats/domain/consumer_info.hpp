@@ -17,14 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_MQ_DOMAIN_QUEUE_TYPE_HPP
-#define ORES_MQ_DOMAIN_QUEUE_TYPE_HPP
+#ifndef ORES_NATS_DOMAIN_CONSUMER_INFO_HPP
+#define ORES_NATS_DOMAIN_CONSUMER_INFO_HPP
 
-namespace ores::mq::domain {
+#include <chrono>
+#include <cstdint>
+#include <string>
 
-enum class queue_type {
-    task,
-    channel
+namespace ores::nats::domain {
+
+/**
+ * @brief Metadata and delivery stats for a JetStream consumer.
+ *
+ * Populated by jetstream_admin::list_consumers() and get_consumer().
+ */
+struct consumer_info {
+    std::string stream_name;
+    std::string name;
+    std::uint64_t num_pending = 0;       // messages not yet delivered
+    std::uint64_t num_ack_pending = 0;   // delivered but not yet acknowledged
+    std::uint64_t num_redelivered = 0;
+    std::uint64_t delivered_count = 0;
+    std::chrono::system_clock::time_point created_at;
 };
 
 }

@@ -74,6 +74,9 @@ jobs:
         if: ${{ matrix.compiler == 'clang' }}
         run: choco install nsis
 
+      - name: Install NATS Server
+        run: choco install nats-server
+
       - name: Enable Developer Command Prompt
         uses: ilammy/msvc-dev-cmd@v1.13.0
 

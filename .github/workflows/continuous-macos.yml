@@ -155,7 +155,7 @@ jobs:
 
       - name: Run CTest workflow
         run: |
-          brew install autoconf automake libtool autoconf-archive
+          brew install autoconf automake libtool autoconf-archive nats-server
           export CMAKE_BUILD_PARALLEL_LEVEL=$(sysctl -n hw.logicalcpu)
           export CTEST_PARALLEL_LEVEL=$(sysctl -n hw.logicalcpu)
           export VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1

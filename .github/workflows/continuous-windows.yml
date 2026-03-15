@@ -97,6 +97,16 @@ jobs:
           echo "test_dml_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
           echo "ro_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
           echo "admin_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "iam_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "refdata_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "dq_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "variability_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "assets_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "synthetic_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "scheduler_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "reporting_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "telemetry_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          echo "trading_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
 
       - name: Setup postgres
         uses: ikalnytskyi/action-setup-postgres@v8
@@ -135,6 +145,16 @@ jobs:
             -t '${{ steps.db_passwords.outputs.test_ddl_password }}' \
             -T '${{ steps.db_passwords.outputs.test_dml_password }}' \
             -r '${{ steps.db_passwords.outputs.ro_password }}' \
+            --iam-service-password '${{ steps.db_passwords.outputs.iam_service_password }}' \
+            --refdata-service-password '${{ steps.db_passwords.outputs.refdata_service_password }}' \
+            --dq-service-password '${{ steps.db_passwords.outputs.dq_service_password }}' \
+            --variability-service-password '${{ steps.db_passwords.outputs.variability_service_password }}' \
+            --assets-service-password '${{ steps.db_passwords.outputs.assets_service_password }}' \
+            --synthetic-service-password '${{ steps.db_passwords.outputs.synthetic_service_password }}' \
+            --scheduler-service-password '${{ steps.db_passwords.outputs.scheduler_service_password }}' \
+            --reporting-service-password '${{ steps.db_passwords.outputs.reporting_service_password }}' \
+            --telemetry-service-password '${{ steps.db_passwords.outputs.telemetry_service_password }}' \
+            --trading-service-password '${{ steps.db_passwords.outputs.trading_service_password }}' \
             -D ores_ci
 
       - name: get-cmake

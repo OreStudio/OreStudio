@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: 65D59476-A8DA-4461-9D82-A39B74F72316
+:END:
+#+title: ores.dq Messaging Reference
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: overview
+
+NATS messaging reference for [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]]. All subjects use the
+=dq.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
+
+Each entity follows the standard pattern: =list=, =save=, =delete=, =history=.
+
+* Catalogs
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.catalogs.list= | Retrieve all data quality catalogs |
+| =dq.v1.catalogs.save= | Create or update a catalog |
+| =dq.v1.catalogs.delete= | Delete one or more catalogs |
+| =dq.v1.catalogs.history= | Retrieve version history for a catalog |
+
+* Data Domains
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.data-domains.list= | Retrieve all data domains |
+| =dq.v1.data-domains.save= | Create or update a data domain |
+| =dq.v1.data-domains.delete= | Delete one or more data domains |
+| =dq.v1.data-domains.history= | Retrieve version history for a data domain |
+
+* Methodologies
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.methodologies.list= | Retrieve all methodologies |
+| =dq.v1.methodologies.save= | Create or update a methodology |
+| =dq.v1.methodologies.delete= | Delete one or more methodologies |
+| =dq.v1.methodologies.history= | Retrieve version history for a methodology |
+
+* Subject Areas
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.subject-areas.list= | Retrieve all subject areas |
+| =dq.v1.subject-areas.save= | Create or update a subject area |
+| =dq.v1.subject-areas.delete= | Delete one or more subject areas |
+| =dq.v1.subject-areas.history= | Retrieve version history for a subject area |
+
+* Nature Dimensions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.nature-dimensions.list= | Retrieve all nature dimensions |
+| =dq.v1.nature-dimensions.save= | Create or update a nature dimension |
+| =dq.v1.nature-dimensions.delete= | Delete one or more nature dimensions |
+| =dq.v1.nature-dimensions.history= | Retrieve version history for a nature dimension |
+
+* Origin Dimensions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.origin-dimensions.list= | Retrieve all origin dimensions |
+| =dq.v1.origin-dimensions.save= | Create or update an origin dimension |
+| =dq.v1.origin-dimensions.delete= | Delete one or more origin dimensions |
+| =dq.v1.origin-dimensions.history= | Retrieve version history for an origin dimension |
+
+* Treatment Dimensions
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.treatment-dimensions.list= | Retrieve all treatment dimensions |
+| =dq.v1.treatment-dimensions.save= | Create or update a treatment dimension |
+| =dq.v1.treatment-dimensions.delete= | Delete one or more treatment dimensions |
+| =dq.v1.treatment-dimensions.history= | Retrieve version history for a treatment dimension |
+
+* Datasets
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.datasets.list= | Retrieve all datasets |
+| =dq.v1.datasets.save= | Create or update a dataset |
+| =dq.v1.datasets.delete= | Delete one or more datasets |
+| =dq.v1.datasets.history= | Retrieve version history for a dataset |
+
+* Dataset Bundles
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.dataset-bundles.list= | Retrieve all dataset bundles |
+| =dq.v1.dataset-bundles.save= | Create or update a dataset bundle |
+| =dq.v1.dataset-bundles.delete= | Delete one or more dataset bundles |
+| =dq.v1.dataset-bundles.history= | Retrieve version history for a dataset bundle |
+
+* Publications
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.publications.list= | Retrieve all publications |
+| =dq.v1.publications.save= | Create or update a publication |
+| =dq.v1.publications.delete= | Delete one or more publications |
+| =dq.v1.publications.history= | Retrieve version history for a publication |
+
+* Coding Scheme Authority Types
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.coding-scheme-authority-types.list= | Retrieve all coding scheme authority types |
+| =dq.v1.coding-scheme-authority-types.save= | Create or update a coding scheme authority type |
+| =dq.v1.coding-scheme-authority-types.delete= | Delete one or more coding scheme authority types |
+| =dq.v1.coding-scheme-authority-types.history= | Retrieve version history for a coding scheme authority type |
+
+* Coding Schemes
+
+| Subject | Description |
+|---------+-------------|
+| =dq.v1.coding-schemes.list= | Retrieve all coding schemes |
+| =dq.v1.coding-schemes.save= | Create or update a coding scheme |
+| =dq.v1.coding-schemes.delete= | Delete one or more coding schemes |
+| =dq.v1.coding-schemes.history= | Retrieve version history for a coding scheme |
+
+* Useful Pages
+
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] — all services overview
+- [[id:D3A9F7C2-8B14-4E5D-A6C9-1F7E2B0D8C4A][ores.dq]] — component documentation

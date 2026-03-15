@@ -1,0 +1,22 @@
+:PROPERTIES:
+:ID: 7AF2DCAB-BC62-43A9-885A-E557FCD4254F
+:END:
+#+title: ores.synthetic Messaging Reference
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: overview
+
+NATS messaging reference for [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]]. All subjects use the
+=synthetic.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
+
+* Organisation
+
+| Subject | Description |
+|---------+-------------|
+| =synthetic.v1.organisation.generate= | Generate a synthetic organisation with trades, portfolios, and reference data |
+
+* Useful Pages
+
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] — all services overview
+- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] — component documentation

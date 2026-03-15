@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: B1A5C952-B709-444B-8A63-5FD834D87D52
+:END:
+#+title: ores.reporting Messaging Reference
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: overview
+
+NATS messaging reference for [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]]. All subjects use the
+=reporting.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
+
+Each entity follows the standard pattern: =list=, =save=, =delete=, =history=.
+
+* Report Types
+
+| Subject | Description |
+|---------+-------------|
+| =reporting.v1.report-types.list= | Retrieve all report types |
+| =reporting.v1.report-types.save= | Create or update a report type |
+| =reporting.v1.report-types.delete= | Delete one or more report types |
+| =reporting.v1.report-types.history= | Retrieve version history for a report type |
+
+* Report Definitions
+
+| Subject | Description |
+|---------+-------------|
+| =reporting.v1.report-definitions.list= | Retrieve all report definitions |
+| =reporting.v1.report-definitions.save= | Create or update a report definition |
+| =reporting.v1.report-definitions.delete= | Delete one or more report definitions |
+| =reporting.v1.report-definitions.history= | Retrieve version history for a report definition |
+| =reporting.v1.report-definitions.schedule= | Activate scheduled execution for a report definition |
+| =reporting.v1.report-definitions.unschedule= | Deactivate scheduled execution for a report definition |
+
+* Report Instances
+
+| Subject | Description |
+|---------+-------------|
+| =reporting.v1.report-instances.list= | Retrieve all report instances |
+| =reporting.v1.report-instances.save= | Create or update a report instance |
+| =reporting.v1.report-instances.delete= | Delete one or more report instances |
+| =reporting.v1.report-instances.history= | Retrieve version history for a report instance |
+
+* Concurrency Policies
+
+| Subject | Description |
+|---------+-------------|
+| =reporting.v1.concurrency-policies.list= | Retrieve all concurrency policies |
+| =reporting.v1.concurrency-policies.save= | Create or update a concurrency policy |
+| =reporting.v1.concurrency-policies.delete= | Delete one or more concurrency policies |
+| =reporting.v1.concurrency-policies.history= | Retrieve version history for a concurrency policy |
+
+* Useful Pages
+
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] — all services overview
+- [[id:D65B6932-7A33-471C-98C6-6AC345D4684C][ores.reporting]] — component documentation

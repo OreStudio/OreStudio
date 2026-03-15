@@ -853,8 +853,9 @@ Acceptance criteria:
 - Successful import creates trades in the selected book.
 - Trades appear in the trade list after import.
 
-*** STARTED Implement NATS support                                     :code:
+*** COMPLETED Implement NATS support                                   :code:
     :LOGBOOK:
+    CLOCK: [2026-03-15 Sun 15:34]--[2026-03-15 Sun 16:35] =>  1:01
     CLOCK: [2026-03-15 Sun 07:20]--[2026-03-15 Sun 07:33] =>  0:13
     CLOCK: [2026-03-15 Sun 01:12]--[2026-03-15 Sun 01:29] =>  0:17
     CLOCK: [2026-03-15 Sun 00:39]--[2026-03-15 Sun 01:11] =>  0:32
@@ -896,6 +897,44 @@ Highlights:
   that previously broke all request/reply functionality.
 - Scheduler Serialization: Added rfl::Reflector<cron_expression> for scheduler
   private-member serialization, improving data handling for scheduled tasks.
+#+end_quote
+
+Merge MQ into nats:
+
+#+begin_quote
+This pull request undertakes a significant architectural shift by transitioning
+the project's messaging queue infrastructure from a PGMQ-based system (ores.mq)
+to NATS JetStream, integrated within the ores.nats module. The core of this
+change is the introduction of a robust jetstream_admin service, enabling
+comprehensive management of JetStream streams and consumers through a clean,
+C++-native interface. This migration necessitated updates across the Qt client,
+which now directly interacts with JetStream for queue monitoring and message
+handling, and led to the complete deprecation and removal of the ores.mq
+library.
+
+Highlights:
+
+- Messaging System Migration: Migrated the internal queue management system from
+  ores.mq (which used PGMQ) to ores.nats, leveraging NATS JetStream for durable
+  messaging and stream processing.
+- JetStream Administration API: Introduced a new jetstream_admin service class
+  within ores.nats that wraps the cnats JetStream management API, providing
+  functionalities like listing streams and consumers, peeking at messages,
+  publishing, and deleting messages, all while abstracting cnats types behind an
+  opaque void*.
+- New JetStream Domain Types: Added three new domain types: stream_info,
+  consumer_info, and stream_message, which replace the old queue_definition and
+  queue_stats types from ores.mq to represent JetStream entities.
+- Qt Queue Monitor Update: The Qt Queue Monitor application has been updated to
+  directly utilize the new JetStream administration capabilities for displaying
+  stream lists, consumer counts, and enabling message peek, publish, and delete
+  operations.
+- Removal of ores.mq Library: The ores.mq header-only library, which previously
+  handled PGMQ interactions, has been entirely removed from the project as it is
+  no longer needed.
+- Queue Chart Window Simplification: The Qt Queue Chart window has been
+  simplified to a placeholder, awaiting future integration with TimescaleDB for
+  historical NATS JetStream statistics.
 #+end_quote
 
 *** Consider renaming =ores.nats= to =ores.messaging=                  :code:

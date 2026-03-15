@@ -1,0 +1,25 @@
+:PROPERTIES:
+:ID: 0D9D09ED-2FD1-402A-9624-31E26D10812E
+:END:
+#+title: ores.trading Messaging Reference
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+#+startup: overview
+
+NATS messaging reference for [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]]. All subjects use the
+=trading.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
+
+* Trades
+
+| Subject | Description |
+|---------+-------------|
+| =trading.v1.trades.list= | Retrieve all trades |
+| =trading.v1.trades.save= | Create or update a trade |
+| =trading.v1.trades.delete= | Delete one or more trades |
+| =trading.v1.trades.history= | Retrieve version history for a trade |
+
+* Useful Pages
+
+- [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] — transport layer: request/reply, subject naming, configuration
+- [[id:A7B3C9D2-E5F1-4A8B-9C6D-3E2F1A0B8C7D][Protocol Reference]] — all services overview
+- [[id:E9A3F7B2-6C14-4D8E-A5B9-3F2D1C0E7A6B][ores.trading]] — component documentation

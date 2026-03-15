@@ -20,27 +20,29 @@
 #ifndef ORES_QT_QUEUE_DETAIL_DIALOG_HPP
 #define ORES_QT_QUEUE_DETAIL_DIALOG_HPP
 
+#include <cstdint>
+#include <vector>
 #include <QWidget>
 #include <QToolBar>
 #include <QTabWidget>
 #include <QSpinBox>
 #include <QComboBox>
+#include <QLineEdit>
 #include <QTableWidget>
 #include <QPlainTextEdit>
 #include <QLabel>
 #include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.mq/messaging/mq_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief Detail widget for a single pgmq queue.
+ * @brief Detail widget for a single JetStream stream.
  *
  * Two-tab interface:
- *  - Publish: compose and send a JSON message to the queue.
- *  - Messages: peek (read) or pop messages, view and delete individual ones.
+ *  - Publish: compose and send a message to a JetStream subject.
+ *  - Messages: peek messages by sequence range, view and delete individual ones.
  */
 class QueueDetailDialog final : public QWidget {
     Q_OBJECT
@@ -56,8 +58,8 @@ private:
     }
 
 public:
-    explicit QueueDetailDialog(const QString& queueId,
-                               const QString& queueName,
+    explicit QueueDetailDialog(const QString& streamName,
+                               const QString& displayName,
                                ClientManager* clientManager,
                                QWidget* parent = nullptr);
     ~QueueDetailDialog() override = default;
@@ -76,19 +78,25 @@ private slots:
     void onGetMessagesDone();
 
 private:
-    enum class GetMode { Read, Pop };
+    enum class GetMode { Peek, Pop };
 
     struct PublishResult {
         bool success{false};
-        std::int64_t msg_id{0};
         QString error_message;
         QString error_details;
     };
 
+    struct MessageRow {
+        std::uint64_t sequence{0};
+        std::string subject;
+        std::string timestamp;   // formatted string
+        std::string payload;
+    };
+
     struct GetMessagesResult {
         bool success{false};
-        std::vector<mq::messaging::queue_message> messages;
-        GetMode mode{GetMode::Read};
+        std::vector<MessageRow> messages;
+        GetMode mode{GetMode::Peek};
         QString error_message;
         QString error_details;
     };
@@ -97,12 +105,11 @@ private:
     void setupToolbar();
     void setupPublishTab();
     void setupMessagesTab();
-    void populateMessagesTable(
-        const std::vector<mq::messaging::queue_message>& messages);
+    void populateMessagesTable(const std::vector<MessageRow>& messages);
     void updateDeleteAction();
 
-    QString queueId_;
-    QString queueName_;
+    QString streamName_;    // NATS stream name (used as identifier)
+    QString displayName_;   // human-readable name shown in UI
     ClientManager* clientManager_;
 
     QToolBar* toolbar_;
@@ -113,15 +120,14 @@ private:
 
     // Publish tab
     QWidget* publishTab_;
+    QLineEdit* subjectEdit_;
     QPlainTextEdit* payloadEdit_;
-    QSpinBox* delaySpinBox_;
 
     // Messages tab
     QWidget* messagesTab_;
     QComboBox* modeCombo_;
+    QSpinBox* startSeqSpinBox_;
     QSpinBox* countSpinBox_;
-    QSpinBox* vtSpinBox_;
-    QLabel* vtLabel_;
     QTableWidget* messagesTable_;
 
     QFutureWatcher<PublishResult>* publishWatcher_;

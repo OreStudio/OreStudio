@@ -87,18 +87,15 @@ The system is organised into four architectural layers:
 
 ** Application Layer
 
-- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.comms.shell]]: REPL client. Exercises the service layer via the binary
-  comms protocol.
+- ores.comms.shell: REPL client. Connects to the service layer via NATS
+  request/reply subjects.
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]: Command-line import/export of entities in multiple formats,
   exercises the database layer directly.
 - [[id:25812E6F-7AD1-36E4-697B-EEC8015C4F1F][ores.qt]]: Desktop GUI with MDI interface for visual data management.
-- [[id:7141E32C-80E2-6B74-F273-C80DAA42D727][ores.comms.service]]: Multi-client server hosting all backend services.
 - [[id:19aeecd4-03ab-4d23-b2bc-9d96aaa64120][ores.http.server]]: RESTful HTTP API server for ORE Studio. Alternative to
-  binary protocol for web clients and integrations.
+  NATS for web clients and integrations.
 - [[id:fe36240a-7a64-4332-9e82-8d976d458c73][ores.wt]]: Web application built with Wt framework for browser-based access.
   Account management, currency operations, feature flags via web UI.
-- [[id:6E2967C7-D79E-41DE-8A68-B3F755541C0D][ores.comms.analyser]]: Communication session analyzer for debugging protocol
-  issues. Parse and decode recorded binary protocol sessions.
 - Depends on: All layers
 
 * Useful Pages

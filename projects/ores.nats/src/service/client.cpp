@@ -20,6 +20,7 @@
 #include "ores.nats/service/client.hpp"
 
 #include <atomic>
+#include "ores.nats/service/jetstream_admin.hpp"
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
@@ -421,6 +422,10 @@ subscription client::js_queue_subscribe(std::string_view subject,
 void client::drain() {
     if (impl_->conn)
         natsConnection_Drain(impl_->conn);
+}
+
+jetstream_admin client::make_admin() {
+    return jetstream_admin(impl_->js);
 }
 
 }

@@ -855,6 +855,10 @@ Acceptance criteria:
 
 *** STARTED Implement NATS support                                     :code:
     :LOGBOOK:
+    CLOCK: [2026-03-15 Sun 07:20]--[2026-03-15 Sun 07:33] =>  0:13
+    CLOCK: [2026-03-15 Sun 01:12]--[2026-03-15 Sun 01:29] =>  0:17
+    CLOCK: [2026-03-15 Sun 00:39]--[2026-03-15 Sun 01:11] =>  0:32
+    CLOCK: [2026-03-14 Sat 23:00]--[2026-03-15 Sun 00:38] =>  1:38
     CLOCK: [2026-03-14 Sat 20:01]--[2026-03-14 Sat 22:22] =>  2:21
     CLOCK: [2026-03-13 Fri 22:45]--[2026-03-14 Sat 01:08] =>  2:23
     CLOCK: [2026-03-13 Fri 11:24]--[2026-03-13 Fri 13:00] =>  1:36
@@ -863,6 +867,46 @@ Acceptance criteria:
     :END:
 
 NNG seems like a lot of work. Let's try NATS first.
+
+#+begin_quote
+This pull request represents a significant architectural shift, replacing the
+custom binary communication protocol with NATS for all inter-service and
+client-server messaging. This migration moves the system towards a more
+standard, scalable, and maintainable messaging infrastructure, facilitating the
+decomposition of the monolithic service into independent microservices. The
+change impacts core communication, authentication, and eventing mechanisms
+across the entire application.
+
+Highlights:
+
+- Protocol Migration: Replaced the entire ores.comms binary-protocol stack
+  (SSL/ASIO transport, NNG broker) with cnats request/reply messaging, resulting
+  in a deletion of ~107k lines of old code and addition of ~20k lines of new
+  NATS-idiomatic code.
+- Microservice Architecture: Introduced a new ores.nats component with a clean
+  =nats::service::client= interface and wired all 10 domain services (iam,
+  variability, refdata, assets, trading, dq, reporting, scheduler, synthetic,
+  telemetry) to NATS with full CRUD handlers, enabling a decomposed microservice
+  architecture.
+- Client and Shell Migration: Re-enabled ores.comms.shell and ores.http.server
+  on the new NATS transport, and migrated the ores.qt GUI client to use the new
+  messaging system.
+- NATS Subject Management: Added NATS subject prefixes (ores.{tier}.{instance})
+  for environment isolation and fixed a _INBOX.* reply-subject prefixing bug
+  that previously broke all request/reply functionality.
+- Scheduler Serialization: Added rfl::Reflector<cron_expression> for scheduler
+  private-member serialization, improving data handling for scheduled tasks.
+#+end_quote
+
+*** Consider renaming =ores.nats= to =ores.messaging=                  :code:
+
+We should have implementation agnostic classes for this which hide NATS as the
+implementation detail.
+
+*** Fine-tune grants for each service account                          :code:
+
+Ideally each service should only be granted access to it's own tables. However,
+we may also need some common tables like change reasons, etc.
 
 *** Improvements to detail dialogs                                    :code:
 

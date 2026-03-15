@@ -17,18 +17,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.service/domain/stub.hpp"
+#ifndef ORES_NATS_DOMAIN_STREAM_MESSAGE_HPP
+#define ORES_NATS_DOMAIN_STREAM_MESSAGE_HPP
 
-#include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
-namespace {
+namespace ores::nats::domain {
 
-const std::string tags("[domain]");
+/**
+ * @brief A message stored in a JetStream stream.
+ *
+ * Returned by jetstream_admin::peek_message() and peek_last_message().
+ * The payload is raw bytes; callers interpret as UTF-8 JSON or binary.
+ */
+struct stream_message {
+    std::string subject;
+    std::uint64_t sequence = 0;
+    std::chrono::system_clock::time_point timestamp;
+    std::vector<std::byte> data;
+    std::unordered_map<std::string, std::string> headers;
+};
 
 }
 
-using namespace ores::dq::service::domain;
-
-TEST_CASE("create_stub", tags) {
-    REQUIRE(stub_function() == "STUB code to be removed");
-}
+#endif

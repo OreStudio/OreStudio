@@ -229,7 +229,8 @@ Uses BASE directly; build type and checkout are already visible as tags."
          (preset-tag  (intern preset))
          (bin         (concat (ores/preset-publish-path preset) "/bin"))
          (common-tags `(ores ,build-tag ,ores/checkout-tag ,preset-tag))
-         (common-args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")))
+         (common-args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log"))
+         (nats-service-args '("--log-to-console")))
     (prodigy-define-tag :name preset-tag)
 
     ;; Services subscribe using a subject prefix to isolate this checkout from
@@ -245,9 +246,13 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :name    (ores/service-name (format "ORE Studio %s" (cdr svc)) preset)
           :cwd     bin
           :command (concat bin "/" (car svc))
-          :args    `(,@common-args ,@nats-args)
+          :args    `(,@common-args ,@nats-service-args ,@nats-args)
           :tags    `(,@common-tags nats-service)
           :env     (ores/setup-nats-service-environment (car svc))
+          :on-output (lambda (&rest args)
+                       (when (string-match-p "Service ready"
+                                             (plist-get args :output))
+                         (prodigy-set-status (plist-get args :service) 'ready)))
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t))
 

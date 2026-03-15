@@ -23,22 +23,17 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QToolBar>
-#include <QFutureWatcher>
 #include <QtCharts/QChartView>
-#include <chrono>
-#include <optional>
-#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.mq/domain/queue_stats.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief MDI window showing time-series charts for a single queue.
+ * @brief MDI window showing time-series charts for a single JetStream stream.
  *
- * Displays pending_count and total_archived over a configurable time window.
- * Fetches data via the get_queue_stats_samples_request protocol message.
+ * Historical statistics recording is not yet implemented (see backlog).
+ * This window displays a placeholder until TimescaleDB integration is added.
  */
 class QueueChartWindow final : public QWidget {
     Q_OBJECT
@@ -79,25 +74,13 @@ signals:
     void errorOccurred(const QString& error_message);
 
 private slots:
-    void onDataLoaded();
     void onTimeRangeChanged(int index);
 
 private:
     void setupUi();
     void setupToolbar();
     void setupChart();
-
-    void populateChart(const std::vector<mq::domain::queue_stats>& samples);
     void clearChart(const QString& message);
-
-    std::optional<std::chrono::system_clock::time_point> fromForRange() const;
-
-    struct FetchResult {
-        bool success{false};
-        std::vector<mq::domain::queue_stats> samples;
-        QString error_message;
-        QString error_details;
-    };
 
     QString queueId_;
     QString queueName_;
@@ -108,9 +91,6 @@ private:
     QAction* reloadAction_;
     QComboBox* rangeCombo_;
     QChartView* chartView_;
-
-    QFutureWatcher<FetchResult>* watcher_;
-    bool isFetching_{false};
 };
 
 }

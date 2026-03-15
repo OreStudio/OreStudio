@@ -17,18 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.synthetic.service/domain/stub.hpp"
+#ifndef ORES_NATS_DOMAIN_CONSUMER_INFO_HPP
+#define ORES_NATS_DOMAIN_CONSUMER_INFO_HPP
 
-#include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <cstdint>
+#include <string>
 
-namespace {
+namespace ores::nats::domain {
 
-const std::string tags("[domain]");
+/**
+ * @brief Metadata and delivery stats for a JetStream consumer.
+ *
+ * Populated by jetstream_admin::list_consumers() and get_consumer().
+ */
+struct consumer_info {
+    std::string stream_name;
+    std::string name;
+    std::uint64_t num_pending = 0;       // messages not yet delivered
+    std::uint64_t num_ack_pending = 0;   // delivered but not yet acknowledged
+    std::uint64_t num_redelivered = 0;
+    std::uint64_t delivered_count = 0;
+    std::chrono::system_clock::time_point created_at;
+};
 
 }
 
-using namespace ores::synthetic::service::domain;
-
-TEST_CASE("create_stub", tags) {
-    REQUIRE(stub_function() == "STUB code to be removed");
-}
+#endif

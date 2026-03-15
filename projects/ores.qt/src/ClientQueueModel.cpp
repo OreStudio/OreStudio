@@ -19,40 +19,13 @@
  */
 #include "ores.qt/ClientQueueModel.hpp"
 
-#include <unordered_map>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_hash.hpp>
 #include <QtConcurrent>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.mq/messaging/mq_protocol.hpp"
-#include "ores.mq/domain/queue_scope_type.hpp"
-#include "ores.mq/domain/queue_type.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-
-namespace {
-
-std::string to_string(ores::mq::domain::queue_scope_type v) {
-    switch (v) {
-    case ores::mq::domain::queue_scope_type::party:  return "party";
-    case ores::mq::domain::queue_scope_type::tenant: return "tenant";
-    case ores::mq::domain::queue_scope_type::system: return "system";
-    }
-    return "unknown";
-}
-
-std::string to_string(ores::mq::domain::queue_type v) {
-    switch (v) {
-    case ores::mq::domain::queue_type::task:    return "task";
-    case ores::mq::domain::queue_type::channel: return "channel";
-    }
-    return "unknown";
-}
-
-} // namespace
 
 ClientQueueModel::ClientQueueModel(ClientManager* clientManager, QObject* parent)
     : QAbstractTableModel(parent),
@@ -87,24 +60,22 @@ QVariant ClientQueueModel::data(const QModelIndex& index, int role) const {
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-        case QueueName:
+        case StreamName:
             return QString::fromStdString(r.name);
-        case Description:
-            return QString::fromStdString(r.description);
-        case ScopeType:
-            return QString::fromStdString(r.scope_type);
-        case QueueType:
-            return QString::fromStdString(r.queue_type);
-        case PendingCount:
-            return static_cast<qlonglong>(r.pending_count);
-        case ProcessingCount:
-            return static_cast<qlonglong>(r.processing_count);
-        case TotalArchived:
-            return static_cast<qlonglong>(r.total_archived);
+        case Subjects:
+            return QString::fromStdString(r.subjects);
+        case Messages:
+            return static_cast<qlonglong>(r.message_count);
+        case Bytes:
+            return static_cast<qlonglong>(r.byte_count);
+        case Consumers:
+            return static_cast<qlonglong>(r.consumer_count);
         case CreatedAt:
             return relative_time_helper::format(r.created_at);
-        case StatsRecordedAt:
-            return relative_time_helper::format(r.stats_recorded_at);
+        case LastMessageAt:
+            return r.last_message_at
+                ? relative_time_helper::format(*r.last_message_at)
+                : tr("—");
         default:
             return {};
         }
@@ -119,16 +90,14 @@ QVariant ClientQueueModel::headerData(
         return {};
 
     switch (section) {
-    case QueueName:       return tr("Queue Name");
-    case Description:     return tr("Description");
-    case ScopeType:       return tr("Scope");
-    case QueueType:       return tr("Type");
-    case PendingCount:    return tr("Pending");
-    case ProcessingCount: return tr("Processing");
-    case TotalArchived:   return tr("Archived");
-    case CreatedAt:       return tr("Created");
-    case StatsRecordedAt: return tr("Last Stats");
-    default:              return {};
+    case StreamName:    return tr("Stream");
+    case Subjects:      return tr("Subjects");
+    case Messages:      return tr("Messages");
+    case Bytes:         return tr("Bytes");
+    case Consumers:     return tr("Consumers");
+    case CreatedAt:     return tr("Created");
+    case LastMessageAt: return tr("Last Message");
+    default:            return {};
     }
 }
 
@@ -143,7 +112,7 @@ void ClientQueueModel::refresh() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting queue fetch";
+    BOOST_LOG_SEV(lg(), debug) << "Starting stream fetch";
     is_fetching_ = true;
 
     QPointer<ClientQueueModel> self = this;
@@ -156,78 +125,38 @@ void ClientQueueModel::refresh() {
                         .error_details = {}};
             }
 
-            // --- Request 1: list all queue definitions ---
-            mq::messaging::get_queues_request queues_req;
-            auto queues_result = self->clientManager_->process_authenticated_request(
-                std::move(queues_req));
-            if (!queues_result) {
-                return {.success = false, .rows = {},
-                        .error_message = tr("Failed to send get_queues request"),
-                        .error_details = {}};
-            }
-
-            if (!queues_result->success) {
-                return {.success = false, .rows = {},
-                        .error_message = QString::fromStdString(queues_result->message),
-                        .error_details = {}};
-            }
-
-            // --- Request 2: get stats for all queues ---
-            mq::messaging::get_queue_stats_request stats_req;
-            auto stats_result = self->clientManager_->process_authenticated_request(
-                std::move(stats_req));
-            if (!stats_result) {
-                return {.success = false, .rows = {},
-                        .error_message = tr("Failed to send get_queue_stats request"),
-                        .error_details = {}};
-            }
-
-            if (!stats_result->success) {
-                return {.success = false, .rows = {},
-                        .error_message = QString::fromStdString(stats_result->message),
-                        .error_details = {}};
-            }
-
-            // --- Merge: index stats by queue_id, keeping latest per queue ---
-            using uuid = boost::uuids::uuid;
-            std::unordered_map<uuid,
-                const mq::domain::queue_stats*> stats_map;
-            for (const auto& s : stats_result->stats) {
-                auto it = stats_map.find(s.queue_id);
-                if (it == stats_map.end() ||
-                    s.recorded_at > it->second->recorded_at) {
-                    stats_map[s.queue_id] = &s;
-                }
-            }
+            auto admin = self->clientManager_->admin();
+            const auto streams = admin.list_streams();
 
             std::vector<queue_row> rows;
-            rows.reserve(queues_result->queues.size());
-            for (const auto& qd : queues_result->queues) {
+            rows.reserve(streams.size());
+            for (const auto& si : streams) {
                 queue_row r;
-                r.id          = qd.id;
-                r.name        = qd.name;
-                r.description = qd.description;
-                r.scope_type  = to_string(qd.scope_type);
-                r.queue_type  = to_string(qd.type);
-                r.created_at  = qd.created_at;
-                r.is_active   = qd.is_active;
+                r.id   = si.name;
+                r.name = si.name;
 
-                if (auto it = stats_map.find(qd.id);
-                    it != stats_map.end()) {
-                    const auto& s = *it->second;
-                    r.pending_count    = s.pending_count;
-                    r.processing_count = s.processing_count;
-                    r.total_archived   = s.total_archived;
-                    r.stats_recorded_at = s.recorded_at;
+                // Join subjects with ", "
+                for (std::size_t i = 0; i < si.subjects.size(); ++i) {
+                    if (i > 0)
+                        r.subjects += ", ";
+                    r.subjects += si.subjects[i];
                 }
+
+                r.message_count  = si.message_count;
+                r.byte_count     = si.byte_count;
+                r.consumer_count = si.consumer_count;
+                r.created_at     = si.created_at;
+
+                if (si.last_seq > 0)
+                    r.last_message_at = si.last_message_at;
 
                 rows.push_back(std::move(r));
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << rows.size() << " queues";
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << rows.size() << " streams";
             return {.success = true, .rows = std::move(rows),
                     .error_message = {}, .error_details = {}};
-        }, "queues");
+        }, "streams");
     });
 
     watcher_->setFuture(future);
@@ -239,7 +168,7 @@ void ClientQueueModel::onDataLoaded() {
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch queues: "
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch streams: "
                                    << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
@@ -249,7 +178,7 @@ void ClientQueueModel::onDataLoaded() {
     rows_ = std::move(result.rows);
     endResetModel();
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << rows_.size() << " queues";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << rows_.size() << " streams";
     emit dataLoaded();
 }
 

@@ -37,9 +37,15 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
+if(TARGET cnats::nats_static)
+    set(CNATS_LIB cnats::nats_static)
+else()
+    set(CNATS_LIB cnats::nats)
+endif()
+
 target_link_libraries(${lib_target_name}
     PUBLIC
-        cnats::nats_static
+        ${CNATS_LIB}
         Boost::program_options
     PRIVATE
         ores.utility.lib

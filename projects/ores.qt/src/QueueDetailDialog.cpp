@@ -19,14 +19,13 @@
  */
 #include "ores.qt/QueueDetailDialog.hpp"
 
-#include <chrono>
-#include <ctime>
 #include <QPointer>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
 #include <QHeaderView>
 #include <QtConcurrent>
+#include "ores.platform/time/datetime.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -34,17 +33,6 @@
 namespace ores::qt {
 
 using namespace ores::logging;
-
-namespace {
-
-std::string format_timepoint(std::chrono::system_clock::time_point tp) {
-    const auto t = std::chrono::system_clock::to_time_t(tp);
-    char buf[32];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::gmtime(&t));
-    return buf;
-}
-
-} // namespace
 
 QueueDetailDialog::QueueDetailDialog(const QString& streamName,
                                      const QString& displayName,
@@ -306,7 +294,7 @@ void QueueDetailDialog::onGetMessages() {
                             MessageRow r;
                             r.sequence  = msg.sequence;
                             r.subject   = msg.subject;
-                            r.timestamp = format_timepoint(msg.timestamp);
+                            r.timestamp = platform::time::datetime::format_time_point_utc(msg.timestamp);
                             r.payload   = std::string(
                                 reinterpret_cast<const char*>(msg.data.data()),
                                 msg.data.size());

@@ -59,7 +59,7 @@ struct telemetry_log_entry final {
     /**
      * @brief Name of the source application.
      *
-     * Examples: "ores.qt", "ores.comms.shell", "ores.comms.service"
+     * Examples: "ores.qt", "ores.shell", "ores.comms.service"
      */
     std::string source_name;
 

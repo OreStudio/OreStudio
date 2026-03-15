@@ -25,7 +25,7 @@ Component]].
 *** Help
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} --help
+./ores.shell ${log_args} --help
 #+end_src
 
 #+RESULTS:
@@ -33,7 +33,7 @@ Component]].
 ORE Studio Shell is an interactive REPL for ORE Studio.
 It provides a command-line interface for connecting to and interacting with ores.comms.service.
 
-Usage: ores.comms.shell [options]
+Usage: ores.shell [options]
 
 
 General:
@@ -48,7 +48,7 @@ Logging:
   --log-to-console                      Output logging to the console, as well
                                         as to file.
   --log-directory arg (=log)            Where to place the log files.
-  --log-filename arg (=ores.comms.shell.log)
+  --log-filename arg (=ores.shell.log)
                                         Name of the log file.
   --log-include-pid                     Include process ID in log filename
                                         (e.g., app.12345.log).
@@ -57,7 +57,7 @@ Telemetry:
   --telemetry-enabled                   Enable telemetry export. When enabled,
                                         all log records are exported to a JSON
                                         Lines file for log aggregation.
-  --telemetry-service-name arg (=ores-comms-shell)
+  --telemetry-service-name arg (=ores-shell)
                                         Name of the service producing
                                         telemetry. Used as service.name in
                                         resource attributes.
@@ -95,7 +95,7 @@ Login:
 *** Version
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} --version
+./ores.shell ${log_args} --version
 #+end_src
 
 #+RESULTS:
@@ -119,7 +119,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-exit>>
 EOF
 #+end_src
@@ -201,7 +201,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-accounts-exit>>
 EOF
 #+end_src
@@ -267,7 +267,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} << 'EOF'
 <<auto-connect>>
 EOF
 #+END_SRC
@@ -295,7 +295,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<basic-connect>>
 EOF
 #+END_SRC
@@ -320,7 +320,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} << 'EOF'
 <<initial-bootstrap>>
 EOF
 #+end_src
@@ -355,7 +355,7 @@ exit
 
 #+begin_src sh :noweb yes :results output :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<auto-login>>
 EOF
 #+end_src
@@ -382,7 +382,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<login-alias>>
 EOF
 #+END_SRC
@@ -412,7 +412,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} << 'EOF'
 <<explicit-login>>
 EOF
 #+end_src
@@ -441,7 +441,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} << 'EOF'
 <<explicit-logout>>
 EOF
 #+end_src
@@ -473,7 +473,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<create-account>>
 EOF
 #+END_SRC
@@ -504,7 +504,7 @@ exit
 
 #+begin_src sh :noweb yes :results output :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-account>>
 EOF
 #+END_SRC
@@ -534,7 +534,7 @@ exit
 
 #+begin_src sh :noweb yes :results output :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-account>>
 EOF
 #+END_SRC
@@ -581,7 +581,7 @@ exit
 
 #+begin_src sh :noweb yes :results output :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-login-info>>
 EOF
 #+END_SRC
@@ -619,7 +619,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<lock-account>>
 EOF
 #+END_SRC
@@ -649,7 +649,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<unlock-account>>
 EOF
 #+END_SRC
@@ -679,7 +679,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<account-roles>>
 EOF
 #+END_SRC
@@ -717,7 +717,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<account-permissions>>
 EOF
 #+END_SRC
@@ -760,7 +760,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<assign-role>>
 EOF
 #+END_SRC
@@ -805,7 +805,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<revoke-role>>
 EOF
 #+END_SRC
@@ -838,7 +838,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<assign-role-by-name>>
 EOF
 #+END_SRC
@@ -856,7 +856,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<revoke-role-by-name>>
 EOF
 #+END_SRC
@@ -873,7 +873,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<account-history>>
 EOF
 #+END_SRC
@@ -911,7 +911,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-tenants-exit>>
 EOF
 #+end_src
@@ -957,7 +957,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-get>>
 EOF
 #+end_src
@@ -994,7 +994,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-get-all>>
 EOF
 #+end_src
@@ -1040,7 +1040,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-add>>
 EOF
 #+end_src
@@ -1073,7 +1073,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<create-account-tenant>>
 EOF
 #+END_SRC
@@ -1104,7 +1104,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<list-accounts-tenant>>
 EOF
 #+END_SRC
@@ -1134,7 +1134,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-history>>
 EOF
 #+end_src
@@ -1173,7 +1173,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-delete>>
 EOF
 #+end_src
@@ -1206,7 +1206,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-variability-exit>>
 EOF
 #+end_src
@@ -1252,7 +1252,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-feature-flags>>
 EOF
 #+END_SRC
@@ -1293,7 +1293,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<add-feature-flag>>
 EOF
 #+END_SRC
@@ -1322,7 +1322,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<delete-feature-flag>>
 EOF
 #+END_SRC
@@ -1351,7 +1351,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<feature-flag-history>>
 EOF
 #+END_SRC
@@ -1391,7 +1391,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-currencies-exit>>
 EOF
 #+end_src
@@ -1436,7 +1436,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-list>>
 EOF
 #+end_src
@@ -1496,7 +1496,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-add>>
 EOF
 #+end_src
@@ -1526,7 +1526,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-delete>>
 EOF
 #+end_src
@@ -1543,7 +1543,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-history>>
 EOF
 #+end_src
@@ -1583,7 +1583,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-roles-exit>>
 EOF
 #+end_src
@@ -1623,7 +1623,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<list-roles>>
 EOF
 #+end_src
@@ -1665,7 +1665,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<get-role>>
 EOF
 #+end_src
@@ -1714,7 +1714,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-permissions-exit>>
 EOF
 #+end_src
@@ -1752,7 +1752,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<list-permissions>>
 EOF
 #+end_src
@@ -1819,7 +1819,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<permissions-suggest>>
 EOF
 #+end_src
@@ -1875,7 +1875,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-events-exit>>
 EOF
 #+end_src
@@ -1921,7 +1921,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-channels>>
 EOF
 #+end_src
@@ -1961,7 +1961,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-listen>>
 EOF
 #+end_src
@@ -1993,7 +1993,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-unlisten>>
 EOF
 #+end_src
@@ -2023,7 +2023,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-subscriptions>>
 EOF
 #+end_src
@@ -2051,7 +2051,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-notifications>>
 EOF
 #+end_src
@@ -2083,7 +2083,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<compression-status>>
 EOF
 #+end_src
@@ -2109,7 +2109,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<compression-off>>
 EOF
 #+end_src
@@ -2136,7 +2136,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<compression-on-all>>
 EOF
 #+end_src
@@ -2163,7 +2163,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<compression-on-zlib>>
 EOF
 #+end_src
@@ -2197,7 +2197,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-countries-exit>>
 EOF
 #+end_src
@@ -2241,7 +2241,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-get>>
 EOF
 #+end_src
@@ -2373,7 +2373,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-add>>
 EOF
 #+end_src
@@ -2401,7 +2401,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-delete>>
 EOF
 #+end_src
@@ -2429,7 +2429,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-history>>
 EOF
 #+end_src
@@ -2469,7 +2469,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-change-reasons-exit>>
 EOF
 #+end_src
@@ -2513,7 +2513,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-get>>
 EOF
 #+end_src
@@ -2566,7 +2566,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-add>>
 EOF
 #+end_src
@@ -2594,7 +2594,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-delete>>
 EOF
 #+end_src
@@ -2622,7 +2622,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-history>>
 EOF
 #+end_src
@@ -2664,7 +2664,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-./ores.comms.shell ${log_args} << 'EOF'
+./ores.shell ${log_args} << 'EOF'
 <<help-change-reasons-categories-exit>>
 EOF
 #+end_src
@@ -2708,7 +2708,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-get>>
 EOF
 #+end_src
@@ -2745,7 +2745,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-add>>
 EOF
 #+end_src
@@ -2773,7 +2773,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-delete>>
 EOF
 #+end_src
@@ -2801,7 +2801,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-history>>
 EOF
 #+end_src
@@ -2845,7 +2845,7 @@ exit
 
 #+begin_src sh :noweb yes :results output  :wrap example
 export ORES_COMMS_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<setup-new-system>>
 EOF
 #+end_src

@@ -44,7 +44,7 @@ struct telemetry_batch final {
      * @brief Name of the source application.
      *
      * This is set once per batch rather than per-entry for efficiency.
-     * Examples: "ores.qt", "ores.comms.shell", "ores.comms.service"
+     * Examples: "ores.qt", "ores.shell", "ores.comms.service"
      */
     std::string source_name;
 

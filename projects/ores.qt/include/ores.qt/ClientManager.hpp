@@ -33,7 +33,7 @@
 #include <QObject>
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QDateTime>
-#include "ores.comms.shell/service/nats_session.hpp"
+#include "ores.shell/service/nats_session.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"

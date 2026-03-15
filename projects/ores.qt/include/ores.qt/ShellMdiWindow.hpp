@@ -36,8 +36,8 @@
 #include <QVBoxLayout>
 #include <QCloseEvent>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.comms.shell/service/nats_session.hpp"
-#include "ores.comms.shell/app/repl.hpp"
+#include "ores.shell/service/nats_session.hpp"
+#include "ores.shell/app/repl.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -100,7 +100,7 @@ private:
 };
 
 /**
- * @brief MDI window embedding the ores.comms.shell REPL.
+ * @brief MDI window embedding the ores.shell REPL.
  *
  * Provides a toolbar, read-only output area, and a command input line.
  * Maintains its own independent server connection, auto-connecting and

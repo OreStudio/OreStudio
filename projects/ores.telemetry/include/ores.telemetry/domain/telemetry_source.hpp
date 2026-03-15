@@ -34,7 +34,7 @@ enum class telemetry_source {
     /**
      * @brief Log entry from a client application.
      *
-     * Examples: ores.qt, ores.comms.shell
+     * Examples: ores.qt, ores.shell
      */
     client = 0,
 

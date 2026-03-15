@@ -28,7 +28,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.reporting/messaging/report_type_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -313,15 +312,7 @@ void ReportTypeMdiWindow::deleteSelected() {
 
         reporting::messaging::delete_report_type_request request;
         request.codes = codes;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_report_type_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -331,28 +322,8 @@ void ReportTypeMdiWindow::deleteSelected() {
             return results;
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Failed to decompress server response"}});
-            }
-            return results;
-        }
-
-        auto response = reporting::messaging::delete_report_type_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
-            for (const auto& code : codes) {
-                results.push_back({code, {false, "Invalid server response"}});
-            }
-            return results;
-        }
-
-        for (const auto& result : response->results) {
-            results.push_back({result.code, {result.success, result.message}});
+        for (const auto& code : codes) {
+            results.push_back({code, {response_result->success, response_result->message}});
         }
 
         return results;

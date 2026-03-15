@@ -21,7 +21,7 @@
 #define ORES_COMMS_SHELL_APP_COMMANDS_SUBSCRIPTION_COMMANDS_HPP
 
 #include <string>
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/service/nats_session.hpp"
 
 namespace cli {
 
@@ -53,7 +53,7 @@ public:
      * @param session Client session for server communication
      */
     static void register_commands(cli::Menu& root,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief List available event channels.
@@ -65,7 +65,7 @@ public:
      * @param session Client session for server communication
      */
     static void process_channels(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Process a listen (subscribe) request.
@@ -75,7 +75,7 @@ public:
      * @param event_type The event type to subscribe to
      */
     static void process_listen(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string event_type);
 
     /**
@@ -86,7 +86,7 @@ public:
      * @param event_type The event type to unsubscribe from (empty = all)
      */
     static void process_unlisten(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string event_type);
 
     /**
@@ -96,7 +96,7 @@ public:
      * @param session Client session for server communication
      */
     static void process_subscriptions(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Display and clear pending notifications.
@@ -105,7 +105,7 @@ public:
      * @param session Client session for server communication
      */
     static void process_notifications(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Display pending notifications without clearing them.
@@ -118,7 +118,7 @@ public:
      * @return Number of notifications displayed
      */
     static std::size_t display_pending_notifications(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 };
 
 }

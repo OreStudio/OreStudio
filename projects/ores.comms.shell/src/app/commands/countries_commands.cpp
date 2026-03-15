@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,19 +21,61 @@
 
 #include <ostream>
 #include <functional>
+#include <rfl/json.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.comms/messaging/message_type.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
 #include "ores.refdata/domain/country_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::comms::shell::app::commands {
 
 using namespace logging;
-using comms::messaging::message_type;
-using comms::net::client_session;
+using service::nats_session;
+
+namespace {
+
+template<typename Response>
+std::optional<Response> do_request(std::ostream& out, nats_session& session,
+    const std::string& subject, const std::string& body) {
+    try {
+        auto reply = session.request(subject, body);
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<Response>(data_str);
+        if (!result) {
+            out << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        out << "✗ Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+template<typename Response>
+std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+    const std::string& subject, const std::string& body) {
+    try {
+        auto reply = session.authenticated_request(subject, body);
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<Response>(data_str);
+        if (!result) {
+            out << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        out << "✗ Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+} // anonymous namespace
 
 void countries_commands::
-register_commands(cli::Menu& root_menu, client_session& session,
+register_commands(cli::Menu& root_menu, nats_session& session,
                   pagination_context& pagination) {
     auto countries_menu =
         std::make_unique<cli::Menu>("countries");
@@ -77,22 +119,19 @@ register_commands(cli::Menu& root_menu, client_session& session,
 }
 
 void countries_commands::
-process_get_countries(std::ostream& out, client_session& session,
+process_get_countries(std::ostream& out, nats_session& session,
                       pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get countries request.";
 
     auto& state = pagination.state_for("countries");
 
-    using refdata::messaging::get_countries_request;
-    auto result = session.process_request(get_countries_request{
-        .offset = state.current_offset,
-        .limit = pagination.page_size()
-    });
+    refdata::messaging::get_countries_request req;
+    req.offset = state.current_offset;
+    req.limit = pagination.page_size();
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_request<refdata::messaging::get_countries_response>(
+        out, session, "refdata.v1.countries.list", rfl::json::write(req));
+    if (!result) return;
 
     state.total_count = result->total_available_count;
     pagination.set_last_entity("countries");
@@ -112,7 +151,7 @@ process_get_countries(std::ostream& out, client_session& session,
 }
 
 void countries_commands::
-process_add_country(std::ostream& out, client_session& session,
+process_add_country(std::ostream& out, nats_session& session,
     std::string alpha2_code, std::string alpha3_code,
     std::string numeric_code, std::string name,
     std::string official_name, std::string change_reason_code,
@@ -121,19 +160,14 @@ process_add_country(std::ostream& out, client_session& session,
                                << alpha2_code;
 
     // Get modified_by from logged-in user
-    const auto& session_info = session.session_info();
-    if (!session_info) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to add a country." << std::endl;
         return;
     }
-    const auto& modified_by = session_info->username;
+    const auto& modified_by = session.auth().username;
 
-    using refdata::messaging::save_country_request;
-    using refdata::messaging::save_country_response;
-    auto result = session.process_authenticated_request<save_country_request,
-                                                        save_country_response,
-                                                        message_type::save_country_request>
-        (save_country_request::from(refdata::domain::country{
+    auto req = refdata::messaging::save_country_request::from(
+        refdata::domain::country{
             .version = 0,
             .alpha2_code = std::move(alpha2_code),
             .alpha3_code = std::move(alpha3_code),
@@ -145,98 +179,84 @@ process_add_country(std::ostream& out, client_session& session,
             .change_reason_code = std::move(change_reason_code),
             .change_commentary = std::move(change_commentary),
             .recorded_at = std::chrono::system_clock::now()
-        }));
+        });
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<refdata::messaging::save_country_response>(
+        out, session, "refdata.v1.countries.save", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added country.";
         out << "✓ Country added successfully!" << std::endl;
     } else {
-        const auto& msg = response.message.empty() ? "Unknown error" : response.message;
+        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add country: " << msg;
         out << "✗ Failed to add country: " << msg << std::endl;
     }
 }
 
 void countries_commands::
-process_delete_country(std::ostream& out, client_session& session,
+process_delete_country(std::ostream& out, nats_session& session,
     std::string alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete country request for: "
                                << alpha2_code;
 
     // Check if logged in
-    if (!session.session_info()) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to delete a country." << std::endl;
         return;
     }
 
-    using refdata::messaging::delete_country_request;
-    using refdata::messaging::delete_country_response;
-    auto result = session.process_authenticated_request<delete_country_request,
-                                                        delete_country_response,
-                                                        message_type::delete_country_request>
-        (delete_country_request{.alpha2_codes = {alpha2_code}});
+    refdata::messaging::delete_country_request req;
+    req.alpha2_codes = {alpha2_code};
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<refdata::messaging::delete_country_response>(
+        out, session, "refdata.v1.countries.delete", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted country: " << alpha2_code;
         out << "✓ Country " << alpha2_code << " deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete country: " << response.message;
-        out << "✗ Failed to delete country: " << response.message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete country: " << result->message;
+        out << "✗ Failed to delete country: " << result->message << std::endl;
     }
 }
 
 void countries_commands::
-process_get_country_history(std::ostream& out, client_session& session,
+process_get_country_history(std::ostream& out, nats_session& session,
     std::string alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get country history for: "
                                << alpha2_code;
 
     // Check if logged in
-    if (!session.session_info()) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to get country history." << std::endl;
         return;
     }
 
-    using refdata::messaging::get_country_history_request;
-    using refdata::messaging::get_country_history_response;
-    auto result = session.process_authenticated_request<get_country_history_request,
-                                                        get_country_history_response,
-                                                        message_type::get_country_history_request>
-        (get_country_history_request{.alpha2_code = std::move(alpha2_code)});
+    refdata::messaging::get_country_history_request req;
+    req.alpha2_code = std::move(alpha2_code);
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<refdata::messaging::get_country_history_response>(
+        out, session, "refdata.v1.countries.history", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (!response.success) {
+    if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get country history: "
-                                  << response.message;
-        out << "✗ " << response.message << std::endl;
+                                  << result->message;
+        out << "✗ " << result->message << std::endl;
         return;
     }
 
-    if (response.history.empty()) {
+    if (result->history.empty()) {
         out << "No history found for this country." << std::endl;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << response.history.size() << " history records.";
-    out << response.history << std::endl;
+                              << result->history.size() << " history records.";
+    out << result->history << std::endl;
 }
 
 }

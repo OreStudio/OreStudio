@@ -20,192 +20,62 @@
 #ifndef ORES_TRADING_MESSAGING_TRADE_PROTOCOL_HPP
 #define ORES_TRADING_MESSAGING_TRADE_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <optional>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.trading/domain/trade.hpp"
 
 namespace ores::trading::messaging {
 
-// ============================================================================
-// Trade Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all trades with optional filtering.
- *
- * Wire format:
- * - 4 bytes: offset (uint32)
- * - 4 bytes: limit  (uint32)
- * - 1 byte : has_book_id (bool)
- * - 16 bytes: book_id UUID   [only if has_book_id]
- * - 1 byte : has_portfolio_id (bool)
- * - 16 bytes: portfolio_id UUID [only if has_portfolio_id]
- * - 1 byte : has_business_unit_id (bool)
- * - 16 bytes: business_unit_id UUID [only if has_business_unit_id]
- */
-struct get_trades_request final {
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-    std::optional<boost::uuids::uuid> book_id;           ///< filter by single book
-    std::optional<boost::uuids::uuid> portfolio_id;      ///< filter by portfolio subtree
-    std::optional<boost::uuids::uuid> business_unit_id;  ///< filter by BU subtree
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_trades_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_trades_request {
+    using response_type = struct get_trades_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.list";
+    int offset = 0;
+    int limit = 100;
+    std::string book_id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_trades_request& v);
-
-/**
- * @brief Response containing all trades.
- */
-struct get_trades_response final {
-    std::vector<domain::trade> trades;
-    std::uint32_t total_available_count = 0;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_trades_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_trades_response {
+    std::vector<ores::trading::domain::trade> trades;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_trades_response& v);
+struct save_trade_request {
+    using response_type = struct save_trade_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.save";
+    std::vector<ores::trading::domain::trade> trades;
 
-/**
- * @brief Request to save one or more trades (create or update).
- */
-struct save_trade_request final {
-    std::vector<domain::trade> trades;
-
-    static save_trade_request from(domain::trade trade);
-    static save_trade_request from(std::vector<domain::trade> trades);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_trade_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+    static save_trade_request from(std::vector<ores::trading::domain::trade> trades) {
+        return { .trades = std::move(trades) };
+    }
 };
 
-std::ostream& operator<<(std::ostream& s, const save_trade_request& v);
-
-/**
- * @brief Response confirming trade save operation(s).
- */
-struct save_trade_response final {
+struct save_trade_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_trade_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_trade_response& v);
-
-/**
- * @brief Request to delete one or more trades.
- */
-struct delete_trade_request final {
-    std::vector<boost::uuids::uuid> ids;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_trade_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_trade_request {
+    using response_type = struct delete_trade_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.delete";
+    std::vector<std::string> ids;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_trade_request& v);
-
-/**
- * @brief Response confirming trade deletion(s).
- */
-struct delete_trade_response final {
+struct delete_trade_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_trade_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_trade_response& v);
-
-/**
- * @brief Request to retrieve version history for a trade.
- */
-struct get_trade_history_request final {
-    boost::uuids::uuid id;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_trade_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_trade_history_request {
+    using response_type = struct get_trade_history_response;
+    static constexpr std::string_view nats_subject = "trading.v1.trades.history";
+    std::string id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_trade_history_request& v);
-
-/**
- * @brief Response containing trade version history.
- */
-struct get_trade_history_response final {
-    bool success;
+struct get_trade_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::trade> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_trade_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_trade_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Trade traits
-template<>
-struct message_traits<trading::messaging::get_trades_request> {
-    using request_type = trading::messaging::get_trades_request;
-    using response_type = trading::messaging::get_trades_response;
-    static constexpr message_type request_message_type =
-        message_type::get_trades_request;
-};
-
-template<>
-struct message_traits<trading::messaging::save_trade_request> {
-    using request_type = trading::messaging::save_trade_request;
-    using response_type = trading::messaging::save_trade_response;
-    static constexpr message_type request_message_type =
-        message_type::save_trade_request;
-};
-
-template<>
-struct message_traits<trading::messaging::delete_trade_request> {
-    using request_type = trading::messaging::delete_trade_request;
-    using response_type = trading::messaging::delete_trade_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_trade_request;
-};
-
-template<>
-struct message_traits<trading::messaging::get_trade_history_request> {
-    using request_type = trading::messaging::get_trade_history_request;
-    using response_type = trading::messaging::get_trade_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_trade_history_request;
+    std::vector<ores::trading::domain::trade> versions;
 };
 
 }

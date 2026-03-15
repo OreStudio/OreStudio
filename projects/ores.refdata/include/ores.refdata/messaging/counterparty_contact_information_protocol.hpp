@@ -20,176 +20,42 @@
 #ifndef ORES_REFDATA_MESSAGING_COUNTERPARTY_CONTACT_INFORMATION_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_COUNTERPARTY_CONTACT_INFORMATION_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/counterparty_contact_information.hpp"
 
 namespace ores::refdata::messaging {
 
-// ============================================================================
-// Counterparty Contact Information Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all counterparty contact informations.
- */
-struct get_counterparty_contact_informations_request final {
-    boost::uuids::uuid counterparty_id{};  ///< Filter by counterparty (nil = all)
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparty_contact_informations_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_counterparty_contact_informations_request {
+    using response_type = struct get_counterparty_contact_informations_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty-contacts.list";
+    std::string counterparty_id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_counterparty_contact_informations_request& v);
-
-/**
- * @brief Response containing all counterparty contact informations.
- */
-struct get_counterparty_contact_informations_response final {
-    std::vector<domain::counterparty_contact_information> counterparty_contact_informations;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparty_contact_informations_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_counterparty_contact_informations_response {
+    std::vector<ores::refdata::domain::counterparty_contact_information> contact_informations;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_counterparty_contact_informations_response& v);
-
-/**
- * @brief Request to save one or more counterparty contact informations (create or update).
- */
-struct save_counterparty_contact_information_request final {
-    std::vector<domain::counterparty_contact_information> counterparty_contact_informations;
-
-    static save_counterparty_contact_information_request from(domain::counterparty_contact_information counterparty_contact_information);
-    static save_counterparty_contact_information_request from(std::vector<domain::counterparty_contact_information> counterparty_contact_informations);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_counterparty_contact_information_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_counterparty_contact_information_request {
+    using response_type = struct save_counterparty_contact_information_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty-contacts.save";
+    ores::refdata::domain::counterparty_contact_information data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_counterparty_contact_information_request& v);
-
-/**
- * @brief Response confirming counterparty contact information save operation(s).
- */
-struct save_counterparty_contact_information_response final {
+struct save_counterparty_contact_information_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_counterparty_contact_information_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_counterparty_contact_information_response& v);
-
-/**
- * @brief Request to delete one or more counterparty contact informations.
- */
-struct delete_counterparty_contact_information_request final {
-    std::vector<boost::uuids::uuid> ids;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_counterparty_contact_information_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_counterparty_contact_information_request {
+    using response_type = struct delete_counterparty_contact_information_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparty-contacts.delete";
+    std::vector<std::string> ids;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_counterparty_contact_information_request& v);
-
-/**
- * @brief Response confirming counterparty contact information deletion(s).
- */
-struct delete_counterparty_contact_information_response final {
+struct delete_counterparty_contact_information_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_counterparty_contact_information_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_counterparty_contact_information_response& v);
-
-/**
- * @brief Request to retrieve version history for a counterparty contact information.
- */
-struct get_counterparty_contact_information_history_request final {
-    boost::uuids::uuid id;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparty_contact_information_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_counterparty_contact_information_history_request& v);
-
-/**
- * @brief Response containing counterparty contact information version history.
- */
-struct get_counterparty_contact_information_history_response final {
-    bool success;
-    std::string message;
-    std::vector<domain::counterparty_contact_information> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparty_contact_information_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_counterparty_contact_information_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Counterparty Contact Information traits
-template<>
-struct message_traits<refdata::messaging::get_counterparty_contact_informations_request> {
-    using request_type = refdata::messaging::get_counterparty_contact_informations_request;
-    using response_type = refdata::messaging::get_counterparty_contact_informations_response;
-    static constexpr message_type request_message_type =
-        message_type::get_counterparty_contact_informations_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::save_counterparty_contact_information_request> {
-    using request_type = refdata::messaging::save_counterparty_contact_information_request;
-    using response_type = refdata::messaging::save_counterparty_contact_information_response;
-    static constexpr message_type request_message_type =
-        message_type::save_counterparty_contact_information_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::delete_counterparty_contact_information_request> {
-    using request_type = refdata::messaging::delete_counterparty_contact_information_request;
-    using response_type = refdata::messaging::delete_counterparty_contact_information_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_counterparty_contact_information_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::get_counterparty_contact_information_history_request> {
-    using request_type = refdata::messaging::get_counterparty_contact_information_history_request;
-    using response_type = refdata::messaging::get_counterparty_contact_information_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_counterparty_contact_information_history_request;
 };
 
 }

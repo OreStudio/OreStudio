@@ -266,7 +266,7 @@ void OrgExplorerMdiWindow::reload() {
                         return {.success = false, .units = {},
                                 .error_message = QString::fromStdString(
                                     "Failed to fetch business units: " +
-                                    comms::net::to_string(result.error())),
+                                    result.error()),
                                 .error_details = {}};
 
                     return {.success = true,
@@ -294,7 +294,7 @@ void OrgExplorerMdiWindow::reload() {
                         return {.success = false, .books = {},
                                 .error_message = QString::fromStdString(
                                     "Failed to fetch books: " +
-                                    comms::net::to_string(result.error())),
+                                    result.error()),
                                 .error_details = {}};
 
                     return {.success = true,
@@ -322,7 +322,7 @@ void OrgExplorerMdiWindow::reload() {
                         return {.success = false, .cpty_map = {},
                                 .error_message = QString::fromStdString(
                                     "Failed to fetch counterparties: " +
-                                    comms::net::to_string(result.error())),
+                                    result.error()),
                                 .error_details = {}};
 
                     std::unordered_map<std::string, CounterpartyInfo> cpty_map;
@@ -447,7 +447,7 @@ void OrgExplorerMdiWindow::rebuildTree() {
                                 .error_details = {}};
 
                     trading::messaging::get_trades_request req;
-                    req.book_id = bid;
+                    req.book_id = boost::uuids::to_string(bid);
                     req.limit = 0;
                     req.offset = 0;
 
@@ -460,7 +460,7 @@ void OrgExplorerMdiWindow::rebuildTree() {
                                 .error_details = {}};
 
                     return {.book_id = bid,
-                            .count = result->total_available_count,
+                            .count = static_cast<std::uint32_t>(result->total_available_count),
                             .success = true,
                             .error_message = {},
                             .error_details = {}};

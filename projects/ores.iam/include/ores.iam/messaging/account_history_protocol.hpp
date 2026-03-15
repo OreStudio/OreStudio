@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,74 +20,27 @@
 #ifndef ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_ACCOUNT_HISTORY_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.iam/domain/account_version_history.hpp"
+#include "ores.iam/domain/account_version.hpp"
 
 namespace ores::iam::messaging {
 
-/**
- * @brief Request to retrieve version history for an account.
- */
-struct get_account_history_request final {
+struct account_version_history {
+    std::vector<ores::iam::domain::account_version> versions;
+};
+
+struct get_account_history_request {
+    using response_type = struct get_account_history_response;
+    static constexpr std::string_view nats_subject = "iam.v1.accounts.history";
     std::string username;
-
-    /**
-     * @brief Serialize request to bytes.
-     */
-    std::vector<std::byte> serialize() const;
-
-    /**
-     * @brief Deserialize request from bytes.
-     */
-    static std::expected<get_account_history_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_account_history_request& v);
-
-/**
- * @brief Response containing account version history.
- */
-struct get_account_history_response final {
-    bool success;
+struct get_account_history_response {
+    bool success = false;
     std::string message;
-    domain::account_version_history history;
-
-    /**
-     * @brief Serialize response to bytes.
-     */
-    std::vector<std::byte> serialize() const;
-
-    /**
-     * @brief Deserialize response from bytes.
-     */
-    static std::expected<get_account_history_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_account_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-/**
- * @brief Message traits specialization for get_account_history_request.
- */
-template<>
-struct message_traits<iam::messaging::get_account_history_request> {
-    using request_type = iam::messaging::get_account_history_request;
-    using response_type = iam::messaging::get_account_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_account_history_request;
+    account_version_history history;
 };
 
 }

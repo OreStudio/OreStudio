@@ -28,6 +28,7 @@
 #include <QtCharts/QLineSeries>
 #include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QValueAxis>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.mq/messaging/mq_protocol.hpp"
@@ -150,16 +151,14 @@ void QueueChartWindow::reload() {
     const auto from = fromForRange();
     QPointer<QueueChartWindow> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self, queueId, from]() -> FetchResult {
+    QFuture<FetchResult> future = QtConcurrent::run([self, queueId]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
             if (!self || !self->clientManager_) {
                 return {.success = false, .samples = {},
                         .error_message = "Window was destroyed", .error_details = {}};
             }
 
-            mq::messaging::get_queue_stats_samples_request request;
-            request.queue_id = queueId.toStdString();
-            request.from = from;
+            mq::messaging::get_queue_stats_request request;
 
             auto result = self->clientManager_->process_authenticated_request(
                 std::move(request));
@@ -176,9 +175,18 @@ void QueueChartWindow::reload() {
                         .error_details = {}};
             }
 
-            return {.success = true, .samples = std::move(result->samples),
+            // Filter stats to only those matching this queue
+            std::vector<mq::domain::queue_stats> filtered;
+            const std::string queueIdStr = queueId.toStdString();
+            for (const auto& s : result->stats) {
+                if (boost::uuids::to_string(s.queue_id) == queueIdStr) {
+                    filtered.push_back(s);
+                }
+            }
+
+            return {.success = true, .samples = std::move(filtered),
                     .error_message = {}, .error_details = {}};
-        }, "queue stats samples");
+        }, "queue stats");
     });
 
     watcher_->setFuture(future);

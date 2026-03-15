@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,26 +22,26 @@
 
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/currency_history_protocol.hpp"
+#include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
-#include "ores.refdata/messaging/party_type_protocol.hpp"
-#include "ores.refdata/messaging/party_status_protocol.hpp"
-#include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
-#include "ores.refdata/messaging/contact_type_protocol.hpp"
-#include "ores.refdata/messaging/party_protocol.hpp"
-#include "ores.refdata/messaging/party_identifier_protocol.hpp"
-#include "ores.refdata/messaging/party_contact_information_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_identifier_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_contact_information_protocol.hpp"
+#include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata/messaging/book_status_protocol.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
-#include "ores.refdata/messaging/portfolio_protocol.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
-#include "ores.refdata/messaging/rounding_type_protocol.hpp"
-#include "ores.refdata/messaging/monetary_nature_protocol.hpp"
-#include "ores.refdata/messaging/monetary_nature_history_protocol.hpp"
-#include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
-#include "ores.refdata/messaging/currency_market_tier_history_protocol.hpp"
 #include "ores.refdata/messaging/business_unit_type_protocol.hpp"
+#include "ores.refdata/messaging/contact_type_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_contact_information_protocol.hpp"
+#include "ores.refdata/messaging/counterparty_identifier_protocol.hpp"
+#include "ores.refdata/messaging/monetary_nature_protocol.hpp"
+#include "ores.refdata/messaging/party_protocol.hpp"
+#include "ores.refdata/messaging/party_contact_information_protocol.hpp"
+#include "ores.refdata/messaging/party_identifier_protocol.hpp"
+#include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
+#include "ores.refdata/messaging/party_status_protocol.hpp"
+#include "ores.refdata/messaging/party_type_protocol.hpp"
+#include "ores.refdata/messaging/portfolio_protocol.hpp"
+#include "ores.refdata/messaging/purpose_type_protocol.hpp"
+#include "ores.refdata/messaging/rounding_type_protocol.hpp"
 
 #endif

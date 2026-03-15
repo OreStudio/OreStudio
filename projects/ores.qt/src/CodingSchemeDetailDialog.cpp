@@ -29,7 +29,6 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -76,22 +75,11 @@ void CodingSchemeDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_coding_scheme_authority_types_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_coding_scheme_authority_types_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_coding_scheme_authority_types_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> codes;
-        for (const auto& at : response->authority_types) {
+        for (const auto& at : response_result->coding_scheme_authority_types) {
             codes.push_back(at.code);
         }
         return codes;
@@ -116,22 +104,11 @@ void CodingSchemeDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_subject_areas_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_subject_areas_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_subject_areas_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> names;
-        for (const auto& sa : response->subject_areas) {
+        for (const auto& sa : response_result->subject_areas) {
             names.push_back(sa.name);
         }
         return names;
@@ -156,22 +133,11 @@ void CodingSchemeDetailDialog::loadLookupData() {
         if (!self || !self->clientManager_) return {};
 
         dq::messaging::get_data_domains_request request;
-        auto payload = request.serialize();
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_data_domains_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = dq::messaging::get_data_domains_response::deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<std::string> names;
-        for (const auto& dd : response->domains) {
+        for (const auto& dd : response_result->domains) {
             names.push_back(dd.name);
         }
         return names;
@@ -286,23 +252,11 @@ void CodingSchemeDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_coding_scheme_request request;
-        request.schemes.push_back(scheme);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_coding_scheme_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.data = scheme;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {false, "Failed to communicate with server"};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = dq::messaging::save_coding_scheme_response::deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response"};
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(this);
@@ -338,21 +292,11 @@ void CodingSchemeDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_coding_scheme_request request;
-        request.codes.push_back({code.toStdString()});
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_coding_scheme_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.codes.push_back(code.toStdString());
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return false;
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return false;
-
-        auto response = dq::messaging::delete_coding_scheme_response::deserialize(*payload_result);
-        return response && response->success;
+        return response_result->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

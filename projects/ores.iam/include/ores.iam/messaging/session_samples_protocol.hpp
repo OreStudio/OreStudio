@@ -19,79 +19,30 @@
  */
 #ifndef ORES_IAM_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_SESSION_SAMPLES_PROTOCOL_HPP
-
-#include <span>
 #include <string>
-#include <vector>
+
 #include <cstdint>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
+#include <vector>
 
 namespace ores::iam::messaging {
 
 /**
- * @brief Request to retrieve time-series samples for a session.
- *
- * The requesting user must own the session or have admin privileges.
+ * @brief Time-series sample for session telemetry.
  */
-struct get_session_samples_request final {
-    boost::uuids::uuid session_id;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_session_samples_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-/**
- * @brief A single time-series sample transferred over the wire.
- */
-struct session_sample_dto final {
-    /**
-     * @brief Sample time as milliseconds since UNIX epoch.
-     */
+struct session_sample_dto {
     std::uint64_t sample_time_ms = 0;
-
-    /**
-     * @brief Cumulative bytes sent at this sample.
-     */
     std::uint64_t bytes_sent = 0;
-
-    /**
-     * @brief Cumulative bytes received at this sample.
-     */
     std::uint64_t bytes_received = 0;
-
-    /**
-     * @brief RTT reported by the client in this ping, in milliseconds.
-     */
-    std::uint64_t latency_ms = 0;
 };
 
-/**
- * @brief Response containing time-series samples for a session.
- */
-struct get_session_samples_response final {
-    bool success = false;
-    std::string message;
+struct get_session_samples_request {
+    using response_type = struct get_session_samples_response;
+    static constexpr std::string_view nats_subject = "iam.v1.sessions.samples";
+    std::string session_id;
+};
+
+struct get_session_samples_response {
     std::vector<session_sample_dto> samples;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_session_samples_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-}
-
-namespace ores::comms::messaging {
-
-template<>
-struct message_traits<ores::iam::messaging::get_session_samples_request> {
-    using response_type = ores::iam::messaging::get_session_samples_response;
-    static constexpr message_type request_message_type =
-        message_type::get_session_samples_request;
 };
 
 }

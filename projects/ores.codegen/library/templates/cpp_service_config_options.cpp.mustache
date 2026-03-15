@@ -1,0 +1,16 @@
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/config/options.hpp"
+
+#include <rfl.hpp>
+#include <rfl/json.hpp>
+
+namespace {{namespace}}::config {
+
+std::ostream& operator<<(std::ostream& s, const options& v) {
+    rfl::json::write(v, s);
+    return s;
+}
+
+}
+{{/component}}

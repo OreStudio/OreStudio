@@ -32,6 +32,8 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.dq/messaging/dataset_protocol.hpp"
+#include "ores.dq/messaging/dataset_dependency_protocol.hpp"
 #include "ores.dq/messaging/publication_protocol.hpp"
 
 namespace ores::qt {
@@ -81,7 +83,7 @@ void PublishDatasetsDialog::setDatasets(
     // Store the requested IDs
     requestedIds_.clear();
     for (const auto& ds : datasets_) {
-        requestedIds_.push_back(ds.id);
+        requestedIds_.push_back(boost::uuids::to_string(ds.id));
     }
 }
 
@@ -250,7 +252,7 @@ void ReviewPage::resolveDependencies() {
         wizard_->resolvedDatasets() = wizard_->datasets();
         wizard_->requestedIds().clear();
         for (const auto& ds : wizard_->datasets()) {
-            wizard_->requestedIds().push_back(ds.id);
+            wizard_->requestedIds().push_back(boost::uuids::to_string(ds.id));
         }
         resolved_ = true;
         statusLabel_->setText(tr("Ready to publish."));
@@ -262,7 +264,7 @@ void ReviewPage::resolveDependencies() {
     // Build request
     dq::messaging::resolve_dependencies_request request;
     for (const auto& ds : wizard_->datasets()) {
-        request.dataset_ids.push_back(ds.id);
+        request.dataset_ids.push_back(boost::uuids::to_string(ds.id));
     }
 
     // Send request
@@ -273,13 +275,14 @@ void ReviewPage::resolveDependencies() {
         wizard_->resolvedDatasets() = wizard_->datasets();
         wizard_->requestedIds().clear();
         for (const auto& ds : wizard_->datasets()) {
-            wizard_->requestedIds().push_back(ds.id);
+            wizard_->requestedIds().push_back(boost::uuids::to_string(ds.id));
         }
         resolved_ = true;
         // Include the actual error message from the server
-        QString errorDetail = result.error().message.empty()
+        const auto& errMsg = result.error();
+        QString errorDetail = errMsg.empty()
             ? tr("unknown error")
-            : QString::fromStdString(result.error().message);
+            : QString::fromStdString(errMsg);
         statusLabel_->setText(tr("Failed to resolve dependencies (%1). Will publish selected datasets only.")
             .arg(errorDetail));
         updatePublicationOrder();
@@ -319,7 +322,8 @@ void ReviewPage::updatePublicationOrder() {
         orderTable_->setItem(row, 1, codeItem);
 
         // Type column - check if this is a dependency or requested
-        bool isRequested = std::ranges::find(requestedIds, ds.id) != requestedIds.end();
+        bool isRequested = std::ranges::find(requestedIds,
+            boost::uuids::to_string(ds.id)) != requestedIds.end();
         QString typeText = isRequested ? tr("Selected") : tr("Dependency");
         auto* typeItem = new QTableWidgetItem(typeText);
 
@@ -426,7 +430,7 @@ void ProgressPage::performPublish() {
     // Build request
     dq::messaging::publish_datasets_request request;
     for (const auto& ds : resolvedDatasets) {
-        request.dataset_ids.push_back(ds.id);
+        request.dataset_ids.push_back(boost::uuids::to_string(ds.id));
     }
     request.mode = wizard_->selectedMode();
     request.published_by = wizard_->username().toStdString();
@@ -438,9 +442,10 @@ void ProgressPage::performPublish() {
     if (!result) {
         statusLabel_->setText(tr("Publication failed!"));
         // Extract and display the actual error message from the server
-        QString errorMsg = result.error().message.empty()
+        const auto& errStr = result.error();
+        QString errorMsg = errStr.empty()
             ? tr("Failed to communicate with server.")
-            : QString::fromStdString(result.error().message);
+            : QString::fromStdString(errStr);
         currentDatasetLabel_->setText(errorMsg);
         // Store error for ResultsPage to display
         wizard_->lastError() = errorMsg;

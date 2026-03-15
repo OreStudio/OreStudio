@@ -169,6 +169,12 @@ void ConnectionDetailPanel::setupEnvironmentPage() {
     envPortLabel_->setStyleSheet(valueStyle);
     formLayout->addRow(portLabel, envPortLabel_);
 
+    auto* nsLabel = new QLabel(tr("Namespace"), environmentPage_);
+    nsLabel->setStyleSheet(labelStyle);
+    envNamespaceLabel_ = new QLabel(environmentPage_);
+    envNamespaceLabel_->setStyleSheet(valueStyle);
+    formLayout->addRow(nsLabel, envNamespaceLabel_);
+
     layout->addLayout(formLayout);
 
     layout->addSpacing(16);
@@ -275,6 +281,9 @@ void ConnectionDetailPanel::showEnvironment(const connections::domain::environme
     envNameLabel_->setText(QString::fromStdString(env.name));
     envHostLabel_->setText(QString::fromStdString(env.host));
     envPortLabel_->setText(QString::number(env.port));
+    envNamespaceLabel_->setText(env.subject_prefix.empty()
+        ? tr("(none)")
+        : QString::fromStdString(env.subject_prefix));
 
     if (env.description.empty()) {
         envDescriptionLabel_->setText(tr("No description"));

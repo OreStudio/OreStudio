@@ -20,173 +20,56 @@
 #ifndef ORES_REFDATA_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_PARTY_ID_SCHEME_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/party_id_scheme.hpp"
 
 namespace ores::refdata::messaging {
 
-// ============================================================================
-// Party ID Scheme Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all party ID schemes.
- */
-struct get_party_id_schemes_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_party_id_schemes_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_party_id_schemes_request {
+    using response_type = struct get_party_id_schemes_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_party_id_schemes_request& v);
-
-/**
- * @brief Response containing all party ID schemes.
- */
-struct get_party_id_schemes_response final {
-    std::vector<domain::party_id_scheme> schemes;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_party_id_schemes_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_party_id_schemes_response {
+    std::vector<ores::refdata::domain::party_id_scheme> party_id_schemes;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_party_id_schemes_response& v);
-
-/**
- * @brief Request to save one or more party ID schemes (create or update).
- */
-struct save_party_id_scheme_request final {
-    std::vector<domain::party_id_scheme> schemes;
-
-    static save_party_id_scheme_request from(domain::party_id_scheme scheme);
-    static save_party_id_scheme_request from(std::vector<domain::party_id_scheme> schemes);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_party_id_scheme_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_party_id_scheme_request {
+    using response_type = struct save_party_id_scheme_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.save";
+    ores::refdata::domain::party_id_scheme data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_party_id_scheme_request& v);
-
-/**
- * @brief Response confirming party ID scheme save operation(s).
- */
-struct save_party_id_scheme_response final {
+struct save_party_id_scheme_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_party_id_scheme_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_party_id_scheme_response& v);
-
-/**
- * @brief Request to delete one or more party ID schemes.
- */
-struct delete_party_id_scheme_request final {
-    std::vector<std::string> codes;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_party_id_scheme_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_party_id_scheme_request {
+    using response_type = struct delete_party_id_scheme_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.delete";
+    std::string scheme;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_party_id_scheme_request& v);
-
-/**
- * @brief Response confirming party ID scheme deletion(s).
- */
-struct delete_party_id_scheme_response final {
+struct delete_party_id_scheme_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_party_id_scheme_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_party_id_scheme_response& v);
-
-/**
- * @brief Request to retrieve version history for a party ID scheme.
- */
-struct get_party_id_scheme_history_request final {
-    std::string code;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_party_id_scheme_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_party_id_scheme_history_request {
+    using response_type = struct get_party_id_scheme_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.party-id-schemes.history";
+    std::string scheme;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_party_id_scheme_history_request& v);
-
-/**
- * @brief Response containing party ID scheme version history.
- */
-struct get_party_id_scheme_history_response final {
-    bool success;
+struct get_party_id_scheme_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::party_id_scheme> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_party_id_scheme_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_party_id_scheme_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Party ID Scheme traits
-template<>
-struct message_traits<refdata::messaging::get_party_id_schemes_request> {
-    using request_type = refdata::messaging::get_party_id_schemes_request;
-    using response_type = refdata::messaging::get_party_id_schemes_response;
-    static constexpr message_type request_message_type =
-        message_type::get_party_id_schemes_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::save_party_id_scheme_request> {
-    using request_type = refdata::messaging::save_party_id_scheme_request;
-    using response_type = refdata::messaging::save_party_id_scheme_response;
-    static constexpr message_type request_message_type =
-        message_type::save_party_id_scheme_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::delete_party_id_scheme_request> {
-    using request_type = refdata::messaging::delete_party_id_scheme_request;
-    using response_type = refdata::messaging::delete_party_id_scheme_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_party_id_scheme_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::get_party_id_scheme_history_request> {
-    using request_type = refdata::messaging::get_party_id_scheme_history_request;
-    using response_type = refdata::messaging::get_party_id_scheme_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_party_id_scheme_history_request;
+    std::vector<ores::refdata::domain::party_id_scheme> history;
 };
 
 }

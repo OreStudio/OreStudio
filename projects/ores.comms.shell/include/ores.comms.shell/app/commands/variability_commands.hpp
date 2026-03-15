@@ -21,7 +21,7 @@
 #define ORES_COMMS_SHELL_APP_COMMANDS_VARIABILITY_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/service/nats_session.hpp"
 
 namespace cli {
 
@@ -55,7 +55,7 @@ public:
      * Creates the variability submenu and adds variability operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Process a list feature flags request.
@@ -66,7 +66,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_list_feature_flags(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Process an add feature flag request.
@@ -82,7 +82,7 @@ public:
      * @param change_commentary Free-text commentary
      */
     static void process_add_feature_flag(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string name, std::string enabled, std::string description,
         std::string change_reason_code, std::string change_commentary);
 
@@ -96,7 +96,7 @@ public:
      * @param name Name of the feature flag to delete
      */
     static void process_delete_feature_flag(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string name);
 
     /**
@@ -109,7 +109,7 @@ public:
      * @param name Name of the feature flag
      */
     static void process_get_feature_flag_history(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string name);
 };
 

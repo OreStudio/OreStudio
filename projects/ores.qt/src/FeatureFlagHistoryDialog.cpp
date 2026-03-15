@@ -31,12 +31,9 @@
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 const QIcon& FeatureFlagHistoryDialog::getHistoryIcon() const {
@@ -109,27 +106,22 @@ void FeatureFlagHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading feature flag history for: "
                               << flagName_.toStdString();
 
-    variability::messaging::get_feature_flag_history_request request{flagName_.toStdString()};
-    auto payload = request.serialize();
-
-    frame request_frame(message_type::get_feature_flag_history_request,
-        0, std::move(payload)
-    );
-
-    using HistoryResult = std::expected<frame, std::string>;
+    using HistoryResult = std::expected<variability::messaging::get_feature_flag_history_response, std::string>;
     QPointer<FeatureFlagHistoryDialog> self = this;
+    const auto flagName = flagName_.toStdString();
+
     QFuture<HistoryResult> future =
-        QtConcurrent::run([self, frame = std::move(request_frame)]() mutable -> HistoryResult {
+        QtConcurrent::run([self, flagName]() -> HistoryResult {
         if (!self->clientManager_ || !self->clientManager_->isConnected()) {
-             return std::unexpected("Disconnected from server");
+            return std::unexpected("Disconnected from server");
         }
-        auto response_result = self->clientManager_->sendRequest(std::move(frame));
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Could not obtain feature flag history: "
-                                       << "Failed to communicate with server.";
-            return std::unexpected("Failed to communicate with server");
+        variability::messaging::get_feature_flag_history_request request;
+        request.name = flagName;
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
+        if (!result) {
+            return std::unexpected(result.error());
         }
-        return *response_result;
+        return std::move(*result);
     });
 
     // Use watcher to handle results
@@ -146,38 +138,13 @@ void FeatureFlagHistoryDialog::loadHistory() {
             return;
         }
 
-        // Check if server sent an error_response instead
-        if (result->header().type != message_type::get_feature_flag_history_response) {
-            self->onHistoryLoadError(
-                QString("Server does not support feature flag history: received message type %1")
-                .arg(static_cast<int>(result->header().type)));
-            return;
-        }
-
-        // Decompress payload
-        auto payload_result = result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress history response";
-            self->onHistoryLoadError("Failed to decompress server response");
-            return;
-        }
-
-        auto response = variability::messaging::get_feature_flag_history_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Could not deserialise server response.";
-            self->onHistoryLoadError("Invalid server response");
-            return;
-        }
-
-        if (!response->success) {
+        if (!result->success) {
             BOOST_LOG_SEV(lg(), error) << "Response was not success.";
-            self->onHistoryLoadError(QString::fromStdString(response->message));
+            self->onHistoryLoadError(QString::fromStdString(result->message));
             return;
         }
 
-        self->history_ = std::move(response->history);
+        self->history_ = std::move(result->history);
         self->onHistoryLoaded();
     });
 

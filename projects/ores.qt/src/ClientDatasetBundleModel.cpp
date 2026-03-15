@@ -23,7 +23,6 @@
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -200,11 +199,11 @@ void ClientDatasetBundleModel::fetch_bundles(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch dataset bundles: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .bundles = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch dataset bundles: " + comms::net::to_string(result.error())),
+                                "Failed to fetch dataset bundles: " + result.error()),
                             .error_details = {}};
                 }
 

@@ -29,7 +29,6 @@
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -117,21 +116,10 @@ void TreatmentDimensionHistoryDialog::loadHistory() {
 
         dq::messaging::get_treatment_dimension_history_request request;
         request.code = code;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_treatment_dimension_history_request, 0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {false, "Failed to communicate with server", {}};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response", {}};
-
-        auto response = dq::messaging::get_treatment_dimension_history_response::deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response", {}};
-
-        return {response->success, response->message, std::move(response->versions)};
+        return {response_result->success, response_result->message, std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);

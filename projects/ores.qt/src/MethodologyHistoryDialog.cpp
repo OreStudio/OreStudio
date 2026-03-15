@@ -29,18 +29,17 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/dataset_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.dq/messaging/data_organization_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 MethodologyHistoryDialog::MethodologyHistoryDialog(
-    const boost::uuids::uuid& id, ClientManager* clientManager, QWidget* parent)
+    const std::string& name, ClientManager* clientManager, QWidget* parent)
     : QWidget(parent),
       ui_(new Ui::MethodologyHistoryDialog),
-      id_(id),
+      name_(name),
       clientManager_(clientManager),
       toolbar_(nullptr),
       openVersionAction_(nullptr),
@@ -113,26 +112,15 @@ void MethodologyHistoryDialog::loadHistory() {
     QPointer<MethodologyHistoryDialog> self = this;
     struct HistoryResult { bool success; std::string message; std::vector<dq::domain::methodology> versions; };
 
-    auto task = [self, id = id_]() -> HistoryResult {
+    auto task = [self, name = name_]() -> HistoryResult {
         if (!self || !self->clientManager_) return {false, "Dialog closed", {}};
 
         dq::messaging::get_methodology_history_request request;
-        request.id = id;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_methodology_history_request, 0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.code = name;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {false, "Failed to communicate with server", {}};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response", {}};
-
-        auto response = dq::messaging::get_methodology_history_response::deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response", {}};
-
-        return {response->success, response->message, std::move(response->versions)};
+        return {response_result->success, response_result->message, std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);

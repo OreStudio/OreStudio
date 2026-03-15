@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "variability.service",
+    "full_name": "ores.variability.service",
+    "brief": "Feature flags and runtime configuration service",
+    "description": "Standalone NATS microservice hosting variability handlers: feature flag management and system-wide runtime configuration."
+  }
+}

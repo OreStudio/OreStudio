@@ -20,10 +20,10 @@
 #ifndef ORES_QT_METHODOLOGY_HISTORY_DIALOG_HPP
 #define ORES_QT_METHODOLOGY_HISTORY_DIALOG_HPP
 
+#include <string>
 #include <QWidget>
 #include <QToolBar>
 #include <QTableWidget>
-#include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.dq/domain/methodology.hpp"
@@ -49,7 +49,7 @@ private:
 
 public:
     explicit MethodologyHistoryDialog(
-        const boost::uuids::uuid& id,
+        const std::string& name,
         ClientManager* clientManager,
         QWidget* parent = nullptr);
     ~MethodologyHistoryDialog() override;
@@ -77,7 +77,7 @@ private:
     void updateActionStates();
 
     Ui::MethodologyHistoryDialog* ui_;
-    boost::uuids::uuid id_;
+    std::string name_;
     ClientManager* clientManager_;
     std::vector<dq::domain::methodology> versions_;
 

@@ -20,86 +20,38 @@
 #ifndef ORES_SYNTHETIC_MESSAGING_GENERATE_ORGANISATION_PROTOCOL_HPP
 #define ORES_SYNTHETIC_MESSAGING_GENERATE_ORGANISATION_PROTOCOL_HPP
 
-#include <cstdint>
-#include <expected>
-#include <iosfwd>
-#include <optional>
-#include <span>
 #include <string>
-#include <vector>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
+#include <string_view>
+#include <cstdint>
 
 namespace ores::synthetic::messaging {
 
-/**
- * @brief Request to generate a synthetic organisation.
- *
- * Carries all generation options from the client to the server.
- * The server will generate the organisation and persist it in one step.
- */
-struct generate_organisation_request final {
-    std::string country = "GB";
-    std::uint32_t party_count = 5;
-    std::uint32_t party_max_depth = 3;
-    std::uint32_t counterparty_count = 10;
-    std::uint32_t counterparty_max_depth = 3;
-    std::uint32_t portfolio_leaf_count = 8;
-    std::uint32_t portfolio_max_depth = 4;
+struct generate_organisation_request {
+    using response_type = struct generate_organisation_response;
+    static constexpr std::string_view nats_subject =
+        "ores.synthetic.v1.organisation.generate";
+    std::string country;
+    std::uint32_t party_count = 10;
+    std::uint32_t counterparty_count = 5;
+    std::uint32_t portfolio_leaf_count = 3;
     std::uint32_t books_per_leaf_portfolio = 2;
-    std::uint32_t business_unit_count = 10;
-    std::uint32_t business_unit_max_depth = 3;
+    std::uint32_t business_unit_count = 3;
     bool generate_addresses = true;
     bool generate_identifiers = true;
-    std::uint32_t contacts_per_party = 2;
-    std::uint32_t contacts_per_counterparty = 1;
-    std::optional<std::uint64_t> seed;
     std::string published_by;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<generate_organisation_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const generate_organisation_request& v);
-
-/**
- * @brief Response from organisation generation.
- *
- * Reports success/failure and counts of entities created.
- */
-struct generate_organisation_response final {
+struct generate_organisation_response {
     bool success = false;
     std::string error_message;
-    std::uint32_t parties_count = 0;
-    std::uint32_t counterparties_count = 0;
-    std::uint32_t portfolios_count = 0;
-    std::uint32_t books_count = 0;
-    std::uint32_t business_unit_types_count = 0;
-    std::uint32_t business_units_count = 0;
-    std::uint32_t contacts_count = 0;
-    std::uint32_t identifiers_count = 0;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<generate_organisation_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const generate_organisation_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-template<>
-struct message_traits<synthetic::messaging::generate_organisation_request> {
-    using request_type = synthetic::messaging::generate_organisation_request;
-    using response_type = synthetic::messaging::generate_organisation_response;
-    static constexpr message_type request_message_type =
-        message_type::generate_organisation_request;
+    int parties_count = 0;
+    int counterparties_count = 0;
+    int business_unit_types_count = 0;
+    int business_units_count = 0;
+    int portfolios_count = 0;
+    int books_count = 0;
+    int contacts_count = 0;
+    int identifiers_count = 0;
 };
 
 }

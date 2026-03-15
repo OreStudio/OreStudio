@@ -31,7 +31,7 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.comms/service/auth_session_service.hpp"
+#include "ores.iam/service/auth_session_service.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -91,7 +91,7 @@ class iam_routes final {
 public:
     iam_routes(database::context ctx,
         std::shared_ptr<variability::service::system_flags_service> system_flags,
-        std::shared_ptr<comms::service::auth_session_service> sessions,
+        std::shared_ptr<iam::service::auth_session_service> sessions,
         std::shared_ptr<iam::service::authorization_service> auth_service,
         std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,
         std::shared_ptr<geo::service::geolocation_service> geo_service);
@@ -234,7 +234,7 @@ private:
     iam::service::account_service account_service_;
     iam::repository::session_repository session_repo_;
     std::shared_ptr<variability::service::system_flags_service> system_flags_;
-    std::shared_ptr<comms::service::auth_session_service> sessions_;
+    std::shared_ptr<iam::service::auth_session_service> sessions_;
     std::shared_ptr<iam::service::authorization_service> auth_service_;
     std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator_;
     std::shared_ptr<geo::service::geolocation_service> geo_service_;

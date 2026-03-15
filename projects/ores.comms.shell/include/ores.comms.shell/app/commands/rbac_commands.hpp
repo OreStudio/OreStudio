@@ -22,7 +22,7 @@
 
 #include <string>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/service/nats_session.hpp"
 #include "ores.comms.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -61,7 +61,7 @@ public:
      * yet, but the pagination_context is passed for consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        comms::net::client_session& session,
+        service::nats_session& session,
         pagination_context& pagination);
 
     // =========================================================================
@@ -77,7 +77,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_list_permissions(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     // =========================================================================
     // Roles Commands
@@ -92,7 +92,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_list_roles(std::ostream& out,
-        comms::net::client_session& session);
+        service::nats_session& session);
 
     /**
      * @brief Process a get role request.
@@ -105,7 +105,7 @@ public:
      * @param role_identifier Role name or UUID
      */
     static void process_get_role(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string role_identifier);
 
     // =========================================================================
@@ -123,7 +123,7 @@ public:
      * @param role_id Role ID UUID as a string.
      */
     static void process_assign_role(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string account_id, std::string role_id);
 
     /**
@@ -137,7 +137,7 @@ public:
      * @param role_id Role ID UUID as a string.
      */
     static void process_revoke_role(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string account_id, std::string role_id);
 
     /**
@@ -150,7 +150,7 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_get_account_roles(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string account_id);
 
     /**
@@ -163,7 +163,7 @@ public:
      * @param account_id Account ID UUID as a string.
      */
     static void process_get_account_permissions(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string account_id);
 
     /**
@@ -178,7 +178,7 @@ public:
      * @param identifier Either a hostname or tenant_id UUID.
      */
     static void process_suggest_role_commands(std::ostream& out,
-        comms::net::client_session& session,
+        service::nats_session& session,
         std::string username, std::string identifier);
 };
 

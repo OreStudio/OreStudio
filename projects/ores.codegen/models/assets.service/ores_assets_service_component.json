@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "assets.service",
+    "full_name": "ores.assets.service",
+    "brief": "Asset management service",
+    "description": "Standalone NATS microservice hosting asset handlers: binary image storage, hierarchical tagging, and currency-to-image linking."
+  }
+}

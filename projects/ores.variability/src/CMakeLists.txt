@@ -36,9 +36,12 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.comms.lib
+        ores.database.lib
+        ores.eventing.lib
+        ores.logging.lib
+        ores.nats.lib
     PRIVATE
+        ores.utility.lib
         libfort::fort)
-# Note: OpenSSL comes transitively through ores.comms.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

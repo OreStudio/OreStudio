@@ -20,174 +20,57 @@
 #ifndef ORES_DQ_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 #define ORES_DQ_MESSAGING_DATASET_BUNDLE_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/dataset_bundle.hpp"
 
 namespace ores::dq::messaging {
 
-// ============================================================================
-// Dataset Bundle Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all dataset bundles.
- */
-struct get_dataset_bundles_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_bundles_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_dataset_bundles_request {
+    using response_type = struct get_dataset_bundles_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_bundles_request& v);
-
-/**
- * @brief Response containing all dataset bundles.
- */
-struct get_dataset_bundles_response final {
-    std::vector<domain::dataset_bundle> bundles;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_bundles_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_dataset_bundles_response {
+    std::vector<ores::dq::domain::dataset_bundle> bundles;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_bundles_response& v);
-
-/**
- * @brief Request to save one or more dataset bundles (create or update).
- */
-struct save_dataset_bundle_request final {
-    std::vector<domain::dataset_bundle> bundles;
-
-    static save_dataset_bundle_request from(domain::dataset_bundle bundle);
-    static save_dataset_bundle_request from(std::vector<domain::dataset_bundle> bundles);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_dataset_bundle_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_dataset_bundle_request {
+    using response_type = struct save_dataset_bundle_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.save";
+    std::vector<ores::dq::domain::dataset_bundle> bundles;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_dataset_bundle_request& v);
-
-/**
- * @brief Response confirming dataset bundle save operation(s).
- */
-struct save_dataset_bundle_response final {
+struct save_dataset_bundle_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_dataset_bundle_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_dataset_bundle_response& v);
-
-/**
- * @brief Request to delete one or more dataset bundles.
- */
-struct delete_dataset_bundle_request final {
-    std::vector<boost::uuids::uuid> ids;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_dataset_bundle_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_dataset_bundle_request {
+    using response_type = struct delete_dataset_bundle_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.delete";
+    std::vector<std::string> ids;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_dataset_bundle_request& v);
-
-/**
- * @brief Response confirming dataset bundle deletion(s).
- */
-struct delete_dataset_bundle_response final {
+struct delete_dataset_bundle_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_dataset_bundle_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_dataset_bundle_response& v);
-
-/**
- * @brief Request to retrieve version history for a dataset bundle.
- */
-struct get_dataset_bundle_history_request final {
-    boost::uuids::uuid id;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_bundle_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_dataset_bundle_history_request {
+    using response_type = struct get_dataset_bundle_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.dataset-bundles.history";
+    std::string id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_bundle_history_request& v);
-
-/**
- * @brief Response containing dataset bundle version history.
- */
-struct get_dataset_bundle_history_response final {
-    bool success;
+struct get_dataset_bundle_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::dataset_bundle> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_bundle_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_dataset_bundle_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Dataset Bundle traits
-template<>
-struct message_traits<dq::messaging::get_dataset_bundles_request> {
-    using request_type = dq::messaging::get_dataset_bundles_request;
-    using response_type = dq::messaging::get_dataset_bundles_response;
-    static constexpr message_type request_message_type =
-        message_type::get_dataset_bundles_request;
-};
-
-template<>
-struct message_traits<dq::messaging::save_dataset_bundle_request> {
-    using request_type = dq::messaging::save_dataset_bundle_request;
-    using response_type = dq::messaging::save_dataset_bundle_response;
-    static constexpr message_type request_message_type =
-        message_type::save_dataset_bundle_request;
-};
-
-template<>
-struct message_traits<dq::messaging::delete_dataset_bundle_request> {
-    using request_type = dq::messaging::delete_dataset_bundle_request;
-    using response_type = dq::messaging::delete_dataset_bundle_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_dataset_bundle_request;
-};
-
-template<>
-struct message_traits<dq::messaging::get_dataset_bundle_history_request> {
-    using request_type = dq::messaging::get_dataset_bundle_history_request;
-    using response_type = dq::messaging::get_dataset_bundle_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_dataset_bundle_history_request;
+    std::vector<ores::dq::domain::dataset_bundle> history;
 };
 
 }

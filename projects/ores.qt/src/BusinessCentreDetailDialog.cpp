@@ -29,7 +29,6 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -264,34 +263,14 @@ void BusinessCentreDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_business_centre_request request;
-        request.business_centres.push_back(business_centre);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_business_centre_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(
-            std::move(request_frame));
+        request.data = business_centre;
+        auto response_result = cm->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = refdata::messaging::save_business_centre_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -351,33 +330,13 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
 
         refdata::messaging::delete_business_centre_request request;
         request.codes.push_back({code_str});
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_business_centre_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(
-            std::move(request_frame));
+        auto response_result = cm->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = refdata::messaging::delete_business_centre_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

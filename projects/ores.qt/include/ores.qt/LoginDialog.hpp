@@ -103,6 +103,11 @@ public:
     void setPassword(const QString& password);
 
     /**
+     * @brief Set the NATS subject prefix field value.
+     */
+    void setSubjectPrefix(const QString& prefix);
+
+    /**
      * @brief Set the client manager for performing login.
      */
     void setClientManager(ClientManager* clientManager);
@@ -126,6 +131,11 @@ public:
      * @brief Get the current port field value.
      */
     int getPort() const;
+
+    /**
+     * @brief Get the current subject prefix field value.
+     */
+    QString getSubjectPrefix() const;
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
@@ -201,6 +211,7 @@ private:
     // Server fields
     QLineEdit* hostEdit_;
     QSpinBox* portSpinBox_;
+    QLineEdit* subjectPrefixEdit_;
 
     // Quick-connect combo (environments + connections, hidden when empty)
     QLabel* quickConnectLabel_{nullptr};

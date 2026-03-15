@@ -24,7 +24,6 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/dataset_dependency_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -116,14 +115,8 @@ void ClientDatasetDependencyModel::loadData() {
             }
 
             dq::messaging::get_dataset_dependencies_request request;
-            auto payload = request.serialize();
-
-            comms::messaging::frame request_frame(
-                comms::messaging::message_type::get_dataset_dependencies_request,
-                0, std::move(payload));
-
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send request";
                 return {.success = false, .dependencies = {},
@@ -131,37 +124,11 @@ void ClientDatasetDependencyModel::loadData() {
                         .error_details = {}};
             }
 
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .dependencies = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .dependencies = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response =
-                dq::messaging::get_dataset_dependencies_response::deserialize(
-                    *payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .dependencies = {},
-                        .error_message = "Invalid server response",
-                        .error_details = {}};
-            }
-
             BOOST_LOG_SEV(lg(), debug) << "Fetched "
-                                       << response->dependencies.size()
+                                       << response_result->dependencies.size()
                                        << " dataset dependencies";
             return {.success = true,
-                    .dependencies = std::move(response->dependencies),
+                    .dependencies = std::move(response_result->dependencies),
                     .error_message = {}, .error_details = {}};
         }, "dataset dependencies");
     };
@@ -223,14 +190,8 @@ void ClientDatasetDependencyModel::loadDataByDataset(
 
             dq::messaging::get_dataset_dependencies_by_dataset_request request;
             request.dataset_code = code_copy;
-            auto payload = request.serialize();
-
-            comms::messaging::frame request_frame(
-                comms::messaging::message_type::get_dataset_dependencies_by_dataset_request,
-                0, std::move(payload));
-
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send request";
                 return {.success = false, .dependencies = {},
@@ -238,38 +199,12 @@ void ClientDatasetDependencyModel::loadDataByDataset(
                         .error_details = {}};
             }
 
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .dependencies = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .dependencies = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response =
-                dq::messaging::get_dataset_dependencies_by_dataset_response::deserialize(
-                    *payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .dependencies = {},
-                        .error_message = "Invalid server response",
-                        .error_details = {}};
-            }
-
             BOOST_LOG_SEV(lg(), debug) << "Fetched "
-                                       << response->dependencies.size()
+                                       << response_result->dependencies.size()
                                        << " dependencies for dataset: "
                                        << code_copy;
             return {.success = true,
-                    .dependencies = std::move(response->dependencies),
+                    .dependencies = std::move(response_result->dependencies),
                     .error_message = {}, .error_details = {}};
         }, "dataset dependencies by dataset");
     };

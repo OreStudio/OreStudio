@@ -24,7 +24,6 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -122,13 +121,7 @@ void ClientCodingSchemeAuthorityTypeModel::refresh() {
             }
 
             dq::messaging::get_coding_scheme_authority_types_request request;
-            auto payload = request.serialize();
-
-            comms::messaging::frame request_frame(
-                comms::messaging::message_type::get_coding_scheme_authority_types_request,
-                0, std::move(payload));
-
-            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send request";
                 return {.success = false, .authority_types = {},
@@ -136,35 +129,9 @@ void ClientCodingSchemeAuthorityTypeModel::refresh() {
                         .error_details = {}};
             }
 
-            // Check for server error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .authority_types = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .authority_types = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response = dq::messaging::get_coding_scheme_authority_types_response::deserialize(
-                *payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .authority_types = {},
-                        .error_message = "Failed to deserialize response",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->authority_types.size()
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->coding_scheme_authority_types.size()
                                        << " coding scheme authority types";
-            return {.success = true, .authority_types = std::move(response->authority_types),
+            return {.success = true, .authority_types = std::move(response_result->coding_scheme_authority_types),
                     .error_message = {}, .error_details = {}};
         }, "coding scheme authority types");
     });

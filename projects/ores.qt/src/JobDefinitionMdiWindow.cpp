@@ -28,8 +28,8 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.scheduler/rfl/reflectors.hpp"
 #include "ores.scheduler/messaging/scheduler_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -316,16 +316,8 @@ void JobDefinitionMdiWindow::deleteSelected() {
 
         for (std::size_t i = 0; i < ids.size(); ++i) {
             scheduler::messaging::unschedule_job_request request;
-            request.job_definition_id = ids[i];
-            auto payload = request.serialize();
-
-            comms::messaging::frame request_frame(
-                comms::messaging::message_type::unschedule_job_request,
-                0, std::move(payload)
-            );
-
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
+            request.job_definition_id = boost::uuids::to_string(ids[i]);
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send unschedule request for "
@@ -334,25 +326,7 @@ void JobDefinitionMdiWindow::deleteSelected() {
                 continue;
             }
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress unschedule response for "
-                                           << codes[i];
-                results.push_back({ids[i], codes[i], false, "Failed to decompress server response"});
-                continue;
-            }
-
-            auto response = scheduler::messaging::unschedule_job_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize unschedule response for "
-                                           << codes[i];
-                results.push_back({ids[i], codes[i], false, "Invalid server response"});
-                continue;
-            }
-
-            results.push_back({ids[i], codes[i], response->success, response->message});
+            results.push_back({ids[i], codes[i], response_result->success, response_result->message});
         }
 
         return results;

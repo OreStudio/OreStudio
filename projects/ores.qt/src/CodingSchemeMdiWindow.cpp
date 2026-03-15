@@ -29,7 +29,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/coding_scheme_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -199,20 +198,10 @@ void CodingSchemeMdiWindow::onDeleteClicked() {
 
         dq::messaging::delete_coding_scheme_request request;
         request.codes = codes;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_coding_scheme_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return false;
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return false;
-
-        auto response = dq::messaging::delete_coding_scheme_response::deserialize(*payload_result);
-        return response && response->success;
+        return response_result->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

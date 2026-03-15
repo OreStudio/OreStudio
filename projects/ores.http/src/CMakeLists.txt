@@ -38,7 +38,6 @@ find_package(Boost REQUIRED COMPONENTS json url)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.comms.lib
         ores.security.lib
         ores.telemetry.lib
         ores.utility.lib

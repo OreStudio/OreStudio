@@ -33,7 +33,6 @@ target_link_libraries(${tests_target_name}
     PRIVATE
         ${lib_target_name}
         ores.telemetry.lib
-        ores.comms.lib  # For telemetry_protocol tests
         ores.utility.lib
         ores.testing.lib
         Catch2::Catch2

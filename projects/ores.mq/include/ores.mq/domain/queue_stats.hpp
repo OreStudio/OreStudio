@@ -21,25 +21,16 @@
 #define ORES_MQ_DOMAIN_QUEUE_STATS_HPP
 
 #include <chrono>
-#include <cstdint>
-#include <optional>
 #include <boost/uuid/uuid.hpp>
 
 namespace ores::mq::domain {
 
-/**
- * @brief Statistics snapshot for a queue.
- *
- * Mirrors a row returned by queue statistics queries.
- */
-struct queue_stats final {
-    std::chrono::system_clock::time_point recorded_at;
+struct queue_stats {
     boost::uuids::uuid queue_id;
-    std::optional<boost::uuids::uuid> tenant_id;
-    std::optional<boost::uuids::uuid> party_id;
-    std::int64_t pending_count = 0;
-    std::int64_t processing_count = 0;
-    std::int64_t total_archived = 0;
+    long long pending_count = 0;
+    long long processing_count = 0;
+    long long total_archived = 0;
+    std::chrono::system_clock::time_point recorded_at;
 };
 
 }

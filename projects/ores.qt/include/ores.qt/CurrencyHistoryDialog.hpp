@@ -30,7 +30,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.refdata/domain/currency_version.hpp"
-#include "ores.refdata/domain/currency_version_history.hpp"
+#include "ores.refdata/messaging/currency_history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_CurrencyHistoryDialog.h"
 
@@ -89,7 +89,7 @@ public:
     /**
      * @brief Returns the loaded history for version navigation.
      */
-    [[nodiscard]] const refdata::domain::currency_version_history& getHistory() const {
+    [[nodiscard]] const refdata::messaging::currency_version_history& getHistory() const {
         return history_;
     }
 
@@ -140,7 +140,7 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString isoCode_;
-    refdata::domain::currency_version_history history_;
+    refdata::messaging::currency_version_history history_;
 
     QToolBar* toolBar_;
     QAction* reloadAction_;

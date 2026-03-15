@@ -1,0 +1,250 @@
+#+TITLE: NATS Migration Plan: Binary Protocol to NATS/JetStream
+#+DATE: 2026-03-13
+#+AUTHOR: ORE Studio Team
+
+* Context
+
+The current =ores.comms.service= monolith connects Qt clients via a custom binary
+protocol over ASIO SSL. Request/reply is fully serialised. The target architecture
+uses NATS with JetStream as the sole message bus. Every dialog communicates
+independently and concurrently. Server push becomes plain pub/sub. Chart history
+uses JetStream replay. Grid nodes (client- and server-side) consume work from
+JetStream queues.
+
+Each domain becomes its own standalone service (=ores.iam.service=,
+=ores.refdata.service=, etc.) that connects directly to NATS. There is no central
+gateway or proxy — NATS is the bus.
+
+*Constraints:*
+- Each PR must compile cleanly and all tests must pass
+- The system may be non-functional between PRs — no backwards compatibility required
+- Services follow the existing naming convention: =ores.<domain>.service=
+- No dual-mode / parallel-path code
+- NNG is already partially implemented in =main= and must be removed
+
+* Key Architectural Decisions
+
+** Subject Naming Convention
+
+#+begin_example
+ores.<domain>.<operation>                    -- request/reply
+ores.<tenant_id>.<domain>.events.<type>      -- pub/sub (tenant-scoped)
+ores.<domain>.js.<stream>                    -- JetStream
+#+end_example
+
+Examples:
+- =ores.iam.login=
+- =ores.refdata.get_currencies=
+- =ores.<tenant>.refdata.events.currency_changed=
+- =ores.trading.js.trades=
+
+Tenant scoping on event subjects is mandatory for multi-tenant isolation.
+Nail this down before Phase 2 — it affects every service.
+
+** Authentication
+
+JWT (RS256) goes into the NATS message header =Authorization: Bearer <token>=.
+Payload bytes remain unchanged serialised domain types. Existing =serialize()= /
+=deserialize()= and =message_traits= infrastructure is reused without modification.
+
+** Transport Security
+
+NATS TLS (=tls+tcp://=) for all external connections. Service-to-service on
+loopback may use plain TCP.
+
+** =ores.nats= Foundation Library
+
+New library that all projects depend on instead of =cnats= directly:
+- RAII wrappers for =natsConnection=, =natsSubscription=, =natsMsg=
+- =nats_service_base= — abstract base for domain services; subscribes to subjects,
+  dispatches payload bytes to handlers, publishes response bytes to reply subject
+- =nats_client= — client-side connection and concurrent request/reply
+- =nats_subject_registry= — compile-time map from =message_type= enum to subject string
+
+* Phase 1 — Remove NNG from main
+
+*PR:* =[cleanup] Remove NNG broker and NNG service runner=
+
+NNG is partially implemented in =main= but never shipped to users. Remove it
+cleanly before starting NATS work.
+
+| File | Action |
+|------|--------|
+| =ores.mq/broker/= | Delete (nng_broker, routing_table, service_registry, broker_config) |
+| =ores.mq/service/nng_service_runner.*= | Delete |
+| =ores.mq/messaging/broker_protocol.*= | Delete (0xC000-0xC003 range) |
+| =ores.mq/src/CMakeLists.txt= | Remove nng::nng linkage |
+| =ores.comms.service/src/app/application.cpp= | Remove broker_backend wiring and nng_service_runner usage |
+| =ores.comms.service/config/options.hpp= | Remove =broker_backend= field |
+| =vcpkg.json= | Remove =nng= |
+| =projects/ores.mq.broker/= | Delete entire project |
+| =projects/CMakeLists.txt= | Remove =add_subdirectory(ores.mq.broker)= |
+| =ores-prodigy.el= | Remove mq-broker service definitions |
+
+*Working state:* Clean =main= with no NNG code. All existing tests pass.
+=ores.comms.service= still runs normally over ASIO SSL.
+
+* Phase 2 — cnats + =ores.nats= Foundation
+
+*PR:* =[nats] Add cnats dependency and ores.nats foundation library=
+
+| File | Action |
+|------|--------|
+| =vcpkg.json= | Add ="cnats"= |
+| =projects/ores.nats/= | New library project |
+| =ores.nats/connection/nats_connection.hpp/cpp= | RAII =natsConnection*= wrapper |
+| =ores.nats/connection/nats_subscription.hpp/cpp= | RAII =natsSubscription*= wrapper |
+| =ores.nats/service/nats_service_base.hpp/cpp= | Abstract service base |
+| =ores.nats/client/nats_client.hpp/cpp= | Client-side request/reply with JWT header injection |
+| =ores.nats/messaging/nats_subject_registry.hpp= | Compile-time =message_type= → subject string map |
+| =ores.nats/jetstream/js_consumer.hpp/cpp= | JetStream consumer stub |
+| =projects/CMakeLists.txt= | Add =add_subdirectory(ores.nats)= |
+
+*Working state:* =ores.nats= compiles and links. No functional change anywhere.
+All existing tests pass.
+
+*Risk:* =cnats= delivers subscription callbacks on internal threads — not the Qt
+main thread. =nats_client= must post callbacks to the Qt event loop via
+=QMetaObject::invokeMethod(..., Qt::QueuedConnection)=. Design this in from the
+start.
+
+* Phase 3 — Migrate =ores.comms.service= Transport to NATS
+
+*PR:* =[nats] Replace ASIO SSL server in ores.comms.service with NATS=
+
+=ores.comms.service= keeps all domain handler logic unchanged. Only the transport
+layer is replaced: the ASIO SSL =server= is removed and =nats_service_base=
+subscriptions replace it for all message type ranges.
+
+| File | Action |
+|------|--------|
+| =ores.comms.service/src/app/application.cpp= | Replace =net::server= with =nats_service_base= subscriptions |
+| =ores.comms.service/config/options.hpp= | Replace =server_options= with =nats_options= |
+| =ores.comms.service/config/parser.cpp= | Replace =--port/--cert/--key= with =--nats-url= |
+
+*System state:* Qt client is broken (still uses ASIO). Handler unit tests pass —
+handlers operate on bytes with no transport dependency. =ores.comms.service=
+connects to NATS and handles messages correctly.
+
+Do not delete =ores.comms/net/= yet — the Qt client and shell still depend on it.
+
+* Phase 4 — Migrate Qt Client and Shell to NATS
+
+*PR:* =[nats] Replace ASIO SSL client in ores.qt and ores.comms.shell with NATS=
+
+| File | Action |
+|------|--------|
+| =ores.qt/src/ClientManager.cpp= | Replace =comms::net::client= with =nats_client= |
+| =ores.qt/src/ClientManager.hpp= | Update member types |
+| =ores.comms.shell/= | Replace client with =nats_client= |
+| =ores.comms/net/client*.hpp/cpp= | Delete |
+| =ores.comms/net/connection*.hpp/cpp= | Delete |
+| =ores.comms/net/server*.hpp/cpp= | Delete |
+| =ores.comms/messaging/frame.hpp= | Delete (JWT now in NATS header) |
+| =ores.comms/messaging/handshake_protocol.*= | Delete |
+| =ores.comms/messaging/heartbeat_protocol.*= | Delete |
+| =ores.comms/messaging/subscription_protocol.*= | Delete |
+| =ores.comms/service/subscription_manager.*= | Delete |
+| =ores.comms/service/subscription_handler.*= | Delete |
+| =ores.comms/service/remote_event_adapter.*= | Delete |
+
+*System state:* Qt and shell connect via NATS. Login and all dialogs work again.
+All tests pass.
+
+* Phase 5 — Split =ores.comms.service= into Domain Services
+
+*PR:* =[arch] Split ores.comms.service into standalone domain services=
+
+Each domain becomes a standalone executable following the =ores.<domain>.service=
+naming convention. Each service:
+- Has its own =main.cpp=, =config/options.hpp=, =config/parser.cpp=
+- Extends =nats_service_base=
+- Subscribes only to its own message type subjects
+- Holds its own database connection pool (size 1-2)
+- Links only the libraries it needs (no cross-domain dependencies)
+
+| New project | Subscribes to | Handler library |
+|-------------|--------------|-----------------|
+| =projects/ores.iam.service/= | =ores.iam.*= | =ores.iam= lib |
+| =projects/ores.refdata.service/= | =ores.refdata.*= | =ores.refdata= lib |
+| =projects/ores.dq.service/= | =ores.dq.*= | =ores.dq= lib |
+| =projects/ores.trading.service/= | =ores.trading.*= | =ores.trading= lib |
+| =projects/ores.scheduler.service/= | =ores.scheduler.*= | =ores.scheduler= lib |
+| =projects/ores.variability.service/= | =ores.variability.*= | =ores.variability= lib |
+| =projects/ores.assets.service/= | =ores.assets.*= | =ores.assets= lib |
+| =projects/ores.mq.service/= | =ores.mq.*= | =ores.mq= lib |
+| =projects/ores.telemetry.service/= | =ores.telemetry.*= | =ores.telemetry= lib |
+
+Then:
+- Delete =projects/ores.comms.service/=
+- Update =projects/CMakeLists.txt=
+- Update =ores-prodigy.el=: replace single comms-service entry with one entry per domain service
+
+*Risk:* DB connections multiply ~10×. Set pool size to 1-2 per service and
+verify PostgreSQL =max_connections= is sufficient before starting.
+
+*System state:* Fully decomposed. Each service starts independently. All tests pass.
+
+* Phase 6 — Server Push via NATS Pub/Sub
+
+*PR:* =[nats] Replace server push with NATS pub/sub subscriptions=
+
+- Each domain service publishes to =ores.<tenant>.<domain>.events.<type>= when
+  entities change (hook into the existing =ores.eventing= event bus as a NATS
+  publisher)
+- Qt dialogs subscribe to relevant subjects via =nats_client=
+- =ClientManager= notification callback wired to NATS subscription delivery
+
+*System state:* Live entity updates delivered via NATS pub/sub.
+
+* Phase 7 — JetStream Chart History + Live Data
+
+*PR:* =[nats] Add JetStream streams for chart history and live data=
+
+- Define JetStream stream configs: =ORES_TRADES=, =ORES_PRICES=, etc.
+- Domain services publish to JetStream subjects on entity changes
+- Qt chart widgets create JetStream consumer with =DeliverByStartTime= for
+  history, seamlessly continuing live on the same consumer
+- =js_consumer.hpp= (stubbed in Phase 2) fully implemented
+
+*System state:* Charts show history + live data. New capability.
+
+* New Components Summary
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| =ores.nats= library | =projects/ores.nats/= | RAII cnats wrappers + service/client base |
+| =nats_service_base= | =ores.nats/service/= | Abstract NATS domain service |
+| =nats_client= | =ores.nats/client/= | Client connection, concurrent request/reply |
+| =nats_subject_registry= | =ores.nats/messaging/= | =message_type= → subject compile-time map |
+| =js_consumer= | =ores.nats/jetstream/= | JetStream consumer RAII wrapper |
+| =ores.iam.service= | =projects/ores.iam.service/= | Standalone IAM service on NATS |
+| =ores.refdata.service= | =projects/ores.refdata.service/= | Standalone refdata service |
+| =ores.dq.service= | =projects/ores.dq.service/= | Standalone DQ service |
+| =ores.trading.service= | =projects/ores.trading.service/= | Standalone trading service |
+| =ores.scheduler.service= | =projects/ores.scheduler.service/= | Standalone scheduler service |
+| =ores.variability.service= | =projects/ores.variability.service/= | Standalone variability service |
+| =ores.assets.service= | =projects/ores.assets.service/= | Standalone assets service |
+| =ores.mq.service= | =projects/ores.mq.service/= | Standalone MQ service |
+| =ores.telemetry.service= | =projects/ores.telemetry.service/= | Standalone telemetry service |
+
+* Risks and Mitigations
+
+| Risk | Mitigation |
+|------|-----------|
+| cnats callbacks on non-Qt threads | =nats_client= enforces =Qt::QueuedConnection= for all widget callbacks |
+| DB connections × 10 in Phase 5 | Pool size 1-2 per service; check =max_connections= before Phase 5 |
+| Incomplete =message_type= → subject mapping | =nats_subject_registry= is compile-time; gaps are build errors |
+| Tenant isolation in pub/sub events | Event subjects include =<tenant_id>= segment |
+
+* Phase Sequence
+
+#+begin_example
+Phase 1: Remove NNG from main        (cleanup, system unchanged)
+Phase 2: ores.nats library           (additive, system unchanged)
+Phase 3: comms.service → NATS        (system broken: Qt still ASIO)
+Phase 4: Qt + shell → NATS           (system restored)
+Phase 5: Split monolith              (decompose into ores.*.service)
+Phase 6: Pub/sub events              (new capability)
+Phase 7: JetStream charts            (new capability)
+#+end_example

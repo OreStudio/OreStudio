@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,48 +20,18 @@
 #ifndef ORES_IAM_MESSAGING_REGISTRAR_HPP
 #define ORES_IAM_MESSAGING_REGISTRAR_HPP
 
-#include <memory>
-#include "ores.comms/net/server.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
-#include "ores.iam/service/authorization_service.hpp"
-#include "ores.iam/messaging/accounts_message_handler.hpp"
-#include "ores.geo/service/geolocation_service.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::iam::messaging {
 
-/**
- * @brief Register accounts subsystem message handlers with the server.
- *
- * Registers handlers for all accounts subsystem messages (0x2000-0x2FFF).
- * Must be called before server.run().
- *
- * @param server The server to register handlers with
- * @param ctx Database context for repository access
- * @param system_flags Shared system flags service for flag access
- * @param auth_service Shared authorization service for RBAC permission checks
- * @param geo_service Shared geolocation service for IP to location lookups
- * @param bundle_provider Optional callback to fetch available bundles for bootstrap
- */
 class registrar {
-private:
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(
-            "ores.iam.messaging.registrar");
-        return instance;
-    }
-
 public:
-    static void register_handlers(comms::net::server& server,
-        database::context ctx,
-        std::shared_ptr<variability::service::system_flags_service> system_flags,
-        std::shared_ptr<service::authorization_service> auth_service,
-        std::shared_ptr<geo::service::geolocation_service> geo_service,
-        bundle_provider_fn bundle_provider = nullptr,
-        std::shared_ptr<security::jwt::jwt_authenticator> jwt_signer = nullptr);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+        ores::database::context ctx);
 };
 
 }

@@ -22,7 +22,10 @@
 
 namespace ores::mq::domain {
 
-enum class queue_type { task, channel };
+enum class queue_type {
+    task,
+    channel
+};
 
 }
 

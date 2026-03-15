@@ -23,7 +23,6 @@
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -218,11 +217,11 @@ void ClientTradeModel::fetch_trades(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch trades: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .trades = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch trades: " + comms::net::to_string(result.error())),
+                                "Failed to fetch trades: " + result.error()),
                             .error_details = {}};
                 }
 
@@ -231,7 +230,7 @@ void ClientTradeModel::fetch_trades(
                                            << result->total_available_count;
                 return {.success = true,
                         .trades = std::move(result->trades),
-                        .total_available_count = result->total_available_count,
+                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
             }, "trades");
         });

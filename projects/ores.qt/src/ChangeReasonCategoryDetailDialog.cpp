@@ -33,12 +33,9 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/change_management_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
@@ -374,32 +371,17 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
                                        << categoryToSave.code;
 
             dq::messaging::save_change_reason_category_request request;
-            request.categories.push_back(categoryToSave);
-
-            auto payload = request.serialize();
-            frame request_frame(message_type::save_change_reason_category_request,
-                0, std::move(payload));
+            request.data = categoryToSave;
 
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 return {false, "Failed to communicate with server"};
             }
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                return {false, "Failed to decompress server response"};
-            }
 
-            auto response = dq::messaging::save_change_reason_category_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                return {false, "Invalid server response"};
-            }
-
-            return {response->success, response->message};
+            return {response_result->success, response_result->message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);
@@ -470,30 +452,15 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
             dq::messaging::delete_change_reason_category_request request;
             request.codes.push_back({code});
 
-            auto payload = request.serialize();
-            frame request_frame(message_type::delete_change_reason_category_request,
-                0, std::move(payload));
-
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+                self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 return {false, "Failed to communicate with server"};
             }
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                return {false, "Failed to decompress server response"};
-            }
 
-            auto response = dq::messaging::delete_change_reason_category_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                return {false, "Invalid server response"};
-            }
-
-            return {response->success, response->message};
+            return {response_result->success, response_result->message};
         });
 
     auto* watcher = new QFutureWatcher<FutureResult>(self);

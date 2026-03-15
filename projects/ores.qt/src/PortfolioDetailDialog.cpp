@@ -35,7 +35,6 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -354,34 +353,15 @@ void PortfolioDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_portfolio_request request;
-        request.portfolios.push_back(portfolio);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_portfolio_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.data = portfolio;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
 
-        auto response = refdata::messaging::save_portfolio_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -454,34 +434,15 @@ void PortfolioDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_portfolio_request request;
-        request.ids.push_back({id});
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_portfolio_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.ids.push_back(boost::uuids::to_string(id));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
 
-        auto response = refdata::messaging::delete_portfolio_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

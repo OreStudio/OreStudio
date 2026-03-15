@@ -27,7 +27,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
@@ -215,7 +214,7 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
                 }
 
                 // Fetch accounts using typed request
-                iam::messaging::get_accounts_request accounts_request;
+                iam::messaging::get_accounts_request_typed accounts_request;
                 accounts_request.offset = offset;
                 accounts_request.limit = limit;
 
@@ -224,11 +223,11 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
 
                 if (!accounts_result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch accounts: "
-                                               << comms::net::to_string(accounts_result.error());
+                                               << accounts_result.error();
                     return {.success = false, .accounts = {}, .loginInfos = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch accounts: " + comms::net::to_string(accounts_result.error())),
+                                "Failed to fetch accounts: " + accounts_result.error()),
                             .error_details = {}};
                 }
 
@@ -249,7 +248,7 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
                                                << " login info records";
                 } else {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to fetch login info: "
-                                              << comms::net::to_string(login_info_result.error());
+                                              << login_info_result.error();
                 }
 
                 // Fetch all account-party assignments for party count column
@@ -264,13 +263,13 @@ void ClientAccountModel::fetch_accounts(std::uint32_t offset, std::uint32_t limi
                                                << " account party records";
                 } else {
                     BOOST_LOG_SEV(lg(), warn) << "Failed to fetch account parties: "
-                                              << comms::net::to_string(parties_result.error());
+                                              << parties_result.error();
                 }
 
                 return {.success = true, .accounts = std::move(accounts_result->accounts),
                         .loginInfos = std::move(login_infos),
                         .accountParties = std::move(account_parties),
-                        .total_available_count = accounts_result->total_available_count,
+                        .total_available_count = static_cast<std::uint32_t>(accounts_result->total_available_count),
                         .error_message = {}, .error_details = {}};
             }, "accounts");
         });

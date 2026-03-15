@@ -106,8 +106,8 @@ public:
     void setAdminCredentials(const QString& username, const QString& email,
                              const QString& password);
 
-    boost::uuids::uuid adminAccountId() const { return adminAccountId_; }
-    void setAdminAccountId(const boost::uuids::uuid& id) { adminAccountId_ = id; }
+    std::string adminAccountId() const { return adminAccountId_; }
+    void setAdminAccountId(const std::string& id) { adminAccountId_ = id; }
 
     // Setup mode accessors
     bool isMultiTenantMode() const { return multiTenantMode_; }
@@ -149,7 +149,7 @@ private:
     QString adminUsername_;
     QString adminEmail_;
     QString adminPassword_;
-    boost::uuids::uuid adminAccountId_;
+    std::string adminAccountId_;
     bool multiTenantMode_ = false;
     QString tenantCode_;
     QString tenantName_;

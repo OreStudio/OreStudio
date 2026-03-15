@@ -165,6 +165,10 @@ void LoginDialog::setPassword(const QString& password) {
     passwordEdit_->setText(password);
 }
 
+void LoginDialog::setSubjectPrefix(const QString& prefix) {
+    subjectPrefixEdit_->setText(prefix);
+}
+
 void LoginDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
@@ -185,14 +189,21 @@ int LoginDialog::getPort() const {
     return portSpinBox_->value();
 }
 
+QString LoginDialog::getSubjectPrefix() const {
+    return subjectPrefixEdit_->text().trimmed();
+}
+
 void LoginDialog::lockServerFields(bool locked) {
     serverFieldsLocked_ = locked;
     hostEdit_->setReadOnly(locked);
     portSpinBox_->setReadOnly(locked);
+    subjectPrefixEdit_->setReadOnly(locked);
     hostEdit_->setStyleSheet(
         locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
     portSpinBox_->setStyleSheet(
         locked ? dialog_styles::spin_box_locked : dialog_styles::spin_box);
+    subjectPrefixEdit_->setStyleSheet(
+        locked ? dialog_styles::input_field_locked : dialog_styles::input_field);
 }
 
 void LoginDialog::lockCredentialFields(bool locked) {
@@ -214,6 +225,7 @@ void LoginDialog::enableForm(bool enabled) {
         // Restore the lock state that was active before the login attempt
         hostEdit_->setEnabled(true);
         portSpinBox_->setEnabled(true);
+        subjectPrefixEdit_->setEnabled(true);
         usernameEdit_->setEnabled(true);
         passwordEdit_->setEnabled(true);
         lockServerFields(serverFieldsLocked_);
@@ -222,6 +234,7 @@ void LoginDialog::enableForm(bool enabled) {
         // Disable everything while waiting for the server response
         hostEdit_->setEnabled(false);
         portSpinBox_->setEnabled(false);
+        subjectPrefixEdit_->setEnabled(false);
         usernameEdit_->setEnabled(false);
         passwordEdit_->setEnabled(false);
     }
@@ -351,10 +364,23 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
 
     portSpinBox_ = new QSpinBox(parent);
     portSpinBox_->setRange(1, 65535);
-    portSpinBox_->setValue(55555);
+    portSpinBox_->setValue(4222);
     portSpinBox_->setStyleSheet(dialog_styles::spin_box);
     portSpinBox_->setFixedHeight(32);
     layout->addWidget(portSpinBox_);
+
+    layout->addSpacing(8);
+
+    auto* prefixLabel = new QLabel("NAMESPACE", parent);
+    prefixLabel->setStyleSheet(dialog_styles::field_label);
+    layout->addWidget(prefixLabel);
+    layout->addSpacing(4);
+
+    subjectPrefixEdit_ = new QLineEdit(parent);
+    subjectPrefixEdit_->setPlaceholderText("e.g. ores.dev.local1  (leave empty for default)");
+    subjectPrefixEdit_->setStyleSheet(dialog_styles::input_field);
+    subjectPrefixEdit_->setFixedHeight(32);
+    layout->addWidget(subjectPrefixEdit_);
 
     layout->addSpacing(12);
 }
@@ -456,6 +482,8 @@ void LoginDialog::onLoginClicked() {
     const auto password = passwordEdit_->text();
     const auto host = hostEdit_->text().trimmed();
     const auto port = static_cast<std::uint16_t>(portSpinBox_->value());
+    const auto prefix = subjectPrefixEdit_->text().trimmed();
+    clientManager_->setSubjectPrefix(prefix.toStdString());
 
     if (username.isEmpty()) {
         MessageBoxHelper::warning(this, "Invalid Input", "Please enter a username.");

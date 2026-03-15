@@ -33,7 +33,6 @@
 #include <QtCharts/QDateTimeAxis>
 #include <QtCharts/QValueAxis>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.comms/service/auth_session_service.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -391,8 +390,7 @@ void SessionHistoryDialog::onSamplesLoaded() {
         if (!result.success) {
             chart->setTitle(tr("Failed to load samples for: %1").arg(result.session_label));
         } else if (result.is_active) {
-            chart->setTitle(tr("Session in progress — no data yet (samples flush every %1 heartbeats)")
-                .arg(comms::service::auth_session_service::sample_flush_interval));
+            chart->setTitle(tr("Session in progress — no data yet"));
         } else {
             chart->setTitle(tr("Session: %1 (no samples recorded)").arg(result.session_label));
         }
@@ -416,7 +414,7 @@ void SessionHistoryDialog::onSamplesLoaded() {
         const qreal t = static_cast<qreal>(s.sample_time_ms);
         const qreal bs = static_cast<qreal>(s.bytes_sent);
         const qreal br = static_cast<qreal>(s.bytes_received);
-        const qreal lat = static_cast<qreal>(s.latency_ms);
+        const qreal lat = 0.0; // latency_ms not available in current protocol
         sent_series->append(t, bs);
         recv_series->append(t, br);
         latency_series->append(t, lat);

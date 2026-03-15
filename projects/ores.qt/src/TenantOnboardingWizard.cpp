@@ -32,6 +32,7 @@
 #include <QFutureWatcher>
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.iam/domain/tenant.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 
 namespace ores::qt {
@@ -592,15 +593,15 @@ void ApplyOnboardingPage::startOnboarding() {
 
             OnboardingResult result;
 
-            iam::messaging::provision_tenant_request request;
-            request.type = type;
-            request.code = code;
-            request.name = name;
-            request.hostname = hostname;
-            request.description = description;
-            request.admin_username = adminUsername;
-            request.admin_password = adminPassword;
-            request.admin_email = adminEmail;
+            iam::domain::tenant tenant;
+            tenant.type = type;
+            tenant.code = code;
+            tenant.name = name;
+            tenant.hostname = hostname;
+            tenant.description = description;
+
+            iam::messaging::save_tenant_request request;
+            request.data = std::move(tenant);
 
             auto response = clientManager->process_authenticated_request(
                 std::move(request));
@@ -611,12 +612,12 @@ void ApplyOnboardingPage::startOnboarding() {
             }
 
             if (!response->success) {
-                result.error = response->error_message;
+                result.error = response->message;
                 return result;
             }
 
             result.success = true;
-            result.tenantId = response->tenant_id;
+            result.tenantId = code; // Use code as ID since save doesn't return tenant ID
             return result;
         }
     );

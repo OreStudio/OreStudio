@@ -32,7 +32,6 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -334,16 +333,10 @@ void PortfolioMdiWindow::deleteSelected() {
                                    << ids.size() << " portfolios";
 
         refdata::messaging::delete_portfolio_request request;
-        request.ids = ids;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_portfolio_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        for (const auto& id : ids) {
+            request.ids.push_back(boost::uuids::to_string(id));
+        }
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
@@ -353,29 +346,9 @@ void PortfolioMdiWindow::deleteSelected() {
             return results;
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress batch response";
-            for (std::size_t i = 0; i < ids.size(); ++i) {
-                results.push_back({ids[i], codes[i], false, "Failed to decompress server response"});
-            }
-            return results;
-        }
-
-        auto response = refdata::messaging::delete_portfolio_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize batch response";
-            for (std::size_t i = 0; i < ids.size(); ++i) {
-                results.push_back({ids[i], codes[i], false, "Invalid server response"});
-            }
-            return results;
-        }
-
         for (std::size_t i = 0; i < ids.size(); ++i) {
             std::string code = (i < codes.size()) ? codes[i] : "";
-            results.push_back({ids[i], code, response->success, response->message});
+            results.push_back({ids[i], code, response_result->success, response_result->message});
         }
 
         return results;

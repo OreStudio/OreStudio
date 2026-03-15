@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,20 +20,15 @@
 #include "ores.comms.shell/app/commands/subscription_commands.hpp"
 
 #include <ostream>
-#include <vector>
 #include <functional>
 #include <cli/cli.h>
-#include "ores.platform/time/datetime.hpp"
-#include "ores.comms/messaging/subscription_protocol.hpp"
 
 namespace ores::comms::shell::app::commands {
 
-using namespace ores::logging;
-using comms::net::client_session;
-using platform::time::datetime;
+using service::nats_session;
 
 void subscription_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
+register_commands(cli::Menu& root_menu, nats_session& session) {
     auto events_menu = std::make_unique<cli::Menu>("events");
 
     events_menu->Insert("channels", [&session](std::ostream& out) {
@@ -64,200 +59,35 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 }
 
 void subscription_commands::
-process_channels(std::ostream& out, client_session& session) {
-    if (!session.is_connected()) {
-        out << "Not connected to server." << std::endl;
-        return;
-    }
-
-    comms::messaging::list_event_channels_request request;
-    auto result = session.process_request(request);
-
-    if (!result) {
-        out << "Failed to retrieve event channels: "
-            << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
-
-    if (result->channels.empty()) {
-        out << "No event channels available." << std::endl;
-        return;
-    }
-
-    out << "Available event channels:" << std::endl;
-    for (const auto& channel : result->channels) {
-        out << "  " << channel.name << " - " << channel.description << std::endl;
-    }
-    out << std::endl;
-    out << "Use 'listen <channel>' to subscribe, or 'listen *' for all." << std::endl;
+process_channels(std::ostream& out, nats_session& /*session*/) {
+    out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_listen(std::ostream& out, client_session& session,
-    std::string event_type) {
-
-    if (!session.is_connected()) {
-        out << "✗ Not connected to server." << std::endl;
-        return;
-    }
-
-    if (event_type.empty()) {
-        out << "✗ Event type required. Usage: listen <event_type>" << std::endl;
-        out << "  Example: listen ores.refdata.currency_changed" << std::endl;
-        out << "  Use 'listen *' to subscribe to all channels." << std::endl;
-        return;
-    }
-
-    if (event_type == "*") {
-        // Query server for available channels
-        comms::messaging::list_event_channels_request request;
-        auto result = session.process_request(request);
-
-        if (!result) {
-            out << "✗ Failed to retrieve event channels: "
-                << comms::net::to_string(result.error()) << std::endl;
-            return;
-        }
-
-        if (result->channels.empty()) {
-            out << "⚠ No event channels available on server." << std::endl;
-            return;
-        }
-
-        // Subscribe to all available channels
-        std::size_t count = 0;
-        std::vector<std::string> failed;
-        for (const auto& channel : result->channels) {
-            if (session.is_subscribed(channel.name)) {
-                continue;  // Skip already subscribed
-            }
-            if (session.subscribe(channel.name)) {
-                ++count;
-            } else {
-                failed.emplace_back(channel.name);
-            }
-        }
-        out << "✓ Subscribed to " << count << " channel(s)." << std::endl;
-        if (!failed.empty()) {
-            out << "✗ Failed to subscribe to " << failed.size()
-                << " channel(s):" << std::endl;
-            for (const auto& ch : failed) {
-                out << "  - " << ch << std::endl;
-            }
-        }
-        return;
-    }
-
-    if (session.is_subscribed(event_type)) {
-        out << "⚠ Already subscribed to " << event_type << std::endl;
-        return;
-    }
-
-    if (session.subscribe(event_type)) {
-        out << "✓ Listening on " << event_type << std::endl;
-    } else {
-        out << "✗ Failed to subscribe to " << event_type << std::endl;
-    }
+process_listen(std::ostream& out, nats_session& /*session*/,
+    std::string /*event_type*/) {
+    out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_unlisten(std::ostream& out, client_session& session,
-    std::string event_type) {
-
-    if (!session.is_connected()) {
-        out << "✗ Not connected to server." << std::endl;
-        return;
-    }
-
-    auto subscriptions = session.get_subscriptions();
-
-    if (event_type.empty() || event_type == "*") {
-        // Unsubscribe from all
-        if (subscriptions.empty()) {
-            out << "⚠ No active subscriptions." << std::endl;
-            return;
-        }
-
-        std::size_t count = 0;
-        std::vector<std::string> failed;
-        for (const auto& sub : subscriptions) {
-            if (session.unsubscribe(sub)) {
-                ++count;
-            } else {
-                failed.push_back(sub);
-            }
-        }
-        out << "✓ Unsubscribed from " << count << " event type(s)." << std::endl;
-        if (!failed.empty()) {
-            out << "✗ Failed to unsubscribe from " << failed.size()
-                << " event type(s):" << std::endl;
-            for (const auto& sub : failed) {
-                out << "  - " << sub << std::endl;
-            }
-        }
-    } else {
-        // Unsubscribe from specific event type
-        if (!session.is_subscribed(event_type)) {
-            out << "⚠ Not subscribed to " << event_type << std::endl;
-            return;
-        }
-
-        if (session.unsubscribe(event_type)) {
-            out << "✓ Stopped listening on " << event_type << std::endl;
-        } else {
-            out << "✗ Failed to unsubscribe from " << event_type << std::endl;
-        }
-    }
+process_unlisten(std::ostream& out, nats_session& /*session*/,
+    std::string /*event_type*/) {
+    out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_subscriptions(std::ostream& out, client_session& session) {
-    if (!session.is_connected()) {
-        out << "✗ Not connected to server." << std::endl;
-        return;
-    }
-
-    auto subscriptions = session.get_subscriptions();
-
-    if (subscriptions.empty()) {
-        out << "No active subscriptions." << std::endl;
-        return;
-    }
-
-    out << "Active subscriptions:" << std::endl;
-    for (const auto& sub : subscriptions) {
-        out << "  • " << sub << std::endl;
-    }
+process_subscriptions(std::ostream& out, nats_session& /*session*/) {
+    out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_notifications(std::ostream& out, client_session& session) {
-    auto notifications = session.take_pending_notifications();
-
-    if (notifications.empty()) {
-        out << "No pending notifications." << std::endl;
-        return;
-    }
-
-    out << "Received " << notifications.size() << " notification(s):" << std::endl;
-    for (const auto& notif : notifications) {
-        out << "  Async notification \"" << notif.event_type
-            << "\" received at " << datetime::format_time_point(notif.timestamp)
-            << std::endl;
-    }
+process_notifications(std::ostream& out, nats_session& /*session*/) {
+    out << "No pending notifications." << std::endl;
 }
 
 std::size_t subscription_commands::
-display_pending_notifications(std::ostream& out, client_session& session) {
-    auto notifications = session.take_pending_notifications();
-
-    for (const auto& notif : notifications) {
-        out << "Asynchronous notification \"" << notif.event_type
-            << "\" received from server at " << datetime::format_time_point(notif.timestamp)
-            << "." << std::endl;
-    }
-
-    return notifications.size();
+display_pending_notifications(std::ostream& /*out*/, nats_session& /*session*/) {
+    return 0;
 }
 
 }

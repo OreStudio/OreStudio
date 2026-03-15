@@ -20,175 +20,56 @@
 #ifndef ORES_REFDATA_MESSAGING_BUSINESS_CENTRE_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_BUSINESS_CENTRE_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <cstdint>
-#include <expected>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.refdata/domain/business_centre.hpp"
 
 namespace ores::refdata::messaging {
 
-/**
- * @brief Request to retrieve business centres with pagination support.
- */
-struct get_business_centres_request final {
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<get_business_centres_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_business_centres_request {
+    using response_type = struct get_business_centres_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_business_centres_request& v);
-
-/**
- * @brief Response containing business centres with pagination metadata.
- */
-struct get_business_centres_response final {
-    std::vector<domain::business_centre> business_centres;
-    std::uint32_t total_available_count = 0;
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<get_business_centres_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_business_centres_response {
+    std::vector<ores::refdata::domain::business_centre> business_centres;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_business_centres_response& v);
-
-/**
- * @brief Request to save one or more business centres (create or update).
- */
-struct save_business_centre_request final {
-    std::vector<domain::business_centre> business_centres;
-
-    static save_business_centre_request from(domain::business_centre business_centre);
-    static save_business_centre_request from(std::vector<domain::business_centre> business_centres);
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<save_business_centre_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_business_centre_request {
+    using response_type = struct save_business_centre_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.save";
+    ores::refdata::domain::business_centre data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_business_centre_request& v);
-
-/**
- * @brief Response confirming business centre save operation(s).
- */
-struct save_business_centre_response final {
+struct save_business_centre_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<save_business_centre_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_business_centre_response& v);
-
-/**
- * @brief Request to delete one or more business centres.
- */
-struct delete_business_centre_request final {
+struct delete_business_centre_request {
+    using response_type = struct delete_business_centre_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.delete";
     std::vector<std::string> codes;
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<delete_business_centre_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_business_centre_request& v);
-
-/**
- * @brief Response confirming business centre deletion(s).
- */
-struct delete_business_centre_response final {
+struct delete_business_centre_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<delete_business_centre_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_business_centre_response& v);
-
-/**
- * @brief Request to retrieve version history for a business centre.
- */
-struct get_business_centre_history_request final {
+struct get_business_centre_history_request {
+    using response_type = struct get_business_centre_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-centres.history";
     std::string code;
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<get_business_centre_history_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_business_centre_history_request& v);
-
-/**
- * @brief Response containing business centre version history.
- */
-struct get_business_centre_history_response final {
-    bool success;
+struct get_business_centre_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::business_centre> history;
-
-    std::vector<std::byte> serialize() const;
-
-    static std::expected<get_business_centre_history_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_business_centre_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-template<>
-struct message_traits<refdata::messaging::get_business_centres_request> {
-    using request_type = refdata::messaging::get_business_centres_request;
-    using response_type = refdata::messaging::get_business_centres_response;
-    static constexpr message_type request_message_type =
-        message_type::get_business_centres_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::save_business_centre_request> {
-    using request_type = refdata::messaging::save_business_centre_request;
-    using response_type = refdata::messaging::save_business_centre_response;
-    static constexpr message_type request_message_type =
-        message_type::save_business_centre_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::delete_business_centre_request> {
-    using request_type = refdata::messaging::delete_business_centre_request;
-    using response_type = refdata::messaging::delete_business_centre_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_business_centre_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::get_business_centre_history_request> {
-    using request_type = refdata::messaging::get_business_centre_history_request;
-    using response_type = refdata::messaging::get_business_centre_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_business_centre_history_request;
+    std::vector<ores::refdata::domain::business_centre> history;
 };
 
 }

@@ -27,7 +27,6 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -198,33 +197,14 @@ void ConcurrencyPolicyDetailDialog::onSaveClicked() {
 
         reporting::messaging::save_concurrency_policy_request request;
         request.policy = policy;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_concurrency_policy_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
 
-        auto response = reporting::messaging::save_concurrency_policy_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -284,33 +264,13 @@ void ConcurrencyPolicyDetailDialog::onDeleteClicked() {
 
         reporting::messaging::delete_concurrency_policy_request request;
         request.codes = {code};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_concurrency_policy_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = reporting::messaging::delete_concurrency_policy_response::
-            deserialize(*payload_result);
-
-        if (!response || response->results.empty()) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->results[0].success, response->results[0].message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

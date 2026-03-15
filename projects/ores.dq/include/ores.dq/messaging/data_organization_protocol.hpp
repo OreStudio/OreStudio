@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,529 +20,372 @@
 #ifndef ORES_DQ_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 #define ORES_DQ_MESSAGING_DATA_ORGANIZATION_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/catalog.hpp"
 #include "ores.dq/domain/data_domain.hpp"
+#include "ores.dq/domain/methodology.hpp"
 #include "ores.dq/domain/subject_area.hpp"
+#include "ores.dq/domain/nature_dimension.hpp"
+#include "ores.dq/domain/origin_dimension.hpp"
+#include "ores.dq/domain/treatment_dimension.hpp"
 
 namespace ores::dq::messaging {
 
-// ============================================================================
-// Catalog Messages
-// ============================================================================
+// =============================================================================
+// Catalog Protocol
+// =============================================================================
 
-/**
- * @brief Request to retrieve all catalogs.
- */
-struct get_catalogs_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_catalogs_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_catalogs_request {
+    using response_type = struct get_catalogs_response;
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_catalogs_request& v);
-
-/**
- * @brief Response containing all catalogs.
- */
-struct get_catalogs_response final {
-    std::vector<domain::catalog> catalogs;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_catalogs_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_catalogs_response {
+    std::vector<ores::dq::domain::catalog> catalogs;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_catalogs_response& v);
-
-/**
- * @brief Request to save one or more catalogs (create or update).
- */
-struct save_catalog_request final {
-    std::vector<domain::catalog> catalogs;
-
-    static save_catalog_request from(domain::catalog catalog);
-    static save_catalog_request from(std::vector<domain::catalog> catalogs);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_catalog_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_catalog_request {
+    using response_type = struct save_catalog_response;
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.save";
+    ores::dq::domain::catalog data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_catalog_request& v);
-
-/**
- * @brief Response confirming catalog save operation(s).
- */
-struct save_catalog_response final {
+struct save_catalog_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_catalog_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_catalog_response& v);
+struct delete_catalog_request {
+    using response_type = struct delete_catalog_response;
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.delete";
+    std::vector<std::string> codes;
+};
 
-/**
- * @brief Request to delete one or more catalogs.
- */
-struct delete_catalog_request final {
+struct delete_catalog_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_catalog_history_request {
+    using response_type = struct get_catalog_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.catalogs.history";
+    std::string code;
+};
+
+struct get_catalog_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::domain::catalog> history;
+};
+
+// =============================================================================
+// Data Domain Protocol
+// =============================================================================
+
+struct get_data_domains_request {
+    using response_type = struct get_data_domains_response;
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+struct get_data_domains_response {
+    std::vector<ores::dq::domain::data_domain> domains;
+    int total_available_count = 0;
+};
+
+struct save_data_domain_request {
+    using response_type = struct save_data_domain_response;
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.save";
+    ores::dq::domain::data_domain data;
+};
+
+struct save_data_domain_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_data_domain_request {
+    using response_type = struct delete_data_domain_response;
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.delete";
     std::vector<std::string> names;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_catalog_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_catalog_request& v);
-
-/**
- * @brief Response confirming catalog deletion(s).
- */
-struct delete_catalog_response final {
+struct delete_data_domain_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_catalog_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_catalog_response& v);
-
-/**
- * @brief Request to retrieve version history for a catalog.
- */
-struct get_catalog_history_request final {
+struct get_data_domain_history_request {
+    using response_type = struct get_data_domain_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.data-domains.history";
     std::string name;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_catalog_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_catalog_history_request& v);
-
-/**
- * @brief Response containing catalog version history.
- */
-struct get_catalog_history_response final {
-    bool success;
-    std::string message;
-    std::vector<domain::catalog> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_catalog_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_catalog_history_response& v);
-
-// ============================================================================
-// Data Domain Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all data domains.
- */
-struct get_data_domains_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_data_domains_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_data_domains_request& v);
-
-/**
- * @brief Response containing all data domains.
- */
-struct get_data_domains_response final {
-    std::vector<domain::data_domain> domains;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_data_domains_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_data_domains_response& v);
-
-/**
- * @brief Request to save one or more data domains (create or update).
- */
-struct save_data_domain_request final {
-    std::vector<domain::data_domain> domains;
-
-    static save_data_domain_request from(domain::data_domain domain);
-    static save_data_domain_request from(std::vector<domain::data_domain> domains);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_data_domain_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const save_data_domain_request& v);
-
-/**
- * @brief Response confirming data domain save operation(s).
- */
-struct save_data_domain_response final {
+struct get_data_domain_history_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_data_domain_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+    std::vector<ores::dq::domain::data_domain> history;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_data_domain_response& v);
+// =============================================================================
+// Methodology Protocol
+// =============================================================================
 
-/**
- * @brief Request to delete one or more data domains.
- */
-struct delete_data_domain_request final {
-    std::vector<std::string> names;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_data_domain_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_methodologies_request {
+    using response_type = struct get_methodologies_response;
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_data_domain_request& v);
+struct get_methodologies_response {
+    std::vector<ores::dq::domain::methodology> methodologies;
+    int total_available_count = 0;
+};
 
-/**
- * @brief Response confirming data domain deletion(s).
- */
-struct delete_data_domain_response final {
+struct save_methodology_request {
+    using response_type = struct save_methodology_response;
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.save";
+    ores::dq::domain::methodology data;
+};
+
+struct save_methodology_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_data_domain_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_data_domain_response& v);
-
-/**
- * @brief Request to retrieve version history for a data domain.
- */
-struct get_data_domain_history_request final {
-    std::string name;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_data_domain_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_methodology_request {
+    using response_type = struct delete_methodology_response;
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.delete";
+    std::vector<std::string> codes;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_data_domain_history_request& v);
-
-/**
- * @brief Response containing data domain version history.
- */
-struct get_data_domain_history_response final {
-    bool success;
-    std::string message;
-    std::vector<domain::data_domain> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_data_domain_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_data_domain_history_response& v);
-
-// ============================================================================
-// Subject Area Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all subject areas.
- */
-struct get_subject_areas_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_subject_areas_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_subject_areas_request& v);
-
-/**
- * @brief Response containing all subject areas.
- */
-struct get_subject_areas_response final {
-    std::vector<domain::subject_area> subject_areas;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_subject_areas_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_subject_areas_response& v);
-
-/**
- * @brief Request to retrieve subject areas for a specific domain.
- */
-struct get_subject_areas_by_domain_request final {
-    std::string domain_name;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_subject_areas_by_domain_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_subject_areas_by_domain_request& v);
-
-/**
- * @brief Response containing subject areas for a domain.
- */
-struct get_subject_areas_by_domain_response final {
-    std::vector<domain::subject_area> subject_areas;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_subject_areas_by_domain_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_subject_areas_by_domain_response& v);
-
-/**
- * @brief Request to save one or more subject areas (create or update).
- */
-struct save_subject_area_request final {
-    std::vector<domain::subject_area> subject_areas;
-
-    static save_subject_area_request from(domain::subject_area subject_area);
-    static save_subject_area_request from(std::vector<domain::subject_area> subject_areas);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_subject_area_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const save_subject_area_request& v);
-
-/**
- * @brief Response confirming subject area save operation(s).
- */
-struct save_subject_area_response final {
+struct delete_methodology_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_subject_area_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_subject_area_response& v);
+struct get_methodology_history_request {
+    using response_type = struct get_methodology_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.methodologies.history";
+    std::string code;
+};
 
-/**
- * @brief Key for a subject area (composite key: name + domain_name).
- */
-struct subject_area_key final {
+struct get_methodology_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::domain::methodology> history;
+};
+
+// =============================================================================
+// Subject Area Protocol
+// =============================================================================
+
+struct subject_area_key {
     std::string name;
     std::string domain_name;
 };
 
-std::ostream& operator<<(std::ostream& s, const subject_area_key& v);
+struct get_subject_areas_request {
+    using response_type = struct get_subject_areas_response;
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.list";
+    int offset = 0;
+    int limit = 100;
+};
 
-/**
- * @brief Request to delete one or more subject areas.
- */
-struct delete_subject_area_request final {
+struct get_subject_areas_response {
+    std::vector<ores::dq::domain::subject_area> subject_areas;
+    int total_available_count = 0;
+};
+
+struct save_subject_area_request {
+    using response_type = struct save_subject_area_response;
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.save";
+    ores::dq::domain::subject_area data;
+};
+
+struct save_subject_area_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_subject_area_request {
+    using response_type = struct delete_subject_area_response;
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.delete";
     std::vector<subject_area_key> keys;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_subject_area_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_subject_area_request& v);
-
-/**
- * @brief Response confirming subject area deletion(s).
- */
-struct delete_subject_area_response final {
+struct delete_subject_area_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_subject_area_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_subject_area_response& v);
-
-/**
- * @brief Request to retrieve version history for a subject area.
- */
-struct get_subject_area_history_request final {
+struct get_subject_area_history_request {
+    using response_type = struct get_subject_area_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.subject-areas.history";
     subject_area_key key;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_subject_area_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_subject_area_history_request& v);
-
-/**
- * @brief Response containing subject area version history.
- */
-struct get_subject_area_history_response final {
-    bool success;
+struct get_subject_area_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::subject_area> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_subject_area_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+    std::vector<ores::dq::domain::subject_area> history;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_subject_area_history_response& v);
+// =============================================================================
+// Nature Dimension Protocol
+// =============================================================================
 
-}
-
-namespace ores::comms::messaging {
-
-// Catalog traits
-template<>
-struct message_traits<dq::messaging::get_catalogs_request> {
-    using request_type = dq::messaging::get_catalogs_request;
-    using response_type = dq::messaging::get_catalogs_response;
-    static constexpr message_type request_message_type =
-        message_type::get_catalogs_request;
+struct get_nature_dimensions_request {
+    using response_type = struct get_nature_dimensions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-template<>
-struct message_traits<dq::messaging::save_catalog_request> {
-    using request_type = dq::messaging::save_catalog_request;
-    using response_type = dq::messaging::save_catalog_response;
-    static constexpr message_type request_message_type =
-        message_type::save_catalog_request;
+struct get_nature_dimensions_response {
+    std::vector<ores::dq::domain::nature_dimension> nature_dimensions;
+    int total_available_count = 0;
 };
 
-template<>
-struct message_traits<dq::messaging::delete_catalog_request> {
-    using request_type = dq::messaging::delete_catalog_request;
-    using response_type = dq::messaging::delete_catalog_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_catalog_request;
+struct save_nature_dimension_request {
+    using response_type = struct save_nature_dimension_response;
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.save";
+    ores::dq::domain::nature_dimension data;
 };
 
-template<>
-struct message_traits<dq::messaging::get_catalog_history_request> {
-    using request_type = dq::messaging::get_catalog_history_request;
-    using response_type = dq::messaging::get_catalog_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_catalog_history_request;
+struct save_nature_dimension_response {
+    bool success = false;
+    std::string message;
 };
 
-// Data Domain traits
-template<>
-struct message_traits<dq::messaging::get_data_domains_request> {
-    using request_type = dq::messaging::get_data_domains_request;
-    using response_type = dq::messaging::get_data_domains_response;
-    static constexpr message_type request_message_type =
-        message_type::get_data_domains_request;
+struct delete_nature_dimension_request {
+    using response_type = struct delete_nature_dimension_response;
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.delete";
+    std::vector<std::string> codes;
 };
 
-template<>
-struct message_traits<dq::messaging::save_data_domain_request> {
-    using request_type = dq::messaging::save_data_domain_request;
-    using response_type = dq::messaging::save_data_domain_response;
-    static constexpr message_type request_message_type =
-        message_type::save_data_domain_request;
+struct delete_nature_dimension_response {
+    bool success = false;
+    std::string message;
 };
 
-template<>
-struct message_traits<dq::messaging::delete_data_domain_request> {
-    using request_type = dq::messaging::delete_data_domain_request;
-    using response_type = dq::messaging::delete_data_domain_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_data_domain_request;
+struct get_nature_dimension_history_request {
+    using response_type = struct get_nature_dimension_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.nature-dimensions.history";
+    std::string code;
 };
 
-template<>
-struct message_traits<dq::messaging::get_data_domain_history_request> {
-    using request_type = dq::messaging::get_data_domain_history_request;
-    using response_type = dq::messaging::get_data_domain_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_data_domain_history_request;
+struct get_nature_dimension_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::domain::nature_dimension> history;
 };
 
-// Subject Area traits
-template<>
-struct message_traits<dq::messaging::get_subject_areas_request> {
-    using request_type = dq::messaging::get_subject_areas_request;
-    using response_type = dq::messaging::get_subject_areas_response;
-    static constexpr message_type request_message_type =
-        message_type::get_subject_areas_request;
+// =============================================================================
+// Origin Dimension Protocol
+// =============================================================================
+
+struct get_origin_dimensions_request {
+    using response_type = struct get_origin_dimensions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-template<>
-struct message_traits<dq::messaging::get_subject_areas_by_domain_request> {
-    using request_type = dq::messaging::get_subject_areas_by_domain_request;
-    using response_type = dq::messaging::get_subject_areas_by_domain_response;
-    static constexpr message_type request_message_type =
-        message_type::get_subject_areas_by_domain_request;
+struct get_origin_dimensions_response {
+    std::vector<ores::dq::domain::origin_dimension> origin_dimensions;
+    int total_available_count = 0;
 };
 
-template<>
-struct message_traits<dq::messaging::save_subject_area_request> {
-    using request_type = dq::messaging::save_subject_area_request;
-    using response_type = dq::messaging::save_subject_area_response;
-    static constexpr message_type request_message_type =
-        message_type::save_subject_area_request;
+struct save_origin_dimension_request {
+    using response_type = struct save_origin_dimension_response;
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.save";
+    ores::dq::domain::origin_dimension data;
 };
 
-template<>
-struct message_traits<dq::messaging::delete_subject_area_request> {
-    using request_type = dq::messaging::delete_subject_area_request;
-    using response_type = dq::messaging::delete_subject_area_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_subject_area_request;
+struct save_origin_dimension_response {
+    bool success = false;
+    std::string message;
 };
 
-template<>
-struct message_traits<dq::messaging::get_subject_area_history_request> {
-    using request_type = dq::messaging::get_subject_area_history_request;
-    using response_type = dq::messaging::get_subject_area_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_subject_area_history_request;
+struct delete_origin_dimension_request {
+    using response_type = struct delete_origin_dimension_response;
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.delete";
+    std::vector<std::string> codes;
+};
+
+struct delete_origin_dimension_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_origin_dimension_history_request {
+    using response_type = struct get_origin_dimension_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.origin-dimensions.history";
+    std::string code;
+};
+
+struct get_origin_dimension_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::domain::origin_dimension> history;
+};
+
+// =============================================================================
+// Treatment Dimension Protocol
+// =============================================================================
+
+struct get_treatment_dimensions_request {
+    using response_type = struct get_treatment_dimensions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+struct get_treatment_dimensions_response {
+    std::vector<ores::dq::domain::treatment_dimension> treatment_dimensions;
+    int total_available_count = 0;
+};
+
+struct save_treatment_dimension_request {
+    using response_type = struct save_treatment_dimension_response;
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.save";
+    ores::dq::domain::treatment_dimension data;
+};
+
+struct save_treatment_dimension_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_treatment_dimension_request {
+    using response_type = struct delete_treatment_dimension_response;
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.delete";
+    std::vector<std::string> codes;
+};
+
+struct delete_treatment_dimension_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_treatment_dimension_history_request {
+    using response_type = struct get_treatment_dimension_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.treatment-dimensions.history";
+    std::string code;
+};
+
+struct get_treatment_dimension_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::domain::treatment_dimension> history;
 };
 
 }

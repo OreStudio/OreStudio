@@ -20,9 +20,9 @@
 #ifndef ORES_QT_METHODOLOGY_CONTROLLER_HPP
 #define ORES_QT_METHODOLOGY_CONTROLLER_HPP
 
+#include <string>
 #include <QMdiArea>
 #include <QMainWindow>
-#include <boost/uuid/uuid.hpp>
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -65,7 +65,7 @@ signals:
 private slots:
     void onShowDetails(const dq::domain::methodology& methodology);
     void onAddNewRequested();
-    void onShowHistory(const boost::uuids::uuid& id);
+    void onShowHistory(const std::string& name);
     void onRevertVersion(const dq::domain::methodology& methodology);
     void onOpenVersion(const dq::domain::methodology& methodology, int versionNumber);
 
@@ -75,7 +75,7 @@ protected:
 private:
     void showAddWindow();
     void showDetailWindow(const dq::domain::methodology& methodology);
-    void showHistoryWindow(const boost::uuids::uuid& id);
+    void showHistoryWindow(const std::string& name);
 
     MethodologyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;

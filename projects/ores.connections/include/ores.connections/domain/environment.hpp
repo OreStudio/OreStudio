@@ -68,6 +68,15 @@ struct environment final {
      * @brief Optional description or notes about this environment.
      */
     std::string description;
+
+    /**
+     * @brief NATS subject namespace for this environment.
+     *
+     * When non-empty, prepended to every outbound NATS subject to isolate
+     * this environment from others sharing the same broker.
+     * Format: "ores.{tier}.{instance}", e.g. "ores.dev.local1".
+     */
+    std::string subject_prefix;
 };
 
 }

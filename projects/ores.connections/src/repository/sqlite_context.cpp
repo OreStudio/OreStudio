@@ -70,6 +70,7 @@ void sqlite_context::initialize_schema() {
             host TEXT NOT NULL,
             port INTEGER NOT NULL,
             description TEXT,
+            subject_prefix TEXT NOT NULL DEFAULT '',
             FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL
         )
     )";
@@ -124,6 +125,13 @@ void sqlite_context::initialize_schema() {
     // Migration: Add description column to folders if it doesn't exist
     try {
         conn->execute("ALTER TABLE folders ADD COLUMN description TEXT");
+    } catch (...) {
+        // Column already exists, ignore
+    }
+
+    // Migration: Add subject_prefix column to environments if it doesn't exist
+    try {
+        conn->execute("ALTER TABLE environments ADD COLUMN subject_prefix TEXT NOT NULL DEFAULT ''");
     } catch (...) {
         // Column already exists, ignore
     }

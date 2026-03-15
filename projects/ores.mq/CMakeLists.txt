@@ -15,6 +15,12 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/tests)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+set(name "ores.mq")
+set(lib_name "${name}.lib")
+set(ORES_MQ_DIR ${CMAKE_SOURCE_DIR}/projects/ores.mq)
+
+file(GLOB_RECURSE HEADERS "${ORES_MQ_DIR}/include/*.hpp")
+
+add_library(${lib_name} INTERFACE ${HEADERS})
+target_include_directories(${lib_name} INTERFACE ${ORES_MQ_DIR}/include)
+add_library(${name}::lib ALIAS ${lib_name})

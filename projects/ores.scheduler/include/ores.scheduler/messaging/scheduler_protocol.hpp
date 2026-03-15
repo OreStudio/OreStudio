@@ -20,225 +20,67 @@
 #ifndef ORES_SCHEDULER_MESSAGING_SCHEDULER_PROTOCOL_HPP
 #define ORES_SCHEDULER_MESSAGING_SCHEDULER_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.scheduler/domain/job_definition.hpp"
 #include "ores.scheduler/domain/job_instance.hpp"
 
 namespace ores::scheduler::messaging {
 
-// ============================================================================
-// get_job_definitions
-// ============================================================================
-
-/**
- * @brief Request to retrieve all job definitions for the current tenant/party.
- *
- * Wire format: empty payload.
- */
-struct get_job_definitions_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_job_definitions_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_job_definitions_request {
+    using response_type = struct get_job_definitions_response;
+    static constexpr std::string_view nats_subject =
+        "ores.scheduler.v1.job-definitions.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_job_definitions_request& v);
-
-/**
- * @brief Response containing all job definitions.
- *
- * Wire format:
- * - 4 bytes: count (uint32)
- * - N × job_definition
- */
-struct get_job_definitions_response final {
-    std::vector<domain::job_definition> definitions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_job_definitions_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_job_definitions_response {
+    std::vector<ores::scheduler::domain::job_definition> definitions;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_job_definitions_response& v);
-
-// ============================================================================
-// schedule_job
-// ============================================================================
-
-/**
- * @brief Request to schedule a new job with pg_cron.
- *
- * Wire format:
- * - job_definition fields (id excluded; server assigns it)
- * - string: change_reason_code
- * - string: change_commentary
- */
-struct schedule_job_request final {
-    domain::job_definition definition;
+struct schedule_job_request {
+    using response_type = struct schedule_job_response;
+    static constexpr std::string_view nats_subject =
+        "ores.scheduler.v1.job-definitions.schedule";
+    ores::scheduler::domain::job_definition definition;
     std::string change_reason_code;
     std::string change_commentary;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<schedule_job_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const schedule_job_request& v);
-
-/**
- * @brief Response after scheduling a job.
- *
- * Wire format:
- * - bool: success
- * - string: message
- * - bool: has_definition (true when success)
- * - job_definition (only if has_definition)
- */
-struct schedule_job_response final {
+struct schedule_job_response {
     bool success = false;
     std::string message;
-    std::optional<domain::job_definition> definition;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<schedule_job_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const schedule_job_response& v);
-
-// ============================================================================
-// unschedule_job
-// ============================================================================
-
-/**
- * @brief Request to unschedule a job from pg_cron (definition is retained).
- *
- * Wire format:
- * - 16 bytes: job_definition_id (UUID)
- * - string: change_reason_code
- * - string: change_commentary
- */
-struct unschedule_job_request final {
-    boost::uuids::uuid job_definition_id;
+struct unschedule_job_request {
+    using response_type = struct unschedule_job_response;
+    static constexpr std::string_view nats_subject =
+        "ores.scheduler.v1.job-definitions.unschedule";
+    std::string job_definition_id;
     std::string change_reason_code;
     std::string change_commentary;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<unschedule_job_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const unschedule_job_request& v);
-
-/**
- * @brief Response after unscheduling a job.
- *
- * Wire format:
- * - bool: success
- * - string: message
- */
-struct unschedule_job_response final {
+struct unschedule_job_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<unschedule_job_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const unschedule_job_response& v);
-
-// ============================================================================
-// get_job_history
-// ============================================================================
-
-/**
- * @brief Request to retrieve execution history for a job.
- *
- * Wire format:
- * - 16 bytes: job_definition_id (UUID)
- * - 4 bytes: limit (uint32, 0 = use server default of 100)
- */
-struct get_job_history_request final {
-    boost::uuids::uuid job_definition_id;
-    std::uint32_t limit = 0;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_job_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_job_history_request {
+    using response_type = struct get_job_history_response;
+    static constexpr std::string_view nats_subject =
+        "ores.scheduler.v1.job-definitions.history";
+    std::string job_definition_id;
+    int limit = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_job_history_request& v);
-
-/**
- * @brief Response containing job execution history.
- *
- * Wire format:
- * - bool: success
- * - string: message
- * - 4 bytes: count (uint32)
- * - N × job_instance
- */
-struct get_job_history_response final {
+struct get_job_history_response {
     bool success = false;
     std::string message;
-    std::vector<domain::job_instance> instances;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_job_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_job_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Scheduler message_traits specializations
-template<>
-struct message_traits<scheduler::messaging::get_job_definitions_request> {
-    using request_type = scheduler::messaging::get_job_definitions_request;
-    using response_type = scheduler::messaging::get_job_definitions_response;
-    static constexpr message_type request_message_type =
-        message_type::get_job_definitions_request;
-};
-
-template<>
-struct message_traits<scheduler::messaging::schedule_job_request> {
-    using request_type = scheduler::messaging::schedule_job_request;
-    using response_type = scheduler::messaging::schedule_job_response;
-    static constexpr message_type request_message_type =
-        message_type::schedule_job_request;
-};
-
-template<>
-struct message_traits<scheduler::messaging::unschedule_job_request> {
-    using request_type = scheduler::messaging::unschedule_job_request;
-    using response_type = scheduler::messaging::unschedule_job_response;
-    static constexpr message_type request_message_type =
-        message_type::unschedule_job_request;
-};
-
-template<>
-struct message_traits<scheduler::messaging::get_job_history_request> {
-    using request_type = scheduler::messaging::get_job_history_request;
-    using response_type = scheduler::messaging::get_job_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_job_history_request;
+    std::vector<ores::scheduler::domain::job_instance> instances;
 };
 
 }

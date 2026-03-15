@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "synthetic.service",
+    "full_name": "ores.synthetic.service",
+    "brief": "Synthetic data generation service",
+    "description": "Standalone NATS microservice hosting synthetic data handlers: generation of realistic test data for development and QA purposes."
+  }
+}

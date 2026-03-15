@@ -28,7 +28,6 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -121,23 +120,11 @@ void DataDomainDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_data_domain_request request;
-        request.domains.push_back(domain);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_data_domain_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.data = domain;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {false, "Failed to communicate with server"};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = dq::messaging::save_data_domain_response::deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response"};
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(this);
@@ -173,21 +160,11 @@ void DataDomainDetailDialog::onDeleteClicked() {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_data_domain_request request;
-        request.names.push_back({name.toStdString()});
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_data_domain_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.names.push_back(name.toStdString());
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return false;
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return false;
-
-        auto response = dq::messaging::delete_data_domain_response::deserialize(*payload_result);
-        return response && response->success;
+        return response_result->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

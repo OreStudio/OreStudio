@@ -20,174 +20,53 @@
 #ifndef ORES_IAM_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_TENANT_STATUS_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.iam/domain/tenant_status.hpp"
 
 namespace ores::iam::messaging {
 
-// ============================================================================
-// Tenant Status Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all tenant statuses.
- */
-struct get_tenant_statuses_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_tenant_statuses_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_tenant_statuses_request {
+    using response_type = struct get_tenant_statuses_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.list";
 };
 
-std::ostream& operator<<(std::ostream& s, const get_tenant_statuses_request& v);
-
-/**
- * @brief Response containing all tenant statuses.
- */
-struct get_tenant_statuses_response final {
-    std::vector<domain::tenant_status> statuses;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_tenant_statuses_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_tenant_statuses_response {
+    std::vector<ores::iam::domain::tenant_status> statuses;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_tenant_statuses_response& v);
-
-/**
- * @brief Request to save one or more tenant statuses (create or update).
- */
-struct save_tenant_status_request final {
-    std::vector<domain::tenant_status> statuses;
-
-    static save_tenant_status_request from(domain::tenant_status status);
-    static save_tenant_status_request from(std::vector<domain::tenant_status> statuses);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_tenant_status_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_tenant_status_request {
+    using response_type = struct save_tenant_status_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.save";
+    ores::iam::domain::tenant_status data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_tenant_status_request& v);
-
-/**
- * @brief Response confirming tenant status save operation(s).
- */
-struct save_tenant_status_response final {
+struct save_tenant_status_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_tenant_status_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_tenant_status_response& v);
-
-/**
- * @brief Request to delete one or more tenant statuses.
- */
-struct delete_tenant_status_request final {
-    std::vector<std::string> statuses;  ///< Text primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_tenant_status_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_tenant_status_request {
+    using response_type = struct delete_tenant_status_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.delete";
+    std::string status;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_tenant_status_request& v);
-
-/**
- * @brief Response confirming tenant status deletion(s).
- */
-struct delete_tenant_status_response final {
+struct delete_tenant_status_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_tenant_status_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_tenant_status_response& v);
-
-/**
- * @brief Request to retrieve version history for a tenant status.
- */
-struct get_tenant_status_history_request final {
-    std::string status;  ///< Text primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_tenant_status_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_tenant_status_history_request {
+    using response_type = struct get_tenant_status_history_response;
+    static constexpr std::string_view nats_subject = "iam.v1.tenant-statuses.history";
+    std::string status;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_tenant_status_history_request& v);
-
-/**
- * @brief Response containing tenant status version history.
- */
-struct get_tenant_status_history_response final {
-    bool success;
+struct get_tenant_status_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::tenant_status> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_tenant_status_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_tenant_status_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Tenant Status traits
-template<>
-struct message_traits<iam::messaging::get_tenant_statuses_request> {
-    using request_type = iam::messaging::get_tenant_statuses_request;
-    using response_type = iam::messaging::get_tenant_statuses_response;
-    static constexpr message_type request_message_type =
-        message_type::get_tenant_statuses_request;
-};
-
-template<>
-struct message_traits<iam::messaging::save_tenant_status_request> {
-    using request_type = iam::messaging::save_tenant_status_request;
-    using response_type = iam::messaging::save_tenant_status_response;
-    static constexpr message_type request_message_type =
-        message_type::save_tenant_status_request;
-};
-
-template<>
-struct message_traits<iam::messaging::delete_tenant_status_request> {
-    using request_type = iam::messaging::delete_tenant_status_request;
-    using response_type = iam::messaging::delete_tenant_status_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_tenant_status_request;
-};
-
-template<>
-struct message_traits<iam::messaging::get_tenant_status_history_request> {
-    using request_type = iam::messaging::get_tenant_status_history_request;
-    using response_type = iam::messaging::get_tenant_status_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_tenant_status_history_request;
+    std::vector<ores::iam::domain::tenant_status> history;
 };
 
 }

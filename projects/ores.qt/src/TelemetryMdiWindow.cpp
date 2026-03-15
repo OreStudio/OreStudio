@@ -33,7 +33,6 @@
 #include "ores.qt/TelemetryLogDelegate.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
-#include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
@@ -344,7 +343,7 @@ void TelemetryMdiWindow::loadSessions() {
 
         if (!result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to fetch sessions: "
-                                       << comms::net::to_string(result.error());
+                                       << result.error();
             QMetaObject::invokeMethod(self, [self]() {
                 emit self->errorOccurred(tr("Failed to load sessions"));
             }, Qt::QueuedConnection);

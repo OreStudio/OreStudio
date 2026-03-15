@@ -20,183 +20,59 @@
 #ifndef ORES_IAM_MESSAGING_ACCOUNT_PARTY_PROTOCOL_HPP
 #define ORES_IAM_MESSAGING_ACCOUNT_PARTY_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.iam/domain/account_party.hpp"
 
 namespace ores::iam::messaging {
 
-// ============================================================================
-// Account Party Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all account parties.
- */
-struct get_account_parties_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_account_parties_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct account_party_key {
+    std::string account_id;
+    std::string party_id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_account_parties_request& v);
-
-/**
- * @brief Response containing all account parties.
- */
-struct get_account_parties_response final {
-    std::vector<domain::account_party> account_parties;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_account_parties_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_account_parties_request {
+    using response_type = struct get_account_parties_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_account_parties_response& v);
-
-/**
- * @brief Request to retrieve account parties for a specific account.
- */
-struct get_account_parties_by_account_request final {
-    boost::uuids::uuid account_id;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_account_parties_by_account_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_account_parties_response {
+    std::vector<ores::iam::domain::account_party> account_parties;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_account_parties_by_account_request& v);
-
-/**
- * @brief Response containing account parties for a account.
- */
-struct get_account_parties_by_account_response final {
-    std::vector<domain::account_party> account_parties;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_account_parties_by_account_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_account_parties_by_account_request {
+    using response_type = struct get_account_parties_by_account_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.by-account";
+    std::string account_id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_account_parties_by_account_response& v);
-
-/**
- * @brief Request to save one or more account parties (create or update).
- */
-struct save_account_party_request final {
-    std::vector<domain::account_party> account_parties;
-
-    static save_account_party_request from(domain::account_party account_party);
-    static save_account_party_request from(
-        std::vector<domain::account_party> account_parties);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_account_party_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_account_parties_by_account_response {
+    std::vector<ores::iam::domain::account_party> account_parties;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_account_party_request& v);
+struct save_account_party_request {
+    using response_type = struct save_account_party_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.save";
+    std::vector<ores::iam::domain::account_party> account_parties;
+};
 
-/**
- * @brief Response confirming account party save operation(s).
- */
-struct save_account_party_response final {
+struct save_account_party_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_account_party_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_account_party_response& v);
-
-/**
- * @brief Key identifying a account party for deletion.
- */
-struct account_party_key final {
-    boost::uuids::uuid account_id;
-    boost::uuids::uuid party_id;
-};
-
-std::ostream& operator<<(std::ostream& s, const account_party_key& v);
-
-/**
- * @brief Request to delete one or more account parties.
- */
-struct delete_account_party_request final {
+struct delete_account_party_request {
+    using response_type = struct delete_account_party_response;
+    static constexpr std::string_view nats_subject = "iam.v1.account-parties.delete";
     std::vector<account_party_key> keys;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_account_party_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_account_party_request& v);
-
-/**
- * @brief Response confirming account party deletion(s).
- */
-struct delete_account_party_response final {
+struct delete_account_party_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_account_party_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_account_party_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Account Party traits
-template<>
-struct message_traits<iam::messaging::get_account_parties_request> {
-    using request_type = iam::messaging::get_account_parties_request;
-    using response_type = iam::messaging::get_account_parties_response;
-    static constexpr message_type request_message_type =
-        message_type::get_account_parties_request;
-};
-
-template<>
-struct message_traits<iam::messaging::get_account_parties_by_account_request> {
-    using request_type = iam::messaging::get_account_parties_by_account_request;
-    using response_type = iam::messaging::get_account_parties_by_account_response;
-    static constexpr message_type request_message_type =
-        message_type::get_account_parties_by_account_request;
-};
-
-template<>
-struct message_traits<iam::messaging::save_account_party_request> {
-    using request_type = iam::messaging::save_account_party_request;
-    using response_type = iam::messaging::save_account_party_response;
-    static constexpr message_type request_message_type =
-        message_type::save_account_party_request;
-};
-
-template<>
-struct message_traits<iam::messaging::delete_account_party_request> {
-    using request_type = iam::messaging::delete_account_party_request;
-    using response_type = iam::messaging::delete_account_party_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_account_party_request;
 };
 
 }

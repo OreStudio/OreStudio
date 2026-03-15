@@ -25,6 +25,7 @@
 #include <QPlainTextEdit>
 #include <chrono>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_JobDefinitionDetailDialog.h"
 #include "ores.scheduler/domain/cron_expression.hpp"
 #include "ores.qt/CronExpressionWidget.hpp"
@@ -33,8 +34,8 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.dq/domain/change_reason_constants.hpp"
+#include "ores.scheduler/rfl/reflectors.hpp"
 #include "ores.scheduler/messaging/scheduler_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -258,33 +259,14 @@ void JobDefinitionDetailDialog::onSaveClicked() {
         request.definition = definition;
         request.change_reason_code = change_reason_code;
         request.change_commentary  = change_commentary;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::schedule_job_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
 
-        auto response = scheduler::messaging::schedule_job_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -364,36 +346,17 @@ void JobDefinitionDetailDialog::onUnscheduleClicked() {
         }
 
         scheduler::messaging::unschedule_job_request request;
-        request.job_definition_id = id;
+        request.job_definition_id = boost::uuids::to_string(id);
         request.change_reason_code = change_reason_code;
         request.change_commentary  = change_commentary;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::unschedule_job_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
 
-        auto response = scheduler::messaging::unschedule_job_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

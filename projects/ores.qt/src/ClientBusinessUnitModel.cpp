@@ -24,7 +24,6 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -233,11 +232,11 @@ void ClientBusinessUnitModel::fetch_business_units(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch business units: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .business_units = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch business units: " + comms::net::to_string(result.error())),
+                                "Failed to fetch business units: " + result.error()),
                             .error_details = {}};
                 }
 
@@ -246,7 +245,7 @@ void ClientBusinessUnitModel::fetch_business_units(
                                            << result->total_available_count;
                 return {.success = true,
                         .business_units = std::move(result->business_units),
-                        .total_available_count = result->total_available_count,
+                        .total_available_count = static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
             }, "business units");
         });

@@ -23,7 +23,6 @@
 #include <QDateTime>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
 
 namespace ores::qt {
@@ -222,10 +221,10 @@ void ClientTelemetryLogModel::fetch_logs() {
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch telemetry logs: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .entries = {}, .total_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch telemetry logs: " + comms::net::to_string(result.error())),
+                                "Failed to fetch telemetry logs: " + result.error()),
                             .error_details = {}};
                 }
 

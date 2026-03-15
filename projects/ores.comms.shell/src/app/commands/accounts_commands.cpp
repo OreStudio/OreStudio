@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -24,35 +24,104 @@
 #include <ostream>
 #include <sstream>
 #include <functional>
+#include <rfl/json.hpp>
 #include <boost/lexical_cast.hpp>
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <cli/cli.h>
 #include "ores.platform/time/datetime.hpp"
-#include "ores.iam/messaging/protocol.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.iam/messaging/account_history_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.iam/domain/account_version_table_io.hpp"  // IWYU pragma: keep.
-#include "ores.iam/client/auth_helpers.hpp"
 #include "ores.comms.shell/app/commands/rbac_commands.hpp"
 
 namespace ores::comms::shell::app::commands {
 
 using namespace ores::logging;
-using comms::messaging::message_type;
-using comms::net::client_session;
+using service::nats_session;
+
+namespace {
+
+std::string format_time(std::chrono::system_clock::time_point tp) {
+    return ores::platform::time::datetime::format_time_point(tp);
+}
+
+std::string format_bytes(std::uint64_t bytes) {
+    if (bytes >= 1024 * 1024) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << (bytes / (1024.0 * 1024.0)) << " MB";
+        return oss.str();
+    } else if (bytes >= 1024) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(2) << (bytes / 1024.0) << " KB";
+        return oss.str();
+    }
+    return std::to_string(bytes) + " B";
+}
+
+std::string format_duration(std::chrono::seconds dur) {
+    auto hours = std::chrono::duration_cast<std::chrono::hours>(dur);
+    auto mins = std::chrono::duration_cast<std::chrono::minutes>(dur - hours);
+    if (hours.count() > 0) {
+        return std::to_string(hours.count()) + "h " + std::to_string(mins.count()) + "m";
+    }
+    return std::to_string(mins.count()) + "m";
+}
+
+template<typename Response>
+std::optional<Response> do_request(std::ostream& out, nats_session& session,
+    const std::string& subject, const std::string& body) {
+    try {
+        auto reply = session.request(subject, body);
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<Response>(data_str);
+        if (!result) {
+            out << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        out << "✗ Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+template<typename Response>
+std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+    const std::string& subject, const std::string& body) {
+    try {
+        auto reply = session.authenticated_request(subject, body);
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<Response>(data_str);
+        if (!result) {
+            out << "✗ Failed to parse response" << std::endl;
+            return std::nullopt;
+        }
+        return *result;
+    } catch (const std::exception& e) {
+        out << "✗ Request failed: " << e.what() << std::endl;
+        return std::nullopt;
+    }
+}
+
+} // anonymous namespace
 
 void accounts_commands::
-register_commands(cli::Menu& root_menu, client_session& session,
+register_commands(cli::Menu& root_menu, nats_session& session,
                   pagination_context& pagination) {
     auto accounts_menu =
         std::make_unique<cli::Menu>("accounts");
 
-    accounts_menu->Insert("create", [&session](std::ostream & out,
+    accounts_menu->Insert("create", [&session](std::ostream& out,
             std::string principal, std::string password, std::string totp_secret,
             std::string email) {
         process_create_account(std::ref(out),
@@ -180,26 +249,24 @@ register_commands(cli::Menu& root_menu, client_session& session,
 }
 
 void accounts_commands::
-process_list_accounts(std::ostream& out, client_session& session,
+process_list_accounts(std::ostream& out, nats_session& session,
                       pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
 
-    auto& state = pagination.state_for("accounts");
-
-    using iam::messaging::get_accounts_request;
-    using iam::messaging::get_accounts_response;
-    auto result = session.process_authenticated_request<get_accounts_request,
-                                                        get_accounts_response,
-                                                        message_type::get_accounts_request>
-        (get_accounts_request{
-            .offset = state.current_offset,
-            .limit = pagination.page_size()
-        });
-
-    if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
+    if (!session.is_logged_in()) {
+        out << "✗ You must be logged in to list accounts." << std::endl;
         return;
     }
+
+    auto& state = pagination.state_for("accounts");
+
+    iam::messaging::get_accounts_request req;
+    req.offset = state.current_offset;
+    req.limit = pagination.page_size();
+
+    auto result = do_auth_request<iam::messaging::get_accounts_response>(
+        out, session, "iam.v1.accounts.list", rfl::json::write(req));
+    if (!result) return;
 
     state.total_count = result->total_available_count;
     pagination.set_last_entity("accounts");
@@ -219,25 +286,40 @@ process_list_accounts(std::ostream& out, client_session& session,
 }
 
 void accounts_commands::
-process_login(std::ostream& out, client_session& session,
+process_login(std::ostream& out, nats_session& session,
     std::string principal, std::string password) {
-    auto result = iam::client::login(session, principal, password);
-    if (result.success) {
-        out << "✓ Login successful!" << std::endl;
-        out << "  User: " << result.username << std::endl;
-        out << "  Tenant: " << result.tenant_name
-            << " (" << result.tenant_id << ")" << std::endl;
-    } else {
-        out << "✗ Login failed: " << result.error_message << std::endl;
+    iam::messaging::login_request req;
+    req.principal = std::move(principal);
+    req.password = std::move(password);
+
+    auto result = do_request<iam::messaging::login_response>(
+        out, session, "iam.v1.auth.login", rfl::json::write(req));
+    if (!result) return;
+
+    if (!result->success) {
+        out << "✗ Login failed: " << result->message << std::endl;
+        return;
     }
+
+    nats_session::login_info info;
+    info.jwt = result->token;
+    info.username = result->username;
+    info.tenant_id = result->tenant_id;
+    info.tenant_name = result->tenant_name;
+    session.set_auth(std::move(info));
+
+    out << "✓ Login successful!" << std::endl;
+    out << "  User: " << result->username << std::endl;
+    out << "  Tenant: " << result->tenant_name
+        << " (" << result->tenant_id << ")" << std::endl;
 }
 
 void accounts_commands::
-process_lock_account(std::ostream& out, client_session& session,
+process_lock_account(std::ostream& out, nats_session& session,
     std::string account_id) {
-    boost::uuids::uuid parsed_id;
+    // Validate UUID format
     try {
-        parsed_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+        boost::lexical_cast<boost::uuids::uuid>(account_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
         out << "✗ Invalid account ID format. Expected UUID." << std::endl;
@@ -247,43 +329,35 @@ process_lock_account(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Creating lock account request for ID: "
                                << account_id;
 
-    using iam::messaging::lock_account_request;
-    using iam::messaging::lock_account_response;
-    auto result = session.process_authenticated_request<lock_account_request,
-                                                        lock_account_response,
-                                                        message_type::lock_account_request>
-        (lock_account_request{.account_ids = {parsed_id}});
+    iam::messaging::lock_account_request req;
+    req.account_ids = {account_id};
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::lock_account_response>(
+        out, session, "iam.v1.accounts.lock", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.results.empty()) {
+    if (result->results.empty()) {
         out << "✗ No results returned from server" << std::endl;
         return;
     }
 
-    const auto& account_result = response.results[0];
+    const auto& account_result = result->results[0];
     if (account_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully locked account: "
-                                  << account_id;
+        BOOST_LOG_SEV(lg(), info) << "Successfully locked account: " << account_id;
         out << "✓ Account locked successfully!" << std::endl
             << "  Account ID: " << account_id << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to lock account: " << account_result.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to lock account: " << account_result.message;
         out << "✗ Failed to lock account: " << account_result.message << std::endl;
     }
 }
 
 void accounts_commands::
-process_unlock_account(std::ostream& out, client_session& session,
+process_unlock_account(std::ostream& out, nats_session& session,
     std::string account_id) {
-    boost::uuids::uuid parsed_id;
+    // Validate UUID format
     try {
-        parsed_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+        boost::lexical_cast<boost::uuids::uuid>(account_id);
     } catch (const boost::bad_lexical_cast&) {
         BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
         out << "✗ Invalid account ID format. Expected UUID." << std::endl;
@@ -293,87 +367,64 @@ process_unlock_account(std::ostream& out, client_session& session,
     BOOST_LOG_SEV(lg(), debug) << "Creating unlock account request for ID: "
                                << account_id;
 
-    using iam::messaging::unlock_account_request;
-    using iam::messaging::unlock_account_response;
-    auto result = session.process_authenticated_request<unlock_account_request,
-                                                        unlock_account_response,
-                                                        message_type::unlock_account_request>
-        (unlock_account_request{.account_ids = {parsed_id}});
+    iam::messaging::unlock_account_request req;
+    req.account_ids = {account_id};
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::unlock_account_response>(
+        out, session, "iam.v1.accounts.unlock", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.results.empty()) {
+    if (result->results.empty()) {
         out << "✗ No results returned from server" << std::endl;
         return;
     }
 
-    const auto& account_result = response.results[0];
+    const auto& account_result = result->results[0];
     if (account_result.success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: "
-                                  << account_id;
+        BOOST_LOG_SEV(lg(), info) << "Successfully unlocked account: " << account_id;
         out << "✓ Account unlocked successfully!" << std::endl
             << "  Account ID: " << account_id << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn)
-            << "Failed to unlock account: " << account_result.message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to unlock account: " << account_result.message;
         out << "✗ Failed to unlock account: " << account_result.message << std::endl;
     }
 }
 
 void accounts_commands::process_create_account(std::ostream& out,
-    client_session& session, std::string principal,
+    nats_session& session, std::string principal,
     std::string password, std::string totp_secret, std::string email) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating create account request for principal: "
                                << principal;
 
-    using iam::messaging::save_account_request;
-    using iam::messaging::save_account_response;
-    auto result = session.process_authenticated_request<save_account_request,
-                                                        save_account_response,
-                                                        message_type::save_account_request>
-        (save_account_request {
-            .principal = std::move(principal),
-            .password = std::move(password),
-            .totp_secret = std::move(totp_secret),
-            .email = std::move(email)
-        });
+    iam::messaging::save_account_request req;
+    req.principal = std::move(principal);
+    req.password = std::move(password);
+    req.totp_secret = std::move(totp_secret);
+    req.email = std::move(email);
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::save_account_response>(
+        out, session, "iam.v1.accounts.save", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (!response.success) {
-        BOOST_LOG_SEV(lg(), warn) << "Account creation failed: " << response.message;
-        out << "✗ " << response.message << std::endl;
+    if (!result->success) {
+        BOOST_LOG_SEV(lg(), warn) << "Account creation failed: " << result->message;
+        out << "✗ " << result->message << std::endl;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully created account with ID: "
-                              << response.account_id;
-    out << "✓ Account created with ID: " << response.account_id << std::endl;
+                              << result->account_id;
+    out << "✓ Account created with ID: " << result->account_id << std::endl;
 }
 
 void accounts_commands::
-process_list_login_info(std::ostream& out, client_session& session) {
+process_list_login_info(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 
-    using iam::messaging::list_login_info_request;
-    using iam::messaging::list_login_info_response;
-    auto result = session.process_authenticated_request<list_login_info_request,
-                                                        list_login_info_response,
-                                                        message_type::list_login_info_request>
-        (list_login_info_request{});
-
-    if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::list_login_info_response>(
+        out, session, "iam.v1.accounts.list-logins",
+        rfl::json::write(iam::messaging::list_login_info_request{}));
+    if (!result) return;
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
                               << result->login_infos.size() << " login info records.";
@@ -381,89 +432,71 @@ process_list_login_info(std::ostream& out, client_session& session) {
 }
 
 void accounts_commands::
-process_logout(std::ostream& out, client_session& session) {
-    auto result = iam::client::logout(session);
-    if (result.success) {
-        out << "✓ Logged out successfully." << std::endl;
-    } else {
-        out << "✗ Logout failed: " << result.error_message << std::endl;
+process_logout(std::ostream& out, nats_session& session) {
+    if (!session.is_logged_in()) {
+        out << "✗ Not logged in." << std::endl;
+        return;
     }
+
+    try {
+        auto reply = session.authenticated_request("iam.v1.auth.logout",
+            rfl::json::write(iam::messaging::logout_request{}));
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<iam::messaging::logout_response>(data_str);
+        if (result && result->success) {
+            out << "✓ Logged out successfully." << std::endl;
+        } else {
+            out << "✗ Logout failed." << std::endl;
+        }
+    } catch (const std::exception& e) {
+        out << "✗ Logout failed: " << e.what() << std::endl;
+    }
+    session.clear_auth();
 }
 
 void accounts_commands::
-process_bootstrap(std::ostream& out, client_session& session,
+process_bootstrap(std::ostream& out, nats_session& session,
     std::string principal, std::string password, std::string email) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for principal: "
                                << principal;
 
-    using iam::messaging::create_initial_admin_request;
-    auto result = session.process_request(create_initial_admin_request{
-        .principal = std::move(principal),
-        .password = std::move(password),
-        .email = std::move(email)
-    });
+    iam::messaging::create_initial_admin_request req;
+    req.principal = std::move(principal);
+    req.password = std::move(password);
+    req.email = std::move(email);
 
-    if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_request<iam::messaging::create_initial_admin_response>(
+        out, session, "iam.v1.auth.bootstrap", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (response.success) {
+    if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Bootstrap successful. Admin account ID: "
-                                  << response.account_id
-                                  << ", tenant: " << response.tenant_name
-                                  << " (" << response.tenant_id << ")";
+                                  << result->account_id
+                                  << ", tenant: " << result->tenant_name
+                                  << " (" << result->tenant_id << ")";
         out << "✓ Initial admin account created successfully!" << std::endl;
-        out << "  Account ID: " << response.account_id << std::endl;
-        out << "  Tenant: " << response.tenant_name
-            << " (" << response.tenant_id << ")" << std::endl;
+        out << "  Account ID: " << result->account_id << std::endl;
+        out << "  Tenant: " << result->tenant_name
+            << " (" << result->tenant_id << ")" << std::endl;
         out << "  You can now login with the credentials provided." << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << response.error_message;
-        out << "✗ Bootstrap failed: " << response.error_message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Bootstrap failed: " << result->error_message;
+        out << "✗ Bootstrap failed: " << result->error_message << std::endl;
     }
-}
-
-namespace {
-
-std::string format_bytes(std::uint64_t bytes) {
-    if (bytes >= 1024 * 1024) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(2) << (bytes / (1024.0 * 1024.0)) << " MB";
-        return oss.str();
-    } else if (bytes >= 1024) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(2) << (bytes / 1024.0) << " KB";
-        return oss.str();
-    }
-    return std::to_string(bytes) + " B";
-}
-
-std::string format_duration(std::chrono::seconds dur) {
-    auto hours = std::chrono::duration_cast<std::chrono::hours>(dur);
-    auto mins = std::chrono::duration_cast<std::chrono::minutes>(dur - hours);
-    if (hours.count() > 0) {
-        return std::to_string(hours.count()) + "h " + std::to_string(mins.count()) + "m";
-    }
-    return std::to_string(mins.count()) + "m";
-}
-
-std::string format_time(std::chrono::system_clock::time_point tp) {
-    return ores::platform::time::datetime::format_time_point(tp);
-}
-
 }
 
 void accounts_commands::
-process_list_sessions(std::ostream& out, client_session& session,
+process_list_sessions(std::ostream& out, nats_session& session,
     std::string account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list sessions request.";
 
-    boost::uuids::uuid parsed_id{};
+    iam::messaging::list_sessions_request req;
+    req.limit = 50;
+
     if (!account_id.empty()) {
         try {
-            parsed_id = boost::lexical_cast<boost::uuids::uuid>(account_id);
+            req.account_id = account_id;
         } catch (const boost::bad_lexical_cast&) {
             BOOST_LOG_SEV(lg(), error) << "Invalid account ID format: " << account_id;
             out << "✗ Invalid account ID format. Expected UUID." << std::endl;
@@ -471,17 +504,9 @@ process_list_sessions(std::ostream& out, client_session& session,
         }
     }
 
-    using iam::messaging::list_sessions_request;
-    using iam::messaging::list_sessions_response;
-    auto result = session.process_authenticated_request<list_sessions_request,
-                                                        list_sessions_response,
-                                                        message_type::list_sessions_request>
-        (list_sessions_request{.account_id = parsed_id, .limit = 50});
-
-    if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::list_sessions_response>(
+        out, session, "iam.v1.sessions.list", rfl::json::write(req));
+    if (!result) return;
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
@@ -526,20 +551,13 @@ process_list_sessions(std::ostream& out, client_session& session,
 }
 
 void accounts_commands::
-process_active_sessions(std::ostream& out, client_session& session) {
+process_active_sessions(std::ostream& out, nats_session& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
 
-    using iam::messaging::get_active_sessions_request;
-    using iam::messaging::get_active_sessions_response;
-    auto result = session.process_authenticated_request<get_active_sessions_request,
-                                                        get_active_sessions_response,
-                                                        message_type::get_active_sessions_request>
-        (get_active_sessions_request{});
-
-    if (!result) {
-        out << "✗ " << to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
+        out, session, "iam.v1.sessions.active",
+        rfl::json::write(iam::messaging::get_active_sessions_request{}));
+    if (!result) return;
 
     const auto& sessions = result->sessions;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
@@ -573,28 +591,21 @@ process_active_sessions(std::ostream& out, client_session& session) {
 }
 
 void accounts_commands::
-process_session_stats(std::ostream& out, client_session& session, int days) {
+process_session_stats(std::ostream& out, nats_session& session, int days) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating session statistics request for "
                                << days << " days.";
 
     auto end_date = std::chrono::system_clock::now();
     auto start_time = end_date - std::chrono::hours(24 * days);
 
-    using iam::messaging::get_session_statistics_request;
-    using iam::messaging::get_session_statistics_response;
-    auto result = session.process_authenticated_request<get_session_statistics_request,
-                                                        get_session_statistics_response,
-                                                        message_type::get_session_statistics_request>
-        (get_session_statistics_request{
-            .account_id = boost::uuids::nil_uuid(),
-            .start_time = start_time,
-            .end_time = end_date
-        });
+    iam::messaging::get_session_statistics_request req;
+    req.account_id = "";
+    req.start_time = start_time;
+    req.end_time = end_date;
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::get_session_statistics_response>(
+        out, session, "iam.v1.sessions.statistics", rfl::json::write(req));
+    if (!result) return;
 
     const auto& stats = result->statistics;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
@@ -648,72 +659,59 @@ process_session_stats(std::ostream& out, client_session& session, int days) {
 }
 
 void accounts_commands::
-process_get_account_history(std::ostream& out, client_session& session,
+process_get_account_history(std::ostream& out, nats_session& session,
     std::string username) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get account history for: "
                                << username;
 
-    // Check if logged in
-    if (!session.session_info()) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to get account history." << std::endl;
         return;
     }
 
-    using iam::messaging::get_account_history_request;
-    using iam::messaging::get_account_history_response;
-    auto result = session.process_authenticated_request<get_account_history_request,
-                                                        get_account_history_response,
-                                                        message_type::get_account_history_request>
-        (get_account_history_request{.username = std::move(username)});
+    iam::messaging::get_account_history_request req;
+    req.username = std::move(username);
 
-    if (!result) {
-        out << "✗ " << comms::net::to_string(result.error()) << std::endl;
-        return;
-    }
+    auto result = do_auth_request<iam::messaging::get_account_history_response>(
+        out, session, "iam.v1.accounts.history", rfl::json::write(req));
+    if (!result) return;
 
-    const auto& response = *result;
-    if (!response.success) {
+    if (!result->success) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to get account history: "
-                                  << response.message;
-        out << "✗ " << response.message << std::endl;
+                                  << result->message;
+        out << "✗ " << result->message << std::endl;
         return;
     }
 
-    if (response.history.versions.empty()) {
+    if (result->history.versions.empty()) {
         out << "No history found for this account." << std::endl;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << response.history.versions.size()
+                              << result->history.versions.size()
                               << " history records.";
-    out << std::endl << response.history.versions << std::endl;
+    out << std::endl << result->history.versions << std::endl;
 }
 
 void accounts_commands::
-process_account_info(std::ostream& out, client_session& session,
+process_account_info(std::ostream& out, nats_session& session,
     std::string username) {
     BOOST_LOG_SEV(lg(), debug) << "Getting comprehensive account info for: "
                                << username;
 
-    // Check if logged in
-    if (!session.session_info()) {
+    if (!session.is_logged_in()) {
         out << "✗ You must be logged in to view account info." << std::endl;
         return;
     }
 
     // Step 1: Get account details via history request
-    using iam::messaging::get_account_history_request;
-    using iam::messaging::get_account_history_response;
-    auto history_result = session.process_authenticated_request<
-        get_account_history_request, get_account_history_response,
-        message_type::get_account_history_request>
-        (get_account_history_request{.username = username});
+    iam::messaging::get_account_history_request hist_req;
+    hist_req.username = username;
 
-    if (!history_result) {
-        out << "✗ " << comms::net::to_string(history_result.error()) << std::endl;
-        return;
-    }
+    auto history_result = do_auth_request<iam::messaging::get_account_history_response>(
+        out, session, "iam.v1.accounts.history", rfl::json::write(hist_req));
+    if (!history_result) return;
 
     if (!history_result->success) {
         out << "✗ " << history_result->message << std::endl;
@@ -748,19 +746,17 @@ process_account_info(std::ostream& out, client_session& session,
         << " by " << current.modified_by << std::endl;
 
     // Step 2: Get roles for this account
-    using iam::messaging::get_account_roles_request;
-    using iam::messaging::get_account_roles_response;
-    auto roles_result = session.process_authenticated_request<
-        get_account_roles_request, get_account_roles_response,
-        message_type::get_account_roles_request>
-        (get_account_roles_request{.account_id = account.id});
+    iam::messaging::get_account_roles_request roles_req;
+    roles_req.account_id = boost::uuids::to_string(account.id);
 
     out << std::endl;
     out << "Roles" << std::endl;
     out << "-----" << std::endl;
+
+    auto roles_result = do_auth_request<iam::messaging::get_account_roles_response>(
+        out, session, "iam.v1.roles.for-account", rfl::json::write(roles_req));
     if (!roles_result) {
-        out << "  (failed to retrieve roles: "
-            << comms::net::to_string(roles_result.error()) << ")" << std::endl;
+        out << "  (failed to retrieve roles)" << std::endl;
     } else if (roles_result->roles.empty()) {
         out << "  (no roles assigned)" << std::endl;
     } else {
@@ -774,19 +770,17 @@ process_account_info(std::ostream& out, client_session& session,
     }
 
     // Step 3: Get effective permissions for this account
-    using iam::messaging::get_account_permissions_request;
-    using iam::messaging::get_account_permissions_response;
-    auto perms_result = session.process_authenticated_request<
-        get_account_permissions_request, get_account_permissions_response,
-        message_type::get_account_permissions_request>
-        (get_account_permissions_request{.account_id = account.id});
+    iam::messaging::get_account_permissions_request perms_req;
+    perms_req.account_id = boost::uuids::to_string(account.id);
 
     out << std::endl;
     out << "Effective Permissions" << std::endl;
     out << "---------------------" << std::endl;
+
+    auto perms_result = do_auth_request<iam::messaging::get_account_permissions_response>(
+        out, session, "iam.v1.permissions.for-account", rfl::json::write(perms_req));
     if (!perms_result) {
-        out << "  (failed to retrieve permissions: "
-            << comms::net::to_string(perms_result.error()) << ")" << std::endl;
+        out << "  (failed to retrieve permissions)" << std::endl;
     } else if (perms_result->permission_codes.empty()) {
         out << "  (no permissions)" << std::endl;
     } else {

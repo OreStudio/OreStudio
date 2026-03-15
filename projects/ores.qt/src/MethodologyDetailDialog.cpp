@@ -28,8 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/dataset_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.dq/messaging/data_organization_protocol.hpp"
 
 namespace ores::qt {
 
@@ -145,23 +144,11 @@ void MethodologyDetailDialog::onSaveClicked() {
         if (!self || !self->clientManager_) return {false, "Dialog closed"};
 
         dq::messaging::save_methodology_request request;
-        request.methodologies.push_back(methodology);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_methodology_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.data = methodology;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {false, "Failed to communicate with server"};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {false, "Failed to decompress response"};
-
-        auto response = dq::messaging::save_methodology_response::deserialize(*payload_result);
-        if (!response) return {false, "Invalid server response"};
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(this);
@@ -192,26 +179,17 @@ void MethodologyDetailDialog::onDeleteClicked() {
 
     QPointer<MethodologyDetailDialog> self = this;
     boost::uuids::uuid methodologyId = methodology_.id;
+    std::string methodologyName = methodology_.name;
 
-    auto task = [self, methodologyId]() -> bool {
+    auto task = [self, methodologyId, methodologyName]() -> bool {
         if (!self || !self->clientManager_) return false;
 
         dq::messaging::delete_methodology_request request;
-        request.ids.push_back({methodologyId});
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_methodology_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
+        request.codes.push_back(methodologyName);
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return false;
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return false;
-
-        auto response = dq::messaging::delete_methodology_response::deserialize(*payload_result);
-        return response && response->success;
+        return response_result->success;
     };
 
     auto* watcher = new QFutureWatcher<bool>(this);

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,36 +20,18 @@
 #ifndef ORES_DQ_MESSAGING_REGISTRAR_HPP
 #define ORES_DQ_MESSAGING_REGISTRAR_HPP
 
-#include "ores.comms/net/server.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.iam/service/authorization_service.hpp"
 
 namespace ores::dq::messaging {
 
-/**
- * @brief Register Data Quality subsystem message handlers with the server.
- *
- * Registers handlers for all DQ subsystem messages (0x6000-0x6FFF).
- * Must be called before server.run().
- *
- * @param server The server to register handlers with
- * @param ctx Database context for repository access
- * @param auth_service Authorization service for permission checks
- */
 class registrar {
-private:
-    [[nodiscard]] static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(
-            "ores.dq.messaging.registrar");
-        return instance;
-    }
-
 public:
-    static void register_handlers(comms::net::server& server,
-        database::context ctx,
-        std::shared_ptr<iam::service::authorization_service> auth_service);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+        ores::database::context ctx);
 };
 
 }

@@ -24,6 +24,8 @@
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.iam/domain/role.hpp"
 
+namespace svc_acct = ores::iam::domain::service_accounts;
+
 namespace ores::iam::service {
 
 using namespace ores::logging;
@@ -85,7 +87,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
         BOOST_LOG_SEV(lg(), warn)
             << "Bootstrap flag is disabled but no SuperAdmin accounts exist, "
             << "this is inconsistent. Enabling bootstrap mode";
-        system_flags_service_.set_bootstrap_mode(true, "system",
+        system_flags_service_.set_bootstrap_mode(true, svc_acct::iam,
             std::string{reason::codes::new_record}, "Bootstrap mode enabled due to inconsistent state - no admin accounts exist");
     }
 }
@@ -98,7 +100,7 @@ void bootstrap_mode_service::exit_bootstrap_mode() {
         return;
     }
 
-    system_flags_service_.set_bootstrap_mode(false, "system",
+    system_flags_service_.set_bootstrap_mode(false, svc_acct::iam,
         std::string{reason::codes::new_record}, "Bootstrap mode disabled - system now in secure mode");
     BOOST_LOG_SEV(lg(), info) << "Successfully exited bootstrap mode";
 }

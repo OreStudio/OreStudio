@@ -34,7 +34,10 @@
 
 (defconst ores-db/database-roles
   '("postgres" "ores_ddl_user" "ores_cli_user" "ores_wt_user" "ores_comms_user" "ores_http_user"
-    "ores_test_ddl_user" "ores_test_dml_user" "ores_readonly_user")
+    "ores_test_ddl_user" "ores_test_dml_user" "ores_readonly_user"
+    "ores_iam_service" "ores_refdata_service" "ores_dq_service" "ores_variability_service"
+    "ores_assets_service" "ores_synthetic_service" "ores_scheduler_service"
+    "ores_reporting_service" "ores_telemetry_service" "ores_trading_service")
   "Available roles to assume when connecting to an ORES database.")
 
 (defvar-local ores-db/marked-ids nil
@@ -348,6 +351,11 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
            ((string-match "^ores_\\([a-z]+\\)_user$" role)
             (let ((app (upcase (match-string 1 role))))
               (setenv (concat "ORES_DB_" app "_PASSWORD") pw)))
+           ;; Domain service accounts: ores_<svc>_service -> ORES_DB_<SVC>_SERVICE_PASSWORD
+           ;; e.g., ores_iam_service -> ORES_DB_IAM_SERVICE_PASSWORD
+           ((string-match "^ores_\\([a-z_]+\\)_service$" role)
+            (let ((svc (upcase (match-string 1 role))))
+              (setenv (concat "ORES_DB_" svc "_SERVICE_PASSWORD") pw)))
            ;; Fallback for any other roles
            (t
             (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD")
@@ -400,6 +408,10 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
        ((string-match "^ores_\\([a-z]+\\)_user$" role)
         (let ((app (upcase (match-string 1 role))))
           (setenv (concat "ORES_DB_" app "_PASSWORD") nil)
+          (setq count (1+ count))))
+       ((string-match "^ores_\\([a-z_]+\\)_service$" role)
+        (let ((svc (upcase (match-string 1 role))))
+          (setenv (concat "ORES_DB_" svc "_SERVICE_PASSWORD") nil)
           (setq count (1+ count))))
        (t
         (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD") nil)

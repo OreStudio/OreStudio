@@ -313,7 +313,7 @@ void PortfolioExplorerMdiWindow::reload() {
                         return {.success = false, .portfolios = {},
                                 .error_message = QString::fromStdString(
                                     "Failed to fetch portfolios: " +
-                                    comms::net::to_string(result.error()))};
+                                    result.error())};
 
                     return {.success = true,
                             .portfolios = std::move(result->portfolios),
@@ -338,7 +338,7 @@ void PortfolioExplorerMdiWindow::reload() {
                         return {.success = false, .books = {},
                                 .error_message = QString::fromStdString(
                                     "Failed to fetch books: " +
-                                    comms::net::to_string(result.error()))};
+                                    result.error())};
 
                     return {.success = true,
                             .books = std::move(result->books),
@@ -363,7 +363,7 @@ void PortfolioExplorerMdiWindow::reload() {
                         return {.success = false, .cpty_map = {},
                                 .error_message = QString::fromStdString(
                                     "Failed to fetch counterparties: " +
-                                    comms::net::to_string(result.error()))};
+                                    result.error())};
 
                     std::unordered_map<std::string, CounterpartyInfo> cpty_map;
                     for (const auto& c : result->counterparties) {
@@ -485,7 +485,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
                                 .error_details = {}};
 
                     trading::messaging::get_trades_request req;
-                    req.book_id = bid;
+                    req.book_id = boost::uuids::to_string(bid);
                     req.limit = 0;
                     req.offset = 0;
 
@@ -498,7 +498,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
                                 .error_details = {}};
 
                     return {.book_id = bid,
-                            .count = result->total_available_count,
+                            .count = static_cast<std::uint32_t>(result->total_available_count),
                             .success = true,
                             .error_message = {},
                             .error_details = {}};

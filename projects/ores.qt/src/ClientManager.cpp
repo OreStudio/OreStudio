@@ -46,7 +46,10 @@ ClientManager::~ClientManager() {
 }
 
 LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) {
-    BOOST_LOG_SEV(lg(), info) << "Connecting to " << host << ":" << port;
+    BOOST_LOG_SEV(lg(), info) << "Connecting to " << host << ":" << port
+                              << " (namespace: '"
+                              << (subject_prefix_.empty() ? "(none)" : subject_prefix_)
+                              << "')";
 
     // If already connected, disconnect first
     if (session_.is_connected()) {

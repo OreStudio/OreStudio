@@ -19,6 +19,9 @@
  */
 #include "ores.trading.service/app/application.hpp"
 
+#include <csignal>
+#include <boost/asio/signal_set.hpp>
+#include <boost/asio/use_awaitable.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
@@ -47,7 +50,7 @@ ores::database::context application::make_context(
 application::application() = default;
 
 boost::asio::awaitable<void>
-application::run(boost::asio::io_context& /*io_ctx*/,
+application::run(boost::asio::io_context& io_ctx,
     const config::options& cfg) const {
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
@@ -55,12 +58,20 @@ application::run(boost::asio::io_context& /*io_ctx*/,
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url;
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url
+                              << " (namespace: '"
+                              << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
+                              << "')";
 
     auto ctx = make_context(cfg.database);
     auto subs = ores::trading::messaging::registrar::register_handlers(nats, std::move(ctx));
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
 
+    BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";
+    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+    co_await signals.async_wait(boost::asio::use_awaitable);
+
+    BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
     nats.drain();
     co_return;
 }

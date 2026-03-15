@@ -97,6 +97,7 @@ private:
     QLabel* envNameLabel_;
     QLabel* envHostLabel_;
     QLabel* envPortLabel_;
+    QLabel* envNamespaceLabel_;
     QLabel* envDescriptionLabel_;
     QWidget* envTagsContainer_;
 

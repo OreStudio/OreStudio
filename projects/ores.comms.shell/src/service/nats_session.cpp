@@ -29,6 +29,7 @@ using namespace ores::logging;
 
 void nats_session::connect(nats::config::nats_options opts) {
     const std::string url = opts.url;
+    const std::string prefix = opts.subject_prefix.empty() ? "(none)" : opts.subject_prefix;
     client_ = std::make_shared<ores::nats::service::client>(std::move(opts));
     try {
         client_->connect();
@@ -36,7 +37,8 @@ void nats_session::connect(nats::config::nats_options opts) {
         client_.reset();
         throw;
     }
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS at " << url;
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS at " << url
+                              << " (namespace: '" << prefix << "')";
 }
 
 void nats_session::disconnect() {

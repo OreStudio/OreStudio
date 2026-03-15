@@ -85,12 +85,6 @@ void CommandLineParser::setupOptions() {
         "color"
     });
 
-    parser_.addOption({
-        "nats-subject-prefix",
-        "Subject prefix prepended to every NATS subject "
-        "(format: ores.{tier}.{instance}, e.g. ores.dev.local1).",
-        "prefix"
-    });
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -158,9 +152,6 @@ QString CommandLineParser::instanceName() const {
     return parser_.value("instance-name");
 }
 
-QString CommandLineParser::natsSubjectPrefix() const {
-    return parser_.value("nats-subject-prefix");
-}
 
 QColor CommandLineParser::instanceColor() const {
     const QString colorStr = parser_.value("instance-color");

@@ -2394,10 +2394,6 @@ void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {
     updateWindowTitle();
 }
 
-void MainWindow::setNatsSubjectPrefix(const QString& prefix) {
-    clientManager_->setSubjectPrefix(prefix.toStdString());
-    BOOST_LOG_SEV(lg(), info) << "NATS subject prefix set to: " << prefix.toStdString();
-}
 
 void MainWindow::updateWindowTitle() {
     QString title = QString("ORE Studio v%1").arg(ORES_VERSION);
@@ -3058,6 +3054,8 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
                     if (QString::fromStdString(env.name) == name) {
                         loginWidget->setServer(QString::fromStdString(env.host));
                         loginWidget->setPort(env.port);
+                        loginWidget->setSubjectPrefix(
+                            QString::fromStdString(env.subject_prefix));
                         break;
                     }
                 }

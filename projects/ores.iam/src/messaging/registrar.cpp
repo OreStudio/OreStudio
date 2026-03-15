@@ -39,8 +39,11 @@
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.iam/service/auth_session_service.hpp"
 #include "ores.iam/domain/session.hpp"
+#include "ores.iam/domain/role.hpp"
 
 namespace ores::iam::messaging {
+
+namespace svc_acct = ores::iam::domain::service_accounts;
 
 namespace {
 
@@ -149,7 +152,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                     try {
                         service::account_service svc(ctx);
                         auto acct = svc.create_account(
-                            req->principal, req->email, req->password, "system");
+                            req->principal, req->email, req->password, svc_acct::iam);
                         reply(nats, msg, signup_response{
                             .success = true,
                             .account_id = boost::uuids::to_string(acct.id)});
@@ -180,7 +183,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                     try {
                         service::account_service svc(ctx);
                         auto acct = svc.create_account(
-                            req->principal, req->email, req->password, "system");
+                            req->principal, req->email, req->password, svc_acct::iam);
                         auto auth_svc =
                             std::make_shared<service::authorization_service>(ctx);
                         service::bootstrap_mode_service bms(

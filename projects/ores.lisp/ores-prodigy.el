@@ -155,10 +155,10 @@
   "Database name derived from the checkout label.")
 
 (defconst ores/database-users
-  '(("SERVICE"     . "ores_comms_user")
-    ("HTTP_SERVER" . "ores_http_user")
+  '(("HTTP_SERVER" . "ores_http_user")
     ("WT"          . "ores_wt_user"))
-  "Alist mapping application prefixes to database users.")
+  "Alist mapping application prefixes to database users.
+NATS domain services use ores/setup-nats-service-environment instead.")
 
 (defun ores/get-database-user (app-prefix)
   "Get the database user for APP-PREFIX."
@@ -175,6 +175,22 @@
      (list (concat "ORES_" app-prefix "_DB_USER")     db-user)
      (list (concat "ORES_" app-prefix "_DB_PASSWORD") pwd)
      (list (concat "ORES_" app-prefix "_DB_DATABASE") ores/database-name))))
+
+(defun ores/nats-service-db-user (binary-name)
+  "Derive the DB role name from BINARY-NAME by replacing dots with underscores.
+e.g. \"ores.iam.service\" -> \"ores_iam_service\"."
+  (replace-regexp-in-string "\\." "_" binary-name))
+
+(defun ores/setup-nats-service-environment (binary-name)
+  "Set up DB environment variables for a NATS domain service with BINARY-NAME."
+  (let* ((db-user (ores/nats-service-db-user binary-name))
+         (pwd (auth-source-pick-first-password
+               :host "localhost"
+               :user db-user)))
+    (list
+     (list "ORES_SERVICE_DB_USER"     db-user)
+     (list "ORES_SERVICE_DB_PASSWORD" pwd)
+     (list "ORES_SERVICE_DB_DATABASE" ores/database-name))))
 
 (defun ores/setup-http-server-environment ()
   "Set up environment variables for the HTTP server."
@@ -193,7 +209,6 @@
 (prodigy-define-tag :name 'debug)
 (prodigy-define-tag :name 'release)
 (prodigy-define-tag :name ores/checkout-tag)
-(prodigy-define-tag :name 'nats-server)
 (prodigy-define-tag :name 'nats-service)
 (prodigy-define-tag :name 'http-server)
 (prodigy-define-tag :name 'wt-server)
@@ -202,10 +217,10 @@
 ;; Dynamic service registration
 ;; =============================================================================
 
-(defun ores/service-name (base preset)
-  "Generate unique service name from BASE and PRESET.
-Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
-  (format "%s [%s:%s]" base ores/checkout-label (ores/preset-code preset)))
+(defun ores/service-name (base _preset)
+  "Generate unique service name from BASE.
+Uses BASE directly; build type and checkout are already visible as tags."
+  base)
 
 (defun ores/define-services-for-preset (preset)
   "Register all prodigy services for PRESET."
@@ -217,21 +232,10 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
          (common-args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log")))
     (prodigy-define-tag :name preset-tag)
 
-    ;; NATS Server — single shared instance on the standard port.
-    ;; Environment isolation is achieved via subject prefixes, not ports.
-    (prodigy-define-service
-      :name    (ores/service-name "ORE Studio NATS Server" preset)
-      :cwd     bin
-      :command "nats-server"
-      :args    '("--port" "4222")
-      :tags    `(,@common-tags nats-server)
-      :stop-signal 'sigint
-      :kill-process-buffer-on-stop t)
-
-    ;; All services receive a subject prefix of the form "ores.dev.{checkout}"
-    ;; so that multiple checkouts can share one NATS server without collisions.
-    (let ((subject-prefix (format "ores.dev.%s" ores/checkout-label))
-          (nats-args `("--nats-url" "nats://localhost:4222"
+    ;; Services subscribe using a subject prefix to isolate this checkout from
+    ;; others sharing the same NATS broker. The matching namespace value is
+    ;; stored in the connection manager and applied by the client at login.
+    (let ((nats-args `("--nats-url" "nats://localhost:4222"
                        "--nats-subject-prefix"
                        ,(format "ores.dev.%s" ores/checkout-label))))
 
@@ -243,17 +247,16 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
           :command (concat bin "/" (car svc))
           :args    `(,@common-args ,@nats-args)
           :tags    `(,@common-tags nats-service)
-          :env     (ores/setup-environment "SERVICE")
+          :env     (ores/setup-nats-service-environment (car svc))
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t))
 
-      ;; QT — also needs the subject prefix so it routes requests correctly
+      ;; QT
       (prodigy-define-service
         :name    (ores/service-name "ORE Studio QT" preset)
         :cwd     bin
         :command (concat bin "/ores.qt")
-        :args    `(,@common-args "--compression-enabled"
-                   "--nats-subject-prefix" ,subject-prefix)
+        :args    common-args
         :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
         :stop-signal 'sigint
         :kill-process-buffer-on-stop t)
@@ -263,9 +266,7 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
         :name    (ores/service-name "ORE Studio QT Blue" preset)
         :cwd     bin
         :command (concat bin "/ores.qt")
-        :args    `(,@common-args "--compression-enabled"
-                   "--nats-subject-prefix" ,subject-prefix
-                   "--log-filename" "ores.qt.blue.log"
+        :args    `(,@common-args "--log-filename" "ores.qt.blue.log"
                    "--instance-name" "Blue" "--instance-color" "2196F3")
         :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
         :stop-signal 'sigint
@@ -276,9 +277,7 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
         :name    (ores/service-name "ORE Studio QT Red" preset)
         :cwd     bin
         :command (concat bin "/ores.qt")
-        :args    `(,@common-args "--compression-enabled"
-                   "--nats-subject-prefix" ,subject-prefix
-                   "--log-filename" "ores.qt.red.log"
+        :args    `(,@common-args "--log-filename" "ores.qt.red.log"
                    "--instance-name" "Red" "--instance-color" "F44336")
         :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
         :stop-signal 'sigint
@@ -289,9 +288,7 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
         :name    (ores/service-name "ORE Studio QT Green" preset)
         :cwd     bin
         :command (concat bin "/ores.qt")
-        :args    `(,@common-args "--compression-enabled"
-                   "--nats-subject-prefix" ,subject-prefix
-                   "--log-filename" "ores.qt.green.log"
+        :args    `(,@common-args "--log-filename" "ores.qt.green.log"
                    "--instance-name" "Green" "--instance-color" "4CAF50")
         :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
         :stop-signal 'sigint
@@ -401,32 +398,8 @@ Format: \"BASE [checkout:code]\" e.g. \"ORE Studio QT [local2:cdn]\"."
 (define-key global-map (kbd "C-x p 8") #'ores/services-menu)
 
 ;; =============================================================================
-;; Startup: restore prodigy defaults and clean stale services
+;; Startup: clean stale services
 ;; =============================================================================
-
-;; Restore prodigy-list-format and prodigy-list-entries to their defaults.
-;; A previous version of this file overrode both; resetting here ensures a
-;; clean state after reloading without needing an Emacs restart.
-(setq prodigy-list-format
-      [("Marked" 6 t :right-align t)
-       ("Name" 35 t)
-       ("Status" 15 t)
-       ("Tags" 25 nil)])
-
-(defun prodigy-list-entries ()
-  "Create the entries for the service list."
-  (-map
-   (lambda (service)
-     (list
-      (prodigy-service-id service)
-      (apply 'vector
-             (--map
-              (funcall it service)
-              '(prodigy-marked-col
-                prodigy-name-col
-                prodigy-status-col
-                prodigy-tags-col)))))
-   (prodigy-services)))
 
 ;; Remove any services for this checkout registered in a prior load,
 ;; so reloading the file does not produce duplicates.

@@ -47,9 +47,7 @@ TEST_CASE("parse_defaults_returns_expected_values", tags) {
     CHECK(result->nats.subject_prefix.empty());
     CHECK(result->database.host == "localhost");
     CHECK(result->database.port == 5432);
-    REQUIRE(result->logging.has_value());
-    CHECK(result->logging->severity == "info");
-    CHECK(result->logging->filename == "ores.refdata.service.log");
+    CHECK_FALSE(result->logging.has_value());
 }
 
 TEST_CASE("parse_custom_nats_url", tags) {
@@ -103,7 +101,7 @@ TEST_CASE("parse_custom_database_name", tags) {
 TEST_CASE("parse_custom_log_level", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const std::vector<std::string> args{"--log-level", "debug"};
+    const std::vector<std::string> args{"--log-enabled", "--log-level", "debug"};
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 
@@ -115,7 +113,7 @@ TEST_CASE("parse_custom_log_level", tags) {
 TEST_CASE("parse_custom_log_filename", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const std::vector<std::string> args{"--log-filename", "custom.log"};
+    const std::vector<std::string> args{"--log-enabled", "--log-filename", "custom.log"};
     std::ostringstream info, err;
     const auto result = parser{}.parse(args, info, err);
 

@@ -220,7 +220,7 @@ void ShellMdiWindow::start_shell() {
             shell_session_.disconnect();
             return;
         }
-        shell_session_.set_auth(comms::shell::service::nats_session::login_info{
+        shell_session_.set_auth(shell::service::nats_session::login_info{
             .jwt         = resp->token,
             .username    = resp->username,
             .tenant_id   = resp->tenant_id,
@@ -237,7 +237,7 @@ void ShellMdiWindow::start_shell() {
     }
 
     // Create REPL and run on worker thread
-    shell_repl_ = std::make_unique<comms::shell::app::repl>(shell_session_);
+    shell_repl_ = std::make_unique<shell::app::repl>(shell_session_);
 
     auto* in = in_stream_.get();
     auto* out = out_stream_.get();

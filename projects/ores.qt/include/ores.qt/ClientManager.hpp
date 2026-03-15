@@ -421,7 +421,7 @@ signals:
 
 private:
     // NATS session for connection and authentication
-    comms::shell::service::nats_session session_;
+    shell::service::nats_session session_;
 
     // Subject prefix applied to all outbound NATS messages
     std::string subject_prefix_;

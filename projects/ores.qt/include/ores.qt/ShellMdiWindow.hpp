@@ -152,8 +152,8 @@ private:
     std::unique_ptr<std::ostream> out_stream_;
     std::unique_ptr<std::istream> in_stream_;
 
-    comms::shell::service::nats_session shell_session_;
-    std::unique_ptr<comms::shell::app::repl> shell_repl_;
+    shell::service::nats_session shell_session_;
+    std::unique_ptr<shell::app::repl> shell_repl_;
     std::unique_ptr<std::thread> worker_thread_;
 
     // Soft violet for prompt, teal-blue for user input

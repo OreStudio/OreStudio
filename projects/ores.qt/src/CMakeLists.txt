@@ -64,6 +64,7 @@ set_target_properties(${exe_binary_name} PROPERTIES
 target_include_directories(${name} PRIVATE ${ORES_QT_DIR}/include)
 
 # Copy main assets from assets/images directory
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 file(GLOB ORES_MAIN_ASSETS "${CMAKE_SOURCE_DIR}/assets/images/*.png")
 foreach(in_file IN LISTS ORES_MAIN_ASSETS)
     get_filename_component(out_file ${in_file} NAME)

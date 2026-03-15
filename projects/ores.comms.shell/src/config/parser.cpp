@@ -19,11 +19,11 @@
  */
 #include "ores.comms.shell/config/parser.hpp"
 
-#include <format>
 #include <ostream>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.comms.shell/config/parser_exception.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.telemetry/exporting/telemetry_configuration.hpp"
@@ -39,9 +39,8 @@ const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");
 
-const std::string connect_host_arg("connect-host");
-const std::string connect_port_arg("connect-port");
-const std::string connect_identifier_arg("connect-identifier");
+const std::string nats_url_arg("nats-url");
+const std::string nats_subject_prefix_arg("nats-subject-prefix");
 const std::string login_username_arg("login-username");
 const std::string login_password_arg("login-password");
 
@@ -49,7 +48,7 @@ using boost::program_options::value;
 using boost::program_options::variables_map;
 using boost::program_options::options_description;
 
-using ores::comms::net::client_options;
+using ores::nats::config::nats_options;
 using ores::comms::shell::config::options;
 using ores::comms::shell::config::login_options;
 using ores::comms::shell::config::parser_exception;
@@ -74,12 +73,11 @@ options_description make_options_description() {
 
     options_description cod("Connection");
     cod.add_options()
-        (connect_host_arg.c_str(), value<std::string>(),
-            "Host to connect to (e.g., localhost)")
-        (connect_port_arg.c_str(), value<std::string>(),
-            "Port to connect to (e.g., 55555)")
-        (connect_identifier_arg.c_str(), value<std::string>(),
-            "Client identifier to use when connecting");
+        (nats_url_arg.c_str(), value<std::string>(),
+            "NATS server URL (e.g., nats://localhost:4222)")
+        (nats_subject_prefix_arg.c_str(), value<std::string>(),
+            "Subject prefix prepended to every NATS subject "
+            "(format: ores.{tier}.{instance}, e.g. ores.dev.local1)");
 
     options_description lod2("Login");
     lod2.add_options()
@@ -128,26 +126,16 @@ void version(std::ostream& info) {
 /**
  * @brief Reads the connection configuration from the variables map.
  */
-std::optional<client_options>
+std::optional<nats_options>
 read_connection_configuration(const variables_map& vm) {
-    // Check if any connection options are provided
-    const bool has_host = vm.count(connect_host_arg) != 0;
-    const bool has_port = vm.count(connect_port_arg) != 0;
-    const bool has_identifier = vm.count(connect_identifier_arg) != 0;
-
-    if (!has_host && !has_port && !has_identifier)
+    if (vm.count(nats_url_arg) == 0 && vm.count(nats_subject_prefix_arg) == 0)
         return {};
 
-    client_options r;
-    r.host = has_host ? vm[connect_host_arg].as<std::string>() : "localhost";
-    r.port = has_port ? static_cast<std::uint16_t>(std::stoi(vm[connect_port_arg].as<std::string>())) : 55555;
-    r.client_identifier = has_identifier ? vm[connect_identifier_arg].as<std::string>() : "ores-shell";
-
-    if (r.port < 1 || r.port > 65535) {
-        BOOST_THROW_EXCEPTION(parser_exception(
-                std::format("Port number {} is out of valid range (1-65535)!", r.port)));
-    }
-
+    nats_options r;
+    if (vm.count(nats_url_arg) != 0)
+        r.url = vm[nats_url_arg].as<std::string>();
+    if (vm.count(nats_subject_prefix_arg) != 0)
+        r.subject_prefix = vm[nats_subject_prefix_arg].as<std::string>();
     return r;
 }
 

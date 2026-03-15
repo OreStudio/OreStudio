@@ -44,11 +44,9 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 AccountMdiWindow::
@@ -394,16 +392,9 @@ void AccountMdiWindow::deleteSelected() {
             BOOST_LOG_SEV(lg(), debug) << "Deleting account: "
                                        << boost::uuids::to_string(account_id);
 
-            iam::messaging::delete_account_request request{account_id};
-            auto payload = request.serialize();
-
-            comms::messaging::frame request_frame(
-                message_type::delete_account_request,
-                0, std::move(payload)
-            );
-
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
+            iam::messaging::delete_account_request request;
+            request.account_id = boost::uuids::to_string(account_id);
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
@@ -412,34 +403,8 @@ void AccountMdiWindow::deleteSelected() {
                 continue;
             }
 
-            // Check for error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server returned error for delete request: "
-                                           << err->message.toStdString();
-                results.push_back({account_id, {false, err->message.toStdString()}});
-                continue;
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                results.push_back({account_id,
-                    {false, "Failed to decompress server response"}});
-                continue;
-            }
-
-            auto response = iam::messaging::delete_account_response::
-                deserialize(*payload_result);
-
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                results.push_back({account_id,
-                    {false, "Invalid server response"}});
-                continue;
-            }
-
             results.push_back({account_id,
-                {response->success, response->message}});
+                {response_result->success, response_result->message}});
         }
 
         return results;
@@ -550,67 +515,28 @@ void AccountMdiWindow::lockSelected() {
     }
 
     QPointer<AccountMdiWindow> self = this;
-    using LockResult = std::vector<iam::messaging::lock_account_result>;
+    using LockResult = std::vector<iam::messaging::account_operation_result>;
 
     auto task = [self, account_ids]() -> LockResult {
         if (!self) return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Locking " << account_ids.size() << " accounts";
 
-        iam::messaging::lock_account_request request{account_ids};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            message_type::lock_account_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        iam::messaging::lock_account_request request;
+        for (const auto& id : account_ids)
+            request.account_ids.push_back(boost::uuids::to_string(id));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send lock request";
             LockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, "Failed to communicate with server"});
+            for (std::size_t i = 0; i < account_ids.size(); ++i) {
+                error_results.push_back({false, "Failed to communicate with server"});
             }
             return error_results;
         }
 
-        // Check for error response
-        if (auto err = exception_helper::check_error_response(*response_result)) {
-            BOOST_LOG_SEV(lg(), error) << "Server returned error for lock request: "
-                                       << err->message.toStdString();
-            LockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, err->message.toStdString()});
-            }
-            return error_results;
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-            LockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, "Failed to decompress server response"});
-            }
-            return error_results;
-        }
-
-        auto response = iam::messaging::lock_account_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            LockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, "Invalid server response"});
-            }
-            return error_results;
-        }
-
-        return response->results;
+        return response_result->results;
     };
 
     auto* watcher = new QFutureWatcher<LockResult>(self);
@@ -625,13 +551,10 @@ void AccountMdiWindow::lockSelected() {
 
         for (const auto& result : results) {
             if (result.success) {
-                BOOST_LOG_SEV(lg(), debug) << "Account locked successfully: "
-                                           << boost::uuids::to_string(result.account_id);
+                BOOST_LOG_SEV(lg(), debug) << "Account locked successfully";
                 success_count++;
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Account lock failed: "
-                                           << boost::uuids::to_string(result.account_id)
-                                           << " - " << result.message;
+                BOOST_LOG_SEV(lg(), error) << "Account lock failed: " << result.message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.message);
@@ -715,67 +638,28 @@ void AccountMdiWindow::unlockSelected() {
     }
 
     QPointer<AccountMdiWindow> self = this;
-    using UnlockResult = std::vector<iam::messaging::unlock_account_result>;
+    using UnlockResult = std::vector<iam::messaging::account_operation_result>;
 
     auto task = [self, account_ids]() -> UnlockResult {
         if (!self) return {};
 
         BOOST_LOG_SEV(lg(), debug) << "Unlocking " << account_ids.size() << " accounts";
 
-        iam::messaging::unlock_account_request request{account_ids};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            message_type::unlock_account_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        iam::messaging::unlock_account_request request;
+        for (const auto& id : account_ids)
+            request.account_ids.push_back(boost::uuids::to_string(id));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send unlock request";
             UnlockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, "Failed to communicate with server"});
+            for (std::size_t i = 0; i < account_ids.size(); ++i) {
+                error_results.push_back({false, "Failed to communicate with server"});
             }
             return error_results;
         }
 
-        // Check for error response
-        if (auto err = exception_helper::check_error_response(*response_result)) {
-            BOOST_LOG_SEV(lg(), error) << "Server returned error for unlock request: "
-                                       << err->message.toStdString();
-            UnlockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, err->message.toStdString()});
-            }
-            return error_results;
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-            UnlockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, "Failed to decompress server response"});
-            }
-            return error_results;
-        }
-
-        auto response = iam::messaging::unlock_account_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            UnlockResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, "Invalid server response"});
-            }
-            return error_results;
-        }
-
-        return response->results;
+        return response_result->results;
     };
 
     auto* watcher = new QFutureWatcher<UnlockResult>(self);
@@ -790,13 +674,10 @@ void AccountMdiWindow::unlockSelected() {
 
         for (const auto& result : results) {
             if (result.success) {
-                BOOST_LOG_SEV(lg(), debug) << "Account unlocked successfully: "
-                                           << boost::uuids::to_string(result.account_id);
+                BOOST_LOG_SEV(lg(), debug) << "Account unlocked successfully";
                 success_count++;
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Account unlock failed: "
-                                           << boost::uuids::to_string(result.account_id)
-                                           << " - " << result.message;
+                BOOST_LOG_SEV(lg(), error) << "Account unlock failed: " << result.message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.message);
@@ -902,7 +783,7 @@ void AccountMdiWindow::resetPasswordSelected() {
     }
 
     QPointer<AccountMdiWindow> self = this;
-    using ResetResult = std::vector<iam::messaging::reset_password_result>;
+    using ResetResult = std::vector<iam::messaging::account_operation_result>;
 
     auto task = [self, account_ids]() -> ResetResult {
         if (!self) return {};
@@ -910,62 +791,21 @@ void AccountMdiWindow::resetPasswordSelected() {
         BOOST_LOG_SEV(lg(), debug) << "Resetting password for "
                                    << account_ids.size() << " accounts";
 
-        iam::messaging::reset_password_request request{account_ids};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            message_type::reset_password_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        iam::messaging::reset_password_request request;
+        for (const auto& id : account_ids)
+            request.account_ids.push_back(boost::uuids::to_string(id));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             BOOST_LOG_SEV(lg(), error) << "Failed to send reset password request";
             ResetResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false,
-                    "Failed to communicate with server"});
+            for (std::size_t i = 0; i < account_ids.size(); ++i) {
+                error_results.push_back({false, "Failed to communicate with server"});
             }
             return error_results;
         }
 
-        // Check for error response
-        if (auto err = exception_helper::check_error_response(*response_result)) {
-            BOOST_LOG_SEV(lg(), error) << "Server returned error for reset password request: "
-                                       << err->message.toStdString();
-            ResetResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, err->message.toStdString()});
-            }
-            return error_results;
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-            ResetResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false,
-                    "Failed to decompress server response"});
-            }
-            return error_results;
-        }
-
-        auto response = iam::messaging::reset_password_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-            ResetResult error_results;
-            for (const auto& id : account_ids) {
-                error_results.push_back({id, false, "Invalid server response"});
-            }
-            return error_results;
-        }
-
-        return response->results;
+        return response_result->results;
     };
 
     auto* watcher = new QFutureWatcher<ResetResult>(self);
@@ -979,28 +819,12 @@ void AccountMdiWindow::resetPasswordSelected() {
         QString first_error;
 
         for (const auto& result : results) {
-            // Look up username for logging
-            std::string username = "<unknown>";
-            for (int row = 0; row < self->accountModel_->rowCount(); ++row) {
-                const auto* account = self->accountModel_->getAccount(row);
-                if (account && account->id == result.account_id) {
-                    username = account->username;
-                    break;
-                }
-            }
-
             if (result.success) {
-                BOOST_LOG_SEV(lg(), info)
-                    << "Password reset: reset flag set for user '"
-                    << username << "' (account_id: "
-                    << boost::uuids::to_string(result.account_id) << ")";
+                BOOST_LOG_SEV(lg(), info) << "Password reset flag set successfully";
                 success_count++;
             } else {
                 BOOST_LOG_SEV(lg(), error)
-                    << "Password reset failed: could not set reset flag for user '"
-                    << username << "' (account_id: "
-                    << boost::uuids::to_string(result.account_id)
-                    << ") - " << result.message;
+                    << "Password reset failed: " << result.message;
                 failure_count++;
                 if (first_error.isEmpty()) {
                     first_error = QString::fromStdString(result.message);

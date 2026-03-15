@@ -20,28 +20,20 @@
 #ifndef ORES_MQ_DOMAIN_QUEUE_DEFINITION_HPP
 #define ORES_MQ_DOMAIN_QUEUE_DEFINITION_HPP
 
-#include <chrono>
-#include <optional>
 #include <string>
+#include <chrono>
 #include <boost/uuid/uuid.hpp>
 #include "ores.mq/domain/queue_scope_type.hpp"
 #include "ores.mq/domain/queue_type.hpp"
 
 namespace ores::mq::domain {
 
-/**
- * @brief Definition of a message queue.
- *
- * Mirrors a row in ores_mq_queues_tbl.
- */
-struct queue_definition final {
+struct queue_definition {
     boost::uuids::uuid id;
-    std::optional<boost::uuids::uuid> tenant_id;
-    std::optional<boost::uuids::uuid> party_id;
-    queue_scope_type scope_type = queue_scope_type::party;
-    queue_type type = queue_type::task;
     std::string name;
     std::string description;
+    queue_scope_type scope_type = queue_scope_type::tenant;
+    queue_type type = queue_type::task;
     std::chrono::system_clock::time_point created_at;
     bool is_active = true;
 };

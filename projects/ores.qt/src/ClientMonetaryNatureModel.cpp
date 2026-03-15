@@ -23,7 +23,6 @@
 #include "ores.refdata/messaging/protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -204,20 +203,20 @@ void ClientMonetaryNatureModel::fetch_types(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch monetary naturees: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch monetary naturees: " + comms::net::to_string(result.error())),
+                                "Failed to fetch monetary naturees: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->monetary_natures.size()
                                            << " monetary naturees";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                    static_cast<std::uint32_t>(result->monetary_natures.size());
                 return {.success = true,
-                        .types = std::move(result->types),
+                        .types = std::move(result->monetary_natures),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "monetary naturees");

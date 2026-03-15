@@ -34,6 +34,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WidgetUtils.hpp"
+#include "ores.iam/domain/tenant.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
@@ -380,7 +381,7 @@ bool AdminAccountPage::validatePage() {
 
     wizard_->setAdminAccountId(adminResult->account_id);
     BOOST_LOG_SEV(lg(), info) << "Administrator account created: "
-        << boost::uuids::to_string(adminResult->account_id);
+        << adminResult->account_id;
 
     // Login as the new administrator
     BOOST_LOG_SEV(lg(), info) << "Logging in as administrator...";
@@ -913,15 +914,15 @@ void ProvisionerApplyPage::startProvisioning() {
 
             ProvisioningResult result;
 
-            iam::messaging::provision_tenant_request request;
-            request.type = type;
-            request.code = code;
-            request.name = name;
-            request.hostname = hostname;
-            request.description = description;
-            request.admin_username = adminUsername;
-            request.admin_password = adminPassword;
-            request.admin_email = adminEmail;
+            iam::domain::tenant tenant;
+            tenant.type = type;
+            tenant.code = code;
+            tenant.name = name;
+            tenant.hostname = hostname;
+            tenant.description = description;
+
+            iam::messaging::save_tenant_request request;
+            request.data = std::move(tenant);
 
             auto response = clientManager->process_authenticated_request(
                 std::move(request));
@@ -932,12 +933,12 @@ void ProvisionerApplyPage::startProvisioning() {
             }
 
             if (!response->success) {
-                result.error = response->error_message;
+                result.error = response->message;
                 return result;
             }
 
             result.success = true;
-            result.tenantId = response->tenant_id;
+            result.tenantId = code; // Use code as ID since save doesn't return tenant ID
             return result;
         }
     );

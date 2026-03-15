@@ -20,10 +20,10 @@
 #include "ores.qt/ClientJobDefinitionModel.hpp"
 
 #include <QtConcurrent>
+#include "ores.scheduler/rfl/reflectors.hpp"
 #include "ores.scheduler/messaging/scheduler_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -204,11 +204,11 @@ void ClientJobDefinitionModel::fetch_definitions(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch job definitions: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .definitions = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch job definitions: " + comms::net::to_string(result.error())),
+                                "Failed to fetch job definitions: " + result.error()),
                             .error_details = {}};
                 }
 

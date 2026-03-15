@@ -20,180 +20,61 @@
 #ifndef ORES_REPORTING_MESSAGING_CONCURRENCY_POLICY_PROTOCOL_HPP
 #define ORES_REPORTING_MESSAGING_CONCURRENCY_POLICY_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.reporting/domain/concurrency_policy.hpp"
 
 namespace ores::reporting::messaging {
 
-// ============================================================================
-// Concurrency Policy Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all concurrency policies.
- */
-struct get_concurrency_policies_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_concurrency_policies_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_concurrency_policies_request {
+    using response_type = struct get_concurrency_policies_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.concurrency-policies.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_concurrency_policies_request& v);
-
-/**
- * @brief Response containing all concurrency policies.
- */
-struct get_concurrency_policies_response final {
-    std::vector<domain::concurrency_policy> policies;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_concurrency_policies_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_concurrency_policies_response {
+    std::vector<ores::reporting::domain::concurrency_policy> policies;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_concurrency_policies_response& v);
-
-/**
- * @brief Request to save a concurrency policy (create or update).
- */
-struct save_concurrency_policy_request final {
-    domain::concurrency_policy policy;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_concurrency_policy_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_concurrency_policy_request {
+    using response_type = struct save_concurrency_policy_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.concurrency-policies.save";
+    ores::reporting::domain::concurrency_policy policy;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_concurrency_policy_request& v);
-
-/**
- * @brief Response confirming concurrency policy save operation.
- */
-struct save_concurrency_policy_response final {
-    bool success;
-    std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_concurrency_policy_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const save_concurrency_policy_response& v);
-
-/**
- * @brief Result for a single concurrency policy deletion.
- */
-struct delete_concurrency_policy_result final {
-    std::string code;  ///< Primary key
-    bool success;
+struct save_concurrency_policy_response {
+    bool success = false;
     std::string message;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_concurrency_policy_result& v);
-
-/**
- * @brief Request to delete one or more concurrency policies.
- */
-struct delete_concurrency_policy_request final {
-    std::vector<std::string> codes;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_concurrency_policy_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_concurrency_policy_request {
+    using response_type = struct delete_concurrency_policy_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.concurrency-policies.delete";
+    std::vector<std::string> codes;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_concurrency_policy_request& v);
-
-/**
- * @brief Response confirming concurrency policy deletion(s).
- */
-struct delete_concurrency_policy_response final {
-    std::vector<delete_concurrency_policy_result> results;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_concurrency_policy_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_concurrency_policy_response& v);
-
-/**
- * @brief Request to retrieve version history for a concurrency policy.
- */
-struct get_concurrency_policy_history_request final {
-    std::string code;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_concurrency_policy_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_concurrency_policy_history_request& v);
-
-/**
- * @brief Response containing concurrency policy version history.
- */
-struct get_concurrency_policy_history_response final {
-    bool success;
+struct delete_concurrency_policy_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::concurrency_policy> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_concurrency_policy_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_concurrency_policy_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Concurrency Policy traits
-template<>
-struct message_traits<reporting::messaging::get_concurrency_policies_request> {
-    using request_type = reporting::messaging::get_concurrency_policies_request;
-    using response_type = reporting::messaging::get_concurrency_policies_response;
-    static constexpr message_type request_message_type =
-        message_type::get_concurrency_policies_request;
+struct get_concurrency_policy_history_request {
+    using response_type = struct get_concurrency_policy_history_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.concurrency-policies.history";
+    std::string code;
 };
 
-template<>
-struct message_traits<reporting::messaging::save_concurrency_policy_request> {
-    using request_type = reporting::messaging::save_concurrency_policy_request;
-    using response_type = reporting::messaging::save_concurrency_policy_response;
-    static constexpr message_type request_message_type =
-        message_type::save_concurrency_policy_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::delete_concurrency_policy_request> {
-    using request_type = reporting::messaging::delete_concurrency_policy_request;
-    using response_type = reporting::messaging::delete_concurrency_policy_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_concurrency_policy_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::get_concurrency_policy_history_request> {
-    using request_type = reporting::messaging::get_concurrency_policy_history_request;
-    using response_type = reporting::messaging::get_concurrency_policy_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_concurrency_policy_history_request;
+struct get_concurrency_policy_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::reporting::domain::concurrency_policy> history;
 };
 
 }

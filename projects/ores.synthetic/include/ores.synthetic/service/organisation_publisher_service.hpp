@@ -20,12 +20,26 @@
 #ifndef ORES_SYNTHETIC_SERVICE_ORGANISATION_PUBLISHER_SERVICE_HPP
 #define ORES_SYNTHETIC_SERVICE_ORGANISATION_PUBLISHER_SERVICE_HPP
 
+#include <cstdint>
+#include <string>
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic/domain/generated_organisation.hpp"
-#include "ores.synthetic/messaging/generate_organisation_protocol.hpp"
 
 namespace ores::synthetic::service {
+
+struct generate_organisation_result {
+    bool success = false;
+    std::string error_message;
+    std::uint32_t parties_count = 0;
+    std::uint32_t counterparties_count = 0;
+    std::uint32_t portfolios_count = 0;
+    std::uint32_t books_count = 0;
+    std::uint32_t business_unit_types_count = 0;
+    std::uint32_t business_units_count = 0;
+    std::uint32_t contacts_count = 0;
+    std::uint32_t identifiers_count = 0;
+};
 
 /**
  * @brief Persists a generated organisation to the database.
@@ -52,7 +66,7 @@ public:
      * @param org The generated organisation to persist.
      * @return Response with success/failure and entity counts.
      */
-    messaging::generate_organisation_response publish(
+    generate_organisation_result publish(
         const domain::generated_organisation& org);
 
 private:

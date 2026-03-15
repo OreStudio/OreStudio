@@ -1,0 +1,50 @@
+{{{cpp_license}}}
+{{#component}}
+#include "{{full_name}}/app/host.hpp"
+
+#include <cstdlib>
+#include <boost/exception/diagnostic_information.hpp>
+#include "ores.telemetry/log/lifecycle_manager.hpp"
+#include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include "{{full_name}}/app/application.hpp"
+#include "{{full_name}}/config/parser.hpp"
+
+namespace {{namespace}}::app {
+
+using namespace ores::logging;
+using {{namespace}}::config::parser;
+using ores::telemetry::log::lifecycle_manager;
+
+boost::asio::awaitable<int>
+host::execute(const std::vector<std::string>& args, std::ostream& std_output,
+    std::ostream& error_output, boost::asio::io_context& io_ctx) {
+    parser p;
+    const auto ocfg(p.parse(args, std_output, error_output));
+
+    if (!ocfg)
+        co_return EXIT_SUCCESS;
+
+    const auto& cfg(*ocfg);
+    lifecycle_manager lm(cfg.logging);
+
+    BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
+    BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
+
+    try {
+        application app;
+        co_await app.run(io_ctx, cfg);
+        co_return EXIT_SUCCESS;
+    } catch (const std::exception& e) {
+        const auto *const be(dynamic_cast<const boost::exception* const>(&e));
+        if (be == nullptr)
+            throw;
+
+        using boost::diagnostic_information;
+        BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
+        BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
+        throw;
+    }
+}
+
+}
+{{/component}}

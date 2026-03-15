@@ -754,11 +754,11 @@ void PublishResultsPage::populateResults() {
         resultsModel_->setItem(row, 0, new QStandardItem(
             QString::fromStdString(r.dataset_code)));
 
-        auto* statusItem = new QStandardItem(
-            QString::fromStdString(r.status));
-        if (r.status == "success") {
+        const std::string statusStr = r.success ? "success" : "failed";
+        auto* statusItem = new QStandardItem(QString::fromStdString(statusStr));
+        if (r.success) {
             statusItem->setForeground(QBrush(QColor("#228B22")));
-        } else if (r.status == "failed") {
+        } else {
             statusItem->setForeground(QBrush(QColor("#cc0000")));
         }
         resultsModel_->setItem(row, 1, statusItem);

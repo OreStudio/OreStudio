@@ -33,7 +33,6 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.refdata/messaging/business_unit_type_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -153,26 +152,12 @@ void BusinessUnitDetailDialog::populateUnitTypes() {
 
     auto task = [cm]() -> std::vector<unit_type_entry> {
         refdata::messaging::get_business_unit_types_request request;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_business_unit_types_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = cm->sendRequest(std::move(request_frame));
+        auto response_result = cm->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) return {};
-
-        auto response = refdata::messaging::get_business_unit_types_response::
-            deserialize(*payload_result);
-        if (!response) return {};
-
         std::vector<unit_type_entry> entries;
-        entries.reserve(response->types.size());
-        for (const auto& t : response->types) {
+        entries.reserve(response_result->business_unit_types.size());
+        for (const auto& t : response_result->business_unit_types) {
             entries.push_back({t.id, t.name, t.level});
         }
         std::sort(entries.begin(), entries.end(),
@@ -336,34 +321,14 @@ void BusinessUnitDetailDialog::onSaveClicked() {
         }
 
         refdata::messaging::save_business_unit_request request;
-        request.business_units.push_back(business_unit);
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_business_unit_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.data = business_unit;
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = refdata::messaging::save_business_unit_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -422,34 +387,14 @@ void BusinessUnitDetailDialog::onDeleteClicked() {
         }
 
         refdata::messaging::delete_business_unit_request request;
-        request.ids.push_back({id});
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_business_unit_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.ids.push_back(boost::uuids::to_string(id));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server"};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = refdata::messaging::delete_business_unit_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

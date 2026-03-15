@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,39 +20,18 @@
 #ifndef ORES_ASSETS_MESSAGING_REGISTRAR_HPP
 #define ORES_ASSETS_MESSAGING_REGISTRAR_HPP
 
-#include <memory>
-#include "ores.comms/net/server.hpp"
-#include "ores.comms/service/auth_session_service.hpp"
-#include "ores.logging/make_logger.hpp"
+#include <vector>
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.database/domain/context.hpp"
 
 namespace ores::assets::messaging {
 
-/**
- * @brief Register assets subsystem message handlers with the server.
- *
- * Registers handlers for all assets subsystem messages (0x4000-0x4FFF).
- * Must be called before server.run().
- *
- * @param server The server to register handlers with
- * @param ctx Database context for repository access
- * @param sessions Shared auth session service for authentication
- */
 class registrar {
-private:
-    inline static std::string_view logger_name =
-        "ores.assets.messaging.registrar";
-
-    static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
-    static void register_handlers(comms::net::server& server,
-        database::context ctx,
-        std::shared_ptr<comms::service::auth_session_service> sessions);
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+        ores::database::context ctx);
 };
 
 }

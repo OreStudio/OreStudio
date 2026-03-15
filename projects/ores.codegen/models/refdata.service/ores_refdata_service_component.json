@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "refdata.service",
+    "full_name": "ores.refdata.service",
+    "brief": "Reference data service",
+    "description": "Standalone NATS microservice hosting reference data handlers: currencies, countries, parties, counterparties, books, business units, and portfolios."
+  }
+}

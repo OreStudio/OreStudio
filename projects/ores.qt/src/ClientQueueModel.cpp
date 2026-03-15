@@ -23,7 +23,6 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_hash.hpp>
 #include <QtConcurrent>
-#include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.mq/messaging/mq_protocol.hpp"
@@ -33,8 +32,6 @@
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
 
@@ -161,75 +158,33 @@ void ClientQueueModel::refresh() {
 
             // --- Request 1: list all queue definitions ---
             mq::messaging::get_queues_request queues_req;
-            auto queues_payload = queues_req.serialize();
-            frame queues_frame(message_type::get_queues_request, 0,
-                               std::move(queues_payload));
-
-            auto queues_result = self->clientManager_->sendRequest(
-                std::move(queues_frame));
+            auto queues_result = self->clientManager_->process_authenticated_request(
+                std::move(queues_req));
             if (!queues_result) {
                 return {.success = false, .rows = {},
                         .error_message = tr("Failed to send get_queues request"),
                         .error_details = {}};
             }
 
-            if (auto err = exception_helper::check_error_response(*queues_result)) {
+            if (!queues_result->success) {
                 return {.success = false, .rows = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto queues_bytes = queues_result->decompressed_payload();
-            if (!queues_bytes) {
-                return {.success = false, .rows = {},
-                        .error_message = tr("Failed to decompress queues response"),
-                        .error_details = {}};
-            }
-
-            auto queues_resp = mq::messaging::get_queues_response::
-                deserialize(*queues_bytes);
-            if (!queues_resp || !queues_resp->success) {
-                return {.success = false, .rows = {},
-                        .error_message = queues_resp
-                            ? QString::fromStdString(queues_resp->message)
-                            : tr("Failed to deserialize queues response"),
+                        .error_message = QString::fromStdString(queues_result->message),
                         .error_details = {}};
             }
 
             // --- Request 2: get stats for all queues ---
             mq::messaging::get_queue_stats_request stats_req;
-            auto stats_payload = stats_req.serialize();
-            frame stats_frame(message_type::get_queue_stats_request, 0,
-                              std::move(stats_payload));
-
-            auto stats_result = self->clientManager_->sendRequest(
-                std::move(stats_frame));
+            auto stats_result = self->clientManager_->process_authenticated_request(
+                std::move(stats_req));
             if (!stats_result) {
                 return {.success = false, .rows = {},
                         .error_message = tr("Failed to send get_queue_stats request"),
                         .error_details = {}};
             }
 
-            if (auto err = exception_helper::check_error_response(*stats_result)) {
+            if (!stats_result->success) {
                 return {.success = false, .rows = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto stats_bytes = stats_result->decompressed_payload();
-            if (!stats_bytes) {
-                return {.success = false, .rows = {},
-                        .error_message = tr("Failed to decompress stats response"),
-                        .error_details = {}};
-            }
-
-            auto stats_resp = mq::messaging::get_queue_stats_response::
-                deserialize(*stats_bytes);
-            if (!stats_resp || !stats_resp->success) {
-                return {.success = false, .rows = {},
-                        .error_message = stats_resp
-                            ? QString::fromStdString(stats_resp->message)
-                            : tr("Failed to deserialize stats response"),
+                        .error_message = QString::fromStdString(stats_result->message),
                         .error_details = {}};
             }
 
@@ -237,7 +192,7 @@ void ClientQueueModel::refresh() {
             using uuid = boost::uuids::uuid;
             std::unordered_map<uuid,
                 const mq::domain::queue_stats*> stats_map;
-            for (const auto& s : stats_resp->stats) {
+            for (const auto& s : stats_result->stats) {
                 auto it = stats_map.find(s.queue_id);
                 if (it == stats_map.end() ||
                     s.recorded_at > it->second->recorded_at) {
@@ -246,8 +201,8 @@ void ClientQueueModel::refresh() {
             }
 
             std::vector<queue_row> rows;
-            rows.reserve(queues_resp->queues.size());
-            for (const auto& qd : queues_resp->queues) {
+            rows.reserve(queues_result->queues.size());
+            for (const auto& qd : queues_result->queues) {
                 queue_row r;
                 r.id          = qd.id;
                 r.name        = qd.name;

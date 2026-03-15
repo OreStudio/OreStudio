@@ -1103,7 +1103,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         name = component.get('name', 'unknown')
         full_name = component.get('full_name', f'ores.{name}')
         component['full_name_upper'] = full_name.replace('.', '_').upper()
-        component['name_upper'] = name.upper()
+        component['name_upper'] = name.replace('.', '_').upper()
+        component['namespace'] = full_name.replace('.', '::')
         data['component'] = component
 
     # Special processing for entity schema models

@@ -20,179 +20,56 @@
 #ifndef ORES_REFDATA_MESSAGING_COUNTERPARTY_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_COUNTERPARTY_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <cstdint>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/counterparty.hpp"
 
 namespace ores::refdata::messaging {
 
-// ============================================================================
-// Counterparty Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve counterparties with pagination support.
- */
-struct get_counterparties_request final {
-    std::uint32_t offset = 0;
-    std::uint32_t limit = 100;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparties_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_counterparties_request {
+    using response_type = struct get_counterparties_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_counterparties_request& v);
-
-/**
- * @brief Response containing counterparties with pagination metadata.
- */
-struct get_counterparties_response final {
-    std::vector<domain::counterparty> counterparties;
-    std::uint32_t total_available_count = 0;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparties_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_counterparties_response {
+    std::vector<ores::refdata::domain::counterparty> counterparties;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_counterparties_response& v);
-
-/**
- * @brief Request to save one or more counterparties (create or update).
- */
-struct save_counterparty_request final {
-    std::vector<domain::counterparty> counterparties;
-
-    static save_counterparty_request from(domain::counterparty counterparty);
-    static save_counterparty_request from(std::vector<domain::counterparty> counterparties);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_counterparty_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_counterparty_request {
+    using response_type = struct save_counterparty_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.save";
+    ores::refdata::domain::counterparty data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_counterparty_request& v);
-
-/**
- * @brief Response confirming counterparty save operation(s).
- */
-struct save_counterparty_response final {
+struct save_counterparty_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_counterparty_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_counterparty_response& v);
-
-/**
- * @brief Request to delete one or more counterparties.
- */
-struct delete_counterparty_request final {
-    std::vector<boost::uuids::uuid> ids;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_counterparty_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_counterparty_request {
+    using response_type = struct delete_counterparty_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.delete";
+    std::vector<std::string> ids;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_counterparty_request& v);
-
-/**
- * @brief Response confirming counterparty deletion(s).
- */
-struct delete_counterparty_response final {
+struct delete_counterparty_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_counterparty_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_counterparty_response& v);
-
-/**
- * @brief Request to retrieve version history for a counterparty.
- */
-struct get_counterparty_history_request final {
-    boost::uuids::uuid id;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparty_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_counterparty_history_request {
+    using response_type = struct get_counterparty_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.counterparties.history";
+    std::string id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_counterparty_history_request& v);
-
-/**
- * @brief Response containing counterparty version history.
- */
-struct get_counterparty_history_response final {
-    bool success;
+struct get_counterparty_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::counterparty> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_counterparty_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_counterparty_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Counterparty traits
-template<>
-struct message_traits<refdata::messaging::get_counterparties_request> {
-    using request_type = refdata::messaging::get_counterparties_request;
-    using response_type = refdata::messaging::get_counterparties_response;
-    static constexpr message_type request_message_type =
-        message_type::get_counterparties_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::save_counterparty_request> {
-    using request_type = refdata::messaging::save_counterparty_request;
-    using response_type = refdata::messaging::save_counterparty_response;
-    static constexpr message_type request_message_type =
-        message_type::save_counterparty_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::delete_counterparty_request> {
-    using request_type = refdata::messaging::delete_counterparty_request;
-    using response_type = refdata::messaging::delete_counterparty_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_counterparty_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::get_counterparty_history_request> {
-    using request_type = refdata::messaging::get_counterparty_history_request;
-    using response_type = refdata::messaging::get_counterparty_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_counterparty_history_request;
+    std::vector<ores::refdata::domain::counterparty> history;
 };
 
 }

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,13 +20,8 @@
 #include "ores.comms.shell/app/host.hpp"
 
 #include <cstdlib>
-#include <memory>
 #include <boost/exception/diagnostic_information.hpp>
 #include "ores.telemetry/log/lifecycle_manager.hpp"
-#include "ores.telemetry/domain/resource.hpp"
-#include "ores.telemetry/domain/telemetry_context.hpp"
-#include "ores.telemetry/exporting/hybrid_log_exporter.hpp"
-#include "ores.comms/service/telemetry_streaming_service.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.comms.shell/app/application.hpp"
 #include "ores.comms.shell/config/parser.hpp"
@@ -62,91 +57,16 @@ int host::execute(const std::vector<std::string>& args,
     lifecycle_manager lm(cfg.logging);
 
     /*
-     * Set up telemetry export if enabled.
-     */
-    std::shared_ptr<telemetry::exporting::hybrid_log_exporter> exporter;
-    std::optional<telemetry::domain::telemetry_context> telemetry_ctx;
-    if (cfg.telemetry) {
-        const auto& tcfg(*cfg.telemetry);
-
-        /*
-         * Create the resource that describes this service instance.
-         */
-        auto resource = std::make_shared<telemetry::domain::resource>(
-            telemetry::domain::resource::from_environment(
-                tcfg.service_name, tcfg.service_version));
-
-        /*
-         * Create a root telemetry context for this session.
-         */
-        telemetry_ctx = telemetry::domain::telemetry_context::create_root(resource);
-
-        /*
-         * Compute the full path to the telemetry output file.
-         */
-        auto path = tcfg.output_directory / tcfg.output_file;
-
-        /*
-         * Create the hybrid exporter for JSON Lines output with optional streaming.
-         *
-         * When streaming is enabled, records are batched and sent to the server
-         * in addition to being written to the local file. The send callback
-         * needs access to the client session for sending, which requires
-         * integration with the application's connection management.
-         *
-         * TODO: Wire up send_callback to client_session for server streaming.
-         * This requires refactoring client_session to be created earlier and
-         * shared between the application and the exporter.
-         */
-        telemetry::exporting::send_records_callback send_callback = nullptr;
-        exporter = std::make_shared<telemetry::exporting::hybrid_log_exporter>(
-            path, tcfg, std::move(send_callback));
-
-        /*
-         * Add the telemetry sink to capture all log records.
-         */
-        lm.add_telemetry_sink(resource, [exporter](auto rec) {
-            exporter->export_record(std::move(rec));
-        });
-        BOOST_LOG_SEV(lg(), info)
-            << "Telemetry export enabled, writing to: " << path;
-        if (tcfg.streaming_enabled) {
-            BOOST_LOG_SEV(lg(), info)
-                << "Telemetry streaming enabled (batch_size="
-                << tcfg.batch_size << ", flush_interval="
-                << tcfg.flush_interval.count() << "s)";
-        }
-        BOOST_LOG_SEV(lg(), info)
-            << "Telemetry context created - trace_id: "
-            << telemetry_ctx->get_trace_id().to_hex();
-    }
-
-    /*
      * Log the configuration and command line arguments.
      */
     BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 
     /*
-     * Build streaming options if telemetry streaming is enabled.
-     */
-    std::optional<comms::service::telemetry_streaming_options> streaming_options;
-    if (cfg.telemetry && cfg.telemetry->streaming_enabled) {
-        const auto& tcfg(*cfg.telemetry);
-        streaming_options = comms::service::telemetry_streaming_options{
-            .source_name = tcfg.service_name,
-            .source_version = tcfg.service_version,
-            .batch_size = tcfg.batch_size,
-            .flush_interval = tcfg.flush_interval
-        };
-    }
-
-    /*
      * Execute the application.
      */
     try {
-        ores::comms::shell::app::application app(
-            cfg.connection, cfg.login, telemetry_ctx, streaming_options);
+        ores::comms::shell::app::application app(cfg.connection, cfg.login);
         app.run();
         return EXIT_SUCCESS;
     } catch (const std::exception& e) {

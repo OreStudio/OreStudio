@@ -37,7 +37,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
-        ores.comms.lib
+        ores.nats.lib
     PRIVATE
         ores.utility.lib
         ores.logging.lib

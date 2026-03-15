@@ -36,7 +36,7 @@
 #include <QVBoxLayout>
 #include <QCloseEvent>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.comms/net/client_session.hpp"
+#include "ores.comms.shell/service/nats_session.hpp"
 #include "ores.comms.shell/app/repl.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -152,7 +152,7 @@ private:
     std::unique_ptr<std::ostream> out_stream_;
     std::unique_ptr<std::istream> in_stream_;
 
-    std::unique_ptr<comms::net::client_session> shell_session_;
+    comms::shell::service::nats_session shell_session_;
     std::unique_ptr<comms::shell::app::repl> shell_repl_;
     std::unique_ptr<std::thread> worker_thread_;
 

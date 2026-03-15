@@ -20,181 +20,61 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_INSTANCE_PROTOCOL_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_INSTANCE_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.reporting/domain/report_instance.hpp"
 
 namespace ores::reporting::messaging {
 
-// ============================================================================
-// Report Instance Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all report instances.
- */
-struct get_report_instances_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_instances_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_report_instances_request {
+    using response_type = struct get_report_instances_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-instances.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_report_instances_request& v);
-
-/**
- * @brief Response containing all report instances.
- */
-struct get_report_instances_response final {
-    std::vector<domain::report_instance> instances;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_instances_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_report_instances_response {
+    std::vector<ores::reporting::domain::report_instance> instances;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_report_instances_response& v);
-
-/**
- * @brief Request to save a report instance (create or update).
- */
-struct save_report_instance_request final {
-    domain::report_instance instance;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_report_instance_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_report_instance_request {
+    using response_type = struct save_report_instance_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-instances.save";
+    ores::reporting::domain::report_instance instance;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_report_instance_request& v);
-
-/**
- * @brief Response confirming report instance save operation.
- */
-struct save_report_instance_response final {
-    bool success;
-    std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_report_instance_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const save_report_instance_response& v);
-
-/**
- * @brief Result for a single report instance deletion.
- */
-struct delete_report_instance_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
+struct save_report_instance_response {
+    bool success = false;
     std::string message;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_report_instance_result& v);
-
-/**
- * @brief Request to delete one or more report instances.
- */
-struct delete_report_instance_request final {
-    std::vector<boost::uuids::uuid> ids;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_report_instance_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_report_instance_request {
+    using response_type = struct delete_report_instance_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-instances.delete";
+    std::vector<std::string> ids;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_report_instance_request& v);
-
-/**
- * @brief Response confirming report instance deletion(s).
- */
-struct delete_report_instance_response final {
-    std::vector<delete_report_instance_result> results;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_report_instance_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_report_instance_response& v);
-
-/**
- * @brief Request to retrieve version history for a report instance.
- */
-struct get_report_instance_history_request final {
-    boost::uuids::uuid id;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_instance_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_report_instance_history_request& v);
-
-/**
- * @brief Response containing report instance version history.
- */
-struct get_report_instance_history_response final {
-    bool success;
+struct delete_report_instance_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::report_instance> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_instance_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_report_instance_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Report Instance traits
-template<>
-struct message_traits<reporting::messaging::get_report_instances_request> {
-    using request_type = reporting::messaging::get_report_instances_request;
-    using response_type = reporting::messaging::get_report_instances_response;
-    static constexpr message_type request_message_type =
-        message_type::get_report_instances_request;
+struct get_report_instance_history_request {
+    using response_type = struct get_report_instance_history_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-instances.history";
+    std::string id;
 };
 
-template<>
-struct message_traits<reporting::messaging::save_report_instance_request> {
-    using request_type = reporting::messaging::save_report_instance_request;
-    using response_type = reporting::messaging::save_report_instance_response;
-    static constexpr message_type request_message_type =
-        message_type::save_report_instance_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::delete_report_instance_request> {
-    using request_type = reporting::messaging::delete_report_instance_request;
-    using response_type = reporting::messaging::delete_report_instance_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_report_instance_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::get_report_instance_history_request> {
-    using request_type = reporting::messaging::get_report_instance_history_request;
-    using response_type = reporting::messaging::get_report_instance_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_report_instance_history_request;
+struct get_report_instance_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::reporting::domain::report_instance> history;
 };
 
 }

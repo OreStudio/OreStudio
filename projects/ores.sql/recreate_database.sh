@@ -43,6 +43,16 @@ Required arguments:
     -t, --test-ddl-password PASSWORD    Password for the test DDL database user
     -T, --test-dml-password PASSWORD    Password for the test DML database user
     -r, --ro-password PASSWORD          Password for the read-only database user
+    --iam-service-password PASSWORD     Password for the IAM domain service user
+    --refdata-service-password PASSWORD Password for the Reference Data domain service user
+    --dq-service-password PASSWORD      Password for the Data Quality domain service user
+    --variability-service-password PASSWORD Password for the Variability domain service user
+    --assets-service-password PASSWORD  Password for the Assets domain service user
+    --synthetic-service-password PASSWORD Password for the Synthetic domain service user
+    --scheduler-service-password PASSWORD Password for the Scheduler domain service user
+    --reporting-service-password PASSWORD Password for the Reporting domain service user
+    --telemetry-service-password PASSWORD Password for the Telemetry domain service user
+    --trading-service-password PASSWORD Password for the Trading domain service user
 
 Optional arguments:
     -D, --database NAME                 Database name (default: ${DEFAULT_DB_NAME})
@@ -60,6 +70,16 @@ Environment Variables:
     ORES_TEST_DB_DDL_PASSWORD           Password for the test DDL database user (overridden by -t)
     ORES_TEST_DB_PASSWORD               Password for the test DML database user (overridden by -T)
     ORES_DB_READONLY_PASSWORD           Password for the read-only database user (overridden by -r)
+    ORES_DB_IAM_SERVICE_PASSWORD        Password for the IAM domain service user (overridden by --iam-service-password)
+    ORES_DB_REFDATA_SERVICE_PASSWORD    Password for the Reference Data domain service user (overridden by --refdata-service-password)
+    ORES_DB_DQ_SERVICE_PASSWORD         Password for the Data Quality domain service user (overridden by --dq-service-password)
+    ORES_DB_VARIABILITY_SERVICE_PASSWORD Password for the Variability domain service user (overridden by --variability-service-password)
+    ORES_DB_ASSETS_SERVICE_PASSWORD     Password for the Assets domain service user (overridden by --assets-service-password)
+    ORES_DB_SYNTHETIC_SERVICE_PASSWORD  Password for the Synthetic domain service user (overridden by --synthetic-service-password)
+    ORES_DB_SCHEDULER_SERVICE_PASSWORD  Password for the Scheduler domain service user (overridden by --scheduler-service-password)
+    ORES_DB_REPORTING_SERVICE_PASSWORD  Password for the Reporting domain service user (overridden by --reporting-service-password)
+    ORES_DB_TELEMETRY_SERVICE_PASSWORD  Password for the Telemetry domain service user (overridden by --telemetry-service-password)
+    ORES_DB_TRADING_SERVICE_PASSWORD    Password for the Trading domain service user (overridden by --trading-service-password)
 
 Example:
     # Using command line arguments
@@ -94,6 +114,16 @@ HTTP_PASSWORD="${ORES_DB_HTTP_PASSWORD:-}"
 TEST_DDL_PASSWORD="${ORES_TEST_DB_DDL_PASSWORD:-}"
 TEST_DML_PASSWORD="${ORES_TEST_DB_PASSWORD:-}"
 RO_PASSWORD="${ORES_DB_READONLY_PASSWORD:-}"
+IAM_SERVICE_PASSWORD="${ORES_DB_IAM_SERVICE_PASSWORD:-}"
+REFDATA_SERVICE_PASSWORD="${ORES_DB_REFDATA_SERVICE_PASSWORD:-}"
+DQ_SERVICE_PASSWORD="${ORES_DB_DQ_SERVICE_PASSWORD:-}"
+VARIABILITY_SERVICE_PASSWORD="${ORES_DB_VARIABILITY_SERVICE_PASSWORD:-}"
+ASSETS_SERVICE_PASSWORD="${ORES_DB_ASSETS_SERVICE_PASSWORD:-}"
+SYNTHETIC_SERVICE_PASSWORD="${ORES_DB_SYNTHETIC_SERVICE_PASSWORD:-}"
+SCHEDULER_SERVICE_PASSWORD="${ORES_DB_SCHEDULER_SERVICE_PASSWORD:-}"
+REPORTING_SERVICE_PASSWORD="${ORES_DB_REPORTING_SERVICE_PASSWORD:-}"
+TELEMETRY_SERVICE_PASSWORD="${ORES_DB_TELEMETRY_SERVICE_PASSWORD:-}"
+TRADING_SERVICE_PASSWORD="${ORES_DB_TRADING_SERVICE_PASSWORD:-}"
 DB_NAME="${DEFAULT_DB_NAME}"
 ASSUME_YES=""
 SKIP_VALIDATION="off"
@@ -110,6 +140,16 @@ while [[ $# -gt 0 ]]; do
         -t|--test-ddl-password)  TEST_DDL_PASSWORD="$2";  shift 2 ;;
         -T|--test-dml-password)  TEST_DML_PASSWORD="$2";  shift 2 ;;
         -r|--ro-password)        RO_PASSWORD="$2";        shift 2 ;;
+        --iam-service-password)          IAM_SERVICE_PASSWORD="$2";          shift 2 ;;
+        --refdata-service-password)      REFDATA_SERVICE_PASSWORD="$2";      shift 2 ;;
+        --dq-service-password)           DQ_SERVICE_PASSWORD="$2";           shift 2 ;;
+        --variability-service-password)  VARIABILITY_SERVICE_PASSWORD="$2";  shift 2 ;;
+        --assets-service-password)       ASSETS_SERVICE_PASSWORD="$2";       shift 2 ;;
+        --synthetic-service-password)    SYNTHETIC_SERVICE_PASSWORD="$2";    shift 2 ;;
+        --scheduler-service-password)    SCHEDULER_SERVICE_PASSWORD="$2";    shift 2 ;;
+        --reporting-service-password)    REPORTING_SERVICE_PASSWORD="$2";    shift 2 ;;
+        --telemetry-service-password)    TELEMETRY_SERVICE_PASSWORD="$2";    shift 2 ;;
+        --trading-service-password)      TRADING_SERVICE_PASSWORD="$2";      shift 2 ;;
         -D|--database)           DB_NAME="$2";            shift 2 ;;
         -y|--yes)                ASSUME_YES="1";          shift   ;;
         --no-sql-validation)     SKIP_VALIDATION="on";    shift   ;;
@@ -133,6 +173,16 @@ MISSING_PASSWORDS=()
 [[ -z "${TEST_DDL_PASSWORD}" ]] && MISSING_PASSWORDS+=("test_ddl (-t or ORES_TEST_DB_DDL_PASSWORD)")
 [[ -z "${TEST_DML_PASSWORD}" ]] && MISSING_PASSWORDS+=("test_dml (-T or ORES_TEST_DB_PASSWORD)")
 [[ -z "${RO_PASSWORD}" ]] && MISSING_PASSWORDS+=("ro (-r or ORES_DB_READONLY_PASSWORD)")
+[[ -z "${IAM_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("iam_service (--iam-service-password or ORES_DB_IAM_SERVICE_PASSWORD)")
+[[ -z "${REFDATA_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("refdata_service (--refdata-service-password or ORES_DB_REFDATA_SERVICE_PASSWORD)")
+[[ -z "${DQ_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("dq_service (--dq-service-password or ORES_DB_DQ_SERVICE_PASSWORD)")
+[[ -z "${VARIABILITY_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("variability_service (--variability-service-password or ORES_DB_VARIABILITY_SERVICE_PASSWORD)")
+[[ -z "${ASSETS_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("assets_service (--assets-service-password or ORES_DB_ASSETS_SERVICE_PASSWORD)")
+[[ -z "${SYNTHETIC_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("synthetic_service (--synthetic-service-password or ORES_DB_SYNTHETIC_SERVICE_PASSWORD)")
+[[ -z "${SCHEDULER_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("scheduler_service (--scheduler-service-password or ORES_DB_SCHEDULER_SERVICE_PASSWORD)")
+[[ -z "${REPORTING_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("reporting_service (--reporting-service-password or ORES_DB_REPORTING_SERVICE_PASSWORD)")
+[[ -z "${TELEMETRY_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("telemetry_service (--telemetry-service-password or ORES_DB_TELEMETRY_SERVICE_PASSWORD)")
+[[ -z "${TRADING_SERVICE_PASSWORD}" ]] && MISSING_PASSWORDS+=("trading_service (--trading-service-password or ORES_DB_TRADING_SERVICE_PASSWORD)")
 
 if [[ ${#MISSING_PASSWORDS[@]} -gt 0 ]]; then
     echo "Error: Missing required passwords:" >&2
@@ -206,6 +256,16 @@ PGPASSWORD="${POSTGRES_PASSWORD}" psql \
     -v test_ddl_password="${TEST_DDL_PASSWORD}" \
     -v test_dml_password="${TEST_DML_PASSWORD}" \
     -v ro_password="${RO_PASSWORD}" \
+    -v iam_service_password="${IAM_SERVICE_PASSWORD}" \
+    -v refdata_service_password="${REFDATA_SERVICE_PASSWORD}" \
+    -v dq_service_password="${DQ_SERVICE_PASSWORD}" \
+    -v variability_service_password="${VARIABILITY_SERVICE_PASSWORD}" \
+    -v assets_service_password="${ASSETS_SERVICE_PASSWORD}" \
+    -v synthetic_service_password="${SYNTHETIC_SERVICE_PASSWORD}" \
+    -v scheduler_service_password="${SCHEDULER_SERVICE_PASSWORD}" \
+    -v reporting_service_password="${REPORTING_SERVICE_PASSWORD}" \
+    -v telemetry_service_password="${TELEMETRY_SERVICE_PASSWORD}" \
+    -v trading_service_password="${TRADING_SERVICE_PASSWORD}" \
     -v db_name="${DB_NAME}"
 
 # Phases 2–4: Create database, schema, and metadata via shared helper

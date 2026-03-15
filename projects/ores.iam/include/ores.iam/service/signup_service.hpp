@@ -24,7 +24,6 @@
 #include <string>
 #include <expected>
 #include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.iam/domain/account.hpp"
 #include "ores.iam/repository/account_repository.hpp"

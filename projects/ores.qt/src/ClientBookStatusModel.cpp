@@ -23,14 +23,11 @@
 #include "ores.refdata/messaging/book_status_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/messaging/frame.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-using ores::comms::messaging::frame;
-using ores::comms::messaging::message_type;
 
 namespace {
     std::string book_status_key_extractor(const refdata::domain::book_status& e) {
@@ -156,15 +153,7 @@ void ClientBookStatusModel::refresh() {
             }
 
             refdata::messaging::get_book_statuses_request request;
-            auto payload = request.serialize();
-
-            frame request_frame(
-                message_type::get_book_statuses_request,
-                0, std::move(payload)
-            );
-
-            auto response_result = self->clientManager_->sendRequest(
-                std::move(request_frame));
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
             if (!response_result) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to send request";
                 return {.success = false, .statuses = {},
@@ -172,35 +161,9 @@ void ClientBookStatusModel::refresh() {
                         .error_details = {}};
             }
 
-            // Check for server error response
-            if (auto err = exception_helper::check_error_response(*response_result)) {
-                BOOST_LOG_SEV(lg(), error) << "Server error: "
-                                           << err->message.toStdString();
-                return {.success = false, .statuses = {},
-                        .error_message = err->message,
-                        .error_details = err->details};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response";
-                return {.success = false, .statuses = {},
-                        .error_message = "Failed to decompress response",
-                        .error_details = {}};
-            }
-
-            auto response = refdata::messaging::get_book_statuses_response::
-                deserialize(*payload_result);
-            if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize response";
-                return {.success = false, .statuses = {},
-                        .error_message = "Failed to deserialize response",
-                        .error_details = {}};
-            }
-
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response->statuses.size()
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->book_statuses.size()
                                        << " book statuses";
-            return {.success = true, .statuses = std::move(response->statuses),
+            return {.success = true, .statuses = std::move(response_result->book_statuses),
                     .error_message = {}, .error_details = {}};
         }, "book statuses");
     });

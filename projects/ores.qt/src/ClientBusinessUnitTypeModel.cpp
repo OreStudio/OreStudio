@@ -23,7 +23,6 @@
 #include "ores.refdata/messaging/business_unit_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -205,21 +204,21 @@ void ClientBusinessUnitTypeModel::fetch_types(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch business unit types: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
                                 "Failed to fetch business unit types: " +
-                                comms::net::to_string(result.error())),
+                                result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->types.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->business_unit_types.size()
                                            << " business unit types";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->types.size());
+                    static_cast<std::uint32_t>(result->business_unit_types.size());
                 return {.success = true,
-                        .types = std::move(result->types),
+                        .types = std::move(result->business_unit_types),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "business unit types");

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,89 +20,52 @@
 #ifndef ORES_DQ_MESSAGING_DATASET_DEPENDENCY_PROTOCOL_HPP
 #define ORES_DQ_MESSAGING_DATASET_DEPENDENCY_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/dataset_dependency.hpp"
+#include "ores.dq/domain/dataset.hpp"
 
 namespace ores::dq::messaging {
 
-/**
- * @brief Request to retrieve all dataset dependencies.
- */
-struct get_dataset_dependencies_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_dependencies_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_dataset_dependencies_request {
+    using response_type = struct get_dataset_dependencies_response;
+    static constexpr std::string_view nats_subject =
+        "ores.dq.v1.dataset-dependencies.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_request& v);
-
-/**
- * @brief Response containing all dataset dependencies.
- */
-struct get_dataset_dependencies_response final {
-    std::vector<domain::dataset_dependency> dependencies;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_dependencies_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_dataset_dependencies_response {
+    std::vector<ores::dq::domain::dataset_dependency> dependencies;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_response& v);
-
-/**
- * @brief Request to retrieve dataset dependencies for a specific dataset.
- */
-struct get_dataset_dependencies_by_dataset_request final {
+struct get_dataset_dependencies_by_dataset_request {
+    using response_type = struct get_dataset_dependencies_by_dataset_response;
+    static constexpr std::string_view nats_subject =
+        "ores.dq.v1.dataset-dependencies.by-dataset";
     std::string dataset_code;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_dependencies_by_dataset_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_by_dataset_request& v);
-
-/**
- * @brief Response containing dataset dependencies for a specific dataset.
- */
-struct get_dataset_dependencies_by_dataset_response final {
-    std::vector<domain::dataset_dependency> dependencies;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_dependencies_by_dataset_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_dataset_dependencies_by_dataset_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::domain::dataset_dependency> dependencies;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_dependencies_by_dataset_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-template<>
-struct message_traits<dq::messaging::get_dataset_dependencies_request> {
-    using request_type = dq::messaging::get_dataset_dependencies_request;
-    using response_type = dq::messaging::get_dataset_dependencies_response;
-    static constexpr message_type request_message_type =
-        message_type::get_dataset_dependencies_request;
+struct resolve_dependencies_request {
+    using response_type = struct resolve_dependencies_response;
+    static constexpr std::string_view nats_subject =
+        "ores.dq.v1.dataset-dependencies.resolve";
+    std::vector<std::string> dataset_ids;
 };
 
-template<>
-struct message_traits<dq::messaging::get_dataset_dependencies_by_dataset_request> {
-    using request_type = dq::messaging::get_dataset_dependencies_by_dataset_request;
-    using response_type = dq::messaging::get_dataset_dependencies_by_dataset_response;
-    static constexpr message_type request_message_type =
-        message_type::get_dataset_dependencies_by_dataset_request;
+struct resolve_dependencies_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::dq::domain::dataset> datasets;
+    std::vector<std::string> requested_ids;
 };
 
 }

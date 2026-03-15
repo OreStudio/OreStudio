@@ -31,8 +31,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
-#include "ores.comms/messaging/frame.hpp"
-#include "ores.comms/messaging/message_type.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
@@ -40,8 +38,6 @@
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 ImageCache::ImageCache(ClientManager* clientManager, QObject* parent)
@@ -173,28 +169,13 @@ void ImageCache::loadCurrencyImageIds() {
             refdata::messaging::get_currencies_request request;
             request.offset = 0;
             request.limit = 1000;
-            auto payload = request.serialize();
 
-            frame request_frame(message_type::get_currencies_request, 0, std::move(payload));
+            auto response = self->clientManager_->
+                process_authenticated_request(std::move(request));
 
-            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send currencies request: "
-                                           << response_result.error();
-                return {false, {}};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
-                return {false, {}};
-            }
-
-            auto response = refdata::messaging::get_currencies_response::deserialize(*payload_result);
             if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize currencies response.";
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
+                                           << response.error();
                 return {false, {}};
             }
 
@@ -268,28 +249,13 @@ void ImageCache::loadCountryImageIds() {
             refdata::messaging::get_countries_request request;
             request.offset = 0;
             request.limit = 1000;
-            auto payload = request.serialize();
 
-            frame request_frame(message_type::get_countries_request, 0, std::move(payload));
+            auto response = self->clientManager_->
+                process_authenticated_request(std::move(request));
 
-            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send countries request: "
-                                           << response_result.error();
-                return {false, {}};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
-                return {false, {}};
-            }
-
-            auto response = refdata::messaging::get_countries_response::deserialize(*payload_result);
             if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize countries response.";
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
+                                           << response.error();
                 return {false, {}};
             }
 
@@ -495,28 +461,13 @@ void ImageCache::loadIncrementalChanges() {
             // Build request with modified_since filter
             assets::messaging::list_images_request request;
             request.modified_since = modified_since;
-            auto payload = request.serialize();
 
-            frame request_frame(message_type::list_images_request, 0, std::move(payload));
+            auto response = self->clientManager_->
+                process_authenticated_request(std::move(request));
 
-            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send list images request: "
-                                           << response_result.error();
-                return {.success = false, .image_ids = {}};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
-                return {.success = false, .image_ids = {}};
-            }
-
-            auto response = assets::messaging::list_images_response::deserialize(*payload_result);
             if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list images response.";
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch incremental image list: "
+                                           << response.error();
                 return {.success = false, .image_ids = {}};
             }
 
@@ -666,26 +617,9 @@ void ImageCache::loadImageById(const std::string& image_id) {
 
             assets::messaging::get_images_request request;
             request.image_ids.push_back(requested_id);
-            auto payload = request.serialize();
 
-            frame request_frame(message_type::get_images_request, 0, std::move(payload));
-
-            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send get image request: "
-                                           << response_result.error();
-                return {false, requested_id, {}};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
-                return {false, requested_id, {}};
-            }
-
-            auto response = assets::messaging::get_images_response::deserialize(*payload_result);
+            auto response = self->clientManager_->
+                process_authenticated_request(std::move(request));
 
             if (!response || response->images.empty()) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to get image: " << requested_id;
@@ -752,32 +686,12 @@ ImageCache::ImagesResult ImageCache::fetchImagesInBatches(
 
         assets::messaging::get_images_request request;
         request.image_ids = std::move(batch);
-        auto payload = request.serialize();
 
-        frame request_frame(message_type::get_images_request, 0, std::move(payload));
-
-        auto response_result = clientManager->sendRequest(std::move(request_frame));
-
-        if (!response_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to send images request (batch "
-                                       << batch_num << "): " << response_result.error();
-            ++failed_batches;
-            continue;
-        }
-
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to decompress images response (batch "
-                                       << batch_num << "): " << payload_result.error();
-            ++failed_batches;
-            continue;
-        }
-
-        auto response = assets::messaging::get_images_response::deserialize(*payload_result);
+        auto response = clientManager->process_authenticated_request(std::move(request));
 
         if (!response) {
-            BOOST_LOG_SEV(lg(), error) << "Failed to deserialize images response (batch "
-                                       << batch_num << ").";
+            BOOST_LOG_SEV(lg(), error) << "Failed to fetch images (batch "
+                                       << batch_num << "): " << response.error();
             ++failed_batches;
             continue;
         }
@@ -810,29 +724,13 @@ void ImageCache::loadImageList() {
             if (!self) return {false, {}};
 
             assets::messaging::list_images_request request;
-            auto payload = request.serialize();
 
-            frame request_frame(message_type::list_images_request, 0, std::move(payload));
-
-            auto response_result = self->clientManager_->sendRequest(std::move(request_frame));
-
-            if (!response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to send list images request: "
-                                           << response_result.error();
-                return {false, {}};
-            }
-
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to decompress response: "
-                                           << payload_result.error();
-                return {false, {}};
-            }
-
-            auto response = assets::messaging::list_images_response::deserialize(*payload_result);
+            auto response = self->clientManager_->
+                process_authenticated_request(std::move(request));
 
             if (!response) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to deserialize list images response.";
+                BOOST_LOG_SEV(lg(), error) << "Failed to fetch image list: "
+                                           << response.error();
                 return {false, {}};
             }
 
@@ -995,30 +893,18 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             refdata::messaging::get_currencies_request get_request;
             get_request.offset = 0;
             get_request.limit = 1000;
-            auto get_payload = get_request.serialize();
 
-            frame get_frame(message_type::get_currencies_request, 0, std::move(get_payload));
-
-            auto get_response_result = self->clientManager_->sendRequest(std::move(get_frame));
-            if (!get_response_result) {
+            auto get_response = self->clientManager_->
+                process_authenticated_request(std::move(get_request));
+            if (!get_response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to fetch currencies: "
-                                           << get_response_result.error();
+                                           << get_response.error();
                 return {false, req_iso_code, "Failed to fetch currencies"};
             }
 
-            auto get_payload_result = get_response_result->decompressed_payload();
-            if (!get_payload_result) {
-                return {false, req_iso_code, "Failed to decompress response"};
-            }
-
-            auto get_response =
-                refdata::messaging::get_currencies_response::deserialize(*get_payload_result);
-            if (!get_response) {
-                return {false, req_iso_code, "Invalid currencies response"};
-            }
-
             // Find the currency with matching iso_code
-            auto it = std::find_if(get_response->currencies.begin(), get_response->currencies.end(),
+            auto it = std::find_if(get_response->currencies.begin(),
+                get_response->currencies.end(),
                 [&req_iso_code](const auto& c) { return c.iso_code == req_iso_code; });
 
             if (it == get_response->currencies.end()) {
@@ -1035,28 +921,13 @@ void ImageCache::setCurrencyImage(const std::string& iso_code,
             currency.modified_by = req_assigned_by;
 
             // Step 3: Save the updated currency
-            refdata::messaging::save_currency_request save_request;
-            save_request.currencies.push_back(currency);
-            auto save_payload = save_request.serialize();
-
-            frame save_frame(message_type::save_currency_request, 0, std::move(save_payload));
-
-            auto save_response_result = self->clientManager_->sendRequest(std::move(save_frame));
-            if (!save_response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to save currency: "
-                                           << save_response_result.error();
-                return {false, req_iso_code, "Failed to save currency"};
-            }
-
-            auto save_payload_result = save_response_result->decompressed_payload();
-            if (!save_payload_result) {
-                return {false, req_iso_code, "Failed to decompress save response"};
-            }
-
-            auto save_response =
-                refdata::messaging::save_currency_response::deserialize(*save_payload_result);
+            auto save_response = self->clientManager_->
+                process_authenticated_request(
+                    refdata::messaging::save_currency_request::from(std::move(currency)));
             if (!save_response) {
-                return {false, req_iso_code, "Invalid save response"};
+                BOOST_LOG_SEV(lg(), error) << "Failed to save currency: "
+                                           << save_response.error();
+                return {false, req_iso_code, "Failed to save currency"};
             }
 
             if (save_response->success) {
@@ -1110,30 +981,18 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             refdata::messaging::get_countries_request get_request;
             get_request.offset = 0;
             get_request.limit = 1000;
-            auto get_payload = get_request.serialize();
 
-            frame get_frame(message_type::get_countries_request, 0, std::move(get_payload));
-
-            auto get_response_result = self->clientManager_->sendRequest(std::move(get_frame));
-            if (!get_response_result) {
+            auto get_response = self->clientManager_->
+                process_authenticated_request(std::move(get_request));
+            if (!get_response) {
                 BOOST_LOG_SEV(lg(), error) << "Failed to fetch countries: "
-                                           << get_response_result.error();
+                                           << get_response.error();
                 return {false, req_alpha2_code, "Failed to fetch countries"};
             }
 
-            auto get_payload_result = get_response_result->decompressed_payload();
-            if (!get_payload_result) {
-                return {false, req_alpha2_code, "Failed to decompress response"};
-            }
-
-            auto get_response =
-                refdata::messaging::get_countries_response::deserialize(*get_payload_result);
-            if (!get_response) {
-                return {false, req_alpha2_code, "Invalid countries response"};
-            }
-
             // Find the country with matching alpha2_code
-            auto it = std::find_if(get_response->countries.begin(), get_response->countries.end(),
+            auto it = std::find_if(get_response->countries.begin(),
+                get_response->countries.end(),
                 [&req_alpha2_code](const auto& c) { return c.alpha2_code == req_alpha2_code; });
 
             if (it == get_response->countries.end()) {
@@ -1150,28 +1009,13 @@ void ImageCache::setCountryImage(const std::string& alpha2_code,
             country.modified_by = req_assigned_by;
 
             // Step 3: Save the updated country
-            refdata::messaging::save_country_request save_request;
-            save_request.countries.push_back(country);
-            auto save_payload = save_request.serialize();
-
-            frame save_frame(message_type::save_country_request, 0, std::move(save_payload));
-
-            auto save_response_result = self->clientManager_->sendRequest(std::move(save_frame));
-            if (!save_response_result) {
-                BOOST_LOG_SEV(lg(), error) << "Failed to save country: "
-                                           << save_response_result.error();
-                return {false, req_alpha2_code, "Failed to save country"};
-            }
-
-            auto save_payload_result = save_response_result->decompressed_payload();
-            if (!save_payload_result) {
-                return {false, req_alpha2_code, "Failed to decompress save response"};
-            }
-
-            auto save_response =
-                refdata::messaging::save_country_response::deserialize(*save_payload_result);
+            auto save_response = self->clientManager_->
+                process_authenticated_request(
+                    refdata::messaging::save_country_request::from(std::move(country)));
             if (!save_response) {
-                return {false, req_alpha2_code, "Invalid save response"};
+                BOOST_LOG_SEV(lg(), error) << "Failed to save country: "
+                                           << save_response.error();
+                return {false, req_alpha2_code, "Failed to save country"};
             }
 
             if (save_response->success) {

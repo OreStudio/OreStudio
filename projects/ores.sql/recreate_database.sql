@@ -37,18 +37,33 @@
  *       -v comms_password='...' -v http_password='...' \
  *       -v test_ddl_password='...' -v test_dml_password='...' \
  *       -v ro_password='...' -v db_name='...' \
+ *       -v iam_service_password='...' -v refdata_service_password='...' \
+ *       -v dq_service_password='...' -v variability_service_password='...' \
+ *       -v assets_service_password='...' -v synthetic_service_password='...' \
+ *       -v scheduler_service_password='...' -v reporting_service_password='...' \
+ *       -v telemetry_service_password='...' -v trading_service_password='...' \
  *       -f recreate_database.sql
  *
  * Variables:
- *   :ddl_password      - password for DDL operations
- *   :cli_password      - password for CLI service
- *   :wt_password       - password for Web Toolkit service
- *   :comms_password    - password for Communications service
- *   :http_password     - password for HTTP service
- *   :test_ddl_password - password for test DDL operations
- *   :test_dml_password - password for test DML operations
- *   :ro_password       - password for read-only access
- *   :db_name           - database name to create
+ *   :ddl_password               - password for DDL operations
+ *   :cli_password               - password for CLI service
+ *   :wt_password                - password for Web Toolkit service
+ *   :comms_password             - password for Communications service
+ *   :http_password              - password for HTTP service
+ *   :test_ddl_password          - password for test DDL operations
+ *   :test_dml_password          - password for test DML operations
+ *   :ro_password                - password for read-only access
+ *   :db_name                    - database name to create
+ *   :iam_service_password       - password for IAM domain service
+ *   :refdata_service_password   - password for Reference Data domain service
+ *   :dq_service_password        - password for Data Quality domain service
+ *   :variability_service_password - password for Variability domain service
+ *   :assets_service_password    - password for Assets domain service
+ *   :synthetic_service_password - password for Synthetic domain service
+ *   :scheduler_service_password - password for Scheduler domain service
+ *   :reporting_service_password - password for Reporting domain service
+ *   :telemetry_service_password - password for Telemetry domain service
+ *   :trading_service_password   - password for Trading domain service
  */
 \pset pager off
 \pset tuples_only on
@@ -150,6 +165,126 @@ $$;
 alter  user ores_comms_user with password :'comms_password';
 grant  ores_rw to ores_comms_user;
 alter  role ores_comms_user set search_path to public;
+
+-- IAM domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_iam_service') then
+        create user ores_iam_service;
+    end if;
+end
+$$;
+alter  user ores_iam_service with password :'iam_service_password';
+grant  ores_rw to ores_iam_service;
+alter  role ores_iam_service set search_path to public;
+
+-- Reference Data domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_refdata_service') then
+        create user ores_refdata_service;
+    end if;
+end
+$$;
+alter  user ores_refdata_service with password :'refdata_service_password';
+grant  ores_rw to ores_refdata_service;
+alter  role ores_refdata_service set search_path to public;
+
+-- Data Quality domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_dq_service') then
+        create user ores_dq_service;
+    end if;
+end
+$$;
+alter  user ores_dq_service with password :'dq_service_password';
+grant  ores_rw to ores_dq_service;
+alter  role ores_dq_service set search_path to public;
+
+-- Variability domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_variability_service') then
+        create user ores_variability_service;
+    end if;
+end
+$$;
+alter  user ores_variability_service with password :'variability_service_password';
+grant  ores_rw to ores_variability_service;
+alter  role ores_variability_service set search_path to public;
+
+-- Assets domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_assets_service') then
+        create user ores_assets_service;
+    end if;
+end
+$$;
+alter  user ores_assets_service with password :'assets_service_password';
+grant  ores_rw to ores_assets_service;
+alter  role ores_assets_service set search_path to public;
+
+-- Synthetic domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_synthetic_service') then
+        create user ores_synthetic_service;
+    end if;
+end
+$$;
+alter  user ores_synthetic_service with password :'synthetic_service_password';
+grant  ores_rw to ores_synthetic_service;
+alter  role ores_synthetic_service set search_path to public;
+
+-- Scheduler domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_scheduler_service') then
+        create user ores_scheduler_service;
+    end if;
+end
+$$;
+alter  user ores_scheduler_service with password :'scheduler_service_password';
+grant  ores_rw to ores_scheduler_service;
+alter  role ores_scheduler_service set search_path to public;
+
+-- Reporting domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_reporting_service') then
+        create user ores_reporting_service;
+    end if;
+end
+$$;
+alter  user ores_reporting_service with password :'reporting_service_password';
+grant  ores_rw to ores_reporting_service;
+alter  role ores_reporting_service set search_path to public;
+
+-- Telemetry domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_telemetry_service') then
+        create user ores_telemetry_service;
+    end if;
+end
+$$;
+alter  user ores_telemetry_service with password :'telemetry_service_password';
+grant  ores_rw to ores_telemetry_service;
+alter  role ores_telemetry_service set search_path to public;
+
+-- Trading domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_trading_service') then
+        create user ores_trading_service;
+    end if;
+end
+$$;
+alter  user ores_trading_service with password :'trading_service_password';
+grant  ores_rw to ores_trading_service;
+alter  role ores_trading_service set search_path to public;
 
 -- HTTP user
 do $$

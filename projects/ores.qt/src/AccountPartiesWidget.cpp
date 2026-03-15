@@ -33,7 +33,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
-#include "ores.comms/net/client_session.hpp"
 
 namespace ores::qt {
 
@@ -172,7 +171,7 @@ void AccountPartiesWidget::load() {
                 auto assignedFuture = std::async(std::launch::async,
                     [&self, &accountId]() {
                         iam::messaging::get_account_parties_by_account_request request;
-                        request.account_id = accountId;
+                        request.account_id = boost::uuids::to_string(accountId);
                         return self->clientManager_->
                             process_authenticated_request(std::move(request));
                     });
@@ -192,13 +191,13 @@ void AccountPartiesWidget::load() {
                 if (!assignedResult) {
                     BOOST_LOG_SEV(lg(), error)
                         << "Failed to fetch assigned parties: "
-                        << comms::net::to_string(assignedResult.error());
+                        << assignedResult.error();
                     return {.success = false};
                 }
                 if (!allPartiesResult) {
                     BOOST_LOG_SEV(lg(), error)
                         << "Failed to fetch all parties: "
-                        << comms::net::to_string(allPartiesResult.error());
+                        << allPartiesResult.error();
                     return {.success = false};
                 }
                 return {.success = true,
@@ -216,7 +215,7 @@ void AccountPartiesWidget::load() {
             if (!result) {
                 BOOST_LOG_SEV(lg(), error)
                     << "Failed to fetch parties: "
-                    << comms::net::to_string(result.error());
+                    << result.error();
                 return {.success = false};
             }
             return {.success = true, .allParties = std::move(result->parties)};

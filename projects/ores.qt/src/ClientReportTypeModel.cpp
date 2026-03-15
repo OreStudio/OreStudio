@@ -23,7 +23,6 @@
 #include "ores.reporting/messaging/report_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -204,11 +203,11 @@ void ClientReportTypeModel::fetch_types(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch report types: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .types = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch report types: " + comms::net::to_string(result.error())),
+                                "Failed to fetch report types: " + result.error()),
                             .error_details = {}};
                 }
 

@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "nats",
+    "full_name": "ores.nats",
+    "brief": "NATS messaging foundation library",
+    "description": "Provides RAII wrappers around the cnats C library, a service base class for domain microservices, a client session for the Qt application, and JetStream consumer support. All other components that communicate over NATS depend on this library rather than on cnats directly."
+  }
+}

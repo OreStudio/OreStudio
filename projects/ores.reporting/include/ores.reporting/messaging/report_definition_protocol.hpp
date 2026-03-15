@@ -20,267 +20,89 @@
 #ifndef ORES_REPORTING_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
 #define ORES_REPORTING_MESSAGING_REPORT_DEFINITION_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.reporting/domain/report_definition.hpp"
 
 namespace ores::reporting::messaging {
 
-// ============================================================================
-// Report Definition Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all report definitions.
- */
-struct get_report_definitions_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_definitions_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_report_definitions_request {
+    using response_type = struct get_report_definitions_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-definitions.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_report_definitions_request& v);
-
-/**
- * @brief Response containing all report definitions.
- */
-struct get_report_definitions_response final {
-    std::vector<domain::report_definition> definitions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_definitions_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_report_definitions_response {
+    std::vector<ores::reporting::domain::report_definition> definitions;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_report_definitions_response& v);
-
-/**
- * @brief Request to save a report definition (create or update).
- */
-struct save_report_definition_request final {
-    domain::report_definition definition;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_report_definition_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_report_definition_request {
+    using response_type = struct save_report_definition_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-definitions.save";
+    ores::reporting::domain::report_definition definition;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_report_definition_request& v);
-
-/**
- * @brief Response confirming report definition save operation.
- */
-struct save_report_definition_response final {
-    bool success;
-    std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_report_definition_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const save_report_definition_response& v);
-
-/**
- * @brief Result for a single report definition deletion.
- */
-struct delete_report_definition_result final {
-    boost::uuids::uuid id;  ///< Primary key
-    bool success;
+struct save_report_definition_response {
+    bool success = false;
     std::string message;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_report_definition_result& v);
-
-/**
- * @brief Request to delete one or more report definitions.
- */
-struct delete_report_definition_request final {
-    std::vector<boost::uuids::uuid> ids;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_report_definition_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_report_definition_request {
+    using response_type = struct delete_report_definition_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-definitions.delete";
+    std::vector<std::string> ids;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_report_definition_request& v);
-
-/**
- * @brief Response confirming report definition deletion(s).
- */
-struct delete_report_definition_response final {
-    std::vector<delete_report_definition_result> results;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_report_definition_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_report_definition_response& v);
-
-/**
- * @brief Request to retrieve version history for a report definition.
- */
-struct get_report_definition_history_request final {
-    boost::uuids::uuid id;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_definition_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_report_definition_history_request& v);
-
-/**
- * @brief Response containing report definition version history.
- */
-struct get_report_definition_history_response final {
-    bool success;
+struct delete_report_definition_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::report_definition> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_report_definition_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const get_report_definition_history_response& v);
+struct get_report_definition_history_request {
+    using response_type = struct get_report_definition_history_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-definitions.history";
+    std::string id;
+};
 
-// ============================================================================
-// Report Scheduling Messages
-// ============================================================================
+struct get_report_definition_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::reporting::domain::report_definition> history;
+};
 
-/**
- * @brief Request to schedule (activate) one or more report definitions.
- */
-struct schedule_report_definitions_request final {
-    std::vector<boost::uuids::uuid> ids;
+struct schedule_report_definitions_request {
+    using response_type = struct schedule_report_definitions_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-definitions.schedule";
+    std::vector<std::string> ids;
     std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<schedule_report_definitions_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const schedule_report_definitions_request& v);
-
-/**
- * @brief Response confirming report definition scheduling.
- */
-struct schedule_report_definitions_response final {
+struct schedule_report_definitions_response {
     bool success = false;
     std::string message;
     int scheduled_count = 0;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<schedule_report_definitions_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const schedule_report_definitions_response& v);
-
-/**
- * @brief Request to unschedule (deactivate) one or more report definitions.
- */
-struct unschedule_report_definitions_request final {
-    std::vector<boost::uuids::uuid> ids;
+struct unschedule_report_definitions_request {
+    using response_type = struct unschedule_report_definitions_response;
+    static constexpr std::string_view nats_subject =
+        "ores.reporting.v1.report-definitions.unschedule";
+    std::vector<std::string> ids;
     std::string performed_by;
-    std::string change_reason_code;
-    std::string change_commentary;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<unschedule_report_definitions_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const unschedule_report_definitions_request& v);
-
-/**
- * @brief Response confirming report definition unscheduling.
- */
-struct unschedule_report_definitions_response final {
+struct unschedule_report_definitions_response {
     bool success = false;
     std::string message;
     int unscheduled_count = 0;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<unschedule_report_definitions_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const unschedule_report_definitions_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Report Definition traits
-template<>
-struct message_traits<reporting::messaging::get_report_definitions_request> {
-    using request_type = reporting::messaging::get_report_definitions_request;
-    using response_type = reporting::messaging::get_report_definitions_response;
-    static constexpr message_type request_message_type =
-        message_type::get_report_definitions_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::save_report_definition_request> {
-    using request_type = reporting::messaging::save_report_definition_request;
-    using response_type = reporting::messaging::save_report_definition_response;
-    static constexpr message_type request_message_type =
-        message_type::save_report_definition_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::delete_report_definition_request> {
-    using request_type = reporting::messaging::delete_report_definition_request;
-    using response_type = reporting::messaging::delete_report_definition_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_report_definition_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::get_report_definition_history_request> {
-    using request_type = reporting::messaging::get_report_definition_history_request;
-    using response_type = reporting::messaging::get_report_definition_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_report_definition_history_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::schedule_report_definitions_request> {
-    using request_type = reporting::messaging::schedule_report_definitions_request;
-    using response_type = reporting::messaging::schedule_report_definitions_response;
-    static constexpr message_type request_message_type =
-        message_type::schedule_report_definitions_request;
-};
-
-template<>
-struct message_traits<reporting::messaging::unschedule_report_definitions_request> {
-    using request_type = reporting::messaging::unschedule_report_definitions_request;
-    using response_type = reporting::messaging::unschedule_report_definitions_response;
-    static constexpr message_type request_message_type =
-        message_type::unschedule_report_definitions_request;
 };
 
 }

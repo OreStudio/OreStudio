@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,348 +20,75 @@
 #ifndef ORES_DQ_MESSAGING_DATASET_PROTOCOL_HPP
 #define ORES_DQ_MESSAGING_DATASET_PROTOCOL_HPP
 
-#include <cstddef>
-#include <span>
-#include <iosfwd>
+#include <string>
+#include <string_view>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.dq/domain/dataset.hpp"
-#include "ores.dq/domain/methodology.hpp"
-#include "ores.utility/serialization/error_code.hpp"
+#include "ores.dq/domain/publication_mode.hpp"
+#include "ores.dq/domain/publication_result.hpp"
 
 namespace ores::dq::messaging {
 
-// ============================================================================
-// Dataset Serialization Helpers
-// ============================================================================
-
-/**
- * @brief Serialize a dataset to binary format.
- *
- * These helpers are exposed for reuse by other protocol implementations that
- * need to serialize/deserialize datasets (e.g., publication_protocol).
- */
-void write_dataset(std::vector<std::byte>& buffer, const domain::dataset& d);
-
-/**
- * @brief Deserialize a dataset from binary format.
- */
-std::expected<domain::dataset, ores::utility::serialization::error_code>
-read_dataset(std::span<const std::byte>& data);
-
-// ============================================================================
-// Dataset Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all datasets.
- */
-struct get_datasets_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_datasets_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_datasets_request {
+    using response_type = struct get_datasets_response;
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_datasets_request& v);
-
-/**
- * @brief Response containing all datasets.
- */
-struct get_datasets_response final {
-    std::vector<domain::dataset> datasets;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_datasets_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_datasets_response {
+    std::vector<ores::dq::domain::dataset> datasets;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_datasets_response& v);
-
-/**
- * @brief Request to save one or more datasets (create or update).
- */
-struct save_dataset_request final {
-    std::vector<domain::dataset> datasets;
-
-    static save_dataset_request from(domain::dataset dataset);
-    static save_dataset_request from(std::vector<domain::dataset> datasets);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_dataset_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_dataset_request {
+    using response_type = struct save_dataset_response;
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.save";
+    std::vector<ores::dq::domain::dataset> datasets;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_dataset_request& v);
-
-/**
- * @brief Response confirming dataset save operation(s).
- */
-struct save_dataset_response final {
+struct save_dataset_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_dataset_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_dataset_response& v);
-
-/**
- * @brief Request to delete one or more datasets.
- */
-struct delete_dataset_request final {
-    std::vector<boost::uuids::uuid> ids;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_dataset_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_dataset_request {
+    using response_type = struct delete_dataset_response;
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.delete";
+    std::vector<std::string> ids;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_dataset_request& v);
-
-/**
- * @brief Response confirming dataset deletion(s).
- */
-struct delete_dataset_response final {
+struct delete_dataset_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_dataset_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_dataset_response& v);
-
-/**
- * @brief Request to retrieve version history for a dataset.
- */
-struct get_dataset_history_request final {
-    boost::uuids::uuid id;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_dataset_history_request {
+    using response_type = struct get_dataset_history_response;
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.history";
+    std::string id;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_dataset_history_request& v);
-
-/**
- * @brief Response containing dataset version history.
- */
-struct get_dataset_history_response final {
-    bool success;
-    std::string message;
-    std::vector<domain::dataset> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_dataset_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_dataset_history_response& v);
-
-// ============================================================================
-// Methodology Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all methodologies.
- */
-struct get_methodologies_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_methodologies_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_methodologies_request& v);
-
-/**
- * @brief Response containing all methodologies.
- */
-struct get_methodologies_response final {
-    std::vector<domain::methodology> methodologies;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_methodologies_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_methodologies_response& v);
-
-/**
- * @brief Request to save one or more methodologies (create or update).
- */
-struct save_methodology_request final {
-    std::vector<domain::methodology> methodologies;
-
-    static save_methodology_request from(domain::methodology methodology);
-    static save_methodology_request from(std::vector<domain::methodology> methodologies);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_methodology_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const save_methodology_request& v);
-
-/**
- * @brief Response confirming methodology save operation(s).
- */
-struct save_methodology_response final {
+struct get_dataset_history_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_methodology_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+    std::vector<ores::dq::domain::dataset> history;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_methodology_response& v);
-
-/**
- * @brief Request to delete one or more methodologies.
- */
-struct delete_methodology_request final {
-    std::vector<boost::uuids::uuid> ids;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_methodology_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct publish_datasets_request {
+    using response_type = struct publish_datasets_response;
+    static constexpr std::string_view nats_subject = "dq.v1.datasets.publish";
+    std::vector<std::string> dataset_ids;
+    ores::dq::domain::publication_mode mode =
+        ores::dq::domain::publication_mode::upsert;
+    std::string published_by;
+    bool resolve_dependencies = true;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_methodology_request& v);
-
-/**
- * @brief Response confirming methodology deletion(s).
- */
-struct delete_methodology_response final {
+struct publish_datasets_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_methodology_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const delete_methodology_response& v);
-
-/**
- * @brief Request to retrieve version history for a methodology.
- */
-struct get_methodology_history_request final {
-    boost::uuids::uuid id;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_methodology_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_methodology_history_request& v);
-
-/**
- * @brief Response containing methodology version history.
- */
-struct get_methodology_history_response final {
-    bool success;
-    std::string message;
-    std::vector<domain::methodology> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_methodology_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_methodology_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Dataset traits
-template<>
-struct message_traits<dq::messaging::get_datasets_request> {
-    using request_type = dq::messaging::get_datasets_request;
-    using response_type = dq::messaging::get_datasets_response;
-    static constexpr message_type request_message_type =
-        message_type::get_datasets_request;
-};
-
-template<>
-struct message_traits<dq::messaging::save_dataset_request> {
-    using request_type = dq::messaging::save_dataset_request;
-    using response_type = dq::messaging::save_dataset_response;
-    static constexpr message_type request_message_type =
-        message_type::save_dataset_request;
-};
-
-template<>
-struct message_traits<dq::messaging::delete_dataset_request> {
-    using request_type = dq::messaging::delete_dataset_request;
-    using response_type = dq::messaging::delete_dataset_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_dataset_request;
-};
-
-template<>
-struct message_traits<dq::messaging::get_dataset_history_request> {
-    using request_type = dq::messaging::get_dataset_history_request;
-    using response_type = dq::messaging::get_dataset_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_dataset_history_request;
-};
-
-// Methodology traits
-template<>
-struct message_traits<dq::messaging::get_methodologies_request> {
-    using request_type = dq::messaging::get_methodologies_request;
-    using response_type = dq::messaging::get_methodologies_response;
-    static constexpr message_type request_message_type =
-        message_type::get_methodologies_request;
-};
-
-template<>
-struct message_traits<dq::messaging::save_methodology_request> {
-    using request_type = dq::messaging::save_methodology_request;
-    using response_type = dq::messaging::save_methodology_response;
-    static constexpr message_type request_message_type =
-        message_type::save_methodology_request;
-};
-
-template<>
-struct message_traits<dq::messaging::delete_methodology_request> {
-    using request_type = dq::messaging::delete_methodology_request;
-    using response_type = dq::messaging::delete_methodology_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_methodology_request;
-};
-
-template<>
-struct message_traits<dq::messaging::get_methodology_history_request> {
-    using request_type = dq::messaging::get_methodology_history_request;
-    using response_type = dq::messaging::get_methodology_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_methodology_history_request;
+    std::vector<ores::dq::domain::publication_result> results;
 };
 
 }

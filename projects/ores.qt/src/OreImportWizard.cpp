@@ -42,7 +42,6 @@
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -784,7 +783,7 @@ void OreTradeImportPage::startImport() {
         // Uses resp->message when available, falls back to transport error text.
         auto make_error = [&](const auto& resp, const char* step) -> QString {
             if (!resp) {
-                const auto msg = comms::net::to_string(resp.error());
+                const auto msg = resp.error();
                 BOOST_LOG_SEV(local_lg, error)
                     << step << " transport error: " << msg;
                 return QString::fromStdString(std::string(step) + ": " + msg);
@@ -1038,39 +1037,42 @@ void OreTradeImportPage::startImport() {
 
             ImportResult res;
 
-            // Step 1: currencies (single batch)
-            if (!plan.currencies.empty()) {
-                auto req = refdata::messaging::save_currency_request::from(
-                    plan.currencies);
+            // Step 1: currencies (one per request)
+            for (const auto& ccy : plan.currencies) {
+                auto req = refdata::messaging::save_currency_request::from(ccy);
                 const auto resp = cm->process_authenticated_request(std::move(req));
                 if (!resp || !resp->success)
                     return {.success=false, .error=make_error(resp, "Currency save")};
-                res.currencies = static_cast<int>(plan.currencies.size());
-                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.currencies << " currencies";
+                res.currencies++;
             }
+            if (res.currencies > 0)
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.currencies << " currencies";
 
-            // Step 2: portfolios (single batch)
-            if (!plan.portfolios.empty()) {
-                auto req = refdata::messaging::save_portfolio_request::from(
-                    plan.portfolios);
+            // Step 2: portfolios (one per request)
+            for (const auto& pf : plan.portfolios) {
+                refdata::messaging::save_portfolio_request req;
+                req.data = pf;
                 const auto resp = cm->process_authenticated_request(std::move(req));
                 if (!resp || !resp->success)
                     return {.success=false, .error=make_error(resp, "Portfolio save"),
                             .currencies=res.currencies};
-                res.portfolios = static_cast<int>(plan.portfolios.size());
-                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.portfolios << " portfolios";
+                res.portfolios++;
             }
+            if (res.portfolios > 0)
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.portfolios << " portfolios";
 
-            // Step 3: books (single batch)
-            if (!plan.books.empty()) {
-                auto req = refdata::messaging::save_book_request::from(plan.books);
+            // Step 3: books (one per request)
+            for (const auto& bk : plan.books) {
+                refdata::messaging::save_book_request req;
+                req.data = bk;
                 const auto resp = cm->process_authenticated_request(std::move(req));
                 if (!resp || !resp->success)
                     return {.success=false, .error=make_error(resp, "Book save"),
                             .currencies=res.currencies, .portfolios=res.portfolios};
-                res.books = static_cast<int>(plan.books.size());
-                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.books << " books";
+                res.books++;
             }
+            if (res.books > 0)
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.books << " books";
 
             // Fill required trade fields that ORE XML may omit.
             // execution_timestamp, effective_date, and termination_date are NOT

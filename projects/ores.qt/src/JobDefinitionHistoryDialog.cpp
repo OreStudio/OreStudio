@@ -22,11 +22,12 @@
 #include <QHeaderView>
 #include <QtConcurrent>
 #include <QFutureWatcher>
+#include <boost/uuid/uuid_io.hpp>
 #include "ui_JobDefinitionHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
+#include "ores.scheduler/rfl/reflectors.hpp"
 #include "ores.scheduler/messaging/scheduler_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -123,35 +124,17 @@ void JobDefinitionHistoryDialog::loadHistory() {
         }
 
         scheduler::messaging::get_job_history_request request;
-        request.job_definition_id = id;
+        request.job_definition_id = boost::uuids::to_string(id);
         request.limit = 0; // server default (100)
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_job_history_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
         if (!response_result) {
             return {false, "Failed to communicate with server", {}};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response", {}};
-        }
 
-        auto response = scheduler::messaging::get_job_history_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response", {}};
-        }
-
-        return {response->success, response->message,
-                std::move(response->instances)};
+        return {response_result->success, response_result->message,
+                std::move(response_result->instances)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);

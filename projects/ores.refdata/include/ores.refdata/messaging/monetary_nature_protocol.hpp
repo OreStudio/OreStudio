@@ -20,135 +20,56 @@
 #ifndef ORES_REFDATA_MESSAGING_MONETARY_NATURE_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_MONETARY_NATURE_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/monetary_nature.hpp"
 
 namespace ores::refdata::messaging {
 
-// ============================================================================
-// Currency Asset Class Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all currency asset classes.
- */
-struct get_monetary_natures_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_monetary_natures_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_monetary_natures_request {
+    using response_type = struct get_monetary_natures_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_monetary_natures_request& v);
-
-/**
- * @brief Response containing all currency asset classes.
- */
-struct get_monetary_natures_response final {
-    std::vector<domain::monetary_nature> types;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_monetary_natures_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_monetary_natures_response {
+    std::vector<ores::refdata::domain::monetary_nature> monetary_natures;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_monetary_natures_response& v);
-
-/**
- * @brief Request to save one or more monetary natures (create or update).
- */
-struct save_monetary_nature_request final {
-    std::vector<domain::monetary_nature> types;
-
-    static save_monetary_nature_request from(domain::monetary_nature type);
-    static save_monetary_nature_request from(std::vector<domain::monetary_nature> types);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_monetary_nature_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_monetary_nature_request {
+    using response_type = struct save_monetary_nature_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.save";
+    ores::refdata::domain::monetary_nature data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_monetary_nature_request& v);
-
-/**
- * @brief Response confirming monetary nature save operation(s).
- */
-struct save_monetary_nature_response final {
+struct save_monetary_nature_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_monetary_nature_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_monetary_nature_response& v);
-
-/**
- * @brief Request to delete one or more currency asset classes.
- */
-struct delete_monetary_nature_request final {
-    std::vector<std::string> codes;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_monetary_nature_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_monetary_nature_request {
+    using response_type = struct delete_monetary_nature_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.delete";
+    std::string nature;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_monetary_nature_request& v);
-
-/**
- * @brief Response confirming currency asset class deletion(s).
- */
-struct delete_monetary_nature_response final {
+struct delete_monetary_nature_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_monetary_nature_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_monetary_nature_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Currency Asset Class traits
-template<>
-struct message_traits<refdata::messaging::get_monetary_natures_request> {
-    using request_type = refdata::messaging::get_monetary_natures_request;
-    using response_type = refdata::messaging::get_monetary_natures_response;
-    static constexpr message_type request_message_type =
-        message_type::get_monetary_natures_request;
+struct get_monetary_nature_history_request {
+    using response_type = struct get_monetary_nature_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.monetary-natures.history";
+    std::string nature;
 };
 
-template<>
-struct message_traits<refdata::messaging::save_monetary_nature_request> {
-    using request_type = refdata::messaging::save_monetary_nature_request;
-    using response_type = refdata::messaging::save_monetary_nature_response;
-    static constexpr message_type request_message_type =
-        message_type::save_monetary_nature_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::delete_monetary_nature_request> {
-    using request_type = refdata::messaging::delete_monetary_nature_request;
-    using response_type = refdata::messaging::delete_monetary_nature_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_monetary_nature_request;
+struct get_monetary_nature_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::refdata::domain::monetary_nature> history;
 };
 
 }

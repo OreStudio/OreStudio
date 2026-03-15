@@ -20,174 +20,56 @@
 #ifndef ORES_REFDATA_MESSAGING_BUSINESS_UNIT_TYPE_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_BUSINESS_UNIT_TYPE_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <expected>
-#include <boost/uuid/uuid.hpp>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/business_unit_type.hpp"
 
 namespace ores::refdata::messaging {
 
-// ============================================================================
-// Business Unit Type Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve business unit types.
- */
-struct get_business_unit_types_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_business_unit_types_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_business_unit_types_request {
+    using response_type = struct get_business_unit_types_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.list";
+    int offset = 0;
+    int limit = 100;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_business_unit_types_request& v);
-
-/**
- * @brief Response containing business unit types.
- */
-struct get_business_unit_types_response final {
-    std::vector<domain::business_unit_type> types;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_business_unit_types_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_business_unit_types_response {
+    std::vector<ores::refdata::domain::business_unit_type> business_unit_types;
+    int total_available_count = 0;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_business_unit_types_response& v);
-
-/**
- * @brief Request to save one or more business unit types (create or update).
- */
-struct save_business_unit_type_request final {
-    std::vector<domain::business_unit_type> types;
-
-    static save_business_unit_type_request from(domain::business_unit_type type);
-    static save_business_unit_type_request from(std::vector<domain::business_unit_type> types);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_business_unit_type_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_business_unit_type_request {
+    using response_type = struct save_business_unit_type_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.save";
+    ores::refdata::domain::business_unit_type data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_business_unit_type_request& v);
-
-/**
- * @brief Response confirming business unit type save operation(s).
- */
-struct save_business_unit_type_response final {
+struct save_business_unit_type_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_business_unit_type_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_business_unit_type_response& v);
-
-/**
- * @brief Request to delete one or more business unit types.
- */
-struct delete_business_unit_type_request final {
-    std::vector<boost::uuids::uuid> ids;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_business_unit_type_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_business_unit_type_request {
+    using response_type = struct delete_business_unit_type_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.delete";
+    std::string type;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_business_unit_type_request& v);
-
-/**
- * @brief Response confirming business unit type deletion(s).
- */
-struct delete_business_unit_type_response final {
+struct delete_business_unit_type_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_business_unit_type_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_business_unit_type_response& v);
-
-/**
- * @brief Request to retrieve version history for a business unit type.
- */
-struct get_business_unit_type_history_request final {
-    boost::uuids::uuid id;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_business_unit_type_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_business_unit_type_history_request {
+    using response_type = struct get_business_unit_type_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.business-unit-types.history";
+    std::string type;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_business_unit_type_history_request& v);
-
-/**
- * @brief Response containing business unit type version history.
- */
-struct get_business_unit_type_history_response final {
-    bool success;
+struct get_business_unit_type_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::business_unit_type> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_business_unit_type_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_business_unit_type_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Business Unit Type traits
-template<>
-struct message_traits<refdata::messaging::get_business_unit_types_request> {
-    using request_type = refdata::messaging::get_business_unit_types_request;
-    using response_type = refdata::messaging::get_business_unit_types_response;
-    static constexpr message_type request_message_type =
-        message_type::get_business_unit_types_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::save_business_unit_type_request> {
-    using request_type = refdata::messaging::save_business_unit_type_request;
-    using response_type = refdata::messaging::save_business_unit_type_response;
-    static constexpr message_type request_message_type =
-        message_type::save_business_unit_type_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::delete_business_unit_type_request> {
-    using request_type = refdata::messaging::delete_business_unit_type_request;
-    using response_type = refdata::messaging::delete_business_unit_type_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_business_unit_type_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::get_business_unit_type_history_request> {
-    using request_type = refdata::messaging::get_business_unit_type_history_request;
-    using response_type = refdata::messaging::get_business_unit_type_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_business_unit_type_history_request;
+    std::vector<ores::refdata::domain::business_unit_type> history;
 };
 
 }

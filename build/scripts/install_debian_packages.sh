@@ -61,6 +61,7 @@ packages=(
     autoconf-archive
     automake
     fontconfig
+    nats-server
     freeglut3-dev
     libegl1
     libltdl-dev
@@ -187,7 +188,8 @@ echo "    Clang   : $(clang --version | head -1)"
 echo "    GCC     : $(gcc --version | head -1)"
 echo "    Ninja   : $(ninja --version)"
 echo "    Postgres: $(psql --version)"
-echo "    Qt6     : $(qmake6 --version 2>/dev/null | head -1 || echo 'see qt6-base-dev')"
+echo "    Qt6     : $(qmake6 --version 2>/dev/null | head -1 || echo 'see qt6-base-dev')
+    NATS    : $(nats-server --version 2>/dev/null || echo 'see nats-server')"
 echo "    Valgrind: $(valgrind --version)"
 echo ""
 echo "  Configure the project with:"

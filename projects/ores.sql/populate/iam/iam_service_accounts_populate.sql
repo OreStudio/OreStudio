@@ -81,6 +81,76 @@ select ores_iam_service_accounts_upsert_fn(
     'System service account for test DML operations'
 );
 
+-- IAM domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_iam_service',
+    'iam_service@system.ores',
+    'System service account for IAM NATS domain service'
+);
+
+-- Reference Data domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_refdata_service',
+    'refdata_service@system.ores',
+    'System service account for Reference Data NATS domain service'
+);
+
+-- Data Quality domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_dq_service',
+    'dq_service@system.ores',
+    'System service account for Data Quality NATS domain service'
+);
+
+-- Variability domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_variability_service',
+    'variability_service@system.ores',
+    'System service account for Variability NATS domain service'
+);
+
+-- Assets domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_assets_service',
+    'assets_service@system.ores',
+    'System service account for Assets NATS domain service'
+);
+
+-- Synthetic domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_synthetic_service',
+    'synthetic_service@system.ores',
+    'System service account for Synthetic NATS domain service'
+);
+
+-- Scheduler domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_scheduler_service',
+    'scheduler_service@system.ores',
+    'System service account for Scheduler NATS domain service'
+);
+
+-- Reporting domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_reporting_service',
+    'reporting_service@system.ores',
+    'System service account for Reporting NATS domain service'
+);
+
+-- Telemetry domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_telemetry_service',
+    'telemetry_service@system.ores',
+    'System service account for Telemetry NATS domain service'
+);
+
+-- Trading domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_trading_service',
+    'trading_service@system.ores',
+    'System service account for Trading NATS domain service'
+);
+
 -- Summary
 select 'Service Accounts' as entity, count(*) as count
 from ores_iam_accounts_tbl

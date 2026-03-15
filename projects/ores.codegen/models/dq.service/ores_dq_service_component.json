@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "dq.service",
+    "full_name": "ores.dq.service",
+    "brief": "Data quality service",
+    "description": "Standalone NATS microservice hosting data quality handlers: change reasons, change reason categories, origin/nature/treatment dimensions, catalogs, datasets, methodologies, coding schemes, data domains, and subject areas."
+  }
+}

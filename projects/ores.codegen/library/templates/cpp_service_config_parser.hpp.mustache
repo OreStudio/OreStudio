@@ -1,0 +1,30 @@
+{{{cpp_license}}}
+{{#component}}
+#ifndef {{full_name_upper}}_CONFIG_PARSER_HPP
+#define {{full_name_upper}}_CONFIG_PARSER_HPP
+
+#include <iosfwd>
+#include <vector>
+#include <string>
+#include <optional>
+#include "{{full_name}}/config/options.hpp"
+
+namespace {{namespace}}::config {
+
+/**
+ * @brief Command-line parser for {{full_name}}.
+ *
+ * Note on logging: logging is not available during parsing since the logger
+ * is only initialised after options have been successfully parsed.
+ */
+class parser final {
+public:
+    std::optional<options>
+    parse(const std::vector<std::string>& arguments, std::ostream& info,
+        std::ostream& error) const;
+};
+
+}
+
+#endif
+{{/component}}

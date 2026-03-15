@@ -22,7 +22,11 @@
 
 namespace ores::mq::domain {
 
-enum class queue_scope_type { party, tenant, system };
+enum class queue_scope_type {
+    party,
+    tenant,
+    system
+};
 
 }
 

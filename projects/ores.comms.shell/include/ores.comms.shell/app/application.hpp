@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -22,9 +22,7 @@
 
 #include <optional>
 #include "ores.logging/make_logger.hpp"
-#include "ores.telemetry/domain/telemetry_context.hpp"
-#include "ores.comms/net/client_options.hpp"
-#include "ores.comms/service/telemetry_streaming_service.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.comms.shell/config/login_options.hpp"
 
 namespace ores::comms::shell::app {
@@ -49,14 +47,10 @@ public:
      *
      * @param connection_config Optional connection configuration for auto-connect.
      * @param login_config Optional login credentials for auto-login.
-     * @param telemetry_ctx Optional telemetry context for distributed tracing.
-     * @param streaming_options Optional telemetry streaming options.
      */
     explicit application(
-        std::optional<comms::net::client_options> connection_config = std::nullopt,
-        std::optional<config::login_options> login_config = std::nullopt,
-        std::optional<telemetry::domain::telemetry_context> telemetry_ctx = std::nullopt,
-        std::optional<comms::service::telemetry_streaming_options> streaming_options = std::nullopt);
+        std::optional<nats::config::nats_options> connection_config = std::nullopt,
+        std::optional<config::login_options> login_config = std::nullopt);
 
     application(const application&) = delete;
     application& operator=(const application&) = delete;
@@ -69,10 +63,8 @@ public:
     void run();
 
 private:
-    std::optional<comms::net::client_options> connection_config_;
+    std::optional<nats::config::nats_options> connection_config_;
     std::optional<config::login_options> login_config_;
-    std::optional<telemetry::domain::telemetry_context> telemetry_ctx_;
-    std::optional<comms::service::telemetry_streaming_options> streaming_options_;
 };
 
 }

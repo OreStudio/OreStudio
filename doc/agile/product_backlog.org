@@ -228,36 +228,10 @@ thinking.
 At present a portfolio can be virtual or not. We should really generalise this
 into a portfolio type.
 
-*** Check change reasons on delete                                     :code:
-
-Seems like we do not have change reasons on entity deletes. We need to update
-all entities.
-
 *** Add missing history dialogs                                        :code:
 
 We have an inventory of missing features across entities. Check to see if it
 covers history as well.
-
-*** ORE Importer: portfolio and trade support                          :code:
-
-Now that we have the basics for trades, books and portfolios, we can do a very
-basic ORE importer:
-
-- point it to the samples directory;
-- for each folder, if it has subfolders, create a portfolio. If it contains the
-  trades file, make it a book.
-- add each trade in the trade file.
-
-Notes:
-
-- users should be able to choose top-level portfolio to import it into.
-  counterparty,
-  -
-- users sho
-
-*** No samples in sessions                                             :code:
-
-For some reason we are no longer sampling for sessions. Investigate why.
 
 *** Add virtual portfolio tree support                                 :code:
 
@@ -277,12 +251,6 @@ table. This story adds the full stack for virtual portfolios:
 - Selecting a virtual portfolio node or any of its book leaves filters the trade
   table using the junction membership list.
 - Stale indicator responds to changes on the virtual portfolio membership.
-
-*** Rename currency asset classes                                      :code:
-
-We should avoid the term "asset classes" unless it is used in the usual asset
-class context. Many of the values are not really what one things of asset
-classes.
 
 *** Single tenant setup creates tenant                                 :code:
 
@@ -325,25 +293,6 @@ Notes:
 - session duration is not updating even on refresh.
 - no sample data even after 10 mins.
 - sessions do not seem to take tenant into account.
-
-*** Add auxiliary types to their entities                              :code:
-
-The toolbars of each entity should have icons for the auxiliary types they use.
-Also we may need to make the menu options a bit more obvious (e.g. "Purpose
-Types"?).
-
-*** Improvements to detail  dialogs                                    :code:
-
-For most dialogs, pressing escape should be the same as closing it.
-
-We should also add a "cancel" button to dialogs, makes it a bit more "normal".
-
-New dialogs use toolbars instead of buttons at the bottom.
-
-*** Alert for unsaved modified entities                                :code:
-
-If a user changes an entity but does not save it, we should alert the user.
-Also, we probably should add a cancel button to all detail dialogs.
 
 *** Add high-watermark support                                         :code:
 
@@ -541,7 +490,6 @@ Improvements to entity version history and comparison features.
   compare against any previous version (not just the immediately preceding one).
 - Revert-to-version should be a server-side operation taking current version and
   target version parameters.
-
 *** Raise events for account profile updates                           :code:
 
 Updating email from "My Account" does not raise an event. Account profile

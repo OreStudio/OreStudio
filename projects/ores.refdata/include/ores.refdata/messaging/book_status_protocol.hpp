@@ -20,173 +20,53 @@
 #ifndef ORES_REFDATA_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 #define ORES_REFDATA_MESSAGING_BOOK_STATUS_PROTOCOL_HPP
 
-#include <span>
-#include <iosfwd>
+#include <string>
 #include <vector>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
-#include "ores.utility/serialization/error_code.hpp"
 #include "ores.refdata/domain/book_status.hpp"
 
 namespace ores::refdata::messaging {
 
-// ============================================================================
-// Book Status Messages
-// ============================================================================
-
-/**
- * @brief Request to retrieve all book statuses.
- */
-struct get_book_statuses_request final {
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_book_statuses_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_book_statuses_request {
+    using response_type = struct get_book_statuses_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.list";
 };
 
-std::ostream& operator<<(std::ostream& s, const get_book_statuses_request& v);
-
-/**
- * @brief Response containing all book statuses.
- */
-struct get_book_statuses_response final {
-    std::vector<domain::book_status> statuses;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_book_statuses_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_book_statuses_response {
+    std::vector<ores::refdata::domain::book_status> book_statuses;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_book_statuses_response& v);
-
-/**
- * @brief Request to save one or more book statuses (create or update).
- */
-struct save_book_status_request final {
-    std::vector<domain::book_status> statuses;
-
-    static save_book_status_request from(domain::book_status status);
-    static save_book_status_request from(std::vector<domain::book_status> statuses);
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_book_status_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct save_book_status_request {
+    using response_type = struct save_book_status_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.save";
+    ores::refdata::domain::book_status data;
 };
 
-std::ostream& operator<<(std::ostream& s, const save_book_status_request& v);
-
-/**
- * @brief Response confirming book status save operation(s).
- */
-struct save_book_status_response final {
+struct save_book_status_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<save_book_status_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const save_book_status_response& v);
-
-/**
- * @brief Request to delete one or more book statuses.
- */
-struct delete_book_status_request final {
-    std::vector<std::string> codes;  ///< Primary keys
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_book_status_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct delete_book_status_request {
+    using response_type = struct delete_book_status_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.delete";
+    std::string status;
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_book_status_request& v);
-
-/**
- * @brief Response confirming book status deletion(s).
- */
-struct delete_book_status_response final {
+struct delete_book_status_response {
     bool success = false;
     std::string message;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<delete_book_status_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const delete_book_status_response& v);
-
-/**
- * @brief Request to retrieve version history for a book status.
- */
-struct get_book_status_history_request final {
-    std::string code;  ///< Primary key
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_book_status_history_request,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
+struct get_book_status_history_request {
+    using response_type = struct get_book_status_history_response;
+    static constexpr std::string_view nats_subject = "refdata.v1.book-statuses.history";
+    std::string status;
 };
 
-std::ostream& operator<<(std::ostream& s, const get_book_status_history_request& v);
-
-/**
- * @brief Response containing book status version history.
- */
-struct get_book_status_history_response final {
-    bool success;
+struct get_book_status_history_response {
+    bool success = false;
     std::string message;
-    std::vector<domain::book_status> versions;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_book_status_history_response,
-                         ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_book_status_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Book Status traits
-template<>
-struct message_traits<refdata::messaging::get_book_statuses_request> {
-    using request_type = refdata::messaging::get_book_statuses_request;
-    using response_type = refdata::messaging::get_book_statuses_response;
-    static constexpr message_type request_message_type =
-        message_type::get_book_statuses_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::save_book_status_request> {
-    using request_type = refdata::messaging::save_book_status_request;
-    using response_type = refdata::messaging::save_book_status_response;
-    static constexpr message_type request_message_type =
-        message_type::save_book_status_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::delete_book_status_request> {
-    using request_type = refdata::messaging::delete_book_status_request;
-    using response_type = refdata::messaging::delete_book_status_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_book_status_request;
-};
-
-template<>
-struct message_traits<refdata::messaging::get_book_status_history_request> {
-    using request_type = refdata::messaging::get_book_status_history_request;
-    using response_type = refdata::messaging::get_book_status_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_book_status_history_request;
+    std::vector<ores::refdata::domain::book_status> history;
 };
 
 }

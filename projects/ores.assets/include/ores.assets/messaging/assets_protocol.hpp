@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -20,128 +20,68 @@
 #ifndef ORES_ASSETS_MESSAGING_ASSETS_PROTOCOL_HPP
 #define ORES_ASSETS_MESSAGING_ASSETS_PROTOCOL_HPP
 
-#include <span>
 #include <chrono>
-#include <iosfwd>
-#include <vector>
+#include <cstddef>
 #include <optional>
-#include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.utility/serialization/error_code.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
+#include <string>
+#include <string_view>
+#include <vector>
 #include "ores.assets/domain/image.hpp"
 
 namespace ores::assets::messaging {
 
 /**
- * @brief Maximum number of images that can be requested in a single get_images_request.
+ * @brief Maximum number of images to request in a single batch.
  */
-constexpr std::uint32_t MAX_IMAGES_PER_REQUEST = 100;
+constexpr std::size_t MAX_IMAGES_PER_REQUEST = 50;
 
 /**
- * @brief Request to retrieve images by their IDs.
- *
- * Supports batched retrieval with a maximum of MAX_IMAGES_PER_REQUEST (100) IDs.
+ * @brief Lightweight image metadata (no SVG data) for list responses.
  */
-struct get_images_request final {
-    std::vector<std::string> image_ids;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_images_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_images_request& v);
-
-/**
- * @brief Response containing requested images.
- */
-struct get_images_response final {
-    std::vector<domain::image> images;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<get_images_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const get_images_response& v);
-
-/**
- * @brief Request to list available images.
- *
- * Returns metadata for all images without the SVG data (to reduce payload size).
- * Optionally filters to only return images modified since a given timestamp.
- */
-struct list_images_request final {
-    /**
-     * @brief Optional timestamp to filter images.
-     *
-     * When set, only images with recorded_at >= modified_since are returned.
-     * When not set, all images are returned (default behavior).
-     */
-    std::optional<std::chrono::system_clock::time_point> modified_since;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<list_images_request, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
-};
-
-std::ostream& operator<<(std::ostream& s, const list_images_request& v);
-
-/**
- * @brief Metadata for an image (without SVG data).
- */
-struct image_info final {
+struct image_info {
     std::string image_id;
     std::string key;
     std::string description;
-    /**
-     * @brief Timestamp when this image was last modified.
-     *
-     * Used by clients to track incremental changes.
-     */
-    std::chrono::system_clock::time_point recorded_at;
 };
 
-std::ostream& operator<<(std::ostream& s, const image_info& v);
+struct get_images_request {
+    using response_type = struct get_images_response;
+    static constexpr std::string_view nats_subject = "assets.v1.images.get";
+    std::vector<std::string> image_ids;
+};
+
+struct get_images_response {
+    bool success = true;
+    std::string message;
+    std::vector<ores::assets::domain::image> images;
+};
+
+struct list_images_request {
+    using response_type = struct list_images_response;
+    static constexpr std::string_view nats_subject = "assets.v1.images.list";
+    std::optional<std::chrono::system_clock::time_point> modified_since;
+};
 
 /**
- * @brief Response containing metadata for all available images.
+ * @brief Response for list_images_request.
+ *
+ * Returns lightweight metadata. Use get_images_request to fetch SVG data.
  */
-struct list_images_response final {
+struct list_images_response {
+    bool success = true;
+    std::string message;
     std::vector<image_info> images;
-
-    std::vector<std::byte> serialize() const;
-    static std::expected<list_images_response, ores::utility::serialization::error_code>
-    deserialize(std::span<const std::byte> data);
 };
 
-std::ostream& operator<<(std::ostream& s, const list_images_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-/**
- * @brief Message traits specialization for get_images_request.
- */
-template<>
-struct message_traits<assets::messaging::get_images_request> {
-    using request_type = assets::messaging::get_images_request;
-    using response_type = assets::messaging::get_images_response;
-    static constexpr message_type request_message_type =
-        message_type::get_images_request;
+struct save_image_request {
+    using response_type = struct save_image_response;
+    static constexpr std::string_view nats_subject = "assets.v1.images.save";
+    ores::assets::domain::image data;
 };
 
-/**
- * @brief Message traits specialization for list_images_request.
- */
-template<>
-struct message_traits<assets::messaging::list_images_request> {
-    using request_type = assets::messaging::list_images_request;
-    using response_type = assets::messaging::list_images_response;
-    static constexpr message_type request_message_type =
-        message_type::list_images_request;
+struct save_image_response {
+    bool success = false;
+    std::string message;
 };
 
 }

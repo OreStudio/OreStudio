@@ -34,7 +34,6 @@
 #include "ores.ore/xml/importer.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
@@ -414,24 +413,10 @@ void ImportTradeDialog::loadCounterparties() {
         refdata::messaging::get_counterparties_request request;
         request.offset = 0;
         request.limit = 1000; // server maximum
-        auto payload = request.serialize();
-
-        comms::messaging::frame req_frame(
-            comms::messaging::message_type::get_counterparties_request,
-            0, std::move(payload));
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(req_frame));
+        auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result) return {};
 
-        auto decompressed = response_result->decompressed_payload();
-        if (!decompressed) return {};
-
-        auto response = refdata::messaging::get_counterparties_response::
-            deserialize(*decompressed);
-        if (!response) return {};
-
-        return {true, std::move(response->counterparties)};
+        return {true, std::move(response_result->counterparties)};
     });
 
     auto* watcher = new QFutureWatcher<Result>(this);
@@ -691,13 +676,7 @@ void ImportTradeDialog::onImportClicked() {
                 try {
                     save_trade_request request;
                     request.trades.push_back(tti.trade);
-                    auto payload = request.serialize();
-                    comms::messaging::frame request_frame(
-                        comms::messaging::message_type::save_trade_request,
-                        0, std::move(payload));
-
-                    auto response_result = self->clientManager_->sendRequest(
-                        std::move(request_frame));
+                    auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
                     if (!response_result) {
                         BOOST_LOG_SEV(lg(), warn)
@@ -706,25 +685,13 @@ void ImportTradeDialog::onImportClicked() {
                         continue;
                     }
 
-                    auto payload_result =
-                        response_result->decompressed_payload();
-                    if (!payload_result) {
-                        BOOST_LOG_SEV(lg(), warn)
-                            << "Failed to decompress response for: "
-                            << tti.trade.external_id;
-                        continue;
-                    }
-
-                    auto response = save_trade_response::
-                        deserialize(*payload_result);
-
-                    if (response && response->success) {
+                    if (response_result->success) {
                         success_count++;
                         BOOST_LOG_SEV(lg(), debug)
                             << "Successfully imported trade: "
                             << tti.trade.external_id;
                     } else {
-                        const std::string msg = response ? response->message : "Unknown error";
+                        const std::string msg = response_result->message;
                         BOOST_LOG_SEV(lg(), warn)
                             << "Server rejected trade: "
                             << tti.trade.external_id << " - " << msg;

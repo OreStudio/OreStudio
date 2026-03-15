@@ -23,7 +23,6 @@
 #include "ores.refdata/messaging/party_status_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -204,20 +203,20 @@ void ClientPartyStatusModel::fetch_statuses(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch party statuses: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .statuses = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch party statuses: " + comms::net::to_string(result.error())),
+                                "Failed to fetch party statuses: " + result.error()),
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->statuses.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->party_statuses.size()
                                            << " party statuses";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->statuses.size());
+                    static_cast<std::uint32_t>(result->party_statuses.size());
                 return {.success = true,
-                        .statuses = std::move(result->statuses),
+                        .statuses = std::move(result->party_statuses),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "party statuses");

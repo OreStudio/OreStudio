@@ -34,6 +34,7 @@ environment_entity environment_mapper::to_entity(const domain::environment& env)
     e.host = env.host;
     e.port = env.port;
     e.description = env.description;
+    e.subject_prefix = env.subject_prefix;
     return e;
 }
 
@@ -48,6 +49,7 @@ domain::environment environment_mapper::to_domain(const environment_entity& e) {
     env.host = e.host;
     env.port = e.port;
     env.description = e.description;
+    env.subject_prefix = e.subject_prefix;
     return env;
 }
 

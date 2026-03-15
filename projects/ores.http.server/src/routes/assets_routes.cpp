@@ -20,6 +20,7 @@
 #include "ores.http.server/routes/assets_routes.hpp"
 
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.assets/service/assets_service.hpp"
@@ -31,7 +32,7 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 assets_routes::assets_routes(database::context ctx,
-    std::shared_ptr<comms::service::auth_session_service> sessions)
+    std::shared_ptr<iam::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
     , sessions_(std::move(sessions)) {
     BOOST_LOG_SEV(lg(), debug) << "Assets routes initialized";

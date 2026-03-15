@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "iam.service",
+    "full_name": "ores.iam.service",
+    "brief": "Identity and access management service",
+    "description": "Standalone NATS microservice hosting IAM handlers: user authentication, session management, account and tenant lifecycle, role and permission management, bootstrap mode, geolocation, and JWT signing/validation."
+  }
+}

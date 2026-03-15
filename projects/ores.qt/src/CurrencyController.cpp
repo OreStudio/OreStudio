@@ -33,12 +33,9 @@
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
 
 namespace ores::qt {
 
-using comms::messaging::frame;
-using comms::messaging::message_type;
 using namespace ores::logging;
 
 namespace {
@@ -545,32 +542,14 @@ void CurrencyController::onRevertCurrency(const refdata::domain::currency& curre
                                        << currencyToSave.iso_code;
 
             refdata::messaging::save_currency_request request;
-            request.currencies.push_back(currencyToSave);
-            auto payload = request.serialize();
-            frame request_frame = frame(message_type::save_currency_request,
-                0, std::move(payload));
-
+            request.data = currencyToSave;
             auto response_result =
-                self->clientManager_->sendRequest(std::move(request_frame));
+self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result)
                 return {false, "Failed to communicate with server"};
 
-            auto payload_result = response_result->decompressed_payload();
-            if (!payload_result)
-                return {false, "Failed to decompress server response"};
-
-            using refdata::messaging::save_currency_response;
-            auto response = save_currency_response::deserialize(*payload_result);
-
-            bool result = false;
-            std::string message = "Invalid server response";
-            if (response) {
-                result = response->success;
-                message = response->message;
-            }
-
-            return {result, message};
+            return {response_result->success, response_result->message};
         });
 
     auto* watcher = new QFutureWatcher<std::pair<bool, std::string>>(self);

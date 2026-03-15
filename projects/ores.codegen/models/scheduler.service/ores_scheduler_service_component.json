@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "scheduler.service",
+    "full_name": "ores.scheduler.service",
+    "brief": "Scheduler service",
+    "description": "Standalone NATS microservice hosting scheduler handlers and running the in-process scheduler loop with SQL and message queue action handlers."
+  }
+}

@@ -217,235 +217,26 @@ void QueueMonitorController::showDetailWindow(
 }
 
 void QueueMonitorController::onCreateQueueRequested() {
-    BOOST_LOG_SEV(lg(), debug) << "Create queue requested";
-
-    CreateQueueDialog dlg(mainWindow_);
-    if (dlg.exec() != QDialog::Accepted)
-        return;
-
-    const QString queueName   = dlg.queueName();
-    const QString scopeType   = dlg.scopeType();
-    const QString queueType   = dlg.queueType();
-    const QString description = dlg.description();
-
-    if (queueName.isEmpty())
-        return;
-
-    struct CreateResult {
-        bool success{false};
-        QString error_message;
-        QString error_details;
-    };
-
-    QPointer<QueueMonitorController> self = this;
-    auto future = QtConcurrent::run(
-            [self, queueName, scopeType, queueType, description]() -> CreateResult {
-        return exception_helper::wrap_async_fetch<CreateResult>(
-                [&]() -> CreateResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false,
-                        .error_message = tr("Controller destroyed"),
-                        .error_details = {}};
-            }
-
-            mq::messaging::create_queue_request req;
-            req.queue_name  = queueName.toStdString();
-            req.scope_type  = scopeType.toStdString();
-            req.queue_type  = queueType.toStdString();
-            req.description = description.toStdString();
-
-            auto result = self->clientManager_
-                ->process_authenticated_request(std::move(req));
-
-            if (!result) {
-                return {.success = false,
-                        .error_message = tr("Request failed"),
-                        .error_details = {}};
-            }
-
-            if (!result->success) {
-                return {.success = false,
-                        .error_message = QString::fromStdString(result->message),
-                        .error_details = {}};
-            }
-
-            return {.success = true, .error_message = {}, .error_details = {}};
-        }, "create_queue");
-    });
-
-    auto* watcher = new QFutureWatcher<CreateResult>(this);
-    connect(watcher, &QFutureWatcher<CreateResult>::finished,
-            this, [self, watcher, queueName]() {
-        const auto r = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (r.success) {
-            BOOST_LOG_SEV(lg(), info) << "Queue created: "
-                                      << queueName.toStdString();
-            emit self->statusMessage(tr("Queue '%1' created").arg(queueName));
-            self->reloadListWindow();
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Create queue failed: "
-                                       << r.error_message.toStdString();
-            emit self->errorMessage(r.error_message);
-            MessageBoxHelper::critical(self->mainWindow_,
-                tr("Create Queue Failed"), r.error_message, r.error_details);
-        }
-    });
-    watcher->setFuture(future);
+    BOOST_LOG_SEV(lg(), warn) << "Create queue not supported in NATS protocol";
+    emit errorMessage(tr("Queue creation is not available in this version."));
+    MessageBoxHelper::warning(mainWindow_, tr("Not Available"),
+        tr("Queue creation is not supported in this version."));
 }
 
 void QueueMonitorController::onDeleteQueueRequested(const QString& queueName) {
-    BOOST_LOG_SEV(lg(), debug) << "Delete queue requested: "
-                               << queueName.toStdString();
-
-    const auto reply = MessageBoxHelper::question(mainWindow_,
-        tr("Delete Queue"),
-        tr("Permanently delete queue '%1' and all its messages?").arg(queueName),
-        QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes)
-        return;
-
-    struct DropResult {
-        bool success{false};
-        QString error_message;
-        QString error_details;
-    };
-
-    QPointer<QueueMonitorController> self = this;
-    auto future = QtConcurrent::run(
-            [self, queueName]() -> DropResult {
-        return exception_helper::wrap_async_fetch<DropResult>(
-                [&]() -> DropResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false,
-                        .error_message = tr("Controller destroyed"),
-                        .error_details = {}};
-            }
-
-            mq::messaging::drop_queue_request req;
-            req.queue_name = queueName.toStdString();
-
-            auto result = self->clientManager_
-                ->process_authenticated_request(std::move(req));
-
-            if (!result) {
-                return {.success = false,
-                        .error_message = tr("Request failed"),
-                        .error_details = {}};
-            }
-
-            if (!result->success) {
-                return {.success = false,
-                        .error_message = QString::fromStdString(result->message),
-                        .error_details = {}};
-            }
-
-            return {.success = true, .error_message = {}, .error_details = {}};
-        }, "drop_queue");
-    });
-
-    auto* watcher = new QFutureWatcher<DropResult>(this);
-    connect(watcher, &QFutureWatcher<DropResult>::finished,
-            this, [self, watcher, queueName]() {
-        const auto r = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (r.success) {
-            BOOST_LOG_SEV(lg(), info) << "Queue deleted: "
-                                      << queueName.toStdString();
-            emit self->statusMessage(tr("Queue '%1' deleted").arg(queueName));
-            self->reloadListWindow();
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Delete queue failed: "
-                                       << r.error_message.toStdString();
-            emit self->errorMessage(r.error_message);
-            MessageBoxHelper::critical(self->mainWindow_,
-                tr("Delete Queue Failed"), r.error_message, r.error_details);
-        }
-    });
-    watcher->setFuture(future);
+    BOOST_LOG_SEV(lg(), warn) << "Delete queue not supported in NATS protocol: "
+                              << queueName.toStdString();
+    emit errorMessage(tr("Queue deletion is not available in this version."));
+    MessageBoxHelper::warning(mainWindow_, tr("Not Available"),
+        tr("Queue deletion is not supported in this version."));
 }
 
 void QueueMonitorController::onPurgeQueueRequested(const QString& queueName) {
-    BOOST_LOG_SEV(lg(), debug) << "Purge queue requested: "
-                               << queueName.toStdString();
-
-    const auto reply = MessageBoxHelper::question(mainWindow_,
-        tr("Purge Queue"),
-        tr("Delete all messages from queue '%1'?").arg(queueName),
-        QMessageBox::Yes | QMessageBox::No);
-    if (reply != QMessageBox::Yes)
-        return;
-
-    struct PurgeResult {
-        bool success{false};
-        std::int64_t purged_count{0};
-        QString error_message;
-        QString error_details;
-    };
-
-    QPointer<QueueMonitorController> self = this;
-    auto future = QtConcurrent::run(
-            [self, queueName]() -> PurgeResult {
-        return exception_helper::wrap_async_fetch<PurgeResult>(
-                [&]() -> PurgeResult {
-            if (!self || !self->clientManager_) {
-                return {.success = false,
-                        .error_message = tr("Controller destroyed"),
-                        .error_details = {}};
-            }
-
-            mq::messaging::purge_queue_request req;
-            req.queue_name = queueName.toStdString();
-
-            auto result = self->clientManager_
-                ->process_authenticated_request(std::move(req));
-
-            if (!result) {
-                return {.success = false,
-                        .error_message = tr("Request failed"),
-                        .error_details = {}};
-            }
-
-            if (!result->success) {
-                return {.success = false,
-                        .error_message = QString::fromStdString(result->message),
-                        .error_details = {}};
-            }
-
-            return {.success = true,
-                    .purged_count = result->purged_count,
-                    .error_message = {}, .error_details = {}};
-        }, "purge_queue");
-    });
-
-    auto* watcher = new QFutureWatcher<PurgeResult>(this);
-    connect(watcher, &QFutureWatcher<PurgeResult>::finished,
-            this, [self, watcher, queueName]() {
-        const auto r = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (r.success) {
-            BOOST_LOG_SEV(lg(), info) << "Queue purged: "
-                                      << queueName.toStdString()
-                                      << " (" << r.purged_count << " messages)";
-            emit self->statusMessage(
-                tr("Queue '%1' purged (%2 messages removed)")
-                    .arg(queueName).arg(r.purged_count));
-            self->reloadListWindow();
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Purge queue failed: "
-                                       << r.error_message.toStdString();
-            emit self->errorMessage(r.error_message);
-            MessageBoxHelper::critical(self->mainWindow_,
-                tr("Purge Queue Failed"), r.error_message, r.error_details);
-        }
-    });
-    watcher->setFuture(future);
+    BOOST_LOG_SEV(lg(), warn) << "Purge queue not supported in NATS protocol: "
+                              << queueName.toStdString();
+    emit errorMessage(tr("Queue purging is not available in this version."));
+    MessageBoxHelper::warning(mainWindow_, tr("Not Available"),
+        tr("Queue purging is not supported in this version."));
 }
 
 }

@@ -7,7 +7,7 @@
         "openssl",
         {
             "name": "reflectcpp",
-            "features": [ "xml", "bson" ]
+            "features": [ "xml", "bson", "msgpack" ]
         },
         {
             "name": "sqlgen",
@@ -34,7 +34,7 @@
         "catch2",
         "libfort",
         "croncpp",
-        "nng"
+        "cnats"
     ],
     "default-features": [ "wt" ],
     "features": {

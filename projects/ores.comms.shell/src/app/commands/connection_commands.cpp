@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -21,16 +21,16 @@
 
 #include <ostream>
 #include <functional>
+#include <rfl/json.hpp>
 #include <cli/cli.h>
 #include "ores.logging/make_logger.hpp"
-#include "ores.comms/messaging/message_type.hpp"
+#include "ores.nats/config/nats_options.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
-#include "ores.comms.shell/app/commands/compression_commands.hpp"
 
 namespace ores::comms::shell::app::commands {
 
 using namespace ores::logging;
-using comms::net::client_session;
+using service::nats_session;
 
 namespace {
 
@@ -42,38 +42,37 @@ auto& anon_lg() {
     return instance;
 }
 
-void check_bootstrap_status(client_session& session, std::ostream& out) {
-    using iam::messaging::bootstrap_status_request;
-
-    auto result = session.process_request(bootstrap_status_request{});
-
-    if (!result) {
-        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed: "
-                                        << to_string(result.error());
-        return;
-    }
-
-    const auto& response = *result;
-    if (response.is_in_bootstrap_mode) {
-        BOOST_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: "
-                                       << response.message;
-        out << std::endl;
-        out << "⚠ WARNING: System is in BOOTSTRAP MODE" << std::endl;
-        out << "  " << response.message << std::endl;
-        out << std::endl;
-    } else {
-        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status: not in bootstrap mode";
+void check_bootstrap_status(nats_session& session, std::ostream& out) {
+    try {
+        auto reply = session.request("iam.v1.auth.bootstrap-status",
+            rfl::json::write(iam::messaging::bootstrap_status_request{}));
+        auto data_str = std::string(
+            reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+        auto result = rfl::json::read<iam::messaging::bootstrap_status_response>(data_str);
+        if (!result) return;
+        if (result->is_in_bootstrap_mode) {
+            BOOST_LOG_SEV(anon_lg(), warn) << "System is in bootstrap mode: "
+                                           << result->message;
+            out << std::endl;
+            out << "WARNING: System is in BOOTSTRAP MODE" << std::endl;
+            out << "  " << result->message << std::endl;
+            out << std::endl;
+        } else {
+            BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status: not in bootstrap mode";
+        }
+    } catch (...) {
+        BOOST_LOG_SEV(anon_lg(), debug) << "Bootstrap status check failed";
     }
 }
 
 } // anonymous namespace
 
 void connection_commands::
-register_commands(cli::Menu& root_menu, client_session& session) {
-    root_menu.Insert("connect", [&session](std::ostream & out,
-            std::string host, std::string port, std::string identifier) {
+register_commands(cli::Menu& root_menu, nats_session& session) {
+    root_menu.Insert("connect", [&session](std::ostream& out,
+            std::string host, std::string port, std::string /*identifier*/) {
         process_connect(std::ref(out), std::ref(session),
-            std::move(host), std::move(port), std::move(identifier));
+            std::move(host), std::move(port), std::string{});
         }, "Connect to server (optional: host port identifier)");
 
     root_menu.Insert("disconnect", [&session](std::ostream& out) {
@@ -82,47 +81,37 @@ register_commands(cli::Menu& root_menu, client_session& session) {
 }
 
 void connection_commands::
-process_connect(std::ostream& out, client_session& session,
-    std::string host, std::string port, std::string identifier) {
+process_connect(std::ostream& out, nats_session& session,
+    std::string host, std::string port, std::string /*identifier*/) {
 
-    comms::net::client_options config;
-
-    // Use provided values or defaults
-    config.host = host.empty() ? "localhost" : std::move(host);
+    const std::string resolved_host = host.empty() ? "localhost" : std::move(host);
+    std::uint16_t resolved_port = 4222;
 
     if (!port.empty()) {
         try {
-            config.port = static_cast<std::uint16_t>(std::stoi(port));
+            resolved_port = static_cast<std::uint16_t>(std::stoi(port));
         } catch (...) {
             out << "✗ Invalid port number: " << port << std::endl;
             return;
         }
     }
 
-    if (!identifier.empty()) {
-        config.client_identifier = std::move(identifier);
-    } else {
-        config.client_identifier = "ores-shell";
-    }
+    const std::string nats_url =
+        "nats://" + resolved_host + ":" + std::to_string(resolved_port);
 
-    config.verify_certificate = false; // FIXME: for now
-    config.heartbeat_enabled = true;   // Enable to receive async notifications
-    config.supported_compression = compression_commands::get_supported_compression();
-
-    auto result = session.connect(std::move(config));
-    if (result) {
-        out << "✓ Connected to " << config.host << ":" << config.port << std::endl;
-
-        // Check bootstrap status after successful connection
+    try {
+        nats::config::nats_options opts;
+        opts.url = nats_url;
+        session.connect(std::move(opts));
+        out << "✓ Connected to " << nats_url << std::endl;
         check_bootstrap_status(session, out);
-    } else {
-        out << "✗ Connection failed: "
-            << comms::net::to_string(result.error()) << std::endl;
+    } catch (const std::exception& e) {
+        out << "✗ Connection failed: " << e.what() << std::endl;
     }
 }
 
 void connection_commands::
-process_disconnect(std::ostream& out, client_session& session) {
+process_disconnect(std::ostream& out, nats_session& session) {
     if (!session.is_connected()) {
         out << "✗ Not connected." << std::endl;
         return;

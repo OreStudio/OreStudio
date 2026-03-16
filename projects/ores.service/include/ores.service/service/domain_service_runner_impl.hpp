@@ -23,6 +23,9 @@
 #include <csignal>
 #include <functional>
 #include <optional>
+#include <boost/asio/bind_cancellation_slot.hpp>
+#include <boost/asio/cancellation_signal.hpp>
+#include <boost/asio/co_spawn.hpp>
 #include <boost/asio/error.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
@@ -49,16 +52,26 @@ run(boost::asio::io_context& io_ctx,
         return instance;
     }();
 
-    // Install signal handler before the JWKS fetch so that SIGINT/SIGTERM
-    // cancels the retry loop instead of hitting the OS default handler.
+    // During the JWKS startup phase, use a cancellation_signal rather than
+    // io_ctx.stop() so that the coroutine can unwind cleanly (log, co_return)
+    // before the io_context exits. Calling io_ctx.stop() here would cause
+    // io_ctx.run() in main() to return before the catch block executes.
+    boost::asio::cancellation_signal startup_cancel;
     boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-    signals.async_wait([&io_ctx](const boost::system::error_code& ec, int) {
-        if (!ec) io_ctx.stop();
+    signals.async_wait([&startup_cancel](const boost::system::error_code& ec, int) {
+        if (!ec) startup_cancel.emit(boost::asio::cancellation_type::all);
     });
 
+    // co_spawn with bind_cancellation_slot propagates the slot to the spawned
+    // coroutine: when startup_cancel.emit() fires, the coroutine is cancelled
+    // at its next async point (the backoff timer) with operation_aborted.
     std::string pub_key;
     try {
-        pub_key = co_await ores::nats::service::fetch_jwks_public_key(nats);
+        pub_key = co_await boost::asio::co_spawn(
+            io_ctx,
+            ores::nats::service::fetch_jwks_public_key(nats),
+            boost::asio::bind_cancellation_slot(
+                startup_cancel.slot(), boost::asio::use_awaitable));
     } catch (const boost::system::system_error& e) {
         if (e.code() != boost::asio::error::operation_aborted)
             throw;
@@ -66,6 +79,11 @@ run(boost::asio::io_context& io_ctx,
         co_return;
     }
     BOOST_LOG_SEV(lg, info) << "Fetched JWKS public key from IAM";
+
+    // Dismiss the startup handler before re-arming for the operational phase.
+    // signals.cancel() posts the handler with operation_aborted (ignored by !ec).
+    // The subsequent async_wait(use_awaitable) then waits for the real signal.
+    signals.cancel();
 
     std::optional<ores::security::jwt::jwt_authenticator> verifier =
         ores::security::jwt::jwt_authenticator::create_rs256_verifier(pub_key);
@@ -77,7 +95,6 @@ run(boost::asio::io_context& io_ctx,
         on_started(io_ctx);
 
     BOOST_LOG_SEV(lg, info) << "Service ready. Waiting for requests...";
-    signals.cancel();
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";

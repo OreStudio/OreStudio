@@ -23,6 +23,7 @@
 #include <chrono>
 #include <string_view>
 #include <boost/asio/awaitable.hpp>
+#include <boost/system/system_error.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
@@ -64,6 +65,8 @@ retry_with_backoff(Fn&& fn,
         try {
             co_await fn();
             co_return;
+        } catch (const boost::system::system_error&) {
+            throw; // propagate cancellation and other system errors unmodified
         } catch (const std::exception& e) {
             if (max_retries >= 0 && attempt >= max_retries)
                 throw;

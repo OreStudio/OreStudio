@@ -1,0 +1,265 @@
+:PROPERTIES:
+:ID: 4e762126-2152-11f1-b1d1-40b0768014eb
+:END:
+#+title: NATS Multi-Tenancy and Multi-Party Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+The goal is to make every NATS domain service (refdata, dq, assets, etc.)
+honour tenant and party isolation per request, using RS256 JWT tokens issued by
+the IAM service.
+
+The system has two layers of isolation:
+
+- *Tenant*: separates organisations from each other (enforced by PostgreSQL RLS
+  on =app.current_tenant_id=).
+- *Party*: separates business units within a tenant (enforced by RLS on
+  =app.visible_party_ids=).
+
+Currently domain services ignore the Bearer token and run everything under the
+system tenant. The fix requires three things working together:
+
+1. *Two-phase login* — phase 1 authenticates the user and returns available
+   parties; phase 2 accepts the party selection, computes =visible_party_ids=
+   via recursive CTE, stores the session in the DB, and issues a full RS256 JWT
+   containing =tenant_id=, =party_id=, and =session_id=.
+
+2. *JWKS distribution* — IAM serves its public key at startup via
+   =ores.iam.v1.auth.jwks=; domain services fetch and cache it once at startup
+   for local JWT validation.
+
+3. *Per-request context extraction* — domain services validate the JWT, extract
+   =tenant_id= / =party_id= / =session_id=, load =visible_party_ids= from the
+   IAM sessions table (cached by =session_id=), and construct the proper DB
+   context before executing the request.
+
+** Success Criteria
+
+- A domain service request with a valid JWT runs under the correct tenant and
+  party context.
+- A request with an invalid, expired, or missing token is rejected before
+  touching the database.
+- Domain service handlers require no knowledge of auth — context extraction is
+  handled by a shared helper.
+- Party switching requires re-login (log out and log back in).
+
+* Architecture
+
+The design touches four layers:
+
+** ores.security
+
+Gains RS256 JWT signing and verification (already planned in
+=2026-03-05-jwt-migration-rs256.org=). =jwt_claims= adds =tenant_id=,
+=party_id=, and =session_id= fields. All services link against this.
+
+** ores.iam.service
+
+Three changes:
+
+- Login handler split into two phases: =auth.login= returns a party list plus
+  an interim token (tenant-scoped, short-lived, valid only for
+  =auth.select_party=); =auth.select_party= computes =visible_party_ids=,
+  persists the session to the DB, and issues the full JWT.
+- New =auth.jwks= handler returns the RS256 public key on request.
+- =auth_session_service= updated to include =visible_party_ids= per session.
+
+** ores.nats
+
+A new =request_context= helper shared by all domain service registrars. Given a
+NATS message, it:
+
+1. Extracts the Bearer token from headers.
+2. Validates the JWT signature using the cached public key.
+3. Extracts =tenant_id=, =party_id=, =session_id= from claims.
+4. Loads =visible_party_ids= from =ores_iam_sessions_tbl= (in-memory cache
+   keyed by =session_id=, TTL matches token expiry).
+5. Returns a fully constructed =database::context=.
+
+** Domain service registrars
+
+Each registrar replaces the current system-tenant context with a
+=request_context= call. One change per handler.
+
+The =visible_party_ids= cache in each domain service is process-local. On first
+request for a =session_id=, it queries =ores_iam_sessions_tbl= directly (same
+DB, shared schema). Subsequent requests for the same session hit the cache.
+
+* Data Flow
+
+** Login phase 1 — =auth.login=
+
+1. Client sends ={username, password}= (username in =user@hostname= format).
+2. IAM resolves tenant from hostname, authenticates credentials.
+3. Looks up =account_parties= for the user.
+4. If exactly one party: proceeds directly to phase 2 internally.
+5. If multiple: returns ={interim_token, parties: [{id, name}, ...]}= to client.
+6. Client shows party picker.
+
+** Login phase 2 — =auth.select_party=
+
+1. Client sends ={interim_token, party_id}=.
+2. IAM validates interim token, checks user is member of requested party.
+3. Runs recursive CTE to compute =visible_party_ids=.
+4. Persists session record to =ores_iam_sessions_tbl= with =tenant_id=,
+   =party_id=, =visible_party_ids=.
+5. Mints full RS256 JWT: claims = =sub=account_id=, =tenant_id=, =party_id=,
+   =session_id=, =roles=, =exp=.
+6. Returns ={token, username, tenant_name, party_name}=.
+
+** Authenticated domain request
+
+1. Client sends NATS message with =Authorization: Bearer <jwt>= header.
+2. Domain service registrar calls =request_context(msg, base_ctx, verifier)=.
+3. =request_context= validates JWT → extracts =tenant_id=, =party_id=,
+   =session_id=.
+4. Cache miss on =session_id= → SELECT =visible_party_ids= from
+   =ores_iam_sessions_tbl=.
+5. Constructs =database::context= with tenant + party + visible set.
+6. Handler executes query — PostgreSQL RLS filters automatically.
+7. Response returned to client.
+
+** JWKS fetch at domain service startup
+
+1. Service sends request to =ores.iam.v1.auth.jwks=.
+2. IAM returns ={keys: [{kid, kty, alg, n, e}]}=.
+3. Service caches public key, uses it for all subsequent JWT validation.
+
+* API and Protocol
+
+** NATS Subjects
+
+| Subject                        | Direction      | Description                                       |
+|--------------------------------+----------------+---------------------------------------------------|
+| =ores.iam.v1.auth.login=       | client → IAM   | Modified: returns party list + interim token      |
+| =ores.iam.v1.auth.select_party= | client → IAM  | New: accepts interim token + party_id, returns JWT |
+| =ores.iam.v1.auth.jwks=        | service → IAM  | New: returns public key in JWKS format            |
+
+** Message Types
+
+#+begin_src cpp
+// Modified — phase 1 response
+struct login_response {
+    bool success;
+    std::string message;
+    std::string interim_token;           // short-lived, select_party only
+    std::vector<party_summary> parties;  // empty if auto-selected
+};
+
+struct party_summary {
+    std::string id;
+    std::string name;
+};
+
+// New — phase 2
+struct select_party_request {
+    std::string interim_token;
+    std::string party_id;
+};
+
+struct select_party_response {
+    bool success;
+    std::string message;
+    std::string token;        // full RS256 JWT
+    std::string username;
+    std::string tenant_name;
+    std::string party_name;
+};
+
+// New — JWKS
+struct jwks_request {};
+struct jwks_response {
+    std::string json; // raw JWKS JSON
+};
+#+end_src
+
+** jwt_claims additions (ores.security)
+
+#+begin_src cpp
+struct jwt_claims {
+    // existing fields ...
+    std::optional<std::string> tenant_id;   // UUID string
+    std::optional<std::string> party_id;    // UUID string
+    std::optional<std::string> session_id;  // UUID string
+    // NOTE: visible_party_ids NOT in JWT — loaded from DB by session_id
+};
+#+end_src
+
+** request_context helper (ores.nats)
+
+#+begin_src cpp
+namespace ores::nats::service {
+
+// Extracts tenant/party/visible_party_ids from a NATS message JWT and
+// returns a database::context scoped to the authenticated user.
+// Throws on invalid/expired token or unknown session.
+database::context request_context(
+    const nats::domain::message& msg,
+    const database::context& base_ctx,
+    const security::jwt::jwt_verifier& verifier);
+
+}
+#+end_src
+
+** Key management
+
+| Key       | Location                                    | Used by       |
+|-----------+---------------------------------------------+---------------|
+| Private   | =ORES_IAM_SERVICE_JWT_PRIVATE_KEY= env var  | IAM only      |
+| Public    | Derived at startup, served via =auth.jwks=  | All services  |
+
+* Error Handling
+
+- *Missing/malformed Bearer token* → =unauthenticated= error, no DB access.
+- *Invalid signature* → =unauthenticated= error.
+- *Expired token* → =token_expired= error; client must re-login.
+- *Unknown =kid=* → refetch JWKS once, retry; if still unknown →
+  =unauthenticated=.
+- *Session not found* (e.g. after logout) → =session_invalid=; client must
+  re-login.
+- *Interim token sent to domain service* → rejected via =audience= claim
+  mismatch → =unauthenticated=.
+- *JWKS fetch failure at startup* → service retries with backoff; fails to start
+  after N attempts. A service that cannot validate tokens must not accept
+  requests.
+- *Party not in visible set* → handled transparently by PostgreSQL RLS; query
+  returns empty results, no application-level check needed.
+
+* Testing Strategy
+
+** Unit tests (ores.security)
+
+- RS256 sign/verify round-trip passes.
+- Tampered payload fails verification.
+- Expired token rejected.
+- Missing claims handled gracefully.
+- Unknown =kid= triggers JWKS refetch.
+
+** Unit tests (ores.nats)
+
+- =request_context= with valid JWT → correct =database::context= constructed.
+- =request_context= with expired token → throws =token_expired=.
+- =request_context= with missing Bearer header → throws =unauthenticated=.
+- =visible_party_ids= cache hit vs miss behaviour.
+
+** Integration tests (ores.iam.service)
+
+- Phase 1 login with single party → auto-selects, no picker.
+- Phase 1 login with multiple parties → party list returned.
+- Phase 2 =select_party= with valid interim token + valid party → full JWT issued.
+- Phase 2 =select_party= with invalid party (user not a member) → rejected.
+- JWKS endpoint returns valid public key matching private key.
+
+** End-to-end (manual, local)
+
+- Login as =admin@system= → auto-selects system party → domain requests succeed.
+- Login as multi-party user → party picker shown → select party → domain
+  requests scoped correctly.
+- Logout → session invalidated → subsequent requests with old token rejected.
+
+* Open Questions
+
+None at this time.

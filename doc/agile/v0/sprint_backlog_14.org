@@ -906,6 +906,47 @@ Highlights:
   historical NATS JetStream statistics.
 #+end_quote
 
+*** COMPLETED Rename =ores.comms.shell= to =ores.shell=                :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-15 Sun 21:18]--[2026-03-15 Sun 22:09] =>  0:51
+    CLOCK: [2026-03-15 Sun 17:30]--[2026-03-15 Sun 20:04] =>  2:34
+    :END:
+
+- rename ores.comms.shell to just ores.shell: done.
+- rename ores.nats to ores.messaging: decided against it after chat with Claude.
+- rename protocol documents to messaging.
+
+**** Clean up NATS build issues
+
+#+begin_quote
+This pull request addresses critical CI failures and updates extensive
+documentation following a recent migration to NATS JetStream messaging. It
+ensures that service configuration tests accurately reflect the opt-in nature of
+logging and provides comprehensive, subject-based protocol references for all
+services, enhancing clarity and maintainability of the system's communication
+architecture.
+
+Highlights:
+
+- CI Test Fixes: Fixed 10 service configuration parser tests to correctly handle
+  opt-in logging, ensuring tests pass when logging is explicitly enabled or
+  absent by default.
+- NATS Documentation Rewrite: Rewrote NATS messaging protocol documentation
+  across all 10 services, replacing outdated binary protocol references with
+  subject-based ones and introducing new component documentation for clarity and
+  accuracy.
+#+end_quote
+
+*** COMPLETED Add NATS telemetry sampling                              :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-16 Mon 09:25]--[2026-03-16 Mon 11:55] =>  2:30
+    :END:
+
+- add nats.service that stores samples, etc. Discuss with Claude if we should
+  rename nats to messaging or not. Having a messaging service is a bit confusing
+  as it does not do core messaging at all. Maybe we should not call this
+  "service". or maybe we should add it to telemetry.
+
 *** STARTED Add trade import mapping dialog to Qt UI                   :code:
     :LOGBOOK:
     CLOCK: [2026-03-01 Sun 10:52]--[2026-03-01 Sun 13:41] =>  2:49
@@ -937,40 +978,10 @@ Acceptance criteria:
 - Successful import creates trades in the selected book.
 - Trades appear in the trade list after import.
 
-*** STARTED Consider renaming =ores.nats= to =ores.messaging=          :code:
+*** STARTED Remaining NATS changes                                     :code:
     :LOGBOOK:
-    CLOCK: [2026-03-15 Sun 17:30]--[2026-03-15 Sun 20:04] =>  2:34
+    CLOCK: [2026-03-16 Mon 15:02]--[2026-03-16 Mon 18:43] =>  3:41
     :END:
-
-We should have implementation agnostic classes for this which hide NATS as the
-implementation detail.
-
-Notes:
-
-- rename ores.comms.shell to just ores.shell
-- rename ores.nats to ores.messaging.
-- rename protocol documents to messaging.
-
-**** Clean up NATS build issues
-
-#+begin_quote
-This pull request addresses critical CI failures and updates extensive
-documentation following a recent migration to NATS JetStream messaging. It
-ensures that service configuration tests accurately reflect the opt-in nature of
-logging and provides comprehensive, subject-based protocol references for all
-services, enhancing clarity and maintainability of the system's communication
-architecture.
-
-Highlights:
-
-- CI Test Fixes: Fixed 10 service configuration parser tests to correctly handle
-  opt-in logging, ensuring tests pass when logging is explicitly enabled or
-  absent by default.
-- NATS Documentation Rewrite: Rewrote NATS messaging protocol documentation
-  across all 10 services, replacing outdated binary protocol references with
-  subject-based ones and introducing new component documentation for clarity and
-  accuracy.
-#+end_quote
 
 *** Fine-tune grants for each service account                          :code:
 

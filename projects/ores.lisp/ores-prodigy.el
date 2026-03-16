@@ -192,6 +192,25 @@ e.g. \"ores.iam.service\" -> \"ores_iam_service\"."
      (list "ORES_SERVICE_DB_PASSWORD" pwd)
      (list "ORES_SERVICE_DB_DATABASE" ores/database-name))))
 
+(defun ores/setup-iam-service-environment (binary-name bin-dir)
+  "Set up environment variables for the IAM service.
+Extends the base NATS service environment with the RS256 JWT private key,
+read from BIN-DIR/iam-rsa-private.pem (alongside the service binary).
+Generate the key with:
+  openssl genrsa -out BIN-DIR/iam-rsa-private.pem 2048"
+  (let* ((base-env (ores/setup-nats-service-environment binary-name))
+         (key-file (concat bin-dir "/iam-rsa-private.pem"))
+         (jwt-key  (when (file-exists-p key-file)
+                     (with-temp-buffer
+                       (insert-file-contents key-file)
+                       (buffer-string)))))
+    (if (and jwt-key (not (string-empty-p jwt-key)))
+        (cons (list "ORES_IAM_SERVICE_JWT_PRIVATE_KEY" jwt-key) base-env)
+      (progn
+        (message "WARNING: %s not found. IAM service will start without JWT signing. \
+Run: openssl genrsa -out %s 2048" key-file key-file)
+        base-env))))
+
 (defun ores/setup-http-server-environment ()
   "Set up environment variables for the HTTP server."
   (let ((jwt-secret (auth-source-pick-first-password
@@ -248,7 +267,9 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :command (concat bin "/" (car svc))
           :args    `(,@common-args ,@nats-service-args ,@nats-args)
           :tags    `(,@common-tags nats-service)
-          :env     (ores/setup-nats-service-environment (car svc))
+          :env     (if (string= (car svc) "ores.iam.service")
+                       (ores/setup-iam-service-environment (car svc) bin)
+                     (ores/setup-nats-service-environment (car svc)))
           :on-output (lambda (&rest args)
                        (when (string-match-p "Service ready"
                                              (plist-get args :output))

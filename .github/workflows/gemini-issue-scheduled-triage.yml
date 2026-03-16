@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: 'Generate GitHub App Token'
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         id: generate-token
         with:
           app-id: '${{ vars.APP_ID }}'

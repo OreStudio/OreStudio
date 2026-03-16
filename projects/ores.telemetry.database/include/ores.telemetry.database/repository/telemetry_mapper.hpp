@@ -22,6 +22,8 @@
 
 #include "ores.telemetry/domain/telemetry_log_entry.hpp"
 #include "ores.telemetry/domain/telemetry_stats.hpp"
+#include "ores.telemetry/domain/nats_server_sample.hpp"
+#include "ores.telemetry/domain/nats_stream_sample.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
 namespace ores::telemetry::database::repository {
@@ -57,6 +59,20 @@ public:
      */
     static domain::telemetry_stats to_domain(
         const telemetry_stats_daily_entity& entity);
+
+    static nats_server_sample_entity to_entity(
+        const domain::nats_server_sample& sample,
+        const std::string& tenant_id);
+
+    static domain::nats_server_sample to_domain(
+        const nats_server_sample_entity& entity);
+
+    static nats_stream_sample_entity to_entity(
+        const domain::nats_stream_sample& sample,
+        const std::string& tenant_id);
+
+    static domain::nats_stream_sample to_domain(
+        const nats_stream_sample_entity& entity);
 };
 
 }

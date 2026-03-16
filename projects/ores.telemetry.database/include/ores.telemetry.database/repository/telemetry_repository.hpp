@@ -31,6 +31,9 @@
 #include "ores.telemetry/domain/telemetry_query.hpp"
 #include "ores.telemetry/domain/telemetry_stats.hpp"
 #include "ores.telemetry/domain/telemetry_batch.hpp"
+#include "ores.telemetry/domain/nats_server_sample.hpp"
+#include "ores.telemetry/domain/nats_stream_sample.hpp"
+#include "ores.telemetry/domain/nats_samples_query.hpp"
 
 namespace ores::telemetry::database::repository {
 
@@ -156,6 +159,30 @@ public:
      */
     std::uint64_t delete_old_logs(context ctx,
         const std::chrono::system_clock::time_point& older_than);
+
+    /**
+     * @brief Inserts a single NATS server-level metrics sample.
+     */
+    void insert_server_sample(context ctx,
+        const domain::nats_server_sample& sample);
+
+    /**
+     * @brief Inserts a batch of NATS per-stream metrics samples.
+     */
+    void insert_stream_samples(context ctx,
+        const std::vector<domain::nats_stream_sample>& samples);
+
+    /**
+     * @brief Queries NATS server samples within a time range.
+     */
+    std::vector<domain::nats_server_sample> query_server_samples(context ctx,
+        const domain::nats_server_samples_query& q);
+
+    /**
+     * @brief Queries NATS stream samples within a time range.
+     */
+    std::vector<domain::nats_stream_sample> query_stream_samples(context ctx,
+        const domain::nats_stream_samples_query& q);
 };
 
 }

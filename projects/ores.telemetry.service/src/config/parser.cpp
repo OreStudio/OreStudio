@@ -57,6 +57,17 @@ options_description make_options_description() {
     r.add(logging_configuration::make_options_description("ores.telemetry.service.log"));
     r.add(database_configuration::make_options_description());
     r.add(nats_configuration::make_options_description());
+
+    options_description monitor_opts("NATS monitoring options");
+    monitor_opts.add_options()
+        ("nats-monitor-url",
+            value<std::string>()->default_value("http://localhost:8222"),
+            "NATS HTTP monitoring endpoint URL")
+        ("nats-monitor-interval",
+            value<std::uint32_t>()->default_value(30),
+            "NATS monitoring poll interval in seconds");
+    r.add(monitor_opts);
+
     return r;
 }
 
@@ -90,7 +101,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
     const auto od(make_options_description());
     using ores::utility::program_options::environment_mapper_factory;
-    const auto name_mapper(environment_mapper_factory::make_mapper("SERVICE"));
+    const auto name_mapper(environment_mapper_factory::make_mapper("TELEMETRY_SERVICE"));
 
     variables_map vm;
     boost::program_options::store(
@@ -113,6 +124,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.nats = nats_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
+    r.nats_monitor_url = vm["nats-monitor-url"].as<std::string>();
+    r.nats_monitor_interval_seconds = vm["nats-monitor-interval"].as<std::uint32_t>();
     return r;
 }
 

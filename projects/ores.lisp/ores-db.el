@@ -40,6 +40,24 @@
     "ores_reporting_service" "ores_telemetry_service" "ores_trading_service")
   "Available roles to assume when connecting to an ORES database.")
 
+(defconst ores-db/role-mapper-prefix
+  '(("ores_cli_user"            . "CLI")
+    ("ores_wt_user"             . "WT")
+    ("ores_http_user"           . "HTTP_SERVER")
+    ("ores_iam_service"         . "IAM_SERVICE")
+    ("ores_refdata_service"     . "REFDATA_SERVICE")
+    ("ores_dq_service"          . "DQ_SERVICE")
+    ("ores_variability_service" . "VARIABILITY_SERVICE")
+    ("ores_assets_service"      . "ASSETS_SERVICE")
+    ("ores_synthetic_service"   . "SYNTHETIC_SERVICE")
+    ("ores_scheduler_service"   . "SCHEDULER_SERVICE")
+    ("ores_reporting_service"   . "REPORTING_SERVICE")
+    ("ores_telemetry_service"   . "TELEMETRY_SERVICE")
+    ("ores_trading_service"     . "TRADING_SERVICE"))
+  "Alist mapping DB role names to their environment variable mapper prefixes.
+Each entry maps a PostgreSQL username to the prefix used in the C++ service
+parser (make_mapper), so the env var for DB password is ORES_<PREFIX>_DB_PASSWORD.")
+
 (defvar-local ores-db/marked-ids nil
   "List of marked database IDs in the current buffer.")
 
@@ -323,8 +341,8 @@ The session's working directory is set to ores.sql for easy script access."
 
 (defun ores-db/set-env-vars (host)
   "Export all ORES passwords for HOST to environment variables.
-Uses ORES_DB_<APP>_PASSWORD convention for service users to avoid
-conflicting with application CLI environment variable mappers.
+For roles in `ores-db/role-mapper-prefix', sets ORES_<PREFIX>_DB_PASSWORD,
+matching the make_mapper(PREFIX) convention used in C++ service parsers.
 Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
   (interactive (list (completing-read "Host: " ores-db/hosts nil t)))
   (let ((count 0)
@@ -346,20 +364,10 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
             (setenv "ORES_TEST_DB_DDL_PASSWORD" pw))
            ((string= role "ores_test_dml_user")
             (setenv "ORES_TEST_DB_PASSWORD" pw))
-           ;; Service users: ores_<app>_user -> ORES_DB_<APP>_PASSWORD
-           ;; e.g., ores_cli_user -> ORES_DB_CLI_PASSWORD
-           ((string-match "^ores_\\([a-z]+\\)_user$" role)
-            (let ((app (upcase (match-string 1 role))))
-              (setenv (concat "ORES_DB_" app "_PASSWORD") pw)))
-           ;; Domain service accounts: ores_<svc>_service -> ORES_DB_<SVC>_SERVICE_PASSWORD
-           ;; e.g., ores_iam_service -> ORES_DB_IAM_SERVICE_PASSWORD
-           ((string-match "^ores_\\([a-z_]+\\)_service$" role)
-            (let ((svc (upcase (match-string 1 role))))
-              (setenv (concat "ORES_DB_" svc "_SERVICE_PASSWORD") pw)))
-           ;; Fallback for any other roles
+           ;; Roles with a mapper prefix: set ORES_<PREFIX>_DB_PASSWORD
            (t
-            (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD")
-                    pw))))))
+            (when-let ((prefix (cdr (assoc role ores-db/role-mapper-prefix))))
+              (setenv (concat "ORES_" prefix "_DB_PASSWORD") pw)))))))
     (message "[ORES] Exported %d environment variables for %s." count host)))
 
 (defun ores-db/show-env-vars ()
@@ -405,17 +413,10 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
        ((string= role "ores_test_dml_user")
         (setenv "ORES_TEST_DB_PASSWORD" nil)
         (setq count (1+ count)))
-       ((string-match "^ores_\\([a-z]+\\)_user$" role)
-        (let ((app (upcase (match-string 1 role))))
-          (setenv (concat "ORES_DB_" app "_PASSWORD") nil)
-          (setq count (1+ count))))
-       ((string-match "^ores_\\([a-z_]+\\)_service$" role)
-        (let ((svc (upcase (match-string 1 role))))
-          (setenv (concat "ORES_DB_" svc "_SERVICE_PASSWORD") nil)
-          (setq count (1+ count))))
        (t
-        (setenv (concat "ORES_DB_" (upcase (replace-regexp-in-string "[-_]" "_" role)) "_PASSWORD") nil)
-        (setq count (1+ count)))))
+        (when-let ((prefix (cdr (assoc role ores-db/role-mapper-prefix))))
+          (setenv (concat "ORES_" prefix "_DB_PASSWORD") nil)
+          (setq count (1+ count))))))
     (message "[ORES] Unset %d environment variables." count)))
 
 ;;; ==========================================================================

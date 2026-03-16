@@ -510,4 +510,99 @@ std::uint64_t telemetry_repository::delete_old_logs(context ctx,
     return 0;
 }
 
+void telemetry_repository::insert_server_sample(context ctx,
+    const domain::nats_server_sample& sample) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+    BOOST_LOG_SEV(lg(), trace) << "Inserting NATS server sample";
+
+    const auto r = sqlgen::session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(telemetry_mapper::to_entity(sample, ctx.tenant_id().to_string())))
+        .and_then(commit);
+    ensure_success(r, lg());
+}
+
+void telemetry_repository::insert_stream_samples(context ctx,
+    const std::vector<domain::nats_stream_sample>& samples) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+
+    if (samples.empty()) {
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), trace) << "Inserting " << samples.size()
+                               << " NATS stream sample(s)";
+
+    const auto tenant_id_str = ctx.tenant_id().to_string();
+    std::vector<nats_stream_sample_entity> entities;
+    entities.reserve(samples.size());
+    for (const auto& s : samples) {
+        entities.push_back(telemetry_mapper::to_entity(s, tenant_id_str));
+    }
+
+    const auto r = sqlgen::session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(entities))
+        .and_then(commit);
+    ensure_success(r, lg());
+}
+
+std::vector<domain::nats_server_sample>
+telemetry_repository::query_server_samples(context ctx,
+    const domain::nats_server_samples_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+    BOOST_LOG_SEV(lg(), debug) << "Querying NATS server samples";
+
+    const auto start_ts = timepoint_to_timestamp(q.start_time, lg());
+    const auto end_ts = timepoint_to_timestamp(q.end_time, lg());
+
+    const auto qry = sqlgen::read<std::vector<nats_server_sample_entity>> |
+        where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts) |
+        order_by("sampled_at"_c.desc()) |
+        sqlgen::limit(static_cast<std::size_t>(q.limit));
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
+    ensure_success(r, lg());
+
+    std::vector<domain::nats_server_sample> result;
+    result.reserve(r->size());
+    for (const auto& entity : *r) {
+        result.push_back(telemetry_mapper::to_domain(entity));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size()
+                               << " server sample(s)";
+    return result;
+}
+
+std::vector<domain::nats_stream_sample>
+telemetry_repository::query_stream_samples(context ctx,
+    const domain::nats_stream_samples_query& q) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+    BOOST_LOG_SEV(lg(), debug) << "Querying NATS stream samples for: "
+                               << q.stream_name;
+
+    const auto start_ts = timepoint_to_timestamp(q.start_time, lg());
+    const auto end_ts = timepoint_to_timestamp(q.end_time, lg());
+
+    const auto qry = sqlgen::read<std::vector<nats_stream_sample_entity>> |
+        where("sampled_at"_c >= start_ts && "sampled_at"_c < end_ts &&
+              "stream_name"_c == q.stream_name) |
+        order_by("sampled_at"_c.desc()) |
+        sqlgen::limit(static_cast<std::size_t>(q.limit));
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
+    ensure_success(r, lg());
+
+    std::vector<domain::nats_stream_sample> result;
+    result.reserve(r->size());
+    for (const auto& entity : *r) {
+        result.push_back(telemetry_mapper::to_domain(entity));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size()
+                               << " stream sample(s)";
+    return result;
+}
+
 }

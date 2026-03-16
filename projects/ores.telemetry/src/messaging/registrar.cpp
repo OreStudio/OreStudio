@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.nats/service/client.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
+#include "ores.telemetry/messaging/nats_samples_protocol.hpp"
 
 namespace ores::telemetry::messaging {
 
@@ -72,6 +73,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
                 // No telemetry query service implemented yet; return empty.
                 if (decode<get_telemetry_logs_request>(msg)) {
                     reply(nats, msg, get_telemetry_logs_response{
+                        .success = true});
+                }
+            }
+            // ----------------------------------------------------------------
+            // NATS server samples — list
+            // ----------------------------------------------------------------
+            else if (subj.ends_with(".nats.server-samples.list")) {
+                if (decode<get_nats_server_samples_request>(msg)) {
+                    reply(nats, msg, get_nats_server_samples_response{
+                        .success = true});
+                }
+            }
+            // ----------------------------------------------------------------
+            // NATS stream samples — list
+            // ----------------------------------------------------------------
+            else if (subj.ends_with(".nats.stream-samples.list")) {
+                if (decode<get_nats_stream_samples_request>(msg)) {
+                    reply(nats, msg, get_nats_stream_samples_response{
                         .success = true});
                 }
             }

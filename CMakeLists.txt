@@ -163,6 +163,12 @@ if(WIN32)
     # Prevent Windows.h from including the legacy WinSock.h header, which
     # conflicts with WinSock2.h pulled in by Boost.ASIO (socket_types.hpp).
     add_compile_definitions(WIN32_LEAN_AND_MEAN)
+    if(MSVC)
+        # Allow object files with more than 65535 addressable sections.
+        # Required by large translation units (e.g. registrar.cpp with many
+        # template instantiations from rfl and Boost headers).
+        add_compile_options(/bigobj)
+    endif()
 endif()
 
 find_package(Boost 1.88 REQUIRED COMPONENTS

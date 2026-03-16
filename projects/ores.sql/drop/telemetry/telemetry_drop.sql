@@ -21,3 +21,5 @@
 -- Stats functions depend on logs
 \ir ./telemetry_stats_functions_drop.sql
 \ir ./telemetry_logs_drop.sql
+\ir ./nats_server_samples_drop.sql
+\ir ./nats_stream_samples_drop.sql

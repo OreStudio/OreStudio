@@ -24,8 +24,9 @@
 -- Designed for TimescaleDB hypertable, partitioned by sampled_at.
 -- =============================================================================
 
-create table if not exists ores_nats_server_samples_tbl (
+create table if not exists ores_telemetry_nats_server_samples_tbl (
     "sampled_at"      timestamp with time zone not null,
+    "tenant_id"       uuid not null,
     "in_msgs"         bigint not null default 0,
     "out_msgs"        bigint not null default 0,
     "in_bytes"        bigint not null default 0,
@@ -33,7 +34,7 @@ create table if not exists ores_nats_server_samples_tbl (
     "connections"     integer not null default 0,
     "mem_bytes"       bigint not null default 0,
     "slow_consumers"  integer not null default 0,
-    primary key (sampled_at)
+    primary key (sampled_at, tenant_id)
 );
 
 do $$
@@ -46,7 +47,7 @@ begin
 
     if tsdb_installed then
         perform public.create_hypertable(
-            'ores_nats_server_samples_tbl',
+            'ores_telemetry_nats_server_samples_tbl',
             'sampled_at',
             chunk_time_interval => interval '1 day',
             if_not_exists => true
@@ -58,7 +59,7 @@ begin
             select current_setting('timescaledb.license', true) into current_license;
             if current_license = 'timescale' then
                 perform public.add_retention_policy(
-                    'ores_nats_server_samples_tbl',
+                    'ores_telemetry_nats_server_samples_tbl',
                     drop_after => interval '30 days',
                     if_not_exists => true
                 );

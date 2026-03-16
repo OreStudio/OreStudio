@@ -517,7 +517,7 @@ void telemetry_repository::insert_server_sample(context ctx,
 
     const auto r = sqlgen::session(ctx.connection_pool())
         .and_then(begin_transaction)
-        .and_then(insert(telemetry_mapper::to_entity(sample)))
+        .and_then(insert(telemetry_mapper::to_entity(sample, ctx.tenant_id().to_string())))
         .and_then(commit);
     ensure_success(r, lg());
 }
@@ -533,10 +533,11 @@ void telemetry_repository::insert_stream_samples(context ctx,
     BOOST_LOG_SEV(lg(), trace) << "Inserting " << samples.size()
                                << " NATS stream sample(s)";
 
+    const auto tenant_id_str = ctx.tenant_id().to_string();
     std::vector<nats_stream_sample_entity> entities;
     entities.reserve(samples.size());
     for (const auto& s : samples) {
-        entities.push_back(telemetry_mapper::to_entity(s));
+        entities.push_back(telemetry_mapper::to_entity(s, tenant_id_str));
     }
 
     const auto r = sqlgen::session(ctx.connection_pool())

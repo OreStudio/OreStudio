@@ -61,13 +61,15 @@ public:
         const telemetry_stats_daily_entity& entity);
 
     static nats_server_sample_entity to_entity(
-        const domain::nats_server_sample& sample);
+        const domain::nats_server_sample& sample,
+        const std::string& tenant_id);
 
     static domain::nats_server_sample to_domain(
         const nats_server_sample_entity& entity);
 
     static nats_stream_sample_entity to_entity(
-        const domain::nats_stream_sample& sample);
+        const domain::nats_stream_sample& sample,
+        const std::string& tenant_id);
 
     static domain::nats_stream_sample to_domain(
         const nats_stream_sample_entity& entity);

@@ -156,9 +156,11 @@ domain::telemetry_stats telemetry_mapper::to_domain(
 }
 
 nats_server_sample_entity telemetry_mapper::to_entity(
-    const domain::nats_server_sample& sample) {
+    const domain::nats_server_sample& sample,
+    const std::string& tenant_id) {
     nats_server_sample_entity r;
     r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.tenant_id = tenant_id;
     r.in_msgs = static_cast<std::int64_t>(sample.in_msgs);
     r.out_msgs = static_cast<std::int64_t>(sample.out_msgs);
     r.in_bytes = static_cast<std::int64_t>(sample.in_bytes);
@@ -184,9 +186,11 @@ domain::nats_server_sample telemetry_mapper::to_domain(
 }
 
 nats_stream_sample_entity telemetry_mapper::to_entity(
-    const domain::nats_stream_sample& sample) {
+    const domain::nats_stream_sample& sample,
+    const std::string& tenant_id) {
     nats_stream_sample_entity r;
     r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.tenant_id = tenant_id;
     r.stream_name = sample.stream_name;
     r.messages = static_cast<std::int64_t>(sample.messages);
     r.bytes = static_cast<std::int64_t>(sample.bytes);

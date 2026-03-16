@@ -38,6 +38,7 @@
 #include <boost/system/system_error.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::telemetry::service::app {
 
@@ -94,7 +95,7 @@ nats_poller::nats_poller(const std::string& monitor_url,
                          std::uint32_t interval_seconds,
                          ores::database::context ctx)
     : interval_seconds_(interval_seconds)
-    , ctx_(std::move(ctx)) {
+    , ctx_(ctx.with_tenant(ores::utility::uuid::tenant_id::system(), "nats_poller")) {
 
     // Parse "http://host:port" or "http://host" → host + port
     auto pos = monitor_url.find("://");

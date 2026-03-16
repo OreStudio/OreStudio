@@ -173,6 +173,7 @@ endif()
 
 find_package(Boost 1.88 REQUIRED COMPONENTS
     log
+    json
     crc
     uuid
     exception

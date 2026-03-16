@@ -39,6 +39,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.nats.lib
     PRIVATE
+        ores.service.lib
         ores.database.lib
         ores.dq.lib
         ores.utility.lib

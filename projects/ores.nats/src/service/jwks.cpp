@@ -37,7 +37,7 @@ fetch_jwks_public_key(client& nats, std::chrono::seconds per_request_timeout) {
             const auto* p = reinterpret_cast<const std::byte*>(body.data());
 
             auto reply = co_await nats.request(
-                "iam.v1.auth.jwks",
+                "iam.v1.auth.public-key",
                 std::span<const std::byte>(p, body.size()),
                 {},
                 per_request_timeout);

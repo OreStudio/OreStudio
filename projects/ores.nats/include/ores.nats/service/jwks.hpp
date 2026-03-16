@@ -30,7 +30,7 @@ namespace ores::nats::service {
 /**
  * @brief Fetches the RS256 public key from the IAM JWKS endpoint via NATS.
  *
- * Sends a request to <prefix>.iam.v1.auth.jwks and parses the JSON response.
+ * Sends a request to <prefix>.iam.v1.auth.public-key and parses the JSON response.
  * Retries with exponential backoff (1s → 2s → 4s … capped at 30s) if IAM is
  * unavailable or returns an error. The coroutine will not return until a valid
  * non-empty public key has been obtained.

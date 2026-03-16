@@ -20,6 +20,7 @@
 #include "ores.iam/messaging/registrar.hpp"
 
 #include <chrono>
+#include "ores.logging/make_logger.hpp"
 #include <memory>
 #include <span>
 #include <string_view>
@@ -50,6 +51,14 @@ namespace ores::iam::messaging {
 namespace svc_acct = ores::iam::domain::service_accounts;
 
 namespace {
+
+using namespace ores::logging;
+inline static std::string_view logger_name = "ores.iam.messaging.registrar";
+static auto& lg() {
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
+
 
 template<typename Resp>
 void reply(ores::nats::service::client& nats,
@@ -95,7 +104,8 @@ static std::vector<boost::uuids::uuid> compute_visible_party_ids(
         if (ids.empty())
             return {party_id}; // fallback: party not yet in refdata
         return ids;
-    } catch (...) {
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to compute visible party IDs: " << e.what();
         return {party_id}; // fallback on DB error
     }
 }
@@ -108,7 +118,9 @@ static std::optional<refdata::domain::party> lookup_party(
         auto parties = repo.read_latest(party_id);
         if (!parties.empty())
             return parties.front();
-    } catch (...) {}
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to look up party: " << e.what();
+    }
     return std::nullopt;
 }
 
@@ -127,7 +139,9 @@ static std::string lookup_tenant_name(const database::context& ctx,
         auto tenants = repo.read_latest(tenant_id);
         if (!tenants.empty())
             return tenants.front().name;
-    } catch (...) {}
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to look up tenant name: " << e.what();
+    }
     return {};
 }
 
@@ -281,7 +295,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
                         .success = false, .message = e.what()});
                 }
 
-            } else if (subj.ends_with(".auth.jwks")) {
+            } else if (subj.ends_with(".auth.public-key")) {
                 try {
                     auto pub_key = signer.get_public_key_pem();
                     if (pub_key.empty())
@@ -456,7 +470,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
                         }
 
                         auto claims_result = signer.validate(token);
-                        if (!claims_result) {
+                        if (!claims_result ||
+                            claims_result->audience != "select_party_only") {
                             reply(nats, msg, select_party_response{
                                 .success = false,
                                 .message = "Invalid or expired token"});
@@ -518,7 +533,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
                         try {
                             auto tid = sg(tenant_id_str);
                             t_name = lookup_tenant_name(ctx, tid);
-                        } catch (...) {}
+                        } catch (const std::exception& e) {
+                            BOOST_LOG_SEV(lg(), warn) << "Failed to look up tenant name during party selection: " << e.what();
+                        }
                         p_name = lookup_party_name(ctx, requested_party_id);
 
                         reply(nats, msg, select_party_response{

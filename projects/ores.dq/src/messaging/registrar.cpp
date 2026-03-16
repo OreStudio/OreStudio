@@ -42,6 +42,7 @@
 #include "ores.dq/service/publication_service.hpp"
 #include "ores.dq/service/coding_scheme_service.hpp"
 #include "ores.dq/messaging/registrar.hpp"
+#include "ores.service/service/request_context.hpp"
 
 namespace {
 
@@ -76,33 +77,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         "dq.v1.>", "ores.dq.service",
         [&nats, base_ctx = ctx, verifier](ores::nats::message msg) mutable {
-            auto ctx = [&]() -> ores::database::context {
-                if (!verifier) return base_ctx;
-                auto it = msg.headers.find("Authorization");
-                if (it == msg.headers.end()) return base_ctx;
-                const auto& val = it->second;
-                if (!val.starts_with("Bearer ")) return base_ctx;
-                const auto token = val.substr(7);
-                auto claims = verifier->validate(token);
-                if (!claims) return base_ctx;
-                const auto tenant_id_str = claims->tenant_id.value_or("");
-                if (tenant_id_str.empty()) return base_ctx;
-                auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
-                if (!tid_result) return base_ctx;
-                if (!claims->party_id || claims->party_id->empty())
-                    return base_ctx.with_tenant(*tid_result, claims->username.value_or(""));
-                try {
-                    boost::uuids::string_generator sg;
-                    boost::uuids::uuid party_id = sg(*claims->party_id);
-                    std::vector<boost::uuids::uuid> visible_ids;
-                    for (const auto& pid_str : claims->visible_party_ids)
-                        visible_ids.push_back(sg(pid_str));
-                    return base_ctx.with_party(*tid_result, party_id,
-                        std::move(visible_ids), claims->username.value_or(""));
-                } catch (...) {
-                    return base_ctx.with_tenant(*tid_result, claims->username.value_or(""));
-                }
-            }();
+            const auto ctx = ores::service::service::make_request_context(base_ctx, msg, verifier);
 
             // ==================================================================
             // Catalogs

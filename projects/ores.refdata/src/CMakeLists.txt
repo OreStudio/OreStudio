@@ -36,7 +36,8 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PRIVATE
-        pugixml::pugixml
+ores.service.lib
+                pugixml::pugixml
         ores.variability.lib
         ores.platform.lib
         ores.utility.lib

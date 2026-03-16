@@ -40,6 +40,7 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.security.lib
         ores.database.lib
+        ores.utility.lib
         Boost::boost
     PRIVATE
         ores.logging.lib)

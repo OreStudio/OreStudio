@@ -48,6 +48,7 @@ target_link_libraries(${lib_target_name}
         ${CNATS_LIB}
         Boost::program_options
     PRIVATE
+        ores.logging.lib
         ores.utility.lib
         Boost::boost)
 

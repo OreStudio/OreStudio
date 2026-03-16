@@ -22,11 +22,13 @@
 #include <atomic>
 #include "ores.nats/service/jetstream_admin.hpp"
 #include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
+#include "ores.logging/make_logger.hpp"
 
 #include <nats/nats.h>
 
@@ -40,6 +42,16 @@
 #include "ores.nats/service/subscription.hpp"
 
 namespace ores::nats::service {
+
+using namespace ores::logging;
+
+namespace {
+    inline static std::string_view logger_name = "ores.nats.service.client";
+    static auto& lg() {
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Subscription callback closure
@@ -109,11 +121,26 @@ message extract_message(natsMsg* msg) {
 
 // cnats message callback used by all subscribe variants.
 // JetStream subscriptions auto-ack by default (ManualAck is false).
+//
+// IMPORTANT: This is a C callback running on a NATS library thread.
+// Exceptions must NOT propagate out — they would cross a C frame boundary
+// and call std::terminate(), killing the service without any shutdown log.
 void on_msg(natsConnection*, natsSubscription*, natsMsg* msg, void* ud) {
     auto* cl = static_cast<sub_closure*>(ud);
     message m = extract_message(msg);
     natsMsg_Destroy(msg);
-    cl->handler(std::move(m));
+    const auto subject = m.subject; // save before move
+    try {
+        cl->handler(std::move(m));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Unhandled exception in NATS message handler for subject '"
+            << subject << "': " << e.what();
+    } catch (...) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Unknown exception in NATS message handler for subject '"
+            << subject << "'";
+    }
 }
 
 // Build a natsMsg* with data and optional headers.

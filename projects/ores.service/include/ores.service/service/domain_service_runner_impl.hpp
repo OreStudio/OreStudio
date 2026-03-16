@@ -21,6 +21,7 @@
 #define ORES_SERVICE_SERVICE_DOMAIN_SERVICE_RUNNER_IMPL_HPP
 
 #include <csignal>
+#include <functional>
 #include <optional>
 #include <boost/asio/error.hpp>
 #include <boost/asio/signal_set.hpp>
@@ -38,7 +39,8 @@ run(boost::asio::io_context& io_ctx,
     ores::nats::service::client& nats,
     ores::database::context ctx,
     std::string_view name,
-    RegisterFn&& register_fn) {
+    RegisterFn&& register_fn,
+    std::function<void(boost::asio::io_context&)> on_started) {
 
     using namespace ores::logging;
     static const std::string_view logger_name = "ores.service.service.runner";
@@ -70,6 +72,9 @@ run(boost::asio::io_context& io_ctx,
 
     auto subs = register_fn(nats, std::move(ctx), std::move(verifier));
     BOOST_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
+
+    if (on_started)
+        on_started(io_ctx);
 
     BOOST_LOG_SEV(lg, info) << "Service ready. Waiting for requests...";
     signals.cancel();

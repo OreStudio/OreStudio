@@ -20,6 +20,7 @@
 #ifndef ORES_SERVICE_SERVICE_DOMAIN_SERVICE_RUNNER_HPP
 #define ORES_SERVICE_SERVICE_DOMAIN_SERVICE_RUNNER_HPP
 
+#include <functional>
 #include <string_view>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/io_context.hpp>
@@ -57,6 +58,10 @@ namespace ores::service::service {
  *                  @endcode
  *                  The return value is ignored (subscriptions are kept alive via
  *                  the returned vector held inside this coroutine).
+ * @param on_started Optional callback invoked after subscriptions are registered
+ *                   and before the service starts waiting for shutdown. Called
+ *                   with the io_context so the caller can co_spawn additional
+ *                   coroutines (e.g. background pollers).
  */
 template<typename RegisterFn>
 boost::asio::awaitable<void>
@@ -64,7 +69,8 @@ run(boost::asio::io_context& io_ctx,
     ores::nats::service::client& nats,
     ores::database::context ctx,
     std::string_view name,
-    RegisterFn&& register_fn);
+    RegisterFn&& register_fn,
+    std::function<void(boost::asio::io_context&)> on_started = {});
 
 } // namespace ores::service::service
 

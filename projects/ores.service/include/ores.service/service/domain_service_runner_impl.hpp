@@ -76,6 +76,7 @@ run(boost::asio::io_context& io_ctx,
         if (e.code() != boost::asio::error::operation_aborted)
             throw;
         BOOST_LOG_SEV(lg, info) << "Shutdown signal received during startup.";
+        BOOST_LOG_SEV(lg, info) << "Shutdown complete: " << name;
         co_return;
     }
     BOOST_LOG_SEV(lg, info) << "Fetched JWKS public key from IAM";

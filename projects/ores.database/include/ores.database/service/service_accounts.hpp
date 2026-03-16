@@ -32,6 +32,7 @@ namespace ores::database::service::service_accounts {
  * and the PostgreSQL roles in setup_user.sql.
  */
 
+// Application tool accounts (ores_<app>_user)
 constexpr std::string_view ddl      = "ores_ddl_user";
 constexpr std::string_view cli      = "ores_cli_user";
 constexpr std::string_view wt       = "ores_wt_user";
@@ -39,6 +40,19 @@ constexpr std::string_view comms    = "ores_comms_user";
 constexpr std::string_view http     = "ores_http_user";
 constexpr std::string_view test_ddl = "ores_test_ddl_user";
 constexpr std::string_view test_dml = "ores_test_dml_user";
+constexpr std::string_view readonly_ = "ores_readonly_user";
+
+// NATS domain service accounts (ores_<service>_service)
+constexpr std::string_view iam_service         = "ores_iam_service";
+constexpr std::string_view refdata_service     = "ores_refdata_service";
+constexpr std::string_view dq_service          = "ores_dq_service";
+constexpr std::string_view variability_service = "ores_variability_service";
+constexpr std::string_view assets_service      = "ores_assets_service";
+constexpr std::string_view synthetic_service   = "ores_synthetic_service";
+constexpr std::string_view scheduler_service   = "ores_scheduler_service";
+constexpr std::string_view reporting_service   = "ores_reporting_service";
+constexpr std::string_view telemetry_service   = "ores_telemetry_service";
+constexpr std::string_view trading_service     = "ores_trading_service";
 
 }
 

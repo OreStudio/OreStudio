@@ -90,7 +90,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
     const auto od(make_options_description());
     using ores::utility::program_options::environment_mapper_factory;
-    const auto name_mapper(environment_mapper_factory::make_mapper("SERVICE"));
+    const auto name_mapper(environment_mapper_factory::make_mapper("DQ_SERVICE"));
 
     variables_map vm;
     boost::program_options::store(

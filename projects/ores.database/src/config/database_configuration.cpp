@@ -19,8 +19,6 @@
  */
 #include "ores.database/config/database_configuration.hpp"
 
-#include <regex>
-#include <ranges>
 #include <boost/throw_exception.hpp>
 #include "ores.platform/environment/environment.hpp"
 #include "ores.database/service/service_accounts.hpp"
@@ -52,8 +50,8 @@ database_configuration::make_options_description() {
             "Database user name.")
         ("db-password",
             value<std::string>()->default_value(""),
-            "Database password. Also reads from ORES_DB_<APP>_PASSWORD env var "
-            "(e.g., ORES_DB_CLI_PASSWORD for ores_cli_user).")
+            "Database password. Reads from ORES_<APP>_DB_PASSWORD env var "
+            "where <APP> is the service mapper prefix (e.g. CLI, IAM_SERVICE).")
         ("db-host",
             value<std::string>()->default_value("localhost"),
             "Database host.")
@@ -81,20 +79,7 @@ database_options database_configuration::read_options(
     r.host = vm[database_host_arg].as<std::string>();
     r.port = vm[database_port_arg].as<int>();
 
-    // Get password from command line, or fall back to environment variable.
-    // Derive env var name from user: ores_<app>_user -> ORES_DB_<APP>_PASSWORD
-    auto password = vm[database_password_arg].as<std::string>();
-    if (password.empty()) {
-        std::regex user_pattern("^ores_([a-z]+)_user$");
-        std::smatch match;
-        if (std::regex_match(r.user, match, user_pattern)) {
-            std::string app = match[1].str();
-            std::ranges::transform(app, app.begin(), ::toupper);
-            const std::string env_var = "ORES_DB_" + app + "_PASSWORD";
-            password = environment::get_value_or_default(env_var, "");
-        }
-    }
-    r.password = password;
+    r.password = vm[database_password_arg].as<std::string>();
 
     // Get tenant from command line, or fall back to ORES_TENANT env var
     auto tenant = vm[database_tenant_arg].as<std::string>();

@@ -19,6 +19,8 @@
  */
 #include "ores.qt/MdiAreaWithBackground.hpp"
 
+#include <QBrush>
+#include <QColor>
 #include <QPainter>
 
 namespace ores::qt {
@@ -28,13 +30,7 @@ using namespace ores::logging;
 MdiAreaWithBackground::MdiAreaWithBackground(QWidget* parent)
     : QMdiArea(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Creating MDI area with background";
-
-    // Explicitly ensure viewport exists
-    if (viewport()) {
-        BOOST_LOG_SEV(lg(), debug) << "Viewport exists in constructor";
-    } else {
-        BOOST_LOG_SEV(lg(), error) << "Viewport is null in constructor!";
-    }
+    setBackground(QBrush(QColor("#1A1A1A")));
 }
 
 void MdiAreaWithBackground::setBackgroundLogo(const QString& imagePath) {

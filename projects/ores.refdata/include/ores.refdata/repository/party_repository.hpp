@@ -86,6 +86,18 @@ public:
      */
     std::uint32_t get_total_party_count();
 
+    /**
+     * @brief Reads all parties in the subtree rooted at the given party.
+     *
+     * Uses a recursive CTE to traverse the party hierarchy via parent_party_id.
+     * Returns the root party plus all its descendants (active records only).
+     *
+     * @param root_id The party to start from (included in result)
+     * @return UUIDs of root and all descendant parties
+     */
+    std::vector<boost::uuids::uuid>
+    read_descendants(const boost::uuids::uuid& root_id);
+
     std::vector<domain::party> read_all(const boost::uuids::uuid& id);
     void remove(const boost::uuids::uuid& id);
 

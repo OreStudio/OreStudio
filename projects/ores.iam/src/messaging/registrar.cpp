@@ -40,8 +40,10 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.iam/repository/account_party_repository.hpp"
+#include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.iam/domain/session.hpp"
 #include "ores.iam/domain/role.hpp"
+#include "ores.refdata/repository/party_repository.hpp"
 
 namespace ores::iam::messaging {
 
@@ -81,14 +83,52 @@ std::string extract_bearer_token(const ores::nats::message& msg) {
     return val.substr(prefix.size());
 }
 
-// Compute visible party IDs for a given party.
-// For now, returns just the user's own party.
-// TODO: implement recursive CTE for full party hierarchy.
+// Returns the given party plus all its descendants via parent_party_id
+// hierarchy (recursive CTE on ores_refdata_parties_tbl).
 static std::vector<boost::uuids::uuid> compute_visible_party_ids(
-    const database::context& /*ctx*/,
+    const database::context& ctx,
     const std::string& /*tenant_id_str*/,
     const boost::uuids::uuid& party_id) {
-    return {party_id};
+    try {
+        refdata::repository::party_repository repo(ctx);
+        auto ids = repo.read_descendants(party_id);
+        if (ids.empty())
+            return {party_id}; // fallback: party not yet in refdata
+        return ids;
+    } catch (...) {
+        return {party_id}; // fallback on DB error
+    }
+}
+
+// Look up a party from refdata; returns {} on failure.
+static std::optional<refdata::domain::party> lookup_party(
+    const database::context& ctx, const boost::uuids::uuid& party_id) {
+    try {
+        refdata::repository::party_repository repo(ctx);
+        auto parties = repo.read_latest(party_id);
+        if (!parties.empty())
+            return parties.front();
+    } catch (...) {}
+    return std::nullopt;
+}
+
+// Look up a party's full_name from refdata; returns empty on failure.
+static std::string lookup_party_name(const database::context& ctx,
+    const boost::uuids::uuid& party_id) {
+    auto p = lookup_party(ctx, party_id);
+    return p ? p->full_name : std::string{};
+}
+
+// Look up a tenant's name from iam; returns empty on failure.
+static std::string lookup_tenant_name(const database::context& ctx,
+    const boost::uuids::uuid& tenant_id) {
+    try {
+        repository::tenant_repository repo(ctx);
+        auto tenants = repo.read_latest(tenant_id);
+        if (!tenants.empty())
+            return tenants.front().name;
+    } catch (...) {}
+    return {};
 }
 
 } // namespace
@@ -172,8 +212,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
                             resp.selected_party_id =
                                 boost::uuids::to_string(party_id);
                             for (const auto& ap : account_parties) {
+                                auto p = lookup_party(ctx, ap.party_id);
                                 resp.available_parties.push_back(party_summary{
-                                    .id = boost::uuids::to_string(ap.party_id)
+                                    .id = boost::uuids::to_string(ap.party_id),
+                                    .name = p ? p->full_name : std::string{},
+                                    .party_category = p ? p->party_category : std::string{}
                                 });
                             }
                             reply(nats, msg, resp);
@@ -200,8 +243,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
                             resp.username = acct.username;
                             resp.email = acct.email;
                             for (const auto& ap : account_parties) {
+                                auto p = lookup_party(ctx, ap.party_id);
                                 resp.available_parties.push_back(party_summary{
-                                    .id = boost::uuids::to_string(ap.party_id)
+                                    .id = boost::uuids::to_string(ap.party_id),
+                                    .name = p ? p->full_name : std::string{},
+                                    .party_category = p ? p->party_category : std::string{}
                                 });
                             }
                             reply(nats, msg, resp);
@@ -462,13 +508,21 @@ registrar::register_handlers(ores::nats::service::client& nats,
                         auto new_token =
                             signer.create_token(new_claims).value_or("");
 
+                        std::string t_name;
+                        std::string p_name;
+                        try {
+                            auto tid = sg(tenant_id_str);
+                            t_name = lookup_tenant_name(ctx, tid);
+                        } catch (...) {}
+                        p_name = lookup_party_name(ctx, requested_party_id);
+
                         reply(nats, msg, select_party_response{
                             .success = true,
                             .message = "Party selected",
                             .token = new_token,
                             .username = claims_result->username.value_or(""),
-                            .tenant_name = tenant_id_str,
-                            .party_name = req->party_id
+                            .tenant_name = t_name,
+                            .party_name = p_name
                         });
                     } catch (const std::exception& e) {
                         reply(nats, msg, select_party_response{

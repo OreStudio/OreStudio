@@ -190,6 +190,36 @@ std::uint32_t party_repository::get_total_party_count() {
     return count;
 }
 
+std::vector<boost::uuids::uuid>
+party_repository::read_descendants(const boost::uuids::uuid& root_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading party descendants. Root: " << root_id;
+
+    const auto id_str = boost::uuids::to_string(root_id);
+    const std::string sql =
+        "WITH RECURSIVE party_tree AS ("
+        "  SELECT id FROM ores_refdata_parties_tbl"
+        "  WHERE id = '" + id_str + "' AND valid_to = '" + MAX_TIMESTAMP + "'"
+        "  UNION ALL"
+        "  SELECT p.id FROM ores_refdata_parties_tbl p"
+        "  JOIN party_tree pt ON p.parent_party_id = pt.id"
+        "  WHERE p.valid_to = '" + MAX_TIMESTAMP + "'"
+        ") SELECT id FROM party_tree";
+
+    const auto rows = execute_raw_multi_column_query(ctx_, sql, lg(),
+        "Reading party descendants");
+
+    std::vector<boost::uuids::uuid> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (!row.empty() && row[0])
+            result.push_back(boost::lexical_cast<boost::uuids::uuid>(*row[0]));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size()
+                               << " party descendants for root: " << root_id;
+    return result;
+}
+
 std::vector<domain::party>
 party_repository::read_all(const boost::uuids::uuid& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all party versions. Id: " << id;

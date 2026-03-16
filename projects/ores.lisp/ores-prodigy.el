@@ -275,9 +275,13 @@ Uses BASE directly; build type and checkout are already visible as tags."
                        (ores/setup-iam-service-environment (car svc) bin)
                      (ores/setup-nats-service-environment (car svc)))
           :on-output (lambda (&rest args)
-                       (when (string-match-p "Service ready"
-                                             (plist-get args :output))
-                         (prodigy-set-status (plist-get args :service) 'ready)))
+                       (let ((output  (plist-get args :output))
+                             (service (plist-get args :service)))
+                         (cond
+                           ((string-match-p "Service ready" output)
+                            (prodigy-set-status service 'ready))
+                           ((string-match-p "Shutdown complete" output)
+                            (prodigy-set-status service 'stopped)))))
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t))
 

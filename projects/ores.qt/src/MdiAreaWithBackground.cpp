@@ -21,6 +21,7 @@
 
 #include <QBrush>
 #include <QColor>
+#include <QEvent>
 #include <QPainter>
 
 namespace ores::qt {
@@ -30,7 +31,15 @@ using namespace ores::logging;
 MdiAreaWithBackground::MdiAreaWithBackground(QWidget* parent)
     : QMdiArea(parent) {
     BOOST_LOG_SEV(lg(), debug) << "Creating MDI area with background";
-    setBackground(QBrush(QColor("#1A1A1A")));
+    setBackground(QBrush(palette().color(QPalette::Window)));
+}
+
+void MdiAreaWithBackground::changeEvent(QEvent* event) {
+    QMdiArea::changeEvent(event);
+    if (event->type() == QEvent::PaletteChange ||
+        event->type() == QEvent::StyleChange) {
+        setBackground(QBrush(palette().color(QPalette::Window)));
+    }
 }
 
 void MdiAreaWithBackground::setBackgroundLogo(const QString& imagePath) {

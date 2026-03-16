@@ -136,13 +136,10 @@ QMenu::item:disabled {
     color: #646464;
 }
 
-QMdiArea {
-    background-color: #1A1A1A;
-}
-
-QMdiArea > QWidget {
-    background-color: #1A1A1A;
-}
+/* QMdiArea viewport background is set programmatically via setBackground()
+ * in MdiAreaWithBackground because QSS rules do not reach the internal
+ * viewport child widget. The background colour is read from QPalette::Window
+ * so it responds to theme changes automatically. */
 
 /* Data Librarian - Lineage Diagram Styling */
 ores--qt--DataLibrarianWindow {

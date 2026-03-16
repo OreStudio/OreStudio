@@ -50,7 +50,7 @@ diagram:
 - [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][Wt Entity Creator]]: Create Wt web UI components for domain entities including
   list widgets, detail dialogs, and application integration.
 - [[id:6a76fdfe-9aa7-4f73-8570-87a458c24553][Shell Entity Creator]]: Create shell commands for domain entities in
-  ores.comms.shell including list, add, history, and other operations.
+  ores.shell including list, add, history, and other operations.
 - [[id:bdcc47d4-b050-409e-8c50-3d179843a274][HTTP Entity Creator]]: Create HTTP REST API endpoints for domain entities in
   ores.http.server including CRUD operations and history.
 - [[id:809aae41-950c-4e0c-85b7-0d50bc4a775f][CLI Entity Creator]]: Create CLI commands for domain entities in ores.cli

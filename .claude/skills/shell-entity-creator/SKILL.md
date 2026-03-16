@@ -1,13 +1,13 @@
 ---
 name: shell-entity-creator
-description: Create shell commands for domain entities in ores.comms.shell including list, add, history, and other operations.
+description: Create shell commands for domain entities in ores.shell including list, add, history, and other operations.
 license: Complete terms in LICENSE.txt
 ---
 
 
 # When to use this skill
 
-When you need to add shell commands for a new entity in `ores.comms.shell`. This skill guides you through creating the command class, registering it with the REPL, and implementing standard operations following established patterns.
+When you need to add shell commands for a new entity in `ores.shell`. This skill guides you through creating the command class, registering it with the REPL, and implementing standard operations following established patterns.
 
 Prerequisites:
 
@@ -76,7 +76,7 @@ Create the command class header with logger and method declarations.
 
 ### File location
 
-`projects/ores.comms.shell/include/ores.comms.shell/app/commands/<entity>_commands.hpp`
+`projects/ores.shell/include/ores.shell/app/commands/<entity>_commands.hpp`
 
 
 ### Header structure
@@ -100,7 +100,7 @@ class Menu;
 
 }
 
-namespace ores::comms::shell::app::commands {
+namespace ores::shell::app::commands {
 
 /**
  * @brief Manages commands related to <entities>.
@@ -108,7 +108,7 @@ namespace ores::comms::shell::app::commands {
 class <entity>_commands {
 private:
     inline static std::string_view logger_name =
-        "ores.comms.shell.app.commands.<entity>_commands";
+        "ores.shell.app.commands.<entity>_commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -183,7 +183,7 @@ Implement the command registration and processing functions.
 
 ### File location
 
-`projects/ores.comms.shell/src/app/commands/<entity>_commands.cpp`
+`projects/ores.shell/src/app/commands/<entity>_commands.cpp`
 
 
 ### Implementation structure
@@ -195,7 +195,7 @@ Implement the command registration and processing functions.
  *
  * licensing text...
  */
-#include "ores.comms.shell/app/commands/<entity>_commands.hpp"
+#include "ores.shell/app/commands/<entity>_commands.hpp"
 
 #include <ostream>
 #include <functional>
@@ -204,7 +204,7 @@ Implement the command registration and processing functions.
 #include "ores.<component>/messaging/<entity>_protocol.hpp"
 #include "ores.<component>/domain/<entity>_table_io.hpp" // IWYU pragma: keep.
 
-namespace ores::comms::shell::app::commands {
+namespace ores::shell::app::commands {
 
 using namespace logging;
 using comms::messaging::message_type;
@@ -408,7 +408,7 @@ Register the command class in the REPL setup.
 
 ### File to modify
 
-`projects/ores.comms.shell/src/app/repl.cpp`
+`projects/ores.shell/src/app/repl.cpp`
 
 
 ### Changes required
@@ -416,7 +416,7 @@ Register the command class in the REPL setup.
 1.  Add include at top of file:
 
 ```cpp
-#include "ores.comms.shell/app/commands/<entity>_commands.hpp"
+#include "ores.shell/app/commands/<entity>_commands.hpp"
 ```
 
 1.  Add registration in `setup_menus()` method:
@@ -765,7 +765,7 @@ This section demonstrates <entity> management commands.
 Display all available <entity> commands.
 
 ```sh
-./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} << 'EOF'
 <entities> help
 exit
 EOF
@@ -777,7 +777,7 @@ EOF
 Retrieve all <entities> from the server.
 
 ```sh
-./ores.comms.shell ${log_args} ${connect_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} << 'EOF'
 <entities> get
 exit
 EOF
@@ -790,7 +790,7 @@ Create a new <entity>. Requires authentication.
 
 ```sh
 export ORES_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <entities> add param1 param2
 exit
 EOF
@@ -803,7 +803,7 @@ View version history for a <entity>. Requires authentication.
 
 ```sh
 export ORES_SHELL_LOGIN_PASSWORD
-./ores.comms.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
+./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <entities> history <entity_id>
 exit
 EOF

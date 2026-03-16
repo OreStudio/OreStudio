@@ -28,7 +28,7 @@ Coverage layers:
 | Qt       | Qt desktop UI (list window, detail dialog, history) |
 | HTTP     | REST API endpoint in =ores.http.server=             |
 | CLI      | Command-line interface support in =ores.cli=        |
-| Shell    | REPL shell command in =ores.comms.shell=            |
+| Shell    | REPL shell command in =ores.shell=            |
 | Wt       | Web UI component in =ores.wt=                       |
 
 * ores.refdata

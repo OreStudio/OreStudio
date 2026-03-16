@@ -37,7 +37,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.scheduler.lib
     ores.reporting.lib
     ores.nats.lib
-    ores.comms.shell.lib
+    ores.shell.lib
     ores.dq.lib
     ores.synthetic.lib
     ores.assets.lib

@@ -121,7 +121,7 @@ LoginResult ClientManager::login(const std::string& username,
         }
 
         // Store auth in session
-        session_.set_auth(comms::shell::service::nats_session::login_info{
+        session_.set_auth(shell::service::nats_session::login_info{
             .jwt = response.token,
             .username = response.username,
             .tenant_id = response.tenant_id,
@@ -225,7 +225,7 @@ LoginResult ClientManager::testConnection(
     BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host << ":" << port;
 
     try {
-        comms::shell::service::nats_session temp_session;
+        shell::service::nats_session temp_session;
         nats::config::nats_options opts;
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;
@@ -266,7 +266,7 @@ SignupResult ClientManager::signup(
     BOOST_LOG_SEV(lg(), info) << "Attempting signup to " << host << ":" << port;
 
     try {
-        comms::shell::service::nats_session temp_session;
+        shell::service::nats_session temp_session;
         nats::config::nats_options opts;
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;

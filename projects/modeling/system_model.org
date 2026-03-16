@@ -87,7 +87,7 @@ The system is organised into four architectural layers:
 
 ** Application Layer
 
-- ores.comms.shell: REPL client. Connects to the service layer via NATS
+- ores.shell: REPL client. Connects to the service layer via NATS
   request/reply subjects.
 - [[id:F0DAACD0-8EAB-46C4-6B53-640921E3F225][ores.cli]]: Command-line import/export of entities in multiple formats,
   exercises the database layer directly.

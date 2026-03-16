@@ -281,7 +281,7 @@ Use `ores-TOPIC-recipes` for consistency with existing skills:
 
 | Skill                                                | Recipes file        | Compares against                                |
 |---------------------------------------------------- |------------------- |----------------------------------------------- |
-| [ores-shell-recipes](../ores-shell-recipes/SKILL.md) | `shell_recipes.org` | `projects/ores.comms.shell/src/app/commands/*`  |
+| [ores-shell-recipes](../ores-shell-recipes/SKILL.md) | `shell_recipes.org` | `projects/ores.shell/src/app/commands/*`  |
 | [ores-cli-recipes](../ores-cli-recipes/SKILL.md)     | `cli_recipes.org`   | `projects/ores.cli/src/config/entity_parsers/*` |
 
 

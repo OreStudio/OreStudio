@@ -822,37 +822,6 @@ Also, we probably should add a cancel button to all detail dialogs.
 We have introduced the broker but we did not validate that the infrastructure
 works as expected.
 
-*** STARTED Add trade import mapping dialog to Qt UI                   :code:
-    :LOGBOOK:
-    CLOCK: [2026-03-01 Sun 10:52]--[2026-03-01 Sun 13:41] =>  2:49
-    CLOCK: [2026-03-01 Sun 09:01]--[2026-03-01 Sun 10:51] =>  1:50
-    :END:
-
-Add a mapping dialog to the Qt UI for importing ORE portfolio XML files. The
-dialog should allow users to:
-
-1. Select an ORE portfolio XML file.
-2. Preview the trades that will be imported (count, types, counterparties).
-3. Select the ORES book to import trades into.
-4. Map ORE =CounterParty= names to ORES counterparties (or auto-create).
-5. Review and confirm the import.
-
-This dialog should be accessible from the book list window toolbar when a book
-is selected (similar to the currency import button on the currency list window).
-
-Files to modify:
-
-- =BookMdiWindow.hpp/cpp= - add import toolbar action
-- New =ImportTradeDialog.hpp/cpp= - the mapping and preview dialog
-- =BookController.hpp/cpp= - wire up the import action
-
-Acceptance criteria:
-
-- Import button is visible and enabled when a book is selected.
-- Dialog shows trade preview with counterparty mapping.
-- Successful import creates trades in the selected book.
-- Trades appear in the trade list after import.
-
 *** COMPLETED Implement NATS support                                   :code:
     :LOGBOOK:
     CLOCK: [2026-03-15 Sun 15:34]--[2026-03-15 Sun 16:35] =>  1:01
@@ -937,10 +906,71 @@ Highlights:
   historical NATS JetStream statistics.
 #+end_quote
 
-*** Consider renaming =ores.nats= to =ores.messaging=                  :code:
+*** STARTED Add trade import mapping dialog to Qt UI                   :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-01 Sun 10:52]--[2026-03-01 Sun 13:41] =>  2:49
+    CLOCK: [2026-03-01 Sun 09:01]--[2026-03-01 Sun 10:51] =>  1:50
+    :END:
+
+Add a mapping dialog to the Qt UI for importing ORE portfolio XML files. The
+dialog should allow users to:
+
+1. Select an ORE portfolio XML file.
+2. Preview the trades that will be imported (count, types, counterparties).
+3. Select the ORES book to import trades into.
+4. Map ORE =CounterParty= names to ORES counterparties (or auto-create).
+5. Review and confirm the import.
+
+This dialog should be accessible from the book list window toolbar when a book
+is selected (similar to the currency import button on the currency list window).
+
+Files to modify:
+
+- =BookMdiWindow.hpp/cpp= - add import toolbar action
+- New =ImportTradeDialog.hpp/cpp= - the mapping and preview dialog
+- =BookController.hpp/cpp= - wire up the import action
+
+Acceptance criteria:
+
+- Import button is visible and enabled when a book is selected.
+- Dialog shows trade preview with counterparty mapping.
+- Successful import creates trades in the selected book.
+- Trades appear in the trade list after import.
+
+*** STARTED Consider renaming =ores.nats= to =ores.messaging=          :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-15 Sun 17:30]--[2026-03-15 Sun 20:04] =>  2:34
+    :END:
 
 We should have implementation agnostic classes for this which hide NATS as the
 implementation detail.
+
+Notes:
+
+- rename ores.comms.shell to just ores.shell
+- rename ores.nats to ores.messaging.
+- rename protocol documents to messaging.
+
+**** Clean up NATS build issues
+
+#+begin_quote
+This pull request addresses critical CI failures and updates extensive
+documentation following a recent migration to NATS JetStream messaging. It
+ensures that service configuration tests accurately reflect the opt-in nature of
+logging and provides comprehensive, subject-based protocol references for all
+services, enhancing clarity and maintainability of the system's communication
+architecture.
+
+Highlights:
+
+- CI Test Fixes: Fixed 10 service configuration parser tests to correctly handle
+  opt-in logging, ensuring tests pass when logging is explicitly enabled or
+  absent by default.
+- NATS Documentation Rewrite: Rewrote NATS messaging protocol documentation
+  across all 10 services, replacing outdated binary protocol references with
+  subject-based ones and introducing new component documentation for clarity and
+  accuracy.
+#+end_quote
 
 *** Fine-tune grants for each service account                          :code:
 

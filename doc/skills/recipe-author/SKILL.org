@@ -259,7 +259,7 @@ Use =ores-TOPIC-recipes= for consistency with existing skills:
 
 | Skill                                                       | Recipes file         | Compares against                                |
 |-------------------------------------------------------------+----------------------+-------------------------------------------------|
-| [[id:30D0AE60-5892-411C-8013-E858FFBF628B][ores-shell-recipes]] | =shell_recipes.org=  | =projects/ores.comms.shell/src/app/commands/*=  |
+| [[id:30D0AE60-5892-411C-8013-E858FFBF628B][ores-shell-recipes]] | =shell_recipes.org=  | =projects/ores.shell/src/app/commands/*=  |
 | [[id:A962DF8E-783D-4DCF-BD60-9FEFAA2E1FBF][ores-cli-recipes]]   | =cli_recipes.org=    | =projects/ores.cli/src/config/entity_parsers/*= |
 
 ** Best practices

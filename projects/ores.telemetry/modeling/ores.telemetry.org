@@ -237,7 +237,7 @@ Logs are stored in a TimescaleDB hypertable with the following structure:
 | =id=         | UUID        | Unique log entry identifier                   |
 | =timestamp=  | TIMESTAMPTZ | When the log was created (partition key)      |
 | =source=     | TEXT        | 'client' or 'server'                          |
-| =source_name=| TEXT        | e.g., 'ores.qt', 'ores.comms.shell', 'ores.comms.service' |
+| =source_name=| TEXT        | e.g., 'ores.qt', 'ores.shell', 'ores.comms.service' |
 | =session_id= | UUID        | Client session (NULL for server logs)         |
 | =account_id= | UUID        | Logged-in user (NULL if not authenticated)    |
 | =level=      | TEXT        | trace, debug, info, warn, error               |

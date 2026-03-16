@@ -36,8 +36,8 @@
 #include <QVBoxLayout>
 #include <QCloseEvent>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.comms.shell/service/nats_session.hpp"
-#include "ores.comms.shell/app/repl.hpp"
+#include "ores.shell/service/nats_session.hpp"
+#include "ores.shell/app/repl.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
@@ -100,7 +100,7 @@ private:
 };
 
 /**
- * @brief MDI window embedding the ores.comms.shell REPL.
+ * @brief MDI window embedding the ores.shell REPL.
  *
  * Provides a toolbar, read-only output area, and a command input line.
  * Maintains its own independent server connection, auto-connecting and
@@ -152,8 +152,8 @@ private:
     std::unique_ptr<std::ostream> out_stream_;
     std::unique_ptr<std::istream> in_stream_;
 
-    comms::shell::service::nats_session shell_session_;
-    std::unique_ptr<comms::shell::app::repl> shell_repl_;
+    shell::service::nats_session shell_session_;
+    std::unique_ptr<shell::app::repl> shell_repl_;
     std::unique_ptr<std::thread> worker_thread_;
 
     // Soft violet for prompt, teal-blue for user input

@@ -120,6 +120,17 @@ LoginResult ClientManager::login(const std::string& username,
                     .error_message = QString::fromStdString(response.error_message)};
         }
 
+        // An empty token means the IAM service has no JWT signing key configured.
+        if (response.token.empty()) {
+            BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: IAM service returned "
+                                       << "empty JWT token - signing key not configured";
+            return {.success = false,
+                    .error_message =
+                        "IAM service is not configured for JWT signing.\n\n"
+                        "Run generate_keys.sh in publish/bin/ to generate "
+                        "the private key, then restart the IAM service."};
+        }
+
         // Store auth in session
         session_.set_auth(shell::service::nats_session::login_info{
             .jwt = response.token,

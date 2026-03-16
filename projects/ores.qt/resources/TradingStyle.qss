@@ -136,6 +136,14 @@ QMenu::item:disabled {
     color: #646464;
 }
 
+QMdiArea {
+    background-color: #1A1A1A;
+}
+
+QMdiArea > QWidget {
+    background-color: #1A1A1A;
+}
+
 /* Data Librarian - Lineage Diagram Styling */
 ores--qt--DataLibrarianWindow {
     /* Node colors */

@@ -50,6 +50,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.logging.lib
         ores.utility.lib
-        Boost::boost)
+        Boost::boost
+        Boost::json)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

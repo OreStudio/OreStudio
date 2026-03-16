@@ -284,6 +284,11 @@ registrar::register_handlers(ores::nats::service::client& nats,
             } else if (subj.ends_with(".auth.jwks")) {
                 try {
                     auto pub_key = signer.get_public_key_pem();
+                    if (pub_key.empty())
+                        throw std::runtime_error(
+                            "No RSA private key configured for JWT signing. "
+                            "Run generate_keys.sh in publish/bin/ to generate "
+                            "the key, then restart the IAM service.");
                     std::string json =
                         "{\"public_key\":" + rfl::json::write(pub_key) + "}";
                     const auto* p =

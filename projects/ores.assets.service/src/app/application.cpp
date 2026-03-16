@@ -33,7 +33,7 @@
 #include "ores.assets.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.assets/messaging/registrar.hpp"
-#include <boost/json.hpp>
+#include "ores.nats/service/jwks.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::assets::service::app {
@@ -71,33 +71,10 @@ application::run(boost::asio::io_context& io_ctx,
                               << "')";
 
     auto ctx = make_context(cfg.database);
-    std::optional<ores::security::jwt::jwt_authenticator> verifier;
-    {
-        std::string pub_key;
-        try {
-            const std::string jwks_req = "{}";
-            const auto* p =
-                reinterpret_cast<const std::byte*>(jwks_req.data());
-            auto reply_msg = nats.request_sync("iam.v1.auth.jwks",
-                std::span<const std::byte>(p, jwks_req.size()),
-                {}, std::chrono::seconds(10));
-            const std::string_view sv(
-                reinterpret_cast<const char*>(reply_msg.data.data()),
-                reply_msg.data.size());
-            auto json = boost::json::parse(sv);
-            pub_key = std::string(json.at("public_key").as_string());
-            BOOST_LOG_SEV(lg(), info) << "Fetched JWKS public key from IAM";
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
-                << "Failed to fetch JWKS, JWT validation disabled: "
-                << e.what();
-        }
-        if (!pub_key.empty()) {
-            verifier =
-                ores::security::jwt::jwt_authenticator::create_rs256_verifier(
-                    pub_key);
-        }
-    }
+    auto pub_key = co_await ores::nats::service::fetch_jwks_public_key(nats);
+    BOOST_LOG_SEV(lg(), info) << "Fetched JWKS public key from IAM";
+    std::optional<ores::security::jwt::jwt_authenticator> verifier =
+        ores::security::jwt::jwt_authenticator::create_rs256_verifier(pub_key);
     auto subs = ores::assets::messaging::registrar::register_handlers(
         nats, std::move(ctx), std::move(verifier));
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";

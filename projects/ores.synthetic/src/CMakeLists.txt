@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         ores.refdata.lib
     PRIVATE
         ores.utility.lib
+        ores.security.lib
         faker-cxx::faker-cxx
         Boost::boost)
 

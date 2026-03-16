@@ -40,6 +40,7 @@ target_link_libraries(${lib_target_name}
         ores.variability.lib
         ores.platform.lib
         ores.utility.lib
+        ores.security.lib
         faker-cxx::faker-cxx
         libfort::fort
     PUBLIC

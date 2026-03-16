@@ -22,7 +22,6 @@
 #include <chrono>
 #include <span>
 #include <csignal>
-#include <functional>
 #include <optional>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
@@ -99,41 +98,8 @@ application::run(boost::asio::io_context& io_ctx,
                     pub_key);
         }
     }
-    using context_extractor_fn = ores::synthetic::messaging::registrar::context_extractor_fn;
-    context_extractor_fn context_extractor;
-    if (verifier.has_value()) {
-        context_extractor = [verifier, base_ctx = ctx](
-            const ores::nats::message& msg) -> std::optional<ores::database::context> {
-            auto it = msg.headers.find("Authorization");
-            if (it == msg.headers.end()) return base_ctx;
-            const auto& val = it->second;
-            if (!val.starts_with("Bearer ")) return base_ctx;
-            const auto token = val.substr(7);
-            auto claims = verifier->validate(token);
-            if (!claims) return std::nullopt;
-            const auto tenant_id_str = claims->tenant_id.value_or("");
-            if (tenant_id_str.empty()) return base_ctx;
-            auto tid_result =
-                ores::utility::uuid::tenant_id::from_string(tenant_id_str);
-            if (!tid_result) return base_ctx;
-            const auto& tid = *tid_result;
-            if (!claims->party_id || claims->party_id->empty())
-                return base_ctx.with_tenant(tid, claims->username.value_or(""));
-            try {
-                boost::uuids::string_generator sg;
-                boost::uuids::uuid party_id = sg(*claims->party_id);
-                std::vector<boost::uuids::uuid> visible_ids;
-                for (const auto& pid_str : claims->visible_party_ids)
-                    visible_ids.push_back(sg(pid_str));
-                return base_ctx.with_party(tid, party_id,
-                    std::move(visible_ids), claims->username.value_or(""));
-            } catch (...) {
-                return base_ctx.with_tenant(tid, claims->username.value_or(""));
-            }
-        };
-    }
     auto subs = ores::synthetic::messaging::registrar::register_handlers(
-        nats, std::move(ctx), std::move(context_extractor));
+        nats, std::move(ctx), std::move(verifier));
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
 
     BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";

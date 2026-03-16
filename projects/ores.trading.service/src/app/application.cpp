@@ -19,22 +19,12 @@
  */
 #include "ores.trading.service/app/application.hpp"
 
-#include <chrono>
-#include <csignal>
-#include <optional>
-#include <boost/asio/error.hpp>
-#include <boost/asio/signal_set.hpp>
-#include <boost/asio/use_awaitable.hpp>
-#include <boost/throw_exception.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.trading/messaging/registrar.hpp"
-#include "ores.nats/service/jwks.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
 
 namespace ores::trading::service::app {
 
@@ -70,36 +60,12 @@ application::run(boost::asio::io_context& io_ctx,
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
 
-    auto ctx = make_context(cfg.database);
-
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-    signals.async_wait([&io_ctx](const boost::system::error_code& ec, int) {
-        if (!ec) io_ctx.stop();
-    });
-
-    std::string pub_key;
-    try {
-        pub_key = co_await ores::nats::service::fetch_jwks_public_key(nats);
-    } catch (const boost::system::system_error& e) {
-        if (e.code() != boost::asio::error::operation_aborted)
-            throw;
-        BOOST_LOG_SEV(lg(), info) << "Shutdown signal received during startup.";
-        co_return;
-    }
-    BOOST_LOG_SEV(lg(), info) << "Fetched JWKS public key from IAM";
-    std::optional<ores::security::jwt::jwt_authenticator> verifier =
-        ores::security::jwt::jwt_authenticator::create_rs256_verifier(pub_key);
-    auto subs = ores::trading::messaging::registrar::register_handlers(
-        nats, std::move(ctx), std::move(verifier));
-    BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
-
-    BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";
-    signals.cancel();
-    co_await signals.async_wait(boost::asio::use_awaitable);
-
-    BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
-    nats.drain();
-    BOOST_LOG_SEV(lg(), info) << "Shutdown complete: ores.trading.service";
+    co_await ores::service::service::run(
+        io_ctx, nats, make_context(cfg.database), "ores.trading.service",
+        [](auto& n, auto c, auto v) {
+            return ores::trading::messaging::registrar::register_handlers(
+                n, std::move(c), std::move(v));
+        });
     co_return;
 }
 

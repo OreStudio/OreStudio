@@ -181,16 +181,25 @@ NATS domain services use ores/setup-nats-service-environment instead.")
 e.g. \"ores.iam.service\" -> \"ores_iam_service\"."
   (replace-regexp-in-string "\\." "_" binary-name))
 
+(defun ores/nats-service-mapper-prefix (db-user)
+  "Derive the make_mapper prefix from DB-USER.
+Strips the leading 'ores_' and uppercases the rest.
+e.g. \"ores_iam_service\" -> \"IAM_SERVICE\"."
+  (upcase (substring db-user (length "ores_"))))
+
 (defun ores/setup-nats-service-environment (binary-name)
-  "Set up DB environment variables for a NATS domain service with BINARY-NAME."
+  "Set up DB environment variables for a NATS domain service with BINARY-NAME.
+Uses the service-specific prefix matching make_mapper() in the C++ parser,
+e.g. ores.iam.service -> ORES_IAM_SERVICE_DB_USER/PASSWORD/DATABASE."
   (let* ((db-user (ores/nats-service-db-user binary-name))
+         (prefix  (ores/nats-service-mapper-prefix db-user))
          (pwd (auth-source-pick-first-password
                :host "localhost"
                :user db-user)))
     (list
-     (list "ORES_SERVICE_DB_USER"     db-user)
-     (list "ORES_SERVICE_DB_PASSWORD" pwd)
-     (list "ORES_SERVICE_DB_DATABASE" ores/database-name))))
+     (list (concat "ORES_" prefix "_DB_USER")     db-user)
+     (list (concat "ORES_" prefix "_DB_PASSWORD") pwd)
+     (list (concat "ORES_" prefix "_DB_DATABASE") ores/database-name))))
 
 (defun ores/setup-iam-service-environment (binary-name bin-dir)
   "Set up environment variables for the IAM service.

@@ -23,6 +23,7 @@
 #include <span>
 #include <csignal>
 #include <optional>
+#include <boost/asio/error.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/throw_exception.hpp>
@@ -71,7 +72,23 @@ application::run(boost::asio::io_context& io_ctx,
                               << "')";
 
     auto ctx = make_context(cfg.database);
-    auto pub_key = co_await ores::nats::service::fetch_jwks_public_key(nats);
+
+    // Install signal handler before JWKS fetch so SIGINT/SIGTERM cancels the
+    // retry loop cleanly rather than relying on the OS default handler.
+    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+    signals.async_wait([&io_ctx](const boost::system::error_code& ec, int) {
+        if (!ec) io_ctx.stop();
+    });
+
+    std::string pub_key;
+    try {
+        pub_key = co_await ores::nats::service::fetch_jwks_public_key(nats);
+    } catch (const boost::system::system_error& e) {
+        if (e.code() != boost::asio::error::operation_aborted)
+            throw;
+        BOOST_LOG_SEV(lg(), info) << "Shutdown signal received during startup.";
+        co_return;
+    }
     BOOST_LOG_SEV(lg(), info) << "Fetched JWKS public key from IAM";
     std::optional<ores::security::jwt::jwt_authenticator> verifier =
         ores::security::jwt::jwt_authenticator::create_rs256_verifier(pub_key);
@@ -80,7 +97,7 @@ application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
 
     BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+    signals.cancel();
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";

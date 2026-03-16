@@ -249,7 +249,11 @@ Uses BASE directly; build type and checkout are already visible as tags."
          (bin         (concat (ores/preset-publish-path preset) "/bin"))
          (common-tags `(ores ,build-tag ,ores/checkout-tag ,preset-tag))
          (common-args '("--log-enabled" "--log-level" "trace" "--log-directory" "../log"))
-         (nats-service-args '("--log-to-console")))
+         (nats-service-args '("--log-to-console"))
+         (qt-on-output (lambda (&rest plist)
+                         (when (string-match-p "Starting ORE Studio Qt"
+                                               (plist-get plist :output))
+                           (prodigy-set-status (plist-get plist :service) 'ready)))))
     (prodigy-define-tag :name preset-tag)
 
     ;; Services subscribe using a subject prefix to isolate this checkout from
@@ -277,58 +281,55 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t))
 
-      (let ((qt-on-output (lambda (&rest args)
-                            (when (string-match-p "Starting ORE Studio Qt"
-                                                  (plist-get args :output))
-                              (prodigy-set-status (plist-get args :service) 'ready))))
-            (qt-args `(,@common-args "--log-to-console")))
+      ;; QT
+      (prodigy-define-service
+        :name      (ores/service-name "ORE Studio QT" preset)
+        :cwd       bin
+        :command   (concat bin "/ores.qt")
+        :args      `(,@common-args "--log-to-console")
+        :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+        :on-output qt-on-output
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t)
 
-        ;; QT
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      qt-args
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :on-output qt-on-output
-          :stop-signal 'sigint
-          :kill-process-buffer-on-stop t)
+      ;; QT Blue
+      (prodigy-define-service
+        :name      (ores/service-name "ORE Studio QT Blue" preset)
+        :cwd       bin
+        :command   (concat bin "/ores.qt")
+        :args      `(,@common-args "--log-to-console"
+                     "--log-filename" "ores.qt.blue.log"
+                     "--instance-name" "Blue" "--instance-color" "2196F3")
+        :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+        :on-output qt-on-output
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t)
 
-        ;; QT Blue
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT Blue" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      `(,@qt-args "--log-filename" "ores.qt.blue.log"
-                       "--instance-name" "Blue" "--instance-color" "2196F3")
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :on-output qt-on-output
-          :stop-signal 'sigint
-          :kill-process-buffer-on-stop t)
+      ;; QT Red
+      (prodigy-define-service
+        :name      (ores/service-name "ORE Studio QT Red" preset)
+        :cwd       bin
+        :command   (concat bin "/ores.qt")
+        :args      `(,@common-args "--log-to-console"
+                     "--log-filename" "ores.qt.red.log"
+                     "--instance-name" "Red" "--instance-color" "F44336")
+        :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+        :on-output qt-on-output
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t)
 
-        ;; QT Red
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT Red" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      `(,@qt-args "--log-filename" "ores.qt.red.log"
-                       "--instance-name" "Red" "--instance-color" "F44336")
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :on-output qt-on-output
-          :stop-signal 'sigint
-          :kill-process-buffer-on-stop t)
-
-        ;; QT Green
-        (prodigy-define-service
-          :name      (ores/service-name "ORE Studio QT Green" preset)
-          :cwd       bin
-          :command   (concat bin "/ores.qt")
-          :args      `(,@qt-args "--log-filename" "ores.qt.green.log"
-                       "--instance-name" "Green" "--instance-color" "4CAF50")
-          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :on-output qt-on-output
-          :stop-signal 'sigint
-          :kill-process-buffer-on-stop t)))
+      ;; QT Green
+      (prodigy-define-service
+        :name      (ores/service-name "ORE Studio QT Green" preset)
+        :cwd       bin
+        :command   (concat bin "/ores.qt")
+        :args      `(,@common-args "--log-to-console"
+                     "--log-filename" "ores.qt.green.log"
+                     "--instance-name" "Green" "--instance-color" "4CAF50")
+        :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+        :on-output qt-on-output
+        :stop-signal 'sigint
+        :kill-process-buffer-on-stop t))
 
     ;; HTTP Server
     (prodigy-define-service

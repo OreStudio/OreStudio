@@ -358,6 +358,16 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
             return false;
         }
 
+        // Update JWT with new token from select_party response
+        if (!result->token.empty()) {
+            auto auth = session_.auth();
+            shell::service::nats_session::login_info updated_auth = auth;
+            updated_auth.jwt = result->token;
+            if (!result->party_name.empty())
+                updated_auth.tenant_name = result->party_name;
+            session_.set_auth(updated_auth);
+        }
+
         current_party_id_ = party_id;
         current_party_name_ = party_name;
         BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString();

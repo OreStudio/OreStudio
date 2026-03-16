@@ -22,6 +22,9 @@
 
 #include <jwt-cpp/jwt.h>
 #include <boost/json.hpp>
+#include <openssl/pem.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
 
 namespace ores::security::jwt {
 
@@ -185,6 +188,14 @@ std::expected<jwt_claims, jwt_error> jwt_authenticator::validate(
             claims.party_id = decoded.get_payload_claim("party_id").as_string();
         }
 
+        if (decoded.has_payload_claim("visible_party_ids")) {
+            auto vpids_claim = decoded.get_payload_claim("visible_party_ids");
+            auto vpids_array = vpids_claim.as_array();
+            for (const auto& v : vpids_array) {
+                claims.visible_party_ids.push_back(std::string(v.as_string()));
+            }
+        }
+
         BOOST_LOG_SEV(lg(), debug) << "JWT claims extracted, subject: "
             << claims.subject << ", roles: " << claims.roles.size();
 
@@ -289,6 +300,15 @@ std::optional<std::string> jwt_authenticator::create_token(
                 ::jwt::basic_claim<json_traits>(std::string(*claims.party_id)));
         }
 
+        if (!claims.visible_party_ids.empty()) {
+            boost::json::array vpids_array;
+            for (const auto& pid : claims.visible_party_ids) {
+                vpids_array.push_back(boost::json::value(pid));
+            }
+            token = token.set_payload_claim("visible_party_ids",
+                ::jwt::basic_claim<json_traits>(vpids_array));
+        }
+
         std::string signed_token;
         if (algorithm_ == algorithm_type::hs256) {
             signed_token = token.sign(::jwt::algorithm::hs256{secret_});
@@ -317,6 +337,32 @@ std::string to_string(jwt_error error) {
     case jwt_error::invalid_audience:  return "Invalid audience";
     default:                           return "Unknown error";
     }
+}
+
+std::string jwt_authenticator::get_public_key_pem() const {
+    if (algorithm_ != algorithm_type::rs256_signer || private_key_.empty())
+        return {};
+
+    BIO* bio = BIO_new_mem_buf(private_key_.data(),
+        static_cast<int>(private_key_.size()));
+    if (!bio) return {};
+
+    EVP_PKEY* pkey = PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr);
+    BIO_free(bio);
+    if (!pkey) return {};
+
+    BIO* pub_bio = BIO_new(BIO_s_mem());
+    if (!pub_bio) { EVP_PKEY_free(pkey); return {}; }
+
+    PEM_write_bio_PUBKEY(pub_bio, pkey);
+    EVP_PKEY_free(pkey);
+
+    BUF_MEM* bptr;
+    BIO_get_mem_ptr(pub_bio, &bptr);
+    std::string result(bptr->data, bptr->length);
+    BIO_free(pub_bio);
+
+    return result;
 }
 
 }

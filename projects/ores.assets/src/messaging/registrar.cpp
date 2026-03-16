@@ -22,7 +22,6 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
@@ -136,13 +135,17 @@ void handle_save_image(ores::nats::service::client& nats,
 
 } // namespace
 
+
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx) {
+    ores::database::context ctx,
+    context_extractor_fn context_extractor) {
     std::vector<ores::nats::service::subscription> subs;
     subs.push_back(nats.queue_subscribe(
         "assets.v1.>", "ores.assets.service",
-        [&nats, ctx](ores::nats::message msg) {
+        [&nats, base_ctx = ctx, context_extractor](ores::nats::message msg) mutable {
+            auto ctx = (context_extractor ?
+                context_extractor(msg) : std::nullopt).value_or(base_ctx);
             if (msg.subject.ends_with("images.get")) {
                 handle_get_images(nats, msg, ctx);
             } else if (msg.subject.ends_with("images.list")) {

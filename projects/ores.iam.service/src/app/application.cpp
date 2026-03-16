@@ -28,6 +28,7 @@
 #include "ores.iam.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.iam/messaging/registrar.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::iam::service::app {
 
@@ -64,7 +65,10 @@ application::run(boost::asio::io_context& io_ctx,
                               << "')";
 
     auto ctx = make_context(cfg.database);
-    auto subs = ores::iam::messaging::registrar::register_handlers(nats, std::move(ctx));
+    auto signer = ores::security::jwt::jwt_authenticator::create_rs256_signer(
+        cfg.jwt_private_key);
+    auto subs = ores::iam::messaging::registrar::register_handlers(
+        nats, std::move(ctx), std::move(signer));
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
 
     BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";

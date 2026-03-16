@@ -67,12 +67,15 @@ namespace ores::dq::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx) {
+    ores::database::context ctx,
+    context_extractor_fn context_extractor) {
     std::vector<ores::nats::service::subscription> subs;
 
     subs.push_back(nats.queue_subscribe(
         "dq.v1.>", "ores.dq.service",
-        [&nats, ctx](ores::nats::message msg) mutable {
+        [&nats, base_ctx = ctx, context_extractor](ores::nats::message msg) mutable {
+            auto ctx = (context_extractor ?
+                context_extractor(msg) : std::nullopt).value_or(base_ctx);
 
             // ==================================================================
             // Catalogs

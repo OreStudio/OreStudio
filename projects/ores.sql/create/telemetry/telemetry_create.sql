@@ -20,3 +20,5 @@
 
 \ir ./telemetry_logs_create.sql
 \ir ./telemetry_stats_functions_create.sql
+\ir ./nats_server_samples_create.sql
+\ir ./nats_stream_samples_create.sql

@@ -40,9 +40,12 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.telemetry.lib
+        ores.telemetry.database.lib
         ores.nats.lib
         ores.database.lib
-        ores.utility.lib)
+        ores.utility.lib
+    PRIVATE
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

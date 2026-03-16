@@ -140,6 +140,41 @@ struct telemetry_stats_daily_entity {
 
 std::ostream& operator<<(std::ostream& s, const telemetry_stats_daily_entity& v);
 
+/**
+ * @brief Entity for a NATS server-level metrics sample.
+ *
+ * Maps to the ores_nats_server_samples_tbl hypertable.
+ */
+struct nats_server_sample_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_nats_server_samples_tbl";
+
+    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sampled_at;
+    std::int64_t in_msgs{0};
+    std::int64_t out_msgs{0};
+    std::int64_t in_bytes{0};
+    std::int64_t out_bytes{0};
+    int connections{0};
+    std::int64_t mem_bytes{0};
+    int slow_consumers{0};
+};
+
+/**
+ * @brief Entity for a single JetStream stream metrics sample.
+ *
+ * Maps to the ores_nats_stream_samples_tbl hypertable.
+ */
+struct nats_stream_sample_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_nats_stream_samples_tbl";
+
+    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sampled_at;
+    sqlgen::PrimaryKey<std::string> stream_name;
+    std::int64_t messages{0};
+    std::int64_t bytes{0};
+    int consumer_count{0};
+};
+
 }
 
 #endif

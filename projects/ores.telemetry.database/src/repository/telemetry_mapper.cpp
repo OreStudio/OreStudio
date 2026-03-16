@@ -155,4 +155,54 @@ domain::telemetry_stats telemetry_mapper::to_domain(
     return r;
 }
 
+nats_server_sample_entity telemetry_mapper::to_entity(
+    const domain::nats_server_sample& sample) {
+    nats_server_sample_entity r;
+    r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.in_msgs = static_cast<std::int64_t>(sample.in_msgs);
+    r.out_msgs = static_cast<std::int64_t>(sample.out_msgs);
+    r.in_bytes = static_cast<std::int64_t>(sample.in_bytes);
+    r.out_bytes = static_cast<std::int64_t>(sample.out_bytes);
+    r.connections = sample.connections;
+    r.mem_bytes = static_cast<std::int64_t>(sample.mem_bytes);
+    r.slow_consumers = sample.slow_consumers;
+    return r;
+}
+
+domain::nats_server_sample telemetry_mapper::to_domain(
+    const nats_server_sample_entity& entity) {
+    domain::nats_server_sample r;
+    r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
+    r.in_msgs = static_cast<std::uint64_t>(entity.in_msgs);
+    r.out_msgs = static_cast<std::uint64_t>(entity.out_msgs);
+    r.in_bytes = static_cast<std::uint64_t>(entity.in_bytes);
+    r.out_bytes = static_cast<std::uint64_t>(entity.out_bytes);
+    r.connections = entity.connections;
+    r.mem_bytes = static_cast<std::uint64_t>(entity.mem_bytes);
+    r.slow_consumers = entity.slow_consumers;
+    return r;
+}
+
+nats_stream_sample_entity telemetry_mapper::to_entity(
+    const domain::nats_stream_sample& sample) {
+    nats_stream_sample_entity r;
+    r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.stream_name = sample.stream_name;
+    r.messages = static_cast<std::int64_t>(sample.messages);
+    r.bytes = static_cast<std::int64_t>(sample.bytes);
+    r.consumer_count = sample.consumer_count;
+    return r;
+}
+
+domain::nats_stream_sample telemetry_mapper::to_domain(
+    const nats_stream_sample_entity& entity) {
+    domain::nats_stream_sample r;
+    r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
+    r.stream_name = entity.stream_name.value();
+    r.messages = static_cast<std::uint64_t>(entity.messages);
+    r.bytes = static_cast<std::uint64_t>(entity.bytes);
+    r.consumer_count = entity.consumer_count;
+    return r;
+}
+
 }

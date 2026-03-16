@@ -21,6 +21,8 @@
 #define ORES_TELEMETRY_SERVICE_CONFIG_OPTIONS_HPP
 
 #include <iosfwd>
+#include <string>
+#include <cstdint>
 #include <optional>
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
@@ -44,6 +46,17 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+    /**
+     * @brief HTTP base URL of the NATS monitoring endpoint.
+     *
+     * Defaults to localhost on the standard NATS monitoring port.
+     * Set to empty to disable NATS metrics collection.
+     */
+    std::string nats_monitor_url{"http://localhost:8222"};
+    /**
+     * @brief How often to poll the NATS monitoring endpoint, in seconds.
+     */
+    std::uint32_t nats_monitor_interval_seconds{30};
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

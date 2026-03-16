@@ -20,12 +20,15 @@
 #include "ores.telemetry.service/app/application.hpp"
 
 #include <csignal>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.telemetry.service/app/application_exception.hpp"
+#include "ores.telemetry.service/app/nats_poller.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.telemetry/messaging/registrar.hpp"
 
@@ -64,8 +67,18 @@ application::run(boost::asio::io_context& io_ctx,
                               << "')";
 
     auto ctx = make_context(cfg.database);
-    auto subs = ores::telemetry::messaging::registrar::register_handlers(nats, std::move(ctx));
+    auto subs = ores::telemetry::messaging::registrar::register_handlers(nats, ctx);
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
+
+    if (!cfg.nats_monitor_url.empty()) {
+        auto poller = std::make_shared<nats_poller>(
+            cfg.nats_monitor_url, cfg.nats_monitor_interval_seconds, ctx);
+        boost::asio::co_spawn(io_ctx,
+            [poller]() { return poller->run(); },
+            boost::asio::detached);
+        BOOST_LOG_SEV(lg(), info) << "NATS metrics poller started ("
+                                  << cfg.nats_monitor_interval_seconds << "s interval).";
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";
     boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);

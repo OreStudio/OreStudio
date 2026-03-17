@@ -21,6 +21,8 @@
 #define ORES_IAM_MESSAGING_TENANT_HANDLER_HPP
 
 #include <stdexcept>
+#include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -86,6 +88,8 @@ public:
         try {
             const auto ctx = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (req->data.id.is_nil())
+                req->data.id = boost::uuids::random_generator()();
             repository::tenant_repository repo(ctx);
             stamp(req->data, ctx);
             repo.write(req->data);

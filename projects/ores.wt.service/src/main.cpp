@@ -21,6 +21,7 @@
 #include <openssl/crypto.h>
 #include <boost/scope_exit.hpp>
 #include <Wt/WServer.h>
+#include <Wt/WLogSink.h>
 #include "ores.wt.service/config/parser.hpp"
 #include "ores.wt.service/config/parser_exception.hpp"
 #include "ores.wt.service/service/application_context.hpp"
@@ -42,6 +43,33 @@ std::unique_ptr<Wt::WApplication>
 create_application(const Wt::WEnvironment& env) {
     return std::make_unique<ores::wt::service::app::ore_application>(env);
 }
+
+/**
+ * @brief Forwards Wt's internal log messages to Boost.Log.
+ *
+ * Installed via WServer::setCustomLogger() so that Wt library messages
+ * (e.g. WServer/wthttp startup notices) are captured in the service log
+ * file alongside application-level Boost.Log output.
+ */
+class boost_log_sink final : public Wt::WLogSink {
+public:
+    void log(const std::string& type, const std::string& /*scope*/,
+             const std::string& message) const noexcept override {
+        using namespace ores::logging;
+        static auto& lg = []() -> auto& {
+            static auto instance = make_logger("ores.wt.service.wt");
+            return instance;
+        }();
+        if (type == "debug")
+            BOOST_LOG_SEV(lg, debug) << message;
+        else if (type == "warning")
+            BOOST_LOG_SEV(lg, warn) << message;
+        else if (type == "error" || type == "fatal")
+            BOOST_LOG_SEV(lg, error) << message;
+        else
+            BOOST_LOG_SEV(lg, info) << message;
+    }
+};
 
 int run(int argc, char* argv[]) {
     std::vector<std::string> args;
@@ -110,7 +138,7 @@ int run(int argc, char* argv[]) {
     }
 
     BOOST_LOG_SEV(lg, info) << "HTTP server listening on http://" << http_address
-                           << ":" << http_port;
+                            << ":" << http_port;
 
     std::vector<char*> wt_argv;
     for (auto& s : wt_argv_strings) {
@@ -120,12 +148,21 @@ int run(int argc, char* argv[]) {
 
     int wt_argc = static_cast<int>(wt_argv.size() - 1);
 
-    int exit_code = Wt::WRun(wt_argc, wt_argv.data(), &create_application);
+    boost_log_sink wt_sink;
+    Wt::WServer server(argv[0]);
+    server.setServerConfiguration(wt_argc, wt_argv.data());
+    server.setCustomLogger(wt_sink);
+    server.addEntryPoint(Wt::EntryPointType::Application, &create_application);
+
+    if (server.start()) {
+        Wt::WServer::waitForShutdown();
+        server.stop();
+    }
 
     app_ctx.stop_eventing();
     BOOST_LOG_SEV(lg, info) << "ORE Studio Web stopped";
 
-    return exit_code;
+    return EXIT_SUCCESS;
 }
 
 }

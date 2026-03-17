@@ -116,9 +116,7 @@ launch() {
 
     # cd into bin so that relative paths (../log) resolve correctly, then exec
     # replaces the subshell so $! refers to the actual service process.
-    # Redirect stdout/stderr to the log file so that any library output
-    # (e.g. Wt's built-in httpd) is captured alongside Boost.Log output.
-    (cd "$BIN_DIR" && exec "./$name" "$@" >>"$LOG_DIR/$name.log" 2>&1) &
+    (cd "$BIN_DIR" && exec "./$name" "$@") &
     local pid=$!
     echo "$pid" > "$pid_file"
     printf "  start   %-38s PID %d\n" "$name" "$pid"

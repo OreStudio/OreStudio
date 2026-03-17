@@ -87,6 +87,13 @@ struct client::impl {
 
 namespace {
 
+// NATS async error handler: forwards connection/subscription errors to
+// Boost.Log instead of the library's default stderr print.
+void on_conn_error(natsConnection* /*nc*/, natsSubscription* /*sub*/,
+                   natsStatus err, void* /*closure*/) {
+    BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err);
+}
+
 message extract_message(natsMsg* msg) {
     message m;
 
@@ -208,7 +215,12 @@ void client::connect() {
     if (impl_->connected.load(std::memory_order_acquire))
         return;
 
-    natsStatus s = natsConnection_ConnectTo(&impl_->conn, impl_->opts.url.c_str());
+    natsOptions* opts = nullptr;
+    natsOptions_Create(&opts);
+    natsOptions_SetURL(opts, impl_->opts.url.c_str());
+    natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
+    natsStatus s = natsConnection_Connect(&impl_->conn, opts);
+    natsOptions_Destroy(opts);
     if (s != NATS_OK)
         throw std::runtime_error(
             std::string("NATS connect failed: ") + natsStatus_GetText(s));

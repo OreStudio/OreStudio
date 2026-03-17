@@ -88,5 +88,11 @@ Unescapes \\\\n sequences to real newlines (used for the PEM key)."
              raw)))
     (replace-regexp-in-string "\\\\n" "\n" v)))
 
+(defun ores/load-dotenv-for-prodigy ()
+  "Like `ores/load-dotenv' but returns a list of (KEY VALUE) pairs.
+Prodigy's :env property requires proper 2-element lists, not cons cells."
+  (mapcar (lambda (pair) (list (car pair) (cdr pair)))
+          (ores/load-dotenv)))
+
 (provide 'ores-env)
 ;;; ores-env.el ends here

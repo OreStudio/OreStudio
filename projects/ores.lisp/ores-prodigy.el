@@ -146,7 +146,7 @@ Derived from ORES_*_SERVICE_DB_USER entries in the checkout .env."
                              (binary (concat "ores." component ".service"))
                              (display (concat component " service")))
                         (cons binary display)))))
-                (ores/load-dotenv))))
+                (ores/load-dotenv-for-prodigy))))
 
 
 ;; =============================================================================
@@ -197,7 +197,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :command (concat bin "/" (car svc))
           :args    `(,@common-args ,@nats-service-args ,@nats-args)
           :tags    `(,@common-tags nats-service)
-          :env     (ores/load-dotenv)
+          :env     (ores/load-dotenv-for-prodigy)
           :on-output (lambda (&rest args)
                        (when (string-match-p "Service ready"
                                              (plist-get args :output))
@@ -218,7 +218,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :command   (concat bin "/ores.qt")
           :args      qt-args
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv)
+          :env       (ores/load-dotenv-for-prodigy)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)
@@ -231,7 +231,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :args      `(,@qt-args "--log-filename" "ores.qt.blue.log"
                        "--instance-name" "Blue" "--instance-color" "2196F3")
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv)
+          :env       (ores/load-dotenv-for-prodigy)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)
@@ -244,7 +244,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :args      `(,@qt-args "--log-filename" "ores.qt.red.log"
                        "--instance-name" "Red" "--instance-color" "F44336")
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv)
+          :env       (ores/load-dotenv-for-prodigy)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)
@@ -257,7 +257,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :args      `(,@qt-args "--log-filename" "ores.qt.green.log"
                        "--instance-name" "Green" "--instance-color" "4CAF50")
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-          :env       (ores/load-dotenv)
+          :env       (ores/load-dotenv-for-prodigy)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)))
@@ -270,7 +270,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
       :args    `(,@common-args
                  "--port" ,(number-to-string (ores/get-port 'http build-type)))
       :tags    `(,@common-tags http-server)
-      :env     (ores/load-dotenv)
+      :env     (ores/load-dotenv-for-prodigy)
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)
 
@@ -285,7 +285,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
       :tags    `(,@common-tags wt-server)
       :env     `(("WT_RESOURCES_DIR" ,(concat (ores/preset-publish-path preset)
                                                "/../../vcpkg_installed/x64-linux/share/Wt/resources"))
-                 ,@(ores/load-dotenv))
+                 ,@(ores/load-dotenv-for-prodigy))
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)))
 

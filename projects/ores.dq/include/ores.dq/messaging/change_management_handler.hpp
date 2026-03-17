@@ -36,6 +36,7 @@ namespace ores::dq::messaging {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 namespace {
@@ -86,6 +87,7 @@ public:
             ctx_, msg, verifier_);
         service::change_management_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_category(req->data);
             BOOST_LOG_SEV(change_management_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_change_reason_category_response{true, {}});
@@ -176,6 +178,7 @@ public:
             ctx_, msg, verifier_);
         service::change_management_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_reason(req->data);
             BOOST_LOG_SEV(change_management_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_change_reason_response{true, {}});

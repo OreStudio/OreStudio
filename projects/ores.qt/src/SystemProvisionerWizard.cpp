@@ -916,6 +916,7 @@ void ProvisionerApplyPage::startProvisioning() {
 
             iam::domain::tenant tenant;
             tenant.type = type;
+            tenant.status = "active";
             tenant.code = code;
             tenant.name = name;
             tenant.hostname = hostname;

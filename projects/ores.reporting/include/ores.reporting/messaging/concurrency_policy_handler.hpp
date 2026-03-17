@@ -43,6 +43,7 @@ inline auto& concurrency_policy_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class concurrency_policy_handler {
@@ -77,6 +78,7 @@ public:
         if (auto req = decode<save_concurrency_policy_request>(msg)) {
             service::concurrency_policy_service svc(ctx);
             try {
+                stamp(req->policy, ctx);
                 svc.save_policy(req->policy);
                 reply(nats_, msg,
                     save_concurrency_policy_response{.success = true});

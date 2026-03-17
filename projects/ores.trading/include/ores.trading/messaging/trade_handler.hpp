@@ -44,6 +44,7 @@ inline auto& trade_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class trade_handler {
@@ -97,6 +98,8 @@ public:
         service::trade_service svc(ctx);
         if (auto req = decode<save_trade_request>(msg)) {
             try {
+                for (auto& t : req->trades)
+                    stamp(t, ctx);
                 svc.save_trades(req->trades);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "Completed " << msg.subject;

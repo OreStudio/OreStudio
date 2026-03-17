@@ -43,6 +43,7 @@ inline auto& report_definition_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class report_definition_handler {
@@ -77,6 +78,7 @@ public:
         if (auto req = decode<save_report_definition_request>(msg)) {
             service::report_definition_service svc(ctx);
             try {
+                stamp(req->definition, ctx);
                 svc.save_definition(req->definition);
                 reply(nats_, msg,
                     save_report_definition_response{.success = true});

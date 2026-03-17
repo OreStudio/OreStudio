@@ -51,7 +51,10 @@ total_gone=0
 # Helpers
 # ---------------------------------------------------------------------------
 
+# Sets STOP_PID to the PID of the stopped process, or "" if nothing was done.
+STOP_PID=""
 stop_service() {
+    STOP_PID=""
     local name="$1"
     local pid_file="$RUN_DIR/$name.pid"
     [[ -f "$pid_file" ]] || return 0
@@ -63,7 +66,7 @@ stop_service() {
     if kill -0 "$pid" 2>/dev/null; then
         kill -TERM "$pid"
         printf "  stop    %-38s PID %d\n" "$name" "$pid"
-        echo "$pid"          # return the pid via stdout
+        STOP_PID="$pid"
         total_stopped=$((total_stopped + 1))
     else
         printf "  gone    %-38s PID %d\n" "$name" "$pid"
@@ -116,8 +119,8 @@ fi
 echo "[Phase 1: front-end servers]"
 phase1_pids=()
 for name in ores.wt.service ores.http.server; do
-    pid="$(stop_service "$name")"
-    [[ -n "$pid" ]] && phase1_pids+=("$pid")
+    stop_service "$name"
+    [[ -n "$STOP_PID" ]] && phase1_pids+=("$STOP_PID")
 done
 echo ""
 wait_for_pids "front-end servers" "${phase1_pids[@]}"
@@ -129,8 +132,8 @@ wait_for_pids "front-end servers" "${phase1_pids[@]}"
 echo "[Phase 2: domain services]"
 phase2_pids=()
 for name in "${domain_services[@]}"; do
-    pid="$(stop_service "$name")"
-    [[ -n "$pid" ]] && phase2_pids+=("$pid")
+    stop_service "$name"
+    [[ -n "$STOP_PID" ]] && phase2_pids+=("$STOP_PID")
 done
 echo ""
 wait_for_pids "domain services" "${phase2_pids[@]}"
@@ -141,8 +144,8 @@ wait_for_pids "domain services" "${phase2_pids[@]}"
 
 echo "[Phase 3: IAM]"
 phase3_pids=()
-pid="$(stop_service "ores.iam.service")"
-[[ -n "$pid" ]] && phase3_pids+=("$pid")
+stop_service "ores.iam.service"
+[[ -n "$STOP_PID" ]] && phase3_pids+=("$STOP_PID")
 echo ""
 wait_for_pids "IAM" "${phase3_pids[@]}"
 

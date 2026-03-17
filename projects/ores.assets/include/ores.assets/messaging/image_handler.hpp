@@ -46,6 +46,7 @@ inline auto& image_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class image_handler {
@@ -120,6 +121,7 @@ public:
             ctx_, msg, verifier_);
         try {
             repository::image_repository repo;
+            stamp(req->data, ctx);
             repo.write(ctx, req->data);
             BOOST_LOG_SEV(image_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_image_response{true, {}});

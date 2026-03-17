@@ -45,6 +45,7 @@ inline auto& business_unit_type_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class business_unit_type_handler {
@@ -87,6 +88,7 @@ public:
             return;
         }
         try {
+            stamp(req->data, ctx);
             repo.write(req->data);
             BOOST_LOG_SEV(business_unit_type_handler_lg(), debug)
                 << "Completed " << msg.subject;

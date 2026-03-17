@@ -43,6 +43,7 @@ inline auto& feature_flag_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class feature_flag_handler {
@@ -75,6 +76,7 @@ public:
         service::feature_flags_service svc(ctx);
         if (auto req = decode<save_feature_flag_request>(msg)) {
             try {
+                stamp(req->data, ctx);
                 svc.save_feature_flag(req->data);
                 BOOST_LOG_SEV(feature_flag_handler_lg(), debug)
                     << "Completed " << msg.subject;

@@ -27,6 +27,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
 #include "ores.iam/messaging/tenant_type_protocol.hpp"
 #include "ores.iam/service/tenant_type_service.hpp"
 
@@ -44,6 +45,7 @@ inline auto& tenant_type_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 
 class tenant_type_handler {
 public:
@@ -80,7 +82,10 @@ public:
             return;
         }
         try {
-            service::tenant_type_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::tenant_type_service svc(ctx);
+            stamp(req->data, ctx);
             svc.save_type(req->data);
             BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
                 << "Completed " << msg.subject;

@@ -43,6 +43,7 @@ inline auto& monetary_nature_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class monetary_nature_handler {
@@ -85,6 +86,7 @@ public:
             return;
         }
         try {
+            stamp(req->data, ctx);
             svc.save_type(req->data);
             BOOST_LOG_SEV(monetary_nature_handler_lg(), debug)
                 << "Completed " << msg.subject;

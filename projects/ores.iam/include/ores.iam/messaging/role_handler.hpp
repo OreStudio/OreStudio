@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 
@@ -82,10 +83,12 @@ public:
             return;
         }
         try {
-            service::authorization_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.assign_role(sg(req->account_id),
-                sg(req->role_id), "admin");
+                sg(req->role_id), ctx.actor());
             BOOST_LOG_SEV(role_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg,

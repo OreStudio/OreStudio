@@ -43,6 +43,7 @@ inline auto& report_instance_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class report_instance_handler {
@@ -77,6 +78,7 @@ public:
         if (auto req = decode<save_report_instance_request>(msg)) {
             service::report_instance_service svc(ctx);
             try {
+                stamp(req->instance, ctx);
                 svc.save_instance(req->instance);
                 reply(nats_, msg,
                     save_report_instance_response{.success = true});

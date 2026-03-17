@@ -31,6 +31,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/account_history_protocol.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
@@ -369,10 +370,12 @@ public:
             return;
         }
         try {
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.update_account(sg(req->account_id), req->email,
-                "admin", req->change_reason_code,
+                ctx.actor(), req->change_reason_code,
                 req->change_commentary);
             BOOST_LOG_SEV(account_handler_lg(), debug)
                 << "Completed " << msg.subject;

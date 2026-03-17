@@ -62,6 +62,7 @@ inline auto& job_definition_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class job_definition_handler {
@@ -98,6 +99,7 @@ public:
         if (auto req = decode<schedule_job_request>(msg)) {
             try {
                 service::job_definition_service svc(ctx);
+                stamp(req->definition, ctx);
                 svc.save_definition(req->definition);
                 reply(nats_, msg, schedule_job_response{.success = true});
             } catch (const std::exception& e) {

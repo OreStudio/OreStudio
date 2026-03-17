@@ -43,6 +43,7 @@ inline auto& report_type_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class report_type_handler {
@@ -77,6 +78,7 @@ public:
         if (auto req = decode<save_report_type_request>(msg)) {
             service::report_type_service svc(ctx);
             try {
+                stamp(req->type, ctx);
                 svc.save_type(req->type);
                 reply(nats_, msg, save_report_type_response{.success = true});
             } catch (const std::exception& e) {

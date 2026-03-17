@@ -28,6 +28,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.service/service/request_context.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.iam/service/account_party_service.hpp"
 
@@ -45,6 +46,7 @@ inline auto& account_party_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 
 class account_party_handler {
 public:
@@ -113,9 +115,13 @@ public:
             return;
         }
         try {
-            service::account_party_service svc(ctx_);
-            for (const auto& ap : req->account_parties)
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_party_service svc(ctx);
+            for (auto ap : req->account_parties) {
+                stamp(ap, ctx);
                 svc.save_account_party(ap);
+            }
             BOOST_LOG_SEV(account_party_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg,

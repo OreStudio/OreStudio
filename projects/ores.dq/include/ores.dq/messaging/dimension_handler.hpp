@@ -36,6 +36,7 @@ namespace ores::dq::messaging {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 namespace {
@@ -93,6 +94,7 @@ public:
             ctx_, msg, verifier_);
         service::dimension_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_nature_dimension(req->data);
             BOOST_LOG_SEV(dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_nature_dimension_response{true, {}});
@@ -189,6 +191,7 @@ public:
             ctx_, msg, verifier_);
         service::dimension_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_origin_dimension(req->data);
             BOOST_LOG_SEV(dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_origin_dimension_response{true, {}});
@@ -285,6 +288,7 @@ public:
             ctx_, msg, verifier_);
         service::dimension_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_treatment_dimension(req->data);
             BOOST_LOG_SEV(dimension_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_treatment_dimension_response{true, {}});

@@ -39,6 +39,7 @@ namespace ores::dq::messaging {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 namespace {
@@ -95,6 +96,8 @@ public:
             ctx_, msg, verifier_);
         service::dataset_service svc(ctx);
         try {
+            for (auto& ds : req->datasets)
+                stamp(ds, ctx);
             svc.save_datasets(req->datasets);
             BOOST_LOG_SEV(dataset_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_dataset_response{true, {}});

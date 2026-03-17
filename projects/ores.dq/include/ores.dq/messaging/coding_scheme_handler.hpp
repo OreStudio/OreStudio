@@ -36,6 +36,7 @@ namespace ores::dq::messaging {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 namespace {
@@ -95,6 +96,7 @@ public:
             ctx_, msg, verifier_);
         service::coding_scheme_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_authority_type(req->data);
             BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg,
@@ -199,6 +201,7 @@ public:
             ctx_, msg, verifier_);
         service::coding_scheme_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_coding_scheme(req->data);
             BOOST_LOG_SEV(coding_scheme_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_coding_scheme_response{true, {}});

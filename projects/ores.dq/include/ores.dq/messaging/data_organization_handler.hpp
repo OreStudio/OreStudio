@@ -38,6 +38,7 @@ namespace ores::dq::messaging {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 namespace {
@@ -98,6 +99,7 @@ public:
             ctx_, msg, verifier_);
         service::data_organization_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_catalog(req->data);
             BOOST_LOG_SEV(data_organization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_catalog_response{true, {}});
@@ -194,6 +196,7 @@ public:
             ctx_, msg, verifier_);
         service::data_organization_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_data_domain(req->data);
             BOOST_LOG_SEV(data_organization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_data_domain_response{true, {}});
@@ -293,6 +296,7 @@ public:
             ctx_, msg, verifier_);
         service::dataset_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_methodology(req->data);
             BOOST_LOG_SEV(data_organization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_methodology_response{true, {}});
@@ -393,6 +397,7 @@ public:
             ctx_, msg, verifier_);
         service::data_organization_service svc(ctx);
         try {
+            stamp(req->data, ctx);
             svc.save_subject_area(req->data);
             BOOST_LOG_SEV(data_organization_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, save_subject_area_response{true, {}});

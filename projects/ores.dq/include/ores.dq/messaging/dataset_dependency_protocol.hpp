@@ -31,7 +31,7 @@ namespace ores::dq::messaging {
 struct get_dataset_dependencies_request {
     using response_type = struct get_dataset_dependencies_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.dataset-dependencies.list";
+        "dq.v1.dataset-dependencies.list";
     int offset = 0;
     int limit = 100;
 };
@@ -44,7 +44,7 @@ struct get_dataset_dependencies_response {
 struct get_dataset_dependencies_by_dataset_request {
     using response_type = struct get_dataset_dependencies_by_dataset_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.dataset-dependencies.by-dataset";
+        "dq.v1.dataset-dependencies.by-dataset";
     std::string dataset_code;
 };
 
@@ -57,7 +57,7 @@ struct get_dataset_dependencies_by_dataset_response {
 struct resolve_dependencies_request {
     using response_type = struct resolve_dependencies_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.dataset-dependencies.resolve";
+        "dq.v1.dataset-dependencies.resolve";
     std::vector<std::string> dataset_ids;
 };
 

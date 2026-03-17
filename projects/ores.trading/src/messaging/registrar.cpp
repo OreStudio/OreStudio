@@ -18,134 +18,43 @@
  *
  */
 #include "ores.trading/messaging/registrar.hpp"
-
-#include <optional>
-#include <span>
-#include <string_view>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include "ores.nats/service/client.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.trading/messaging/trade_protocol.hpp"
-#include "ores.trading/service/trade_service.hpp"
-#include "ores.service/service/request_context.hpp"
+#include "ores.trading/messaging/trade_handler.hpp"
 
 namespace ores::trading::messaging {
-
-namespace {
-
-template<typename Resp>
-void reply(ores::nats::service::client& nats,
-           const ores::nats::message& msg,
-           const Resp& resp) {
-    if (msg.reply_subject.empty())
-        return;
-    const auto json = rfl::json::write(resp);
-    const auto* p = reinterpret_cast<const std::byte*>(json.data());
-    nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
-}
-
-template<typename Req>
-std::optional<Req> decode(const ores::nats::message& msg) {
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto r = rfl::json::read<Req>(sv);
-    if (!r)
-        return std::nullopt;
-    return *r;
-}
-
-} // namespace
-
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
+    constexpr auto queue = "ores.trading.service";
 
     subs.push_back(nats.queue_subscribe(
-        "trading.v1.>", "ores.trading.service",
-        [&nats, base_ctx = ctx, verifier](ores::nats::message msg) mutable {
-            const auto ctx = ores::service::service::make_request_context(base_ctx, msg, verifier);
-            const auto& subj = msg.subject;
+        std::string(get_trades_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            trade_handler h(nats, ctx, verifier);
+            h.list(std::move(msg));
+        }));
 
-            // ----------------------------------------------------------------
-            // Trades
-            // ----------------------------------------------------------------
-            if (subj.ends_with(".trades.list")) {
-                service::trade_service svc(ctx);
-                get_trades_response resp;
-                try {
-                    if (auto req = decode<get_trades_request>(msg)) {
-                        const auto offset =
-                            static_cast<std::uint32_t>(req->offset);
-                        const auto limit =
-                            static_cast<std::uint32_t>(req->limit);
-                        if (!req->book_id.empty()) {
-                            boost::uuids::string_generator gen;
-                            const auto book_uuid = gen(req->book_id);
-                            resp.trades = svc.list_trades_filtered(
-                                offset, limit,
-                                std::optional<boost::uuids::uuid>(book_uuid),
-                                std::nullopt);
-                            resp.total_available_count =
-                                static_cast<int>(svc.count_trades_filtered(
-                                    std::optional<boost::uuids::uuid>(book_uuid),
-                                    std::nullopt));
-                        } else {
-                            resp.trades = svc.list_trades(offset, limit);
-                            resp.total_available_count =
-                                static_cast<int>(svc.count_trades());
-                        }
-                    }
-                } catch (...) {}
-                reply(nats, msg, resp);
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_trade_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            trade_handler h(nats, ctx, verifier);
+            h.save(std::move(msg));
+        }));
 
-            } else if (subj.ends_with(".trades.save")) {
-                service::trade_service svc(ctx);
-                if (auto req = decode<save_trade_request>(msg)) {
-                    try {
-                        svc.save_trades(req->trades);
-                        reply(nats, msg,
-                            save_trade_response{.success = true});
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, save_trade_response{
-                            .success = false, .message = e.what()});
-                    }
-                }
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_trade_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            trade_handler h(nats, ctx, verifier);
+            h.remove(std::move(msg));
+        }));
 
-            } else if (subj.ends_with(".trades.delete")) {
-                service::trade_service svc(ctx);
-                if (auto req = decode<delete_trade_request>(msg)) {
-                    try {
-                        for (const auto& id : req->ids)
-                            svc.remove_trade(id);
-                        reply(nats, msg,
-                            delete_trade_response{.success = true});
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, delete_trade_response{
-                            .success = false, .message = e.what()});
-                    }
-                }
-
-            } else if (subj.ends_with(".trades.history")) {
-                service::trade_service svc(ctx);
-                if (auto req = decode<get_trade_history_request>(msg)) {
-                    try {
-                        auto versions = svc.get_trade_history(req->id);
-                        reply(nats, msg, get_trade_history_response{
-                            .success = true,
-                            .versions = std::move(versions)});
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, get_trade_history_response{
-                            .success = false, .message = e.what()});
-                    }
-                }
-            }
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_trade_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            trade_handler h(nats, ctx, verifier);
+            h.history(std::move(msg));
         }));
 
     return subs;

@@ -30,7 +30,7 @@ namespace ores::dq::messaging {
 struct get_dataset_bundle_members_request {
     using response_type = struct get_dataset_bundle_members_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.dataset-bundle-members.list";
+        "dq.v1.dataset-bundle-members.list";
     int offset = 0;
     int limit = 100;
 };
@@ -43,7 +43,7 @@ struct get_dataset_bundle_members_response {
 struct get_dataset_bundle_members_by_bundle_request {
     using response_type = struct get_dataset_bundle_members_by_bundle_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.dataset-bundle-members.by-bundle";
+        "dq.v1.dataset-bundle-members.by-bundle";
     std::string bundle_code;
 };
 

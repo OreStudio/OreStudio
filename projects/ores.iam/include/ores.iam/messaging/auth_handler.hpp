@@ -1,0 +1,339 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_IAM_MESSAGING_AUTH_HANDLER_HPP
+#define ORES_IAM_MESSAGING_AUTH_HANDLER_HPP
+
+#include <chrono>
+#include <stdexcept>
+#include <boost/asio/ip/address.hpp>
+#include <boost/uuid/string_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/message.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.security/jwt/jwt_claims.hpp"
+#include <span>
+#include <rfl/json.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.iam/messaging/signup_protocol.hpp"
+#include "ores.iam/domain/role.hpp"
+#include "ores.iam/repository/account_party_repository.hpp"
+#include "ores.iam/repository/tenant_repository.hpp"
+#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.iam/service/account_service.hpp"
+
+namespace ores::iam::messaging {
+
+namespace {
+
+inline auto& auth_handler_lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.iam.messaging.auth_handler");
+    return instance;
+}
+
+inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
+    auto it = msg.headers.find("Authorization");
+    if (it == msg.headers.end())
+        return {};
+    const auto& val = it->second;
+    constexpr std::string_view prefix = "Bearer ";
+    if (!val.starts_with(prefix))
+        return {};
+    return val.substr(prefix.size());
+}
+
+inline std::vector<boost::uuids::uuid> auth_compute_visible_party_ids(
+    const ores::database::context& ctx,
+    const boost::uuids::uuid& party_id) {
+    try {
+        refdata::repository::party_repository repo(ctx);
+        auto ids = repo.read_descendants(party_id);
+        if (ids.empty())
+            return {party_id};
+        return ids;
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn)
+            << "Failed to compute visible party IDs: " << e.what();
+        return {party_id};
+    }
+}
+
+inline std::optional<refdata::domain::party> auth_lookup_party(
+    const ores::database::context& ctx,
+    const boost::uuids::uuid& party_id) {
+    try {
+        refdata::repository::party_repository repo(ctx);
+        auto parties = repo.read_latest(party_id);
+        if (!parties.empty())
+            return parties.front();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn)
+            << "Failed to look up party: " << e.what();
+    }
+    return std::nullopt;
+}
+
+inline std::string auth_lookup_tenant_name(
+    const ores::database::context& ctx,
+    const boost::uuids::uuid& tenant_id) {
+    try {
+        repository::tenant_repository repo(ctx);
+        auto tenants = repo.read_latest(tenant_id);
+        if (!tenants.empty())
+            return tenants.front().name;
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn)
+            << "Failed to look up tenant name: " << e.what();
+    }
+    return {};
+}
+
+} // namespace
+
+using ores::service::messaging::reply;
+using ores::service::messaging::decode;
+
+class auth_handler {
+public:
+    auth_handler(ores::nats::service::client& nats,
+        ores::database::context ctx,
+        ores::security::jwt::jwt_authenticator signer)
+        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+
+    void signup(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        namespace svc_acct = ores::iam::domain::service_accounts;
+        auto req = decode<signup_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            service::account_service svc(ctx_);
+            auto acct = svc.create_account(
+                req->principal, req->email, req->password,
+                svc_acct::iam);
+            BOOST_LOG_SEV(auth_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, signup_response{
+                .success = true,
+                .account_id = boost::uuids::to_string(acct.id)});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, signup_response{
+                .success = false, .message = e.what()});
+        }
+    }
+
+    void login(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req = decode<login_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            return;
+        }
+        try {
+            service::account_service svc(ctx_);
+            auto ip = boost::asio::ip::address_v4::loopback();
+            auto acct = svc.login(req->principal, req->password, ip);
+
+            repository::account_party_repository ap_repo(ctx_);
+            auto account_parties =
+                ap_repo.read_latest_by_account(acct.id);
+
+            if (account_parties.empty()) {
+                security::jwt::jwt_claims claims;
+                claims.subject = boost::uuids::to_string(acct.id);
+                claims.issued_at = std::chrono::system_clock::now();
+                claims.expires_at =
+                    claims.issued_at + std::chrono::hours(8);
+                claims.username = acct.username;
+                claims.email = acct.email;
+                claims.tenant_id = acct.tenant_id.to_string();
+                auto token = signer_.create_token(claims).value_or("");
+
+                login_response resp;
+                resp.success = true;
+                resp.token = token;
+                resp.account_id = boost::uuids::to_string(acct.id);
+                resp.tenant_id = acct.tenant_id.to_string();
+                resp.username = acct.username;
+                resp.email = acct.email;
+                BOOST_LOG_SEV(auth_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, resp);
+            } else if (account_parties.size() == 1) {
+                const auto& party_id =
+                    account_parties.front().party_id;
+                auto visible = auth_compute_visible_party_ids(
+                    ctx_, party_id);
+
+                security::jwt::jwt_claims claims;
+                claims.subject = boost::uuids::to_string(acct.id);
+                claims.issued_at = std::chrono::system_clock::now();
+                claims.expires_at =
+                    claims.issued_at + std::chrono::hours(8);
+                claims.username = acct.username;
+                claims.email = acct.email;
+                claims.tenant_id = acct.tenant_id.to_string();
+                claims.party_id =
+                    boost::uuids::to_string(party_id);
+                for (const auto& vid : visible)
+                    claims.visible_party_ids.push_back(
+                        boost::uuids::to_string(vid));
+                auto token =
+                    signer_.create_token(claims).value_or("");
+
+                login_response resp;
+                resp.success = true;
+                resp.token = token;
+                resp.account_id = boost::uuids::to_string(acct.id);
+                resp.tenant_id = acct.tenant_id.to_string();
+                resp.username = acct.username;
+                resp.email = acct.email;
+                resp.selected_party_id =
+                    boost::uuids::to_string(party_id);
+                for (const auto& ap : account_parties) {
+                    auto p = auth_lookup_party(ctx_, ap.party_id);
+                    resp.available_parties.push_back(party_summary{
+                        .id = boost::uuids::to_string(ap.party_id),
+                        .name = p ? p->full_name : std::string{},
+                        .party_category =
+                            p ? p->party_category : std::string{}
+                    });
+                }
+                BOOST_LOG_SEV(auth_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, resp);
+            } else {
+                security::jwt::jwt_claims claims;
+                claims.subject = boost::uuids::to_string(acct.id);
+                claims.issued_at = std::chrono::system_clock::now();
+                claims.expires_at =
+                    claims.issued_at + std::chrono::minutes(5);
+                claims.audience = "select_party_only";
+                claims.username = acct.username;
+                claims.email = acct.email;
+                claims.tenant_id = acct.tenant_id.to_string();
+                auto token =
+                    signer_.create_token(claims).value_or("");
+
+                login_response resp;
+                resp.success = true;
+                resp.token = token;
+                resp.account_id = boost::uuids::to_string(acct.id);
+                resp.tenant_id = acct.tenant_id.to_string();
+                resp.username = acct.username;
+                resp.email = acct.email;
+                for (const auto& ap : account_parties) {
+                    auto p = auth_lookup_party(ctx_, ap.party_id);
+                    resp.available_parties.push_back(party_summary{
+                        .id = boost::uuids::to_string(ap.party_id),
+                        .name = p ? p->full_name : std::string{},
+                        .party_category =
+                            p ? p->party_category : std::string{}
+                    });
+                }
+                BOOST_LOG_SEV(auth_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, resp);
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            login_response resp;
+            resp.success = false;
+            resp.error_message = e.what();
+            reply(nats_, msg, resp);
+        }
+    }
+
+    void public_key(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        if (msg.reply_subject.empty()) return;
+        try {
+            auto pub_key = signer_.get_public_key_pem();
+            if (pub_key.empty())
+                throw std::runtime_error(
+                    "No RSA private key configured for JWT signing. "
+                    "Run generate_keys.sh in publish/bin/ to generate "
+                    "the key, then restart the IAM service.");
+            const auto json =
+                std::string("{\"public_key\":") + rfl::json::write(pub_key) + "}";
+            const auto* p = reinterpret_cast<const std::byte*>(json.data());
+            nats_.publish(msg.reply_subject,
+                std::span<const std::byte>(p, json.size()));
+            BOOST_LOG_SEV(auth_handler_lg(), debug)
+                << "Completed " << msg.subject;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+        }
+    }
+
+    void logout(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        auto token = auth_extract_bearer_token(msg);
+        try {
+            if (!token.empty()) {
+                auto claims_result = signer_.validate(token);
+                if (claims_result) {
+                    boost::uuids::string_generator sg;
+                    try {
+                        auto account_id = sg(claims_result->subject);
+                        service::account_service svc(ctx_);
+                        svc.logout(account_id);
+                    } catch (...) {}
+                }
+            }
+            BOOST_LOG_SEV(auth_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, logout_response{
+                .success = true, .message = "Logged out"});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, logout_response{
+                .success = false, .message = e.what()});
+        }
+    }
+
+private:
+    ores::nats::service::client& nats_;
+    ores::database::context ctx_;
+    ores::security::jwt::jwt_authenticator signer_;
+};
+
+} // namespace ores::iam::messaging
+#endif

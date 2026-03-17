@@ -35,7 +35,7 @@ namespace ores::dq::messaging {
 struct get_change_reason_categories_request {
     using response_type = struct get_change_reason_categories_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reason-categories.list";
+        "dq.v1.change-reason-categories.list";
 };
 
 struct get_change_reason_categories_response {
@@ -45,7 +45,7 @@ struct get_change_reason_categories_response {
 struct save_change_reason_category_request {
     using response_type = struct save_change_reason_category_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reason-categories.save";
+        "dq.v1.change-reason-categories.save";
     ores::dq::domain::change_reason_category data;
 
     static save_change_reason_category_request
@@ -62,7 +62,7 @@ struct save_change_reason_category_response {
 struct delete_change_reason_category_request {
     using response_type = struct delete_change_reason_category_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reason-categories.delete";
+        "dq.v1.change-reason-categories.delete";
     std::vector<std::string> codes;
 };
 
@@ -74,7 +74,7 @@ struct delete_change_reason_category_response {
 struct get_change_reason_category_history_request {
     using response_type = struct get_change_reason_category_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reason-categories.history";
+        "dq.v1.change-reason-categories.history";
     std::string code;
 };
 
@@ -91,7 +91,7 @@ struct get_change_reason_category_history_response {
 struct get_change_reasons_request {
     using response_type = struct get_change_reasons_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reasons.list";
+        "dq.v1.change-reasons.list";
 };
 
 struct get_change_reasons_response {
@@ -101,7 +101,7 @@ struct get_change_reasons_response {
 struct save_change_reason_request {
     using response_type = struct save_change_reason_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reasons.save";
+        "dq.v1.change-reasons.save";
     ores::dq::domain::change_reason data;
 
     static save_change_reason_request from(ores::dq::domain::change_reason r) {
@@ -117,7 +117,7 @@ struct save_change_reason_response {
 struct delete_change_reason_request {
     using response_type = struct delete_change_reason_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reasons.delete";
+        "dq.v1.change-reasons.delete";
     std::vector<std::string> codes;
 };
 
@@ -129,7 +129,7 @@ struct delete_change_reason_response {
 struct get_change_reason_history_request {
     using response_type = struct get_change_reason_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.change-reasons.history";
+        "dq.v1.change-reasons.history";
     std::string code;
 };
 

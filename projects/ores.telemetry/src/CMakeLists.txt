@@ -44,6 +44,7 @@ target_link_libraries(${lib_target_name}
         # reflectcpp is provided by ores.platform.lib at build time; expose to consumers here
         reflectcpp::reflectcpp
     PRIVATE
+        ores.service.lib
         ores.platform.lib
         ores.security.lib
         Boost::boost)

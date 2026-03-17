@@ -19,36 +19,33 @@
  */
 #include "ores.iam/messaging/registrar.hpp"
 
-#include <chrono>
-#include "ores.logging/make_logger.hpp"
 #include <memory>
-#include <span>
-#include <string_view>
-#include <rfl/json.hpp>
-#include "ores.utility/rfl/reflectors.hpp"
-#include <boost/uuid/random_generator.hpp>
-#include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/asio/ip/address.hpp>
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.security/jwt/jwt_claims.hpp"
+#include "ores.iam/messaging/auth_handler.hpp"
+#include "ores.iam/messaging/bootstrap_handler.hpp"
+#include "ores.iam/messaging/account_handler.hpp"
+#include "ores.iam/messaging/account_party_handler.hpp"
+#include "ores.iam/messaging/session_handler.hpp"
+#include "ores.iam/messaging/role_handler.hpp"
+#include "ores.iam/messaging/tenant_handler.hpp"
+#include "ores.iam/messaging/tenant_status_handler.hpp"
+#include "ores.iam/messaging/tenant_type_handler.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
-#include "ores.iam/service/account_service.hpp"
-#include "ores.iam/service/authorization_service.hpp"
-#include "ores.iam/service/bootstrap_mode_service.hpp"
-#include "ores.iam/repository/account_party_repository.hpp"
-#include "ores.iam/repository/tenant_repository.hpp"
-#include "ores.iam/domain/session.hpp"
-#include "ores.iam/domain/role.hpp"
-#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.iam/messaging/account_history_protocol.hpp"
+#include "ores.iam/messaging/account_party_protocol.hpp"
+#include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam/messaging/session_samples_protocol.hpp"
+#include "ores.iam/messaging/authorization_protocol.hpp"
+#include "ores.iam/messaging/tenant_protocol.hpp"
+#include "ores.iam/messaging/tenant_status_protocol.hpp"
+#include "ores.iam/messaging/tenant_type_protocol.hpp"
 
 namespace ores::iam::messaging {
-
-namespace svc_acct = ores::iam::domain::service_accounts;
 
 namespace {
 
@@ -59,92 +56,6 @@ static auto& lg() {
     return instance;
 }
 
-
-template<typename Resp>
-void reply(ores::nats::service::client& nats,
-           const ores::nats::message& msg,
-           const Resp& resp) {
-    if (msg.reply_subject.empty())
-        return;
-    const auto json = rfl::json::write(resp);
-    const auto* p = reinterpret_cast<const std::byte*>(json.data());
-    nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
-}
-
-template<typename Req>
-std::optional<Req> decode(const ores::nats::message& msg) {
-    const std::string_view sv(
-        reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
-    auto r = rfl::json::read<Req>(sv);
-    if (!r)
-        return std::nullopt;
-    return *r;
-}
-
-std::string extract_bearer_token(const ores::nats::message& msg) {
-    auto it = msg.headers.find("Authorization");
-    if (it == msg.headers.end())
-        return {};
-    const auto& val = it->second;
-    constexpr std::string_view prefix = "Bearer ";
-    if (!val.starts_with(prefix))
-        return {};
-    return val.substr(prefix.size());
-}
-
-// Returns the given party plus all its descendants via parent_party_id
-// hierarchy (recursive CTE on ores_refdata_parties_tbl).
-static std::vector<boost::uuids::uuid> compute_visible_party_ids(
-    const database::context& ctx,
-    const std::string& /*tenant_id_str*/,
-    const boost::uuids::uuid& party_id) {
-    try {
-        refdata::repository::party_repository repo(ctx);
-        auto ids = repo.read_descendants(party_id);
-        if (ids.empty())
-            return {party_id}; // fallback: party not yet in refdata
-        return ids;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to compute visible party IDs: " << e.what();
-        return {party_id}; // fallback on DB error
-    }
-}
-
-// Look up a party from refdata; returns {} on failure.
-static std::optional<refdata::domain::party> lookup_party(
-    const database::context& ctx, const boost::uuids::uuid& party_id) {
-    try {
-        refdata::repository::party_repository repo(ctx);
-        auto parties = repo.read_latest(party_id);
-        if (!parties.empty())
-            return parties.front();
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to look up party: " << e.what();
-    }
-    return std::nullopt;
-}
-
-// Look up a party's full_name from refdata; returns empty on failure.
-static std::string lookup_party_name(const database::context& ctx,
-    const boost::uuids::uuid& party_id) {
-    auto p = lookup_party(ctx, party_id);
-    return p ? p->full_name : std::string{};
-}
-
-// Look up a tenant's name from iam; returns empty on failure.
-static std::string lookup_tenant_name(const database::context& ctx,
-    const boost::uuids::uuid& tenant_id) {
-    try {
-        repository::tenant_repository repo(ctx);
-        auto tenants = repo.read_latest(tenant_id);
-        if (!tenants.empty())
-            return tenants.front().name;
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to look up tenant name: " << e.what();
-    }
-    return {};
-}
-
 } // namespace
 
 std::vector<ores::nats::service::subscription>
@@ -153,408 +64,162 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ores::security::jwt::jwt_authenticator signer) {
 
     std::vector<ores::nats::service::subscription> subs;
+    constexpr auto qg = "ores.iam.service";
+
+    // --- Auth ---
+    auto ah = std::make_shared<auth_handler>(nats, ctx, signer);
     subs.push_back(nats.queue_subscribe(
-        "iam.v1.>", "ores.iam.service",
-        [&nats, ctx, signer](ores::nats::message msg) mutable {
-            const auto& subj = msg.subject;
+        signup_request::nats_subject, qg,
+        [ah](ores::nats::message msg) { ah->signup(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        login_request::nats_subject, qg,
+        [ah](ores::nats::message msg) { ah->login(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        logout_request::nats_subject, qg,
+        [ah](ores::nats::message msg) { ah->logout(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        public_key_request::nats_subject, qg,
+        [ah](ores::nats::message msg) { ah->public_key(std::move(msg)); }));
 
-            // --- Auth ---
+    // --- Bootstrap ---
+    auto bh = std::make_shared<bootstrap_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        bootstrap_status_request::nats_subject, qg,
+        [bh](ores::nats::message msg) { bh->status(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        create_initial_admin_request::nats_subject, qg,
+        [bh](ores::nats::message msg) { bh->create_admin(std::move(msg)); }));
 
-            if (subj.ends_with(".auth.login")) {
-                if (auto req = decode<login_request>(msg)) {
-                    try {
-                        service::account_service svc(ctx);
-                        auto ip = boost::asio::ip::address_v4::loopback();
-                        auto acct = svc.login(req->principal, req->password, ip);
+    // --- Accounts ---
+    auto acth = std::make_shared<account_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        get_accounts_request_typed::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        save_account_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_account_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->del(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        lock_account_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->lock(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        unlock_account_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->unlock(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        list_login_info_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->login_info(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        reset_password_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->reset_password(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        change_password_request_typed::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->change_password(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        update_account_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->update(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        update_my_email_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->update_email(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        select_party_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->select_party(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_account_history_request::nats_subject, qg,
+        [acth](ores::nats::message msg) { acth->history(std::move(msg)); }));
 
-                        // Get available parties for this account
-                        repository::account_party_repository ap_repo(ctx);
-                        auto account_parties =
-                            ap_repo.read_latest_by_account(acct.id);
+    // --- Account parties ---
+    auto aph = std::make_shared<account_party_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        get_account_parties_request::nats_subject, qg,
+        [aph](ores::nats::message msg) { aph->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_account_parties_by_account_request::nats_subject, qg,
+        [aph](ores::nats::message msg) { aph->by_account(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        save_account_party_request::nats_subject, qg,
+        [aph](ores::nats::message msg) { aph->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_account_party_request::nats_subject, qg,
+        [aph](ores::nats::message msg) { aph->del(std::move(msg)); }));
 
-                        if (account_parties.empty()) {
-                            // No parties - issue full JWT with system defaults
-                            security::jwt::jwt_claims claims;
-                            claims.subject = boost::uuids::to_string(acct.id);
-                            claims.issued_at = std::chrono::system_clock::now();
-                            claims.expires_at =
-                                claims.issued_at + std::chrono::hours(8);
-                            claims.username = acct.username;
-                            claims.email = acct.email;
-                            claims.tenant_id = acct.tenant_id.to_string();
-                            auto token = signer.create_token(claims).value_or("");
+    // --- Sessions ---
+    auto sh = std::make_shared<session_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        list_sessions_request::nats_subject, qg,
+        [sh](ores::nats::message msg) { sh->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_active_sessions_request::nats_subject, qg,
+        [sh](ores::nats::message msg) { sh->active(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_session_samples_request::nats_subject, qg,
+        [sh](ores::nats::message msg) { sh->samples(std::move(msg)); }));
 
-                            login_response resp;
-                            resp.success = true;
-                            resp.token = token;
-                            resp.account_id = boost::uuids::to_string(acct.id);
-                            resp.tenant_id = acct.tenant_id.to_string();
-                            resp.username = acct.username;
-                            resp.email = acct.email;
-                            reply(nats, msg, resp);
-                        } else if (account_parties.size() == 1) {
-                            // Single party - compute visible_party_ids and
-                            // issue full JWT
-                            const auto& party_id =
-                                account_parties.front().party_id;
-                            auto visible = compute_visible_party_ids(
-                                ctx, acct.tenant_id.to_string(), party_id);
+    // --- Roles ---
+    auto rh = std::make_shared<role_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        list_roles_request::nats_subject, qg,
+        [rh](ores::nats::message msg) { rh->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        assign_role_request::nats_subject, qg,
+        [rh](ores::nats::message msg) { rh->assign(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        revoke_role_request::nats_subject, qg,
+        [rh](ores::nats::message msg) { rh->revoke(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_account_roles_request::nats_subject, qg,
+        [rh](ores::nats::message msg) { rh->by_account(std::move(msg)); }));
 
-                            security::jwt::jwt_claims claims;
-                            claims.subject = boost::uuids::to_string(acct.id);
-                            claims.issued_at = std::chrono::system_clock::now();
-                            claims.expires_at =
-                                claims.issued_at + std::chrono::hours(8);
-                            claims.username = acct.username;
-                            claims.email = acct.email;
-                            claims.tenant_id = acct.tenant_id.to_string();
-                            claims.party_id =
-                                boost::uuids::to_string(party_id);
-                            for (const auto& vid : visible)
-                                claims.visible_party_ids.push_back(
-                                    boost::uuids::to_string(vid));
-                            auto token =
-                                signer.create_token(claims).value_or("");
+    // --- Tenants ---
+    auto th = std::make_shared<tenant_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        get_tenants_request::nats_subject, qg,
+        [th](ores::nats::message msg) { th->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        save_tenant_request::nats_subject, qg,
+        [th](ores::nats::message msg) { th->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_tenant_request::nats_subject, qg,
+        [th](ores::nats::message msg) { th->del(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_tenant_history_request::nats_subject, qg,
+        [th](ores::nats::message msg) { th->history(std::move(msg)); }));
 
-                            login_response resp;
-                            resp.success = true;
-                            resp.token = token;
-                            resp.account_id = boost::uuids::to_string(acct.id);
-                            resp.tenant_id = acct.tenant_id.to_string();
-                            resp.username = acct.username;
-                            resp.email = acct.email;
-                            resp.selected_party_id =
-                                boost::uuids::to_string(party_id);
-                            for (const auto& ap : account_parties) {
-                                auto p = lookup_party(ctx, ap.party_id);
-                                resp.available_parties.push_back(party_summary{
-                                    .id = boost::uuids::to_string(ap.party_id),
-                                    .name = p ? p->full_name : std::string{},
-                                    .party_category = p ? p->party_category : std::string{}
-                                });
-                            }
-                            reply(nats, msg, resp);
-                        } else {
-                            // Multiple parties - issue interim JWT
-                            // (audience restricted)
-                            security::jwt::jwt_claims claims;
-                            claims.subject = boost::uuids::to_string(acct.id);
-                            claims.issued_at = std::chrono::system_clock::now();
-                            claims.expires_at =
-                                claims.issued_at + std::chrono::minutes(5);
-                            claims.audience = "select_party_only";
-                            claims.username = acct.username;
-                            claims.email = acct.email;
-                            claims.tenant_id = acct.tenant_id.to_string();
-                            auto token =
-                                signer.create_token(claims).value_or("");
+    // --- Tenant statuses ---
+    auto tsh = std::make_shared<tenant_status_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        get_tenant_statuses_request::nats_subject, qg,
+        [tsh](ores::nats::message msg) { tsh->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        save_tenant_status_request::nats_subject, qg,
+        [tsh](ores::nats::message msg) { tsh->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_tenant_status_request::nats_subject, qg,
+        [tsh](ores::nats::message msg) { tsh->del(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_tenant_status_history_request::nats_subject, qg,
+        [tsh](ores::nats::message msg) { tsh->history(std::move(msg)); }));
 
-                            login_response resp;
-                            resp.success = true;
-                            resp.token = token; // interim JWT
-                            resp.account_id = boost::uuids::to_string(acct.id);
-                            resp.tenant_id = acct.tenant_id.to_string();
-                            resp.username = acct.username;
-                            resp.email = acct.email;
-                            for (const auto& ap : account_parties) {
-                                auto p = lookup_party(ctx, ap.party_id);
-                                resp.available_parties.push_back(party_summary{
-                                    .id = boost::uuids::to_string(ap.party_id),
-                                    .name = p ? p->full_name : std::string{},
-                                    .party_category = p ? p->party_category : std::string{}
-                                });
-                            }
-                            reply(nats, msg, resp);
-                        }
-                    } catch (const std::exception& e) {
-                        login_response resp;
-                        resp.success = false;
-                        resp.error_message = e.what();
-                        reply(nats, msg, resp);
-                    }
-                }
+    // --- Tenant types ---
+    auto tth = std::make_shared<tenant_type_handler>(nats, ctx, signer);
+    subs.push_back(nats.queue_subscribe(
+        get_tenant_types_request::nats_subject, qg,
+        [tth](ores::nats::message msg) { tth->list(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        save_tenant_type_request::nats_subject, qg,
+        [tth](ores::nats::message msg) { tth->save(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        delete_tenant_type_request::nats_subject, qg,
+        [tth](ores::nats::message msg) { tth->del(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        get_tenant_type_history_request::nats_subject, qg,
+        [tth](ores::nats::message msg) { tth->history(std::move(msg)); }));
 
-            } else if (subj.ends_with(".auth.logout")) {
-                auto token = extract_bearer_token(msg);
-                try {
-                    if (!token.empty()) {
-                        auto claims_result = signer.validate(token);
-                        if (claims_result) {
-                            boost::uuids::string_generator sg;
-                            try {
-                                auto account_id = sg(claims_result->subject);
-                                service::account_service svc(ctx);
-                                svc.logout(account_id);
-                            } catch (...) {}
-                        }
-                    }
-                    reply(nats, msg, logout_response{
-                        .success = true, .message = "Logged out"});
-                } catch (const std::exception& e) {
-                    reply(nats, msg, logout_response{
-                        .success = false, .message = e.what()});
-                }
-
-            } else if (subj.ends_with(".auth.public-key")) {
-                try {
-                    auto pub_key = signer.get_public_key_pem();
-                    if (pub_key.empty())
-                        throw std::runtime_error(
-                            "No RSA private key configured for JWT signing. "
-                            "Run generate_keys.sh in publish/bin/ to generate "
-                            "the key, then restart the IAM service.");
-                    std::string json =
-                        "{\"public_key\":" + rfl::json::write(pub_key) + "}";
-                    const auto* p =
-                        reinterpret_cast<const std::byte*>(json.data());
-                    nats.publish(msg.reply_subject,
-                        std::span<const std::byte>(p, json.size()));
-                } catch (const std::exception& e) {
-                    reply(nats, msg, login_response{
-                        .success = false, .error_message = e.what()});
-                }
-
-            } else if (subj.ends_with(".auth.signup")) {
-                if (auto req = decode<signup_request>(msg)) {
-                    try {
-                        service::account_service svc(ctx);
-                        auto acct = svc.create_account(
-                            req->principal, req->email, req->password,
-                            svc_acct::iam);
-                        reply(nats, msg, signup_response{
-                            .success = true,
-                            .account_id = boost::uuids::to_string(acct.id)});
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, signup_response{
-                            .success = false, .message = e.what()});
-                    }
-                }
-
-            // --- Bootstrap ---
-
-            } else if (subj.ends_with(".bootstrap.status")) {
-                try {
-                    auto auth_svc =
-                        std::make_shared<service::authorization_service>(ctx);
-                    service::bootstrap_mode_service bms(
-                        ctx, ctx.tenant_id().to_string(), auth_svc);
-                    reply(nats, msg, bootstrap_status_response{
-                        .is_in_bootstrap_mode = bms.is_in_bootstrap_mode()});
-                } catch (const std::exception& e) {
-                    reply(nats, msg, bootstrap_status_response{
-                        .is_in_bootstrap_mode = false,
-                        .message = e.what()});
-                }
-
-            } else if (subj.ends_with(".bootstrap.create-admin")) {
-                if (auto req = decode<create_initial_admin_request>(msg)) {
-                    try {
-                        service::account_service svc(ctx);
-                        auto acct = svc.create_account(
-                            req->principal, req->email, req->password,
-                            svc_acct::iam);
-                        auto auth_svc =
-                            std::make_shared<service::authorization_service>(ctx);
-                        service::bootstrap_mode_service bms(
-                            ctx, ctx.tenant_id().to_string(), auth_svc);
-                        bms.exit_bootstrap_mode();
-                        reply(nats, msg, create_initial_admin_response{
-                            .success = true,
-                            .account_id = boost::uuids::to_string(acct.id),
-                            .tenant_id = acct.tenant_id.to_string()});
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, create_initial_admin_response{
-                            .success = false, .error_message = e.what()});
-                    }
-                }
-
-            // --- Accounts ---
-
-            } else if (subj.ends_with(".accounts.list")) {
-                try {
-                    service::account_service svc(ctx);
-                    auto accounts = svc.list_accounts();
-                    get_accounts_response resp;
-                    resp.total_available_count =
-                        static_cast<int>(accounts.size());
-                    resp.accounts = std::move(accounts);
-                    reply(nats, msg, resp);
-                } catch (...) {
-                    reply(nats, msg, get_accounts_response{});
-                }
-
-            } else if (subj.ends_with(".accounts.save")) {
-                if (auto req = decode<save_account_request>(msg)) {
-                    try {
-                        service::account_service svc(ctx);
-                        auto acct = svc.create_account(
-                            req->principal, req->email, req->password, "admin");
-                        reply(nats, msg, save_account_response{
-                            .success = true,
-                            .account_id = boost::uuids::to_string(acct.id)});
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, save_account_response{
-                            .success = false, .message = e.what()});
-                    }
-                }
-
-            } else if (subj.ends_with(".accounts.delete")) {
-                if (auto req = decode<delete_account_request>(msg)) {
-                    try {
-                        service::account_service svc(ctx);
-                        boost::uuids::string_generator sg;
-                        svc.delete_account(sg(req->account_id));
-                        reply(nats, msg,
-                            delete_account_response{.success = true});
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, delete_account_response{
-                            .success = false, .message = e.what()});
-                    }
-                }
-
-            } else if (subj.ends_with(".accounts.lock")) {
-                if (auto req = decode<lock_account_request>(msg)) {
-                    lock_account_response resp;
-                    service::account_service svc(ctx);
-                    boost::uuids::string_generator sg;
-                    for (const auto& id : req->account_ids) {
-                        try {
-                            svc.lock_account(sg(id));
-                            resp.results.push_back({.success = true});
-                        } catch (const std::exception& e) {
-                            resp.results.push_back({
-                                .success = false, .message = e.what()});
-                        }
-                    }
-                    reply(nats, msg, resp);
-                }
-
-            } else if (subj.ends_with(".accounts.unlock")) {
-                if (auto req = decode<unlock_account_request>(msg)) {
-                    unlock_account_response resp;
-                    service::account_service svc(ctx);
-                    boost::uuids::string_generator sg;
-                    for (const auto& id : req->account_ids) {
-                        try {
-                            svc.unlock_account(sg(id));
-                            resp.results.push_back({.success = true});
-                        } catch (const std::exception& e) {
-                            resp.results.push_back({
-                                .success = false, .message = e.what()});
-                        }
-                    }
-                    reply(nats, msg, resp);
-                }
-
-            } else if (subj.ends_with(".accounts.login-info")) {
-                try {
-                    service::account_service svc(ctx);
-                    auto infos = svc.list_login_info();
-                    reply(nats, msg,
-                        list_login_info_response{
-                            .login_infos = std::move(infos)});
-                } catch (...) {
-                    reply(nats, msg, list_login_info_response{});
-                }
-
-            } else if (subj.ends_with(".accounts.select-party")) {
-                if (auto req = decode<select_party_request>(msg)) {
-                    try {
-                        // Validate interim JWT from Bearer header
-                        auto token = extract_bearer_token(msg);
-                        if (token.empty()) {
-                            reply(nats, msg, select_party_response{
-                                .success = false,
-                                .message = "Missing authorization token"});
-                            return;
-                        }
-
-                        auto claims_result = signer.validate(token);
-                        if (!claims_result ||
-                            claims_result->audience != "select_party_only") {
-                            reply(nats, msg, select_party_response{
-                                .success = false,
-                                .message = "Invalid or expired token"});
-                            return;
-                        }
-
-                        boost::uuids::string_generator sg;
-                        auto account_id = sg(claims_result->subject);
-
-                        // Validate user is member of requested party
-                        boost::uuids::uuid requested_party_id =
-                            sg(req->party_id);
-                        repository::account_party_repository ap_repo(ctx);
-                        auto parties =
-                            ap_repo.read_latest_by_account(account_id);
-
-                        bool is_member = false;
-                        for (const auto& ap : parties) {
-                            if (ap.party_id == requested_party_id) {
-                                is_member = true;
-                                break;
-                            }
-                        }
-
-                        if (!is_member) {
-                            reply(nats, msg, select_party_response{
-                                .success = false,
-                                .message =
-                                    "User is not a member of requested party"});
-                            return;
-                        }
-
-                        // Compute visible_party_ids
-                        auto tenant_id_str = claims_result->tenant_id.value_or(
-                            ctx.tenant_id().to_string());
-                        auto visible = compute_visible_party_ids(
-                            ctx, tenant_id_str, requested_party_id);
-
-                        // Issue full JWT
-                        security::jwt::jwt_claims new_claims;
-                        new_claims.subject = claims_result->subject;
-                        new_claims.issued_at = std::chrono::system_clock::now();
-                        new_claims.expires_at =
-                            new_claims.issued_at + std::chrono::hours(8);
-                        new_claims.username = claims_result->username;
-                        new_claims.email = claims_result->email;
-                        new_claims.tenant_id = tenant_id_str;
-                        new_claims.party_id =
-                            boost::uuids::to_string(requested_party_id);
-                        for (const auto& vid : visible)
-                            new_claims.visible_party_ids.push_back(
-                                boost::uuids::to_string(vid));
-
-                        auto new_token =
-                            signer.create_token(new_claims).value_or("");
-
-                        std::string t_name;
-                        std::string p_name;
-                        try {
-                            auto tid = sg(tenant_id_str);
-                            t_name = lookup_tenant_name(ctx, tid);
-                        } catch (const std::exception& e) {
-                            BOOST_LOG_SEV(lg(), warn) << "Failed to look up tenant name during party selection: " << e.what();
-                        }
-                        p_name = lookup_party_name(ctx, requested_party_id);
-
-                        reply(nats, msg, select_party_response{
-                            .success = true,
-                            .message = "Party selected",
-                            .token = new_token,
-                            .username = claims_result->username.value_or(""),
-                            .tenant_name = t_name,
-                            .party_name = p_name
-                        });
-                    } catch (const std::exception& e) {
-                        reply(nats, msg, select_party_response{
-                            .success = false, .message = e.what()});
-                    }
-                }
-            }
-        }));
+    BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size()
+        << " IAM message handlers.";
 
     return subs;
 }
 
-}
+} // namespace ores::iam::messaging

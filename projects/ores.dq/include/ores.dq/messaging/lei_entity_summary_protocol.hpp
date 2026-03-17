@@ -36,7 +36,7 @@ struct lei_entity_summary {
 struct get_lei_entities_summary_request {
     using response_type = struct get_lei_entities_summary_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.lei-entities.summary";
+        "dq.v1.lei-entities.summary";
     std::string country_filter;
     int offset = 0;
     int limit = 1000;

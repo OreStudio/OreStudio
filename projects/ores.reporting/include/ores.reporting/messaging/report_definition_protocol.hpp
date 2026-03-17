@@ -30,7 +30,7 @@ namespace ores::reporting::messaging {
 struct get_report_definitions_request {
     using response_type = struct get_report_definitions_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-definitions.list";
+        "reporting.v1.report-definitions.list";
     int offset = 0;
     int limit = 100;
 };
@@ -43,7 +43,7 @@ struct get_report_definitions_response {
 struct save_report_definition_request {
     using response_type = struct save_report_definition_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-definitions.save";
+        "reporting.v1.report-definitions.save";
     ores::reporting::domain::report_definition definition;
 };
 
@@ -55,7 +55,7 @@ struct save_report_definition_response {
 struct delete_report_definition_request {
     using response_type = struct delete_report_definition_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-definitions.delete";
+        "reporting.v1.report-definitions.delete";
     std::vector<std::string> ids;
 };
 
@@ -67,7 +67,7 @@ struct delete_report_definition_response {
 struct get_report_definition_history_request {
     using response_type = struct get_report_definition_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-definitions.history";
+        "reporting.v1.report-definitions.history";
     std::string id;
 };
 
@@ -80,7 +80,7 @@ struct get_report_definition_history_response {
 struct schedule_report_definitions_request {
     using response_type = struct schedule_report_definitions_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-definitions.schedule";
+        "reporting.v1.report-definitions.schedule";
     std::vector<std::string> ids;
     std::string performed_by;
 };
@@ -94,7 +94,7 @@ struct schedule_report_definitions_response {
 struct unschedule_report_definitions_request {
     using response_type = struct unschedule_report_definitions_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-definitions.unschedule";
+        "reporting.v1.report-definitions.unschedule";
     std::vector<std::string> ids;
     std::string performed_by;
 };

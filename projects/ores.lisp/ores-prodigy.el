@@ -135,15 +135,18 @@
 
 (defun ores/nats-domain-services ()
   "Return alist of (binary-name . display-name) for all NATS domain services.
-Discovered from projects/ores.*.service directories at the checkout root."
-  (let ((projects-dir (expand-file-name "projects" (ores/checkout-root)))
-        result)
-    (dolist (entry (directory-files projects-dir nil "^ores\\..+\\.service$"))
-      (let* ((component (replace-regexp-in-string
-                         "^ores\\.\\(.+\\)\\.service$" "\\1" entry))
-             (display (concat component " service")))
-        (push (cons entry display) result)))
-    (nreverse result)))
+Derived from ORES_*_SERVICE_DB_USER entries in the checkout .env."
+  (delq nil
+        (mapcar (lambda (pair)
+                  (let ((key (car pair)))
+                    (when (string-match "^ORES_\\(.+\\)_SERVICE_DB_USER$" key)
+                      (let* ((component (downcase
+                                         (replace-regexp-in-string
+                                          "_" "." (match-string 1 key))))
+                             (binary (concat "ores." component ".service"))
+                             (display (concat component " service")))
+                        (cons binary display)))))
+                (ores/load-dotenv))))
 
 
 ;; =============================================================================

@@ -55,19 +55,21 @@ class boost_log_sink final : public Wt::WLogSink {
 public:
     void log(const std::string& type, const std::string& /*scope*/,
              const std::string& message) const noexcept override {
-        using namespace ores::logging;
-        static auto& lg = []() -> auto& {
-            static auto instance = make_logger("ores.wt.service.wt");
-            return instance;
-        }();
-        if (type == "debug")
-            BOOST_LOG_SEV(lg, debug) << message;
-        else if (type == "warning")
-            BOOST_LOG_SEV(lg, warn) << message;
-        else if (type == "error" || type == "fatal")
-            BOOST_LOG_SEV(lg, error) << message;
-        else
-            BOOST_LOG_SEV(lg, info) << message;
+        try {
+            using namespace ores::logging;
+            static auto& lg = []() -> auto& {
+                static auto instance = make_logger("ores.wt.service.wt");
+                return instance;
+            }();
+            if (type == "debug")
+                BOOST_LOG_SEV(lg, debug) << message;
+            else if (type == "warning")
+                BOOST_LOG_SEV(lg, warn) << message;
+            else if (type == "error" || type == "fatal")
+                BOOST_LOG_SEV(lg, error) << message;
+            else
+                BOOST_LOG_SEV(lg, info) << message;
+        } catch (...) {}
     }
 };
 

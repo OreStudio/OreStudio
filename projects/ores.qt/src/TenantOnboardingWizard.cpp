@@ -33,6 +33,7 @@
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.iam/domain/tenant.hpp"
+#include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 
 namespace ores::qt {
@@ -614,6 +615,28 @@ void ApplyOnboardingPage::startOnboarding() {
 
             if (!response->success) {
                 result.error = response->message;
+                return result;
+            }
+
+            // Create tenant admin account
+            iam::messaging::provision_tenant_request adminReq;
+            adminReq.tenant_hostname = hostname;
+            adminReq.principal = adminUsername;
+            adminReq.password = adminPassword;
+            adminReq.email = adminEmail;
+
+            auto adminResp = clientManager->process_authenticated_request(
+                std::move(adminReq));
+
+            if (!adminResp) {
+                result.error = "Tenant created but failed to create admin account: "
+                    + adminResp.error();
+                return result;
+            }
+
+            if (!adminResp->success) {
+                result.error = "Tenant created but admin account creation failed: "
+                    + adminResp->error_message;
                 return result;
             }
 

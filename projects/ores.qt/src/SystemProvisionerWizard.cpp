@@ -938,6 +938,28 @@ void ProvisionerApplyPage::startProvisioning() {
                 return result;
             }
 
+            // Create tenant admin account
+            iam::messaging::provision_tenant_request adminReq;
+            adminReq.tenant_hostname = hostname;
+            adminReq.principal = adminUsername;
+            adminReq.password = adminPassword;
+            adminReq.email = adminEmail;
+
+            auto adminResp = clientManager->process_authenticated_request(
+                std::move(adminReq));
+
+            if (!adminResp) {
+                result.error = "Tenant created but failed to create admin account: "
+                    + adminResp.error();
+                return result;
+            }
+
+            if (!adminResp->success) {
+                result.error = "Tenant created but admin account creation failed: "
+                    + adminResp->error_message;
+                return result;
+            }
+
             result.success = true;
             result.tenantId = code; // Use code as ID since save doesn't return tenant ID
             return result;

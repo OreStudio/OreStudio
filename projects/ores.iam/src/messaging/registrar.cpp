@@ -89,6 +89,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         create_initial_admin_request::nats_subject, qg,
         [bh](ores::nats::message msg) { bh->create_admin(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        provision_tenant_request::nats_subject, qg,
+        [bh](ores::nats::message msg) { bh->provision_tenant(std::move(msg)); }));
 
     // --- Accounts ---
     auto acth = std::make_shared<account_handler>(nats, ctx, signer);

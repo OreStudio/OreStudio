@@ -41,6 +41,7 @@
 #include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.iam/service/account_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::iam::messaging {
 
@@ -112,6 +113,21 @@ inline std::string auth_lookup_tenant_name(
     return {};
 }
 
+inline std::optional<ores::iam::domain::tenant> auth_lookup_tenant_by_hostname(
+    const ores::database::context& ctx, const std::string& hostname) {
+    try {
+        repository::tenant_repository repo(ctx);
+        auto tenants = repo.read_latest_by_hostname(hostname);
+        if (!tenants.empty())
+            return tenants.front();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn)
+            << "Failed to look up tenant by hostname: " << e.what();
+    }
+    return std::nullopt;
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -162,11 +178,25 @@ public:
             return;
         }
         try {
-            service::account_service svc(ctx_);
-            auto ip = boost::asio::ip::address_v4::loopback();
-            auto acct = svc.login(req->principal, req->password, ip);
+            // Parse principal: split username@hostname for tenant routing
+            std::string username = req->principal;
+            ores::database::context login_ctx = ctx_;
+            const auto at_pos = req->principal.rfind('@');
+            if (at_pos != std::string::npos) {
+                username = req->principal.substr(0, at_pos);
+                const auto hostname = req->principal.substr(at_pos + 1);
+                if (auto t = auth_lookup_tenant_by_hostname(ctx_, hostname)) {
+                    auto tid_result = ores::utility::uuid::tenant_id::from_uuid(t->id);
+                    if (tid_result)
+                        login_ctx = ctx_.with_tenant(*tid_result, "");
+                }
+            }
 
-            repository::account_party_repository ap_repo(ctx_);
+            service::account_service svc(login_ctx);
+            auto ip = boost::asio::ip::address_v4::loopback();
+            auto acct = svc.login(username, req->password, ip);
+
+            repository::account_party_repository ap_repo(login_ctx);
             auto account_parties =
                 ap_repo.read_latest_by_account(acct.id);
 
@@ -195,7 +225,7 @@ public:
                 const auto& party_id =
                     account_parties.front().party_id;
                 auto visible = auth_compute_visible_party_ids(
-                    ctx_, party_id);
+                    login_ctx, party_id);
 
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
@@ -223,7 +253,7 @@ public:
                 resp.selected_party_id =
                     boost::uuids::to_string(party_id);
                 for (const auto& ap : account_parties) {
-                    auto p = auth_lookup_party(ctx_, ap.party_id);
+                    auto p = auth_lookup_party(login_ctx, ap.party_id);
                     resp.available_parties.push_back(party_summary{
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},
@@ -255,7 +285,7 @@ public:
                 resp.username = acct.username;
                 resp.email = acct.email;
                 for (const auto& ap : account_parties) {
-                    auto p = auth_lookup_party(ctx_, ap.party_id);
+                    auto p = auth_lookup_party(login_ctx, ap.party_id);
                     resp.available_parties.push_back(party_summary{
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},

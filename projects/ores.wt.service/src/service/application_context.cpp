@@ -149,10 +149,18 @@ void application_context::start_eventing() {
 void application_context::stop_eventing() {
     using namespace ores::logging;
 
+    // Tear down all eventing objects here, while Boost.Log is still alive.
+    // The application_context is a Meyer's singleton: its destructor runs
+    // during static destruction, after lifecycle_manager (and Boost.Log) are
+    // already gone.  Any logging in those destructors would throw bad_alloc
+    // inside a noexcept destructor and call terminate().
     if (event_source_) {
         BOOST_LOG_SEV(lg(), info) << "Stopping event source";
         event_source_->stop();
+        event_source_.reset();
     }
+    flags_subscription_.unsubscribe();
+    event_bus_.reset();
 }
 
 void application_context::check_bootstrap_mode() {

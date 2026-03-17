@@ -41,8 +41,10 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.nats.lib
     PRIVATE
+        ores.service.lib
         ores.scheduler.lib
         ores.utility.lib
+        ores.security.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx
         libfort::fort

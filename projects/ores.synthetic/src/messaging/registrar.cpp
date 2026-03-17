@@ -19,15 +19,18 @@
  */
 #include "ores.synthetic/messaging/registrar.hpp"
 
+#include <optional>
 #include <span>
 #include <string_view>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/string_generator.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.synthetic/messaging/generate_organisation_protocol.hpp"
 #include "ores.synthetic/service/organisation_generator_service.hpp"
+#include "ores.service/service/request_context.hpp"
 
 namespace ores::synthetic::messaging {
 
@@ -56,14 +59,17 @@ std::optional<Req> decode(const ores::nats::message& msg) {
 
 } // namespace
 
+
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context /*ctx*/) {
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
     subs.push_back(nats.queue_subscribe(
         "synthetic.v1.>", "ores.synthetic.service",
-        [&nats](ores::nats::message msg) mutable {
+        [&nats, base_ctx = ctx, verifier](ores::nats::message msg) mutable {
+            const auto ctx = ores::service::service::make_request_context(base_ctx, msg, verifier);
             const auto& subj = msg.subject;
 
             // ----------------------------------------------------------------

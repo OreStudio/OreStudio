@@ -45,6 +45,7 @@ target_link_libraries(${lib_target_name}
         reflectcpp::reflectcpp
     PRIVATE
         ores.platform.lib
+        ores.security.lib
         Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

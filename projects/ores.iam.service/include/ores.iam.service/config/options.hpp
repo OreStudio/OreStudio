@@ -44,6 +44,14 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+    /**
+     * @brief RSA private key PEM for signing JWT tokens (RS256).
+     *
+     * Read from ORES_IAM_SERVICE_JWT_PRIVATE_KEY environment variable
+     * or --jwt-private-key command-line option. Must be a valid RSA
+     * private key in PEM format.
+     */
+    std::string jwt_private_key;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

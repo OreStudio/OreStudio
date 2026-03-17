@@ -343,7 +343,7 @@ private:
      */
     struct LoginDialogOptions {
         QString host;
-        int port = 5433;
+        int port = 4222;
         QString username;
         QString password;
         QString connectionName;       ///< If set, shown in status message on success

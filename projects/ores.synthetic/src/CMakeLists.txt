@@ -35,6 +35,7 @@ target_include_directories(${lib_target_name}
     PUBLIC
         ${CMAKE_SOURCE_DIR}/projects/${name}/include
     PRIVATE
+        ores.service.lib
         ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(${lib_target_name}
@@ -44,7 +45,9 @@ target_link_libraries(${lib_target_name}
         ores.iam.lib
         ores.refdata.lib
     PRIVATE
+        ores.service.lib
         ores.utility.lib
+        ores.security.lib
         faker-cxx::faker-cxx
         Boost::boost)
 

@@ -41,7 +41,9 @@ target_link_libraries(${lib_target_name}
         ores.logging.lib
         ores.nats.lib
     PRIVATE
+        ores.service.lib
         ores.utility.lib
+        ores.security.lib
         libfort::fort)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

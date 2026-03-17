@@ -39,7 +39,9 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.nats.lib
     PRIVATE
+        ores.service.lib
         ores.utility.lib
+        ores.security.lib
         ores.logging.lib
         ores.platform.lib
         croncpp::croncpp

@@ -93,6 +93,14 @@ public:
      */
     bool is_configured() const { return configured_; }
 
+    /**
+     * @brief Extracts the RSA public key PEM from the private key.
+     *
+     * Only supported on RS256 signer instances. Returns an empty string
+     * if the authenticator is not an RS256 signer.
+     */
+    std::string get_public_key_pem() const;
+
 private:
     enum class algorithm_type { hs256, rs256_signer, rs256_verifier };
 

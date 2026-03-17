@@ -39,9 +39,11 @@ target_link_libraries(${lib_target_name}
         ores.variability.lib
         ores.nats.lib
     PRIVATE
+        ores.service.lib
         ores.telemetry.lib
         ores.utility.lib
         ores.database.lib
+        ores.security.lib
         faker-cxx::faker-cxx
         libfort::fort
         Boost::boost)

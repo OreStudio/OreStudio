@@ -17,9 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <optional>
 #include <span>
 #include <string>
-#include <optional>
 #include <stdexcept>
 #include <string_view>
 #include <rfl/json.hpp>
@@ -28,6 +28,8 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
@@ -40,6 +42,7 @@
 #include "ores.dq/service/publication_service.hpp"
 #include "ores.dq/service/coding_scheme_service.hpp"
 #include "ores.dq/messaging/registrar.hpp"
+#include "ores.service/service/request_context.hpp"
 
 namespace {
 
@@ -67,12 +70,14 @@ namespace ores::dq::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx) {
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
     subs.push_back(nats.queue_subscribe(
         "dq.v1.>", "ores.dq.service",
-        [&nats, ctx](ores::nats::message msg) mutable {
+        [&nats, base_ctx = ctx, verifier](ores::nats::message msg) mutable {
+            const auto ctx = ores::service::service::make_request_context(base_ctx, msg, verifier);
 
             // ==================================================================
             // Catalogs

@@ -56,7 +56,27 @@
     ("ores_trading_service"     . "TRADING_SERVICE"))
   "Alist mapping DB role names to their environment variable mapper prefixes.
 Each entry maps a PostgreSQL username to the prefix used in the C++ service
-parser (make_mapper), so the env var for DB password is ORES_<PREFIX>_DB_PASSWORD.")
+parser (make_mapper), so the app env var for DB password is ORES_<PREFIX>_DB_PASSWORD.")
+
+(defconst ores-db/role-script-var
+  '(("ores_ddl_user"            . "ORES_DB_DDL_PASSWORD")
+    ("ores_cli_user"            . "ORES_DB_CLI_PASSWORD")
+    ("ores_wt_user"             . "ORES_DB_WT_PASSWORD")
+    ("ores_comms_user"          . "ORES_DB_COMMS_PASSWORD")
+    ("ores_http_user"           . "ORES_DB_HTTP_PASSWORD")
+    ("ores_readonly_user"       . "ORES_DB_READONLY_PASSWORD")
+    ("ores_iam_service"         . "ORES_DB_IAM_SERVICE_PASSWORD")
+    ("ores_refdata_service"     . "ORES_DB_REFDATA_SERVICE_PASSWORD")
+    ("ores_dq_service"          . "ORES_DB_DQ_SERVICE_PASSWORD")
+    ("ores_variability_service" . "ORES_DB_VARIABILITY_SERVICE_PASSWORD")
+    ("ores_assets_service"      . "ORES_DB_ASSETS_SERVICE_PASSWORD")
+    ("ores_synthetic_service"   . "ORES_DB_SYNTHETIC_SERVICE_PASSWORD")
+    ("ores_scheduler_service"   . "ORES_DB_SCHEDULER_SERVICE_PASSWORD")
+    ("ores_reporting_service"   . "ORES_DB_REPORTING_SERVICE_PASSWORD")
+    ("ores_telemetry_service"   . "ORES_DB_TELEMETRY_SERVICE_PASSWORD")
+    ("ores_trading_service"     . "ORES_DB_TRADING_SERVICE_PASSWORD"))
+  "Alist mapping DB role names to the ORES_DB_*_PASSWORD env vars read by
+recreate_database.sh when creating PostgreSQL users.")
 
 (defvar-local ores-db/marked-ids nil
   "List of marked database IDs in the current buffer.")
@@ -364,10 +384,14 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
             (setenv "ORES_TEST_DB_DDL_PASSWORD" pw))
            ((string= role "ores_test_dml_user")
             (setenv "ORES_TEST_DB_PASSWORD" pw))
-           ;; Roles with a mapper prefix: set ORES_<PREFIX>_DB_PASSWORD
+           ;; All other roles: set both the app var and the script var
            (t
+            ;; App var: ORES_<PREFIX>_DB_PASSWORD for make_mapper() in C++ parsers
             (when-let ((prefix (cdr (assoc role ores-db/role-mapper-prefix))))
-              (setenv (concat "ORES_" prefix "_DB_PASSWORD") pw)))))))
+              (setenv (concat "ORES_" prefix "_DB_PASSWORD") pw))
+            ;; Script var: ORES_DB_*_PASSWORD for recreate_database.sh
+            (when-let ((script-var (cdr (assoc role ores-db/role-script-var))))
+              (setenv script-var pw)))))))
     (message "[ORES] Exported %d environment variables for %s." count host)))
 
 (defun ores-db/show-env-vars ()
@@ -416,6 +440,9 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
        (t
         (when-let ((prefix (cdr (assoc role ores-db/role-mapper-prefix))))
           (setenv (concat "ORES_" prefix "_DB_PASSWORD") nil)
+          (setq count (1+ count)))
+        (when-let ((script-var (cdr (assoc role ores-db/role-script-var))))
+          (setenv script-var nil)
           (setq count (1+ count))))))
     (message "[ORES] Unset %d environment variables." count)))
 

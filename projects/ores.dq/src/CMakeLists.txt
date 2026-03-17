@@ -45,7 +45,9 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.iam.lib
     PRIVATE
+        ores.service.lib
         ores.utility.lib
+        ores.security.lib
         sqlgen::sqlgen
         faker-cxx::faker-cxx
         libfort::fort

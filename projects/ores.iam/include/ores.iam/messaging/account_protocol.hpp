@@ -155,6 +155,10 @@ struct select_party_request {
 struct select_party_response {
     bool success = false;
     std::string message;
+    std::string token;
+    std::string username;
+    std::string tenant_name;
+    std::string party_name;
 };
 
 struct get_accounts_request_typed {

@@ -39,12 +39,13 @@ find_package(Boost REQUIRED COMPONENTS json)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.variability.lib
         OpenSSL::SSL
         OpenSSL::Crypto
         Boost::json
+        ores.logging.lib
     PRIVATE
         ores.utility.lib
+        ores.platform.lib
         Boost::boost
         jwt-cpp::jwt-cpp)
 

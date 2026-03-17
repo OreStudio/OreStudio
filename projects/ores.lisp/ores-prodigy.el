@@ -181,16 +181,44 @@ NATS domain services use ores/setup-nats-service-environment instead.")
 e.g. \"ores.iam.service\" -> \"ores_iam_service\"."
   (replace-regexp-in-string "\\." "_" binary-name))
 
+(defun ores/nats-service-mapper-prefix (db-user)
+  "Derive the make_mapper prefix from DB-USER.
+Strips the leading 'ores_' and uppercases the rest.
+e.g. \"ores_iam_service\" -> \"IAM_SERVICE\"."
+  (upcase (substring db-user (length "ores_"))))
+
 (defun ores/setup-nats-service-environment (binary-name)
-  "Set up DB environment variables for a NATS domain service with BINARY-NAME."
+  "Set up DB environment variables for a NATS domain service with BINARY-NAME.
+Uses the service-specific prefix matching make_mapper() in the C++ parser,
+e.g. ores.iam.service -> ORES_IAM_SERVICE_DB_USER/PASSWORD/DATABASE."
   (let* ((db-user (ores/nats-service-db-user binary-name))
+         (prefix  (ores/nats-service-mapper-prefix db-user))
          (pwd (auth-source-pick-first-password
                :host "localhost"
                :user db-user)))
     (list
-     (list "ORES_SERVICE_DB_USER"     db-user)
-     (list "ORES_SERVICE_DB_PASSWORD" pwd)
-     (list "ORES_SERVICE_DB_DATABASE" ores/database-name))))
+     (list (concat "ORES_" prefix "_DB_USER")     db-user)
+     (list (concat "ORES_" prefix "_DB_PASSWORD") pwd)
+     (list (concat "ORES_" prefix "_DB_DATABASE") ores/database-name))))
+
+(defun ores/setup-iam-service-environment (binary-name bin-dir)
+  "Set up environment variables for the IAM service.
+Extends the base NATS service environment with the RS256 JWT private key,
+read from BIN-DIR/iam-rsa-private.pem (alongside the service binary).
+Generate the key with:
+  openssl genrsa -out BIN-DIR/iam-rsa-private.pem 2048"
+  (let* ((base-env (ores/setup-nats-service-environment binary-name))
+         (key-file (concat bin-dir "/iam-rsa-private.pem"))
+         (jwt-key  (when (file-exists-p key-file)
+                     (with-temp-buffer
+                       (insert-file-contents key-file)
+                       (buffer-string)))))
+    (if (and jwt-key (not (string-empty-p jwt-key)))
+        (cons (list "ORES_IAM_SERVICE_JWT_PRIVATE_KEY" jwt-key) base-env)
+      (progn
+        (message "WARNING: %s not found. IAM service will start without JWT signing. \
+Run: openssl genrsa -out %s 2048" key-file key-file)
+        base-env))))
 
 (defun ores/setup-http-server-environment ()
   "Set up environment variables for the HTTP server."
@@ -248,7 +276,9 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :command (concat bin "/" (car svc))
           :args    `(,@common-args ,@nats-service-args ,@nats-args)
           :tags    `(,@common-tags nats-service)
-          :env     (ores/setup-nats-service-environment (car svc))
+          :env     (if (string= (car svc) "ores.iam.service")
+                       (ores/setup-iam-service-environment (car svc) bin)
+                     (ores/setup-nats-service-environment (car svc)))
           :on-output (lambda (&rest args)
                        (when (string-match-p "Service ready"
                                              (plist-get args :output))
@@ -256,48 +286,58 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t))
 
-      ;; QT
-      (prodigy-define-service
-        :name    (ores/service-name "ORE Studio QT" preset)
-        :cwd     bin
-        :command (concat bin "/ores.qt")
-        :args    common-args
-        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-        :stop-signal 'sigint
-        :kill-process-buffer-on-stop t)
+      (let ((qt-on-output (lambda (&rest args)
+                            (when (string-match-p "Starting ORE Studio Qt"
+                                                  (plist-get args :output))
+                              (prodigy-set-status (plist-get args :service) 'ready))))
+            (qt-args `(,@common-args "--log-to-console")))
 
-      ;; QT Blue
-      (prodigy-define-service
-        :name    (ores/service-name "ORE Studio QT Blue" preset)
-        :cwd     bin
-        :command (concat bin "/ores.qt")
-        :args    `(,@common-args "--log-filename" "ores.qt.blue.log"
-                   "--instance-name" "Blue" "--instance-color" "2196F3")
-        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-        :stop-signal 'sigint
-        :kill-process-buffer-on-stop t)
+        ;; QT
+        (prodigy-define-service
+          :name      (ores/service-name "ORE Studio QT" preset)
+          :cwd       bin
+          :command   (concat bin "/ores.qt")
+          :args      qt-args
+          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :on-output qt-on-output
+          :stop-signal 'sigint
+          :kill-process-buffer-on-stop t)
 
-      ;; QT Red
-      (prodigy-define-service
-        :name    (ores/service-name "ORE Studio QT Red" preset)
-        :cwd     bin
-        :command (concat bin "/ores.qt")
-        :args    `(,@common-args "--log-filename" "ores.qt.red.log"
-                   "--instance-name" "Red" "--instance-color" "F44336")
-        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-        :stop-signal 'sigint
-        :kill-process-buffer-on-stop t)
+        ;; QT Blue
+        (prodigy-define-service
+          :name      (ores/service-name "ORE Studio QT Blue" preset)
+          :cwd       bin
+          :command   (concat bin "/ores.qt")
+          :args      `(,@qt-args "--log-filename" "ores.qt.blue.log"
+                       "--instance-name" "Blue" "--instance-color" "2196F3")
+          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :on-output qt-on-output
+          :stop-signal 'sigint
+          :kill-process-buffer-on-stop t)
 
-      ;; QT Green
-      (prodigy-define-service
-        :name    (ores/service-name "ORE Studio QT Green" preset)
-        :cwd     bin
-        :command (concat bin "/ores.qt")
-        :args    `(,@common-args "--log-filename" "ores.qt.green.log"
-                   "--instance-name" "Green" "--instance-color" "4CAF50")
-        :tags    `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
-        :stop-signal 'sigint
-        :kill-process-buffer-on-stop t))
+        ;; QT Red
+        (prodigy-define-service
+          :name      (ores/service-name "ORE Studio QT Red" preset)
+          :cwd       bin
+          :command   (concat bin "/ores.qt")
+          :args      `(,@qt-args "--log-filename" "ores.qt.red.log"
+                       "--instance-name" "Red" "--instance-color" "F44336")
+          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :on-output qt-on-output
+          :stop-signal 'sigint
+          :kill-process-buffer-on-stop t)
+
+        ;; QT Green
+        (prodigy-define-service
+          :name      (ores/service-name "ORE Studio QT Green" preset)
+          :cwd       bin
+          :command   (concat bin "/ores.qt")
+          :args      `(,@qt-args "--log-filename" "ores.qt.green.log"
+                       "--instance-name" "Green" "--instance-color" "4CAF50")
+          :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :on-output qt-on-output
+          :stop-signal 'sigint
+          :kill-process-buffer-on-stop t)))
 
     ;; HTTP Server
     (prodigy-define-service

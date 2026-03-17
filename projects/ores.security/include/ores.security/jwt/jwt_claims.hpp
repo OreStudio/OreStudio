@@ -99,11 +99,17 @@ struct jwt_claims final {
     /**
      * @brief Optional party ID (UUID string, nil UUID if no party selected).
      *
-     * Identifies the active party for the session. NOTE: visible_party_ids
-     * are NOT included in the JWT to keep tokens small; services load them
-     * from the DB session record on first request and cache by session_id.
+     * Identifies the active party for the session.
      */
     std::optional<std::string> party_id;
+
+    /**
+     * @brief List of visible party IDs (UUID strings) for the session.
+     *
+     * Contains the user's own party and all descendant parties, computed
+     * at login time via recursive CTE on the party hierarchy.
+     */
+    std::vector<std::string> visible_party_ids;
 
     /**
      * @brief Create a claims object with issued_at set to now and

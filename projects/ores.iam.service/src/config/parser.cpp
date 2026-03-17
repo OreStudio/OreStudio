@@ -57,6 +57,14 @@ options_description make_options_description() {
     r.add(logging_configuration::make_options_description("ores.iam.service.log"));
     r.add(database_configuration::make_options_description());
     r.add(nats_configuration::make_options_description());
+
+    options_description iam_opts("IAM options");
+    iam_opts.add_options()
+        ("jwt-private-key",
+            value<std::string>()->default_value(""),
+            "RSA private key PEM for JWT signing (RS256). "
+            "Also read from ORES_IAM_SERVICE_JWT_PRIVATE_KEY.");
+    r.add(iam_opts);
     return r;
 }
 
@@ -113,6 +121,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.nats = nats_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
+    r.jwt_private_key = vm["jwt-private-key"].as<std::string>();
     return r;
 }
 

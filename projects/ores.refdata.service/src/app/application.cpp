@@ -19,15 +19,12 @@
  */
 #include "ores.refdata.service/app/application.hpp"
 
-#include <csignal>
-#include <boost/asio/signal_set.hpp>
-#include <boost/asio/use_awaitable.hpp>
-#include <boost/throw_exception.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.refdata.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.refdata/messaging/registrar.hpp"
+#include "ores.service/service/domain_service_runner.hpp"
 
 namespace ores::refdata::service::app {
 
@@ -63,17 +60,12 @@ application::run(boost::asio::io_context& io_ctx,
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
 
-    auto ctx = make_context(cfg.database);
-    auto subs = ores::refdata::messaging::registrar::register_handlers(nats, std::move(ctx));
-    BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
-
-    BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";
-    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
-    co_await signals.async_wait(boost::asio::use_awaitable);
-
-    BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
-    nats.drain();
-    BOOST_LOG_SEV(lg(), info) << "Shutdown complete: ores.refdata.service";
+    co_await ores::service::service::run(
+        io_ctx, nats, make_context(cfg.database), "ores.refdata.service",
+        [](auto& n, auto c, auto v) {
+            return ores::refdata::messaging::registrar::register_handlers(
+                n, std::move(c), std::move(v));
+        });
     co_return;
 }
 

@@ -378,6 +378,7 @@ void LoginDialog::setupServerFields(QVBoxLayout* layout, QWidget* parent) {
 
     subjectPrefixEdit_ = new QLineEdit(parent);
     subjectPrefixEdit_->setPlaceholderText("e.g. ores.dev.local1  (leave empty for default)");
+    subjectPrefixEdit_->setText("ores.dev.local1");
     subjectPrefixEdit_->setStyleSheet(dialog_styles::input_field);
     subjectPrefixEdit_->setFixedHeight(32);
     layout->addWidget(subjectPrefixEdit_);

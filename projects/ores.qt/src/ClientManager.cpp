@@ -120,6 +120,17 @@ LoginResult ClientManager::login(const std::string& username,
                     .error_message = QString::fromStdString(response.error_message)};
         }
 
+        // An empty token means the IAM service has no JWT signing key configured.
+        if (response.token.empty()) {
+            BOOST_LOG_SEV(lg(), error) << "LOGIN FAILURE: IAM service returned "
+                                       << "empty JWT token - signing key not configured";
+            return {.success = false,
+                    .error_message =
+                        "IAM service is not configured for JWT signing.\n\n"
+                        "Run generate_keys.sh in publish/bin/ to generate "
+                        "the private key, then restart the IAM service."};
+        }
+
         // Store auth in session
         session_.set_auth(shell::service::nats_session::login_info{
             .jwt = response.token,
@@ -356,6 +367,16 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
         if (!result || !result->success) {
             BOOST_LOG_SEV(lg(), warn) << "selectParty: server rejected party selection";
             return false;
+        }
+
+        // Update JWT with new token from select_party response
+        if (!result->token.empty()) {
+            auto auth = session_.auth();
+            shell::service::nats_session::login_info updated_auth = auth;
+            updated_auth.jwt = result->token;
+            if (!result->party_name.empty())
+                updated_auth.tenant_name = result->party_name;
+            session_.set_auth(updated_auth);
         }
 
         current_party_id_ = party_id;

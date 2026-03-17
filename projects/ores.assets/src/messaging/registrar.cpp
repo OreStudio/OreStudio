@@ -22,17 +22,20 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/string_generator.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.assets/messaging/assets_protocol.hpp"
 #include "ores.assets/repository/image_repository.hpp"
 #include "ores.assets/service/assets_service.hpp"
 #include "ores.assets/messaging/registrar.hpp"
+#include "ores.service/service/request_context.hpp"
 
 namespace ores::assets::messaging {
 
@@ -136,13 +139,16 @@ void handle_save_image(ores::nats::service::client& nats,
 
 } // namespace
 
+
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
-    ores::database::context ctx) {
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     subs.push_back(nats.queue_subscribe(
         "assets.v1.>", "ores.assets.service",
-        [&nats, ctx](ores::nats::message msg) {
+        [&nats, base_ctx = ctx, verifier](ores::nats::message msg) mutable {
+            const auto ctx = ores::service::service::make_request_context(base_ctx, msg, verifier);
             if (msg.subject.ends_with("images.get")) {
                 handle_get_images(nats, msg, ctx);
             } else if (msg.subject.ends_with("images.list")) {

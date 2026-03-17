@@ -71,3 +71,10 @@ target_link_libraries(${exe_target_name}
         ${CMAKE_THREAD_LIBS_INIT})
 
 install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)
+
+# Copy development scripts to the runtime output directory.
+set(ores_http_scripts_dir "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+file(COPY_FILE
+    "${ores_http_scripts_dir}/generate_keys.sh"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/generate_keys.sh")

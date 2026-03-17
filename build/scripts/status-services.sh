@@ -90,8 +90,16 @@ for svc in $(printf '%s\n' "${!EXPECTED_SERVICES[@]}" | sort); do
         continue
     fi
 
-    # Process is alive — check whether it logged "Service ready".
-    if [[ -f "$log_file" ]] && grep -q "Service ready" "$log_file" 2>/dev/null; then
+    # Determine the readiness string for this service.
+    # NATS domain services log "Service ready"; HTTP and WT use different markers.
+    case "$svc" in
+        ores.http.server)  ready_pattern="HTTP server started, accepting connections" ;;
+        ores.wt.service)   ready_pattern="wthttp: started server:" ;;
+        *)                 ready_pattern="Service ready" ;;
+    esac
+
+    # Process is alive — check whether it logged the readiness marker.
+    if [[ -f "$log_file" ]] && grep -q "$ready_pattern" "$log_file" 2>/dev/null; then
         printf "  %-10s %-38s %s\n" "running" "$svc" "PID $pid"
         running=$((running + 1))
     else

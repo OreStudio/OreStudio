@@ -236,6 +236,14 @@ public:
                     << "; account has no party context";
             }
 
+            // Seed the tenant bootstrap mode flag so the provisioning
+            // wizard is shown on the tenant admin's first login.
+            variability::service::system_flags_service sfs(
+                tenant_ctx, tenant_id_str);
+            sfs.set_bootstrap_mode(true, req->principal,
+                "system.initial_load",
+                "Tenant provisioned: initial setup required");
+
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, provision_tenant_response{

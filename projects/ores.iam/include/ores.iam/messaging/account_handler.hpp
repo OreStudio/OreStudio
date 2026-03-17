@@ -129,7 +129,9 @@ public:
         BOOST_LOG_SEV(account_handler_lg(), debug)
             << "Handling " << msg.subject;
         try {
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             auto accounts = svc.list_accounts();
             get_accounts_response resp;
             resp.total_available_count =
@@ -156,7 +158,9 @@ public:
             return;
         }
         try {
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             auto acct = svc.create_account(
                 req->principal, req->email, req->password, "admin");
             BOOST_LOG_SEV(account_handler_lg(), debug)
@@ -183,7 +187,9 @@ public:
             return;
         }
         try {
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.delete_account(sg(req->account_id));
             BOOST_LOG_SEV(account_handler_lg(), debug)
@@ -209,7 +215,9 @@ public:
             return;
         }
         lock_account_response resp;
-        service::account_service svc(ctx_);
+        const auto ctx = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
             try {
@@ -238,7 +246,9 @@ public:
             return;
         }
         unlock_account_response resp;
-        service::account_service svc(ctx_);
+        const auto ctx = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
             try {
@@ -261,7 +271,9 @@ public:
         BOOST_LOG_SEV(account_handler_lg(), debug)
             << "Handling " << msg.subject;
         try {
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             auto infos = svc.list_login_info();
             BOOST_LOG_SEV(account_handler_lg(), debug)
                 << "Completed " << msg.subject;
@@ -286,7 +298,9 @@ public:
             return;
         }
         reset_password_response resp;
-        service::account_service svc(ctx_);
+        const auto ctx = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id_str : req->account_ids) {
             try {
@@ -339,7 +353,9 @@ public:
             }
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             auto err = svc.change_password(account_id,
                 req->new_password);
             if (err.empty()) {
@@ -416,7 +432,9 @@ public:
             }
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             auto err = svc.update_my_email(account_id, req->email);
             if (err.empty()) {
                 BOOST_LOG_SEV(account_handler_lg(), debug)
@@ -466,9 +484,11 @@ public:
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
 
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
             boost::uuids::uuid requested_party_id =
                 sg(req->party_id);
-            repository::account_party_repository ap_repo(ctx_);
+            repository::account_party_repository ap_repo(ctx);
             auto parties =
                 ap_repo.read_latest_by_account(account_id);
 
@@ -491,7 +511,7 @@ public:
             auto tenant_id_str = claims_result->tenant_id.value_or(
                 ctx_.tenant_id().to_string());
             auto visible = acct_compute_visible_party_ids(
-                ctx_, requested_party_id);
+                ctx, requested_party_id);
 
             security::jwt::jwt_claims new_claims;
             new_claims.subject = claims_result->subject;
@@ -514,13 +534,13 @@ public:
             std::string p_name;
             try {
                 auto tid = sg(tenant_id_str);
-                t_name = acct_lookup_tenant_name(ctx_, tid);
+                t_name = acct_lookup_tenant_name(ctx, tid);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(account_handler_lg(), warn)
                     << "Failed to look up tenant name during "
                        "party selection: " << e.what();
             }
-            if (const auto p = acct_lookup_party(ctx_, requested_party_id))
+            if (const auto p = acct_lookup_party(ctx, requested_party_id))
                 p_name = p->full_name;
 
             BOOST_LOG_SEV(account_handler_lg(), debug)
@@ -552,7 +572,9 @@ public:
             return;
         }
         try {
-            service::account_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::account_service svc(ctx);
             auto accounts = svc.get_account_history(req->username);
             account_version_history avh;
             int vnum = static_cast<int>(accounts.size());

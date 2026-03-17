@@ -42,6 +42,7 @@
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.iam/service/account_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.variability/service/system_flags_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -128,6 +129,21 @@ inline std::optional<ores::iam::domain::tenant> auth_lookup_tenant_by_hostname(
     return std::nullopt;
 }
 
+inline bool auth_is_tenant_bootstrap_mode(
+    const ores::database::context& ctx,
+    const std::string& tenant_id_str) {
+    try {
+        variability::service::system_flags_service sfs(ctx, tenant_id_str);
+        sfs.refresh();
+        return sfs.is_bootstrap_mode_enabled();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn)
+            << "Failed to check tenant bootstrap mode: " << e.what();
+    }
+    return false;
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -196,6 +212,12 @@ public:
             auto ip = boost::asio::ip::address_v4::loopback();
             auto acct = svc.login(username, req->password, ip);
 
+            // Check if this non-system tenant needs its provisioning wizard
+            const bool in_tenant_bootstrap =
+                !acct.tenant_id.is_system() &&
+                auth_is_tenant_bootstrap_mode(
+                    login_ctx, acct.tenant_id.to_string());
+
             repository::account_party_repository ap_repo(login_ctx);
             auto account_parties =
                 ap_repo.read_latest_by_account(acct.id);
@@ -218,6 +240,7 @@ public:
                 resp.tenant_id = acct.tenant_id.to_string();
                 resp.username = acct.username;
                 resp.email = acct.email;
+                resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 BOOST_LOG_SEV(auth_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, resp);
@@ -252,6 +275,7 @@ public:
                 resp.email = acct.email;
                 resp.selected_party_id =
                     boost::uuids::to_string(party_id);
+                resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
                     resp.available_parties.push_back(party_summary{
@@ -284,6 +308,7 @@ public:
                 resp.tenant_id = acct.tenant_id.to_string();
                 resp.username = acct.username;
                 resp.email = acct.email;
+                resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
                     resp.available_parties.push_back(party_summary{

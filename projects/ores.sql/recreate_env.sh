@@ -24,6 +24,14 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHECKOUT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+ENV_FILE="${CHECKOUT_ROOT}/.env"
+if [[ -f "${ENV_FILE}" ]]; then
+    set -o allexport
+    # shellcheck source=/dev/null
+    source "${ENV_FILE}"
+    set +o allexport
+fi
 
 usage() {
     cat <<EOF

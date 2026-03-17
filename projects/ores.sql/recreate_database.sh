@@ -31,7 +31,7 @@ if [[ -f "${ENV_FILE}" ]]; then
 fi
 
 # Default values
-DEFAULT_DB_NAME="ores_frosty_leaf"
+DEFAULT_DB_NAME="${ORES_DATABASE_NAME:-ores_frosty_leaf}"
 
 usage() {
     cat <<EOF

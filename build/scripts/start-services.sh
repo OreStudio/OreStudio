@@ -128,7 +128,6 @@ launch_nats_service() {
         --log-enabled \
         --log-level "$LOG_LEVEL" \
         --log-directory ../log \
-        --log-to-console \
         --nats-url "$NATS_URL" \
         --nats-subject-prefix "$NATS_PREFIX"
 }

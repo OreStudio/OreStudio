@@ -53,11 +53,12 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
         co_return EXIT_SUCCESS;
     } catch (const std::exception& e) {
         const auto *const be(dynamic_cast<const boost::exception* const>(&e));
-        if (be == nullptr)
-            throw;
-
-        using boost::diagnostic_information;
-        BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
+        if (be != nullptr) {
+            using boost::diagnostic_information;
+            BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Error: " << e.what();
+        }
         BOOST_LOG_SEV(lg(), error) << "Failed to execute command.";
         throw;
     }

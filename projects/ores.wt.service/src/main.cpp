@@ -18,6 +18,7 @@
  *
  */
 #include <iostream>
+#include <exception>
 #include <openssl/crypto.h>
 #include <boost/scope_exit.hpp>
 #include <Wt/WServer.h>
@@ -53,14 +54,24 @@ create_application(const Wt::WEnvironment& env) {
  */
 class boost_log_sink final : public Wt::WLogSink {
 public:
-    void log(const std::string& type, const std::string& /*scope*/,
+    boost_log_sink() {
+        std::cerr << "[DEBUG] boost_log_sink constructed\n";
+    }
+    ~boost_log_sink() {
+        std::cerr << "[DEBUG] boost_log_sink destroyed\n";
+    }
+    void log(const std::string& type, const std::string& scope,
              const std::string& message) const noexcept override {
+        std::cerr << "[DEBUG] boost_log_sink::log called type=" << type
+                  << " scope=" << scope << "\n";
         try {
             using namespace ores::logging;
             static auto& lg = []() -> auto& {
+                std::cerr << "[DEBUG] initialising static logger\n";
                 static auto instance = make_logger("ores.wt.service.wt");
                 return instance;
             }();
+            std::cerr << "[DEBUG] about to BOOST_LOG_SEV\n";
             if (type == "debug")
                 BOOST_LOG_SEV(lg, debug) << message;
             else if (type == "warning")
@@ -69,7 +80,12 @@ public:
                 BOOST_LOG_SEV(lg, error) << message;
             else
                 BOOST_LOG_SEV(lg, info) << message;
-        } catch (...) {}
+            std::cerr << "[DEBUG] BOOST_LOG_SEV done\n";
+        } catch (const std::exception& e) {
+            std::cerr << "[DEBUG] boost_log_sink::log caught: " << e.what() << "\n";
+        } catch (...) {
+            std::cerr << "[DEBUG] boost_log_sink::log caught unknown exception\n";
+        }
     }
 };
 
@@ -157,12 +173,18 @@ int run(int argc, char* argv[]) {
     server.addEntryPoint(Wt::EntryPointType::Application, &create_application);
 
     if (server.start()) {
+        std::cerr << "[DEBUG] server started, waiting for shutdown\n";
         Wt::WServer::waitForShutdown();
+        std::cerr << "[DEBUG] waitForShutdown returned, calling server.stop()\n";
         server.stop();
+        std::cerr << "[DEBUG] server.stop() returned\n";
     }
 
+    std::cerr << "[DEBUG] stopping eventing\n";
     app_ctx.stop_eventing();
+    std::cerr << "[DEBUG] eventing stopped, logging final message\n";
     BOOST_LOG_SEV(lg, info) << "ORE Studio Web stopped";
+    std::cerr << "[DEBUG] run() returning\n";
 
     return EXIT_SUCCESS;
 }
@@ -170,6 +192,21 @@ int run(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
+    std::set_terminate([]() {
+        std::cerr << "[DEBUG] std::terminate called\n";
+        auto ep = std::current_exception();
+        if (ep) {
+            try { std::rethrow_exception(ep); }
+            catch (const std::exception& e) {
+                std::cerr << "[DEBUG] current exception: " << e.what() << "\n";
+            } catch (...) {
+                std::cerr << "[DEBUG] current exception: unknown\n";
+            }
+        }
+        std::cerr << "[DEBUG] aborting\n";
+        std::abort();
+    });
+
     BOOST_SCOPE_EXIT(void) {
         OPENSSL_cleanup();
     } BOOST_SCOPE_EXIT_END

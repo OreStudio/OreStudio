@@ -31,28 +31,20 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+BIN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/bin"
 RUN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/run"
-
-if [[ ! -d "$RUN_DIR" ]]; then
-    echo "No services started for preset '$PRESET' (no run directory found)."
-    exit 0
-fi
-
-shopt -s nullglob
-pid_files=("$RUN_DIR"/*.pid)
-
-if [[ ${#pid_files[@]} -eq 0 ]]; then
-    echo "No PID files found in $RUN_DIR — nothing to stop."
-    exit 0
-fi
 
 echo "Stopping ORE Studio services ($PRESET)"
 echo ""
+
+shopt -s nullglob
+pid_files=("$RUN_DIR"/*.pid)
 
 stopped_pids=()
 stopped=0
 gone=0
 
+# Stop services tracked by PID files.
 for pid_file in "${pid_files[@]}"; do
     name="$(basename "$pid_file" .pid)"
     pid="$(cat "$pid_file")"
@@ -69,6 +61,25 @@ for pid_file in "${pid_files[@]}"; do
 
     rm -f "$pid_file"
 done
+
+# Fall back to pkill for any services running from this bin directory that
+# were not started via this script (e.g. launched from Prodigy or manually).
+if [[ -d "$BIN_DIR" ]]; then
+    while IFS= read -r pid; do
+        exe="$(readlink -f /proc/"$pid"/exe 2>/dev/null || true)"
+        [[ "$exe" == "$BIN_DIR"/ores.* ]] || continue
+        name="$(basename "$exe")"
+        kill -TERM "$pid" 2>/dev/null || continue
+        printf "  stop    %-38s PID %d (untracked)\n" "$name" "$pid"
+        stopped_pids+=("$pid")
+        stopped=$((stopped + 1))
+    done < <(pgrep -f "$BIN_DIR/ores\." 2>/dev/null || true)
+fi
+
+if [[ $((stopped + gone)) -eq 0 ]]; then
+    echo "No services found for preset '$PRESET'."
+    exit 0
+fi
 
 echo ""
 

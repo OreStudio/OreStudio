@@ -30,9 +30,12 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
 #include "ores.iam/domain/role.hpp"
+#include "ores.iam/domain/account_party.hpp"
 #include "ores.iam/service/account_service.hpp"
+#include "ores.iam/service/account_party_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
+#include "ores.refdata/repository/party_repository.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::iam::messaging {
@@ -95,6 +98,33 @@ public:
             auto acct = svc.create_account(
                 req->principal, req->email, req->password,
                 svc_acct::iam);
+
+            // Associate the admin account with the system party so the
+            // JWT gains a party_id and the user can access party-scoped data.
+            const auto tenant_id_str = ctx_.tenant_id().to_string();
+            refdata::repository::party_repository party_repo(ctx_);
+            auto system_parties = party_repo.read_system_party(tenant_id_str);
+            if (!system_parties.empty()) {
+                const auto& sys_party = system_parties.front();
+                domain::account_party ap;
+                ap.account_id = acct.id;
+                ap.party_id = sys_party.id;
+                ap.tenant_id = tenant_id_str;
+                ap.modified_by = req->principal;
+                ap.performed_by = req->principal;
+                ap.change_reason_code = "system.initial_load";
+                ap.change_commentary = "Bootstrap: associate admin with system party";
+                service::account_party_service ap_svc(ctx_);
+                ap_svc.save_account_party(ap);
+                BOOST_LOG_SEV(bootstrap_handler_lg(), info)
+                    << "Associated " << req->principal
+                    << " with system party " << boost::uuids::to_string(sys_party.id);
+            } else {
+                BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
+                    << "No system party found for tenant " << tenant_id_str
+                    << "; admin account has no party context";
+            }
+
             auto auth_svc =
                 std::make_shared<service::authorization_service>(ctx_);
             service::bootstrap_mode_service bms(

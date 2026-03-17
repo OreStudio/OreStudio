@@ -130,21 +130,20 @@
     (+ base offset)))
 
 ;; =============================================================================
-;; NATS domain service registry
+;; NATS domain service discovery
 ;; =============================================================================
 
-(defconst ores/nats-domain-services
-  '(("ores.iam.service"        . "IAM Service")
-    ("ores.refdata.service"    . "Reference Data Service")
-    ("ores.dq.service"         . "Data Quality Service")
-    ("ores.variability.service". "Variability Service")
-    ("ores.assets.service"     . "Assets Service")
-    ("ores.synthetic.service"  . "Synthetic Service")
-    ("ores.scheduler.service"  . "Scheduler Service")
-    ("ores.reporting.service"  . "Reporting Service")
-    ("ores.telemetry.service"  . "Telemetry Service")
-    ("ores.trading.service"    . "Trading Service"))
-  "Alist of (binary-name . display-name) for all NATS domain services.")
+(defun ores/nats-domain-services ()
+  "Return alist of (binary-name . display-name) for all NATS domain services.
+Discovered from projects/ores.*.service directories at the checkout root."
+  (let ((projects-dir (expand-file-name "projects" (ores/checkout-root)))
+        result)
+    (dolist (entry (directory-files projects-dir nil "^ores\\..+\\.service$"))
+      (let* ((component (replace-regexp-in-string
+                         "^ores\\.\\(.+\\)\\.service$" "\\1" entry))
+             (display (concat component " service")))
+        (push (cons entry display) result)))
+    (nreverse result)))
 
 
 ;; =============================================================================
@@ -188,7 +187,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
                        ,(format "ores.dev.%s" ores/checkout-label))))
 
       ;; NATS domain services
-      (dolist (svc ores/nats-domain-services)
+      (dolist (svc (ores/nats-domain-services))
         (prodigy-define-service
           :name    (ores/service-name (format "ORE Studio %s" (cdr svc)) preset)
           :cwd     bin

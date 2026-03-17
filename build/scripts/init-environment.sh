@@ -6,12 +6,17 @@
 # init-environment.sh - Initialise the checkout environment.
 #
 # Generates a .env file at the checkout root with all required credentials
-# for running ORE Studio services locally. Run once per checkout.
+# for running ORE Studio services locally and in CI.
 #
 # Dependencies: bash 3.2+, openssl
 #
 # Usage:
-#   ./build/scripts/init-environment.sh
+#   ./build/scripts/init-environment.sh           # interactive (prompts for postgres pw)
+#   PGPASSWORD=secret ./build/scripts/init-environment.sh   # non-interactive
+#   ORES_DATABASE_NAME=ores_ci ./build/scripts/init-environment.sh -y  # CI mode
+#
+# Flags:
+#   -y, --yes    Skip the overwrite confirmation prompt
 #
 set -euo pipefail
 
@@ -20,7 +25,20 @@ CHECKOUT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 ENV_FILE="${CHECKOUT_ROOT}/.env"
 
 # ---------------------------------------------------------------------------
+# Argument parsing
+# ---------------------------------------------------------------------------
+ASSUME_YES=0
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -y|--yes) ASSUME_YES=1 ;;
+        *) echo "Unknown argument: $1" >&2; exit 1 ;;
+    esac
+    shift
+done
+
+# ---------------------------------------------------------------------------
 # Derive checkout identity from directory name
+# (can be overridden by ORES_DATABASE_NAME / ORES_NATS_SUBJECT_PREFIX env vars)
 # ---------------------------------------------------------------------------
 DIR_NAME="$(basename "${CHECKOUT_ROOT}")"
 if [[ "${DIR_NAME}" == OreStudio.* ]]; then
@@ -29,30 +47,47 @@ else
     LABEL="${DIR_NAME}"
 fi
 
-DB_NAME="ores_dev_${LABEL}"
-NATS_PREFIX="ores.dev.${LABEL}"
+DB_NAME="${ORES_DATABASE_NAME:-ores_dev_${LABEL}}"
+NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.${LABEL}}"
 NATS_URL="nats://localhost:4222"
 
 # ---------------------------------------------------------------------------
-# IAM RSA key
+# IAM RSA key — stored in build/keys/ (independent of build preset)
 # ---------------------------------------------------------------------------
-PUBLISH_BIN="${CHECKOUT_ROOT}/build/output/linux-clang-debug-ninja/publish/bin"
-IAM_KEY="${PUBLISH_BIN}/iam-rsa-private.pem"
+KEYS_DIR="${CHECKOUT_ROOT}/build/keys"
+IAM_KEY="${KEYS_DIR}/iam-rsa-private.pem"
 
 if [[ ! -f "${IAM_KEY}" ]]; then
     echo "Generating IAM RSA-2048 signing key..."
-    mkdir -p "${PUBLISH_BIN}"
+    mkdir -p "${KEYS_DIR}"
     openssl genrsa -out "${IAM_KEY}" 2048 2>/dev/null
+    chmod 600 "${IAM_KEY}"
     echo "  Written to ${IAM_KEY}"
 fi
 
 # ---------------------------------------------------------------------------
 # Overwrite guard
 # ---------------------------------------------------------------------------
-if [[ -f "${ENV_FILE}" ]]; then
+if [[ -f "${ENV_FILE}" && "${ASSUME_YES}" -eq 0 ]]; then
     printf ".env already exists at %s.\nOverwrite? [y/N] " "${ENV_FILE}"
     read -r answer
     [[ "${answer}" != "y" && "${answer}" != "Y" ]] && { echo "Aborted."; exit 1; }
+fi
+
+# ---------------------------------------------------------------------------
+# Postgres superuser password
+# Read from PGPASSWORD env var if set (CI / scripted use); otherwise prompt.
+# ---------------------------------------------------------------------------
+if [[ -n "${PGPASSWORD:-}" ]]; then
+    PGPASSWORD_VAL="${PGPASSWORD}"
+else
+    printf "Enter the postgres superuser password: "
+    read -r -s PGPASSWORD_VAL
+    printf "\n"
+    if [[ -z "${PGPASSWORD_VAL}" ]]; then
+        echo "Error: postgres password cannot be empty." >&2
+        exit 1
+    fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -66,9 +101,7 @@ gen_password() {
     printf '%s' "${result:0:32}"
 }
 
-echo "Generating passwords..."
-
-PGPASSWORD_VAL="$(gen_password)"
+echo "Generating service passwords..."
 ORES_DB_DDL_PASSWORD="$(gen_password)"
 ORES_DB_CLI_PASSWORD="$(gen_password)"
 ORES_DB_WT_PASSWORD="$(gen_password)"
@@ -173,15 +206,16 @@ ORES_TRADING_SERVICE_DB_PASSWORD=${ORES_TRADING_SERVICE_DB_PASSWORD}
 ORES_TRADING_SERVICE_DB_DATABASE=${DB_NAME}
 
 # ---------------------------------------------------------------------------
-# IAM JWT signing key (PEM encoded as single line, \\n = newline)
+# IAM JWT signing key (PEM encoded as single line, \n = newline)
+# Note: excluded from GITHUB_ENV export since services don't run in CI.
 # ---------------------------------------------------------------------------
-ORES_IAM_SERVICE_JWT_PRIVATE_KEY=${JWT_KEY_ONELINE}
+ORES_IAM_SERVICE_JWT_PRIVATE_KEY="${JWT_KEY_ONELINE}"
 EOF
 
 chmod 600 "${ENV_FILE}"
 
 echo ""
-echo "=== Environment initialised for '${LABEL}' ==="
+echo "=== Environment initialised for '${LABEL}' (db: ${DB_NAME}) ==="
 echo ""
 echo "Next steps:"
 echo "  1. Create the database (first time only):"

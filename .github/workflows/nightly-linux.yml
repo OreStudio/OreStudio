@@ -118,30 +118,12 @@ jobs:
           modules: 'qtcharts'
           cache: true
 
-      - name: Generate DB Passwords
-        id: db_passwords
+      - name: Generate postgres password
+        id: pg_password
         run: |
-          PGPASSWORD="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
-          echo "PGPASSWORD=${PGPASSWORD}" >> $GITHUB_ENV
-          echo "admin_password=${PGPASSWORD}" >> $GITHUB_OUTPUT
-          echo "ORES_DB_DDL_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DB_CLI_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DB_WT_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DB_COMMS_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DB_HTTP_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DB_TEST_DDL_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DB_TEST_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DB_READONLY_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_IAM_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_REFDATA_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_DQ_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_VARIABILITY_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_ASSETS_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_SYNTHETIC_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_SCHEDULER_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_REPORTING_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_TELEMETRY_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
-          echo "ORES_TRADING_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          PG_PASS="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
+          echo "admin_password=${PG_PASS}" >> $GITHUB_OUTPUT
+          echo "PGPASSWORD=${PG_PASS}" >> $GITHUB_ENV
 
       - name: Install PostgreSQL extensions
         run: |
@@ -151,7 +133,7 @@ jobs:
         uses: ikalnytskyi/action-setup-postgres@v8
         with:
           username: postgres
-          password: ${{ steps.db_passwords.outputs.admin_password }}
+          password: ${{ steps.pg_password.outputs.admin_password }}
           database: oresdb
           port: 5432
           postgres-version: "18"
@@ -161,6 +143,14 @@ jobs:
             local all all trust
             host all all 0.0.0.0/0 scram-sha-256
         id: postgres
+
+      - name: Init environment
+        env:
+          ORES_DATABASE_NAME: ores_ci
+        run: |
+          ./build/scripts/init-environment.sh -y
+          grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \
+            | grep -v 'ORES_IAM_SERVICE_JWT_PRIVATE_KEY' >> $GITHUB_ENV
 
       - name: Setup Database
         run: |
@@ -189,7 +179,6 @@ jobs:
           export ORES_BUILD_COMMIT="${GITHUB_SHA}"
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
-          export ORES_TEST_DB_DATABASE=ores_ci
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           export cmake_args="build_group=Nightly,preset=${preset}"
           cmake_args="${cmake_args},code_coverage=1,with_memcheck=1"

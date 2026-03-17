@@ -27,6 +27,7 @@
 (require 'json)
 (require 'transient)
 (require 'prodigy)
+(require 'ores-env)
 
 (autoload 'prodigy-define-tag "prodigy")
 (autoload 'prodigy-define-service "prodigy")
@@ -37,12 +38,11 @@
 ;; =============================================================================
 
 (defconst ores/checkout-label
-  (let* ((pr (project-current t))
-         (root (directory-file-name (expand-file-name (project-root pr))))
-         (dir-name (file-name-nondirectory root)))
-    (if (string-prefix-p "OreStudio." dir-name)
-        (substring dir-name (length "OreStudio."))
-      dir-name))
+  (let* ((root (directory-file-name (ores/checkout-root)))
+         (dir  (file-name-nondirectory root)))
+    (if (string-prefix-p "OreStudio." dir)
+        (substring dir (length "OreStudio."))
+      dir))
   "The checkout label derived from the project directory name.")
 
 (defconst ores/checkout-tag (intern ores/checkout-label)
@@ -146,87 +146,6 @@
     ("ores.trading.service"    . "Trading Service"))
   "Alist of (binary-name . display-name) for all NATS domain services.")
 
-;; =============================================================================
-;; Database and environment setup
-;; =============================================================================
-
-(defconst ores/database-name
-  (concat "ores_dev_" ores/checkout-label)
-  "Database name derived from the checkout label.")
-
-(defconst ores/database-users
-  '(("HTTP_SERVER" . "ores_http_user")
-    ("WT"          . "ores_wt_user"))
-  "Alist mapping application prefixes to database users.
-NATS domain services use ores/setup-nats-service-environment instead.")
-
-(defun ores/get-database-user (app-prefix)
-  "Get the database user for APP-PREFIX."
-  (or (cdr (assoc app-prefix ores/database-users))
-      "ores_cli_user"))
-
-(defun ores/setup-environment (app-prefix)
-  "Set up environment variables for APP-PREFIX."
-  (let* ((db-user (ores/get-database-user app-prefix))
-         (pwd (auth-source-pick-first-password
-               :host "localhost"
-               :user db-user)))
-    (list
-     (list (concat "ORES_" app-prefix "_DB_USER")     db-user)
-     (list (concat "ORES_" app-prefix "_DB_PASSWORD") pwd)
-     (list (concat "ORES_" app-prefix "_DB_DATABASE") ores/database-name))))
-
-(defun ores/nats-service-db-user (binary-name)
-  "Derive the DB role name from BINARY-NAME by replacing dots with underscores.
-e.g. \"ores.iam.service\" -> \"ores_iam_service\"."
-  (replace-regexp-in-string "\\." "_" binary-name))
-
-(defun ores/nats-service-mapper-prefix (db-user)
-  "Derive the make_mapper prefix from DB-USER.
-Strips the leading 'ores_' and uppercases the rest.
-e.g. \"ores_iam_service\" -> \"IAM_SERVICE\"."
-  (upcase (substring db-user (length "ores_"))))
-
-(defun ores/setup-nats-service-environment (binary-name)
-  "Set up DB environment variables for a NATS domain service with BINARY-NAME.
-Uses the service-specific prefix matching make_mapper() in the C++ parser,
-e.g. ores.iam.service -> ORES_IAM_SERVICE_DB_USER/PASSWORD/DATABASE."
-  (let* ((db-user (ores/nats-service-db-user binary-name))
-         (prefix  (ores/nats-service-mapper-prefix db-user))
-         (pwd (auth-source-pick-first-password
-               :host "localhost"
-               :user db-user)))
-    (list
-     (list (concat "ORES_" prefix "_DB_USER")     db-user)
-     (list (concat "ORES_" prefix "_DB_PASSWORD") pwd)
-     (list (concat "ORES_" prefix "_DB_DATABASE") ores/database-name))))
-
-(defun ores/setup-iam-service-environment (binary-name bin-dir)
-  "Set up environment variables for the IAM service.
-Extends the base NATS service environment with the RS256 JWT private key,
-read from BIN-DIR/iam-rsa-private.pem (alongside the service binary).
-Generate the key with:
-  openssl genrsa -out BIN-DIR/iam-rsa-private.pem 2048"
-  (let* ((base-env (ores/setup-nats-service-environment binary-name))
-         (key-file (concat bin-dir "/iam-rsa-private.pem"))
-         (jwt-key  (when (file-exists-p key-file)
-                     (with-temp-buffer
-                       (insert-file-contents key-file)
-                       (buffer-string)))))
-    (if (and jwt-key (not (string-empty-p jwt-key)))
-        (cons (list "ORES_IAM_SERVICE_JWT_PRIVATE_KEY" jwt-key) base-env)
-      (progn
-        (message "WARNING: %s not found. IAM service will start without JWT signing. \
-Run: openssl genrsa -out %s 2048" key-file key-file)
-        base-env))))
-
-(defun ores/setup-http-server-environment ()
-  "Set up environment variables for the HTTP server."
-  (let ((jwt-secret (auth-source-pick-first-password
-                     :host "ores-jwt"
-                     :user "http-server")))
-    `(("ORES_HTTP_SERVER_JWT_SECRET" ,jwt-secret)
-      ,@(ores/setup-environment "HTTP_SERVER"))))
 
 ;; =============================================================================
 ;; Tags
@@ -276,9 +195,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :command (concat bin "/" (car svc))
           :args    `(,@common-args ,@nats-service-args ,@nats-args)
           :tags    `(,@common-tags nats-service)
-          :env     (if (string= (car svc) "ores.iam.service")
-                       (ores/setup-iam-service-environment (car svc) bin)
-                     (ores/setup-nats-service-environment (car svc)))
+          :env     (ores/load-dotenv)
           :on-output (lambda (&rest args)
                        (when (string-match-p "Service ready"
                                              (plist-get args :output))
@@ -299,6 +216,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :command   (concat bin "/ores.qt")
           :args      qt-args
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :env       (ores/load-dotenv)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)
@@ -311,6 +229,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :args      `(,@qt-args "--log-filename" "ores.qt.blue.log"
                        "--instance-name" "Blue" "--instance-color" "2196F3")
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :env       (ores/load-dotenv)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)
@@ -323,6 +242,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :args      `(,@qt-args "--log-filename" "ores.qt.red.log"
                        "--instance-name" "Red" "--instance-color" "F44336")
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :env       (ores/load-dotenv)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)
@@ -335,6 +255,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :args      `(,@qt-args "--log-filename" "ores.qt.green.log"
                        "--instance-name" "Green" "--instance-color" "4CAF50")
           :tags      `(ores ui ,build-tag ,ores/checkout-tag ,preset-tag)
+          :env       (ores/load-dotenv)
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)))
@@ -347,7 +268,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
       :args    `(,@common-args
                  "--port" ,(number-to-string (ores/get-port 'http build-type)))
       :tags    `(,@common-tags http-server)
-      :env     (ores/setup-http-server-environment)
+      :env     (ores/load-dotenv)
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)
 
@@ -360,8 +281,9 @@ Uses BASE directly; build type and checkout are already visible as tags."
                  "--http-address" "0.0.0.0" "--docroot" "."
                  "--http-port" ,(number-to-string (ores/get-port 'wt build-type)))
       :tags    `(,@common-tags wt-server)
-      :env     `(("WT_RESOURCES_DIR" ,(ores/preset-wt-resources preset))
-                 ,@(ores/setup-environment "WT"))
+      :env     `(("WT_RESOURCES_DIR" ,(concat (ores/preset-publish-path preset)
+                                               "/../../vcpkg_installed/x64-linux/share/Wt/resources"))
+                 ,@(ores/load-dotenv))
       :stop-signal 'sigint
       :kill-process-buffer-on-stop t)))
 

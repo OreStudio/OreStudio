@@ -25,6 +25,7 @@
 (require 'sql)
 (require 'transient)
 (require 'project)
+(require 'ores-env)
 
 ;; Disable sql-postgres login prompts - we provide connection URI directly
 (setq sql-postgres-login-params nil)
@@ -40,43 +41,6 @@
     "ores_reporting_service" "ores_telemetry_service" "ores_trading_service")
   "Available roles to assume when connecting to an ORES database.")
 
-(defconst ores-db/role-mapper-prefix
-  '(("ores_cli_user"            . "CLI")
-    ("ores_wt_user"             . "WT")
-    ("ores_http_user"           . "HTTP_SERVER")
-    ("ores_iam_service"         . "IAM_SERVICE")
-    ("ores_refdata_service"     . "REFDATA_SERVICE")
-    ("ores_dq_service"          . "DQ_SERVICE")
-    ("ores_variability_service" . "VARIABILITY_SERVICE")
-    ("ores_assets_service"      . "ASSETS_SERVICE")
-    ("ores_synthetic_service"   . "SYNTHETIC_SERVICE")
-    ("ores_scheduler_service"   . "SCHEDULER_SERVICE")
-    ("ores_reporting_service"   . "REPORTING_SERVICE")
-    ("ores_telemetry_service"   . "TELEMETRY_SERVICE")
-    ("ores_trading_service"     . "TRADING_SERVICE"))
-  "Alist mapping DB role names to their environment variable mapper prefixes.
-Each entry maps a PostgreSQL username to the prefix used in the C++ service
-parser (make_mapper), so the app env var for DB password is ORES_<PREFIX>_DB_PASSWORD.")
-
-(defconst ores-db/role-script-var
-  '(("ores_ddl_user"            . "ORES_DB_DDL_PASSWORD")
-    ("ores_cli_user"            . "ORES_DB_CLI_PASSWORD")
-    ("ores_wt_user"             . "ORES_DB_WT_PASSWORD")
-    ("ores_comms_user"          . "ORES_DB_COMMS_PASSWORD")
-    ("ores_http_user"           . "ORES_DB_HTTP_PASSWORD")
-    ("ores_readonly_user"       . "ORES_DB_READONLY_PASSWORD")
-    ("ores_iam_service"         . "ORES_DB_IAM_SERVICE_PASSWORD")
-    ("ores_refdata_service"     . "ORES_DB_REFDATA_SERVICE_PASSWORD")
-    ("ores_dq_service"          . "ORES_DB_DQ_SERVICE_PASSWORD")
-    ("ores_variability_service" . "ORES_DB_VARIABILITY_SERVICE_PASSWORD")
-    ("ores_assets_service"      . "ORES_DB_ASSETS_SERVICE_PASSWORD")
-    ("ores_synthetic_service"   . "ORES_DB_SYNTHETIC_SERVICE_PASSWORD")
-    ("ores_scheduler_service"   . "ORES_DB_SCHEDULER_SERVICE_PASSWORD")
-    ("ores_reporting_service"   . "ORES_DB_REPORTING_SERVICE_PASSWORD")
-    ("ores_telemetry_service"   . "ORES_DB_TELEMETRY_SERVICE_PASSWORD")
-    ("ores_trading_service"     . "ORES_DB_TRADING_SERVICE_PASSWORD"))
-  "Alist mapping DB role names to the ORES_DB_*_PASSWORD env vars read by
-recreate_database.sh when creating PostgreSQL users.")
 
 (defvar-local ores-db/marked-ids nil
   "List of marked database IDs in the current buffer.")
@@ -84,13 +48,45 @@ recreate_database.sh when creating PostgreSQL users.")
 (defvar-local ores-db/project-root nil
   "The project root for this database list buffer.")
 
-(defun ores-db/database--get-credential (user host key)
-  "Get a specific KEY (:secret or :port) for USER at HOST from auth-source."
-  (let* ((match (auth-source-search :host host :user user :max 1))
-         (val (plist-get (car match) key)))
-    (cond ((and (eq key :secret) (functionp val)) (funcall val))
-          (val (format "%s" val)) ;; Ensure port is a string
-          (t nil))))
+(defun ores-db/--get-password-from-dotenv (env-var-name)
+  "Look up ENV-VAR-NAME in the checkout .env and return its value."
+  (cdr (assoc env-var-name (ores/load-dotenv))))
+
+(defun ores-db/setup-connections ()
+  "Populate `sql-connection-alist' from the checkout .env file.
+
+Creates one SQL connection per NATS service, named ores-<label>-<svc>-service.
+Call this once after starting Emacs; call again to refresh after re-running
+init-environment.sh."
+  (interactive)
+  (let* ((pairs  (ores/load-dotenv))
+         (label  (or (cdr (assoc "ORES_CHECKOUT_LABEL" pairs)) "unknown"))
+         (count  0))
+    ;; Remove stale entries for this label before re-adding
+    (setq sql-connection-alist
+          (seq-remove (lambda (e)
+                        (string-prefix-p (format "ores-%s-" label) (car e)))
+                      sql-connection-alist))
+    (dolist (svc '("iam" "refdata" "dq" "variability" "assets"
+                   "synthetic" "scheduler" "reporting" "telemetry" "trading"))
+      (let* ((prefix  (upcase (replace-regexp-in-string "-" "_" svc)))
+             (user-k  (format "ORES_%s_SERVICE_DB_USER"     prefix))
+             (pw-k    (format "ORES_%s_SERVICE_DB_PASSWORD"  prefix))
+             (db-k    (format "ORES_%s_SERVICE_DB_DATABASE"  prefix))
+             (user    (or (cdr (assoc user-k pairs))
+                          (format "ores_%s_service" svc)))
+             (pw      (cdr (assoc pw-k pairs)))
+             (db      (or (cdr (assoc db-k pairs)) "ores_unknown"))
+             (name    (format "ores-%s-%s-service" label svc)))
+        (push (list name
+                    (list 'sql-product  ''postgres)
+                    (list 'sql-user     user)
+                    (list 'sql-password pw)
+                    (list 'sql-database db)
+                    (list 'sql-server   "localhost"))
+              sql-connection-alist)
+        (cl-incf count)))
+    (message "[ores-db] Added %d SQL connections for checkout '%s'" count label)))
 
 (defun ores-db/database-list-discovery ()
   "Query all hosts in \='ores-db/hosts' for databases starting with \='ores_'.
@@ -102,8 +98,8 @@ falls back to the current project."
          (script-path (expand-file-name "projects/ores.sql/utility/list_databases.sh" root))
          all-dbs)
     (dolist (host ores-db/hosts)
-      (let* ((pw   (ores-db/database--get-credential "postgres" host :secret))
-             (port (or (ores-db/database--get-credential "postgres" host :port) "5432"))
+      (let* ((pw   (ores-db/--get-password-from-dotenv "PGPASSWORD"))
+             (port "5432")
              (process-environment (cons (concat "PGPASSWORD=" pw) process-environment))
              (cmd (format "%s -h %s -p %s" script-path host port))
              (output (if (and pw (file-executable-p script-path))
@@ -133,8 +129,7 @@ falls back to the current project."
     (define-key map (kbd "e")   #'ores-db/recreate-env-database)
     (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
-    (define-key map (kbd "v")   #'ores-db/set-env-vars)
-    (define-key map (kbd "E")   #'ores-db/unset-env-vars)
+    (define-key map (kbd "v")   #'ores-db/setup-connections)
     (define-key map (kbd "V")   #'ores-db/show-env-vars)
     (define-key map (kbd "g")   #'ores-db/ui-refresh)
     (define-key map (kbd "m")   #'ores-db/mark)
@@ -237,9 +232,8 @@ database lists with independent current database selections."
   "Construct a connection URI using DB-NAME ROLE HOST.
 Then launch a unique `sql-postgres` session.
 The session's working directory is set to ores.sql for easy script access."
-  (let* ((pw   (ores-db/database--get-credential role host :secret))
-         ;; Try to get port from auth-source, fallback to "5432"
-         (port (or (ores-db/database--get-credential role host :port) "5432"))
+  (let* ((pw   (ores-db/--get-password-from-dotenv "PGPASSWORD"))
+         (port "5432")
          (connection-uri (format "postgresql://%s:%s@%s:%s/%s"
                                  role
                                  (or (and pw (url-hexify-string pw)) "")
@@ -277,7 +271,7 @@ The session's working directory is set to ores.sql for easy script access."
         (user-error "Aborted"))
       (let* ((sql-dir (ores-db/sql-scripts-directory))
              (script-path (expand-file-name "drop_database.sh" sql-dir))
-             (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+             (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
              (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                         process-environment)))
         (if (not (file-exists-p script-path))
@@ -305,7 +299,7 @@ The session's working directory is set to ores.sql for easy script access."
                (script-path (expand-file-name "teardown_database.sh" sql-dir))
                ;; Use first host's password (assumes same password for all hosts)
                (host (cdar ids))
-               (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+               (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
                (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                           process-environment))
                ;; Build a single command that runs all teardowns sequentially
@@ -330,7 +324,7 @@ The session's working directory is set to ores.sql for easy script access."
          (host (cdr id)))
     (if (not id)
         (message "No database at point.")
-      (let* ((postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+      (let* ((postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
              (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                         process-environment))
              (sql "SELECT pid, usename AS user, client_addr AS client, state, backend_start::timestamp(0) AS connected_since, LEFT(query, 60) AS current_query FROM pg_stat_activity WHERE datname = '%s' ORDER BY backend_start;"))
@@ -349,7 +343,7 @@ The session's working directory is set to ores.sql for easy script access."
         (message "No database at point.")
       (let* ((sql-dir (ores-db/sql-scripts-directory))
              (script-path (expand-file-name "utility/kill_db_connections.sh" sql-dir))
-             (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
+             (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
              (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                         process-environment)))
         (if (not (file-exists-p script-path))
@@ -359,40 +353,6 @@ The session's working directory is set to ores.sql for easy script access."
            nil
            (lambda (_) (format "*ores-db-kill-%s*" db-name))))))))
 
-(defun ores-db/set-env-vars (host)
-  "Export all ORES passwords for HOST to environment variables.
-For roles in `ores-db/role-mapper-prefix', sets ORES_<PREFIX>_DB_PASSWORD,
-matching the make_mapper(PREFIX) convention used in C++ service parsers.
-Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
-  (interactive (list (completing-read "Host: " ores-db/hosts nil t)))
-  (let ((count 0)
-        (env (ores-db/current-environment)))
-    ;; Set test database connection info (use current environment's database)
-    (setenv "ORES_TEST_DB_DATABASE" (if env (concat "ores_dev_" env) "ores"))
-    (setenv "ORES_TEST_DB_HOST" host)
-    (setq count (+ count 2))
-
-    (dolist (role ores-db/database-roles)
-      (let ((pw (ores-db/database--get-credential role host :secret)))
-        (when pw
-          (setq count (1+ count))
-          (cond
-           ((string= role "postgres")
-            (setenv "PGPASSWORD" pw))
-           ;; Test users for C++ test infrastructure
-           ((string= role "ores_test_ddl_user")
-            (setenv "ORES_TEST_DB_DDL_PASSWORD" pw))
-           ((string= role "ores_test_dml_user")
-            (setenv "ORES_TEST_DB_PASSWORD" pw))
-           ;; All other roles: set both the app var and the script var
-           (t
-            ;; App var: ORES_<PREFIX>_DB_PASSWORD for make_mapper() in C++ parsers
-            (when-let ((prefix (cdr (assoc role ores-db/role-mapper-prefix))))
-              (setenv (concat "ORES_" prefix "_DB_PASSWORD") pw))
-            ;; Script var: ORES_DB_*_PASSWORD for recreate_database.sh
-            (when-let ((script-var (cdr (assoc role ores-db/role-script-var))))
-              (setenv script-var pw)))))))
-    (message "[ORES] Exported %d environment variables for %s." count host)))
 
 (defun ores-db/show-env-vars ()
   "Display all ORES_ environment variables in a buffer."
@@ -417,34 +377,6 @@ Also sets ORES_TEST_DB_DATABASE and ORES_TEST_DB_HOST for test infrastructure."
       (read-only-mode 1))
     (display-buffer buf)))
 
-(defun ores-db/unset-env-vars ()
-  "Unset all ORES environment variables."
-  (interactive)
-  (let ((count 0))
-    ;; Unset test database connection info
-    (setenv "ORES_TEST_DB_DATABASE" nil)
-    (setenv "ORES_TEST_DB_HOST" nil)
-    (setq count (+ count 2))
-
-    (dolist (role ores-db/database-roles)
-      (cond
-       ((string= role "postgres")
-        (setenv "PGPASSWORD" nil)
-        (setq count (1+ count)))
-       ((string= role "ores_test_ddl_user")
-        (setenv "ORES_TEST_DB_DDL_PASSWORD" nil)
-        (setq count (1+ count)))
-       ((string= role "ores_test_dml_user")
-        (setenv "ORES_TEST_DB_PASSWORD" nil)
-        (setq count (1+ count)))
-       (t
-        (when-let ((prefix (cdr (assoc role ores-db/role-mapper-prefix))))
-          (setenv (concat "ORES_" prefix "_DB_PASSWORD") nil)
-          (setq count (1+ count)))
-        (when-let ((script-var (cdr (assoc role ores-db/role-script-var))))
-          (setenv script-var nil)
-          (setq count (1+ count))))))
-    (message "[ORES] Unset %d environment variables." count)))
 
 ;;; ==========================================================================
 ;;; Environment Management
@@ -490,7 +422,7 @@ ARGS is an optional list of arguments to pass to the script.
 SQL-DIR overrides the default scripts directory when provided."
   (let* ((sql-dir (or sql-dir (ores-db/sql-scripts-directory)))
          (script-path (expand-file-name script-name sql-dir))
-         (postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
+         (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
          (default-directory sql-dir)
          (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                     process-environment)))
@@ -508,7 +440,7 @@ SQL-DIR overrides the default scripts directory when provided."
 BUFFER-NAME is the compilation buffer name."
   (let* ((sql-dir (ores-db/sql-scripts-directory))
          (sql-path (expand-file-name sql-file sql-dir))
-         (postgres-pw (ores-db/database--get-credential "postgres" "localhost" :secret))
+         (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
          (default-directory sql-dir)
          (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                     process-environment)))
@@ -582,8 +514,8 @@ Uses two-phase creation: postgres creates the database, ores_ddl_user sets up sc
   (interactive)
   (let* ((sql-dir (ores-db/sql-scripts-directory))
          (host "localhost")
-         (postgres-pw (ores-db/database--get-credential "postgres" host :secret))
-         (ddl-pw (ores-db/database--get-credential "ores_ddl_user" host :secret))
+         (postgres-pw (ores-db/--get-password-from-dotenv "PGPASSWORD"))
+         (ddl-pw (ores-db/--get-password-from-dotenv "ORES_DB_DDL_PASSWORD"))
          (default-directory sql-dir)
          (process-environment (cons (concat "PGPASSWORD=" postgres-pw)
                                     process-environment))
@@ -631,8 +563,7 @@ Uses two-phase creation: postgres creates the database, ores_ddl_user sets up sc
     ("e" "Recreate environment..." ores-db/recreate-env-database)
     ("R" "Recreate ALL (nuclear)" ores-db/recreate-all)]
    ["Utilities"
-    ("v" "Export env vars" ores-db/set-env-vars)
-    ("E" "Unset env vars" ores-db/unset-env-vars)
+    ("v" "Setup SQL connections" ores-db/setup-connections)
     ("V" "Show env vars" ores-db/show-env-vars)
     ("q" "Quit" transient-quit-one)]])
 

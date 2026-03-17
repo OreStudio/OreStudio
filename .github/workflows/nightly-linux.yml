@@ -121,25 +121,27 @@ jobs:
       - name: Generate DB Passwords
         id: db_passwords
         run: |
-          echo "ddl_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "cli_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "wt_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "comms_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "http_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "test_ddl_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "test_dml_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "ro_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "admin_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "iam_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "refdata_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "dq_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "variability_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "assets_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "synthetic_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "scheduler_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "reporting_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "telemetry_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
-          echo "trading_service_password=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_OUTPUT
+          PGPASSWORD="$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')"
+          echo "PGPASSWORD=${PGPASSWORD}" >> $GITHUB_ENV
+          echo "admin_password=${PGPASSWORD}" >> $GITHUB_OUTPUT
+          echo "ORES_DB_DDL_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DB_CLI_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DB_WT_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DB_COMMS_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DB_HTTP_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DB_TEST_DDL_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DB_TEST_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DB_READONLY_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_IAM_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_REFDATA_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_DQ_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_VARIABILITY_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_ASSETS_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_SYNTHETIC_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_SCHEDULER_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_REPORTING_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_TELEMETRY_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
+          echo "ORES_TRADING_SERVICE_DB_PASSWORD=$(openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')" >> $GITHUB_ENV
 
       - name: Install PostgreSQL extensions
         run: |
@@ -162,27 +164,7 @@ jobs:
 
       - name: Setup Database
         run: |
-          ./projects/ores.sql/recreate_database.sh -y \
-            -p '${{ steps.db_passwords.outputs.admin_password }}' \
-            -d '${{ steps.db_passwords.outputs.ddl_password }}' \
-            -c '${{ steps.db_passwords.outputs.cli_password }}' \
-            -w '${{ steps.db_passwords.outputs.wt_password }}' \
-            -m '${{ steps.db_passwords.outputs.comms_password }}' \
-            -h '${{ steps.db_passwords.outputs.http_password }}' \
-            -t '${{ steps.db_passwords.outputs.test_ddl_password }}' \
-            -T '${{ steps.db_passwords.outputs.test_dml_password }}' \
-            -r '${{ steps.db_passwords.outputs.ro_password }}' \
-            --iam-service-password '${{ steps.db_passwords.outputs.iam_service_password }}' \
-            --refdata-service-password '${{ steps.db_passwords.outputs.refdata_service_password }}' \
-            --dq-service-password '${{ steps.db_passwords.outputs.dq_service_password }}' \
-            --variability-service-password '${{ steps.db_passwords.outputs.variability_service_password }}' \
-            --assets-service-password '${{ steps.db_passwords.outputs.assets_service_password }}' \
-            --synthetic-service-password '${{ steps.db_passwords.outputs.synthetic_service_password }}' \
-            --scheduler-service-password '${{ steps.db_passwords.outputs.scheduler_service_password }}' \
-            --reporting-service-password '${{ steps.db_passwords.outputs.reporting_service_password }}' \
-            --telemetry-service-password '${{ steps.db_passwords.outputs.telemetry_service_password }}' \
-            --trading-service-password '${{ steps.db_passwords.outputs.trading_service_password }}' \
-            -D ores_ci
+          ./projects/ores.sql/recreate_database.sh -y -D ores_ci
 
       - name: Get latest CMake
         uses: lukka/get-cmake@v4.2.3
@@ -208,8 +190,6 @@ jobs:
           export ORES_BUILD_NUMBER="${GITHUB_RUN_NUMBER}"
           export ORES_BUILD_TIMESTAMP=`date "+%Y/%m/%d %H:%M:%S"`
           export ORES_TEST_DB_DATABASE=ores_ci
-          export ORES_TEST_DB_DDL_PASSWORD=${{ steps.db_passwords.outputs.test_ddl_password }}
-          export ORES_TEST_DB_PASSWORD=${{ steps.db_passwords.outputs.test_dml_password }}
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           export cmake_args="build_group=Nightly,preset=${preset}"
           cmake_args="${cmake_args},code_coverage=1,with_memcheck=1"

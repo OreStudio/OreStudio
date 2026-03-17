@@ -199,7 +199,7 @@ echo ""
 
 # 4. WT server
 echo "[WT server]"
-launch ores.wt \
+launch ores.wt.service \
     --log-enabled \
     --log-level "$LOG_LEVEL" \
     --log-directory ../log \

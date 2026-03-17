@@ -980,6 +980,8 @@ Acceptance criteria:
 
 *** STARTED Remaining NATS changes                                     :code:
     :LOGBOOK:
+    CLOCK: [2026-03-17 Tue 15:03]
+    CLOCK: [2026-03-17 Tue 10:50]--[2026-03-17 Tue 13:10] =>  2:20
     CLOCK: [2026-03-16 Mon 15:02]--[2026-03-16 Mon 18:43] =>  3:41
     :END:
 

@@ -278,7 +278,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
     (prodigy-define-service
       :name    (ores/service-name "ORE Studio WT Server" preset)
       :cwd     bin
-      :command (concat bin "/ores.wt")
+      :command (concat bin "/ores.wt.service")
       :args    `(,@common-args
                  "--http-address" "0.0.0.0" "--docroot" "."
                  "--http-port" ,(number-to-string (ores/get-port 'wt build-type)))

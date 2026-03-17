@@ -33,13 +33,17 @@
 (defconst ores-db/hosts '("localhost" "192.168.1.22")
   "List of hosts to scan for ORES databases.")
 
-(defconst ores-db/database-roles
-  '("postgres" "ores_ddl_user" "ores_cli_user" "ores_wt_user" "ores_comms_user" "ores_http_user"
-    "ores_test_ddl_user" "ores_test_dml_user" "ores_readonly_user"
-    "ores_iam_service" "ores_refdata_service" "ores_dq_service" "ores_variability_service"
-    "ores_assets_service" "ores_synthetic_service" "ores_scheduler_service"
-    "ores_reporting_service" "ores_telemetry_service" "ores_trading_service")
-  "Available roles to assume when connecting to an ORES database.")
+(defun ores-db/database-roles ()
+  "Return a list of database roles available for connection.
+Derives roles from *_DB_USER entries in the checkout .env, with
+postgres prepended.  Falls back to an empty list if .env is missing."
+  (cons "postgres"
+        (when (file-exists-p (ores/dotenv-file))
+          (delq nil
+                (mapcar (lambda (pair)
+                          (when (string-suffix-p "_DB_USER" (car pair))
+                            (cdr pair)))
+                        (ores/load-dotenv))))))
 
 
 (defvar-local ores-db/marked-ids nil
@@ -255,7 +259,7 @@ The session's working directory is set to ores.sql for easy script access."
          (host (cdr id)))
     (if id
         (let ((role (completing-read (format "Connect to %s on %s as: " db-name host)
-                                     ores-db/database-roles nil t)))
+                                     (ores-db/database-roles) nil t)))
           (ores-db/database-connect-to db-name role host))
       (message "No database at point."))))
 

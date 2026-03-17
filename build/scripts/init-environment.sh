@@ -101,7 +101,24 @@ gen_password() {
     printf '%s' "${result:0:32}"
 }
 
-echo "Generating service passwords..."
+# ---------------------------------------------------------------------------
+# Discover NATS domain services from projects/ores.*.service directories
+# ---------------------------------------------------------------------------
+SERVICE_COMPONENTS=()
+for svc_dir in "${CHECKOUT_ROOT}"/projects/ores.*.service; do
+    [[ -d "${svc_dir}" ]] || continue
+    dir_name="$(basename "${svc_dir}")"        # e.g. ores.iam.service
+    component="${dir_name#ores.}"              # e.g. iam.service
+    component="${component%.service}"          # e.g. iam
+    SERVICE_COMPONENTS+=("${component}")
+done
+
+echo "Detected services: ${SERVICE_COMPONENTS[*]}"
+
+# ---------------------------------------------------------------------------
+# Generate passwords
+# ---------------------------------------------------------------------------
+echo "Generating passwords..."
 ORES_DB_DDL_PASSWORD="$(gen_password)"
 ORES_DB_CLI_PASSWORD="$(gen_password)"
 ORES_DB_WT_PASSWORD="$(gen_password)"
@@ -111,16 +128,11 @@ ORES_DB_READONLY_PASSWORD="$(gen_password)"
 ORES_DB_TEST_DDL_PASSWORD="$(gen_password)"
 ORES_DB_TEST_PASSWORD="$(gen_password)"
 
-ORES_IAM_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_REFDATA_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_DQ_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_VARIABILITY_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_ASSETS_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_SYNTHETIC_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_SCHEDULER_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_REPORTING_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_TELEMETRY_SERVICE_DB_PASSWORD="$(gen_password)"
-ORES_TRADING_SERVICE_DB_PASSWORD="$(gen_password)"
+# Associative array: component -> password
+declare -A SVC_PASSWORDS
+for component in "${SERVICE_COMPONENTS[@]}"; do
+    SVC_PASSWORDS["${component}"]="$(gen_password)"
+done
 
 # Encode PEM as a single line with literal \n separators
 JWT_KEY_ONELINE="$(awk '{printf "%s\\n", $0}' "${IAM_KEY}")"
@@ -162,55 +174,31 @@ ORES_DB_READONLY_PASSWORD=${ORES_DB_READONLY_PASSWORD}
 ORES_DB_TEST_DDL_PASSWORD=${ORES_DB_TEST_DDL_PASSWORD}
 ORES_DB_TEST_PASSWORD=${ORES_DB_TEST_PASSWORD}
 
-# ---------------------------------------------------------------------------
-# NATS service DB credentials (read by C++ make_mapper)
-# ---------------------------------------------------------------------------
-ORES_IAM_SERVICE_DB_USER=ores_iam_service
-ORES_IAM_SERVICE_DB_PASSWORD=${ORES_IAM_SERVICE_DB_PASSWORD}
-ORES_IAM_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_REFDATA_SERVICE_DB_USER=ores_refdata_service
-ORES_REFDATA_SERVICE_DB_PASSWORD=${ORES_REFDATA_SERVICE_DB_PASSWORD}
-ORES_REFDATA_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_DQ_SERVICE_DB_USER=ores_dq_service
-ORES_DQ_SERVICE_DB_PASSWORD=${ORES_DQ_SERVICE_DB_PASSWORD}
-ORES_DQ_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_VARIABILITY_SERVICE_DB_USER=ores_variability_service
-ORES_VARIABILITY_SERVICE_DB_PASSWORD=${ORES_VARIABILITY_SERVICE_DB_PASSWORD}
-ORES_VARIABILITY_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_ASSETS_SERVICE_DB_USER=ores_assets_service
-ORES_ASSETS_SERVICE_DB_PASSWORD=${ORES_ASSETS_SERVICE_DB_PASSWORD}
-ORES_ASSETS_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_SYNTHETIC_SERVICE_DB_USER=ores_synthetic_service
-ORES_SYNTHETIC_SERVICE_DB_PASSWORD=${ORES_SYNTHETIC_SERVICE_DB_PASSWORD}
-ORES_SYNTHETIC_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_SCHEDULER_SERVICE_DB_USER=ores_scheduler_service
-ORES_SCHEDULER_SERVICE_DB_PASSWORD=${ORES_SCHEDULER_SERVICE_DB_PASSWORD}
-ORES_SCHEDULER_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_REPORTING_SERVICE_DB_USER=ores_reporting_service
-ORES_REPORTING_SERVICE_DB_PASSWORD=${ORES_REPORTING_SERVICE_DB_PASSWORD}
-ORES_REPORTING_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_TELEMETRY_SERVICE_DB_USER=ores_telemetry_service
-ORES_TELEMETRY_SERVICE_DB_PASSWORD=${ORES_TELEMETRY_SERVICE_DB_PASSWORD}
-ORES_TELEMETRY_SERVICE_DB_DATABASE=${DB_NAME}
-
-ORES_TRADING_SERVICE_DB_USER=ores_trading_service
-ORES_TRADING_SERVICE_DB_PASSWORD=${ORES_TRADING_SERVICE_DB_PASSWORD}
-ORES_TRADING_SERVICE_DB_DATABASE=${DB_NAME}
-
-# ---------------------------------------------------------------------------
-# IAM JWT signing key (PEM encoded as single line, \n = newline)
-# Note: excluded from GITHUB_ENV export since services don't run in CI.
-# ---------------------------------------------------------------------------
-ORES_IAM_SERVICE_JWT_PRIVATE_KEY="${JWT_KEY_ONELINE}"
 EOF
+
+# ---------------------------------------------------------------------------
+# NATS service DB credentials (read by C++ make_mapper) — auto-detected
+# ---------------------------------------------------------------------------
+{
+    echo ""
+    echo "# ---------------------------------------------------------------------------"
+    echo "# NATS service DB credentials (read by C++ make_mapper)"
+    echo "# ---------------------------------------------------------------------------"
+    for component in "${SERVICE_COMPONENTS[@]}"; do
+        upper="$(echo "${component}" | tr '[:lower:]-' '[:upper:]_')"
+        db_user="ores_${component}_service"
+        echo ""
+        echo "ORES_${upper}_SERVICE_DB_USER=${db_user}"
+        echo "ORES_${upper}_SERVICE_DB_PASSWORD=${SVC_PASSWORDS[${component}]}"
+        echo "ORES_${upper}_SERVICE_DB_DATABASE=${DB_NAME}"
+    done
+    echo ""
+    echo "# ---------------------------------------------------------------------------"
+    echo "# IAM JWT signing key (PEM encoded as single line, \\n = newline)"
+    echo "# Note: excluded from GITHUB_ENV export since services don't run in CI."
+    echo "# ---------------------------------------------------------------------------"
+    echo "ORES_IAM_SERVICE_JWT_PRIVATE_KEY=\"${JWT_KEY_ONELINE}\""
+} >> "${ENV_FILE}"
 
 chmod 600 "${ENV_FILE}"
 

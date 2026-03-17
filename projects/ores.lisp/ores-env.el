@@ -25,9 +25,8 @@
 ;;
 ;; Public API:
 ;;
-;;   `ores/dotenv-file'       - path to the .env file
-;;   `ores/load-dotenv'       - parse .env -> alist of (KEY . VALUE)
-;;   `ores/setenv-from-dotenv' - load .env into the Emacs process environment
+;;   `ores/dotenv-file'  - path to the .env file
+;;   `ores/load-dotenv'  - parse .env -> alist of (KEY . VALUE)
 
 ;;; Code:
 
@@ -88,23 +87,6 @@ Unescapes \\\\n sequences to real newlines (used for the PEM key)."
                (substring raw 1 -1)
              raw)))
     (replace-regexp-in-string "\\\\n" "\n" v)))
-
-;; ---------------------------------------------------------------------------
-;; Emacs process environment
-;; ---------------------------------------------------------------------------
-
-(defun ores/setenv-from-dotenv ()
-  "Load the checkout .env file into the Emacs process environment.
-
-Calls `setenv' for every KEY=VALUE pair.  Used by prodigy so that
-subprocess services inherit the full checkout configuration."
-  (interactive)
-  (let ((pairs (ores/load-dotenv))
-        (count 0))
-    (dolist (pair pairs)
-      (setenv (car pair) (cdr pair))
-      (cl-incf count))
-    (message "[ores-env] Loaded %d variables from %s" count (ores/dotenv-file))))
 
 (provide 'ores-env)
 ;;; ores-env.el ends here

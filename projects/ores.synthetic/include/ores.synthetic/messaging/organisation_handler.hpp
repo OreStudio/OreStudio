@@ -67,14 +67,21 @@ public:
             ctx_, msg, verifier_);
         try {
             domain::organisation_generation_options opts;
-            opts.country = req->country;
-            opts.party_count = req->party_count;
-            opts.counterparty_count = req->counterparty_count;
-            opts.portfolio_leaf_count = req->portfolio_leaf_count;
+            opts.seed                    = req->seed;
+            opts.country                 = req->country;
+            opts.party_count             = req->party_count;
+            opts.party_max_depth         = req->party_max_depth;
+            opts.counterparty_count      = req->counterparty_count;
+            opts.counterparty_max_depth  = req->counterparty_max_depth;
+            opts.portfolio_leaf_count    = req->portfolio_leaf_count;
+            opts.portfolio_max_depth     = req->portfolio_max_depth;
             opts.books_per_leaf_portfolio = req->books_per_leaf_portfolio;
-            opts.business_unit_count = req->business_unit_count;
-            opts.generate_addresses = req->generate_addresses;
-            opts.generate_identifiers = req->generate_identifiers;
+            opts.business_unit_count     = req->business_unit_count;
+            opts.business_unit_max_depth = req->business_unit_max_depth;
+            opts.generate_addresses      = req->generate_addresses;
+            opts.contacts_per_party      = req->contacts_per_party;
+            opts.contacts_per_counterparty = req->contacts_per_counterparty;
+            opts.generate_identifiers    = req->generate_identifiers;
 
             service::organisation_generator_service gen;
             const auto org = gen.generate(opts);
@@ -85,6 +92,7 @@ public:
             generate_organisation_response resp;
             resp.success = result.success;
             resp.error_message = result.error_message;
+            resp.seed = org.seed;
             resp.parties_count = static_cast<int>(result.parties_count);
             resp.counterparties_count =
                 static_cast<int>(result.counterparties_count);
@@ -99,7 +107,8 @@ public:
                 static_cast<int>(result.identifiers_count);
 
             BOOST_LOG_SEV(organisation_handler_lg(), debug)
-                << "Completed " << msg.subject;
+                << "Completed " << msg.subject
+                << " (seed: " << org.seed << ")";
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(organisation_handler_lg(), error)

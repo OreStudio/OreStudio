@@ -28,6 +28,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.dq/messaging/lei_entity_summary_protocol.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::dq::messaging {
@@ -58,9 +59,47 @@ public:
             BOOST_LOG_SEV(lei_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
+        const auto ctx = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
         get_lei_entities_summary_response resp;
-        resp.success = false;
-        resp.error_message = "not implemented";
+        try {
+            using namespace ores::database::repository;
+            if (req->country_filter.empty()) {
+                const std::string sql =
+                    "SELECT * FROM ores_dq_lei_entities_distinct_countries_fn()";
+                auto rows = execute_raw_multi_column_query(
+                    ctx, sql, lei_entity_handler_lg(),
+                    "listing LEI countries");
+                for (const auto& row : rows) {
+                    if (!row.empty() && row[0])
+                        resp.entities.push_back({.country = *row[0]});
+                }
+            } else {
+                const std::string sql =
+                    "SELECT * FROM ores_dq_lei_entities_summary_by_country_fn($1, $2, $3)";
+                auto rows = execute_parameterized_multi_column_query(
+                    ctx, sql,
+                    {req->country_filter,
+                     std::to_string(req->limit),
+                     std::to_string(req->offset)},
+                    lei_entity_handler_lg(),
+                    "listing LEI entities by country");
+                for (const auto& row : rows) {
+                    if (row.size() >= 4)
+                        resp.entities.push_back({
+                            .lei = row[0].value_or(""),
+                            .entity_legal_name = row[1].value_or(""),
+                            .entity_category = row[2].value_or(""),
+                            .country = row[3].value_or("")});
+                }
+            }
+            resp.success = true;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lei_entity_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.error_message = e.what();
+        }
         BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
     }

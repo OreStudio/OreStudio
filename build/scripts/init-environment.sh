@@ -128,11 +128,6 @@ ORES_DB_READONLY_PASSWORD="$(gen_password)"
 ORES_TEST_DB_DDL_PASSWORD="$(gen_password)"
 ORES_TEST_DB_PASSWORD="$(gen_password)"
 
-# Associative array: component -> password
-declare -A SVC_PASSWORDS
-for component in "${SERVICE_COMPONENTS[@]}"; do
-    SVC_PASSWORDS["${component}"]="$(gen_password)"
-done
 
 # Encode PEM as a single line with literal \n separators
 JWT_KEY_ONELINE="$(awk '{printf "%s\\n", $0}' "${IAM_KEY}")"
@@ -194,7 +189,7 @@ EOF
         db_user="ores_${component}_service"
         echo ""
         echo "ORES_${upper}_SERVICE_DB_USER=${db_user}"
-        echo "ORES_${upper}_SERVICE_DB_PASSWORD=${SVC_PASSWORDS[${component}]}"
+        echo "ORES_${upper}_SERVICE_DB_PASSWORD=$(gen_password)"
         echo "ORES_${upper}_SERVICE_DB_DATABASE=${DB_NAME}"
     done
     echo ""

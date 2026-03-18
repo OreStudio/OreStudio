@@ -24,6 +24,7 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/throw_exception.hpp>
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/service_accounts.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.iam.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
@@ -42,7 +43,8 @@ ores::database::context application::make_context(
         .database_options = db_opts,
         .pool_size = 4,
         .num_attempts = 10,
-        .wait_time_in_seconds = 1
+        .wait_time_in_seconds = 1,
+        .service_account = std::string(ores::database::service::service_accounts::iam_service)
     };
 
     return context_factory::make_context(cfg);

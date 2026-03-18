@@ -42,13 +42,14 @@ namespace change_reasons {
 /**
  * @brief Stamps audit fields on a domain object from the request context.
  *
- * Sets modified_by and performed_by from ctx.actor(), and sets
- * change_reason_code to the given default if the object has not supplied one.
- * Always overwrites modified_by and performed_by to prevent client spoofing.
- * Only applies when the context carries a non-empty actor (authenticated user).
+ * Sets modified_by from ctx.actor() (the end-user who initiated the request)
+ * and performed_by from ctx.service_account() (the system service executing
+ * the write). Sets change_reason_code to the given default if the object has
+ * not supplied one. Always overwrites these fields to prevent client spoofing.
  *
  * @param obj           Domain object to stamp (modified in place).
- * @param ctx           Per-request database context carrying the actor.
+ * @param ctx           Per-request database context carrying actor and service
+ *                      account.
  * @param change_reason Default change reason code (applied only if obj has none).
  */
 template<typename T>
@@ -58,8 +59,11 @@ void stamp(T& obj, const ores::database::context& ctx,
     if (!actor.empty()) {
         if constexpr (requires { obj.modified_by; })
             obj.modified_by = actor;
+    }
+    const auto& svc = ctx.service_account();
+    if (!svc.empty()) {
         if constexpr (requires { obj.performed_by; })
-            obj.performed_by = actor;
+            obj.performed_by = svc;
     }
     if constexpr (requires { obj.change_reason_code; }) {
         if (obj.change_reason_code.empty())

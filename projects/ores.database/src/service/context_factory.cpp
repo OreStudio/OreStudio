@@ -65,7 +65,8 @@ context context_factory::make_context(const configuration& cfg) {
         tenant_id = *tenant_result;
     }
 
-    context r(std::move(*pool_result), credentials, std::move(tenant_id));
+    context r(std::move(*pool_result), credentials, std::move(tenant_id),
+              /*actor=*/"", cfg.service_account);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

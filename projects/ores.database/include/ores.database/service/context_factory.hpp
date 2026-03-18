@@ -52,6 +52,9 @@ public:
         std::size_t num_attempts;
         /// Wait time between retry attempts.
         std::size_t wait_time_in_seconds;
+        /// Service account name stamped as performed_by on all writes.
+        /// Should be one of the constants from service_accounts.hpp.
+        std::string service_account;
     };
 
     static context make_context(const configuration& cfg);

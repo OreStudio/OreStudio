@@ -26,6 +26,7 @@
 #include "ores.http/net/http_server.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/context_factory.hpp"
+#include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 #include "ores.iam/service/auth_session_service.hpp"
@@ -60,7 +61,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         .database_options = cfg.database,
         .pool_size = 4,
         .num_attempts = 10,
-        .wait_time_in_seconds = 1
+        .wait_time_in_seconds = 1,
+        .service_account = std::string(ores::database::service::service_accounts::http)
     };
     auto ctx = database::context_factory::make_context(db_cfg);
 

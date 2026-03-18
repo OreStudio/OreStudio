@@ -125,8 +125,8 @@ ORES_DB_WT_PASSWORD="$(gen_password)"
 ORES_DB_HTTP_PASSWORD="$(gen_password)"
 ORES_DB_COMMS_PASSWORD="$(gen_password)"
 ORES_DB_READONLY_PASSWORD="$(gen_password)"
-ORES_DB_TEST_DDL_PASSWORD="$(gen_password)"
-ORES_DB_TEST_PASSWORD="$(gen_password)"
+ORES_TEST_DB_DDL_PASSWORD="$(gen_password)"
+ORES_TEST_DB_PASSWORD="$(gen_password)"
 
 # Associative array: component -> password
 declare -A SVC_PASSWORDS
@@ -171,14 +171,13 @@ ORES_DB_WT_PASSWORD=${ORES_DB_WT_PASSWORD}
 ORES_DB_HTTP_PASSWORD=${ORES_DB_HTTP_PASSWORD}
 ORES_DB_COMMS_PASSWORD=${ORES_DB_COMMS_PASSWORD}
 ORES_DB_READONLY_PASSWORD=${ORES_DB_READONLY_PASSWORD}
-ORES_DB_TEST_DDL_PASSWORD=${ORES_DB_TEST_DDL_PASSWORD}
-ORES_DB_TEST_PASSWORD=${ORES_DB_TEST_PASSWORD}
 
 # ---------------------------------------------------------------------------
-# Test connection credentials (read by C++ test_database_manager)
+# Test connection credentials (read by recreate_database.sh and C++ tests)
 # ---------------------------------------------------------------------------
 ORES_TEST_DB_USER=ores_test_dml_user
-ORES_TEST_DB_PASSWORD=${ORES_DB_TEST_PASSWORD}
+ORES_TEST_DB_PASSWORD=${ORES_TEST_DB_PASSWORD}
+ORES_TEST_DB_DDL_PASSWORD=${ORES_TEST_DB_DDL_PASSWORD}
 
 EOF
 

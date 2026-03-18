@@ -23,6 +23,15 @@
  *
  * Functions for querying the LEI entity artefact table.
  * Used by the DQ service to power the GLEIF counterparty picker UI.
+ *
+ * Both functions return only root entities: those that are NOT the child
+ * (start_node) of an active IS_DIRECTLY_CONSOLIDATED_BY relationship.
+ * This excludes subsidiaries and branches, showing only top-level legal
+ * entities to the user.
+ *
+ * DISTINCT ON (lei) is used throughout to deduplicate: the artefact table
+ * accumulates one row per (dataset_id, lei) across publications, so the
+ * same LEI can appear multiple times.
  */
 
 -- =============================================================================
@@ -31,7 +40,8 @@
 
 /**
  * Returns distinct countries present in the LEI entities artefact for the
- * current tenant. Used to populate the country filter dropdown in the UI.
+ * current tenant, considering root entities only. Used to populate the
+ * country filter dropdown in the UI.
  */
 create or replace function ores_dq_lei_entities_distinct_countries_fn()
 returns table (
@@ -39,10 +49,24 @@ returns table (
 ) as $$
 begin
     return query
-    select distinct entity_legal_address_country
-    from ores_dq_lei_entities_artefact_tbl
-    where tenant_id = ores_iam_current_tenant_id_fn()
-    order by entity_legal_address_country;
+    select distinct deduped.entity_legal_address_country
+    from (
+        select distinct on (e.lei)
+            e.entity_legal_address_country
+        from ores_dq_lei_entities_artefact_tbl e
+        where e.tenant_id = ores_iam_current_tenant_id_fn()
+          and e.entity_entity_status = 'ACTIVE'
+          and not exists (
+              select 1
+              from ores_dq_lei_relationships_artefact_tbl r
+              where r.tenant_id = ores_iam_current_tenant_id_fn()
+                and r.relationship_start_node_node_id = e.lei
+                and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
+                and r.relationship_relationship_status = 'ACTIVE'
+          )
+        order by e.lei
+    ) deduped
+    order by deduped.entity_legal_address_country;
 end;
 $$ language plpgsql stable;
 
@@ -52,6 +76,7 @@ $$ language plpgsql stable;
 
 /**
  * Returns LEI entity summaries for a given country with pagination support.
+ * Returns only root entities (no subsidiaries) deduplicated by LEI code.
  *
  * @param p_country  ISO 3166-1 alpha-2 country code to filter by
  * @param p_limit    Maximum number of records to return
@@ -71,14 +96,31 @@ returns table (
 begin
     return query
     select
-        e.lei,
-        e.entity_legal_name,
-        e.entity_entity_category,
-        e.entity_legal_address_country
-    from ores_dq_lei_entities_artefact_tbl e
-    where e.tenant_id = ores_iam_current_tenant_id_fn()
-      and e.entity_legal_address_country = p_country
-    order by e.entity_legal_name
+        deduped.lei,
+        deduped.entity_legal_name,
+        deduped.entity_entity_category,
+        deduped.entity_legal_address_country
+    from (
+        select distinct on (e.lei)
+            e.lei,
+            e.entity_legal_name,
+            e.entity_entity_category,
+            e.entity_legal_address_country
+        from ores_dq_lei_entities_artefact_tbl e
+        where e.tenant_id = ores_iam_current_tenant_id_fn()
+          and e.entity_legal_address_country = p_country
+          and e.entity_entity_status = 'ACTIVE'
+          and not exists (
+              select 1
+              from ores_dq_lei_relationships_artefact_tbl r
+              where r.tenant_id = ores_iam_current_tenant_id_fn()
+                and r.relationship_start_node_node_id = e.lei
+                and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
+                and r.relationship_relationship_status = 'ACTIVE'
+          )
+        order by e.lei
+    ) deduped
+    order by deduped.entity_legal_name
     limit p_limit
     offset p_offset;
 end;

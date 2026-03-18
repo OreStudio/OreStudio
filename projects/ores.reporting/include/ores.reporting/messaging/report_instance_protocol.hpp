@@ -30,7 +30,7 @@ namespace ores::reporting::messaging {
 struct get_report_instances_request {
     using response_type = struct get_report_instances_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-instances.list";
+        "reporting.v1.report-instances.list";
     int offset = 0;
     int limit = 100;
 };
@@ -43,7 +43,7 @@ struct get_report_instances_response {
 struct save_report_instance_request {
     using response_type = struct save_report_instance_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-instances.save";
+        "reporting.v1.report-instances.save";
     ores::reporting::domain::report_instance instance;
 };
 
@@ -55,7 +55,7 @@ struct save_report_instance_response {
 struct delete_report_instance_request {
     using response_type = struct delete_report_instance_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-instances.delete";
+        "reporting.v1.report-instances.delete";
     std::vector<std::string> ids;
 };
 
@@ -67,7 +67,7 @@ struct delete_report_instance_response {
 struct get_report_instance_history_request {
     using response_type = struct get_report_instance_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.report-instances.history";
+        "reporting.v1.report-instances.history";
     std::string id;
 };
 

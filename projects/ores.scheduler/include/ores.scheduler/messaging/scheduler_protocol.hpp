@@ -31,7 +31,7 @@ namespace ores::scheduler::messaging {
 struct get_job_definitions_request {
     using response_type = struct get_job_definitions_response;
     static constexpr std::string_view nats_subject =
-        "ores.scheduler.v1.job-definitions.list";
+        "scheduler.v1.job-definitions.list";
     int offset = 0;
     int limit = 100;
 };
@@ -44,7 +44,7 @@ struct get_job_definitions_response {
 struct schedule_job_request {
     using response_type = struct schedule_job_response;
     static constexpr std::string_view nats_subject =
-        "ores.scheduler.v1.job-definitions.schedule";
+        "scheduler.v1.job-definitions.schedule";
     ores::scheduler::domain::job_definition definition;
     std::string change_reason_code;
     std::string change_commentary;
@@ -58,7 +58,7 @@ struct schedule_job_response {
 struct unschedule_job_request {
     using response_type = struct unschedule_job_response;
     static constexpr std::string_view nats_subject =
-        "ores.scheduler.v1.job-definitions.unschedule";
+        "scheduler.v1.job-definitions.unschedule";
     std::string job_definition_id;
     std::string change_reason_code;
     std::string change_commentary;
@@ -72,7 +72,7 @@ struct unschedule_job_response {
 struct get_job_history_request {
     using response_type = struct get_job_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.scheduler.v1.job-definitions.history";
+        "scheduler.v1.job-definitions.history";
     std::string job_definition_id;
     int limit = 0;
 };

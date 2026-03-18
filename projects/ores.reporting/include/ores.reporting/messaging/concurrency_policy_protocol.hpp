@@ -30,7 +30,7 @@ namespace ores::reporting::messaging {
 struct get_concurrency_policies_request {
     using response_type = struct get_concurrency_policies_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.concurrency-policies.list";
+        "reporting.v1.concurrency-policies.list";
     int offset = 0;
     int limit = 100;
 };
@@ -43,7 +43,7 @@ struct get_concurrency_policies_response {
 struct save_concurrency_policy_request {
     using response_type = struct save_concurrency_policy_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.concurrency-policies.save";
+        "reporting.v1.concurrency-policies.save";
     ores::reporting::domain::concurrency_policy policy;
 };
 
@@ -55,7 +55,7 @@ struct save_concurrency_policy_response {
 struct delete_concurrency_policy_request {
     using response_type = struct delete_concurrency_policy_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.concurrency-policies.delete";
+        "reporting.v1.concurrency-policies.delete";
     std::vector<std::string> codes;
 };
 
@@ -67,7 +67,7 @@ struct delete_concurrency_policy_response {
 struct get_concurrency_policy_history_request {
     using response_type = struct get_concurrency_policy_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.reporting.v1.concurrency-policies.history";
+        "reporting.v1.concurrency-policies.history";
     std::string code;
 };
 

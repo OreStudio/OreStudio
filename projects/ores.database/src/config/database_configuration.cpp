@@ -21,7 +21,6 @@
 
 #include <boost/throw_exception.hpp>
 #include "ores.platform/environment/environment.hpp"
-#include "ores.database/service/service_accounts.hpp"
 
 namespace ores::database {
 
@@ -46,7 +45,7 @@ database_configuration::make_options_description() {
     options_description r("Database");
     r.add_options()
         ("db-user",
-            value<std::string>()->default_value(std::string(service::service_accounts::cli)),
+            value<std::string>(),
             "Database user name.")
         ("db-password",
             value<std::string>()->default_value(""),
@@ -56,7 +55,7 @@ database_configuration::make_options_description() {
             value<std::string>()->default_value("localhost"),
             "Database host.")
         ("db-database",
-            value<std::string>()->default_value("ores_default"),
+            value<std::string>(),
             "Database name. Convention: ores_dev_<env> (e.g., ores_dev_local2).")
         ("db-port",
             value<int>()->default_value(5432),
@@ -74,7 +73,14 @@ database_options database_configuration::read_options(
     const boost::program_options::variables_map& vm) {
     database_options r;
 
+    if (!vm.count(database_user_arg))
+        BOOST_THROW_EXCEPTION(std::runtime_error("db-user is required but not set. "
+            "Set ORES_<APP>_DB_USER environment variable."));
     r.user = vm[database_user_arg].as<std::string>();
+
+    if (!vm.count(database_database_arg))
+        BOOST_THROW_EXCEPTION(std::runtime_error("db-database is required but not set. "
+            "Set ORES_<APP>_DB_DATABASE environment variable."));
     r.database = vm[database_database_arg].as<std::string>();
     r.host = vm[database_host_arg].as<std::string>();
     r.port = vm[database_port_arg].as<int>();

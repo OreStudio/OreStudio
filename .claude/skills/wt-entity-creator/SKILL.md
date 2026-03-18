@@ -73,7 +73,7 @@ Create the data transfer structures for form binding and table display.
 
 ### File locations
 
-Add to or create: `projects/ores.wt/include/ores.wt/app/<entity>_list_widget.hpp`
+Add to or create: `projects/ores.wt.service/include/ores.wt.service/app/<entity>_list_widget.hpp`
 
 
 ### Row structure for table display
@@ -107,8 +107,8 @@ Create the list widget showing entities in a table with toolbar actions.
 
 ### File locations
 
--   Header: `projects/ores.wt/include/ores.wt/app/<entity>_list_widget.hpp`
--   Implementation: `projects/ores.wt/src/app/<entity>_list_widget.cpp`
+-   Header: `projects/ores.wt.service/include/ores.wt.service/app/<entity>_list_widget.hpp`
+-   Implementation: `projects/ores.wt.service/src/app/<entity>_list_widget.cpp`
 
 
 ### Header structure
@@ -294,7 +294,7 @@ private:
 
 ### CMakeLists.txt update
 
-Add the new source file to `projects/ores.wt/CMakeLists.txt`:
+Add the new source file to `projects/ores.wt.service/CMakeLists.txt`:
 
 ```cmake
 set(ores_wt_sources
@@ -352,7 +352,7 @@ Create the data structure for form binding.
 
 ### File location
 
-Add to: `projects/ores.wt/include/ores.wt/app/<entity>_dialog.hpp`
+Add to: `projects/ores.wt.service/include/ores.wt.service/app/<entity>_dialog.hpp`
 
 
 ### Data structure for form binding
@@ -387,8 +387,8 @@ Create the dialog for creating and editing entities.
 
 ### File locations
 
--   Header: `projects/ores.wt/include/ores.wt/app/<entity>_dialog.hpp`
--   Implementation: `projects/ores.wt/src/app/<entity>_dialog.cpp`
+-   Header: `projects/ores.wt.service/include/ores.wt.service/app/<entity>_dialog.hpp`
+-   Implementation: `projects/ores.wt.service/src/app/<entity>_dialog.cpp`
 
 
 ### Header structure
@@ -577,7 +577,7 @@ private:
 
 ### CMakeLists.txt update
 
-Add the new source file to `projects/ores.wt/CMakeLists.txt`:
+Add the new source file to `projects/ores.wt.service/CMakeLists.txt`:
 
 ```cmake
 set(ores_wt_sources
@@ -634,7 +634,7 @@ Create functions to convert between domain objects and UI structures.
 
 ### File location
 
-Add to: `projects/ores.wt/src/app/ore_application.cpp`
+Add to: `projects/ores.wt.service/src/app/ore_application.cpp`
 
 
 ### Conversion functions
@@ -696,8 +696,8 @@ Wire up the entity handlers in the main application.
 
 ### Files to modify
 
--   `projects/ores.wt/include/ores.wt/app/ore_application.hpp`
--   `projects/ores.wt/src/app/ore_application.cpp`
+-   `projects/ores.wt.service/include/ores.wt.service/app/ore_application.hpp`
+-   `projects/ores.wt.service/src/app/ore_application.cpp`
 
 
 ### Header changes
@@ -907,7 +907,7 @@ At this point:
 
 ## Bootstrap 5 CSS classes
 
-Common classes used in ores.wt:
+Common classes used in ores.wt.service:
 
 | Purpose              | Classes                                         |
 |-------------------- |----------------------------------------------- |

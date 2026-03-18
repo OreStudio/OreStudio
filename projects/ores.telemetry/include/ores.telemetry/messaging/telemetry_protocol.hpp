@@ -32,7 +32,7 @@ namespace ores::telemetry::messaging {
 struct get_telemetry_logs_request {
     using response_type = struct get_telemetry_logs_response;
     static constexpr std::string_view nats_subject =
-        "ores.telemetry.v1.logs.list";
+        "telemetry.v1.logs.list";
     domain::telemetry_query query;
 };
 

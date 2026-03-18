@@ -112,28 +112,28 @@ jobs:
           pg_ctl restart --pgdata="$PGDATA" --wait
 
       - name: Setup Database
+        env:
+          PGPASSWORD: ${{ steps.db_passwords.outputs.admin_password }}
+          ORES_DB_DDL_PASSWORD: ${{ steps.db_passwords.outputs.ddl_password }}
+          ORES_DB_CLI_PASSWORD: ${{ steps.db_passwords.outputs.cli_password }}
+          ORES_DB_WT_PASSWORD: ${{ steps.db_passwords.outputs.wt_password }}
+          ORES_DB_COMMS_PASSWORD: ${{ steps.db_passwords.outputs.comms_password }}
+          ORES_DB_HTTP_PASSWORD: ${{ steps.db_passwords.outputs.http_password }}
+          ORES_DB_TEST_DDL_PASSWORD: ${{ steps.db_passwords.outputs.test_ddl_password }}
+          ORES_DB_TEST_PASSWORD: ${{ steps.db_passwords.outputs.test_dml_password }}
+          ORES_DB_READONLY_PASSWORD: ${{ steps.db_passwords.outputs.ro_password }}
+          ORES_IAM_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.iam_service_password }}
+          ORES_REFDATA_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.refdata_service_password }}
+          ORES_DQ_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.dq_service_password }}
+          ORES_VARIABILITY_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.variability_service_password }}
+          ORES_ASSETS_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.assets_service_password }}
+          ORES_SYNTHETIC_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.synthetic_service_password }}
+          ORES_SCHEDULER_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.scheduler_service_password }}
+          ORES_REPORTING_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.reporting_service_password }}
+          ORES_TELEMETRY_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.telemetry_service_password }}
+          ORES_TRADING_SERVICE_DB_PASSWORD: ${{ steps.db_passwords.outputs.trading_service_password }}
         run: |
-          ./projects/ores.sql/recreate_database.sh -y \
-            -p '${{ steps.db_passwords.outputs.admin_password }}' \
-            -d '${{ steps.db_passwords.outputs.ddl_password }}' \
-            -c '${{ steps.db_passwords.outputs.cli_password }}' \
-            -w '${{ steps.db_passwords.outputs.wt_password }}' \
-            -m '${{ steps.db_passwords.outputs.comms_password }}' \
-            -h '${{ steps.db_passwords.outputs.http_password }}' \
-            -t '${{ steps.db_passwords.outputs.test_ddl_password }}' \
-            -T '${{ steps.db_passwords.outputs.test_dml_password }}' \
-            -r '${{ steps.db_passwords.outputs.ro_password }}' \
-            --iam-service-password '${{ steps.db_passwords.outputs.iam_service_password }}' \
-            --refdata-service-password '${{ steps.db_passwords.outputs.refdata_service_password }}' \
-            --dq-service-password '${{ steps.db_passwords.outputs.dq_service_password }}' \
-            --variability-service-password '${{ steps.db_passwords.outputs.variability_service_password }}' \
-            --assets-service-password '${{ steps.db_passwords.outputs.assets_service_password }}' \
-            --synthetic-service-password '${{ steps.db_passwords.outputs.synthetic_service_password }}' \
-            --scheduler-service-password '${{ steps.db_passwords.outputs.scheduler_service_password }}' \
-            --reporting-service-password '${{ steps.db_passwords.outputs.reporting_service_password }}' \
-            --telemetry-service-password '${{ steps.db_passwords.outputs.telemetry_service_password }}' \
-            --trading-service-password '${{ steps.db_passwords.outputs.trading_service_password }}' \
-            -D ores_ci
+          ./projects/ores.sql/recreate_database.sh -y -D ores_ci
 
       - name: get-cmake
         uses: lukka/get-cmake@v4.2.3
@@ -152,6 +152,35 @@ jobs:
           doNotCache: false
 
       - name: Run CTest workflow
+        env:
+          ORES_CLI_DB_USER: ores_cli_user
+          ORES_CLI_DB_DATABASE: ores_ci
+          ORES_COMMS_SHELL_DB_USER: ores_comms_user
+          ORES_COMMS_SHELL_DB_DATABASE: ores_ci
+          ORES_HTTP_SERVER_DB_USER: ores_http_user
+          ORES_HTTP_SERVER_DB_DATABASE: ores_ci
+          ORES_IAM_SERVICE_DB_USER: ores_iam_service
+          ORES_IAM_SERVICE_DB_DATABASE: ores_ci
+          ORES_REFDATA_SERVICE_DB_USER: ores_refdata_service
+          ORES_REFDATA_SERVICE_DB_DATABASE: ores_ci
+          ORES_DQ_SERVICE_DB_USER: ores_dq_service
+          ORES_DQ_SERVICE_DB_DATABASE: ores_ci
+          ORES_VARIABILITY_SERVICE_DB_USER: ores_variability_service
+          ORES_VARIABILITY_SERVICE_DB_DATABASE: ores_ci
+          ORES_ASSETS_SERVICE_DB_USER: ores_assets_service
+          ORES_ASSETS_SERVICE_DB_DATABASE: ores_ci
+          ORES_SYNTHETIC_SERVICE_DB_USER: ores_synthetic_service
+          ORES_SYNTHETIC_SERVICE_DB_DATABASE: ores_ci
+          ORES_SCHEDULER_SERVICE_DB_USER: ores_scheduler_service
+          ORES_SCHEDULER_SERVICE_DB_DATABASE: ores_ci
+          ORES_REPORTING_SERVICE_DB_USER: ores_reporting_service
+          ORES_REPORTING_SERVICE_DB_DATABASE: ores_ci
+          ORES_TELEMETRY_SERVICE_DB_USER: ores_telemetry_service
+          ORES_TELEMETRY_SERVICE_DB_DATABASE: ores_ci
+          ORES_TRADING_SERVICE_DB_USER: ores_trading_service
+          ORES_TRADING_SERVICE_DB_DATABASE: ores_ci
+          ORES_WT_DB_USER: ores_wt_user
+          ORES_WT_DB_DATABASE: ores_ci
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
           export CTEST_PARALLEL_LEVEL=$(nproc)

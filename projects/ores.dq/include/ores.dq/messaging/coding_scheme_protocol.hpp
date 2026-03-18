@@ -35,7 +35,7 @@ namespace ores::dq::messaging {
 struct get_coding_scheme_authority_types_request {
     using response_type = struct get_coding_scheme_authority_types_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-scheme-authority-types.list";
+        "dq.v1.coding-scheme-authority-types.list";
     int offset = 0;
     int limit = 100;
 };
@@ -49,7 +49,7 @@ struct get_coding_scheme_authority_types_response {
 struct save_coding_scheme_authority_type_request {
     using response_type = struct save_coding_scheme_authority_type_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-scheme-authority-types.save";
+        "dq.v1.coding-scheme-authority-types.save";
     ores::dq::domain::coding_scheme_authority_type data;
 };
 
@@ -61,7 +61,7 @@ struct save_coding_scheme_authority_type_response {
 struct delete_coding_scheme_authority_type_request {
     using response_type = struct delete_coding_scheme_authority_type_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-scheme-authority-types.delete";
+        "dq.v1.coding-scheme-authority-types.delete";
     std::vector<std::string> types;
 };
 
@@ -73,7 +73,7 @@ struct delete_coding_scheme_authority_type_response {
 struct get_coding_scheme_authority_type_history_request {
     using response_type = struct get_coding_scheme_authority_type_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-scheme-authority-types.history";
+        "dq.v1.coding-scheme-authority-types.history";
     std::string type;
 };
 
@@ -90,7 +90,7 @@ struct get_coding_scheme_authority_type_history_response {
 struct get_coding_schemes_request {
     using response_type = struct get_coding_schemes_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-schemes.list";
+        "dq.v1.coding-schemes.list";
     int offset = 0;
     int limit = 100;
 };
@@ -103,7 +103,7 @@ struct get_coding_schemes_response {
 struct save_coding_scheme_request {
     using response_type = struct save_coding_scheme_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-schemes.save";
+        "dq.v1.coding-schemes.save";
     ores::dq::domain::coding_scheme data;
 };
 
@@ -115,7 +115,7 @@ struct save_coding_scheme_response {
 struct delete_coding_scheme_request {
     using response_type = struct delete_coding_scheme_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-schemes.delete";
+        "dq.v1.coding-schemes.delete";
     std::vector<std::string> codes;
 };
 
@@ -127,7 +127,7 @@ struct delete_coding_scheme_response {
 struct get_coding_scheme_history_request {
     using response_type = struct get_coding_scheme_history_response;
     static constexpr std::string_view nats_subject =
-        "ores.dq.v1.coding-schemes.history";
+        "dq.v1.coding-schemes.history";
     std::string code;
 };
 

@@ -21,6 +21,7 @@
 #define ORES_NATS_SERVICE_SUBSCRIPTION_HPP
 
 #include <memory>
+#include <string>
 
 namespace ores::nats::service {
 
@@ -46,6 +47,11 @@ public:
 
     subscription(const subscription&) = delete;
     subscription& operator=(const subscription&) = delete;
+
+    /**
+     * @brief Returns the NATS subject this subscription is listening on.
+     */
+    std::string subject() const;
 
     /**
      * @brief Drain the subscription.

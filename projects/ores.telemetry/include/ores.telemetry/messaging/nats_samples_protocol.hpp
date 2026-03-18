@@ -32,7 +32,7 @@ namespace ores::telemetry::messaging {
 struct get_nats_server_samples_request {
     using response_type = struct get_nats_server_samples_response;
     static constexpr std::string_view nats_subject =
-        "ores.telemetry.v1.nats.server-samples.list";
+        "telemetry.v1.nats.server-samples.list";
     domain::nats_server_samples_query query;
 };
 
@@ -45,7 +45,7 @@ struct get_nats_server_samples_response {
 struct get_nats_stream_samples_request {
     using response_type = struct get_nats_stream_samples_response;
     static constexpr std::string_view nats_subject =
-        "ores.telemetry.v1.nats.stream-samples.list";
+        "telemetry.v1.nats.stream-samples.list";
     domain::nats_stream_samples_query query;
 };
 

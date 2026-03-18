@@ -23,6 +23,7 @@
 #include <libpq-fe.h>
 #include <stdexcept>
 #include <sstream>
+#include <string_view>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
@@ -32,12 +33,37 @@ using namespace ores::logging;
 
 namespace {
 
+auto& bitemporal_lg() {
+    static auto instance = ores::logging::make_logger(
+        "ores.utility.database.postgres");
+    return instance;
+}
+
+/**
+ * @brief libpq notice processor that routes NOTICE/WARNING messages to
+ * Boost.Log instead of stdout. The arg parameter is unused (we use a
+ * module-level logger).
+ */
+void pg_notice_to_log(void* /*arg*/, const char* msg) {
+    using namespace ores::logging;
+    std::string_view sv(msg);
+    if (!sv.empty() && sv.back() == '\n')
+        sv.remove_suffix(1);
+    BOOST_LOG_SEV(bitemporal_lg(), info) << sv;
+}
+
 /**
  * @brief RAII wrapper for PGconn to ensure proper cleanup.
+ *
+ * Also installs the Boost.Log notice processor so that RAISE NOTICE /
+ * RAISE WARNING messages from PL/pgSQL functions are captured by the
+ * logging framework rather than printed to stdout.
  */
 struct pg_connection_guard {
     PGconn* conn;
-    explicit pg_connection_guard(PGconn* c) : conn(c) {}
+    explicit pg_connection_guard(PGconn* c) : conn(c) {
+        if (conn) PQsetNoticeProcessor(conn, &pg_notice_to_log, nullptr);
+    }
     ~pg_connection_guard() { if (conn) PQfinish(conn); }
     pg_connection_guard(const pg_connection_guard&) = delete;
     pg_connection_guard& operator=(const pg_connection_guard&) = delete;

@@ -916,6 +916,7 @@ void ProvisionerApplyPage::startProvisioning() {
 
             iam::domain::tenant tenant;
             tenant.type = type;
+            tenant.status = "active";
             tenant.code = code;
             tenant.name = name;
             tenant.hostname = hostname;
@@ -934,6 +935,28 @@ void ProvisionerApplyPage::startProvisioning() {
 
             if (!response->success) {
                 result.error = response->message;
+                return result;
+            }
+
+            // Create tenant admin account
+            iam::messaging::provision_tenant_request adminReq;
+            adminReq.tenant_hostname = hostname;
+            adminReq.principal = adminUsername;
+            adminReq.password = adminPassword;
+            adminReq.email = adminEmail;
+
+            auto adminResp = clientManager->process_authenticated_request(
+                std::move(adminReq));
+
+            if (!adminResp) {
+                result.error = "Tenant created but failed to create admin account: "
+                    + adminResp.error();
+                return result;
+            }
+
+            if (!adminResp->success) {
+                result.error = "Tenant created but admin account creation failed: "
+                    + adminResp->error_message;
                 return result;
             }
 

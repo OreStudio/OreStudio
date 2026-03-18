@@ -87,6 +87,20 @@ struct client::impl {
 
 namespace {
 
+// NATS async error handler: forwards connection/subscription errors to
+// Boost.Log instead of the library's default stderr print.
+// NATS_CONNECTION_CLOSED is expected during orderly drain — suppress it.
+void on_conn_error(natsConnection* /*nc*/, natsSubscription* /*sub*/,
+                   natsStatus err, void* /*closure*/) {
+    if (err == NATS_CONNECTION_CLOSED)
+        return;
+    try {
+        BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err);
+    } catch (...) {
+        // Boost.Log may already be torn down on a NATS internal thread.
+    }
+}
+
 message extract_message(natsMsg* msg) {
     message m;
 
@@ -101,7 +115,8 @@ message extract_message(natsMsg* msg) {
         m.data.assign(p, p + data_len);
     }
 
-    // Extract all headers; cnats allocates heap copies of each key name.
+    // Extract all headers; cnats allocates the keys array but the key strings
+    // themselves are owned by the message — only free the array, not the keys.
     const char** keys = nullptr;
     int key_count = 0;
     if (natsMsgHeader_Keys(msg, &keys, &key_count) == NATS_OK && keys) {
@@ -109,8 +124,6 @@ message extract_message(natsMsg* msg) {
             const char* val = nullptr;
             if (natsMsgHeader_Get(msg, keys[i], &val) == NATS_OK && val)
                 m.headers[keys[i]] = val;
-            // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,hicpp-no-malloc)
-            free(const_cast<char*>(keys[i]));
         }
         // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,hicpp-no-malloc)
         free(keys);
@@ -187,6 +200,13 @@ subscription::~subscription() {
 subscription::subscription(subscription&&) noexcept = default;
 subscription& subscription::operator=(subscription&&) noexcept = default;
 
+std::string subscription::subject() const {
+    if (!impl_ || !impl_->sub)
+        return {};
+    const char* s = natsSubscription_GetSubject(impl_->sub);
+    return s ? s : std::string{};
+}
+
 void subscription::drain() {
     if (impl_ && impl_->sub)
         natsSubscription_Drain(impl_->sub);
@@ -208,7 +228,15 @@ void client::connect() {
     if (impl_->connected.load(std::memory_order_acquire))
         return;
 
-    natsStatus s = natsConnection_ConnectTo(&impl_->conn, impl_->opts.url.c_str());
+    if (impl_->opts.subject_prefix.empty())
+        throw std::runtime_error("NATS subject_prefix must be set in configuration");
+
+    natsOptions* opts = nullptr;
+    natsOptions_Create(&opts);
+    natsOptions_SetURL(opts, impl_->opts.url.c_str());
+    natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
+    natsStatus s = natsConnection_Connect(&impl_->conn, opts);
+    natsOptions_Destroy(opts);
     if (s != NATS_OK)
         throw std::runtime_error(
             std::string("NATS connect failed: ") + natsStatus_GetText(s));
@@ -246,8 +274,6 @@ bool client::is_connected() const noexcept {
 }
 
 std::string client::make_subject(std::string_view relative) const {
-    if (impl_->opts.subject_prefix.empty())
-        return std::string(relative);
     // NATS inbox subjects (_INBOX.*) are created by the server for
     // request/reply and must never carry a user-defined prefix.
     if (relative.starts_with("_INBOX"))

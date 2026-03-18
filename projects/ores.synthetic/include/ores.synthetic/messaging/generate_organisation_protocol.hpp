@@ -29,7 +29,7 @@ namespace ores::synthetic::messaging {
 struct generate_organisation_request {
     using response_type = struct generate_organisation_response;
     static constexpr std::string_view nats_subject =
-        "ores.synthetic.v1.organisation.generate";
+        "synthetic.v1.organisation.generate";
     std::string country;
     std::uint32_t party_count = 10;
     std::uint32_t counterparty_count = 5;

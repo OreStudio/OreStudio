@@ -83,11 +83,12 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
          * thus could not provide the exception message to the console.
          */
         const auto *const be(dynamic_cast<const boost::exception* const>(&e));
-        if (be == nullptr)
-            throw;
-
-        using boost::diagnostic_information;
-        BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
+        if (be != nullptr) {
+            using boost::diagnostic_information;
+            BOOST_LOG_SEV(lg(), error) << "Error: " << diagnostic_information(*be);
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Error: " << e.what();
+        }
         BOOST_LOG_SEV(lg(), error) << "Failed to execute HTTP server.";
         throw;
     }

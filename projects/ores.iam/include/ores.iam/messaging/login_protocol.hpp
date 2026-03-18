@@ -64,6 +64,10 @@ struct logout_response {
     std::string message;
 };
 
+struct public_key_request {
+    static constexpr std::string_view nats_subject = "iam.v1.auth.public-key";
+};
+
 }
 
 #endif

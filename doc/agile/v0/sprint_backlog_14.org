@@ -17,46 +17,49 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-14 Sat 23:22], for Saturday, March 14, 2026.
+#+CAPTION: Clock summary at [2026-03-18 Wed 00:28], for Wednesday, March 18, 2026.
 |      | <75>                   |        |      |      |       |
 | Tags | Headline               | Time   |      |      |     % |
 |------+------------------------+--------+------+------+-------|
-|      | *Total time*           | *3:29* |      |      | 100.0 |
+|      | *Total time*           | *0:28* |      |      | 100.0 |
 |------+------------------------+--------+------+------+-------|
-|      | Stories                | 3:29   |      |      | 100.0 |
-|      | Active                 |        | 3:29 |      | 100.0 |
-| code | Implement NATS support |        |      | 3:29 | 100.0 |
+|      | Stories                | 0:28   |      |      | 100.0 |
+|      | Active                 |        | 0:28 |      | 100.0 |
+| code | Remaining NATS changes |        |      | 0:28 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-14 Sat 23:22]
-|       | <75>                                                    |         |       |      |       |
-| Tags  | Headline                                                | Time    |       |      |     % |
-|-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                            | *59:30* |       |      | 100.0 |
-|-------+---------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                 | 59:30   |       |      | 100.0 |
-|       | Active                                                  |         | 59:30 |      | 100.0 |
-| agile | Sprint and product backlog refinement                   |         |       | 3:23 |   5.7 |
-| code  | Add ORE Import Wizard                                   |         |       | 3:00 |   5.0 |
-| code  | Add reporting component design document                 |         |       | 1:30 |   2.5 |
-| code  | Add ores.reporting SQL schema                           |         |       | 1:20 |   2.2 |
-| code  | Reporting: Add domain types, messaging and repository   |         |       | 1:50 |   3.1 |
-| code  | Trading: Implement trade status state machine           |         |       | 0:59 |   1.7 |
-| code  | Cli: Add domain sub-menu layer to CLI command syntax    |         |       | 1:35 |   2.7 |
-| code  | Add pgmq queue management and messaging UI              |         |       | 0:34 |   1.0 |
-| code  | Reporting UI: cron widget, and party codename plan      |         |       | 8:19 |  14.0 |
-| code  | Add party codename and report scheduling UI             |         |       | 7:19 |  12.3 |
-| code  | Replace pgmq + pg_cron with custom tables and scheduler |         |       | 2:54 |   4.9 |
-| code  | Fix TOCTOU race in party codename generation trigger    |         |       | 1:10 |   2.0 |
-| code  | Migrate JWT to ores.security with RS256 support         |         |       | 0:07 |   0.2 |
-| code  | Implement NNG message broker                            |         |       | 8:55 |  15.0 |
-| code  | Add build tool suffix to all CMake presets              |         |       | 2:10 |   3.6 |
-| code  | Fix codename with sequence-based unique suffix          |         |       | 0:45 |   1.3 |
-| code  | Hook up broker and comms service                        |         |       | 0:47 |   1.3 |
-| code  | Add trade import mapping dialog to Qt UI                |         |       | 4:39 |   7.8 |
-| code  | Implement NATS support                                  |         |       | 8:14 |  13.8 |
+#+CAPTION: Clock summary at [2026-03-18 Wed 00:28]
+|       | <75>                                                    |         |       |       |       |
+| Tags  | Headline                                                | Time    |       |       |     % |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | *Total time*                                            | *82:20* |       |       | 100.0 |
+|-------+---------------------------------------------------------+---------+-------+-------+-------|
+|       | Stories                                                 | 82:20   |       |       | 100.0 |
+|       | Active                                                  |         | 82:20 |       | 100.0 |
+| agile | Sprint and product backlog refinement                   |         |       |  3:23 |   4.1 |
+| code  | Add ORE Import Wizard                                   |         |       |  3:00 |   3.6 |
+| code  | Add reporting component design document                 |         |       |  1:30 |   1.8 |
+| code  | Add ores.reporting SQL schema                           |         |       |  1:20 |   1.6 |
+| code  | Reporting: Add domain types, messaging and repository   |         |       |  1:50 |   2.2 |
+| code  | Trading: Implement trade status state machine           |         |       |  0:59 |   1.2 |
+| code  | Cli: Add domain sub-menu layer to CLI command syntax    |         |       |  1:35 |   1.9 |
+| code  | Add pgmq queue management and messaging UI              |         |       |  0:34 |   0.7 |
+| code  | Reporting UI: cron widget, and party codename plan      |         |       |  8:19 |  10.1 |
+| code  | Add party codename and report scheduling UI             |         |       |  7:19 |   8.9 |
+| code  | Replace pgmq + pg_cron with custom tables and scheduler |         |       |  2:54 |   3.5 |
+| code  | Fix TOCTOU race in party codename generation trigger    |         |       |  1:10 |   1.4 |
+| code  | Migrate JWT to ores.security with RS256 support         |         |       |  0:07 |   0.1 |
+| code  | Implement NNG message broker                            |         |       |  8:55 |  10.8 |
+| code  | Add build tool suffix to all CMake presets              |         |       |  2:10 |   2.6 |
+| code  | Fix codename with sequence-based unique suffix          |         |       |  0:45 |   0.9 |
+| code  | Hook up broker and comms service                        |         |       |  0:47 |   1.0 |
+| code  | Implement NATS support                                  |         |       | 11:55 |  14.5 |
+| code  | Rename =ores.comms.shell= to =ores.shell=               |         |       |  3:25 |   4.1 |
+| code  | Add NATS telemetry sampling                             |         |       |  2:30 |   3.0 |
+| code  | Add trade import mapping dialog to Qt UI                |         |       |  4:39 |   5.6 |
+| code  | Remaining NATS changes                                  |         |       | 13:14 |  16.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -980,8 +983,45 @@ Acceptance criteria:
 
 *** STARTED Remaining NATS changes                                     :code:
     :LOGBOOK:
+    CLOCK: [2026-03-17 Tue 23:21]--[2026-03-18 Wed 00:28] =>  1:07
+    CLOCK: [2026-03-17 Tue 20:00]--[2026-03-17 Tue 21:25] =>  1:25
+    CLOCK: [2026-03-17 Tue 15:03]--[2026-03-17 Tue 19:44] =>  4:41
+    CLOCK: [2026-03-17 Tue 10:50]--[2026-03-17 Tue 13:10] =>  2:20
     CLOCK: [2026-03-16 Mon 15:02]--[2026-03-16 Mon 18:43] =>  3:41
     :END:
+
+Notes:
+
+- session bytes are no longer working.
+- projects/ores.refdata/src/repository/party_repository.cpp
+
+    const auto id_str = boost::uuids::to_string(root_id);
+    const std::string sql =
+        "WITH RECURSIVE party_tree AS ("
+        "  SELECT id FROM ores_refdata_parties_tbl"
+        "  WHERE id = '" + id_str + "' AND valid_to = '" + MAX_TIMESTAMP + "'"
+        "  UNION ALL"6ju
+        "  SELECT p.id FROM ores_refdata_parties_tbl p"
+        "  JOIN party_tree pt ON p.parent_party_id = pt.id"
+        "  WHERE p.valid_to = '" + MAX_TIMESTAMP + "'"
+        ") SELECT id FROM party_tree";
+
+*** Remove uses of raw libpq                                           :code:
+
+We have added support for the missing features in sqlgen so that we can replace
+uses of raw libpq. The PRs have been merged in main sqlgen, we just need a
+release. Do a search for all uses of raw libpq and replace it with appropriate
+sqlgen calls.
+
+We need to monitor sqlgen releases and then vcpkg updates.
+
+Actually we now have a port with latest.
+
+Merged PRs:
+
+- [[https://github.com/getml/sqlgen/pull/120][#120: Add PostgreSQL notice processor support]]
+- [[https://github.com/getml/sqlgen/pull/121][#121: Use PGPASSWORD env var for postgres test credentials]]
+- [[https://github.com/getml/sqlgen/pull/122][#122: Add parameterized execute for postgres]]
 
 *** Fine-tune grants for each service account                          :code:
 

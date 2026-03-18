@@ -129,6 +129,7 @@ jobs:
         shell: bash
         env:
           ORES_DATABASE_NAME: ores_ci
+          PGPASSWORD: ${{ steps.pg_password.outputs.admin_password }}
         run: |
           ./build/scripts/init-environment.sh -y
           grep -v '^[[:space:]]*#' .env | grep -v '^[[:space:]]*$' \

@@ -60,7 +60,7 @@ IAM_KEY="${KEYS_DIR}/iam-rsa-private.pem"
 if [[ ! -f "${IAM_KEY}" ]]; then
     echo "Generating IAM RSA-2048 signing key..."
     mkdir -p "${KEYS_DIR}"
-    openssl genrsa -out "${IAM_KEY}" 2048 2>/dev/null
+    openssl genrsa -out "${IAM_KEY}" 2048
     chmod 600 "${IAM_KEY}"
     echo "  Written to ${IAM_KEY}"
 fi

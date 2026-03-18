@@ -152,6 +152,35 @@ jobs:
           doNotCache: false
 
       - name: Run CTest workflow
+        env:
+          ORES_CLI_DB_USER: ores_cli_user
+          ORES_CLI_DB_DATABASE: ores_ci
+          ORES_COMMS_SHELL_DB_USER: ores_comms_user
+          ORES_COMMS_SHELL_DB_DATABASE: ores_ci
+          ORES_HTTP_SERVER_DB_USER: ores_http_user
+          ORES_HTTP_SERVER_DB_DATABASE: ores_ci
+          ORES_IAM_SERVICE_DB_USER: ores_iam_service
+          ORES_IAM_SERVICE_DB_DATABASE: ores_ci
+          ORES_REFDATA_SERVICE_DB_USER: ores_refdata_service
+          ORES_REFDATA_SERVICE_DB_DATABASE: ores_ci
+          ORES_DQ_SERVICE_DB_USER: ores_dq_service
+          ORES_DQ_SERVICE_DB_DATABASE: ores_ci
+          ORES_VARIABILITY_SERVICE_DB_USER: ores_variability_service
+          ORES_VARIABILITY_SERVICE_DB_DATABASE: ores_ci
+          ORES_ASSETS_SERVICE_DB_USER: ores_assets_service
+          ORES_ASSETS_SERVICE_DB_DATABASE: ores_ci
+          ORES_SYNTHETIC_SERVICE_DB_USER: ores_synthetic_service
+          ORES_SYNTHETIC_SERVICE_DB_DATABASE: ores_ci
+          ORES_SCHEDULER_SERVICE_DB_USER: ores_scheduler_service
+          ORES_SCHEDULER_SERVICE_DB_DATABASE: ores_ci
+          ORES_REPORTING_SERVICE_DB_USER: ores_reporting_service
+          ORES_REPORTING_SERVICE_DB_DATABASE: ores_ci
+          ORES_TELEMETRY_SERVICE_DB_USER: ores_telemetry_service
+          ORES_TELEMETRY_SERVICE_DB_DATABASE: ores_ci
+          ORES_TRADING_SERVICE_DB_USER: ores_trading_service
+          ORES_TRADING_SERVICE_DB_DATABASE: ores_ci
+          ORES_WT_DB_USER: ores_wt_user
+          ORES_WT_DB_DATABASE: ores_ci
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
           export CTEST_PARALLEL_LEVEL=$(nproc)

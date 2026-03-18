@@ -174,6 +174,12 @@ ORES_DB_READONLY_PASSWORD=${ORES_DB_READONLY_PASSWORD}
 ORES_DB_TEST_DDL_PASSWORD=${ORES_DB_TEST_DDL_PASSWORD}
 ORES_DB_TEST_PASSWORD=${ORES_DB_TEST_PASSWORD}
 
+# ---------------------------------------------------------------------------
+# Test connection credentials (read by C++ test_database_manager)
+# ---------------------------------------------------------------------------
+ORES_TEST_DB_USER=ores_test_dml_user
+ORES_TEST_DB_PASSWORD=${ORES_DB_TEST_PASSWORD}
+
 EOF
 
 # ---------------------------------------------------------------------------

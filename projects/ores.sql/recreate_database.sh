@@ -47,8 +47,8 @@ Passwords are read from environment variables (set via .env or CI environment):
     ORES_DB_WT_PASSWORD                 Password for the Web Toolkit database user
     ORES_DB_COMMS_PASSWORD              Password for the Communications database user
     ORES_DB_HTTP_PASSWORD               Password for the HTTP database user
-    ORES_DB_TEST_DDL_PASSWORD           Password for the test DDL database user
-    ORES_DB_TEST_PASSWORD               Password for the test DML database user
+    ORES_TEST_DB_DDL_PASSWORD           Password for the test DDL database user
+    ORES_TEST_DB_PASSWORD               Password for the test DML database user
     ORES_DB_READONLY_PASSWORD           Password for the read-only database user
     ORES_IAM_SERVICE_DB_PASSWORD        Password for the IAM domain service user
     ORES_REFDATA_SERVICE_DB_PASSWORD    Password for the Reference Data domain service user
@@ -108,8 +108,8 @@ MISSING_PASSWORDS=()
 [[ -z "${ORES_DB_WT_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_WT_PASSWORD")
 [[ -z "${ORES_DB_COMMS_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_COMMS_PASSWORD")
 [[ -z "${ORES_DB_HTTP_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_HTTP_PASSWORD")
-[[ -z "${ORES_DB_TEST_DDL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_TEST_DDL_PASSWORD")
-[[ -z "${ORES_DB_TEST_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_TEST_PASSWORD")
+[[ -z "${ORES_TEST_DB_DDL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_DDL_PASSWORD")
+[[ -z "${ORES_TEST_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_PASSWORD")
 [[ -z "${ORES_DB_READONLY_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_READONLY_PASSWORD")
 [[ -z "${ORES_IAM_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_IAM_SERVICE_DB_PASSWORD")
 [[ -z "${ORES_REFDATA_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_REFDATA_SERVICE_DB_PASSWORD")
@@ -192,8 +192,8 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v wt_password="${ORES_DB_WT_PASSWORD}" \
     -v comms_password="${ORES_DB_COMMS_PASSWORD}" \
     -v http_password="${ORES_DB_HTTP_PASSWORD}" \
-    -v test_ddl_password="${ORES_DB_TEST_DDL_PASSWORD}" \
-    -v test_dml_password="${ORES_DB_TEST_PASSWORD}" \
+    -v test_ddl_password="${ORES_TEST_DB_DDL_PASSWORD}" \
+    -v test_dml_password="${ORES_TEST_DB_PASSWORD}" \
     -v ro_password="${ORES_DB_READONLY_PASSWORD}" \
     -v iam_service_password="${ORES_IAM_SERVICE_DB_PASSWORD}" \
     -v refdata_service_password="${ORES_REFDATA_SERVICE_DB_PASSWORD}" \

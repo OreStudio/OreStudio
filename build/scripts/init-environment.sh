@@ -125,8 +125,8 @@ ORES_DB_WT_PASSWORD="$(gen_password)"
 ORES_DB_HTTP_PASSWORD="$(gen_password)"
 ORES_DB_COMMS_PASSWORD="$(gen_password)"
 ORES_DB_READONLY_PASSWORD="$(gen_password)"
-ORES_DB_TEST_DDL_PASSWORD="$(gen_password)"
-ORES_DB_TEST_PASSWORD="$(gen_password)"
+ORES_TEST_DB_DDL_PASSWORD="$(gen_password)"
+ORES_TEST_DB_PASSWORD="$(gen_password)"
 
 # Associative array: component -> password
 declare -A SVC_PASSWORDS
@@ -171,8 +171,13 @@ ORES_DB_WT_PASSWORD=${ORES_DB_WT_PASSWORD}
 ORES_DB_HTTP_PASSWORD=${ORES_DB_HTTP_PASSWORD}
 ORES_DB_COMMS_PASSWORD=${ORES_DB_COMMS_PASSWORD}
 ORES_DB_READONLY_PASSWORD=${ORES_DB_READONLY_PASSWORD}
-ORES_DB_TEST_DDL_PASSWORD=${ORES_DB_TEST_DDL_PASSWORD}
-ORES_DB_TEST_PASSWORD=${ORES_DB_TEST_PASSWORD}
+
+# ---------------------------------------------------------------------------
+# Test connection credentials (read by recreate_database.sh and C++ tests)
+# ---------------------------------------------------------------------------
+ORES_TEST_DB_USER=ores_test_dml_user
+ORES_TEST_DB_PASSWORD=${ORES_TEST_DB_PASSWORD}
+ORES_TEST_DB_DDL_PASSWORD=${ORES_TEST_DB_DDL_PASSWORD}
 
 EOF
 
@@ -192,6 +197,20 @@ EOF
         echo "ORES_${upper}_SERVICE_DB_PASSWORD=${SVC_PASSWORDS[${component}]}"
         echo "ORES_${upper}_SERVICE_DB_DATABASE=${DB_NAME}"
     done
+    echo ""
+    echo "# ---------------------------------------------------------------------------"
+    echo "# CLI DB credentials (read by C++ make_mapper(\"CLI\"))"
+    echo "# ---------------------------------------------------------------------------"
+    echo "ORES_CLI_DB_USER=ores_cli_user"
+    echo "ORES_CLI_DB_PASSWORD=${ORES_DB_CLI_PASSWORD}"
+    echo "ORES_CLI_DB_DATABASE=${DB_NAME}"
+    echo ""
+    echo "# ---------------------------------------------------------------------------"
+    echo "# Comms shell DB credentials (read by C++ make_mapper(\"COMMS_SHELL\"))"
+    echo "# ---------------------------------------------------------------------------"
+    echo "ORES_COMMS_SHELL_DB_USER=ores_comms_user"
+    echo "ORES_COMMS_SHELL_DB_PASSWORD=${ORES_DB_COMMS_PASSWORD}"
+    echo "ORES_COMMS_SHELL_DB_DATABASE=${DB_NAME}"
     echo ""
     echo "# ---------------------------------------------------------------------------"
     echo "# HTTP server DB credentials (read by C++ make_mapper(\"HTTP_SERVER\"))"

@@ -23,6 +23,7 @@
 #include <optional>
 #include <span>
 #include <string_view>
+#include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -66,6 +67,9 @@ void stamp(T& obj, const ores::database::context& ctx,
     if constexpr (requires { obj.tenant_id; }) {
         if constexpr (std::is_assignable_v<decltype(obj.tenant_id)&, std::string>)
             obj.tenant_id = ctx.tenant_id().to_string();
+        else if constexpr (std::is_assignable_v<decltype(obj.tenant_id)&,
+                boost::uuids::uuid>)
+            obj.tenant_id = ctx.tenant_id().to_uuid();
         else
             obj.tenant_id = ctx.tenant_id();
     }

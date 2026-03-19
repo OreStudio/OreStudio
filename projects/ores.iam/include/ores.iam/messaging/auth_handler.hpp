@@ -138,7 +138,10 @@ inline bool auth_is_tenant_bootstrap_mode(
     const ores::database::context& ctx,
     const std::string& tenant_id_str) {
     try {
-        variability::service::system_flags_service sfs(ctx, tenant_id_str);
+        auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+        if (!tid_result) return false;
+        auto tenant_ctx = ctx.with_tenant(*tid_result, "");
+        variability::service::system_flags_service sfs(tenant_ctx, tenant_id_str);
         sfs.refresh();
         return sfs.is_bootstrap_mode_enabled();
     } catch (const std::exception& e) {

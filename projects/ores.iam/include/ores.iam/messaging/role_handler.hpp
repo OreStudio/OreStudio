@@ -20,7 +20,6 @@
 #ifndef ORES_IAM_MESSAGING_ROLE_HANDLER_HPP
 #define ORES_IAM_MESSAGING_ROLE_HANDLER_HPP
 
-#include <stdexcept>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -48,17 +47,6 @@ inline auto& role_handler_lg() {
     return instance;
 }
 
-inline std::string role_extract_bearer_token(const ores::nats::message& msg) {
-    auto it = msg.headers.find("Authorization");
-    if (it == msg.headers.end())
-        return {};
-    const auto& val = it->second;
-    constexpr std::string_view prefix = "Bearer ";
-    if (!val.starts_with(prefix))
-        return {};
-    return val.substr(prefix.size());
-}
-
 } // namespace
 
 using ores::service::messaging::reply;
@@ -76,7 +64,9 @@ public:
         BOOST_LOG_SEV(role_handler_lg(), debug)
             << "Handling " << msg.subject;
         try {
-            service::authorization_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::authorization_service svc(ctx);
             auto roles = svc.list_roles();
             BOOST_LOG_SEV(role_handler_lg(), debug)
                 << "Completed " << msg.subject;
@@ -130,24 +120,11 @@ public:
             return;
         }
         try {
-            // Authenticate the caller and check roles:revoke permission.
-            auto token = role_extract_bearer_token(msg);
-            if (token.empty()) {
-                reply(nats_, msg, revoke_role_response{
-                    .success = false,
-                    .error_message = "Authentication required"});
-                return;
-            }
-            auto claims = signer_.validate(token);
-            if (!claims) {
-                reply(nats_, msg, revoke_role_response{
-                    .success = false,
-                    .error_message = "Invalid or expired token"});
-                return;
-            }
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
             boost::uuids::string_generator sg;
-            const auto caller_id = sg(claims->subject);
-            service::authorization_service svc(ctx_);
+            const auto caller_id = sg(ctx.actor());
+            service::authorization_service svc(ctx);
             if (!svc.has_permission(caller_id,
                     domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(role_handler_lg(), warn)
@@ -184,7 +161,9 @@ public:
             return;
         }
         try {
-            service::authorization_service svc(ctx_);
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
             auto roles = svc.get_account_roles(
                 sg(req->account_id));
@@ -286,23 +265,11 @@ public:
         }
         try {
             // Authenticate and check roles:revoke permission
-            auto token = role_extract_bearer_token(msg);
-            if (token.empty()) {
-                reply(nats_, msg, revoke_role_by_name_response{
-                    .success = false,
-                    .error_message = "Authentication required"});
-                return;
-            }
-            auto claims = signer_.validate(token);
-            if (!claims) {
-                reply(nats_, msg, revoke_role_by_name_response{
-                    .success = false,
-                    .error_message = "Invalid or expired token"});
-                return;
-            }
+            const auto ctx = ores::service::service::make_request_context(
+                ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
             boost::uuids::string_generator sg;
-            const auto caller_id = sg(claims->subject);
-            service::authorization_service caller_svc(ctx_);
+            const auto caller_id = sg(ctx.actor());
+            service::authorization_service caller_svc(ctx);
             if (!caller_svc.has_permission(caller_id,
                     domain::permissions::roles_revoke)) {
                 BOOST_LOG_SEV(role_handler_lg(), warn)

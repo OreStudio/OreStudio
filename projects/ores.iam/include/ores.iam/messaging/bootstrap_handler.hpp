@@ -91,7 +91,6 @@ public:
         using namespace ores::logging;
         BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
             << "Handling " << msg.subject;
-        namespace svc_acct = ores::iam::domain::service_accounts;
         auto req = decode<create_initial_admin_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), warn)

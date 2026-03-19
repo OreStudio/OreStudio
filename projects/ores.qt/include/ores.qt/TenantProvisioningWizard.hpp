@@ -24,6 +24,7 @@
 #include <QWizardPage>
 #include <QComboBox>
 #include <QLabel>
+#include <QLineEdit>
 #include <QProgressBar>
 #include <QRadioButton>
 #include <QSpinBox>
@@ -31,6 +32,8 @@
 #include <QTextEdit>
 #include <QPushButton>
 #include <QListWidget>
+#include <optional>
+#include <cstdint>
 #include <vector>
 #include <string>
 #include "ores.logging/make_logger.hpp"
@@ -45,12 +48,16 @@ class LeiEntityPicker;
  * @brief Wizard for first-time tenant setup after provisioning.
  *
  * Guides a tenant admin through initial setup:
- * 1. Welcome - explains the setup process
- * 2. Bundle Selection - choose a reference data bundle to publish
- * 3. Bundle Install - publish the selected bundle
- * 4. Party Setup - optionally select a root LEI entity
- * 5. Counterparty Setup - informational placeholder
- * 6. Apply & Summary - clear bootstrap flag and show summary
+ * 1. Welcome             - explains the setup process
+ * 2. Bundle Selection    - choose a reference data bundle to publish
+ * 3. Bundle Install      - publish the selected bundle
+ * 4. Data Source         - choose between GLEIF registry and synthetic data
+ * 5. Party Setup         - (GLEIF only) select a root LEI entity
+ * 6. Counterparty Setup  - (GLEIF only) informational placeholder
+ * 7. Organisation Setup  - populate parties, counterparties, and org structure
+ * 8. Report Setup        - select initial report definitions to create
+ * 9. Report Install      - create the selected report definitions
+ * 10. Summary            - clear bootstrap flag and show results
  *
  * This wizard appears automatically on first login to a tenant that is
  * in bootstrap mode. It clears the bootstrap flag on completion or cancel.
@@ -127,23 +134,52 @@ public:
     DataSourceMode dataSourceMode() const { return dataSourceMode_; }
     void setDataSourceMode(DataSourceMode m) { dataSourceMode_ = m; }
 
-    // Synthetic generation options (set by DataSourceSelectionPage)
+    // --- Synthetic generation options (set by DataSourceSelectionPage) ---
+
     QString syntheticCountry() const { return syntheticCountry_; }
     void setSyntheticCountry(const QString& c) { syntheticCountry_ = c; }
+
     int syntheticPartyCount() const { return syntheticPartyCount_; }
     void setSyntheticPartyCount(int c) { syntheticPartyCount_ = c; }
+
+    int syntheticPartyMaxDepth() const { return syntheticPartyMaxDepth_; }
+    void setSyntheticPartyMaxDepth(int d) { syntheticPartyMaxDepth_ = d; }
+
     int syntheticCounterpartyCount() const { return syntheticCounterpartyCount_; }
     void setSyntheticCounterpartyCount(int c) { syntheticCounterpartyCount_ = c; }
+
+    int syntheticCounterpartyMaxDepth() const { return syntheticCounterpartyMaxDepth_; }
+    void setSyntheticCounterpartyMaxDepth(int d) { syntheticCounterpartyMaxDepth_ = d; }
+
     int syntheticPortfolioLeafCount() const { return syntheticPortfolioLeafCount_; }
     void setSyntheticPortfolioLeafCount(int c) { syntheticPortfolioLeafCount_ = c; }
+
+    int syntheticPortfolioMaxDepth() const { return syntheticPortfolioMaxDepth_; }
+    void setSyntheticPortfolioMaxDepth(int d) { syntheticPortfolioMaxDepth_ = d; }
+
     int syntheticBooksPerPortfolio() const { return syntheticBooksPerPortfolio_; }
     void setSyntheticBooksPerPortfolio(int c) { syntheticBooksPerPortfolio_ = c; }
+
     int syntheticBusinessUnitCount() const { return syntheticBusinessUnitCount_; }
     void setSyntheticBusinessUnitCount(int c) { syntheticBusinessUnitCount_ = c; }
+
+    int syntheticBusinessUnitMaxDepth() const { return syntheticBusinessUnitMaxDepth_; }
+    void setSyntheticBusinessUnitMaxDepth(int d) { syntheticBusinessUnitMaxDepth_ = d; }
+
     bool syntheticGenerateAddresses() const { return syntheticGenerateAddresses_; }
     void setSyntheticGenerateAddresses(bool v) { syntheticGenerateAddresses_ = v; }
+
+    int syntheticContactsPerParty() const { return syntheticContactsPerParty_; }
+    void setSyntheticContactsPerParty(int c) { syntheticContactsPerParty_ = c; }
+
+    int syntheticContactsPerCounterparty() const { return syntheticContactsPerCounterparty_; }
+    void setSyntheticContactsPerCounterparty(int c) { syntheticContactsPerCounterparty_ = c; }
+
     bool syntheticGenerateIdentifiers() const { return syntheticGenerateIdentifiers_; }
     void setSyntheticGenerateIdentifiers(bool v) { syntheticGenerateIdentifiers_ = v; }
+
+    std::optional<std::uint64_t> syntheticSeed() const { return syntheticSeed_; }
+    void setSyntheticSeed(std::optional<std::uint64_t> s) { syntheticSeed_ = s; }
 
     std::vector<ReportSpec> selectedReports() const { return selectedReports_; }
     void setSelectedReports(std::vector<ReportSpec> r) { selectedReports_ = std::move(r); }
@@ -167,14 +203,24 @@ private:
     QString leiDatasetSize_ = "large";
     bool organisationPublished_ = false;
     DataSourceMode dataSourceMode_ = DataSourceMode::gleif;
+
+    // Synthetic generation options
     QString syntheticCountry_ = "GB";
     int syntheticPartyCount_ = 5;
+    int syntheticPartyMaxDepth_ = 3;
     int syntheticCounterpartyCount_ = 10;
+    int syntheticCounterpartyMaxDepth_ = 3;
     int syntheticPortfolioLeafCount_ = 8;
+    int syntheticPortfolioMaxDepth_ = 4;
     int syntheticBooksPerPortfolio_ = 2;
     int syntheticBusinessUnitCount_ = 10;
+    int syntheticBusinessUnitMaxDepth_ = 2;
     bool syntheticGenerateAddresses_ = true;
+    int syntheticContactsPerParty_ = 2;
+    int syntheticContactsPerCounterparty_ = 1;
     bool syntheticGenerateIdentifiers_ = true;
+    std::optional<std::uint64_t> syntheticSeed_;
+
     std::vector<ReportSpec> selectedReports_;
 };
 
@@ -262,6 +308,10 @@ private:
 
 /**
  * @brief Page for choosing between GLEIF registry and synthetic data generation.
+ *
+ * When synthetic is selected, exposes controls for all generation parameters:
+ * entity counts, hierarchy depths, contact counts, identifier generation,
+ * and an optional reproducibility seed.
  */
 class DataSourceSelectionPage final : public QWizardPage {
     Q_OBJECT
@@ -279,14 +329,29 @@ private:
     QRadioButton* gleifRadio_;
     QRadioButton* syntheticRadio_;
     QWidget* syntheticOptions_;
+
+    // Basic counts
     QComboBox* countryCombo_;
     QSpinBox* partyCountSpin_;
     QSpinBox* counterpartyCountSpin_;
     QSpinBox* portfolioLeafCountSpin_;
     QSpinBox* booksPerPortfolioSpin_;
     QSpinBox* businessUnitCountSpin_;
+
+    // Hierarchy depths
+    QSpinBox* partyMaxDepthSpin_;
+    QSpinBox* counterpartyMaxDepthSpin_;
+    QSpinBox* portfolioMaxDepthSpin_;
+    QSpinBox* businessUnitMaxDepthSpin_;
+
+    // Contact and identifier options
+    QSpinBox* contactsPerPartySpin_;
+    QSpinBox* contactsPerCounterpartySpin_;
     QCheckBox* generateAddressesCheck_;
     QCheckBox* generateIdentifiersCheck_;
+
+    // Reproducibility
+    QLineEdit* seedEdit_;
 };
 
 /**

@@ -57,7 +57,8 @@ context test_database_manager::make_context() {
         .database_options = opts,
         .pool_size = 4,
         .num_attempts = 10,
-        .wait_time_in_seconds = 1
+        .wait_time_in_seconds = 1,
+        .service_account = std::string(ores::database::service::service_accounts::test_dml)
     };
 
     context ctx = context_factory::make_context(db_cfg);

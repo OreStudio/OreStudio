@@ -29,6 +29,7 @@
 #include <QHBoxLayout>
 #include <QGroupBox>
 #include <QListWidgetItem>
+#include <QRegularExpressionValidator>
 #include <QSizePolicy>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -470,9 +471,11 @@ void DataSourceSelectionPage::setupUI() {
     syntheticOptions_ = new QWidget(this);
     auto* optLayout = new QGridLayout(syntheticOptions_);
     optLayout->setContentsMargins(20, 0, 0, 0);
+    optLayout->setColumnStretch(1, 1);
 
     int row = 0;
 
+    // --- Entity counts -------------------------------------------------------
     optLayout->addWidget(new QLabel(tr("Country:"), this), row, 0);
     countryCombo_ = new QComboBox(this);
     countryCombo_->addItem(tr("United Kingdom (GB)"), "GB");
@@ -515,6 +518,60 @@ void DataSourceSelectionPage::setupUI() {
     optLayout->addWidget(businessUnitCountSpin_, row, 1);
     row++;
 
+    // --- Hierarchy depths ----------------------------------------------------
+    auto* depthSep = new QLabel(tr("<b>Hierarchy depths</b>"), this);
+    depthSep->setContentsMargins(0, 6, 0, 2);
+    optLayout->addWidget(depthSep, row, 0, 1, 2);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Party max depth:"), this), row, 0);
+    partyMaxDepthSpin_ = new QSpinBox(this);
+    partyMaxDepthSpin_->setRange(1, 10);
+    partyMaxDepthSpin_->setValue(3);
+    optLayout->addWidget(partyMaxDepthSpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Counterparty max depth:"), this), row, 0);
+    counterpartyMaxDepthSpin_ = new QSpinBox(this);
+    counterpartyMaxDepthSpin_->setRange(1, 10);
+    counterpartyMaxDepthSpin_->setValue(3);
+    optLayout->addWidget(counterpartyMaxDepthSpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Portfolio max depth:"), this), row, 0);
+    portfolioMaxDepthSpin_ = new QSpinBox(this);
+    portfolioMaxDepthSpin_->setRange(1, 10);
+    portfolioMaxDepthSpin_->setValue(4);
+    optLayout->addWidget(portfolioMaxDepthSpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Business unit max depth:"), this), row, 0);
+    businessUnitMaxDepthSpin_ = new QSpinBox(this);
+    businessUnitMaxDepthSpin_->setRange(1, 5);
+    businessUnitMaxDepthSpin_->setValue(2);
+    optLayout->addWidget(businessUnitMaxDepthSpin_, row, 1);
+    row++;
+
+    // --- Contact and identifier options --------------------------------------
+    auto* contactSep = new QLabel(tr("<b>Contacts &amp; identifiers</b>"), this);
+    contactSep->setContentsMargins(0, 6, 0, 2);
+    optLayout->addWidget(contactSep, row, 0, 1, 2);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Contacts per party:"), this), row, 0);
+    contactsPerPartySpin_ = new QSpinBox(this);
+    contactsPerPartySpin_->setRange(0, 10);
+    contactsPerPartySpin_->setValue(2);
+    optLayout->addWidget(contactsPerPartySpin_, row, 1);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Contacts per counterparty:"), this), row, 0);
+    contactsPerCounterpartySpin_ = new QSpinBox(this);
+    contactsPerCounterpartySpin_->setRange(0, 10);
+    contactsPerCounterpartySpin_->setValue(1);
+    optLayout->addWidget(contactsPerCounterpartySpin_, row, 1);
+    row++;
+
     generateAddressesCheck_ = new QCheckBox(tr("Generate addresses"), this);
     generateAddressesCheck_->setChecked(true);
     optLayout->addWidget(generateAddressesCheck_, row, 0, 1, 2);
@@ -523,6 +580,21 @@ void DataSourceSelectionPage::setupUI() {
     generateIdentifiersCheck_ = new QCheckBox(tr("Generate identifiers (LEI, BIC)"), this);
     generateIdentifiersCheck_->setChecked(true);
     optLayout->addWidget(generateIdentifiersCheck_, row, 0, 1, 2);
+    row++;
+
+    // --- Reproducibility -----------------------------------------------------
+    auto* seedSep = new QLabel(tr("<b>Reproducibility</b>"), this);
+    seedSep->setContentsMargins(0, 6, 0, 2);
+    optLayout->addWidget(seedSep, row, 0, 1, 2);
+    row++;
+
+    optLayout->addWidget(new QLabel(tr("Seed (optional):"), this), row, 0);
+    seedEdit_ = new QLineEdit(this);
+    seedEdit_->setPlaceholderText(tr("Leave blank for a random seed"));
+    seedEdit_->setValidator(new QRegularExpressionValidator(
+        QRegularExpression("[0-9]*"), seedEdit_));
+    optLayout->addWidget(seedEdit_, row, 1);
+    row++;
 
     syntheticOptions_->setVisible(false);
     layout->addWidget(syntheticOptions_);
@@ -548,12 +620,29 @@ bool DataSourceSelectionPage::validatePage() {
         wizard_->setSyntheticCountry(
             countryCombo_->currentData().toString());
         wizard_->setSyntheticPartyCount(partyCountSpin_->value());
+        wizard_->setSyntheticPartyMaxDepth(partyMaxDepthSpin_->value());
         wizard_->setSyntheticCounterpartyCount(counterpartyCountSpin_->value());
+        wizard_->setSyntheticCounterpartyMaxDepth(counterpartyMaxDepthSpin_->value());
         wizard_->setSyntheticPortfolioLeafCount(portfolioLeafCountSpin_->value());
+        wizard_->setSyntheticPortfolioMaxDepth(portfolioMaxDepthSpin_->value());
         wizard_->setSyntheticBooksPerPortfolio(booksPerPortfolioSpin_->value());
         wizard_->setSyntheticBusinessUnitCount(businessUnitCountSpin_->value());
+        wizard_->setSyntheticBusinessUnitMaxDepth(businessUnitMaxDepthSpin_->value());
         wizard_->setSyntheticGenerateAddresses(generateAddressesCheck_->isChecked());
+        wizard_->setSyntheticContactsPerParty(contactsPerPartySpin_->value());
+        wizard_->setSyntheticContactsPerCounterparty(
+            contactsPerCounterpartySpin_->value());
         wizard_->setSyntheticGenerateIdentifiers(generateIdentifiersCheck_->isChecked());
+
+        const auto seedText = seedEdit_->text().trimmed();
+        if (seedText.isEmpty()) {
+            wizard_->setSyntheticSeed(std::nullopt);
+        } else {
+            bool ok = false;
+            const auto seed = seedText.toULongLong(&ok);
+            wizard_->setSyntheticSeed(ok ? std::optional<std::uint64_t>{seed}
+                                         : std::nullopt);
+        }
     } else {
         wizard_->setDataSourceMode(
             TenantProvisioningWizard::DataSourceMode::gleif);
@@ -893,20 +982,32 @@ void OrganisationSetupPage::startSyntheticGeneration() {
 
     // Build request struct upfront to avoid a long capture list.
     synthetic::messaging::generate_organisation_request request;
-    request.country = wizard_->syntheticCountry().toStdString();
-    request.party_count =
+    request.country               = wizard_->syntheticCountry().toStdString();
+    request.party_count           =
         static_cast<std::uint32_t>(wizard_->syntheticPartyCount());
-    request.counterparty_count =
+    request.party_max_depth       =
+        static_cast<std::uint32_t>(wizard_->syntheticPartyMaxDepth());
+    request.counterparty_count    =
         static_cast<std::uint32_t>(wizard_->syntheticCounterpartyCount());
-    request.portfolio_leaf_count =
+    request.counterparty_max_depth =
+        static_cast<std::uint32_t>(wizard_->syntheticCounterpartyMaxDepth());
+    request.portfolio_leaf_count  =
         static_cast<std::uint32_t>(wizard_->syntheticPortfolioLeafCount());
+    request.portfolio_max_depth   =
+        static_cast<std::uint32_t>(wizard_->syntheticPortfolioMaxDepth());
     request.books_per_leaf_portfolio =
         static_cast<std::uint32_t>(wizard_->syntheticBooksPerPortfolio());
-    request.business_unit_count =
+    request.business_unit_count   =
         static_cast<std::uint32_t>(wizard_->syntheticBusinessUnitCount());
-    request.generate_addresses = wizard_->syntheticGenerateAddresses();
-    request.generate_identifiers = wizard_->syntheticGenerateIdentifiers();
-    request.published_by = clientManager->currentUsername();
+    request.business_unit_max_depth =
+        static_cast<std::uint32_t>(wizard_->syntheticBusinessUnitMaxDepth());
+    request.generate_addresses    = wizard_->syntheticGenerateAddresses();
+    request.contacts_per_party    =
+        static_cast<std::uint32_t>(wizard_->syntheticContactsPerParty());
+    request.contacts_per_counterparty =
+        static_cast<std::uint32_t>(wizard_->syntheticContactsPerCounterparty());
+    request.generate_identifiers  = wizard_->syntheticGenerateIdentifiers();
+    request.seed                  = wizard_->syntheticSeed();
 
     auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
     connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
@@ -938,7 +1039,8 @@ void OrganisationSetupPage::startSyntheticGeneration() {
             BOOST_LOG_SEV(lg(), info)
                 << "Synthetic generation succeeded: "
                 << result->parties_count << " parties, "
-                << result->counterparties_count << " counterparties";
+                << result->counterparties_count << " counterparties"
+                << " (seed: " << result->seed << ")";
             statusLabel_->setText(
                 tr("Synthetic organisation generated successfully!"));
             appendLog(tr("Generated %1 parties, %2 counterparties, "
@@ -953,6 +1055,8 @@ void OrganisationSetupPage::startSyntheticGeneration() {
                 .arg(result->books_count)
                 .arg(result->contacts_count)
                 .arg(result->identifiers_count));
+            appendLog(tr("Seed: %1 (use this to reproduce the same organisation)")
+                .arg(result->seed));
             publishSuccess_ = true;
             wizard_->setOrganisationPublished(true);
         }

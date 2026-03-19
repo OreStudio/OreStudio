@@ -105,11 +105,20 @@ gen_password() {
 # Discover NATS domain services from projects/ores.*.service directories
 # ---------------------------------------------------------------------------
 SERVICE_COMPONENTS=()
+# Frontend services (wt) have their own DB user sections below and must not
+# be included here, as their env-var prefix would clash with the NATS service
+# credentials generated in this loop.
+NATS_ONLY_EXCLUDES=("wt")
 for svc_dir in "${CHECKOUT_ROOT}"/projects/ores.*.service; do
     [[ -d "${svc_dir}" ]] || continue
     dir_name="$(basename "${svc_dir}")"        # e.g. ores.iam.service
     component="${dir_name#ores.}"              # e.g. iam.service
     component="${component%.service}"          # e.g. iam
+    skip=false
+    for ex in "${NATS_ONLY_EXCLUDES[@]}"; do
+        [[ "$component" == "$ex" ]] && skip=true && break
+    done
+    $skip && continue
     SERVICE_COMPONENTS+=("${component}")
 done
 

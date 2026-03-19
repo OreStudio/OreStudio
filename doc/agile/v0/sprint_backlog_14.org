@@ -17,27 +17,23 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-18 Wed 00:28], for Wednesday, March 18, 2026.
-|      | <75>                   |        |      |      |       |
-| Tags | Headline               | Time   |      |      |     % |
-|------+------------------------+--------+------+------+-------|
-|      | *Total time*           | *0:28* |      |      | 100.0 |
-|------+------------------------+--------+------+------+-------|
-|      | Stories                | 0:28   |      |      | 100.0 |
-|      | Active                 |        | 0:28 |      | 100.0 |
-| code | Remaining NATS changes |        |      | 0:28 | 100.0 |
+#+CAPTION: Clock summary at [2026-03-19 Thu 10:08], for Thursday, March 19, 2026.
+|      | <75>         |        |     |
+| Tags | Headline     | Time   |   % |
+|------+--------------+--------+-----|
+|      | *Total time* | *0:00* | 0.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-18 Wed 00:28]
+#+CAPTION: Clock summary at [2026-03-19 Thu 10:08]
 |       | <75>                                                    |         |       |       |       |
 | Tags  | Headline                                                | Time    |       |       |     % |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | *Total time*                                            | *82:20* |       |       | 100.0 |
+|       | *Total time*                                            | *82:38* |       |       | 100.0 |
 |-------+---------------------------------------------------------+---------+-------+-------+-------|
-|       | Stories                                                 | 82:20   |       |       | 100.0 |
-|       | Active                                                  |         | 82:20 |       | 100.0 |
+|       | Stories                                                 | 82:38   |       |       | 100.0 |
+|       | Active                                                  |         | 82:38 |       | 100.0 |
 | agile | Sprint and product backlog refinement                   |         |       |  3:23 |   4.1 |
 | code  | Add ORE Import Wizard                                   |         |       |  3:00 |   3.6 |
 | code  | Add reporting component design document                 |         |       |  1:30 |   1.8 |
@@ -54,15 +50,15 @@
 | code  | Implement NNG message broker                            |         |       |  8:55 |  10.8 |
 | code  | Add build tool suffix to all CMake presets              |         |       |  2:10 |   2.6 |
 | code  | Fix codename with sequence-based unique suffix          |         |       |  0:45 |   0.9 |
-| code  | Hook up broker and comms service                        |         |       |  0:47 |   1.0 |
-| code  | Implement NATS support                                  |         |       | 11:55 |  14.5 |
+| code  | Hook up broker and comms service                        |         |       |  0:47 |   0.9 |
+| code  | Implement NATS support                                  |         |       | 11:55 |  14.4 |
 | code  | Rename =ores.comms.shell= to =ores.shell=               |         |       |  3:25 |   4.1 |
 | code  | Add NATS telemetry sampling                             |         |       |  2:30 |   3.0 |
 | code  | Add trade import mapping dialog to Qt UI                |         |       |  4:39 |   5.6 |
-| code  | Remaining NATS changes                                  |         |       | 13:14 |  16.1 |
+| code  | Remaining NATS changes                                  |         |       | 13:32 |  16.4 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                     :agile:
+*** COMPLETED Sprint and product backlog refinement                   :agile:
     :LOGBOOK:
     CLOCK: [2026-03-12 Thu 22:30]--[2026-03-12 Thu 23:10] =>  0:40
     CLOCK: [2026-03-12 Thu 21:10]--[2026-03-12 Thu 22:18] =>  1:08
@@ -75,6 +71,9 @@ Updates to sprint and product backlog.
 ;; agenda
 (org-agenda-file-to-front)
 #+end_src
+
+#+RESULTS:
+: File moved to front of agenda file list
 
 #+name: pie-stories-chart
 #+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_14_stories_pie_sorted.png :width 1920 :height 1080
@@ -950,7 +949,7 @@ Highlights:
   as it does not do core messaging at all. Maybe we should not call this
   "service". or maybe we should add it to telemetry.
 
-*** STARTED Add trade import mapping dialog to Qt UI                   :code:
+*** POSTPONED Add trade import mapping dialog to Qt UI                 :code:
     :LOGBOOK:
     CLOCK: [2026-03-01 Sun 10:52]--[2026-03-01 Sun 13:41] =>  2:49
     CLOCK: [2026-03-01 Sun 09:01]--[2026-03-01 Sun 10:51] =>  1:50
@@ -981,14 +980,61 @@ Acceptance criteria:
 - Successful import creates trades in the selected book.
 - Trades appear in the trade list after import.
 
-*** STARTED Remaining NATS changes                                     :code:
+*** COMPLETED Remaining NATS changes                                   :code:
     :LOGBOOK:
+    CLOCK: [2026-03-18 Wed 00:29]--[2026-03-18 Wed 00:47] =>  0:18
     CLOCK: [2026-03-17 Tue 23:21]--[2026-03-18 Wed 00:28] =>  1:07
     CLOCK: [2026-03-17 Tue 20:00]--[2026-03-17 Tue 21:25] =>  1:25
     CLOCK: [2026-03-17 Tue 15:03]--[2026-03-17 Tue 19:44] =>  4:41
     CLOCK: [2026-03-17 Tue 10:50]--[2026-03-17 Tue 13:10] =>  2:20
     CLOCK: [2026-03-16 Mon 15:02]--[2026-03-16 Mon 18:43] =>  3:41
     :END:
+
+#+begin_quote
+This pull request introduces several key enhancements and fixes related to NATS
+multi-tenancy, RBAC, and LEI entity handling. It streamlines tenant
+provisioning, ensures proper data scoping, enhances entity summary capabilities,
+and improves logging.
+
+Highlights:
+
+- Tenant Provisioning: Automated system party creation for new tenants, granting
+  tenant admins immediate party context in JWTs. Also, a system bootstrap mode
+  flag has been seeded to trigger the provisioning wizard on first login.
+- Tenant UUID: Server-side UUID generation in tenant_handler::save() addresses
+  cases where the client omits it.
+- RBAC/RLS: The account_handler is fixed to ensure all methods use
+  make_request_context, scoping DB queries to the requesting user's tenant.
+- LEI Entity Handler: The lei_entity_handler::summary() is implemented, calling
+  SQL functions instead of inline SQL.
+- SQL Functions: Added ores_dq_lei_entities_distinct_countries_fn() and
+  ores_dq_lei_entities_summary_by_country_fn() for GLEIF counterparty picker,
+  deduplicating by DISTINCT ON (lei).
+- PostgreSQL NOTICEs: Installed PQsetNoticeProcessor in pg_connection_guard to
+  route PL/pgSQL messages through Boost.Log instead of stdout.
+#+end_quote
+
+#+begin_quote
+This pull request delivers crucial enhancements across three key areas: it
+re-establishes the full capabilities of the provisioning wizard for synthetic
+data generation, refines the audit logging mechanism to correctly attribute
+actions to service accounts, and addresses a critical startup issue affecting
+the ores.wt.service. These changes collectively improve the system's
+configurability, auditability, and operational stability.
+
+Highlights:
+
+- Provisioning Wizard Parity Restored: Full feature parity for the provisioning
+  wizard was restored, reintroducing depth controls, contact counts, and a
+  reproducibility seed for synthetic data generation after the binary-to-NATS
+  migration.
+- Performed By Audit Field Correction: The performed_by audit field was
+  corrected to accurately reflect the service account responsible for an action,
+  distinguishing it from the end-user captured by modified_by.
+- ores.wt.service Startup Fix: A startup crash in ores.wt.service was resolved
+  by excluding it from NATS service discovery to prevent environment variable
+  collisions and ensuring Wt-specific arguments are correctly passed.
+#+end_quote
 
 Notes:
 
@@ -1005,90 +1051,6 @@ Notes:
         "  JOIN party_tree pt ON p.parent_party_id = pt.id"
         "  WHERE p.valid_to = '" + MAX_TIMESTAMP + "'"
         ") SELECT id FROM party_tree";
-
-*** Remove uses of raw libpq                                           :code:
-
-We have added support for the missing features in sqlgen so that we can replace
-uses of raw libpq. The PRs have been merged in main sqlgen, we just need a
-release. Do a search for all uses of raw libpq and replace it with appropriate
-sqlgen calls.
-
-We need to monitor sqlgen releases and then vcpkg updates.
-
-Actually we now have a port with latest.
-
-Merged PRs:
-
-- [[https://github.com/getml/sqlgen/pull/120][#120: Add PostgreSQL notice processor support]]
-- [[https://github.com/getml/sqlgen/pull/121][#121: Use PGPASSWORD env var for postgres test credentials]]
-- [[https://github.com/getml/sqlgen/pull/122][#122: Add parameterized execute for postgres]]
-
-*** Fine-tune grants for each service account                          :code:
-
-Ideally each service should only be granted access to it's own tables. However,
-we may also need some common tables like change reasons, etc.
-
-*** Improvements to detail dialogs                                    :code:
-
-We've implemented most of these but check:
-
-- For most dialogs, pressing escape should be the same as closing it.
-- We should also add a "cancel" button to dialogs, makes it a bit more "normal".
-- New dialogs use toolbars instead of buttons at the bottom.
-
-*** No samples in sessions                                             :code:
-
-For some reason we are no longer sampling for sessions. Investigate why.
-
-*** Check change reasons on delete                                     :code:
-
-Seems like we do not have change reasons on entity deletes. We need to update
-all entities.
-
-
-*** Add party level currency and country restrictions                  :code:
-
-At present a party can use all currencies and all countries. In reality we
-normally want to restrict this at the party level. We won't be able to do a full
-implementation of this right now but it is a good idea to put in the framework
-so that we start to get a feel for how to work with RLS.
-
-#+begin_quote
-This pull request significantly enhances the reference data management system by
-introducing party-specific visibility for currencies and countries. It
-establishes a robust framework for granular control over which reference data
-elements are accessible to different parties, addressing a limitation where all
-such data was previously tenant-wide. The changes span the entire application
-stack, from database schema and generated C++ code to service-level filtering,
-ensuring a comprehensive and well-integrated solution.
-
-Highlights:
-
-- New Party-Visibility Junction Tables: Introduced
-  ores_refdata_party_currencies_tbl and ores_refdata_party_countries_tbl to
-  control which currencies and countries are visible to specific parties, moving
-  from tenant-wide visibility to per-party control.
-- Full Stack Codegen: Generated the complete domain, repository, service, and
-  test layers for both new entities using codegen models, ensuring consistency
-  and reducing manual effort.
-- Service Integration: Integrated filtering logic into existing currency_service
-  and country_service to leverage the new junction tables, adding
-  list_currencies_for_party and list_countries_for_party methods.
-- Bitemporal Support: Implemented bitemporal functionality for the new junction
-  tables, including valid_from and valid_to columns, versioning, and soft-delete
-  rules.
-#+end_quote
-
-***
-
-
-*** Add auxiliary types to their entities                              :code:
-
-The toolbars of each entity should have icons for the auxiliary types they use.
-Also we may need to make the menu options a bit more obvious (e.g. "Purpose
-Types"?).
-
-
 
 * Footer
 

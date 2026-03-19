@@ -67,6 +67,88 @@ Note: use Claude to do this via the [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][N
 
 Stories we may get two in the next two or three sprints.
 
+*** Remove uses of raw libpq                                           :code:
+
+We have added support for the missing features in sqlgen so that we can replace
+uses of raw libpq. The PRs have been merged in main sqlgen, we just need a
+release. Do a search for all uses of raw libpq and replace it with appropriate
+sqlgen calls.
+
+We need to monitor sqlgen releases and then vcpkg updates.
+
+Actually we now have a port with latest.
+
+Merged PRs:
+
+- [[https://github.com/getml/sqlgen/pull/120][#120: Add PostgreSQL notice processor support]]
+- [[https://github.com/getml/sqlgen/pull/121][#121: Use PGPASSWORD env var for postgres test credentials]]
+- [[https://github.com/getml/sqlgen/pull/122][#122: Add parameterized execute for postgres]]
+
+*** Fine-tune grants for each service account                          :code:
+
+Ideally each service should only be granted access to it's own tables. However,
+we may also need some common tables like change reasons, etc.
+
+*** Improvements to detail dialogs                                     :code:
+
+We've implemented most of these but check:
+
+- For most dialogs, pressing escape should be the same as closing it.
+- We should also add a "cancel" button to dialogs, makes it a bit more "normal".
+- New dialogs use toolbars instead of buttons at the bottom.
+
+*** No samples in sessions                                             :code:
+
+For some reason we are no longer sampling for sessions. Investigate why.
+
+*** Check change reasons on delete                                     :code:
+
+Seems like we do not have change reasons on entity deletes. We need to update
+all entities.
+
+
+*** Add party level currency and country restrictions                  :code:
+
+At present a party can use all currencies and all countries. In reality we
+normally want to restrict this at the party level. We won't be able to do a full
+implementation of this right now but it is a good idea to put in the framework
+so that we start to get a feel for how to work with RLS.
+
+#+begin_quote
+This pull request significantly enhances the reference data management system by
+introducing party-specific visibility for currencies and countries. It
+establishes a robust framework for granular control over which reference data
+elements are accessible to different parties, addressing a limitation where all
+such data was previously tenant-wide. The changes span the entire application
+stack, from database schema and generated C++ code to service-level filtering,
+ensuring a comprehensive and well-integrated solution.
+
+Highlights:
+
+- New Party-Visibility Junction Tables: Introduced
+  ores_refdata_party_currencies_tbl and ores_refdata_party_countries_tbl to
+  control which currencies and countries are visible to specific parties, moving
+  from tenant-wide visibility to per-party control.
+- Full Stack Codegen: Generated the complete domain, repository, service, and
+  test layers for both new entities using codegen models, ensuring consistency
+  and reducing manual effort.
+- Service Integration: Integrated filtering logic into existing currency_service
+  and country_service to leverage the new junction tables, adding
+  list_currencies_for_party and list_countries_for_party methods.
+- Bitemporal Support: Implemented bitemporal functionality for the new junction
+  tables, including valid_from and valid_to columns, versioning, and soft-delete
+  rules.
+#+end_quote
+
+*** Add auxiliary types to their entities                              :code:
+
+The toolbars of each entity should have icons for the auxiliary types they use.
+Also we may need to make the menu options a bit more obvious (e.g. "Purpose
+Types"?).
+
+
+
+
 *** Analyse caching at dialog level                                    :code:
 
 We seem to have a lot of caches lying around at the dialog level. It makes more

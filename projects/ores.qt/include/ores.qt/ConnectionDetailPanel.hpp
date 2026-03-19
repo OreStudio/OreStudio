@@ -106,6 +106,7 @@ private:
     QLabel* connNameLabel_;
     QLabel* connHostLabel_;
     QLabel* connPortLabel_;
+    QLabel* connNamespaceLabel_;
     QLabel* connUsernameLabel_;
     QLabel* connDescriptionLabel_;
     QWidget* connTagsContainer_;

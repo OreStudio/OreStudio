@@ -280,6 +280,7 @@ public:
     bool validatePage() override;
 
 private slots:
+    void onActivityTypesFetchFinished();
     void onCounterpartiesFetchFinished();
     void onImportFinished();
 
@@ -289,7 +290,7 @@ private:
 
     OreImportWizard* wizard_;
     QLineEdit* tradeDateEdit_;
-    QLineEdit* lifecycleEventEdit_;
+    QComboBox* lifecycleEventCombo_;
     QComboBox* defaultCounterpartyCombo_;
     QLabel* counterpartyStatusLabel_;
     QLabel* statusLabel_;

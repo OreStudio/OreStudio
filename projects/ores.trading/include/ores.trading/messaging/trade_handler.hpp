@@ -30,6 +30,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
+#include "ores.trading/service/activity_type_service.hpp"
 #include "ores.trading/service/trade_service.hpp"
 
 namespace ores::trading::messaging {
@@ -53,6 +54,21 @@ public:
         ores::database::context ctx,
         std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+
+    void list_activity_types(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto ctx = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        service::activity_type_service svc(ctx);
+        get_activity_types_response resp;
+        try {
+            resp.activity_types = svc.list_types();
+        } catch (...) {}
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug)

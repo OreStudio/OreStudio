@@ -23,9 +23,19 @@
 #include <string>
 #include <string_view>
 #include <vector>
+#include "ores.trading/domain/activity_type.hpp"
 #include "ores.trading/domain/trade.hpp"
 
 namespace ores::trading::messaging {
+
+struct get_activity_types_request {
+    using response_type = struct get_activity_types_response;
+    static constexpr std::string_view nats_subject = "trading.v1.activity_types.list";
+};
+
+struct get_activity_types_response {
+    std::vector<ores::trading::domain::activity_type> activity_types;
+};
 
 struct get_trades_request {
     using response_type = struct get_trades_response;

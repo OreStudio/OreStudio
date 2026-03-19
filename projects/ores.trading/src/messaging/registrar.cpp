@@ -30,6 +30,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
     constexpr auto queue = "ores.trading.service";
 
     subs.push_back(nats.queue_subscribe(
+        std::string(get_activity_types_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            trade_handler h(nats, ctx, verifier);
+            h.list_activity_types(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
         std::string(get_trades_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             trade_handler h(nats, ctx, verifier);

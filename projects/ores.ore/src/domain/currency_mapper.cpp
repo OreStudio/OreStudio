@@ -43,6 +43,17 @@ roundingType parse_rounding_type(const std::string& s) {
     throw std::runtime_error("Invalid rounding type: " + s);
 }
 
+// Map ORE CurrencyType values to OreStudio monetary_nature codes.
+// ORE uses: "Major", "Minor", "Metal", "Crypto" (and others).
+// OreStudio accepts: "fiat", "commodity", "synthetic", "supranational".
+std::string map_monetary_nature(const std::string& ore_type) {
+    if (ore_type.empty()) return "";
+    if (ore_type == "Metal") return "commodity";
+    if (ore_type == "Crypto") return "synthetic";
+    // "Major", "Minor", or anything else → fiat
+    return "fiat";
+}
+
 }
 
 refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
@@ -58,8 +69,8 @@ refdata::domain::currency currency_mapper::map(const currencyDefinition& v) {
     r.rounding_type = to_string(v.RoundingType);
     r.rounding_precision = static_cast<int>(v.RoundingPrecision);
     r.format = "";  // Not in XSD
-    r.monetary_nature = v.CurrencyType ? std::string(*v.CurrencyType) : "";
-    // ORE XML's CurrencyType attribute is stored as-is in monetary_nature.
+    const std::string ore_type = v.CurrencyType ? std::string(*v.CurrencyType) : "";
+    r.monetary_nature = map_monetary_nature(ore_type);
     // market_tier is left empty on import and is not written on export.
     r.market_tier = "";
     r.modified_by = "ores";

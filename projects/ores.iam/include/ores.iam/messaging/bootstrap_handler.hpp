@@ -171,10 +171,14 @@ public:
             // permissions, lookup tables), seeds the WRLD business centre, creates
             // the system party, and sets the bootstrap mode flag.
             auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+            // The actor for the provisioning operation is the IAM service
+            // account, not the new tenant admin (req->principal). The admin
+            // username is not yet a known account at this point and would
+            // fail the modified_by validation in the SQL trigger.
             const auto results = execute_parameterized_string_query(sys_ctx,
                 "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)::text",
                 {req->type, req->code, req->name, req->hostname,
-                 req->description, req->principal},
+                 req->description, std::string(svc_acct::iam)},
                 bootstrap_handler_lg(), "Provisioning tenant");
 
             if (results.empty()) {

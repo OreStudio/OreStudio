@@ -41,6 +41,8 @@
 #include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.iam/service/account_service.hpp"
+#include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/service/account_setup_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.variability/service/system_flags_service.hpp"
 
@@ -167,10 +169,12 @@ public:
             return;
         }
         try {
-            service::account_service svc(ctx_);
-            auto acct = svc.create_account(
-                req->principal, req->email, req->password,
-                svc_acct::iam);
+            service::account_service acct_svc(ctx_);
+            auto auth_svc =
+                std::make_shared<service::authorization_service>(ctx_);
+            service::account_setup_service setup_svc(acct_svc, auth_svc);
+            auto acct = setup_svc.create_account(
+                req->principal, req->email, req->password, svc_acct::iam);
             BOOST_LOG_SEV(auth_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, signup_response{
@@ -369,7 +373,10 @@ public:
                         auto account_id = sg(claims_result->subject);
                         service::account_service svc(ctx_);
                         svc.logout(account_id);
-                    } catch (...) {}
+                    } catch (const std::exception& e) {
+                        BOOST_LOG_SEV(auth_handler_lg(), warn)
+                            << "Failed to update logout state: " << e.what();
+                    }
                 }
             }
             BOOST_LOG_SEV(auth_handler_lg(), debug)

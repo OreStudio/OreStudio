@@ -41,6 +41,8 @@
 #include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.iam/service/account_service.hpp"
+#include "ores.iam/service/authorization_service.hpp"
+#include "ores.iam/service/account_setup_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -160,9 +162,12 @@ public:
         try {
             const auto ctx = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            service::account_service svc(ctx);
-            auto acct = svc.create_account(
-                req->principal, req->email, req->password, "admin");
+            service::account_service acct_svc(ctx);
+            auto auth_svc =
+                std::make_shared<service::authorization_service>(ctx);
+            service::account_setup_service setup_svc(acct_svc, auth_svc);
+            auto acct = setup_svc.create_account(
+                req->principal, req->email, req->password, ctx.actor());
             BOOST_LOG_SEV(account_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, save_account_response{

@@ -202,6 +202,7 @@ launch ores.wt.service \
     --log-enabled \
     --log-level "$LOG_LEVEL" \
     --log-directory ../log \
+    -- \
     --http-address 0.0.0.0 \
     --docroot . \
     --http-port "$WT_PORT"

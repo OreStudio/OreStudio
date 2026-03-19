@@ -63,8 +63,12 @@ void stamp(T& obj, const ores::database::context& ctx,
     std::string_view change_reason = change_reasons::new_record) {
     // tenant_id is a security boundary — always derived from the validated JWT,
     // never from client-supplied data.
-    if constexpr (requires { obj.tenant_id; })
-        obj.tenant_id = ctx.tenant_id().to_string();
+    if constexpr (requires { obj.tenant_id; }) {
+        if constexpr (std::is_assignable_v<decltype(obj.tenant_id)&, std::string>)
+            obj.tenant_id = ctx.tenant_id().to_string();
+        else
+            obj.tenant_id = ctx.tenant_id();
+    }
     const auto& actor = ctx.actor();
     if (!actor.empty()) {
         if constexpr (requires { obj.modified_by; })

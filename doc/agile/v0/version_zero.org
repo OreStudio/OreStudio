@@ -187,6 +187,8 @@ Backlogs]]. The last entry is the active sprint.
    :resource_id: s15
    :END:
 
+- [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | TBD.
+
 ** Sprint 16
    :PROPERTIES:
    :resource_id: s16

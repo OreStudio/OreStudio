@@ -150,8 +150,22 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
         tr("Import ORE"));
     importAction_->setToolTip(tr("Import ORE directory data into OreStudio"));
     connect(importAction_, &QAction::triggered, this, [this]() {
-        if (oreImportController_)
+        if (!oreImportController_)
+            return;
+        const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
+        if (node && node->kind == PortfolioTreeNode::Kind::Portfolio) {
+            oreImportController_->trigger(this, node->portfolio.id,
+                                          node->portfolio.name);
+        } else if (node && node->kind == PortfolioTreeNode::Kind::Book) {
+            const auto* par = node->parent;
+            if (par && par->kind == PortfolioTreeNode::Kind::Portfolio)
+                oreImportController_->trigger(this, par->portfolio.id,
+                                              par->portfolio.name);
+            else
+                oreImportController_->trigger(this);
+        } else {
             oreImportController_->trigger(this);
+        }
     });
 }
 

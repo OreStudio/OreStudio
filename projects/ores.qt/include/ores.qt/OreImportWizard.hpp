@@ -20,6 +20,9 @@
 #ifndef ORES_QT_ORE_IMPORT_WIZARD_HPP
 #define ORES_QT_ORE_IMPORT_WIZARD_HPP
 
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
 #include <QWizard>
 #include <QWizardPage>
 #include <QLabel>
@@ -77,6 +80,8 @@ public:
     };
 
     explicit OreImportWizard(ClientManager* clientManager,
+                             std::optional<boost::uuids::uuid> parentPortfolioId = std::nullopt,
+                             const std::string& parentPortfolioName = "",
                              QWidget* parent = nullptr);
     ~OreImportWizard() override = default;
 
@@ -254,6 +259,7 @@ private slots:
 
 private:
     OreImportWizard* wizard_;
+    QLabel* parentContextLabel_{nullptr};  // shown when parent is pre-selected
     QCheckBox* createParentCheck_;
     QComboBox* parentCombo_;
     QLabel* hierarchyPreviewLabel_;

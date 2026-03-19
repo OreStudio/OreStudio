@@ -75,7 +75,10 @@ using namespace ores::logging;
 // OreImportWizard
 // ============================================================================
 
-OreImportWizard::OreImportWizard(ClientManager* clientManager, QWidget* parent)
+OreImportWizard::OreImportWizard(ClientManager* clientManager,
+                                 std::optional<boost::uuids::uuid> parentPortfolioId,
+                                 const std::string& parentPortfolioName,
+                                 QWidget* parent)
     : QWizard(parent),
       clientManager_(clientManager) {
 
@@ -96,6 +99,12 @@ OreImportWizard::OreImportWizard(ClientManager* clientManager, QWidget* parent)
     choices_.create_parent_portfolio = true;
     choices_.currency_mode = ore::planner::currency_import_mode::missing_only;
     choices_.party_id = clientManager_->currentPartyId();
+
+    // Pre-set parent portfolio context from Portfolio Explorer selection
+    if (parentPortfolioId) {
+        choices_.existing_parent_portfolio_id = parentPortfolioId;
+        choices_.parent_portfolio_name = parentPortfolioName;
+    }
 
     setupPages();
 }
@@ -471,6 +480,12 @@ OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
 
     auto* layout = new QVBoxLayout(this);
 
+    // Banner shown when a portfolio was pre-selected in the Explorer
+    parentContextLabel_ = new QLabel(this);
+    parentContextLabel_->setWordWrap(true);
+    parentContextLabel_->hide();
+    layout->addWidget(parentContextLabel_);
+
     createParentCheck_ = new QCheckBox(
         tr("Set a portfolio as the parent of imported portfolios"), this);
     createParentCheck_->setChecked(true);
@@ -507,32 +522,52 @@ OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
 
 void OrePortfolioPage::initializePage() {
     fetchDone_ = false;
-    createParentCheck_->setChecked(wizard_->choices().create_parent_portfolio);
+    const bool hasContext =
+        wizard_->choices().existing_parent_portfolio_id.has_value();
 
-    // Fetch existing portfolios asynchronously to populate combo
-    parentCombo_->clear();
-    parentCombo_->setEnabled(false);
+    if (hasContext) {
+        // Parent is pre-selected from Explorer — lock the UI and skip fetch.
+        const auto name = wizard_->choices().parent_portfolio_name;
+        const auto display = name.empty()
+            ? tr("Importing under pre-selected portfolio.")
+            : tr("Importing under portfolio: <b>%1</b>")
+                .arg(QString::fromStdString(name));
+        parentContextLabel_->setText(display);
+        parentContextLabel_->show();
+        createParentCheck_->hide();
+        parentCombo_->hide();
+        fetchDone_ = true;
+    } else {
+        parentContextLabel_->hide();
+        createParentCheck_->show();
+        parentCombo_->show();
+        createParentCheck_->setChecked(wizard_->choices().create_parent_portfolio);
 
-    auto* cm = wizard_->clientManager();
-    using Result = std::vector<std::string>;
-    auto* watcher = new QFutureWatcher<Result>(this);
-    connect(watcher, &QFutureWatcher<Result>::finished,
-            this, &OrePortfolioPage::onPortfoliosFetchFinished);
+        // Fetch existing portfolios asynchronously to populate combo
+        parentCombo_->clear();
+        parentCombo_->setEnabled(false);
 
-    watcher->setFuture(QtConcurrent::run([cm]() -> Result {
-        refdata::messaging::get_portfolios_request req;
-        req.limit = 1000;
-        const auto resp = cm->process_authenticated_request(std::move(req));
-        Result names;
-        if (resp) {
-            for (const auto& p : resp->portfolios)
-                names.push_back(p.name);
-            std::sort(names.begin(), names.end());
-        }
-        return names;
-    }));
+        auto* cm = wizard_->clientManager();
+        using Result = std::vector<std::string>;
+        auto* watcher = new QFutureWatcher<Result>(this);
+        connect(watcher, &QFutureWatcher<Result>::finished,
+                this, &OrePortfolioPage::onPortfoliosFetchFinished);
 
-    onCreateParentToggled(createParentCheck_->isChecked());
+        watcher->setFuture(QtConcurrent::run([cm]() -> Result {
+            refdata::messaging::get_portfolios_request req;
+            req.limit = 1000;
+            const auto resp = cm->process_authenticated_request(std::move(req));
+            Result names;
+            if (resp) {
+                for (const auto& p : resp->portfolios)
+                    names.push_back(p.name);
+                std::sort(names.begin(), names.end());
+            }
+            return names;
+        }));
+
+        onCreateParentToggled(createParentCheck_->isChecked());
+    }
 }
 
 bool OrePortfolioPage::validatePage() {

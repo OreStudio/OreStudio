@@ -109,6 +109,11 @@ void AddItemDialog::setupUI() {
     portSpinBox_->setValue(55555);
     formLayout->addRow(portLabel_, portSpinBox_);
 
+    namespaceLabel_ = new QLabel(tr("Namespace:"), this);
+    namespaceEdit_ = new QLineEdit(this);
+    namespaceEdit_->setPlaceholderText(tr("e.g., ores.dev.local1"));
+    formLayout->addRow(namespaceLabel_, namespaceEdit_);
+
     // Connection-only: credentials
     usernameLabel_ = new QLabel(tr("Username:"), this);
     usernameEdit_ = new QLineEdit(this);
@@ -253,6 +258,7 @@ void AddItemDialog::onEnvironmentComboChanged(int index) {
         hostEdit_->setReadOnly(false);
         portSpinBox_->setEnabled(true);
         hostEdit_->setPlaceholderText(tr("e.g., localhost or 192.168.1.100"));
+        namespaceEdit_->clear();
     } else {
         // Environment selected — fill and lock host/port
         QString envIdStr = environmentCombo_->itemData(index).toString();
@@ -267,6 +273,7 @@ void AddItemDialog::onEnvironmentComboChanged(int index) {
             if (env) {
                 hostEdit_->setText(QString::fromStdString(env->host));
                 portSpinBox_->setValue(env->port);
+                namespaceEdit_->setText(QString::fromStdString(env->subject_prefix));
                 hostEdit_->setReadOnly(true);
                 portSpinBox_->setEnabled(false);
             }
@@ -295,6 +302,16 @@ void AddItemDialog::updateFieldVisibility() {
     portSpinBox_->setVisible(isEnvironment || isConnection);
     portSpinBox_->setEnabled(isEnvironment || isConnection);
 
+    // Namespace: Environment (editable), Connection (read-only from env)
+    namespaceLabel_->setVisible(isEnvironment || isConnection);
+    namespaceEdit_->setVisible(isEnvironment || isConnection);
+    namespaceEdit_->setReadOnly(isConnection);
+    namespaceEdit_->setEnabled(isEnvironment || isConnection);
+    if (isConnection)
+        namespaceEdit_->setPlaceholderText(tr("(from linked environment)"));
+    else
+        namespaceEdit_->setPlaceholderText(tr("e.g., ores.dev.local1"));
+
     // Credentials: Connection only
     usernameLabel_->setVisible(isConnection);
     usernameEdit_->setVisible(isConnection);
@@ -313,10 +330,11 @@ void AddItemDialog::updateFieldVisibility() {
     // Test button only for connections with callback
     testAction_->setVisible(isConnection && static_cast<bool>(testCallback_));
 
-    // Reset host/port lock state when switching away from Connection
+    // Reset host/port/namespace lock state when switching away from Connection
     if (!isConnection) {
         hostEdit_->setReadOnly(false);
         portSpinBox_->setEnabled(isEnvironment || isConnection);
+        namespaceEdit_->setReadOnly(false);
     }
 }
 
@@ -395,6 +413,7 @@ void AddItemDialog::setEnvironment(const connections::domain::environment& env) 
     nameEdit_->setText(QString::fromStdString(env.name));
     hostEdit_->setText(QString::fromStdString(env.host));
     portSpinBox_->setValue(env.port);
+    namespaceEdit_->setText(QString::fromStdString(env.subject_prefix));
     descriptionEdit_->setPlainText(QString::fromStdString(env.description));
 
     // Set folder
@@ -424,6 +443,7 @@ connections::domain::environment AddItemDialog::getEnvironment() const {
     env.name = nameEdit_->text().trimmed().toStdString();
     env.host = hostEdit_->text().trimmed().toStdString();
     env.port = portSpinBox_->value();
+    env.subject_prefix = namespaceEdit_->text().trimmed().toStdString();
     env.description = descriptionEdit_->toPlainText().trimmed().toStdString();
 
     QString folderIdStr = folderCombo_->currentData().toString();
@@ -454,7 +474,7 @@ void AddItemDialog::setConnection(const connections::domain::connection& conn) {
         int index = environmentCombo_->findData(envIdStr);
         if (index >= 0) {
             environmentCombo_->setCurrentIndex(index);
-            // onEnvironmentComboChanged will fill and lock host/port
+            // onEnvironmentComboChanged will fill and lock host/port and namespace
         }
     } else {
         linkedEnvironmentId_ = std::nullopt;

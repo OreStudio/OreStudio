@@ -321,10 +321,12 @@ public:
      *
      * @tparam RequestType Request type (must satisfy nats_request concept)
      * @param request The request to send
+     * @param timeout  Request timeout (default: 30 seconds)
      * @return Response on success, error string on failure
      */
     template <nats_request RequestType>
-    auto process_authenticated_request(RequestType request)
+    auto process_authenticated_request(RequestType request,
+        std::chrono::milliseconds timeout = std::chrono::seconds(30))
         -> std::expected<typename RequestType::response_type, std::string> {
         using ResponseType = typename RequestType::response_type;
         if (!session_.is_logged_in()) {
@@ -333,7 +335,7 @@ public:
         try {
             const auto json_body = rfl::json::write(request);
             auto msg = session_.authenticated_request(
-                RequestType::nats_subject, json_body);
+                RequestType::nats_subject, json_body, timeout);
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
                 msg.data.size());

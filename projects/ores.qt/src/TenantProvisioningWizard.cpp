@@ -25,6 +25,7 @@
 #include "ores.qt/WidgetUtils.hpp"
 
 #include <array>
+#include <chrono>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
@@ -932,7 +933,7 @@ void OrganisationSetupPage::startBundlePublish() {
                 leiRequest.params_json = leiParamsJson;
 
                 auto leiResult = clientManager->process_authenticated_request(
-                    std::move(leiRequest));
+                    std::move(leiRequest), std::chrono::minutes(5));
 
                 if (!leiResult) {
                     return std::nullopt;
@@ -950,7 +951,7 @@ void OrganisationSetupPage::startBundlePublish() {
             orgRequest.atomic = true;
 
             auto orgResult = clientManager->process_authenticated_request(
-                std::move(orgRequest));
+                std::move(orgRequest), std::chrono::minutes(5));
 
             if (!orgResult) {
                 return std::nullopt;

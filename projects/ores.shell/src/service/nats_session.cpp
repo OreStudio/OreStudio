@@ -84,7 +84,8 @@ ores::nats::message nats_session::request(std::string_view subject,
 }
 
 ores::nats::message nats_session::authenticated_request(std::string_view subject,
-                                                        std::string_view json_body) {
+                                                        std::string_view json_body,
+                                                        std::chrono::milliseconds timeout) {
     if (!client_) {
         throw std::runtime_error("Not connected to NATS");
     }
@@ -95,7 +96,7 @@ ores::nats::message nats_session::authenticated_request(std::string_view subject
     auto data = std::span<const std::byte>(begin, json_body.size());
     std::unordered_map<std::string, std::string> headers;
     headers["Authorization"] = "Bearer " + auth_->jwt;
-    return client_->request_sync(subject, data, std::move(headers));
+    return client_->request_sync(subject, data, std::move(headers), timeout);
 }
 
 std::shared_ptr<ores::nats::service::client> nats_session::get_client() const {

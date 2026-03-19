@@ -23,6 +23,7 @@
 #include <chrono>
 #include <stdexcept>
 #include <boost/asio/ip/address.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -37,7 +38,9 @@
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/domain/role.hpp"
+#include "ores.iam/domain/session.hpp"
 #include "ores.iam/repository/account_party_repository.hpp"
+#include "ores.iam/repository/session_repository.hpp"
 #include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.iam/service/account_service.hpp"
@@ -206,7 +209,8 @@ public:
                 username = req->principal.substr(0, at_pos);
                 const auto hostname = req->principal.substr(at_pos + 1);
                 if (auto t = auth_lookup_tenant_by_hostname(ctx_, hostname)) {
-                    auto tid_result = ores::utility::uuid::tenant_id::from_uuid(t->id);
+                    auto tid_result =
+                        ores::utility::uuid::tenant_id::from_uuid(t->id);
                     if (tid_result)
                         login_ctx = ctx_.with_tenant(*tid_result, "");
                 }
@@ -226,15 +230,60 @@ public:
             auto account_parties =
                 ap_repo.read_latest_by_account(acct.id);
 
+            // Every fully-provisioned account must have at least one party.
+            // A missing party is a misconfiguration — reject the login so the
+            // issue surfaces immediately rather than producing a confusing
+            // partial session.
             if (account_parties.empty()) {
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Login rejected for " << username
+                    << ": account has no party assignment";
+                throw std::runtime_error(
+                    "Account has no party assignment. "
+                    "Please contact your administrator.");
+            }
+
+            // Create a session record so that analytics, session listings,
+            // and logout end-time tracking all work correctly.
+            const auto now = std::chrono::system_clock::now();
+            boost::uuids::random_generator uuid_gen;
+            domain::session sess;
+            sess.id = uuid_gen();
+            sess.account_id = acct.id;
+            sess.tenant_id = acct.tenant_id;
+            sess.start_time = now;
+            sess.username = acct.username;
+            sess.protocol = domain::session_protocol::http;
+            sess.client_ip = ip;
+            // party_id set below once we know which party is active
+            try {
+                repository::session_repository sess_repo(login_ctx);
+                sess_repo.create(sess);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Failed to create session record: " << e.what();
+            }
+            const auto session_id_str = boost::uuids::to_string(sess.id);
+
+            if (account_parties.size() == 1) {
+                const auto& party_id =
+                    account_parties.front().party_id;
+                auto visible = auth_compute_visible_party_ids(
+                    login_ctx, party_id);
+
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
-                claims.issued_at = std::chrono::system_clock::now();
-                claims.expires_at =
-                    claims.issued_at + std::chrono::hours(8);
+                claims.issued_at = now;
+                claims.expires_at = now + std::chrono::hours(8);
                 claims.username = acct.username;
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();
+                claims.party_id = boost::uuids::to_string(party_id);
+                claims.session_id = session_id_str;
+                claims.session_start_time = now;
+                for (const auto& vid : visible)
+                    claims.visible_party_ids.push_back(
+                        boost::uuids::to_string(vid));
                 auto token = signer_.create_token(claims).value_or("");
 
                 login_response resp;
@@ -244,41 +293,7 @@ public:
                 resp.tenant_id = acct.tenant_id.to_string();
                 resp.username = acct.username;
                 resp.email = acct.email;
-                resp.tenant_bootstrap_mode = in_tenant_bootstrap;
-                BOOST_LOG_SEV(auth_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg, resp);
-            } else if (account_parties.size() == 1) {
-                const auto& party_id =
-                    account_parties.front().party_id;
-                auto visible = auth_compute_visible_party_ids(
-                    login_ctx, party_id);
-
-                security::jwt::jwt_claims claims;
-                claims.subject = boost::uuids::to_string(acct.id);
-                claims.issued_at = std::chrono::system_clock::now();
-                claims.expires_at =
-                    claims.issued_at + std::chrono::hours(8);
-                claims.username = acct.username;
-                claims.email = acct.email;
-                claims.tenant_id = acct.tenant_id.to_string();
-                claims.party_id =
-                    boost::uuids::to_string(party_id);
-                for (const auto& vid : visible)
-                    claims.visible_party_ids.push_back(
-                        boost::uuids::to_string(vid));
-                auto token =
-                    signer_.create_token(claims).value_or("");
-
-                login_response resp;
-                resp.success = true;
-                resp.token = token;
-                resp.account_id = boost::uuids::to_string(acct.id);
-                resp.tenant_id = acct.tenant_id.to_string();
-                resp.username = acct.username;
-                resp.email = acct.email;
-                resp.selected_party_id =
-                    boost::uuids::to_string(party_id);
+                resp.selected_party_id = boost::uuids::to_string(party_id);
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
@@ -293,17 +308,18 @@ public:
                     << "Completed " << msg.subject;
                 reply(nats_, msg, resp);
             } else {
+                // Multiple parties: issue a short-lived select-party token.
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
-                claims.issued_at = std::chrono::system_clock::now();
-                claims.expires_at =
-                    claims.issued_at + std::chrono::minutes(5);
+                claims.issued_at = now;
+                claims.expires_at = now + std::chrono::minutes(5);
                 claims.audience = "select_party_only";
                 claims.username = acct.username;
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();
-                auto token =
-                    signer_.create_token(claims).value_or("");
+                claims.session_id = session_id_str;
+                claims.session_start_time = now;
+                auto token = signer_.create_token(claims).value_or("");
 
                 login_response resp;
                 resp.success = true;
@@ -369,6 +385,7 @@ public:
                 auto claims_result = signer_.validate(token);
                 if (claims_result) {
                     boost::uuids::string_generator sg;
+                    // Update the login_info online flag
                     try {
                         auto account_id = sg(claims_result->subject);
                         service::account_service svc(ctx_);
@@ -376,6 +393,25 @@ public:
                     } catch (const std::exception& e) {
                         BOOST_LOG_SEV(auth_handler_lg(), warn)
                             << "Failed to update logout state: " << e.what();
+                    }
+                    // Persist session end time using the IDs embedded in
+                    // the JWT at login.
+                    if (claims_result->session_id &&
+                            claims_result->session_start_time) {
+                        try {
+                            const auto session_id =
+                                sg(*claims_result->session_id);
+                            repository::session_repository sess_repo(ctx_);
+                            sess_repo.end_session(
+                                session_id,
+                                *claims_result->session_start_time,
+                                std::chrono::system_clock::now(),
+                                0, 0);
+                        } catch (const std::exception& e) {
+                            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                                << "Failed to end session record: "
+                                << e.what();
+                        }
                     }
                 }
             }

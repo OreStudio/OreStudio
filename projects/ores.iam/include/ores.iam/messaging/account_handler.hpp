@@ -40,6 +40,7 @@
 #include "ores.iam/repository/account_party_repository.hpp"
 #include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
@@ -160,14 +161,37 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            const auto base_ctx = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
-            service::account_service acct_svc(ctx);
+
+            // Parse principal: if username@hostname, route to that tenant's
+            // context so accounts can be created in any tenant by a system
+            // admin whose JWT is in the system tenant.
+            std::string username = req->principal;
+            ores::database::context op_ctx = base_ctx;
+            const auto at_pos = req->principal.rfind('@');
+            if (at_pos != std::string::npos) {
+                username = req->principal.substr(0, at_pos);
+                const auto hostname = req->principal.substr(at_pos + 1);
+                repository::tenant_repository tenant_repo(ctx_);
+                auto tenants = tenant_repo.read_latest_by_hostname(hostname);
+                if (!tenants.empty()) {
+                    using ores::database::service::tenant_context;
+                    op_ctx = tenant_context::with_tenant(
+                        ctx_, boost::uuids::to_string(tenants.front().id));
+                } else {
+                    BOOST_LOG_SEV(account_handler_lg(), warn)
+                        << "Tenant not found for hostname: " << hostname
+                        << ", using session tenant";
+                }
+            }
+
+            service::account_service acct_svc(op_ctx);
             auto auth_svc =
-                std::make_shared<service::authorization_service>(ctx);
+                std::make_shared<service::authorization_service>(op_ctx);
             service::account_setup_service setup_svc(acct_svc, auth_svc);
             auto acct = setup_svc.create_account(
-                req->principal, req->email, req->password, ctx.actor());
+                username, req->email, req->password, base_ctx.actor());
             BOOST_LOG_SEV(account_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, save_account_response{
@@ -528,6 +552,10 @@ public:
             new_claims.tenant_id = tenant_id_str;
             new_claims.party_id =
                 boost::uuids::to_string(requested_party_id);
+            // Carry the session identifiers forward so logout can end
+            // the session record created at login.
+            new_claims.session_id = claims_result->session_id;
+            new_claims.session_start_time = claims_result->session_start_time;
             for (const auto& vid : visible)
                 new_claims.visible_party_ids.push_back(
                     boost::uuids::to_string(vid));

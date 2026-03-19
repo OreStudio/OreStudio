@@ -180,9 +180,9 @@ public:
                     op_ctx = tenant_context::with_tenant(
                         ctx_, boost::uuids::to_string(tenants.front().id));
                 } else {
-                    BOOST_LOG_SEV(account_handler_lg(), warn)
-                        << "Tenant not found for hostname: " << hostname
-                        << ", falling back to JWT tenant context";
+                    throw std::runtime_error(
+                        "Tenant not found for hostname: " + hostname +
+                        ". Cannot create account in an unknown tenant.");
                 }
             }
 

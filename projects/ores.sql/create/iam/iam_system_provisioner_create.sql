@@ -143,7 +143,8 @@ begin
     v_system_party_id := ores_iam_account_parties_system_party_id_fn(v_system_tenant_id);
 
     if v_system_party_id is null then
-        raise warning 'No system party found for system tenant; admin account has no party context';
+        raise exception 'No system party found for system tenant. Cannot create admin account without a party assignment.'
+            using errcode = '23503';
     else
         insert into ores_iam_account_parties_tbl (
             account_id, tenant_id, party_id, version,

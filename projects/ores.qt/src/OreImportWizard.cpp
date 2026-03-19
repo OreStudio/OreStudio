@@ -42,6 +42,7 @@
 #include "ores.refdata/messaging/book_protocol.hpp"
 #include "ores.refdata/messaging/counterparty_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
+#include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -1181,10 +1182,15 @@ void OreTradeImportPage::startImport() {
                 << trade_batch_size << " each";
             for (int offset = 0; offset < total_trades; offset += trade_batch_size) {
                 const int end = std::min(offset + trade_batch_size, total_trades);
+                namespace reason = ores::database::domain::change_reason_constants;
                 std::vector<trading::domain::trade> batch;
                 batch.reserve(static_cast<std::size_t>(end - offset));
-                for (int i = offset; i < end; ++i)
-                    batch.push_back(plan.trades[static_cast<std::size_t>(i)].trade);
+                for (int i = offset; i < end; ++i) {
+                    auto t = plan.trades[static_cast<std::size_t>(i)].trade;
+                    t.change_reason_code =
+                        std::string(reason::codes::external_data_import);
+                    batch.push_back(std::move(t));
+                }
 
                 BOOST_LOG_SEV(local_lg, debug) << "Sending trade batch "
                     << (offset / trade_batch_size + 1) << "/"

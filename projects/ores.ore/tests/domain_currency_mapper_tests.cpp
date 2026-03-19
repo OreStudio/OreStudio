@@ -68,7 +68,7 @@ TEST_CASE("map_currency_definition_to_domain_with_all_fields", tags) {
     CHECK(result.fractions_per_unit == 100);
     CHECK(result.rounding_type == "Closest");
     CHECK(result.rounding_precision == 2);
-    CHECK(result.monetary_nature == "Major");
+    CHECK(result.monetary_nature == "fiat");
     CHECK(result.market_tier.empty());
     CHECK(result.modified_by == "ores");
     CHECK(result.change_reason_code == "system.external_data_import");
@@ -306,7 +306,7 @@ TEST_CASE("map_currency_roundtrip_preserves_fields", tags) {
     original.fractions_per_unit = 1;
     original.rounding_type = "Floor";
     original.rounding_precision = 0;
-    original.monetary_nature = "Major";
+    original.monetary_nature = "fiat";
 
     const auto def = currency_mapper::map(original);
     const auto roundtripped = currency_mapper::map(def);

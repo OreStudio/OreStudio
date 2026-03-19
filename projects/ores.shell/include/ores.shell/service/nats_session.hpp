@@ -20,6 +20,7 @@
 #ifndef ORES_SHELL_SERVICE_NATS_SESSION_HPP
 #define ORES_SHELL_SERVICE_NATS_SESSION_HPP
 
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
@@ -103,12 +104,14 @@ public:
      *
      * @param subject NATS subject to send to
      * @param json_body JSON request body
+     * @param timeout  Request timeout (default: 30 seconds)
      * @return Reply message
      * @throws std::runtime_error on timeout or transport error
      */
     [[nodiscard]] ores::nats::message authenticated_request(
         std::string_view subject,
-        std::string_view json_body);
+        std::string_view json_body,
+        std::chrono::milliseconds timeout = std::chrono::seconds(30));
 
     /**
      * @brief Get the underlying NATS client. May be null if not connected.

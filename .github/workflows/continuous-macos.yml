@@ -144,4 +144,4 @@ jobs:
         uses: actions/upload-artifact@v7.0.0
         with:
           name: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-0.0.14-Darwin.dmg
+          path: ./build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/packages/OreStudio-0.0.15-Darwin.dmg

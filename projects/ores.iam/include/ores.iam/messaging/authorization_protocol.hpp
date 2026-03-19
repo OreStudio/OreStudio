@@ -66,7 +66,14 @@ struct assign_role_response {
     std::string error_message;
 };
 
+struct assign_role_by_name_response {
+    bool success = false;
+    std::string error_message;
+};
+
 struct assign_role_by_name_request {
+    using response_type = struct assign_role_by_name_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.assign-by-name";
     std::string principal;
     std::string role_name;
 };
@@ -83,7 +90,14 @@ struct revoke_role_response {
     std::string error_message;
 };
 
+struct revoke_role_by_name_response {
+    bool success = false;
+    std::string error_message;
+};
+
 struct revoke_role_by_name_request {
+    using response_type = struct revoke_role_by_name_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.revoke-by-name";
     std::string principal;
     std::string role_name;
 };
@@ -107,6 +121,8 @@ struct get_account_permissions_response {
 };
 
 struct suggest_role_commands_request {
+    using response_type = struct suggest_role_commands_response;
+    static constexpr std::string_view nats_subject = "iam.v1.roles.suggest-commands";
     std::string username;
     std::string tenant_id;
     std::string hostname;

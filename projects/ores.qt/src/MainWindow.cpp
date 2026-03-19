@@ -2618,6 +2618,7 @@ void MainWindow::onConnectionBrowserTriggered() {
     });
 
     mdiArea_->addSubWindow(connectionBrowserWindow_);
+    connectionBrowserWindow_->resize(browserWidget->sizeHint());
     connectionBrowserWindow_->show();
 
     BOOST_LOG_SEV(lg(), info) << "Connection Browser window opened";

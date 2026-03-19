@@ -616,9 +616,10 @@ OreTradeImportPage::OreTradeImportPage(OreImportWizard* wizard)
     tradeDateEdit_->setPlaceholderText(tr("YYYY-MM-DD (leave blank to keep ORE value)"));
     form->addRow(tr("Default trade date:"), tradeDateEdit_);
 
-    lifecycleEventEdit_ = new QLineEdit(this);
-    lifecycleEventEdit_->setPlaceholderText(tr("e.g. New (leave blank to keep ORE value)"));
-    form->addRow(tr("Default lifecycle event:"), lifecycleEventEdit_);
+    lifecycleEventCombo_ = new QComboBox(this);
+    lifecycleEventCombo_->addItem(tr("(keep ORE value)"), QString());
+    lifecycleEventCombo_->setEnabled(false);
+    form->addRow(tr("Default lifecycle event:"), lifecycleEventCombo_);
 
     defaultCounterpartyCombo_ = new QComboBox(this);
     defaultCounterpartyCombo_->addItem(tr("-- None (use ORE value) --"), QString());
@@ -663,29 +664,87 @@ void OreTradeImportPage::initializePage() {
     logOutput_->hide();
     logOutput_->clear();
 
-    // Pre-fill defaults: today's date and "New" lifecycle event
+    // Pre-fill default trade date
     if (tradeDateEdit_->text().isEmpty())
         tradeDateEdit_->setText(QDate::currentDate().toString("yyyy-MM-dd"));
-    if (lifecycleEventEdit_->text().isEmpty())
-        lifecycleEventEdit_->setText(tr("New"));
+
+    auto* cm = wizard_->clientManager();
+
+    // Async fetch activity types to populate lifecycle event combo
+    lifecycleEventCombo_->setEnabled(false);
+    using ActivityTypeList = std::vector<trading::domain::activity_type>;
+    auto* atWatcher = new QFutureWatcher<ActivityTypeList>(this);
+    connect(atWatcher, &QFutureWatcher<ActivityTypeList>::finished,
+            this, &OreTradeImportPage::onActivityTypesFetchFinished);
+    atWatcher->setFuture(QtConcurrent::run([cm]() -> ActivityTypeList {
+        trading::messaging::get_activity_types_request req;
+        const auto resp = cm->process_authenticated_request(std::move(req));
+        if (!resp) return {};
+        return resp->activity_types;
+    }));
 
     // Async fetch counterparties to populate the default counterparty combo
     defaultCounterpartyCombo_->setEnabled(false);
     counterpartyStatusLabel_->setText(tr("Loading…"));
 
     using CounterpartyList = std::vector<refdata::domain::counterparty>;
-    auto* cm = wizard_->clientManager();
-    auto* watcher = new QFutureWatcher<CounterpartyList>(this);
-    connect(watcher, &QFutureWatcher<CounterpartyList>::finished,
+    auto* cpWatcher = new QFutureWatcher<CounterpartyList>(this);
+    connect(cpWatcher, &QFutureWatcher<CounterpartyList>::finished,
             this, &OreTradeImportPage::onCounterpartiesFetchFinished);
 
-    watcher->setFuture(QtConcurrent::run([cm]() -> CounterpartyList {
+    cpWatcher->setFuture(QtConcurrent::run([cm]() -> CounterpartyList {
         refdata::messaging::get_counterparties_request req;
         req.limit = 1000;
         const auto resp = cm->process_authenticated_request(std::move(req));
         if (!resp) return {};
         return resp->counterparties;
     }));
+}
+
+void OreTradeImportPage::onActivityTypesFetchFinished() {
+    using ActivityTypeList = std::vector<trading::domain::activity_type>;
+    auto* watcher = static_cast<QFutureWatcher<ActivityTypeList>*>(sender());
+    if (!watcher) return;
+
+    const auto types = watcher->result();
+    watcher->deleteLater();
+
+    BOOST_LOG_SEV(lg(), info) << "Fetched " << types.size() << " activity types";
+
+    // Preserve current selection across re-visits
+    const QString prevCode = lifecycleEventCombo_->currentData().toString();
+    lifecycleEventCombo_->clear();
+    lifecycleEventCombo_->addItem(tr("(keep ORE value)"), QString());
+
+    for (const auto& t : types) {
+        const QString code = QString::fromStdString(t.code);
+        const QString label = t.description.empty()
+            ? code
+            : QString("%1 (%2)").arg(QString::fromStdString(t.description), code);
+        lifecycleEventCombo_->addItem(label, code);
+    }
+
+    // Restore prior selection; otherwise default to new_booking
+    bool restored = false;
+    if (!prevCode.isEmpty()) {
+        for (int i = 1; i < lifecycleEventCombo_->count(); ++i) {
+            if (lifecycleEventCombo_->itemData(i).toString() == prevCode) {
+                lifecycleEventCombo_->setCurrentIndex(i);
+                restored = true;
+                break;
+            }
+        }
+    }
+    if (!restored) {
+        for (int i = 1; i < lifecycleEventCombo_->count(); ++i) {
+            if (lifecycleEventCombo_->itemData(i).toString() == QStringLiteral("new_booking")) {
+                lifecycleEventCombo_->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
+    lifecycleEventCombo_->setEnabled(true);
 }
 
 void OreTradeImportPage::onCounterpartiesFetchFinished() {
@@ -746,7 +805,7 @@ void OreTradeImportPage::startImport() {
     // Capture defaults from form
     auto& defs = wizard_->choices().defaults;
     defs.trade_date      = tradeDateEdit_->text().trimmed().toStdString();
-    defs.activity_type_code = lifecycleEventEdit_->text().trimmed().toStdString();
+    defs.activity_type_code = lifecycleEventCombo_->currentData().toString().toStdString();
 
     const QString cpUuidStr = defaultCounterpartyCombo_->currentData().toString();
     if (!cpUuidStr.isEmpty()) {

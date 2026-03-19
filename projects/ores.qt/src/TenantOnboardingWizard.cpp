@@ -32,9 +32,7 @@
 #include <QFutureWatcher>
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam/domain/tenant.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
-#include "ores.iam/messaging/tenant_protocol.hpp"
 
 namespace ores::qt {
 
@@ -594,54 +592,31 @@ void ApplyOnboardingPage::startOnboarding() {
 
             OnboardingResult result;
 
-            iam::domain::tenant tenant;
-            tenant.type = type;
-            tenant.status = "active";
-            tenant.code = code;
-            tenant.name = name;
-            tenant.hostname = hostname;
-            tenant.description = description;
+            iam::messaging::provision_tenant_request req;
+            req.type = type;
+            req.code = code;
+            req.name = name;
+            req.hostname = hostname;
+            req.description = description;
+            req.principal = adminUsername;
+            req.password = adminPassword;
+            req.email = adminEmail;
 
-            iam::messaging::save_tenant_request request;
-            request.data = std::move(tenant);
+            auto resp = clientManager->process_authenticated_request(
+                std::move(req));
 
-            auto response = clientManager->process_authenticated_request(
-                std::move(request));
-
-            if (!response) {
+            if (!resp) {
                 result.error = "Failed to communicate with server";
                 return result;
             }
 
-            if (!response->success) {
-                result.error = response->message;
-                return result;
-            }
-
-            // Create tenant admin account
-            iam::messaging::provision_tenant_request adminReq;
-            adminReq.tenant_hostname = hostname;
-            adminReq.principal = adminUsername;
-            adminReq.password = adminPassword;
-            adminReq.email = adminEmail;
-
-            auto adminResp = clientManager->process_authenticated_request(
-                std::move(adminReq));
-
-            if (!adminResp) {
-                result.error = "Tenant created but failed to create admin account: "
-                    + adminResp.error();
-                return result;
-            }
-
-            if (!adminResp->success) {
-                result.error = "Tenant created but admin account creation failed: "
-                    + adminResp->error_message;
+            if (!resp->success) {
+                result.error = resp->error_message;
                 return result;
             }
 
             result.success = true;
-            result.tenantId = code; // Use code as ID since save doesn't return tenant ID
+            result.tenantId = resp->tenant_id;
             return result;
         }
     );

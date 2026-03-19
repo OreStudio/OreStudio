@@ -21,6 +21,8 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/nil_generator.hpp>
+#include "ores.trading/service/trade_status_service.hpp"
 
 namespace ores::trading::service {
 
@@ -77,8 +79,14 @@ void trade_service::save_trade(const domain::trade& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving trade: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade: " << v.id;
+    auto t = v;
+    const std::optional<boost::uuids::uuid> current =
+        t.status_id.is_nil() ? std::nullopt
+                             : std::make_optional(t.status_id);
+    t.status_id = trade_status_service::resolve_status(
+        ctx_, t.activity_type_code, current);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved trade: " << t.id;
 }
 
 void trade_service::save_trades(const std::vector<domain::trade>& trades) {
@@ -87,7 +95,15 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades) {
             throw std::invalid_argument("Trade id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
-    repo_.write(ctx_, trades);
+    auto resolved = trades;
+    for (auto& t : resolved) {
+        const std::optional<boost::uuids::uuid> current =
+            t.status_id.is_nil() ? std::nullopt
+                                 : std::make_optional(t.status_id);
+        t.status_id = trade_status_service::resolve_status(
+            ctx_, t.activity_type_code, current);
+    }
+    repo_.write(ctx_, resolved);
 }
 
 void trade_service::remove_trade(const std::string& id) {

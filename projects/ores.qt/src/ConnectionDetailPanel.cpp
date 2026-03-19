@@ -229,6 +229,12 @@ void ConnectionDetailPanel::setupConnectionPage() {
     connPortLabel_->setStyleSheet(valueStyle);
     formLayout->addRow(portLabel, connPortLabel_);
 
+    auto* nsLabel = new QLabel(tr("Namespace"), connectionPage_);
+    nsLabel->setStyleSheet(labelStyle);
+    connNamespaceLabel_ = new QLabel(connectionPage_);
+    connNamespaceLabel_->setStyleSheet(valueStyle);
+    formLayout->addRow(nsLabel, connNamespaceLabel_);
+
     auto* usernameLabel = new QLabel(tr("Username"), connectionPage_);
     usernameLabel->setStyleSheet(labelStyle);
     connUsernameLabel_ = new QLabel(connectionPage_);
@@ -306,10 +312,10 @@ void ConnectionDetailPanel::showConnection(const connections::domain::connection
     static const auto normalStyle =
         QString("font-size: 13px; color: #c0c0c0;");
 
-    // Resolve linked environment once if host/port are inherited
+    // Resolve linked environment for inherited fields (host, port, namespace)
     std::optional<connections::domain::environment> resolvedEnv;
     QString envTooltip;
-    if (conn.environment_id && (!conn.host || !conn.port)) {
+    if (conn.environment_id) {
         resolvedEnv = manager_->get_environment(*conn.environment_id);
         if (resolvedEnv) {
             envTooltip = tr("Inherited from environment: %1")
@@ -343,6 +349,17 @@ void ConnectionDetailPanel::showConnection(const connections::domain::connection
         connPortLabel_->setText({});
         connPortLabel_->setStyleSheet(normalStyle);
         connPortLabel_->setToolTip({});
+    }
+
+    if (resolvedEnv && !resolvedEnv->subject_prefix.empty()) {
+        connNamespaceLabel_->setText(
+            QString::fromStdString(resolvedEnv->subject_prefix));
+        connNamespaceLabel_->setStyleSheet(inheritedStyle);
+        connNamespaceLabel_->setToolTip(envTooltip);
+    } else {
+        connNamespaceLabel_->setText(tr("(none)"));
+        connNamespaceLabel_->setStyleSheet(normalStyle);
+        connNamespaceLabel_->setToolTip({});
     }
 
     connUsernameLabel_->setText(QString::fromStdString(conn.username));

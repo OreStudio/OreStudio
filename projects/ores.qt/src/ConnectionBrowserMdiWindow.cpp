@@ -182,6 +182,10 @@ void ConnectionBrowserMdiWindow::setupUI() {
 
     layout_->addWidget(splitter_);
 
+    connect(splitter_, &QSplitter::splitterMoved, this, [this]() {
+        UiPersistence::saveSplitter(settings_group_, splitter_);
+    });
+
     // Connect signals
     connect(addAction_, &QAction::triggered,
             this, &ConnectionBrowserMdiWindow::openAddDialog);

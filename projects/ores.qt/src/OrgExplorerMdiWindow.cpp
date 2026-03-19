@@ -70,6 +70,7 @@ void OrgExplorerMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     splitter_ = new QSplitter(Qt::Horizontal, this);
 
@@ -91,7 +92,7 @@ void OrgExplorerMdiWindow::setupToolbar() {
         tr("Reload"));
     reloadAction_->setToolTip(tr("Refresh organisational tree"));
     connect(reloadAction_, &QAction::triggered, this,
-            &OrgExplorerMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_,
         IconUtils::iconPath(Icon::ArrowClockwise));
@@ -235,8 +236,7 @@ void OrgExplorerMdiWindow::setupEventSubscriptions() {
         subscribe_all();
 }
 
-void OrgExplorerMdiWindow::reload() {
-    clearStaleIndicator();
+void OrgExplorerMdiWindow::doReload() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot reload: not connected.";
@@ -417,6 +417,7 @@ void OrgExplorerMdiWindow::rebuildTree() {
     treeView_->expandAll();
     updateBreadcrumb(nullptr);
     updateActionStates();
+    endLoading();
 
     // Fetch trade counts for each book in the background
     QList<boost::uuids::uuid> book_ids;

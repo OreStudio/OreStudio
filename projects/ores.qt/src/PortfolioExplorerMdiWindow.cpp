@@ -81,6 +81,7 @@ void PortfolioExplorerMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     splitter_ = new QSplitter(Qt::Horizontal, this);
 
@@ -102,7 +103,7 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
         tr("Reload"));
     reloadAction_->setToolTip(tr("Refresh portfolio/book tree"));
     connect(reloadAction_, &QAction::triggered, this,
-            &PortfolioExplorerMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_,
         IconUtils::iconPath(Icon::ArrowClockwise));
@@ -284,9 +285,7 @@ void PortfolioExplorerMdiWindow::setupEventSubscriptions() {
         subscribe_all();
 }
 
-void PortfolioExplorerMdiWindow::reload() {
-    clearStaleIndicator();
-
+void PortfolioExplorerMdiWindow::doReload() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot reload: not connected.";
         return;
@@ -455,6 +454,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
     treeModel_->load(party_name, portfolios_, books_);
     treeView_->expandAll();
     updateBreadcrumb(nullptr);
+    endLoading();
 
     // Fetch trade counts for each book in the background
     QList<boost::uuids::uuid> book_ids;

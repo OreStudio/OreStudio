@@ -182,7 +182,7 @@ public:
                 } else {
                     BOOST_LOG_SEV(account_handler_lg(), warn)
                         << "Tenant not found for hostname: " << hostname
-                        << ", using session tenant";
+                        << ", falling back to JWT tenant context";
                 }
             }
 

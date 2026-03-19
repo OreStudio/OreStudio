@@ -173,6 +173,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_account_roles_request::nats_subject, qg,
         [rh](ores::nats::message msg) { rh->by_account(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        assign_role_by_name_request::nats_subject, qg,
+        [rh](ores::nats::message msg) { rh->assign_by_name(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        revoke_role_by_name_request::nats_subject, qg,
+        [rh](ores::nats::message msg) { rh->revoke_by_name(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        suggest_role_commands_request::nats_subject, qg,
+        [rh](ores::nats::message msg) { rh->suggest_commands(std::move(msg)); }));
 
     // --- Tenants ---
     auto th = std::make_shared<tenant_handler>(nats, ctx, signer);

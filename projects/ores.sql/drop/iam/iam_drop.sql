@@ -19,6 +19,7 @@
  */
 
 -- Tenant lifecycle (dropped first - depends on all tables)
+\ir ./iam_system_provisioner_drop.sql
 \ir ./iam_tenant_deprovisioner_drop.sql
 \ir ./iam_tenant_provisioner_drop.sql
 

@@ -37,6 +37,7 @@
 #include "ores.iam/service/bootstrap_mode_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
+#include "ores.security/crypto/password_hasher.hpp"
 #include "ores.refdata/domain/party.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -98,48 +99,33 @@ public:
             return;
         }
         try {
-            service::account_service svc(ctx_);
-            auto acct = svc.create_account(
-                req->principal, req->email, req->password,
-                svc_acct::iam);
+            using ores::database::repository::execute_parameterized_string_query;
 
-            // Associate the admin account with the system party so the
-            // JWT gains a party_id and the user can access party-scoped data.
-            const auto tenant_id_str = ctx_.tenant_id().to_string();
-            refdata::repository::party_repository party_repo(ctx_);
-            auto system_parties = party_repo.read_system_party(tenant_id_str);
-            if (!system_parties.empty()) {
-                const auto& sys_party = system_parties.front();
-                domain::account_party ap;
-                ap.account_id = acct.id;
-                ap.party_id = sys_party.id;
-                ap.tenant_id = tenant_id_str;
-                ap.modified_by = req->principal;
-                ap.performed_by = req->principal;
-                ap.change_reason_code = "system.initial_load";
-                ap.change_commentary = "Bootstrap: associate admin with system party";
-                service::account_party_service ap_svc(ctx_);
-                ap_svc.save_account_party(ap);
-                BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                    << "Associated " << req->principal
-                    << " with system party " << boost::uuids::to_string(sys_party.id);
-            } else {
-                BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
-                    << "No system party found for tenant " << tenant_id_str
-                    << "; admin account has no party context";
+            // Hash the password in C++ — pgcrypto is not required in the DB.
+            const auto password_hash =
+                ores::security::crypto::password_hasher::hash(req->password);
+
+            // The stored procedure creates the account, assigns SuperAdmin,
+            // associates with the system party, and exits bootstrap mode.
+            const auto results = execute_parameterized_string_query(ctx_,
+                "SELECT ores_iam_create_initial_admin_fn($1, $2, $3, $4)::text",
+                {req->principal, req->email, password_hash, req->principal},
+                bootstrap_handler_lg(), "Creating initial admin");
+
+            if (results.empty()) {
+                reply(nats_, msg, create_initial_admin_response{
+                    .success = false,
+                    .error_message = "Procedure returned no account_id"});
+                return;
             }
 
-            auto auth_svc =
-                std::make_shared<service::authorization_service>(ctx_);
-            service::bootstrap_mode_service bms(
-                ctx_, ctx_.tenant_id().to_string(), auth_svc);
-            bms.exit_bootstrap_mode();
+            const auto& account_id_str = results[0];
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;
             reply(nats_, msg, create_initial_admin_response{
                 .success = true,
-                .account_id = boost::uuids::to_string(acct.id),
-                .tenant_id = acct.tenant_id.to_string()});
+                .account_id = account_id_str,
+                .tenant_id = ctx_.tenant_id().to_string()});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();

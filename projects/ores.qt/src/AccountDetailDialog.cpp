@@ -419,23 +419,6 @@ void AccountDetailDialog::onSaveClicked() {
 
         const bool needsRoleSave  = rolesWidget_ && rolesWidget_->hasPendingChanges();
 
-        // Get change reason for party/role assignments if needed
-        std::string changeReasonCode;
-        std::string changeCommentary;
-        if (needsPartySave || needsRoleSave) {
-            namespace reason = dq::domain::change_reason_constants;
-            std::vector<dq::domain::change_reason> reasons;
-            if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
-                reasons = changeReasonCache_->getReasonsForAmend(
-                    std::string{reason::categories::common});
-            }
-            ChangeReasonDialog dialog(reasons,
-                ChangeReasonDialog::OperationType::Amend, true, this);
-            if (dialog.exec() != QDialog::Accepted) return;
-            changeReasonCode = dialog.selectedReasonCode();
-            changeCommentary = dialog.commentary();
-        }
-
         // Capture pending adds before going async
         const auto pendingPartyAdds =
             needsPartySave ? partiesWidget_->pendingAdds()
@@ -451,8 +434,7 @@ void AccountDetailDialog::onSaveClicked() {
 
         QFuture<std::pair<bool, std::string>> future =
             QtConcurrent::run([self, username, password, email,
-                               pendingPartyAdds, pendingRoleAdds,
-                               changeReasonCode, changeCommentary]()
+                               pendingPartyAdds, pendingRoleAdds]()
                 -> std::pair<bool, std::string> {
                 if (!self) return {false, ""};
 
@@ -483,10 +465,8 @@ void AccountDetailDialog::onSaveClicked() {
                 // Commit any staged party additions
                 for (const auto& partyId : pendingPartyAdds) {
                     iam::domain::account_party ap;
-                    ap.account_id        = account_id;
-                    ap.party_id          = partyId;
-                    ap.change_commentary = changeCommentary;
-                    ap.modified_by       = "";  // server overwrites from session
+                    ap.account_id  = account_id;
+                    ap.party_id    = partyId;
 
                     iam::messaging::save_account_party_request party_req;
                     party_req.account_parties.push_back(ap);

@@ -97,6 +97,24 @@ public:
                 << "Failed to decode: " << msg.subject;
             return;
         }
+
+        // Guard: reject if system is not in bootstrap mode.
+        {
+            auto auth_svc =
+                std::make_shared<service::authorization_service>(ctx_);
+            service::bootstrap_mode_service bms(
+                ctx_, ctx_.tenant_id().to_string(), auth_svc);
+            if (!bms.is_in_bootstrap_mode()) {
+                BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
+                    << "Rejected " << msg.subject
+                    << ": system is not in bootstrap mode";
+                reply(nats_, msg, create_initial_admin_response{
+                    .success = false,
+                    .error_message = "System is not in bootstrap mode"});
+                return;
+            }
+        }
+
         try {
             using ores::database::repository::execute_parameterized_string_query;
 

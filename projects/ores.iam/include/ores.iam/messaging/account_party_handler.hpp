@@ -120,7 +120,6 @@ public:
             service::account_party_service svc(ctx);
             for (auto ap : req->account_parties) {
                 stamp(ap, ctx);
-                ap.tenant_id = ctx.tenant_id().to_string();
                 svc.save_account_party(ap);
             }
             BOOST_LOG_SEV(account_party_handler_lg(), debug)

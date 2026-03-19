@@ -40,21 +40,31 @@ namespace change_reasons {
 } // namespace change_reasons
 
 /**
- * @brief Stamps audit fields on a domain object from the request context.
+ * @brief Stamps server-authoritative fields on a domain object from the
+ * request context.
  *
- * Sets modified_by from ctx.actor() (the end-user who initiated the request)
- * and performed_by from ctx.service_account() (the system service executing
- * the write). Sets change_reason_code to the given default if the object has
- * not supplied one. Always overwrites these fields to prevent client spoofing.
+ * Fields stamped (where present on the object):
+ *  - tenant_id: always overwritten from ctx.tenant_id() — never trusted
+ *    from the client, as it is a security boundary enforced by RLS.
+ *  - modified_by: overwritten from ctx.actor() (the authenticated user).
+ *  - performed_by: overwritten from ctx.service_account().
+ *  - change_reason_code: set to @p change_reason only if the object left
+ *    it empty; a client-supplied code is preserved.
+ *
+ * All field assignments are guarded by if constexpr so the function compiles
+ * for any domain type regardless of which fields it declares.
  *
  * @param obj           Domain object to stamp (modified in place).
- * @param ctx           Per-request database context carrying actor and service
- *                      account.
+ * @param ctx           Per-request database context derived from the JWT.
  * @param change_reason Default change reason code (applied only if obj has none).
  */
 template<typename T>
 void stamp(T& obj, const ores::database::context& ctx,
     std::string_view change_reason = change_reasons::new_record) {
+    // tenant_id is a security boundary — always derived from the validated JWT,
+    // never from client-supplied data.
+    if constexpr (requires { obj.tenant_id; })
+        obj.tenant_id = ctx.tenant_id().to_string();
     const auto& actor = ctx.actor();
     if (!actor.empty()) {
         if constexpr (requires { obj.modified_by; })

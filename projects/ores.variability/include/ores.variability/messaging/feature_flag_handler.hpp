@@ -77,7 +77,6 @@ public:
         if (auto req = decode<save_feature_flag_request>(msg)) {
             try {
                 stamp(req->data, ctx);
-                req->data.tenant_id = ctx.tenant_id().to_string();
                 svc.save_feature_flag(req->data);
                 BOOST_LOG_SEV(feature_flag_handler_lg(), debug)
                     << "Completed " << msg.subject;

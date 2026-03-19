@@ -35,12 +35,12 @@
 #include "ores.iam/service/account_party_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.refdata/domain/party.hpp"
 #include "ores.refdata/repository/party_repository.hpp"
-#include "ores.iam/repository/tenant_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
 
 namespace ores::iam::messaging {
 
@@ -160,60 +160,42 @@ public:
             return;
         }
         try {
-            // Look up tenant by hostname
-            repository::tenant_repository tenant_repo(ctx_);
-            auto tenants = tenant_repo.read_latest_by_hostname(req->tenant_hostname);
-            if (tenants.empty()) {
+            using ores::database::service::tenant_context;
+            using ores::database::repository::execute_parameterized_string_query;
+
+            // Call the SQL provisioner in system tenant context. The procedure
+            // creates the tenant, copies all system-tenant reference data (roles,
+            // permissions, lookup tables), seeds the WRLD business centre, creates
+            // the system party, and sets the bootstrap mode flag.
+            auto sys_ctx = tenant_context::with_system_tenant(ctx_);
+            const auto results = execute_parameterized_string_query(sys_ctx,
+                "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)::text",
+                {req->type, req->code, req->name, req->hostname,
+                 req->description, req->principal},
+                bootstrap_handler_lg(), "Provisioning tenant");
+
+            if (results.empty()) {
                 reply(nats_, msg, provision_tenant_response{
                     .success = false,
-                    .error_message = "Tenant not found for hostname: " +
-                        req->tenant_hostname});
-                return;
-            }
-            const auto& t = tenants.front();
-            auto tid_result = ores::utility::uuid::tenant_id::from_uuid(t.id);
-            if (!tid_result) {
-                reply(nats_, msg, provision_tenant_response{
-                    .success = false,
-                    .error_message = "Invalid tenant ID: " + tid_result.error()});
+                    .error_message = "Provisioner returned no tenant_id"});
                 return;
             }
 
-            // Create tenant-scoped context
-            auto tenant_ctx = ctx_.with_tenant(*tid_result, req->principal);
-            const auto tenant_id_str = tid_result->to_string();
+            const auto& tenant_id_str = results[0];
+            BOOST_LOG_SEV(bootstrap_handler_lg(), info)
+                << "Provisioned tenant: " << req->code
+                << " (id: " << tenant_id_str << ")";
 
-            // Create account in tenant context
+            // Create the admin account in the new tenant's context.
+            auto tenant_ctx = tenant_context::with_tenant(ctx_, tenant_id_str);
             service::account_service svc(tenant_ctx);
             auto acct = svc.create_account(
                 req->principal, req->email, req->password,
                 svc_acct::iam);
 
-            // Ensure a system party exists for this tenant
+            // Associate the admin account with the system party.
             refdata::repository::party_repository party_repo(tenant_ctx);
             auto system_parties = party_repo.read_system_party(tenant_id_str);
-            if (system_parties.empty()) {
-                refdata::domain::party sys_party;
-                sys_party.id = boost::uuids::random_generator()();
-                sys_party.tenant_id = tenant_id_str;
-                sys_party.full_name = t.name + " System Party";
-                sys_party.short_code = "system_party";
-                sys_party.party_category = "System";
-                sys_party.party_type = "Internal";
-                sys_party.business_center_code = "WRLD";
-                sys_party.status = "Active";
-                sys_party.modified_by = req->principal;
-                sys_party.performed_by = req->principal;
-                sys_party.change_reason_code = "system.initial_load";
-                sys_party.change_commentary =
-                    "Provision tenant: create system party";
-                party_repo.write(sys_party);
-                system_parties = party_repo.read_system_party(tenant_id_str);
-                BOOST_LOG_SEV(bootstrap_handler_lg(), info)
-                    << "Created system party for tenant " << tenant_id_str;
-            }
-
-            // Associate the account with the system party
             if (!system_parties.empty()) {
                 const auto& sys_party = system_parties.front();
                 domain::account_party ap;
@@ -223,7 +205,8 @@ public:
                 ap.modified_by = req->principal;
                 ap.performed_by = req->principal;
                 ap.change_reason_code = "system.initial_load";
-                ap.change_commentary = "Provision tenant: associate admin with system party";
+                ap.change_commentary =
+                    "Provision tenant: associate admin with system party";
                 service::account_party_service ap_svc(tenant_ctx);
                 ap_svc.save_account_party(ap);
                 BOOST_LOG_SEV(bootstrap_handler_lg(), info)
@@ -235,14 +218,6 @@ public:
                     << "No system party found for tenant " << tenant_id_str
                     << "; account has no party context";
             }
-
-            // Seed the tenant bootstrap mode flag so the provisioning
-            // wizard is shown on the tenant admin's first login.
-            variability::service::system_flags_service sfs(
-                tenant_ctx, tenant_id_str);
-            sfs.set_bootstrap_mode(true, req->principal,
-                "system.initial_load",
-                "Tenant provisioned: initial setup required");
 
             BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
                 << "Completed " << msg.subject;

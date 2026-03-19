@@ -53,8 +53,12 @@ struct create_initial_admin_response {
 struct provision_tenant_request {
     using response_type = struct provision_tenant_response;
     static constexpr std::string_view nats_subject = "iam.v1.bootstrap.provision-tenant";
-    std::string tenant_hostname;   // used to look up the tenant
-    std::string principal;         // username for the new account
+    std::string type;              // tenant type (e.g., "corporate")
+    std::string code;              // unique tenant code
+    std::string name;              // display name
+    std::string hostname;          // unique hostname
+    std::string description;       // optional description
+    std::string principal;         // username for the admin account
     std::string password;
     std::string email;
 };

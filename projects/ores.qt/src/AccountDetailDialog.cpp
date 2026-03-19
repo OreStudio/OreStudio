@@ -483,11 +483,10 @@ void AccountDetailDialog::onSaveClicked() {
                 // Commit any staged party additions
                 for (const auto& partyId : pendingPartyAdds) {
                     iam::domain::account_party ap;
-                    ap.account_id         = account_id;
-                    ap.party_id           = partyId;
-                    ap.change_reason_code = changeReasonCode;
-                    ap.change_commentary  = changeCommentary;
-                    ap.modified_by        = "";  // server overwrites from session
+                    ap.account_id        = account_id;
+                    ap.party_id          = partyId;
+                    ap.change_commentary = changeCommentary;
+                    ap.modified_by       = "";  // server overwrites from session
 
                     iam::messaging::save_account_party_request party_req;
                     party_req.account_parties.push_back(ap);

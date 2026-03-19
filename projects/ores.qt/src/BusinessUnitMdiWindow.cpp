@@ -70,6 +70,7 @@ void BusinessUnitMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -89,7 +90,7 @@ void BusinessUnitMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &BusinessUnitMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -197,14 +198,14 @@ void BusinessUnitMdiWindow::setupConnections() {
     });
 }
 
-void BusinessUnitMdiWindow::reload() {
+void BusinessUnitMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading business units";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading business units..."));
     model_->refresh();
 }
 
 void BusinessUnitMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 business units").arg(loaded).arg(total));
@@ -216,6 +217,7 @@ void BusinessUnitMdiWindow::onDataLoaded() {
 
 void BusinessUnitMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

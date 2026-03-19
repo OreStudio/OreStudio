@@ -65,6 +65,7 @@ void ChangeReasonCategoryMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -81,7 +82,7 @@ void ChangeReasonCategoryMdiWindow::setupToolbar() {
             Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &ChangeReasonCategoryMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 
@@ -157,19 +158,20 @@ void ChangeReasonCategoryMdiWindow::setupConnections() {
             this, &ChangeReasonCategoryMdiWindow::onDoubleClicked);
 }
 
-void ChangeReasonCategoryMdiWindow::reload() {
+void ChangeReasonCategoryMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading categories";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading categories..."));
     model_->refresh();
 }
 
 void ChangeReasonCategoryMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 categories").arg(model_->rowCount()));
 }
 
 void ChangeReasonCategoryMdiWindow::onLoadError(const QString& error_message,
                                                  const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

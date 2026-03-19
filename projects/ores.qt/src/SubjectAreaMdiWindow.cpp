@@ -74,6 +74,7 @@ void SubjectAreaMdiWindow::setupUi() {
         ClientSubjectAreaModel::kSettingsGroup,
         ClientSubjectAreaModel::defaultHiddenColumns(), ClientSubjectAreaModel::kDefaultWindowSize, 1);
 
+    layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
 }
 
@@ -139,12 +140,14 @@ void SubjectAreaMdiWindow::setupConnections() {
 }
 
 void SubjectAreaMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 subject areas").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void SubjectAreaMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -254,8 +257,7 @@ void SubjectAreaMdiWindow::updateActionStates() {
     historyAction_->setEnabled(singleSelection);
 }
 
-void SubjectAreaMdiWindow::reload() {
-    clearStaleIndicator();
+void SubjectAreaMdiWindow::doReload() {
     model_->refresh();
 }
 

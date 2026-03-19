@@ -115,6 +115,7 @@ CountryMdiWindow(ClientManager* clientManager,
     toolBar_->addAction(exportCSVAction);
 
     verticalLayout_->addWidget(toolBar_);
+    verticalLayout_->addWidget(loadingBar());
     verticalLayout_->addWidget(countryTableView_);
     verticalLayout_->addWidget(pagination_widget_);
 
@@ -227,15 +228,13 @@ void CountryMdiWindow::onConnectionStateChanged() {
     }
 }
 
-void CountryMdiWindow::reload() {
+void CountryMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
     if (!clientManager_->isConnected()) {
         emit statusChanged("Cannot reload - Disconnected");
         return;
     }
     emit statusChanged("Reloading countries...");
-    clearStaleIndicator();
-
     countryModel_->refresh();
 }
 
@@ -245,6 +244,7 @@ void CountryMdiWindow::addNew() {
 }
 
 void CountryMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = countryModel_->rowCount();
     const auto total = countryModel_->total_available_count();
 
@@ -275,6 +275,7 @@ void CountryMdiWindow::onDataLoaded() {
 
 void CountryMdiWindow::onLoadError(const QString& error_message,
                                     const QString& details) {
+    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading countries: "
                               << error_message.toStdString();
@@ -552,7 +553,7 @@ void CountryMdiWindow::updateActionStates() {
 void CountryMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &CountryMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

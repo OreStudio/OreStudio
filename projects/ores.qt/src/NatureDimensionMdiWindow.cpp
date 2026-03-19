@@ -62,6 +62,7 @@ void NatureDimensionMdiWindow::setupUi() {
     auto* layout = new QVBoxLayout(this);
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
     setupTable();
     layout->addWidget(tableView_);
 }
@@ -76,7 +77,7 @@ void NatureDimensionMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this, &NatureDimensionMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -143,19 +144,20 @@ void NatureDimensionMdiWindow::setupConnections() {
             this, &NatureDimensionMdiWindow::onDoubleClicked);
 }
 
-void NatureDimensionMdiWindow::reload() {
+void NatureDimensionMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading nature dimensions";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading nature dimensions..."));
     model_->refresh();
 }
 
 void NatureDimensionMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 nature dimensions").arg(model_->rowCount()));
 }
 
 void NatureDimensionMdiWindow::onLoadError(const QString& error_message,
                                             const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

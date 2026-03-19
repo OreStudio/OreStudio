@@ -74,6 +74,7 @@ void BookMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -93,7 +94,7 @@ void BookMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &BookMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -210,14 +211,14 @@ void BookMdiWindow::setupConnections() {
     });
 }
 
-void BookMdiWindow::reload() {
+void BookMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading books";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading books..."));
     model_->refresh();
 }
 
 void BookMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 books").arg(loaded).arg(total));
@@ -229,6 +230,7 @@ void BookMdiWindow::onDataLoaded() {
 
 void BookMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

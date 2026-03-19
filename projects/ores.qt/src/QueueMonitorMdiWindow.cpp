@@ -55,6 +55,7 @@ void QueueMonitorMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -71,7 +72,7 @@ void QueueMonitorMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered,
-            this, &QueueMonitorMdiWindow::reload);
+            this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_,
                              IconUtils::iconPath(Icon::ArrowClockwise));
@@ -152,14 +153,14 @@ void QueueMonitorMdiWindow::setupConnections() {
             this, &QueueMonitorMdiWindow::onRowDoubleClicked);
 }
 
-void QueueMonitorMdiWindow::reload() {
+void QueueMonitorMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading queue metrics";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading queues..."));
     model_->refresh();
 }
 
 void QueueMonitorMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 queues").arg(model_->rowCount()));
 
     // Wire selection model after model data is loaded (proxy model may
@@ -198,6 +199,7 @@ void QueueMonitorMdiWindow::onViewChart() {
 
 void QueueMonitorMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

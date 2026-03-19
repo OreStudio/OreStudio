@@ -73,7 +73,7 @@ signals:
     void showMarketTiersRequested();
 
 public slots:
-    void reload() override;
+    void doReload() override;
     void addNew();
     void editSelected();
     void deleteSelected();

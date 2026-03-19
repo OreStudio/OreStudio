@@ -66,6 +66,7 @@ void ReportDefinitionMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -85,7 +86,7 @@ void ReportDefinitionMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &ReportDefinitionMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -199,14 +200,14 @@ void ReportDefinitionMdiWindow::setupConnections() {
     });
 }
 
-void ReportDefinitionMdiWindow::reload() {
+void ReportDefinitionMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading report definitions";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading report definitions..."));
     model_->refresh();
 }
 
 void ReportDefinitionMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 report definitions").arg(loaded).arg(total));
@@ -218,6 +219,7 @@ void ReportDefinitionMdiWindow::onDataLoaded() {
 
 void ReportDefinitionMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

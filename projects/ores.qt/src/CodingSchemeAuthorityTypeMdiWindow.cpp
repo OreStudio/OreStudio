@@ -75,6 +75,7 @@ void CodingSchemeAuthorityTypeMdiWindow::setupUi() {
         ClientCodingSchemeAuthorityTypeModel::defaultHiddenColumns(),
         ClientCodingSchemeAuthorityTypeModel::kDefaultWindowSize, 1);
 
+    layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
 }
 
@@ -140,12 +141,14 @@ void CodingSchemeAuthorityTypeMdiWindow::setupConnections() {
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 authority types").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::onLoadError(const QString& error_message,
                                                       const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -251,8 +254,7 @@ void CodingSchemeAuthorityTypeMdiWindow::updateActionStates() {
     historyAction_->setEnabled(singleSelection);
 }
 
-void CodingSchemeAuthorityTypeMdiWindow::reload() {
-    clearStaleIndicator();
+void CodingSchemeAuthorityTypeMdiWindow::doReload() {
     model_->refresh();
 }
 

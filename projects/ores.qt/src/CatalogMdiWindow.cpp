@@ -72,6 +72,7 @@ void CatalogMdiWindow::setupUi() {
         ClientCatalogModel::kSettingsGroup,
         ClientCatalogModel::defaultHiddenColumns(), ClientCatalogModel::kDefaultWindowSize, 1);
 
+    layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
 }
 
@@ -159,8 +160,7 @@ void CatalogMdiWindow::updateActionStates() {
     historyAction_->setEnabled(hasSelection);
 }
 
-void CatalogMdiWindow::reload() {
-    clearStaleIndicator();
+void CatalogMdiWindow::doReload() {
     model_->loadData();
 }
 

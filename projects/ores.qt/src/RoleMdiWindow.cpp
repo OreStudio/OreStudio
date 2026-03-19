@@ -79,6 +79,7 @@ RoleMdiWindow(ClientManager* clientManager,
     toolBar_->addAction(viewAction_);
 
     verticalLayout_->addWidget(toolBar_);
+    verticalLayout_->addWidget(loadingBar());
     verticalLayout_->addWidget(roleTableView_);
 
     roleTableView_->setObjectName("roleTableView");
@@ -155,18 +156,18 @@ void RoleMdiWindow::onConnectionStateChanged() {
     }
 }
 
-void RoleMdiWindow::reload() {
+void RoleMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
     if (!clientManager_->isConnected()) {
         emit statusChanged("Cannot reload - Disconnected");
         return;
     }
     emit statusChanged("Reloading roles...");
-    clearStaleIndicator();
     roleModel_->refresh();
 }
 
 void RoleMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = roleModel_->rowCount();
 
     const QString message = QString("Loaded %1 roles").arg(loaded);
@@ -183,6 +184,7 @@ void RoleMdiWindow::onDataLoaded() {
 
 void RoleMdiWindow::onLoadError(const QString& error_message,
                                  const QString& details) {
+    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading roles: "
                               << error_message.toStdString();
@@ -236,7 +238,7 @@ void RoleMdiWindow::updateActionStates() {
 void RoleMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &RoleMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

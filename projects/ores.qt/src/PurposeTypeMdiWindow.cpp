@@ -65,6 +65,7 @@ void PurposeTypeMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -81,7 +82,7 @@ void PurposeTypeMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &PurposeTypeMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -157,19 +158,20 @@ void PurposeTypeMdiWindow::setupConnections() {
             this, &PurposeTypeMdiWindow::onDoubleClicked);
 }
 
-void PurposeTypeMdiWindow::reload() {
+void PurposeTypeMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading purpose types";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading purpose types..."));
     model_->refresh();
 }
 
 void PurposeTypeMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 purpose types").arg(model_->rowCount()));
 }
 
 void PurposeTypeMdiWindow::onLoadError(const QString& error_message,
                                        const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

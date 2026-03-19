@@ -94,6 +94,7 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
     toolBar_->addAction(historyAction_);
 
     verticalLayout_->addWidget(toolBar_);
+    verticalLayout_->addWidget(loadingBar());
     verticalLayout_->addWidget(featureFlagTableView_);
 
     featureFlagTableView_->setObjectName("featureFlagTableView");
@@ -169,14 +170,13 @@ void FeatureFlagMdiWindow::onConnectionStateChanged() {
     }
 }
 
-void FeatureFlagMdiWindow::reload() {
+void FeatureFlagMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
     if (!clientManager_->isConnected()) {
         emit statusChanged("Cannot reload - Disconnected");
         return;
     }
     emit statusChanged("Reloading feature flags...");
-    clearStaleIndicator();
     featureFlagModel_->refresh();
 }
 
@@ -186,6 +186,7 @@ void FeatureFlagMdiWindow::addNew() {
 }
 
 void FeatureFlagMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = featureFlagModel_->rowCount();
 
     const QString message = QString("Loaded %1 feature flags").arg(loaded);
@@ -202,6 +203,7 @@ void FeatureFlagMdiWindow::onDataLoaded() {
 
 void FeatureFlagMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
+    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading feature flags: "
                                << error_message.toStdString();
@@ -387,7 +389,7 @@ void FeatureFlagMdiWindow::updateActionStates() {
 void FeatureFlagMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &FeatureFlagMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

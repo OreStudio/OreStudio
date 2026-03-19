@@ -74,6 +74,7 @@ void DataDomainMdiWindow::setupUi() {
         ClientDataDomainModel::kSettingsGroup,
         ClientDataDomainModel::defaultHiddenColumns(), ClientDataDomainModel::kDefaultWindowSize, 1);
 
+    layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
 }
 
@@ -87,7 +88,7 @@ void DataDomainMdiWindow::setupToolbar() {
         IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor),
         tr("Refresh"));
     refreshAction_->setToolTip(tr("Refresh data domains"));
-    connect(refreshAction_, &QAction::triggered, this, &DataDomainMdiWindow::reload);
+    connect(refreshAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(refreshAction_, IconUtils::iconPath(Icon::ArrowSync));
 
@@ -141,12 +142,14 @@ void DataDomainMdiWindow::setupConnections() {
 }
 
 void DataDomainMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 data domains").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void DataDomainMdiWindow::onLoadError(const QString& error_message,
                                        const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -252,8 +255,7 @@ void DataDomainMdiWindow::updateActionStates() {
     historyAction_->setEnabled(singleSelection);
 }
 
-void DataDomainMdiWindow::reload() {
-    clearStaleIndicator();
+void DataDomainMdiWindow::doReload() {
     model_->refresh();
 }
 

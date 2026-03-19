@@ -185,6 +185,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
     toolBar_->addAction(exportXMLAction);
 
     verticalLayout_->addWidget(toolBar_);
+    verticalLayout_->addWidget(loadingBar());
     verticalLayout_->addWidget(currencyTableView_);
     verticalLayout_->addWidget(pagination_widget_);
 
@@ -323,15 +324,13 @@ void CurrencyMdiWindow::onConnectionStateChanged() {
     }
 }
 
-void CurrencyMdiWindow::reload() {
+void CurrencyMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
     if (!clientManager_->isLoggedIn()) {
         emit statusChanged("Cannot reload - Not logged in");
         return;
     }
     emit statusChanged("Reloading currencies...");
-    clearStaleIndicator();
-
     currencyModel_->refresh();
 }
 
@@ -341,6 +340,7 @@ void CurrencyMdiWindow::addNew() {
 }
 
 void CurrencyMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = currencyModel_->rowCount();
     const auto total = currencyModel_->total_available_count();
 
@@ -371,6 +371,7 @@ void CurrencyMdiWindow::onDataLoaded() {
 
 void CurrencyMdiWindow::onLoadError(const QString& error_message,
                                      const QString& details) {
+    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading currencies: "
                               << error_message.toStdString();
@@ -795,7 +796,7 @@ void CurrencyMdiWindow::updateActionStates() {
 void CurrencyMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &CurrencyMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

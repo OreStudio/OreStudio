@@ -54,7 +54,7 @@ public:
                               QWidget* parent = nullptr);
 
 public slots:
-    void reload() override;
+    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);

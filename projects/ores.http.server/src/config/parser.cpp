@@ -48,6 +48,7 @@ const std::string server_jwt_audience_arg("jwt-audience");
 const std::string server_disable_cors_arg("disable-cors");
 const std::string server_cors_origins_arg("cors-origins");
 const std::string server_identifier_arg("identifier");
+const std::string compute_storage_dir_arg("compute-storage-dir");
 
 using boost::program_options::value;
 using boost::program_options::variables_map;
@@ -94,10 +95,16 @@ options_description make_options_description() {
         ("identifier,i", value<std::string>()->default_value("ores-http-server-v1"),
             "Server identifier for responses.");
 
+    options_description cod("Compute Storage");
+    cod.add_options()
+        (compute_storage_dir_arg.c_str(),
+            value<std::string>()->default_value("/var/ores/http-server/compute"),
+            "Root directory for compute grid file storage (packages, inputs, outputs).");
+
     const auto dod(database_configuration::make_options_description());
 
     options_description r;
-    r.add(god).add(lod).add(sod).add(dod);
+    r.add(god).add(lod).add(sod).add(cod).add(dod);
     return r;
 }
 
@@ -192,6 +199,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.server = read_server_configuration(vm);
     r.database = database_configuration::read_options(vm);
+    r.compute_storage_dir = vm[compute_storage_dir_arg].as<std::string>();
 
     // Validate required configuration
     if (r.server.jwt_secret.empty()) {

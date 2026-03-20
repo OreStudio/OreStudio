@@ -62,6 +62,14 @@ struct options final {
      * @brief Interval in seconds between heartbeat messages while a job is running.
      */
     std::uint32_t heartbeat_interval_seconds{30};
+
+    /**
+     * @brief Base URL of the HTTP server for file transfers (e.g. http://localhost:8080).
+     *
+     * The wrapper appends compute API paths to this URL when downloading inputs
+     * and uploading outputs. If empty, URI fields from work assignments are used as-is.
+     */
+    std::string http_base_url;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

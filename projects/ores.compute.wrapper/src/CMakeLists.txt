@@ -41,7 +41,8 @@ target_link_libraries(${lib_target_name}
         ores.compute.lib
         ores.nats.lib
         ores.utility.lib
-        ores.telemetry.lib)
+        ores.telemetry.lib
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

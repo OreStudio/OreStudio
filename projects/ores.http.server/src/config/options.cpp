@@ -27,6 +27,7 @@ std::ostream& operator<<(std::ostream& s, const options& v) {
     s << "options {"
       << " logging: " << (v.logging.has_value() ? "configured" : "none")
       << " server: " << v.server
+      << " compute_storage_dir: " << v.compute_storage_dir
       << " }";
     return s;
 }

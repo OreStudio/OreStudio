@@ -21,6 +21,10 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <span>
 #include <thread>
 #include <rfl/json.hpp>
@@ -28,6 +32,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.compute/messaging/work_protocol.hpp"
 #include "ores.compute/messaging/result_protocol.hpp"
+#include "ores.compute.wrapper/net/http_client.hpp"
 
 namespace ores::compute::wrapper::app {
 
@@ -133,11 +138,81 @@ void submit_result(ores::nats::service::client& nats,
     }
 }
 
+namespace fs = std::filesystem;
+
+/**
+ * @brief Build a URL from a base URL and a path.
+ *
+ * If base_url is empty, path is returned unchanged (already a full URL).
+ */
+std::string make_url(const std::string& base_url, const std::string& path) {
+    if (base_url.empty())
+        return path;
+    if (!path.empty() && path[0] == '/')
+        return base_url + path;
+    return base_url + "/" + path;
+}
+
+/**
+ * @brief Engine package manifest — describes how to invoke the engine.
+ */
+struct manifest {
+    std::string executable;
+    std::vector<std::string> args;
+};
+
+/**
+ * @brief Read and parse manifest.json from the unpacked package directory.
+ */
+manifest read_manifest(const fs::path& package_dir) {
+    const auto manifest_path = package_dir / "manifest.json";
+    std::ifstream f(manifest_path);
+    if (!f)
+        throw std::runtime_error("manifest.json not found in " + package_dir.string());
+    // Extra parentheses avoid the vexing parse.
+    const std::string json((std::istreambuf_iterator<char>(f)),
+                            std::istreambuf_iterator<char>());
+    const auto m = rfl::json::read<manifest>(json);
+    if (!m)
+        throw std::runtime_error("Failed to parse manifest.json: " + m.error().what());
+    return *m;
+}
+
+/**
+ * @brief Replace {input}, {config}, {output} placeholders in argument list.
+ */
+std::vector<std::string> substitute_args(const std::vector<std::string>& tmpl,
+    const std::string& input_path,
+    const std::string& config_path,
+    const std::string& output_path) {
+
+    std::vector<std::string> result;
+    result.reserve(tmpl.size());
+    for (const auto& arg : tmpl) {
+        std::string s = arg;
+        auto replace_all = [&](const std::string& from, const std::string& to) {
+            std::string::size_type pos = 0;
+            while ((pos = s.find(from, pos)) != std::string::npos) {
+                s.replace(pos, from.size(), to);
+                pos += to.size();
+            }
+        };
+        replace_all("{input}",  input_path);
+        replace_all("{config}", config_path);
+        replace_all("{output}", output_path);
+        result.push_back(std::move(s));
+    }
+    return result;
+}
+
 /**
  * @brief Process one work assignment.
  *
- * Downloads inputs, runs engine, uploads output, submits result.
- * TODO: implement HTTP download/upload and subprocess execution.
+ * 1. Download and cache the engine package (if not already cached).
+ * 2. Download input and config files for this job.
+ * 3. Spawn the engine subprocess with substituted argument placeholders.
+ * 4. Upload the output file on success.
+ * 5. Submit the result via NATS.
  */
 void process_assignment(ores::nats::service::client& nats,
     const compute::messaging::work_assignment_event& evt,
@@ -151,26 +226,72 @@ void process_assignment(ores::nats::service::client& nats,
     heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds);
     hb.start();
 
-    int outcome = 0;        // 0 = success
-    std::string output_uri;
+    int outcome = 0;
+    std::string output_uri = evt.output_uri;
 
     try {
-        // TODO: download package (if not cached), input, config via HTTP
-        // TODO: unpack package, read manifest.json
-        // TODO: spawn engine subprocess with substituted args
-        // TODO: wait for subprocess exit
-        // TODO: upload output file via HTTP PUT to evt.output_uri
-        output_uri = evt.output_uri;
+        // 1. Download and unpack package if not cached
+        const fs::path pkg_cache_dir =
+            fs::path(cfg.work_dir) / "packages" / evt.app_version_id;
+        if (!fs::exists(pkg_cache_dir / "manifest.json")) {
+            BOOST_LOG_SEV(lg, info) << "Downloading package: " << evt.app_version_id;
+            const fs::path pkg_archive =
+                pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
+            net::http_client::download(make_url(cfg.http_base_url, evt.package_uri),
+                pkg_archive);
 
-        BOOST_LOG_SEV(lg, warn) << "Job processing not yet implemented; "
-                                 << "submitting stub success for " << evt.result_id;
+            fs::create_directories(pkg_cache_dir);
+            const auto tar_cmd = "tar -xzf " + pkg_archive.string() +
+                " -C " + pkg_cache_dir.string();
+            if (std::system(tar_cmd.c_str()) != 0) // NOLINT(cert-env33-c)
+                throw std::runtime_error("Failed to unpack: " + pkg_archive.string());
+        }
+
+        const auto mf = read_manifest(pkg_cache_dir);
+
+        // 2. Per-job scratch directory
+        const fs::path job_dir =
+            fs::path(cfg.work_dir) / "jobs" / evt.result_id;
+        fs::create_directories(job_dir);
+
+        const fs::path input_path  = job_dir / "input";
+        const fs::path config_path = job_dir / "config";
+        const fs::path output_path = job_dir / "output";
+
+        BOOST_LOG_SEV(lg, info) << "Downloading input and config";
+        net::http_client::download(make_url(cfg.http_base_url, evt.input_uri), input_path);
+        net::http_client::download(make_url(cfg.http_base_url, evt.config_uri), config_path);
+
+        // 3. Spawn engine — build a shell command from the manifest args
+        const fs::path exe = pkg_cache_dir / mf.executable;
+        const auto args = substitute_args(mf.args,
+            input_path.string(), config_path.string(), output_path.string());
+
+        // Build the full command string (simple shell invocation)
+        std::string cmd = exe.string();
+        for (const auto& arg : args) {
+            cmd += ' ';
+            cmd += arg; // simple quoting: relies on paths without spaces
+        }
+
+        BOOST_LOG_SEV(lg, info) << "Launching engine: " << cmd;
+        const int exit_code = std::system(cmd.c_str()); // NOLINT(cert-env33-c)
+
+        if (exit_code != 0) {
+            BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
+            outcome = 1;
+        } else {
+            // 4. Upload output
+            BOOST_LOG_SEV(lg, info) << "Uploading output: " << evt.result_id;
+            net::http_client::upload(make_url(cfg.http_base_url, evt.output_uri), output_path);
+            BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
+        }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Job failed: " << e.what();
-        outcome = 1; // failed
+        outcome = 1;
     }
 
     hb.stop();
-
     submit_result(nats, evt.result_id, output_uri, outcome, lg);
 }
 
@@ -186,6 +307,7 @@ application::run(boost::asio::io_context& /*io_ctx*/,
     BOOST_LOG_SEV(lg(), info) << "Tenant ID : " << cfg.tenant_id;
     BOOST_LOG_SEV(lg(), info) << "Work dir  : " << cfg.work_dir;
     BOOST_LOG_SEV(lg(), info) << "Heartbeat : " << cfg.heartbeat_interval_seconds << "s";
+    BOOST_LOG_SEV(lg(), info) << "HTTP Base : " << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();

@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "compute",
+    "full_name": "ores.compute",
+    "brief": "BOINC-inspired distributed compute grid domain types.",
+    "description": "Provides domain types and repository layer for the ORE Studio distributed compute grid.\nModels the BOINC lexicon: hosts (compute nodes), apps (engine registry), app_versions\n(wrapper+engine bundles), batches, workunits (job templates), and results (execution\ninstances). Supports PostgreSQL-backed orchestration via the standard temporal entity\npattern with full audit trail."
+  }
+}

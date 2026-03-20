@@ -55,7 +55,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/system_setting_changed_event.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
@@ -827,29 +827,30 @@ void CurrencyMdiWindow::updateGenerateActionVisibility() {
         if (!self || !self->clientManager_)
             return false;
 
-        variability::messaging::get_feature_flags_request request;
+        variability::messaging::list_settings_request request;
         auto result = self->clientManager_->
             process_authenticated_request(std::move(request));
 
         if (!result) {
-            BOOST_LOG_SEV(lg(), debug) << "Feature flags request failed";
+            BOOST_LOG_SEV(lg(), debug) << "System settings request failed";
             return false;
         }
 
-        // Find our specific flag
-        auto it = std::find_if(result->feature_flags.begin(), result->feature_flags.end(),
-            [](const auto& flag) {
-                return flag.name == synthetic_generation_flag;
+        // Find our specific setting
+        auto it = std::find_if(result->settings.begin(), result->settings.end(),
+            [](const auto& s) {
+                return s.name == synthetic_generation_flag;
             });
 
-        if (it == result->feature_flags.end()) {
-            BOOST_LOG_SEV(lg(), debug) << "Feature flag not found: " << synthetic_generation_flag;
+        if (it == result->settings.end()) {
+            BOOST_LOG_SEV(lg(), debug) << "System setting not found: " << synthetic_generation_flag;
             return false;
         }
 
-        BOOST_LOG_SEV(lg(), debug) << "Feature flag " << synthetic_generation_flag
-                                   << " enabled: " << it->enabled;
-        return it->enabled;
+        const bool enabled = (it->value == "true");
+        BOOST_LOG_SEV(lg(), debug) << "System setting " << synthetic_generation_flag
+                                   << " enabled: " << enabled;
+        return enabled;
     }).then(this, [self](bool enabled) {
         if (self && self->generateAction_) {
             self->generateAction_->setVisible(enabled);

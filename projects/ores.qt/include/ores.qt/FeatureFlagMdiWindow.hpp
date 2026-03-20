@@ -64,7 +64,7 @@ signals:
     void errorOccurred(const QString& error_message);
     void selectionChanged(int selection_count);
     void addNewRequested();
-    void showFeatureFlagDetails(const variability::domain::feature_flags& flag);
+    void showFeatureFlagDetails(const variability::domain::system_setting& flag);
     void showHistoryRequested(const QString& name);
     void featureFlagDeleted(const QString& name);
 

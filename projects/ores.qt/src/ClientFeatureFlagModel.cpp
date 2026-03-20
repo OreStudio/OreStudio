@@ -24,14 +24,14 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 
 namespace {
-    std::string feature_flag_key_extractor(const variability::domain::feature_flags& e) {
+    std::string feature_flag_key_extractor(const variability::domain::system_setting& e) {
         return e.name;
     }
 }
@@ -85,7 +85,7 @@ QVariant ClientFeatureFlagModel::data(const QModelIndex& index, int role) const 
         case Name:
             return QString::fromStdString(flag.name);
         case Enabled:
-            return flag.enabled ? tr("Yes") : tr("No");
+            return (flag.value == "true") ? tr("Yes") : tr("No");
         case Version:
             return QString::number(flag.version);
         case ModifiedBy:
@@ -145,7 +145,7 @@ void ClientFeatureFlagModel::refresh() {
                         .error_details = {}};
             }
 
-            variability::messaging::get_feature_flags_request request;
+            variability::messaging::list_settings_request request;
             auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 
             if (!response_result) {
@@ -155,9 +155,9 @@ void ClientFeatureFlagModel::refresh() {
                         .error_details = {}};
             }
 
-            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->feature_flags.size()
+            BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->settings.size()
                                        << " feature flags";
-            return {.success = true, .flags = std::move(response_result->feature_flags),
+            return {.success = true, .flags = std::move(response_result->settings),
                     .error_message = {}, .error_details = {}};
         }, "feature flags");
     });
@@ -192,7 +192,7 @@ void ClientFeatureFlagModel::onFeatureFlagsLoaded() {
     emit dataLoaded();
 }
 
-const variability::domain::feature_flags*
+const variability::domain::system_setting*
 ClientFeatureFlagModel::getFeatureFlag(int row) const {
     if (row < 0 || row >= static_cast<int>(flags_.size()))
         return nullptr;

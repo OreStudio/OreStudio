@@ -27,7 +27,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability/eventing/system_setting_changed_event.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 
 namespace ores::qt {
@@ -173,13 +173,13 @@ void FeatureFlagController::onAddNewRequested() {
 }
 
 void FeatureFlagController::onShowDetails(
-    const variability::domain::feature_flags& flag) {
+    const variability::domain::system_setting& flag) {
     BOOST_LOG_SEV(lg(), debug) << "Show details requested for: " << flag.name;
     showDetailWindow(flag, false);
 }
 
 void FeatureFlagController::showDetailWindow(
-    const variability::domain::feature_flags& flag, bool createMode) {
+    const variability::domain::system_setting& flag, bool createMode) {
 
     const QString identifier = createMode ? "new" :
         QString::fromStdString(flag.name);
@@ -381,7 +381,7 @@ void FeatureFlagController::showHistoryWindow(const QString& name) {
 }
 
 void FeatureFlagController::onOpenFeatureFlagVersion(
-    const variability::domain::feature_flags& flag, int versionNumber) {
+    const variability::domain::system_setting& flag, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
                               << " for feature flag: " << flag.name;
 
@@ -449,7 +449,7 @@ void FeatureFlagController::onOpenFeatureFlagVersion(
 }
 
 void FeatureFlagController::onRevertFeatureFlag(
-    const variability::domain::feature_flags& flag) {
+    const variability::domain::system_setting& flag) {
     BOOST_LOG_SEV(lg(), info) << "Reverting feature flag: " << flag.name
                               << " to version " << flag.version;
 
@@ -459,7 +459,7 @@ void FeatureFlagController::onRevertFeatureFlag(
     }
 
     // Save the flag (which creates a new version with the old data)
-    variability::messaging::save_feature_flag_request request;
+    variability::messaging::save_setting_request request;
     request.data = flag;
     auto response_result = clientManager_->process_authenticated_request(std::move(request));
     if (!response_result) {

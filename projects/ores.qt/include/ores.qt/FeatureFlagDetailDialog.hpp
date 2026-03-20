@@ -26,7 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.variability/domain/feature_flags.hpp"
+#include "ores.variability/domain/system_setting.hpp"
 
 namespace Ui {
 class FeatureFlagDetailDialog;
@@ -60,11 +60,11 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
 
-    void setFeatureFlag(const variability::domain::feature_flags& flag);
-    variability::domain::feature_flags getFeatureFlag() const;
+    void setFeatureFlag(const variability::domain::system_setting& flag);
+    variability::domain::system_setting getFeatureFlag() const;
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly, int versionNumber = 0);
-    void setHistory(const std::vector<variability::domain::feature_flags>& history,
+    void setHistory(const std::vector<variability::domain::system_setting>& history,
                     int versionNumber);
     void clearDialog();
     void save();
@@ -107,7 +107,7 @@ private:
     QToolBar* toolBar_;
     QAction* revertAction_;
 
-    variability::domain::feature_flags currentFlag_;
+    variability::domain::system_setting currentFlag_;
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;
@@ -115,7 +115,7 @@ private:
     ClientManager* clientManager_;
 
     // Version navigation members
-    std::vector<variability::domain::feature_flags> history_;
+    std::vector<variability::domain::system_setting> history_;
     int currentHistoryIndex_;
     QAction* firstVersionAction_;
     QAction* prevVersionAction_;

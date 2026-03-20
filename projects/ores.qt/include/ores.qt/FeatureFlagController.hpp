@@ -23,7 +23,7 @@
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.variability/domain/feature_flags.hpp"
+#include "ores.variability/domain/system_setting.hpp"
 
 namespace ores::qt {
 
@@ -65,18 +65,18 @@ public:
 
 private slots:
     void onAddNewRequested();
-    void onShowDetails(const variability::domain::feature_flags& flag);
+    void onShowDetails(const variability::domain::system_setting& flag);
     void onShowHistory(const QString& name);
     void onFeatureFlagSaved(const QString& name);
     void onFeatureFlagDeleted(const QString& name);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds, const QString& tenantId);
-    void onOpenFeatureFlagVersion(const variability::domain::feature_flags& flag,
+    void onOpenFeatureFlagVersion(const variability::domain::system_setting& flag,
                                   int versionNumber);
-    void onRevertFeatureFlag(const variability::domain::feature_flags& flag);
+    void onRevertFeatureFlag(const variability::domain::system_setting& flag);
 
 private:
-    void showDetailWindow(const variability::domain::feature_flags& flag,
+    void showDetailWindow(const variability::domain::system_setting& flag,
                           bool createMode = false);
     void showHistoryWindow(const QString& name);
     void refreshListWindow();

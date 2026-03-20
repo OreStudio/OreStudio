@@ -21,7 +21,7 @@
 
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::http_server::routes {
 
@@ -30,11 +30,10 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 variability_routes::variability_routes(database::context ctx,
-    std::shared_ptr<variability::service::system_settings_service> system_flags,
+    std::shared_ptr<variability::service::system_settings_service> system_settings,
     std::shared_ptr<iam::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
-    , feature_flags_service_(ctx_)
-    , system_flags_(std::move(system_flags))
+    , system_settings_(std::move(system_settings))
     , sessions_(std::move(sessions)) {
     BOOST_LOG_SEV(lg(), debug) << "Variability routes initialized";
 }
@@ -44,31 +43,29 @@ void variability_routes::register_routes(std::shared_ptr<http::net::router> rout
 
     BOOST_LOG_SEV(lg(), info) << "Registering Variability routes";
 
-    auto list_flags = router->get("/api/v1/feature-flags")
-        .summary("List feature flags")
-        .description("Retrieve all feature flags in the system")
-        .tags({"feature-flags"})
+    auto list_settings = router->get("/api/v1/system-settings")
+        .summary("List system settings")
+        .description("Retrieve all system settings")
+        .tags({"system-settings"})
         .auth_required()
-        .response<variability::messaging::get_feature_flags_response>()
-        .handler([this](const http_request& req) { return handle_list_feature_flags(req); });
-    router->add_route(list_flags.build());
-    registry->register_route(list_flags.build());
+        .response<variability::messaging::list_settings_response>()
+        .handler([this](const http_request& req) { return handle_list_system_settings(req); });
+    router->add_route(list_settings.build());
+    registry->register_route(list_settings.build());
 
     BOOST_LOG_SEV(lg(), info) << "Variability routes registered: 1 endpoint";
 }
 
-asio::awaitable<http_response> variability_routes::handle_list_feature_flags(const http_request&) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling list feature flags request";
+asio::awaitable<http_response> variability_routes::handle_list_system_settings(const http_request&) {
+    BOOST_LOG_SEV(lg(), debug) << "Handling list system settings request";
 
     try {
-        auto flags = feature_flags_service_.get_all_feature_flags();
-
-        variability::messaging::get_feature_flags_response resp;
-        resp.feature_flags = flags;
+        variability::messaging::list_settings_response resp;
+        resp.settings = system_settings_->get_all();
 
         co_return http_response::json(rfl::json::write(resp));
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "List feature flags error: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "List system settings error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
 }

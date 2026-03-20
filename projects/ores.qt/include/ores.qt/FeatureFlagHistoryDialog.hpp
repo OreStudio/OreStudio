@@ -28,7 +28,7 @@
 #include <QToolBar>
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.variability/domain/feature_flags.hpp"
+#include "ores.variability/domain/system_setting.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_FeatureFlagHistoryDialog.h"
 
@@ -82,7 +82,7 @@ public:
     /**
      * @brief Returns the loaded history vector for version navigation.
      */
-    [[nodiscard]] const std::vector<variability::domain::feature_flags>& getHistory() const {
+    [[nodiscard]] const std::vector<variability::domain::system_setting>& getHistory() const {
         return history_;
     }
 
@@ -95,13 +95,13 @@ signals:
      * @param flag The feature flag data at the selected version.
      * @param versionNumber The version number being viewed.
      */
-    void openVersionRequested(const variability::domain::feature_flags& flag, int versionNumber);
+    void openVersionRequested(const variability::domain::system_setting& flag, int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
      * @param flag The feature flag data to revert to.
      */
-    void revertVersionRequested(const variability::domain::feature_flags& flag);
+    void revertVersionRequested(const variability::domain::system_setting& flag);
 
 private slots:
     void onVersionSelected(int index);
@@ -122,8 +122,8 @@ private:
      */
     using DiffResult = QVector<QPair<QString, QPair<QString, QString>>>;
     DiffResult calculateDiff(
-        const variability::domain::feature_flags& current,
-        const variability::domain::feature_flags& previous);
+        const variability::domain::system_setting& current,
+        const variability::domain::system_setting& previous);
 
     void setupToolbar();
     void updateButtonStates();
@@ -132,7 +132,7 @@ private:
     std::unique_ptr<Ui::FeatureFlagHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString flagName_;
-    std::vector<variability::domain::feature_flags> history_;
+    std::vector<variability::domain::system_setting> history_;
 
     QToolBar* toolBar_;
     QAction* reloadAction_;

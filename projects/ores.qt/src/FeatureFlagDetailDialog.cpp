@@ -31,7 +31,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
@@ -158,14 +158,14 @@ QWidget* FeatureFlagDetailDialog::provenanceTab() const { return ui_->provenance
 ProvenanceWidget* FeatureFlagDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
 void FeatureFlagDetailDialog::setFeatureFlag(
-    const variability::domain::feature_flags& flag) {
+    const variability::domain::system_setting& flag) {
     currentFlag_ = flag;
     isAddMode_ = flag.name.empty();
 
     setCreateMode(isAddMode_);
 
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
-    ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);  // 0=Yes, 1=No
+    ui_->enabledComboBox->setCurrentIndex((flag.value == "true") ? 0 : 1);  // 0=Yes, 1=No
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     populateProvenance(currentFlag_.version, currentFlag_.modified_by,
                        currentFlag_.performed_by, currentFlag_.recorded_at,
@@ -185,10 +185,11 @@ void FeatureFlagDetailDialog::setCreateMode(bool createMode) {
     setProvenanceEnabled(!createMode);
 }
 
-variability::domain::feature_flags FeatureFlagDetailDialog::getFeatureFlag() const {
-    variability::domain::feature_flags flag = currentFlag_;
+variability::domain::system_setting FeatureFlagDetailDialog::getFeatureFlag() const {
+    variability::domain::system_setting flag = currentFlag_;
     flag.name = ui_->nameEdit->text().toStdString();
-    flag.enabled = ui_->enabledComboBox->currentIndex() == 0;  // 0=Yes, 1=No
+    flag.value = (ui_->enabledComboBox->currentIndex() == 0) ? "true" : "false";
+    flag.data_type = "boolean";
     flag.description = ui_->descriptionEdit->toPlainText().toStdString();
     flag.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
@@ -230,7 +231,7 @@ void FeatureFlagDetailDialog::onSaveClicked() {
                                << currentFlag_.name;
 
     QPointer<FeatureFlagDetailDialog> self = this;
-    const variability::domain::feature_flags flagToSave = getFeatureFlag();
+    const variability::domain::system_setting flagToSave = getFeatureFlag();
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, flagToSave]() -> FutureResult {
@@ -239,7 +240,7 @@ void FeatureFlagDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending save feature flag request for: "
                                        << flagToSave.name;
 
-            variability::messaging::save_feature_flag_request request;
+            variability::messaging::save_setting_request request;
             request.data = flagToSave;
 
             auto response_result =
@@ -318,7 +319,7 @@ void FeatureFlagDetailDialog::onDeleteClicked() {
             BOOST_LOG_SEV(lg(), debug) << "Sending delete feature flag request for: "
                                        << name;
 
-            variability::messaging::delete_feature_flag_request request{name};
+            variability::messaging::delete_setting_request request{name};
             auto response_result =
 self->clientManager_->process_authenticated_request(std::move(request));
 
@@ -390,7 +391,7 @@ void FeatureFlagDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
 }
 
 void FeatureFlagDetailDialog::setHistory(
-    const std::vector<variability::domain::feature_flags>& history,
+    const std::vector<variability::domain::system_setting>& history,
     int versionNumber) {
     BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.size()
                                << " versions, viewing version " << versionNumber;
@@ -435,7 +436,7 @@ void FeatureFlagDetailDialog::displayCurrentVersion() {
 
     // Update UI with current version data
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
-    ui_->enabledComboBox->setCurrentIndex(flag.enabled ? 0 : 1);
+    ui_->enabledComboBox->setCurrentIndex((flag.value == "true") ? 0 : 1);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     populateProvenance(flag.version, flag.modified_by, flag.performed_by,
                        flag.recorded_at, flag.change_reason_code, flag.change_commentary);

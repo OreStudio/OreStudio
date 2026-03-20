@@ -27,7 +27,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.variability/domain/feature_flags.hpp"
+#include "ores.variability/domain/system_setting.hpp"
 
 namespace ores::qt {
 
@@ -85,7 +85,7 @@ public:
      * @param row The row index.
      * @return The feature flag, or nullptr if row is invalid.
      */
-    const variability::domain::feature_flags* getFeatureFlag(int row) const;
+    const variability::domain::system_setting* getFeatureFlag(int row) const;
 
 signals:
     /**
@@ -108,18 +108,18 @@ private:
 
     struct FetchResult {
         bool success;
-        std::vector<variability::domain::feature_flags> flags;
+        std::vector<variability::domain::system_setting> flags;
         QString error_message;
         QString error_details;
     };
 
     ClientManager* clientManager_;
-    std::vector<variability::domain::feature_flags> flags_;
+    std::vector<variability::domain::system_setting> flags_;
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    using FeatureFlagKeyExtractor = std::string(*)(const variability::domain::feature_flags&);
-    RecencyTracker<variability::domain::feature_flags, FeatureFlagKeyExtractor> recencyTracker_;
+    using FeatureFlagKeyExtractor = std::string(*)(const variability::domain::system_setting&);
+    RecencyTracker<variability::domain::system_setting, FeatureFlagKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

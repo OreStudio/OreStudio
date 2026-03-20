@@ -30,7 +30,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
@@ -302,7 +302,7 @@ void FeatureFlagMdiWindow::deleteSelected() {
         for (const auto& name : names) {
             BOOST_LOG_SEV(lg(), debug) << "Deleting feature flag: " << name;
 
-            variability::messaging::delete_feature_flag_request request;
+            variability::messaging::delete_setting_request request;
             request.name = name;
             auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
 

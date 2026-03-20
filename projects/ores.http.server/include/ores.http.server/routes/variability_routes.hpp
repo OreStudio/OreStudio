@@ -25,24 +25,23 @@
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability/service/system_settings_service.hpp"
-#include "ores.variability/service/feature_flags_service.hpp"
 #include "ores.iam/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::http_server::routes {
 
 /**
- * @brief Registers Variability (Feature Flags) HTTP endpoints.
+ * @brief Registers Variability (System Settings) HTTP endpoints.
  *
  * Maps the following protocol messages to REST endpoints:
  *
- * Feature Flags:
- * - GET /api/v1/feature-flags - get_feature_flags_request
+ * System Settings:
+ * - GET /api/v1/system-settings - list_settings_request
  */
 class variability_routes final {
 public:
     variability_routes(database::context ctx,
-        std::shared_ptr<variability::service::system_settings_service> system_flags,
+        std::shared_ptr<variability::service::system_settings_service> system_settings,
         std::shared_ptr<iam::service::auth_session_service> sessions);
 
     /**
@@ -61,11 +60,10 @@ private:
     }
 
     boost::asio::awaitable<http::domain::http_response>
-    handle_list_feature_flags(const http::domain::http_request& req);
+    handle_list_system_settings(const http::domain::http_request& req);
 
     database::context ctx_;
-    variability::service::feature_flags_service feature_flags_service_;
-    std::shared_ptr<variability::service::system_settings_service> system_flags_;
+    std::shared_ptr<variability::service::system_settings_service> system_settings_;
     std::shared_ptr<iam::service::auth_session_service> sessions_;
 };
 

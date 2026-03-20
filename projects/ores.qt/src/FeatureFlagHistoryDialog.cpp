@@ -30,7 +30,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
@@ -106,7 +106,7 @@ void FeatureFlagHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), info) << "Loading feature flag history for: "
                               << flagName_.toStdString();
 
-    using HistoryResult = std::expected<variability::messaging::get_feature_flag_history_response, std::string>;
+    using HistoryResult = std::expected<variability::messaging::get_setting_history_response, std::string>;
     QPointer<FeatureFlagHistoryDialog> self = this;
     const auto flagName = flagName_.toStdString();
 
@@ -115,7 +115,7 @@ void FeatureFlagHistoryDialog::loadHistory() {
         if (!self->clientManager_ || !self->clientManager_->isConnected()) {
             return std::unexpected("Disconnected from server");
         }
-        variability::messaging::get_feature_flag_history_request request;
+        variability::messaging::get_setting_history_request request;
         request.name = flagName;
         auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!result) {
@@ -169,7 +169,7 @@ void FeatureFlagHistoryDialog::onHistoryLoaded() {
         auto* versionItem =
             new QTableWidgetItem(QString::number(flag.version));
         auto* enabledItem =
-            new QTableWidgetItem(flag.enabled ? "Yes" : "No");
+            new QTableWidgetItem((flag.value == "true") ? "Yes" : "No");
         auto* recordedAtItem =
             new QTableWidgetItem(relative_time_helper::format(flag.recorded_at));
         auto* modifiedByItem =
@@ -267,7 +267,7 @@ void FeatureFlagHistoryDialog::displayFullDetailsTab(int version_index) {
     const auto& flag = history_[version_index];
 
     ui_->nameValue->setText(QString::fromStdString(flag.name));
-    ui_->enabledValue->setText(flag.enabled ? "Yes" : "No");
+    ui_->enabledValue->setText((flag.value == "true") ? "Yes" : "No");
     ui_->descriptionValue->setText(QString::fromStdString(flag.description));
     ui_->versionNumberValue->setText(QString::number(flag.version));
     ui_->modifiedByValue->setText(QString::fromStdString(flag.modified_by));
@@ -275,16 +275,16 @@ void FeatureFlagHistoryDialog::displayFullDetailsTab(int version_index) {
 }
 
 FeatureFlagHistoryDialog::DiffResult FeatureFlagHistoryDialog::
-calculateDiff(const variability::domain::feature_flags& current,
-    const variability::domain::feature_flags& previous) {
+calculateDiff(const variability::domain::system_setting& current,
+    const variability::domain::system_setting& previous) {
 
     DiffResult diffs;
 
-    // Compare enabled flag
-    if (current.enabled != previous.enabled) {
+    // Compare value (enabled flag)
+    if (current.value != previous.value) {
         diffs.append({"Enabled", {
-            previous.enabled ? "Yes" : "No",
-            current.enabled ? "Yes" : "No"
+            (previous.value == "true") ? "Yes" : "No",
+            (current.value == "true") ? "Yes" : "No"
         }});
     }
 
@@ -406,7 +406,7 @@ void FeatureFlagHistoryDialog::onRevertClicked() {
 
     // Use the PREVIOUS version's data (the "old" side of the diff) for the revert.
     // Server handles versioning - we just send the data we want to restore.
-    variability::domain::feature_flags flagToRevert = previous;
+    variability::domain::system_setting flagToRevert = previous;
     emit revertVersionRequested(flagToRevert);
 }
 

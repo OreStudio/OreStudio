@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
+    <width>620</width>
     <height>560</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
+    <width>620</width>
     <height>560</height>
    </size>
   </property>
@@ -52,7 +52,7 @@
           <item row="0" column="1">
            <widget class="QLineEdit" name="nameEdit">
             <property name="placeholderText">
-             <string>Enter setting name (e.g., feature.new_ui)</string>
+             <string>Enter setting name (e.g., system.bootstrap_mode)</string>
             </property>
            </widget>
           </item>
@@ -99,12 +99,9 @@
             <property name="currentIndex">
              <number>0</number>
             </property>
-            <widget class="QWidget" name="boolPage">
-             <layout class="QVBoxLayout" name="boolPageLayout">
-              <property name="contentsMargins">
-               <number>0</number>
-               <number>0</number>
-               <number>0</number>
+            <widget class="QWidget" name="pageBool">
+             <layout class="QVBoxLayout" name="boolLayout">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -123,12 +120,9 @@
               </item>
              </layout>
             </widget>
-            <widget class="QWidget" name="linePage">
-             <layout class="QVBoxLayout" name="linePageLayout">
-              <property name="contentsMargins">
-               <number>0</number>
-               <number>0</number>
-               <number>0</number>
+            <widget class="QWidget" name="pageText">
+             <layout class="QVBoxLayout" name="textLayout">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
@@ -140,30 +134,21 @@
               </item>
              </layout>
             </widget>
-            <widget class="QWidget" name="textPage">
-             <layout class="QVBoxLayout" name="textPageLayout">
-              <property name="contentsMargins">
-               <number>0</number>
-               <number>0</number>
-               <number>0</number>
+            <widget class="QWidget" name="pageJson">
+             <layout class="QVBoxLayout" name="jsonLayout">
+              <property name="margin">
                <number>0</number>
               </property>
               <item>
-               <widget class="QPlainTextEdit" name="valueTextEdit">
+               <widget class="QPlainTextEdit" name="valueJsonEdit">
                 <property name="minimumSize">
                  <size>
                   <width>0</width>
                   <height>80</height>
                  </size>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>150</height>
-                 </size>
-                </property>
                 <property name="placeholderText">
-                 <string>Enter value</string>
+                 <string>Enter valid JSON</string>
                 </property>
                </widget>
               </item>
@@ -177,7 +162,7 @@
              <string/>
             </property>
             <property name="styleSheet">
-             <string>color: gray; font-style: italic;</string>
+             <string>color: #888888; font-style: italic;</string>
             </property>
            </widget>
           </item>

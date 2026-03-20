@@ -89,7 +89,7 @@ private slots:
     void onSaveClicked();
     void onDeleteClicked();
     void onFieldChanged();
-    void onDataTypeChanged(int index);
+    void onDataTypeChanged();
 
     // Version navigation slots
     void onFirstVersionClicked();
@@ -103,17 +103,17 @@ private:
     void displayCurrentVersion();
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
-    void populateValueWidgets(const variability::domain::system_setting& flag);
-    void switchValuePage(const std::string& data_type);
-    std::string currentValueText() const;
+    void populateValueWidgets(const std::string& dataType, const std::string& value);
+    void switchValuePage(const QString& dataType);
+    [[nodiscard]] QString currentValueText() const;
 
 private:
     Ui::SystemSettingDetailDialog* ui_;
     QToolBar* toolBar_;
     QAction* revertAction_;
+    QIntValidator* intValidator_;
 
     variability::domain::system_setting currentFlag_;
-    QIntValidator* intValidator_;
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;

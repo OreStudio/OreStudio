@@ -25,6 +25,7 @@
 #include <QToolBar>
 #include <QIcon>
 #include <QComboBox>
+#include <QIntValidator>
 #include <QJsonDocument>
 #include <QMdiSubWindow>
 #include <QMetaObject>
@@ -125,23 +126,20 @@ SystemSettingDetailDialog::SystemSettingDetailDialog(QWidget* parent)
     connect(ui_->closeButton, &QPushButton::clicked, this,
         &SystemSettingDetailDialog::onCloseClicked);
 
-    // Integer validator for the line edit page
-    ui_->valueLineEdit->setValidator(intValidator_);
-
     // Connect data type selector
-    connect(ui_->dataTypeComboBox, &QComboBox::currentIndexChanged, this,
-        &SystemSettingDetailDialog::onDataTypeChanged);
+    connect(ui_->dataTypeComboBox, &QComboBox::currentTextChanged, this,
+        [this](const QString&) { onDataTypeChanged(); });
 
     // Connect signals for editable fields to detect changes
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
         &SystemSettingDetailDialog::onFieldChanged);
     connect(ui_->dataTypeComboBox, &QComboBox::currentIndexChanged, this,
-        &SystemSettingDetailDialog::onFieldChanged);
+        [this](int) { onDataTypeChanged(); });
     connect(ui_->valueBoolCombo, &QComboBox::currentIndexChanged, this,
         &SystemSettingDetailDialog::onFieldChanged);
     connect(ui_->valueLineEdit, &QLineEdit::textChanged, this,
         &SystemSettingDetailDialog::onFieldChanged);
-    connect(ui_->valueTextEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->valueJsonEdit, &QPlainTextEdit::textChanged, this,
         &SystemSettingDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
         &SystemSettingDetailDialog::onFieldChanged);
@@ -181,7 +179,7 @@ void SystemSettingDetailDialog::setSystemSetting(
     setCreateMode(isAddMode_);
 
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
-    populateValueWidgets(flag);
+    populateValueWidgets(flag.data_type, flag.value);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     populateProvenance(currentFlag_.version, currentFlag_.modified_by,
                        currentFlag_.performed_by, currentFlag_.recorded_at,
@@ -205,20 +203,73 @@ variability::domain::system_setting SystemSettingDetailDialog::getSystemSetting(
     variability::domain::system_setting flag = currentFlag_;
     flag.name = ui_->nameEdit->text().toStdString();
     flag.data_type = ui_->dataTypeComboBox->currentText().toStdString();
-    flag.value = currentValueText();
+    flag.value = currentValueText().toStdString();
     flag.description = ui_->descriptionEdit->toPlainText().toStdString();
     flag.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return flag;
 }
 
+QString SystemSettingDetailDialog::currentValueText() const {
+    const int page = ui_->valueStack->currentIndex();
+    if (page == 0)
+        return ui_->valueBoolCombo->currentText();
+    if (page == 2)
+        return ui_->valueJsonEdit->toPlainText().trimmed();
+    return ui_->valueLineEdit->text().trimmed();
+}
+
+void SystemSettingDetailDialog::populateValueWidgets(
+    const std::string& dataType, const std::string& value) {
+
+    // Block signals so populateValueWidgets doesn't trigger onFieldChanged
+    QSignalBlocker b1(ui_->dataTypeComboBox);
+    QSignalBlocker b2(ui_->valueBoolCombo);
+    QSignalBlocker b3(ui_->valueLineEdit);
+    QSignalBlocker b4(ui_->valueJsonEdit);
+
+    const QString dt = QString::fromStdString(dataType);
+    const QString val = QString::fromStdString(value);
+
+    // Set the data type combo
+    const int idx = ui_->dataTypeComboBox->findText(dt);
+    ui_->dataTypeComboBox->setCurrentIndex(idx >= 0 ? idx : 0);
+
+    // Switch the value stack and populate
+    switchValuePage(dt);
+
+    if (dt == "boolean") {
+        ui_->valueBoolCombo->setCurrentIndex(val == "true" ? 0 : 1);
+    } else if (dt == "json") {
+        ui_->valueJsonEdit->setPlainText(val);
+    } else {
+        ui_->valueLineEdit->setText(val);
+    }
+}
+
+void SystemSettingDetailDialog::switchValuePage(const QString& dataType) {
+    if (dataType == "boolean") {
+        ui_->valueStack->setCurrentIndex(0);
+        ui_->valueLineEdit->setValidator(nullptr);
+        ui_->valueHintLabel->setText(tr("Accepted values: true, false"));
+    } else if (dataType == "integer") {
+        ui_->valueStack->setCurrentIndex(1);
+        ui_->valueLineEdit->setValidator(intValidator_);
+        ui_->valueHintLabel->setText(tr("Must be a whole number"));
+    } else if (dataType == "string") {
+        ui_->valueStack->setCurrentIndex(1);
+        ui_->valueLineEdit->setValidator(nullptr);
+        ui_->valueHintLabel->setText(tr("Any text value"));
+    } else if (dataType == "json") {
+        ui_->valueStack->setCurrentIndex(2);
+        ui_->valueLineEdit->setValidator(nullptr);
+        ui_->valueHintLabel->setText(tr("Must be valid JSON"));
+    }
+}
+
 void SystemSettingDetailDialog::clearDialog() {
     ui_->nameEdit->clear();
-    ui_->dataTypeComboBox->setCurrentIndex(0);  // Default to boolean
-    ui_->valueBoolCombo->setCurrentIndex(1);    // Default to false
-    ui_->valueLineEdit->clear();
-    ui_->valueTextEdit->clear();
-    ui_->valueStack->setCurrentIndex(0);
+    populateValueWidgets("boolean", "false");
     ui_->descriptionEdit->clear();
     clearProvenance();
 
@@ -226,6 +277,11 @@ void SystemSettingDetailDialog::clearDialog() {
     isDirty_ = false;
     emit isDirtyChanged(false);
     updateSaveButtonState();
+}
+
+void SystemSettingDetailDialog::onDataTypeChanged() {
+    switchValuePage(ui_->dataTypeComboBox->currentText());
+    onFieldChanged();
 }
 
 void SystemSettingDetailDialog::save() {
@@ -248,29 +304,26 @@ void SystemSettingDetailDialog::onSaveClicked() {
     }
 
     // Validate value against data type
-    const std::string dataType = ui_->dataTypeComboBox->currentText().toStdString();
+    const QString dataType = ui_->dataTypeComboBox->currentText();
+    const QString value = currentValueText();
+
     if (dataType == "integer") {
-        const QString val = ui_->valueLineEdit->text().trimmed();
-        if (val.isEmpty()) {
-            MessageBoxHelper::warning(this, "Validation Error",
-                "An integer value is required.");
-            return;
-        }
         bool ok = false;
-        val.toInt(&ok);
+        value.toInt(&ok);
         if (!ok) {
+            BOOST_LOG_SEV(lg(), warn) << "Validation failed: value is not an integer";
             MessageBoxHelper::warning(this, "Validation Error",
-                QString("'%1' is not a valid integer.").arg(val));
+                QString("Value '%1' is not a valid integer.").arg(value));
             return;
         }
     } else if (dataType == "json") {
-        const QString val = ui_->valueTextEdit->toPlainText().trimmed();
-        if (!val.isEmpty()) {
+        if (!value.isEmpty()) {
             QJsonParseError err;
-            QJsonDocument::fromJson(val.toUtf8(), &err);
+            QJsonDocument::fromJson(value.toUtf8(), &err);
             if (err.error != QJsonParseError::NoError) {
+                BOOST_LOG_SEV(lg(), warn) << "Validation failed: value is not valid JSON";
                 MessageBoxHelper::warning(this, "Validation Error",
-                    QString("Invalid JSON: %1").arg(err.errorString()));
+                    QString("Value is not valid JSON: %1").arg(err.errorString()));
                 return;
             }
         }
@@ -429,7 +482,7 @@ void SystemSettingDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     ui_->dataTypeComboBox->setEnabled(!readOnly);
     ui_->valueBoolCombo->setEnabled(!readOnly);
     ui_->valueLineEdit->setReadOnly(readOnly);
-    ui_->valueTextEdit->setReadOnly(readOnly);
+    ui_->valueJsonEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
 
     ui_->saveButton->setVisible(!readOnly);
@@ -488,7 +541,7 @@ void SystemSettingDetailDialog::displayCurrentVersion() {
 
     // Update UI with current version data
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
-    populateValueWidgets(flag);
+    populateValueWidgets(flag.data_type, flag.value);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     populateProvenance(flag.version, flag.modified_by, flag.performed_by,
                        flag.recorded_at, flag.change_reason_code, flag.change_commentary);
@@ -560,69 +613,6 @@ void SystemSettingDetailDialog::onLastVersionClicked() {
     // Go to latest (index 0)
     currentHistoryIndex_ = 0;
     displayCurrentVersion();
-}
-
-void SystemSettingDetailDialog::populateValueWidgets(
-    const variability::domain::system_setting& flag) {
-
-    const QString dt = QString::fromStdString(flag.data_type);
-    // Set data type combo (block signals to avoid triggering onFieldChanged)
-    {
-        QSignalBlocker blocker(ui_->dataTypeComboBox);
-        const int idx = ui_->dataTypeComboBox->findText(dt);
-        ui_->dataTypeComboBox->setCurrentIndex(idx >= 0 ? idx : 0);
-    }
-
-    switchValuePage(flag.data_type);
-
-    // Populate the correct page widget (block signals)
-    const QString val = QString::fromStdString(flag.value);
-    if (flag.data_type == "boolean") {
-        QSignalBlocker blocker(ui_->valueBoolCombo);
-        ui_->valueBoolCombo->setCurrentIndex(val == "true" ? 0 : 1);
-    } else if (flag.data_type == "integer" || flag.data_type == "string") {
-        QSignalBlocker blocker(ui_->valueLineEdit);
-        ui_->valueLineEdit->setText(val);
-    } else {
-        QSignalBlocker blocker(ui_->valueTextEdit);
-        ui_->valueTextEdit->setPlainText(val);
-    }
-}
-
-void SystemSettingDetailDialog::switchValuePage(const std::string& data_type) {
-    if (data_type == "boolean") {
-        ui_->valueStack->setCurrentWidget(ui_->boolPage);
-        ui_->valueHintLabel->setText(tr("Accepted values: true, false"));
-        ui_->valueLineEdit->setValidator(nullptr);
-    } else if (data_type == "integer") {
-        ui_->valueStack->setCurrentWidget(ui_->linePage);
-        ui_->valueHintLabel->setText(tr("Must be a whole number"));
-        ui_->valueLineEdit->setValidator(intValidator_);
-    } else if (data_type == "string") {
-        ui_->valueStack->setCurrentWidget(ui_->linePage);
-        ui_->valueHintLabel->setText(tr("Free-form text value"));
-        ui_->valueLineEdit->setValidator(nullptr);
-    } else {
-        ui_->valueStack->setCurrentWidget(ui_->textPage);
-        ui_->valueHintLabel->setText(tr("Must be valid JSON"));
-        ui_->valueLineEdit->setValidator(nullptr);
-    }
-}
-
-std::string SystemSettingDetailDialog::currentValueText() const {
-    const std::string dt = ui_->dataTypeComboBox->currentText().toStdString();
-    if (dt == "boolean") {
-        return ui_->valueBoolCombo->currentText().toStdString();
-    } else if (dt == "integer" || dt == "string") {
-        return ui_->valueLineEdit->text().toStdString();
-    } else {
-        return ui_->valueTextEdit->toPlainText().toStdString();
-    }
-}
-
-void SystemSettingDetailDialog::onDataTypeChanged(int /*index*/) {
-    const std::string dt = ui_->dataTypeComboBox->currentText().toStdString();
-    switchValuePage(dt);
 }
 
 }

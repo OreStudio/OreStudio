@@ -88,6 +88,35 @@
         "domain": ["<string>", "<boost/uuid/uuid.hpp>"]
       },
       "iterator_var": "av"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/app_version.hpp",
+      "domain_class": "compute::domain::app_version",
+      "protocol_include": "ores.compute/messaging/app_version_protocol.hpp",
+      "collection_name": "app_versions",
+      "item_var": "app_version",
+      "key_field": "wrapper_version",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_app_versions_request",
+      "get_response_class": "compute::messaging::list_app_versions_response",
+
+      "columns": [
+        {"enum_name": "AppId",          "field": "app_id",          "header": "App ID",          "is_uuid": true,   "width": 160},
+        {"enum_name": "WrapperVersion", "field": "wrapper_version", "header": "Wrapper Version", "is_string": true, "width": 120},
+        {"enum_name": "EngineVersion",  "field": "engine_version",  "header": "Engine Version",  "is_string": true, "width": 120},
+        {"enum_name": "Platform",       "field": "platform",        "header": "Platform",        "is_string": true, "width": 100},
+        {"enum_name": "MinRamMb",       "field": "min_ram_mb",      "header": "Min RAM (MB)",    "is_int": true,    "width": 90},
+        {"enum_name": "PackageUri",     "field": "package_uri",     "header": "Package URI",     "is_string": true, "width": 200},
+        {"enum_name": "Version",        "field": "version",         "header": "Version",         "is_int": true,    "width": 60},
+        {"enum_name": "ModifiedBy",     "field": "modified_by",     "header": "Modified By",     "is_string": true, "width": 120}
+      ],
+
+      "settings_group": "AppVersionListWindow",
+      "window_title": "App Versions",
+      "icon": "Code"
     }
   }
 }

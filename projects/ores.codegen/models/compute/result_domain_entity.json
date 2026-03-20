@@ -107,6 +107,35 @@
         "domain": ["<string>", "<cstdint>", "<chrono>", "<boost/uuid/uuid.hpp>"]
       },
       "iterator_var": "r"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/result.hpp",
+      "domain_class": "compute::domain::result",
+      "protocol_include": "ores.compute/messaging/result_protocol.hpp",
+      "collection_name": "results",
+      "item_var": "result",
+      "key_field": "modified_by",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_results_request",
+      "get_response_class": "compute::messaging::list_results_response",
+
+      "columns": [
+        {"enum_name": "WorkunitId",  "field": "workunit_id",  "header": "Workunit ID",  "is_uuid": true,      "width": 160},
+        {"enum_name": "HostId",      "field": "host_id",      "header": "Host ID",      "is_uuid": true,      "width": 160},
+        {"enum_name": "ServerState", "field": "server_state", "header": "State",        "is_int": true,       "width": 70},
+        {"enum_name": "Outcome",     "field": "outcome",      "header": "Outcome",      "is_int": true,       "width": 70},
+        {"enum_name": "OutputUri",   "field": "output_uri",   "header": "Output URI",   "is_string": true,    "width": 200},
+        {"enum_name": "ReceivedAt",  "field": "received_at",  "header": "Received At",  "is_timestamp": true, "width": 140},
+        {"enum_name": "Version",     "field": "version",      "header": "Version",      "is_int": true,       "width": 60},
+        {"enum_name": "ModifiedBy",  "field": "modified_by",  "header": "Modified By",  "is_string": true,    "width": 120}
+      ],
+
+      "settings_group": "ResultListWindow",
+      "window_title": "Results",
+      "icon": "CheckmarkCircle"
     }
   }
 }

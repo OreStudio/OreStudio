@@ -53,6 +53,31 @@
         "domain": ["<string>"]
       },
       "iterator_var": "b"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/batch.hpp",
+      "domain_class": "compute::domain::batch",
+      "protocol_include": "ores.compute/messaging/batch_protocol.hpp",
+      "collection_name": "batches",
+      "item_var": "batch",
+      "key_field": "external_ref",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_batches_request",
+      "get_response_class": "compute::messaging::list_batches_response",
+
+      "columns": [
+        {"enum_name": "ExternalRef", "field": "external_ref", "header": "Reference",   "is_string": true, "width": 200},
+        {"enum_name": "Status",      "field": "status",       "header": "Status",      "is_string": true, "width": 100},
+        {"enum_name": "Version",     "field": "version",      "header": "Version",     "is_int": true,    "width": 60},
+        {"enum_name": "ModifiedBy",  "field": "modified_by",  "header": "Modified By", "is_string": true, "width": 120}
+      ],
+
+      "settings_group": "BatchListWindow",
+      "window_title": "Compute Batches",
+      "icon": "TextBulletListSquare"
     }
   }
 }

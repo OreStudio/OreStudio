@@ -90,6 +90,36 @@
         "domain": ["<string>", "<cstdint>", "<chrono>"]
       },
       "iterator_var": "h"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/host.hpp",
+      "domain_class": "compute::domain::host",
+      "protocol_include": "ores.compute/messaging/host_protocol.hpp",
+      "collection_name": "hosts",
+      "item_var": "host",
+      "key_field": "external_id",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_hosts_request",
+      "get_response_class": "compute::messaging::list_hosts_response",
+
+      "columns": [
+        {"enum_name": "ExternalId",   "field": "external_id",   "header": "Host ID",       "is_string": true,    "width": 180},
+        {"enum_name": "Location",     "field": "location",      "header": "Location",      "is_string": true,    "width": 120},
+        {"enum_name": "CpuCount",     "field": "cpu_count",     "header": "CPUs",          "is_int": true,       "width": 60},
+        {"enum_name": "RamMb",        "field": "ram_mb",        "header": "RAM (MB)",      "is_int": true,       "width": 80},
+        {"enum_name": "GpuType",      "field": "gpu_type",      "header": "GPU",           "is_string": true,    "width": 100},
+        {"enum_name": "LastRpcTime",  "field": "last_rpc_time", "header": "Last Heartbeat","is_timestamp": true, "width": 140},
+        {"enum_name": "CreditTotal",  "field": "credit_total",  "header": "Credits",       "is_int": true,       "width": 80},
+        {"enum_name": "Version",      "field": "version",       "header": "Version",       "is_int": true,       "width": 60},
+        {"enum_name": "ModifiedBy",   "field": "modified_by",   "header": "Modified By",   "is_string": true,    "width": 120}
+      ],
+
+      "settings_group": "HostListWindow",
+      "window_title": "Compute Hosts",
+      "icon": "Desktop"
     }
   }
 }

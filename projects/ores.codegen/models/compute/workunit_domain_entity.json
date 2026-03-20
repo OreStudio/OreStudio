@@ -102,6 +102,34 @@
         "domain": ["<string>", "<boost/uuid/uuid.hpp>"]
       },
       "iterator_var": "wu"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/workunit.hpp",
+      "domain_class": "compute::domain::workunit",
+      "protocol_include": "ores.compute/messaging/workunit_protocol.hpp",
+      "collection_name": "workunits",
+      "item_var": "workunit",
+      "key_field": "input_uri",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_workunits_request",
+      "get_response_class": "compute::messaging::list_workunits_response",
+
+      "columns": [
+        {"enum_name": "BatchId",         "field": "batch_id",         "header": "Batch ID",         "is_uuid": true,   "width": 160},
+        {"enum_name": "AppVersionId",    "field": "app_version_id",   "header": "App Version ID",   "is_uuid": true,   "width": 160},
+        {"enum_name": "InputUri",        "field": "input_uri",        "header": "Input URI",        "is_string": true, "width": 200},
+        {"enum_name": "Priority",        "field": "priority",         "header": "Priority",         "is_int": true,    "width": 70},
+        {"enum_name": "TargetRedundancy","field": "target_redundancy","header": "Redundancy",       "is_int": true,    "width": 80},
+        {"enum_name": "Version",         "field": "version",          "header": "Version",          "is_int": true,    "width": 60},
+        {"enum_name": "ModifiedBy",      "field": "modified_by",      "header": "Modified By",      "is_string": true, "width": 120}
+      ],
+
+      "settings_group": "WorkunitListWindow",
+      "window_title": "Workunits",
+      "icon": "FlashFlow"
     }
   }
 }

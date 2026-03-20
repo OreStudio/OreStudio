@@ -22,6 +22,7 @@
 #include "ores.cli/config/domain_parsers/iam_parser.hpp"
 #include "ores.cli/config/domain_parsers/refdata_parser.hpp"
 #include "ores.cli/config/domain_parsers/variability_parser.hpp"
+#include "ores.cli/config/domain_parsers/compute_parser.hpp"
 #include "ores.cli/config/entity_parsers/accounts_parser.hpp"
 #include "ores.cli/config/entity_parsers/change_reason_categories_parser.hpp"
 #include "ores.cli/config/entity_parsers/change_reasons_parser.hpp"
@@ -62,6 +63,9 @@ namespace {
 
     const std::string variability_domain_name("variability");
     const std::string variability_domain_desc("System settings and variability: system-settings.");
+
+    const std::string compute_domain_name("compute");
+    const std::string compute_domain_desc("Distributed compute grid: hosts, apps, app-versions, batches, workunits, results.");
 
     const std::string operation_arg("operation");
 
@@ -125,12 +129,13 @@ namespace {
     void validate_domain_name(const std::string& domain_name) {
         const bool is_valid(domain_name == refdata_domain_name || domain_name == iam_domain_name ||
                             domain_name == dq_domain_name ||
-                            domain_name == variability_domain_name);
+                            domain_name == variability_domain_name ||
+                            domain_name == compute_domain_name);
 
         if (!is_valid) {
             BOOST_THROW_EXCEPTION(
                 parser_exception(std::format("Invalid or unsupported domain: {}. "
-                                             "Available domains: refdata, iam, dq, variability",
+                                             "Available domains: refdata, iam, dq, variability, compute",
                                              domain_name)));
         }
     }
@@ -172,6 +177,7 @@ void print_help(const options_description& od, std::ostream& info) {
     lambda(iam_domain_name, iam_domain_desc);
     lambda(dq_domain_name, dq_domain_desc);
     lambda(variability_domain_name, variability_domain_desc);
+    lambda(compute_domain_name, compute_domain_desc);
 
     info << std::endl
          << "For entity and operation specific options, use: <domain> <entity> <operation> --help"
@@ -243,6 +249,8 @@ std::optional<options> handle_domain_command(const std::string& domain_name,
         return domain_parsers::handle_dq_command(has_help, po, info, vm);
     } else if (domain_name == variability_domain_name) {
         return domain_parsers::handle_variability_command(has_help, po, info, vm);
+    } else if (domain_name == compute_domain_name) {
+        return domain_parsers::handle_compute_command(has_help, po, info, vm);
     }
 
     // Unreachable - all domains handled above

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,38 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#include "ores.cli/config/add_compute_app_version_options.hpp"
+
+#include <ostream>
 
 namespace ores::cli::config {
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        feature_flags,
-        system_settings,
-        // compute
-        compute_hosts,
-        compute_apps,
-        compute_app_versions,
-        compute_batches,
-        compute_workunits,
-        compute_results
-    };
+std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options& v) {
+    s << "{ app_id: " << v.app_id
+      << ", wrapper_version: " << v.wrapper_version
+      << ", engine_version: " << v.engine_version
+      << ", platform: " << v.platform
+      << ", modified_by: " << v.modified_by;
 
+    if (v.package_uri) s << ", package_uri: " << *v.package_uri;
+    if (v.min_ram_mb) s << ", min_ram_mb: " << *v.min_ram_mb;
+
+    s << " }";
+    return s;
 }
 
-#endif
+}

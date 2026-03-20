@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,37 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_CLI_CONFIG_ENTITY_PARSERS_COMPUTE_HOSTS_PARSER_HPP
+#define ORES_CLI_CONFIG_ENTITY_PARSERS_COMPUTE_HOSTS_PARSER_HPP
 
-namespace ores::cli::config {
+#include <optional>
+#include <iosfwd>
+#include <boost/program_options.hpp>
+#include "ores.cli/config/options.hpp"
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        feature_flags,
-        system_settings,
-        // compute
-        compute_hosts,
-        compute_apps,
-        compute_app_versions,
-        compute_batches,
-        compute_workunits,
-        compute_results
-    };
+namespace ores::cli::config::entity_parsers {
+
+/**
+ * @brief Handles parsing of compute hosts entity commands.
+ */
+std::optional<options>
+handle_compute_hosts_command(bool has_help,
+    const boost::program_options::parsed_options& po,
+    std::ostream& info,
+    boost::program_options::variables_map& vm);
 
 }
 

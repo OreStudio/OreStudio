@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,37 +17,29 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_CLI_CONFIG_ADD_COMPUTE_APP_VERSION_OPTIONS_HPP
+#define ORES_CLI_CONFIG_ADD_COMPUTE_APP_VERSION_OPTIONS_HPP
+
+#include <iosfwd>
+#include <string>
+#include <optional>
 
 namespace ores::cli::config {
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        feature_flags,
-        system_settings,
-        // compute
-        compute_hosts,
-        compute_apps,
-        compute_app_versions,
-        compute_batches,
-        compute_workunits,
-        compute_results
-    };
+/**
+ * @brief Configuration for adding a compute app_version entity via command-line arguments.
+ */
+struct add_compute_app_version_options final {
+    std::string app_id;
+    std::string wrapper_version;
+    std::string engine_version;
+    std::string platform;
+    std::string modified_by;
+    std::optional<std::string> package_uri;
+    std::optional<int> min_ram_mb;
+};
+
+std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options& v);
 
 }
 

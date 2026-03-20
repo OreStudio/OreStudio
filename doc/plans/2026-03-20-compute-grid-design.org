@@ -26,9 +26,9 @@ reaper, which is a scheduled job in ~ores.scheduler~.
 | 4     | Heartbeat handler                         | ✅ Done |
 | 5     | Validator (event-driven)                  | ✅ Done |
 | 5     | Assimilator (event-driven)                | ✅ Done |
-| 5     | Reaper scheduler job                      | TODO   |
-| 6     | Qt list windows                           | TODO   |
-| 6     | CLI commands                              | TODO   |
+| 5     | Reaper scheduler job                      | ✅ Done |
+| 6     | Qt list windows                           | ✅ Done |
+| 6     | CLI commands                              | ✅ Done |
 
 * Architecture
 

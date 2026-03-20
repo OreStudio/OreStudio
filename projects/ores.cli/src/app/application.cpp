@@ -84,6 +84,28 @@
 #include "ores.cli/config/add_country_options.hpp"
 #include "ores.cli/config/add_change_reason_options.hpp"
 #include "ores.cli/config/add_change_reason_category_options.hpp"
+#include <boost/uuid/random_generator.hpp>
+#include "ores.compute/domain/host_table_io.hpp"
+#include "ores.compute/domain/host_json_io.hpp"
+#include "ores.compute/domain/app_table_io.hpp"
+#include "ores.compute/domain/app_json_io.hpp"
+#include "ores.compute/domain/app_version_table_io.hpp"
+#include "ores.compute/domain/app_version_json_io.hpp"
+#include "ores.compute/domain/batch_table_io.hpp"
+#include "ores.compute/domain/batch_json_io.hpp"
+#include "ores.compute/domain/workunit_table_io.hpp"
+#include "ores.compute/domain/workunit_json_io.hpp"
+#include "ores.compute/domain/result_table_io.hpp"
+#include "ores.compute/domain/result_json_io.hpp"
+#include "ores.compute/repository/host_repository.hpp"
+#include "ores.compute/repository/app_repository.hpp"
+#include "ores.compute/repository/app_version_repository.hpp"
+#include "ores.compute/repository/batch_repository.hpp"
+#include "ores.compute/repository/workunit_repository.hpp"
+#include "ores.compute/repository/result_repository.hpp"
+#include "ores.cli/config/add_compute_app_options.hpp"
+#include "ores.cli/config/add_compute_app_version_options.hpp"
+#include "ores.cli/config/add_compute_batch_options.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -493,6 +515,168 @@ export_change_reason_categories(const config::export_options& cfg) const {
 }
 
 void application::
+export_compute_hosts(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting compute hosts.";
+
+    compute::repository::host_repository repo;
+    std::vector<compute::domain::host> items;
+
+    if (!cfg.key.empty()) {
+        items = repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        for (const auto& item : items) {
+            output_stream_ << item << "\n";
+        }
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for compute hosts"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute host(s).";
+}
+
+void application::
+export_compute_apps(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting compute apps.";
+
+    compute::repository::app_repository repo;
+    std::vector<compute::domain::app> items;
+
+    if (!cfg.key.empty()) {
+        items = repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        for (const auto& item : items) {
+            output_stream_ << item << "\n";
+        }
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for compute apps"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute app(s).";
+}
+
+void application::
+export_compute_app_versions(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting compute app versions.";
+
+    compute::repository::app_version_repository repo;
+    std::vector<compute::domain::app_version> items;
+
+    if (!cfg.key.empty()) {
+        items = repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        for (const auto& item : items) {
+            output_stream_ << item << "\n";
+        }
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for compute app versions"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute app version(s).";
+}
+
+void application::
+export_compute_batches(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting compute batches.";
+
+    compute::repository::batch_repository repo;
+    std::vector<compute::domain::batch> items;
+
+    if (!cfg.key.empty()) {
+        items = repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        for (const auto& item : items) {
+            output_stream_ << item << "\n";
+        }
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for compute batches"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute batch(es).";
+}
+
+void application::
+export_compute_workunits(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting compute workunits.";
+
+    compute::repository::workunit_repository repo;
+    std::vector<compute::domain::workunit> items;
+
+    if (!cfg.key.empty()) {
+        items = repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        for (const auto& item : items) {
+            output_stream_ << item << "\n";
+        }
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for compute workunits"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute workunit(s).";
+}
+
+void application::
+export_compute_results(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting compute results.";
+
+    compute::repository::result_repository repo;
+    std::vector<compute::domain::result> items;
+
+    if (!cfg.key.empty()) {
+        items = repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        for (const auto& item : items) {
+            output_stream_ << item << "\n";
+        }
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(
+            application_exception("Only JSON and table formats are supported for compute results"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " compute result(s).";
+}
+
+void application::
 export_data(const std::optional<config::export_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No dumping configuration found.";
@@ -528,6 +712,27 @@ export_data(const std::optional<config::export_options>& ocfg) const {
         case config::entity::change_reason_categories:
             export_change_reason_categories(cfg);
             break;
+        case config::entity::compute_hosts:
+            export_compute_hosts(cfg);
+            break;
+        case config::entity::compute_apps:
+            export_compute_apps(cfg);
+            break;
+        case config::entity::compute_app_versions:
+            export_compute_app_versions(cfg);
+            break;
+        case config::entity::compute_batches:
+            export_compute_batches(cfg);
+            break;
+        case config::entity::compute_workunits:
+            export_compute_workunits(cfg);
+            break;
+        case config::entity::compute_results:
+            export_compute_results(cfg);
+            break;
+        case config::entity::feature_flags:
+            BOOST_THROW_EXCEPTION(
+                application_exception("Export is not yet supported for feature flags."));
     }
 }
 
@@ -729,6 +934,17 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
         case config::entity::change_reason_categories:
             delete_change_reason_category(cfg);
             break;
+        case config::entity::compute_hosts:
+        case config::entity::compute_apps:
+        case config::entity::compute_app_versions:
+        case config::entity::compute_batches:
+        case config::entity::compute_workunits:
+        case config::entity::compute_results:
+            BOOST_THROW_EXCEPTION(
+                application_exception("Delete is not supported for compute entities via CLI."));
+        case config::entity::feature_flags:
+            BOOST_THROW_EXCEPTION(
+                application_exception("Delete is not yet supported for feature flags."));
     }
 }
 
@@ -1019,6 +1235,75 @@ add_change_reason_category(const config::add_change_reason_category_options& cfg
 }
 
 void application::
+add_compute_app(const config::add_compute_app_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding compute app: " << cfg.name;
+
+    compute::domain::app record;
+    record.id = boost::uuids::random_generator()();
+    record.name = cfg.name;
+    record.description = cfg.description.value_or("");
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+
+    compute::repository::app_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added compute app: " << record.name << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added compute app: " << record.name;
+}
+
+void application::
+add_compute_app_version(const config::add_compute_app_version_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding compute app version: "
+                              << cfg.wrapper_version << "/" << cfg.engine_version;
+
+    boost::uuids::uuid app_id;
+    try {
+        app_id = boost::lexical_cast<boost::uuids::uuid>(cfg.app_id);
+    } catch (const boost::bad_lexical_cast&) {
+        BOOST_THROW_EXCEPTION(
+            application_exception(std::format("Invalid app ID UUID: {}", cfg.app_id)));
+    }
+
+    compute::domain::app_version record;
+    record.id = boost::uuids::random_generator()();
+    record.app_id = app_id;
+    record.wrapper_version = cfg.wrapper_version;
+    record.engine_version = cfg.engine_version;
+    record.platform = cfg.platform;
+    record.package_uri = cfg.package_uri.value_or("");
+    record.min_ram_mb = cfg.min_ram_mb.value_or(0);
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+
+    compute::repository::app_version_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added compute app version: "
+                   << record.wrapper_version << "/" << record.engine_version << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added compute app version: "
+                              << record.wrapper_version << "/" << record.engine_version;
+}
+
+void application::
+add_compute_batch(const config::add_compute_batch_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding compute batch: " << cfg.external_ref;
+
+    compute::domain::batch record;
+    record.id = boost::uuids::random_generator()();
+    record.external_ref = cfg.external_ref;
+    record.status = cfg.status.value_or("open");
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+
+    compute::repository::batch_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added compute batch: " << record.external_ref << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added compute batch: " << record.external_ref;
+}
+
+void application::
 add_data(const std::optional<config::add_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No add configuration found.";
@@ -1046,6 +1331,12 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_change_reason(opts);
         } else if constexpr (std::is_same_v<T, config::add_change_reason_category_options>) {
             add_change_reason_category(opts);
+        } else if constexpr (std::is_same_v<T, config::add_compute_app_options>) {
+            add_compute_app(opts);
+        } else if constexpr (std::is_same_v<T, config::add_compute_app_version_options>) {
+            add_compute_app_version(opts);
+        } else if constexpr (std::is_same_v<T, config::add_compute_batch_options>) {
+            add_compute_batch(opts);
         } else {
             []<bool flag = false>() {
                 static_assert(flag, "unhandled type in std::visit for add_data");

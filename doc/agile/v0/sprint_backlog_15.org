@@ -191,6 +191,30 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_15_tags.png]]
 
+*** COMPLETED Compute grid: domain, service, CLI, and Qt list windows      :code:
+
+Implement the BOINC-inspired distributed compute grid across all layers of the
+ORE Studio stack.
+
+*What was implemented:*
+
+- =ores.compute= domain library: 6 entity types (host, app, app_version, batch,
+  workunit, result) with JSON I/O, table I/O, generators, and repository layer.
+- SQL schema: tables, triggers, and DDL for all 6 entities.
+- =ores.compute.service= executable: JetStream dispatcher, Validator, Assimilator,
+  and Reaper scheduler jobs via NATS eventing.
+- Messaging protocol: work assignment events, heartbeat messages, result submission
+  requests/responses.
+- =ores.compute.wrapper= executable: NATS JetStream subscriber, package download
+  and cache, engine subprocess invocation via manifest.json templates, heartbeat
+  sender, result upload via Boost Beast HTTP client.
+- HTTP file-transfer endpoints added to =ores.http.server=: packages, workunit
+  inputs/configs, result outputs.
+- CLI commands: list, add, and delete for all 6 entities (hosts, apps, app-versions,
+  batches, workunits, results).
+- Qt list windows: all 6 entities with stale indicators, pagination, and MainWindow
+  integration.
+
 *** Token Expired
 
 #+begin_quote

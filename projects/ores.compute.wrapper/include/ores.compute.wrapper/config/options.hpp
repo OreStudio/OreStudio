@@ -49,6 +49,11 @@ struct options final {
     std::string host_id;
 
     /**
+     * @brief Tenant identifier; determines which JetStream work queue to subscribe to.
+     */
+    std::string tenant_id;
+
+    /**
      * @brief Directory used for package cache and per-job scratch space.
      */
     std::string work_dir;

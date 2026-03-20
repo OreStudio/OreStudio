@@ -38,6 +38,7 @@ const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");
 const std::string host_id_arg("host-id");
+const std::string tenant_id_arg("tenant-id");
 const std::string work_dir_arg("work-dir");
 const std::string heartbeat_interval_arg("heartbeat-interval-seconds");
 
@@ -63,6 +64,9 @@ options_description make_options_description() {
         (host_id_arg.c_str(),
             value<std::string>(),
             "UUID of this node's host record (required)")
+        (tenant_id_arg.c_str(),
+            value<std::string>(),
+            "Tenant identifier for work queue subscription (required)")
         (work_dir_arg.c_str(),
             value<std::string>()->default_value("/var/ores/wrapper"),
             "Directory for package cache and job scratch space")
@@ -128,10 +132,16 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
             parser_exception("Must supply --host-id."));
     }
 
+    if (vm.count(tenant_id_arg) == 0) {
+        BOOST_THROW_EXCEPTION(
+            parser_exception("Must supply --tenant-id."));
+    }
+
     options r;
     r.logging = logging_configuration::read_options(vm);
     r.nats = nats_configuration::read_options(vm);
     r.host_id = vm[host_id_arg].as<std::string>();
+    r.tenant_id = vm[tenant_id_arg].as<std::string>();
     r.work_dir = vm[work_dir_arg].as<std::string>();
     r.heartbeat_interval_seconds =
         vm[heartbeat_interval_arg].as<std::uint32_t>();

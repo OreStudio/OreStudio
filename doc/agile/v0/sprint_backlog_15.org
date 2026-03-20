@@ -17,24 +17,44 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-19 Thu 00:00], for Thursday, March 19, 2026.
-|      | <75>         |        |     |
-| Tags | Headline     | Time   |   % |
-|------+--------------+--------+-----|
-|      | *Total time* | *0:00* | 0.0 |
+#+CAPTION: Clock summary at [2026-03-20 Fri 10:10], for Friday, March 20, 2026.
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:20* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:20   |      |      | 100.0 |
+|       | Active                                |        | 0:20 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:20 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-19 Thu 00:00]
-|       | <75>         |        |       |       |       |
-| Tags  | Headline     | Time   |       |       |     % |
-|-------+--------------+--------+-------+-------+-------|
-|       | *Total time* | *0:00* |       |       | 100.0 |
-|-------+--------------+--------+-------+-------+-------|
-|       | Stories      |  0:00  |       |       | 100.0 |
-|       | Active       |        |  0:00 |       | 100.0 |
+#+CAPTION: Clock summary at [2026-03-20 Fri 10:10]
+|       | <75>                                  |        |      |      |       |
+| Tags  | Headline                              | Time   |      |      |     % |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | *Total time*                          | *0:20* |      |      | 100.0 |
+|-------+---------------------------------------+--------+------+------+-------|
+|       | Stories                               | 0:20   |      |      | 100.0 |
+|       | Active                                |        | 0:20 |      | 100.0 |
+| agile | Sprint and product backlog refinement |        |      | 0:20 | 100.0 |
 #+end:
+
+*** STARTED Sprint and product backlog refinement                     :agile:
+    :LOGBOOK:
+    CLOCK: [2026-03-20 Fri 09:50]--[2026-03-20 Fri 10:10] =>  0:20
+    :END:
+
+Updates to sprint and product backlog.
+
+#+begin_src emacs-lisp :exports none
+;; agenda
+(org-agenda-file-to-front)
+#+end_src
+
+#+RESULTS:
+: File moved to front of agenda file list
 
 #+name: pie-stories-chart
 #+begin_src R :var sprint_summary=sprint_summary :colnames yes :results file graphics :exports results :file sprint_backlog_15_stories_pie_sorted.png :width 1920 :height 1080
@@ -171,22 +191,15 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_15_tags.png]]
 
-*** Sprint and product backlog refinement                             :agile:
+*** Token Expired
 
-Updates to sprint and product backlog.
-
-#+begin_src emacs-lisp :exports none
-;; agenda
-(org-agenda-file-to-front)
-#+end_src
-
-** Completed
-
-** Cancelled
-
-** Postponed
-
-** Blocked
+#+begin_quote
+2026-03-20 10:04:27.471965 [DEBUG] [ores.trading.messaging.trade_handler] Completed ores.dev.local1.trading.v1.trades.list
+2026-03-20 10:05:17.241863 [DEBUG] [ores.trading.messaging.trade_handler] Handling ores.dev.local1.trading.v1.trades.list
+2026-03-20 10:05:17.241962 [TRACE] [ores.security.jwt.jwt_authenticator] Validating JWT token
+2026-03-20 10:05:17.242485 [WARN] [ores.security.jwt.jwt_authenticator] JWT verification failed: token expired
+2026-03-20 10:05:17.242569 [DEBUG] [ores.trading.service.trade_service] Listing trades with offset=0, limit=100
+#+end_quote
 
 * Footer
 

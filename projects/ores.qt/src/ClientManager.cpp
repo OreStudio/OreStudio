@@ -20,10 +20,13 @@
 #include "ores.qt/ClientManager.hpp"
 
 #include <sstream>
+#include <QDateTime>
+#include <QTimeZone>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
 #include "ores.iam/messaging/signup_protocol.hpp"
 #include "ores.iam/messaging/bootstrap_protocol.hpp"
@@ -312,8 +315,70 @@ SignupResult ClientManager::signup(
     }
 }
 
+void ClientManager::subscribeToEvent(const std::string& subject) {
+    if (nats_subscriptions_.count(subject))
+        return;
+
+    auto cl = session_.get_client();
+    if (!cl) {
+        BOOST_LOG_SEV(lg(), warn) << "subscribeToEvent: not connected, skipping '"
+                                  << subject << "'";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Subscribing to NATS event: " << subject;
+    try {
+        auto sub = cl->subscribe(subject,
+            [this, subject](nats::message msg) {
+                try {
+                    const std::string_view json(
+                        reinterpret_cast<const char*>(msg.data.data()),
+                        msg.data.size());
+                    auto result =
+                        rfl::json::read<eventing::domain::entity_change_event>(json);
+                    if (!result) {
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Failed to parse event on '" << subject << "': "
+                            << result.error().what();
+                        return;
+                    }
+                    const auto& ev = *result;
+                    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                        ev.timestamp.time_since_epoch()).count();
+                    QDateTime ts = QDateTime::fromMSecsSinceEpoch(ms, QTimeZone::UTC);
+                    QStringList ids;
+                    ids.reserve(static_cast<int>(ev.entity_ids.size()));
+                    for (const auto& id : ev.entity_ids)
+                        ids.append(QString::fromStdString(id));
+                    QString eventType = QString::fromStdString(ev.entity);
+                    QString tenantId  = QString::fromStdString(ev.tenant_id);
+                    QMetaObject::invokeMethod(this,
+                        [this, eventType, ts, ids, tenantId]() {
+                            emit notificationReceived(
+                                eventType, ts, ids, tenantId, 0, {});
+                        }, Qt::QueuedConnection);
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Exception in event handler for '" << subject
+                        << "': " << e.what();
+                }
+            });
+        nats_subscriptions_.emplace(subject, std::move(sub));
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Failed to subscribe to '" << subject
+                                   << "': " << e.what();
+    }
+}
+
+void ClientManager::unsubscribeFromEvent(const std::string& subject) {
+    if (nats_subscriptions_.erase(subject) > 0) {
+        BOOST_LOG_SEV(lg(), debug) << "Unsubscribed from event: " << subject;
+    }
+}
+
 void ClientManager::disconnect() {
     BOOST_LOG_SEV(lg(), info) << "Disconnecting";
+    nats_subscriptions_.clear();
     if (session_.is_logged_in()) {
         logout();
     }

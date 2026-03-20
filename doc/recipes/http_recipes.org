@@ -1838,16 +1838,101 @@ Authorization: Bearer {{(verb-var token)}}
 }
 #+end_src
 
+** Compute File Storage                                                :verb:
+  :PROPERTIES:
+  :header-args:verb: :exports both
+  :END:
+
+File storage endpoints for the distributed compute grid. All paths are under
+=/api/v1/compute/=. No JWT authentication is required — these endpoints are
+intended for internal use by the compute wrapper service.
+
+*** Upload Package
+
+Upload an engine package bundle (tar.gz) for a given app version. The
+=app_version_id= is the UUID of the app version record.
+
+#+begin_src verb :wrap src text
+post http://localhost:8080/api/v1/compute/packages/{{(verb-var app_version_id)}}
+Content-Type: application/octet-stream
+
+<<engine-package.tar.gz
+#+end_src
+
+*** Download Package
+
+Download the engine package bundle for a given app version.
+
+#+begin_src verb :wrap src text
+get http://localhost:8080/api/v1/compute/packages/{{(verb-var app_version_id)}}
+#+end_src
+
+*** Upload Workunit Input
+
+Upload the input data bundle for a workunit.
+
+#+begin_src verb :wrap src text
+post http://localhost:8080/api/v1/compute/workunits/{{(verb-var workunit_id)}}/input
+Content-Type: application/octet-stream
+
+<<input-data.bin
+#+end_src
+
+*** Download Workunit Input
+
+#+begin_src verb :wrap src text
+get http://localhost:8080/api/v1/compute/workunits/{{(verb-var workunit_id)}}/input
+#+end_src
+
+*** Upload Workunit Config
+
+Upload the engine config file (e.g. ORE XML) for a workunit.
+
+#+begin_src verb :wrap src text
+post http://localhost:8080/api/v1/compute/workunits/{{(verb-var workunit_id)}}/config
+Content-Type: application/octet-stream
+
+<<ore-config.xml
+#+end_src
+
+*** Download Workunit Config
+
+#+begin_src verb :wrap src text
+get http://localhost:8080/api/v1/compute/workunits/{{(verb-var workunit_id)}}/config
+#+end_src
+
+*** Upload Result Output
+
+Upload the result output file after job completion (PUT semantics).
+
+#+begin_src verb :wrap src text
+put http://localhost:8080/api/v1/compute/results/{{(verb-var result_id)}}/output
+Content-Type: application/octet-stream
+
+<<output-data.bin
+#+end_src
+
+*** Download Result Output
+
+Download the result output file.
+
+#+begin_src verb :wrap src text
+get http://localhost:8080/api/v1/compute/results/{{(verb-var result_id)}}/output
+#+end_src
+
 ** Variables                                                       :noexport:
 
 Use =M-x verb-set-var= to set these variables before running authenticated requests:
 
 | Variable   | Description                            | Example                              |
 |------------+----------------------------------------+--------------------------------------|
-| token      | JWT authentication token               | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 |
-| account_id | UUID of an account                     | 12345678-1234-1234-1234-123456789abc |
-| role_id    | UUID of a role                         | 87654321-4321-4321-4321-cba987654321 |
-| image_id   | UUID of an image                       | abcdef12-3456-7890-abcd-ef1234567890 |
+| token          | JWT authentication token               | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 |
+| account_id     | UUID of an account                     | 12345678-1234-1234-1234-123456789abc |
+| role_id        | UUID of a role                         | 87654321-4321-4321-4321-cba987654321 |
+| image_id       | UUID of an image                       | abcdef12-3456-7890-abcd-ef1234567890 |
+| app_version_id | UUID of a compute app version          | 11111111-2222-3333-4444-555555555555 |
+| workunit_id    | UUID of a compute workunit             | aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee |
+| result_id      | UUID of a compute result               | 99999999-8888-7777-6666-555555555555 |
 
 * Footer
 

@@ -23,8 +23,98 @@ set namespaceSeparator ::
 
 namespace ores #F2F2F2 {
     namespace compute #F2F2F2 {
-        ' BOINC-inspired distributed compute grid domain types.
-        ' Entities: host, app, app_version, batch, workunit, result.
+
+        namespace domain #F2F2F2 {
+            class host {
+                + id: uuid
+                + external_id: string
+                + location: string
+                + cpu_count: int
+                + ram_mb: int64
+                + gpu_type: string
+                + last_rpc_time: time_point
+                + credit_total: double
+                + modified_by: string
+                + performed_by: string
+            }
+            class app {
+                + id: uuid
+                + name: string
+                + description: string
+                + modified_by: string
+                + performed_by: string
+            }
+            class app_version {
+                + id: uuid
+                + app_id: uuid
+                + wrapper_version: string
+                + engine_version: string
+                + package_uri: string
+                + platform: string
+                + min_ram_mb: int
+                + modified_by: string
+            }
+            class batch {
+                + id: uuid
+                + external_ref: string
+                + status: string
+                + modified_by: string
+            }
+            class workunit {
+                + id: uuid
+                + batch_id: uuid
+                + app_version_id: uuid
+                + input_uri: string
+                + config_uri: string
+                + priority: int
+                + target_redundancy: int
+                + canonical_result_id: uuid
+                + modified_by: string
+            }
+            class result {
+                + id: uuid
+                + workunit_id: uuid
+                + host_id: uuid
+                + server_state: string
+                + outcome: int
+                + output_uri: string
+                + received_at: time_point
+            }
+
+            app_version --> app : app_id
+            workunit --> batch : batch_id
+            workunit --> app_version : app_version_id
+            result --> workunit : workunit_id
+            result --> host : host_id
+            workunit ..> result : canonical_result_id
+        }
+
+        namespace messaging #F2F2F2 {
+            class work_assignment_event {
+                + result_id: string
+                + workunit_id: string
+                + app_version_id: string
+                + input_uri: string
+                + config_uri: string
+                + output_uri: string
+                + package_uri: string
+            }
+            class heartbeat_message {
+                + host_id: string
+                + {static} nats_subject: string
+            }
+            class submit_result_request {
+                + result_id: string
+                + output_uri: string
+                + outcome: int
+                + {static} nats_subject: string
+            }
+            class submit_result_response {
+                + success: bool
+                + message: string
+            }
+        }
+
     }
 }
 

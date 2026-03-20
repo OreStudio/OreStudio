@@ -1742,6 +1742,264 @@ export ORES_CLI_DB_PASSWORD
 Successfully added change reason category: test_category
 #+end_src
 
+** Compute Hosts
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Compute host management operations from the ORE Studio Compute Grid Component.
+
+*** Help
+
+Show available operations for compute hosts.
+
+#+begin_src sh :wrap src text
+./ores.cli compute hosts --help
+#+end_src
+
+*** List
+
+List all compute hosts in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute hosts list ${db_args} ${log_args} --format table
+#+end_src
+
+*** List as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute hosts list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+*** Add
+
+Register a new compute host node.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute hosts add ${db_args} ${log_args} \
+  --external-id "worker-01.example.com" \
+  --location "us-east-1" \
+  --cpu-count 32 \
+  --ram-mb 65536 \
+  --gpu-type "A100" \
+  --modified-by admin
+#+end_src
+
+** Compute Apps
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Compute application registry management from the ORE Studio Compute Grid Component.
+
+*** Help
+
+Show available operations for compute apps.
+
+#+begin_src sh :wrap src text
+./ores.cli compute apps --help
+#+end_src
+
+*** List
+
+List all registered compute apps in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute apps list ${db_args} ${log_args} --format table
+#+end_src
+
+*** List as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute apps list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+*** Add
+
+Register a new compute application.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute apps add ${db_args} ${log_args} \
+  --name "ore-pricing-engine" \
+  --description "ORE-based derivatives pricing engine" \
+  --modified-by admin
+#+end_src
+
+** Compute App Versions
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Compute application version management from the ORE Studio Compute Grid Component.
+
+*** Help
+
+Show available operations for compute app-versions.
+
+#+begin_src sh :wrap src text
+./ores.cli compute app-versions --help
+#+end_src
+
+*** List
+
+List all compute app versions in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute app-versions list ${db_args} ${log_args} --format table
+#+end_src
+
+*** List as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute app-versions list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+*** Add
+
+Register a new application version bundle. Replace the UUIDs with actual IDs.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute app-versions add ${db_args} ${log_args} \
+  --app-id "00000000-0000-0000-0000-000000000000" \
+  --wrapper-version "1.0.0" \
+  --engine-version "2.5.1" \
+  --platform "linux-x86_64" \
+  --package-uri "/api/v1/compute/packages/00000000-0000-0000-0000-000000000000" \
+  --min-ram-mb 4096 \
+  --modified-by admin
+#+end_src
+
+** Compute Batches
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Compute batch management from the ORE Studio Compute Grid Component.
+
+*** Help
+
+Show available operations for compute batches.
+
+#+begin_src sh :wrap src text
+./ores.cli compute batches --help
+#+end_src
+
+*** List
+
+List all compute batches in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute batches list ${db_args} ${log_args} --format table
+#+end_src
+
+*** List as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute batches list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+*** Add
+
+Create a new compute batch.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute batches add ${db_args} ${log_args} \
+  --external-ref "eod-pricing-2026-03-20" \
+  --status "open" \
+  --modified-by admin
+#+end_src
+
+** Compute Workunits
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Compute workunit management from the ORE Studio Compute Grid Component. Upload
+input and config files to the HTTP server first, then reference their URIs here.
+
+*** Help
+
+Show available operations for compute workunits.
+
+#+begin_src sh :wrap src text
+./ores.cli compute workunits --help
+#+end_src
+
+*** List
+
+List all compute workunits in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute workunits list ${db_args} ${log_args} --format table
+#+end_src
+
+*** List as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute workunits list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
+*** Add
+
+Add a new workunit to a batch. Replace UUIDs with actual IDs.
+
+#+begin_src sh :wrap src text
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute workunits add ${db_args} ${log_args} \
+  --batch-id "00000000-0000-0000-0000-000000000000" \
+  --app-version-id "00000000-0000-0000-0000-000000000000" \
+  --input-uri "/api/v1/compute/workunits/00000000-0000-0000-0000-000000000000/input" \
+  --config-uri "/api/v1/compute/workunits/00000000-0000-0000-0000-000000000000/config" \
+  --priority 10 \
+  --target-redundancy 1 \
+  --modified-by admin
+#+end_src
+
+** Compute Results
+   :PROPERTIES:
+   :header-args+: :wrap src json
+   :END:
+
+Compute result management from the ORE Studio Compute Grid Component.
+
+*** Help
+
+Show available operations for compute results.
+
+#+begin_src sh :wrap src text
+./ores.cli compute results --help
+#+end_src
+
+*** List
+
+List all compute results in table format.
+
+#+begin_src sh :wrap src org
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute results list ${db_args} ${log_args} --format table
+#+end_src
+
+*** List as JSON
+
+#+begin_src sh
+export ORES_CLI_DB_PASSWORD
+./ores.cli compute results list ${db_args} ${log_args} --format json | jq .
+#+end_src
+
 * Footer
 
 | Previous: [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] |

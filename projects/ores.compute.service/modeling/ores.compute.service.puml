@@ -24,7 +24,71 @@ set namespaceSeparator ::
 namespace ores #F2F2F2 {
     namespace compute #F2F2F2 {
         namespace service #F2F2F2 {
-            ' Types to be added.
+
+            namespace app #F2F2F2 {
+                class application {
+                    + run(io_ctx: io_context&, cfg: options): awaitable<void>
+                    - dispatch_pending(): void
+                    - reap_stale_results(): void
+                }
+            }
+
+            namespace messaging #F2F2F2 {
+                class host_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class app_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class app_version_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class batch_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class workunit_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class result_handler {
+                    + handle_list(req): response
+                    + handle_submit(req): response
+                }
+                class work_handler {
+                    + handle_dispatch(): void
+                    + handle_heartbeat(msg): void
+                }
+                class registrar {
+                    + register_all(nats: client&, db: context&): void
+                }
+            }
+
+            namespace config #F2F2F2 {
+                class options {
+                    + nats: nats_options
+                    + database: db_options
+                    + heartbeat_timeout_seconds: uint32_t
+                    + dispatch_interval_seconds: uint32_t
+                    + reaper_interval_seconds: uint32_t
+                }
+                class parser {
+                    + {static} parse(argc: int, argv: char**): options
+                }
+            }
+
+            app::application --> messaging::registrar : uses
+            app::application --> config::options : configured by
+            messaging::registrar --> messaging::host_handler : registers
+            messaging::registrar --> messaging::app_handler : registers
+            messaging::registrar --> messaging::app_version_handler : registers
+            messaging::registrar --> messaging::batch_handler : registers
+            messaging::registrar --> messaging::workunit_handler : registers
+            messaging::registrar --> messaging::result_handler : registers
+            messaging::registrar --> messaging::work_handler : registers
         }
     }
 }

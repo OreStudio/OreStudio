@@ -23,12 +23,15 @@
 
 #include <atomic>
 #include <chrono>
+#include <csignal>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <span>
 #include <thread>
+#include <boost/asio/signal_set.hpp>
+#include <boost/asio/use_awaitable.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/version/version.hpp"
 #include "ores.nats/service/client.hpp"
@@ -300,7 +303,7 @@ void process_assignment(ores::nats::service::client& nats,
 } // namespace
 
 boost::asio::awaitable<void>
-application::run(boost::asio::io_context& /*io_ctx*/,
+application::run(boost::asio::io_context& io_ctx,
     const config::options& cfg) const {
 
     BOOST_LOG_SEV(lg(), info) << ores::utility::version::format_startup_message(
@@ -351,7 +354,13 @@ application::run(boost::asio::io_context& /*io_ctx*/,
 
     BOOST_LOG_SEV(lg(), info) << "Service ready.";
     BOOST_LOG_SEV(lg(), info) << "Waiting for work assignments...";
+
+    boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
+    co_await signals.async_wait(boost::asio::use_awaitable);
+
+    BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
     nats.drain();
+    BOOST_LOG_SEV(lg(), info) << "Service stopped.";
 
     co_return;
 }

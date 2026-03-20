@@ -1,0 +1,500 @@
+#+TITLE: System Settings Unification: Replace Feature Flags with Typed System Settings
+#+DATE: 2026-03-20
+#+AUTHOR: ORE Studio Team
+
+* Context
+
+The variability module currently has a single configuration primitive:
+=ores_variability_feature_flags_tbl=, which stores boolean on/off flags per
+tenant. This works well for flags like =system.bootstrap_mode= or
+=user_signups=, but breaks down when we need typed configuration values such as
+integer durations (JWT token lifetimes), strings, or structured JSON.
+
+Rather than extending the flags table with a =value= text column (which would
+corrupt the clean boolean semantics and add runtime type coercion throughout),
+we replace it entirely with a unified =ores_variability_system_settings_tbl=
+that:
+
+- Supports four value types: =boolean=, =integer=, =string=, =json=
+- Remains per-tenant (using =system_tenant_id= for system-wide entries)
+- Is fully bitemporal and audited, identical pattern to the flags table
+- Carries a =data_type= column so the UI renders the correct control (toggle,
+  spinbox, text field, JSON editor) without hardcoding
+- Subsumes all existing feature flags (migrated as =boolean= entries)
+
+This is a prerequisite for the JWT token refresh plan, which needs
+=iam.access_token_lifetime_minutes= (integer) and related settings to be
+configurable via the UI.
+
+*No backwards compatibility is required.* The system may be non-functional
+between phases. All phases should land in a single PR.
+
+* Key Architectural Decisions
+
+** Single table, two scopes
+
+Tenant-specific settings use the tenant's own =tenant_id=. System-wide
+settings (visible to all, managed by SuperAdmin only) use
+=system_tenant_id=. Both live in the same table; the distinction is purely
+in the =tenant_id= value. Existing flags were per-tenant and remain so.
+
+** Value representation
+
+All values are stored as =text=. The =data_type= column drives validation and
+UI rendering:
+
+| data_type | Storage example | Qt control | C++ accessor return type |
+|-----------|-----------------|------------|--------------------------|
+| =boolean= | ="true"= / ="false"= | Toggle | =bool= |
+| =integer= | ="30"= | QSpinBox | =int= / =std::chrono::minutes= |
+| =string=  | ="hello"= | QLineEdit | =std::string= |
+| =json=    | ={"k":"v"}= | JSON text area | =std::string= (caller parses) |
+
+The service layer exposes typed accessors (=get_bool=, =get_int=,
+=get_string=, =get_json=) with compile-time fallback defaults. Callers never
+interact with raw text values.
+
+** Setting name registry
+
+A =constexpr= array of =system_setting_definition= structs (name, data_type,
+default_value, description) lives in =system_settings.hpp=. This drives:
+
+- The seed/populate SQL script (one row per definition)
+- The compile-time default used when a setting is absent from the DB
+- The UI description column
+
+Any module adding new settings registers them here. No new tables required.
+
+** Rename throughout, no shim layer
+
+=feature_flags= is renamed to =system_settings= everywhere: domain struct,
+repository, service, NATS subjects, Qt classes, CLI commands, tests. No
+compatibility shim is kept — all callers are updated in the same PR.
+
+The =system_flags_service= (which provided typed bool accessors backed by the
+flags table) is replaced by =system_settings_service= with equivalent bool
+accessors plus new typed getters for integer/string/json settings.
+
+* Setting Definitions (initial registry)
+
+The following settings seed the new table (migrated from flags + new IAM entries
+added by the JWT plan once that PR lands):
+
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| =system.bootstrap_mode= | boolean | false | System is in bootstrap mode (no admin exists) |
+| =system.user_signups= | boolean | true | Allow new user self-registration |
+| =system.signup_requires_authorization= | boolean | false | New signups require admin approval |
+| =system.disable_password_validation= | boolean | false | Disable password complexity enforcement |
+
+JWT-related settings are added in the JWT plan (separate PR, depends on this one).
+
+* Phase 1 — SQL Foundation
+
+*PR phase:* SQL only. Create new table alongside old one; migrate data; old
+table kept until Phase 7 drop.
+
+** New table
+
+#+begin_src sql
+create table ores_variability_system_settings_tbl (
+    tenant_id   uuid    not null,
+    name        text    not null,
+    version     integer not null,
+    value       text    not null,
+    data_type   text    not null check (data_type in ('boolean','integer','string','json')),
+    description text    not null default '',
+    modified_by        text not null,
+    performed_by       text not null,
+    change_reason_code text not null,
+    change_commentary  text not null,
+    valid_from  timestamp with time zone not null,
+    valid_to    timestamp with time zone not null,
+    primary key (tenant_id, name, valid_from, valid_to),
+    exclude using gist (
+        tenant_id            with =,
+        name                 with =,
+        tstzrange(valid_from, valid_to) with &&
+    ),
+    check (valid_from < valid_to)
+);
+
+create unique index ores_variability_system_settings_version_uniq_idx
+    on ores_variability_system_settings_tbl (tenant_id, name, version)
+    where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index ores_variability_system_settings_name_uniq_idx
+    on ores_variability_system_settings_tbl (tenant_id, name)
+    where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index ores_variability_system_settings_tenant_idx
+    on ores_variability_system_settings_tbl (tenant_id)
+    where valid_to = ores_utility_infinity_timestamp_fn();
+#+end_src
+
+Before-insert trigger follows the identical pattern as the flags table:
+validates tenant_id, increments version, closes the previous active row,
+sets =valid_from= / =valid_to=, populates =performed_by= from
+=ores_iam_current_actor_fn()=, validates =change_reason_code=.
+
+** NOTIFY trigger
+
+Same pattern as =variability_feature_flags_notify_trigger=. Fires =NOTIFY=
+on =ores.variability.system_setting_changed= after each insert so consumers
+can invalidate their caches.
+
+** Data migration (inline SQL in populate script)
+
+#+begin_src sql
+insert into ores_variability_system_settings_tbl
+    (tenant_id, name, value, data_type, description,
+     modified_by, performed_by, change_reason_code, change_commentary)
+select
+    tenant_id,
+    name,
+    case when enabled = 1 then 'true' else 'false' end,
+    'boolean',
+    coalesce(description, ''),
+    modified_by, performed_by, change_reason_code, change_commentary
+from ores_variability_feature_flags_tbl
+where valid_to = ores_utility_infinity_timestamp_fn()
+on conflict do nothing;
+#+end_src
+
+** RLS policies
+
+Identical to flags RLS: tenant-isolated read; write restricted to service
+role and SuperAdmin.
+
+** Files
+
+| File | Action |
+|------|--------|
+| =ores.sql/create/variability/variability_system_settings_create.sql= | *NEW* table + before-insert trigger |
+| =ores.sql/create/variability/variability_system_settings_notify_trigger_create.sql= | *NEW* NOTIFY trigger |
+| =ores.sql/create/variability/variability_rls_policies_create.sql= | *UPDATE* add system_settings RLS |
+| =ores.sql/populate/variability/variability_system_settings_populate.sql= | *NEW* seed from registry + migrate from flags |
+| =ores.sql/drop/variability/variability_system_settings_drop.sql= | *NEW* |
+| =ores.sql/drop/variability/variability_system_settings_notify_trigger_drop.sql= | *NEW* |
+| =ores.sql/create/variability/variability_create.sql= | *UPDATE* include new files |
+| =ores.sql/drop/variability/variability_drop.sql= | *UPDATE* include new drop files |
+| =ores.sql/teardown_all.sql= | *UPDATE* add system_settings teardown |
+
+* Phase 2 — Domain Layer (=ores.variability=)
+
+Replace the =feature_flags= domain type with =system_setting=. The
+=system_flags= compile-time registry migrates into a =system_setting_definition=
+array in =system_settings.hpp=.
+
+** =system_setting= struct
+
+#+begin_src cpp
+struct system_setting final {
+    int version = 0;
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+    std::string name;
+    std::string value;
+    std::string data_type;   // "boolean" | "integer" | "string" | "json"
+    std::string description;
+    std::string modified_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+    std::string performed_by;
+    std::chrono::system_clock::time_point recorded_at;
+};
+#+end_src
+
+** =system_setting_definition= registry
+
+#+begin_src cpp
+struct system_setting_definition {
+    std::string_view name;
+    std::string_view data_type;      // must match check constraint
+    std::string_view default_value;
+    std::string_view description;
+};
+
+constexpr std::array system_setting_definitions = {
+    system_setting_definition{
+        "system.bootstrap_mode", "boolean", "false",
+        "System is in bootstrap mode (no admin exists)"
+    },
+    system_setting_definition{
+        "system.user_signups", "boolean", "true",
+        "Allow new user self-registration"
+    },
+    system_setting_definition{
+        "system.signup_requires_authorization", "boolean", "false",
+        "New signups require admin approval before activation"
+    },
+    system_setting_definition{
+        "system.disable_password_validation", "boolean", "false",
+        "Disable password complexity enforcement (development only)"
+    },
+    // IAM entries added in the JWT plan PR
+};
+#+end_src
+
+** Files
+
+| File | Action |
+|------|--------|
+| =ores.variability/domain/system_setting.hpp= | *NEW* =system_setting= struct |
+| =ores.variability/domain/system_setting_json_io.hpp/.cpp= | *NEW* RFL JSON I/O |
+| =ores.variability/domain/system_setting_table_io.hpp/.cpp= | *NEW* table I/O |
+| =ores.variability/domain/system_settings.hpp= | *NEW* definition registry + helper functions |
+| =ores.variability/domain/feature_flags.hpp= | *DELETE* |
+| =ores.variability/domain/feature_flags_json.hpp/.cpp= | *DELETE* |
+| =ores.variability/domain/feature_flags_json_io.hpp/.cpp= | *DELETE* |
+| =ores.variability/domain/feature_flags_table.hpp/.cpp= | *DELETE* |
+| =ores.variability/domain/feature_flags_table_io.hpp/.cpp= | *DELETE* |
+| =ores.variability/domain/system_flags.hpp= | *DELETE* (registry moved to system_settings.hpp) |
+| =ores.variability/domain/system_flags_cache.hpp= | *DELETE* (replaced by typed accessors in service) |
+| =ores.variability/domain/ores.variability.domain.hpp= | *UPDATE* aggregator includes |
+
+* Phase 3 — Repository + Service Layer (=ores.variability=)
+
+** Repository
+
+Follows identical pattern to =feature_flags_repository=. Key methods:
+
+#+begin_src cpp
+class system_settings_repository {
+public:
+    void write(database::context ctx, const domain::system_setting& setting);
+    std::vector<domain::system_setting> read_latest(database::context ctx);
+    std::vector<domain::system_setting> read_latest(
+        database::context ctx, const std::string& name);
+    std::vector<domain::system_setting> read_all(database::context ctx);
+};
+#+end_src
+
+** Service
+
+Replaces both =feature_flags_service= and =system_flags_service=. Exposes
+typed accessors with compile-time defaults from the registry:
+
+#+begin_src cpp
+class system_settings_service {
+public:
+    system_settings_service(database::context ctx, std::string tenant_id);
+
+    void refresh();   // re-reads all settings from DB into cache
+
+    // Raw access
+    std::optional<domain::system_setting>
+        get(const std::string& name) const;
+    void set(domain::system_setting setting);
+
+    // Typed accessors (return default_value from registry if not in DB)
+    bool        get_bool   (std::string_view name) const;
+    int         get_int    (std::string_view name) const;
+    std::string get_string (std::string_view name) const;
+    std::string get_json   (std::string_view name) const;
+
+    // Convenience bool setters (matches old system_flags_service API)
+    void set_bool(std::string_view name, bool value,
+                  std::string modified_by,
+                  std::string change_reason_code,
+                  std::string change_commentary);
+
+    // Named convenience methods retained for existing callers
+    bool is_bootstrap_mode_enabled() const;
+    void set_bootstrap_mode(bool enabled, std::string modified_by,
+                            std::string change_reason_code,
+                            std::string change_commentary);
+    bool is_user_signups_enabled() const;
+    bool is_signup_requires_authorization() const;
+    bool is_password_validation_disabled() const;
+};
+#+end_src
+
+** Files
+
+| File | Action |
+|------|--------|
+| =ores.variability/repository/system_setting_entity.hpp= | *NEW* |
+| =ores.variability/repository/system_setting_mapper.hpp/.cpp= | *NEW* |
+| =ores.variability/repository/system_settings_repository.hpp/.cpp= | *NEW* |
+| =ores.variability/service/system_settings_service.hpp/.cpp= | *NEW* |
+| =ores.variability/repository/feature_flags_entity.hpp= | *DELETE* |
+| =ores.variability/repository/feature_flags_mapper.hpp/.cpp= | *DELETE* |
+| =ores.variability/repository/feature_flags_repository.hpp/.cpp= | *DELETE* |
+| =ores.variability/service/feature_flags_service.hpp/.cpp= | *DELETE* |
+| =ores.variability/service/system_flags_service.hpp/.cpp= | *DELETE* |
+| =ores.variability/repository/ores.variability.repository.hpp= | *UPDATE* |
+| =ores.variability/service/ores.variability.service.hpp= | *UPDATE* |
+
+* Phase 4 — NATS Protocol + Handler + Eventing (=ores.variability=)
+
+** New NATS subjects
+
+| Old subject | New subject |
+|-------------|-------------|
+| =variability.v1.flags.list= | =variability.v1.settings.list= |
+| =variability.v1.flags.save= | =variability.v1.settings.save= |
+| =variability.v1.flags.delete= | =variability.v1.settings.delete= |
+| =variability.v1.flags.history= | =variability.v1.settings.history= |
+
+** Protocol structs
+
+#+begin_src cpp
+struct list_settings_request {
+    using response_type = list_settings_response;
+    static constexpr std::string_view nats_subject =
+        "variability.v1.settings.list";
+};
+struct list_settings_response {
+    std::vector<domain::system_setting> settings;
+};
+
+struct save_setting_request {
+    using response_type = save_setting_response;
+    static constexpr std::string_view nats_subject =
+        "variability.v1.settings.save";
+    domain::system_setting data;
+};
+struct save_setting_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_setting_request {
+    using response_type = delete_setting_response;
+    static constexpr std::string_view nats_subject =
+        "variability.v1.settings.delete";
+    std::string name;
+};
+struct delete_setting_response {
+    bool success = false;
+    std::string message;
+};
+#+end_src
+
+** Eventing
+
+The NOTIFY event is renamed from =feature_flags_changed_event= to
+=system_setting_changed_event=. Existing subscribers (=application_context= in
+wt, IAM, etc.) are updated to subscribe to the new event type.
+
+** Files
+
+| File | Action |
+|------|--------|
+| =ores.variability/messaging/system_settings_protocol.hpp= | *NEW* |
+| =ores.variability/messaging/system_setting_handler.hpp= | *NEW* |
+| =ores.variability/messaging/registrar.hpp/.cpp= | *UPDATE* new subjects |
+| =ores.variability/eventing/system_setting_changed_event.hpp= | *NEW* |
+| =ores.variability/messaging/feature_flags_protocol.hpp= | *DELETE* |
+| =ores.variability/messaging/feature_flag_handler.hpp= | *DELETE* |
+| =ores.variability/eventing/feature_flags_changed_event.hpp= | *DELETE* |
+| =ores.variability/eventing/ores.variability.eventing.hpp= | *UPDATE* |
+
+* Phase 5 — Qt UI (=ores.qt=)
+
+Rename all =FeatureFlag*= classes to =SystemSetting*=. The detail dialog
+renders the appropriate control based on =data_type=:
+
+- =boolean= → =QCheckBox= (existing behaviour)
+- =integer= → =QSpinBox=
+- =string= → =QLineEdit=
+- =json= → =QPlainTextEdit= with basic JSON validation on save
+
+The list window gains a =Type= column. History dialog is unchanged in
+structure. Settings whose =name= starts with =system.= or are otherwise
+system-scoped are only editable by SuperAdmin.
+
+** Files
+
+| File | Action |
+|------|--------|
+| =ores.qt/SystemSettingController.hpp/.cpp= | *NEW* (replaces FeatureFlagController) |
+| =ores.qt/SystemSettingMdiWindow.hpp/.cpp= | *NEW* (replaces FeatureFlagMdiWindow) |
+| =ores.qt/SystemSettingDetailDialog.hpp/.cpp= | *NEW* (replaces FeatureFlagDetailDialog, typed controls) |
+| =ores.qt/SystemSettingHistoryDialog.hpp/.cpp= | *NEW* (replaces FeatureFlagHistoryDialog) |
+| =ores.qt/ClientSystemSettingModel.hpp/.cpp= | *NEW* (replaces ClientFeatureFlagModel) |
+| =ores.qt/SystemSettingItemDelegate.hpp/.cpp= | *NEW* (replaces FeatureFlagItemDelegate) |
+| =ores.qt/FeatureFlagController.hpp/.cpp= | *DELETE* |
+| =ores.qt/FeatureFlagMdiWindow.hpp/.cpp= | *DELETE* |
+| =ores.qt/FeatureFlagDetailDialog.hpp/.cpp= | *DELETE* |
+| =ores.qt/FeatureFlagHistoryDialog.hpp/.cpp= | *DELETE* |
+| =ores.qt/ClientFeatureFlagModel.hpp/.cpp= | *DELETE* |
+| =ores.qt/FeatureFlagItemDelegate.hpp/.cpp= | *DELETE* |
+| =ores.qt/MainWindow.hpp/.cpp= | *UPDATE* menu item rename + new controller |
+
+* Phase 6 — Shell Commands (=ores.shell=)
+
+Rename =variability_commands= to handle =system_settings= subjects. CLI
+subcommands rename from =feature-flag= to =setting=.
+
+| File | Action |
+|------|--------|
+| =ores.shell/app/commands/variability_commands.hpp/.cpp= | *UPDATE* new subjects + setting noun |
+
+* Phase 7 — CLI (=ores.cli=)
+
+Rename =feature_flags= entity to =setting= throughout the CLI parser,
+options, and tests.
+
+| File | Action |
+|------|--------|
+| =ores.cli/config/add_feature_flag_options.hpp/.cpp= | *RENAME/UPDATE* → =add_setting_options= |
+| =ores.cli/config/entity_parsers/feature_flags_parser.hpp/.cpp= | *RENAME/UPDATE* → =setting_parser= |
+| =ores.cli/config/parser.cpp= | *UPDATE* |
+| =ores.cli/app/application.cpp= | *UPDATE* |
+| =ores.cli/tests/entity_parser_tests.cpp= | *UPDATE* |
+| =ores.cli/tests/add_options_tests.cpp= | *UPDATE* |
+| =ores.cli/tests/config_options_tests.cpp= | *UPDATE* |
+
+* Phase 8 — Cross-Module Callers
+
+All consumers of =system_flags_service= or =feature_flags_service= are
+updated to use =system_settings_service=. Named convenience methods
+(=is_bootstrap_mode_enabled()= etc.) are preserved so changes are minimal.
+
+| File | Action |
+|------|--------|
+| =ores.iam/service/signup_service.hpp/.cpp= | *UPDATE* service type |
+| =ores.iam/service/bootstrap_mode_service.hpp/.cpp= | *UPDATE* service type |
+| =ores.iam/messaging/auth_handler.hpp= | *UPDATE* service type |
+| =ores.wt.service/service/application_context.hpp/.cpp= | *UPDATE* service type + event subscription |
+| =ores.http.server/src/routes/variability_routes.hpp/.cpp= | *UPDATE* new NATS subjects |
+| =ores.http.server/src/routes/iam_routes.cpp= | *UPDATE* service type |
+| =ores.http.server/src/app/application.cpp= | *UPDATE* event subscription |
+
+* Phase 9 — Drop Old Table + Tests
+
+Once all callers are migrated, remove the old flags table and update the
+full test suite.
+
+| File | Action |
+|------|--------|
+| =ores.sql/drop/variability/variability_feature_flags_drop.sql= | Run in migration; file kept for reference |
+| =ores.sql/teardown_all.sql= | *UPDATE* remove flags table teardown |
+| =ores.variability/tests/domain_feature_flags_tests.cpp= | *DELETE* |
+| =ores.variability/tests/domain_feature_flags_io_tests.cpp= | *DELETE* |
+| =ores.variability/tests/domain_system_flags_tests.cpp= | *DELETE* |
+| =ores.variability/tests/repository_feature_flags_repository_tests.cpp= | *DELETE* |
+| =ores.variability/tests/service_feature_flags_service_tests.cpp= | *DELETE* |
+| =ores.variability/tests/service_system_flags_service_tests.cpp= | *DELETE* |
+| =ores.variability/tests/eventing_feature_flags_changed_event_tests.cpp= | *DELETE* |
+| =ores.variability/tests/domain_system_setting_tests.cpp= | *NEW* |
+| =ores.variability/tests/domain_system_setting_io_tests.cpp= | *NEW* |
+| =ores.variability/tests/repository_system_settings_repository_tests.cpp= | *NEW* |
+| =ores.variability/tests/service_system_settings_service_tests.cpp= | *NEW* |
+| =ores.variability/tests/eventing_system_setting_changed_event_tests.cpp= | *NEW* |
+
+* File Count Summary
+
+| Phase | Scope | New | Update | Delete |
+|-------|-------|-----|--------|--------|
+| 1 | SQL | 6 | 3 | 0 |
+| 2 | Domain | 7 | 1 | 10 |
+| 3 | Repository + Service | 7 | 2 | 7 |
+| 4 | NATS + Eventing | 4 | 2 | 4 |
+| 5 | Qt UI | 12 | 1 | 12 |
+| 6 | Shell | 0 | 1 | 0 |
+| 7 | CLI | 2 | 5 | 0 |
+| 8 | Cross-module callers | 0 | 8 | 0 |
+| 9 | SQL drop + Tests | 5 | 1 | 7 |
+| *Total* | | *43* | *24* | *40* |

@@ -42,7 +42,10 @@ host_mapper::map(const host_entity& v) {
     r.cpu_count = v.cpu_count;
     r.ram_mb = v.ram_mb;
     r.gpu_type = v.gpu_type.value_or("");
-    r.last_rpc_time = v.last_rpc_time.value_or("");
+    if (v.last_rpc_time)
+        r.last_rpc_time = timestamp_to_timepoint(*v.last_rpc_time);
+    else
+        r.last_rpc_time = {};
     r.credit_total = v.credit_total;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -69,7 +72,10 @@ host_mapper::map(const domain::host& v) {
     r.cpu_count = v.cpu_count;
     r.ram_mb = v.ram_mb;
     r.gpu_type = v.gpu_type.empty() ? std::nullopt : std::optional(v.gpu_type);
-    r.last_rpc_time = v.last_rpc_time.empty() ? std::nullopt : std::optional(v.last_rpc_time);
+    if (v.last_rpc_time != std::chrono::system_clock::time_point{})
+        r.last_rpc_time = timepoint_to_timestamp(v.last_rpc_time, lg());
+    else
+        r.last_rpc_time = std::nullopt;
     r.credit_total = v.credit_total;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

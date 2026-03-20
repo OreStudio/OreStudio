@@ -43,7 +43,7 @@ workunit_mapper::map(const workunit_entity& v) {
     r.config_uri = v.config_uri.value_or("");
     r.priority = v.priority;
     r.target_redundancy = v.target_redundancy;
-    r.canonical_result_id = v.canonical_result_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.canonical_result_id)) : std::nullopt;
+    r.canonical_result_id = v.canonical_result_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.canonical_result_id) : boost::uuids::uuid{};
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -70,7 +70,7 @@ workunit_mapper::map(const domain::workunit& v) {
     r.config_uri = v.config_uri.empty() ? std::nullopt : std::optional(v.config_uri);
     r.priority = v.priority;
     r.target_redundancy = v.target_redundancy;
-    r.canonical_result_id = v.canonical_result_id.has_value() ? std::optional(boost::uuids::to_string(*v.canonical_result_id)) : std::nullopt;
+    r.canonical_result_id = (v.canonical_result_id == boost::uuids::uuid{}) ? std::nullopt : std::optional(boost::uuids::to_string(v.canonical_result_id));
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

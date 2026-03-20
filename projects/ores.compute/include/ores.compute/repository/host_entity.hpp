@@ -43,7 +43,7 @@ struct host_entity {
     int cpu_count;
     std::int64_t ram_mb;
     std::optional<std::string> gpu_type;
-    std::optional<std::chrono::system_clock::time_point> last_rpc_time;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_rpc_time;
     double credit_total;
     std::string modified_by;
     std::string performed_by;

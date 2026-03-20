@@ -151,7 +151,7 @@ launch_nats_service() {
 
 launch_wrapper_node() {
     local n="$1"
-    local host_id_var="ORES_COMPUTE_WRAPPER_NODE_${n}_HOST_ID"
+    local host_id_var="ORES_GRID_NODE_${n}_HOST_ID"
     local host_id="${!host_id_var:-}"
     if [[ -z "$host_id" ]]; then
         echo "  skip    ores.compute.wrapper.node${n} (no host ID in .env)"

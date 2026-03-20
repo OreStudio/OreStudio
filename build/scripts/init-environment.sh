@@ -252,7 +252,7 @@ EOF
     echo "# Re-run recreate_database.sh after regenerating to keep IDs in sync."
     echo "# ---------------------------------------------------------------------------"
     for n in 1 2 3 4 5; do
-        echo "ORES_COMPUTE_WRAPPER_NODE_${n}_HOST_ID=$(gen_uuid)"
+        echo "ORES_GRID_NODE_${n}_HOST_ID=$(gen_uuid)"
     done
 } >> "${ENV_FILE}"
 

@@ -64,7 +64,7 @@ EXPECTED_SERVICES["ores.wt.service"]=1
 if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
     source "$ENV_FILE" 2>/dev/null || true
     for n in 1 2 3 4 5; do
-        host_id_var="ORES_COMPUTE_WRAPPER_NODE_${n}_HOST_ID"
+        host_id_var="ORES_GRID_NODE_${n}_HOST_ID"
         if [[ -n "${!host_id_var:-}" ]]; then
             EXPECTED_SERVICES["ores.compute.wrapper.node${n}"]=1
         fi

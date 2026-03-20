@@ -1,0 +1,93 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "entity_singular": "app_version",
+    "entity_plural": "app_versions",
+    "entity_title": "App Version",
+    "has_tenant_id": true,
+    "brief": "A versioned wrapper+engine bundle for a compute grid application.",
+    "description": "Combines a specific wrapper version with a specific engine version for a given\nplatform. The BOINC equivalent of 'app_version'. Nodes download the package_uri\nbundle and launch the wrapper to run the engine.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the app version."
+    },
+
+    "columns": [
+      {
+        "name": "app_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "FK reference to ores_compute_apps_tbl."
+      },
+      {
+        "name": "wrapper_version",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Version of the OreStudio wrapper binary, e.g. 'v1.2.0'."
+      },
+      {
+        "name": "engine_version",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Version of the underlying engine, e.g. 'ORE-Studio-7.1'."
+      },
+      {
+        "name": "package_uri",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "URI pointing to the zipped wrapper+engine bundle in object storage."
+      },
+      {
+        "name": "platform",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Target platform identifier, e.g. 'linux_x86_64', 'win_x64'."
+      },
+      {
+        "name": "min_ram_mb",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "0",
+        "description": "Minimum RAM in MB required by the node to run this app version."
+      }
+    ],
+
+    "indexes": [
+      {
+        "name": "app_id",
+        "columns": "tenant_id, app_id",
+        "unique": false,
+        "current_only": true
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_app_versions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "app_version",
+      "entity_plural_short": "app_versions",
+      "entity_singular_words": "app version",
+      "entity_plural_words": "app versions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "av"
+    }
+  }
+}

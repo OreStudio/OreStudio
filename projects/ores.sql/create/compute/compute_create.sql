@@ -1,6 +1,6 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -19,18 +19,21 @@
  */
 
 -- =============================================================================
--- Row-Level Security Policies
+-- Compute Grid Tables
 -- =============================================================================
--- RLS policies must be created after all tables and functions are defined.
--- This orchestration file includes all component RLS policies.
+-- BOINC-inspired distributed compute grid: hosts, apps, workunits, results,
+-- and batch orchestration.
 
-\ir ../iam/iam_rls_policies_create.sql
-\ir ../dq/dq_rls_policies_create.sql
-\ir ../trading/trading_rls_policies_create.sql
-\ir ../refdata/refdata_rls_policies_create.sql
-\ir ../assets/assets_rls_policies_create.sql
-\ir ../variability/variability_rls_policies_create.sql
-\ir ../telemetry/telemetry_rls_policies_create.sql
-\ir ../geo/geo_rls_policies_create.sql
-\ir ../scheduler/scheduler_rls_policies_create.sql
-\ir ../compute/compute_rls_policies_create.sql
+\ir ./compute_apps_create.sql
+\ir ./compute_apps_notify_trigger_create.sql
+\ir ./compute_app_versions_create.sql
+\ir ./compute_app_versions_notify_trigger_create.sql
+\ir ./compute_hosts_create.sql
+\ir ./compute_hosts_notify_trigger_create.sql
+\ir ./compute_batches_create.sql
+\ir ./compute_batches_notify_trigger_create.sql
+\ir ./compute_batch_dependencies_create.sql
+\ir ./compute_workunits_create.sql
+\ir ./compute_workunits_notify_trigger_create.sql
+\ir ./compute_results_create.sql
+\ir ./compute_results_notify_trigger_create.sql

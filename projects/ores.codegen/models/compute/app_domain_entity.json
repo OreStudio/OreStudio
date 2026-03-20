@@ -1,0 +1,57 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "entity_singular": "app",
+    "entity_plural": "apps",
+    "entity_title": "App",
+    "has_tenant_id": true,
+    "brief": "A registered application engine in the compute grid.",
+    "description": "Represents the high-level definition of an engine that can be executed on\ngrid nodes (e.g., ORE_STUDIO, LLAMA_CPP, LEDGER). The BOINC equivalent of 'app'.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the app."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Unique application identifier, e.g. 'ORE_STUDIO', 'LLAMA_CPP', 'LEDGER'."
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Human-readable description of the application engine."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_apps_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "app",
+      "entity_plural_short": "apps",
+      "entity_singular_words": "compute app",
+      "entity_plural_words": "compute apps"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>"]
+      },
+      "iterator_var": "a"
+    }
+  }
+}

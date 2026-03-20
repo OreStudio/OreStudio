@@ -1,0 +1,95 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "entity_singular": "host",
+    "entity_plural": "hosts",
+    "entity_title": "Host",
+    "has_tenant_id": true,
+    "brief": "A registered compute node in the distributed grid.",
+    "description": "Represents a physical or virtual machine that participates in the BOINC-inspired\ncompute grid. Tracks hardware capabilities, heartbeat, and accumulated credit.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the host."
+    },
+
+    "natural_keys": [
+      {
+        "column": "external_id",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "User-defined name or hostname for the node."
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "location",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Physical site or region identifier."
+      },
+      {
+        "name": "cpu_count",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "0",
+        "description": "Total logical CPU cores available."
+      },
+      {
+        "name": "ram_mb",
+        "type": "bigint",
+        "cpp_type": "std::int64_t",
+        "nullable": false,
+        "default": "0",
+        "description": "Total system memory in megabytes."
+      },
+      {
+        "name": "gpu_type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "GPU model identifier, e.g. 'A100' or NULL if no GPU."
+      },
+      {
+        "name": "last_rpc_time",
+        "type": "timestamp with time zone",
+        "cpp_type": "std::chrono::system_clock::time_point",
+        "nullable": true,
+        "description": "Timestamp of the last heartbeat received from this node."
+      },
+      {
+        "name": "credit_total",
+        "type": "numeric",
+        "cpp_type": "double",
+        "nullable": false,
+        "default": "0",
+        "description": "Accumulated work units successfully processed by this host."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_hosts_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "host",
+      "entity_plural_short": "hosts",
+      "entity_singular_words": "compute host",
+      "entity_plural_words": "compute hosts"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>", "<cstdint>", "<chrono>"]
+      },
+      "iterator_var": "h"
+    }
+  }
+}

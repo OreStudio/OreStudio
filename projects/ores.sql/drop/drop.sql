@@ -26,6 +26,7 @@
 -- =============================================================================
 -- 2. Operational Tables (have FKs to data governance tables, must be dropped first)
 -- =============================================================================
+\ir ./compute/drop_compute.sql
 \ir ./mq/mq_drop.sql
 \ir ./reporting/reporting_drop.sql
 \ir ./scheduler/scheduler_drop.sql

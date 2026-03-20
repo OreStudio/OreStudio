@@ -1,0 +1,58 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "entity_singular": "batch",
+    "entity_plural": "batches",
+    "entity_title": "Batch",
+    "has_tenant_id": true,
+    "brief": "A logical grouping of workunits forming a financial computation batch.",
+    "description": "Tracks the lifecycle of a collection of workunits that together constitute a\nfinancial computation (e.g., a risk report run). The Assimilator monitors\nbatch completion to trigger downstream report generation.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the batch."
+    },
+
+    "natural_keys": [
+      {
+        "column": "external_ref",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "External reference linking this batch to the originating finance system or project."
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "'open'",
+        "description": "Lifecycle status: open, processing, assimilating, or closed."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_batches_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "batch",
+      "entity_plural_short": "batches",
+      "entity_singular_words": "compute batch",
+      "entity_plural_words": "compute batches"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>"]
+      },
+      "iterator_var": "b"
+    }
+  }
+}

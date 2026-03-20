@@ -46,6 +46,7 @@
 \ir ./scheduler/scheduler_create.sql
 \ir ./reporting/reporting_create.sql
 \ir ./mq/mq_create.sql
+\ir ./compute/compute_create.sql
 
 -- =============================================================================
 -- 5. Row-Level Security Policies (depend on all tables and IAM functions)

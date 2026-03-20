@@ -34,7 +34,6 @@ while [[ $# -gt 0 ]]; do
         --nats-prefix) NATS_PREFIX="$2"; shift 2 ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
-    shift || true
 done
 
 # Derive a safe stream name suffix from the prefix (dots → underscores, uppercase)

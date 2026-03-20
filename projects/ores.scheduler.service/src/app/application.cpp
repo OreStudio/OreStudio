@@ -19,12 +19,20 @@
  */
 #include "ores.scheduler.service/app/application.hpp"
 
+#include <memory>
+#include <vector>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/service_accounts.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.scheduler.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.scheduler/messaging/registrar.hpp"
+#include "ores.scheduler/service/scheduler_loop.hpp"
+#include "ores.scheduler/service/sql_action_handler.hpp"
+#include "ores.scheduler/service/mq_action_handler.hpp"
+#include "ores.scheduler/service/nats_publish_action_handler.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 
 namespace ores::scheduler::service::app {
@@ -62,11 +70,25 @@ application::run(boost::asio::io_context& io_ctx,
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
 
+    auto db_ctx = make_context(cfg.database);
+
+    std::vector<std::unique_ptr<ores::scheduler::service::action_handler>> handlers;
+    handlers.push_back(std::make_unique<ores::scheduler::service::sql_action_handler>());
+    handlers.push_back(std::make_unique<ores::scheduler::service::mq_action_handler>());
+    handlers.push_back(
+        std::make_unique<ores::scheduler::service::nats_publish_action_handler>(nats));
+
+    auto loop = std::make_shared<ores::scheduler::service::scheduler_loop>(
+        db_ctx, std::move(handlers));
+
     co_await ores::service::service::run(
-        io_ctx, nats, make_context(cfg.database), "ores.scheduler.service",
+        io_ctx, nats, db_ctx, "ores.scheduler.service",
         [](auto& n, auto c, auto v) {
             return ores::scheduler::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
+        },
+        [loop](boost::asio::io_context& ioc) {
+            boost::asio::co_spawn(ioc, loop->run(ioc), boost::asio::detached);
         });
     co_return;
 }

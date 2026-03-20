@@ -29,7 +29,7 @@
 #include "ores.iam/repository/account_repository.hpp"
 #include "ores.iam/repository/login_info_repository.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -81,7 +81,7 @@ public:
      * @param auth_service Shared authorization service for role assignment.
      */
     signup_service(database::context ctx,
-        std::shared_ptr<variability::service::system_flags_service> system_flags,
+        std::shared_ptr<variability::service::system_settings_service> system_flags,
         std::shared_ptr<authorization_service> auth_service);
 
     /**
@@ -113,7 +113,7 @@ public:
 private:
     repository::account_repository account_repo_;
     repository::login_info_repository login_info_repo_;
-    std::shared_ptr<variability::service::system_flags_service> system_flags_;
+    std::shared_ptr<variability::service::system_settings_service> system_flags_;
     std::shared_ptr<authorization_service> auth_service_;
     utility::uuid::uuid_v7_generator uuid_generator_;
 };

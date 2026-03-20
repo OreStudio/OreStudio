@@ -53,7 +53,7 @@
 #include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/eventing/system_setting_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 
 namespace ores::qt {
@@ -65,7 +65,7 @@ namespace reason = dq::domain::change_reason_constants;
 namespace {
     // Event type name for feature flag changes
     constexpr std::string_view feature_flag_event_name =
-        eventing::domain::event_traits<variability::eventing::feature_flags_changed_event>::name;
+        eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
 
     // Feature flag name for synthetic data generation
     constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";

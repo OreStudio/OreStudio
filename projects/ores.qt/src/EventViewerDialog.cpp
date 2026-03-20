@@ -43,7 +43,7 @@
 
 // Event types to subscribe to
 #include "ores.refdata/eventing/currency_changed_event.hpp"
-#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/eventing/system_setting_changed_event.hpp"
 #include "ores.iam/eventing/account_changed_event.hpp"
 #include "ores.iam/eventing/role_assigned_event.hpp"
 #include "ores.iam/eventing/role_revoked_event.hpp"
@@ -326,19 +326,19 @@ void EventViewerWindow::subscribeToEvents() {
                 }, Qt::QueuedConnection);
             }));
 
-    // Subscribe to feature flags changed events
+    // Subscribe to system settings changed events
     subscriptions_.push_back(
-        eventBus_->subscribe<variability::eventing::feature_flags_changed_event>(
-            [this](const variability::eventing::feature_flags_changed_event& e) {
+        eventBus_->subscribe<variability::eventing::system_setting_changed_event>(
+            [this](const variability::eventing::system_setting_changed_event& e) {
                 QJsonObject json;
                 json["timestamp"] = formatTimestamp(e.timestamp);
 
                 EventRecord record{
                     toQDateTime(e.timestamp),
                     QString::fromUtf8(eventing::domain::event_traits<
-                        variability::eventing::feature_flags_changed_event>::name),
+                        variability::eventing::system_setting_changed_event>::name),
                     "local",
-                    "Feature flags changed",
+                    "System settings changed",
                     QString::fromUtf8(
                         QJsonDocument(json).toJson(QJsonDocument::Indented))
                 };

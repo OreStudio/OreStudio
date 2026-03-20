@@ -17,30 +17,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#include "ores.cli/config/add_system_setting_options.hpp"
+
+#include <ostream>
 
 namespace ores::cli::config {
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        system_settings
-    };
+std::ostream& operator<<(std::ostream& s, const add_system_setting_options& v) {
+    s << "{ setting_name: " << v.setting_name
+      << ", modified_by: " << v.modified_by;
 
+    if (v.value) s << ", value: " << *v.value;
+    if (v.data_type) s << ", data_type: " << *v.data_type;
+    if (v.description) s << ", description: " << *v.description;
+
+    s << " }";
+    return s;
 }
 
-#endif
+}

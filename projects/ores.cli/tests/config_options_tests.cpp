@@ -81,8 +81,8 @@ TEST_CASE("import_options_all_entities", tags) {
     CHECK(accounts_opts.target_entity == entity::accounts);
 
     import_options flags_opts;
-    flags_opts.target_entity = entity::feature_flags;
-    CHECK(flags_opts.target_entity == entity::feature_flags);
+    flags_opts.target_entity = entity::system_settings;
+    CHECK(flags_opts.target_entity == entity::system_settings);
 
     import_options login_opts;
     login_opts.target_entity = entity::login_info;
@@ -200,9 +200,9 @@ TEST_CASE("delete_options_all_entities", tags) {
     CHECK(accounts_opts.target_entity == entity::accounts);
 
     delete_options flags_opts;
-    flags_opts.target_entity = entity::feature_flags;
+    flags_opts.target_entity = entity::system_settings;
     flags_opts.key = "new-feature";
-    CHECK(flags_opts.target_entity == entity::feature_flags);
+    CHECK(flags_opts.target_entity == entity::system_settings);
 
     delete_options login_opts;
     login_opts.target_entity = entity::login_info;

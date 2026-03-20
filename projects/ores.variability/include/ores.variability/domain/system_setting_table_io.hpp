@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,29 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_TABLE_IO_HPP
+#define ORES_VARIABILITY_DOMAIN_SYSTEM_SETTING_TABLE_IO_HPP
 
-namespace ores::cli::config {
+#include <iosfwd>
+#include <string>
+#include <vector>
+#include "ores.variability/domain/system_setting.hpp"
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        system_settings
-    };
+namespace ores::variability::domain {
+
+/**
+ * @brief Converts system settings to ASCII table format.
+ */
+std::string convert_to_table(const std::vector<system_setting>& v);
+
+/**
+ * @brief Dumps system settings to a stream in table format.
+ */
+std::ostream& operator<<(std::ostream& s, const std::vector<system_setting>& v);
 
 }
 

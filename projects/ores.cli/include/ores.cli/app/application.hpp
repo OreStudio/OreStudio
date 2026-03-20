@@ -34,7 +34,7 @@
 #include "ores.cli/config/add_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
@@ -82,7 +82,7 @@ private:
 
     void export_currencies(const config::export_options& cfg) const;
     void export_accounts(const config::export_options& cfg) const;
-    void export_feature_flags(const config::export_options& cfg) const;
+    void export_system_settings(const config::export_options& cfg) const;
     void export_login_info(const config::export_options& cfg) const;
     void export_roles(const config::export_options& cfg) const;
     void export_permissions(const config::export_options& cfg) const;
@@ -93,7 +93,7 @@ private:
 
     void delete_currency(const config::delete_options& cfg) const;
     void delete_account(const config::delete_options& cfg) const;
-    void delete_feature_flag(const config::delete_options& cfg) const;
+    void delete_system_setting(const config::delete_options& cfg) const;
     void delete_login_info(const config::delete_options& cfg) const;
     void delete_role(const config::delete_options& cfg) const;
     void delete_permission(const config::delete_options& cfg) const;
@@ -104,7 +104,7 @@ private:
 
     void add_currency(const config::add_currency_options& cfg) const;
     void add_account(const config::add_account_options& cfg) const;
-    void add_feature_flag(const config::add_feature_flag_options& cfg) const;
+    void add_system_setting(const config::add_system_setting_options& cfg) const;
     void add_login_info(const config::add_login_info_options& cfg) const;
     void add_role(const config::add_role_options& cfg) const;
     void add_permission(const config::add_permission_options& cfg) const;

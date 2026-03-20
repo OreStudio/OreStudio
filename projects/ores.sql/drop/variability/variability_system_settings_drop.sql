@@ -1,6 +1,6 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,30 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
 
-namespace ores::cli::config {
-
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        system_settings
-    };
-
-}
-
-#endif
+drop trigger if exists ores_variability_system_settings_insert_trg on "ores_variability_system_settings_tbl";
+drop function if exists ores_variability_system_settings_insert_fn;
+drop index if exists ores_variability_system_settings_version_uniq_idx;
+drop index if exists ores_variability_system_settings_name_uniq_idx;
+drop index if exists ores_variability_system_settings_tenant_idx;
+drop table if exists "ores_variability_system_settings_tbl";

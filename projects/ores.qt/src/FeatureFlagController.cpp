@@ -26,7 +26,7 @@
 #include "ores.qt/FeatureFlagHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/eventing/system_setting_changed_event.hpp"
 #include "ores.variability/messaging/feature_flags_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 
@@ -38,7 +38,7 @@ namespace {
     // Event type name for feature flag changes
     constexpr std::string_view feature_flag_event_name =
         eventing::domain::event_traits<
-            variability::eventing::feature_flags_changed_event>::name;
+            variability::eventing::system_setting_changed_event>::name;
 }
 
 FeatureFlagController::FeatureFlagController(

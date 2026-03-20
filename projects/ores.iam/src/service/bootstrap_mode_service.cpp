@@ -35,17 +35,17 @@ bootstrap_mode_service::bootstrap_mode_service(database::context ctx,
     std::string tenant_id,
     std::shared_ptr<authorization_service> auth_service)
     : account_repo_(ctx),
-      system_flags_service_(ctx, std::move(tenant_id)),
+      system_settings_service_(ctx, std::move(tenant_id)),
       auth_service_(std::move(auth_service)),
       ctx_(ctx) {
     BOOST_LOG_SEV(lg(), debug) << "DML for account: " << account_repo_.sql();
-    system_flags_service_.refresh();
+    system_settings_service_.refresh();
 }
 
 bool bootstrap_mode_service::is_in_bootstrap_mode() {
     BOOST_LOG_SEV(lg(), debug) << "Checking bootstrap mode status";
 
-    const bool in_bootstrap = system_flags_service_.is_bootstrap_mode_enabled();
+    const bool in_bootstrap = system_settings_service_.is_bootstrap_mode_enabled();
     BOOST_LOG_SEV(lg(), debug) << "Bootstrap mode: "
         << (in_bootstrap ? "true" : "false");
     return in_bootstrap;
@@ -74,7 +74,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
     BOOST_LOG_SEV(lg(), debug) << "SuperAdmin exists: "
         << (super_admin_exists ? "true" : "false");
 
-    const bool flag_enabled = system_flags_service_.is_bootstrap_mode_enabled();
+    const bool flag_enabled = system_settings_service_.is_bootstrap_mode_enabled();
     BOOST_LOG_SEV(lg(), debug) << "Bootstrap flag enabled: "
         << (flag_enabled ? "true" : "false");
 
@@ -87,7 +87,7 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
         BOOST_LOG_SEV(lg(), warn)
             << "Bootstrap flag is disabled but no SuperAdmin accounts exist, "
             << "this is inconsistent. Enabling bootstrap mode";
-        system_flags_service_.set_bootstrap_mode(true, svc_acct::iam,
+        system_settings_service_.set_bootstrap_mode(true, svc_acct::iam,
             std::string{reason::codes::new_record}, "Bootstrap mode enabled due to inconsistent state - no admin accounts exist");
     }
 }
@@ -95,12 +95,12 @@ void bootstrap_mode_service::initialize_bootstrap_state() {
 void bootstrap_mode_service::exit_bootstrap_mode() {
     BOOST_LOG_SEV(lg(), info) << "Exiting bootstrap mode";
 
-    if (!system_flags_service_.is_bootstrap_mode_enabled()) {
+    if (!system_settings_service_.is_bootstrap_mode_enabled()) {
         BOOST_LOG_SEV(lg(), debug) << "Already in secure mode, nothing to do";
         return;
     }
 
-    system_flags_service_.set_bootstrap_mode(false, svc_acct::iam,
+    system_settings_service_.set_bootstrap_mode(false, svc_acct::iam,
         std::string{reason::codes::new_record}, "Bootstrap mode disabled - system now in secure mode");
     BOOST_LOG_SEV(lg(), info) << "Successfully exited bootstrap mode";
 }

@@ -55,3 +55,4 @@ drop function if exists ores_iam_role_permissions_assign_fn;
 
 -- Variability upsert functions
 drop function if exists ores_variability_feature_flags_upsert_fn;
+drop function if exists ores_variability_system_settings_upsert_fn;

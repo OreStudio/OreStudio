@@ -53,9 +53,9 @@
 #include "ores.security/crypto/password_hasher.hpp"
 #include "ores.security/validation/password_validator.hpp"
 #include "ores.iam/repository/account_repository.hpp"
-#include "ores.variability/domain/feature_flags_json.hpp"
-#include "ores.variability/domain/feature_flags_table.hpp"
-#include "ores.variability/repository/feature_flags_repository.hpp"
+#include "ores.variability/domain/system_setting_json_io.hpp"
+#include "ores.variability/domain/system_setting_table_io.hpp"
+#include "ores.variability/repository/system_settings_repository.hpp"
 #include "ores.iam/domain/login_info_json.hpp"
 #include "ores.iam/domain/login_info_table.hpp"
 #include "ores.iam/repository/login_info_repository.hpp"
@@ -77,7 +77,7 @@
 #include "ores.cli/config/export_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
@@ -241,42 +241,39 @@ export_accounts(const config::export_options& cfg) const {
 }
 
 void application::
-export_feature_flags(const config::export_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Exporting feature flags.";
+export_system_settings(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting system settings.";
 
-    variability::repository::feature_flags_repository repo;
-    std::vector<variability::domain::feature_flags> flags;
+    variability::repository::system_settings_repository repo;
+    std::vector<variability::domain::system_setting> settings;
 
     if (!cfg.key.empty()) {
-        // Export specific feature flag by name
+        // Export specific system setting by name
         if (cfg.all_versions) {
-            flags = repo.read_all(context_, cfg.key);
+            settings = repo.read_all(context_, cfg.key);
         } else {
-            flags = repo.read_latest(context_, cfg.key);
+            settings = repo.read_latest(context_, cfg.key);
         }
     } else {
-        // Export all feature flags
+        // Export all system settings
         if (cfg.all_versions) {
-            flags = repo.read_all(context_);
+            settings = repo.read_all(context_);
         } else {
-            flags = repo.read_latest(context_);
+            settings = repo.read_latest(context_);
         }
     }
 
     // Output in the requested format
-    if (cfg.target_format == config::format::json ||
-        cfg.target_format == config::format::table) {
-        if (cfg.target_format == config::format::json) {
-            output_stream_ << variability::domain::convert_to_json(flags) << std::endl;
-        } else if (cfg.target_format == config::format::table) {
-            output_stream_ << variability::domain::convert_to_table(flags) << std::endl;
-        }
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << variability::domain::convert_to_json(settings) << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << settings << std::endl;
     } else {
         BOOST_THROW_EXCEPTION(
-            application_exception("Only JSON and table formats are supported for feature flags"));
+            application_exception("Only JSON and table formats are supported for system settings"));
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Exported " << flags.size() << " feature flag(s).";
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << settings.size() << " system setting(s).";
 }
 
 void application::
@@ -510,8 +507,8 @@ export_data(const std::optional<config::export_options>& ocfg) const {
         case config::entity::accounts:
             export_accounts(cfg);
             break;
-        case config::entity::feature_flags:
-            export_feature_flags(cfg);
+        case config::entity::system_settings:
+            export_system_settings(cfg);
             break;
         case config::entity::login_info:
             export_login_info(cfg);
@@ -588,12 +585,12 @@ delete_account(const config::delete_options& cfg) const {
 }
 
 void application::
-delete_feature_flag(const config::delete_options& cfg) const {
-    BOOST_LOG_SEV(lg(), debug) << "Deleting feature flag: " << cfg.key;
-    variability::repository::feature_flags_repository repo;
+delete_system_setting(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting system setting: " << cfg.key;
+    variability::repository::system_settings_repository repo;
     repo.remove(context_, cfg.key);
-    output_stream_ << "Feature flag deleted successfully: " << cfg.key << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Deleted feature flag: " << cfg.key;
+    output_stream_ << "System setting deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted system setting: " << cfg.key;
 }
 
 void application::
@@ -711,8 +708,8 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
         case config::entity::accounts:
             delete_account(cfg);
             break;
-        case config::entity::feature_flags:
-            delete_feature_flag(cfg);
+        case config::entity::system_settings:
+            delete_system_setting(cfg);
             break;
         case config::entity::login_info:
             delete_login_info(cfg);
@@ -777,14 +774,13 @@ add_account(const config::add_account_options& cfg) const {
 
     // Validate password policy
     using security::validation::password_validator;
-    using variability::repository::feature_flags_repository;
 
-    // Check if password validation is disabled via feature flag
-    feature_flags_repository flag_repo;
-    const auto disable_validation_flags =
-        flag_repo.read_latest(context_, "system.disable_password_validation");
-    const bool enforce_policy = disable_validation_flags.empty() ||
-                                !disable_validation_flags[0].enabled;
+    // Check if password validation is disabled via system setting
+    variability::repository::system_settings_repository setting_repo;
+    const auto disable_validation_settings =
+        setting_repo.read_latest(context_, "system.disable_password_validation");
+    const bool enforce_policy = disable_validation_settings.empty() ||
+                                disable_validation_settings[0].value != "true";
 
     const auto validation_result =
         password_validator::validate(cfg.password, enforce_policy);
@@ -850,23 +846,24 @@ add_account(const config::add_account_options& cfg) const {
 }
 
 void application::
-add_feature_flag(const config::add_feature_flag_options& cfg) const {
-    BOOST_LOG_SEV(lg(), info) << "Adding feature flag: " << cfg.flag_name;
+add_system_setting(const config::add_system_setting_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding system setting: " << cfg.setting_name;
 
-    // Construct feature flag from command-line arguments
-    variability::domain::feature_flags flag;
-    flag.name = cfg.flag_name;
-    flag.description = cfg.description.value_or("");
-    flag.enabled = cfg.enabled.value_or(false);
-    flag.modified_by = cfg.modified_by;
-    flag.performed_by = cfg.modified_by;
+    // Construct system setting from command-line arguments
+    variability::domain::system_setting setting;
+    setting.name = cfg.setting_name;
+    setting.value = cfg.value.value_or("");
+    setting.data_type = cfg.data_type.value_or("boolean");
+    setting.description = cfg.description.value_or("");
+    setting.modified_by = cfg.modified_by;
+    setting.performed_by = cfg.modified_by;
 
     // Write to database
-    variability::repository::feature_flags_repository repo;
-    repo.write(context_, flag);
+    variability::repository::system_settings_repository repo;
+    repo.write(context_, setting);
 
-    output_stream_ << "Successfully added feature flag: " << flag.name << std::endl;
-    BOOST_LOG_SEV(lg(), info) << "Added feature flag: " << flag.name;
+    output_stream_ << "Successfully added system setting: " << setting.name << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added system setting: " << setting.name;
 }
 
 void application::
@@ -1035,8 +1032,8 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_currency(opts);
         } else if constexpr (std::is_same_v<T, config::add_account_options>) {
             add_account(opts);
-        } else if constexpr (std::is_same_v<T, config::add_feature_flag_options>) {
-            add_feature_flag(opts);
+        } else if constexpr (std::is_same_v<T, config::add_system_setting_options>) {
+            add_system_setting(opts);
         } else if constexpr (std::is_same_v<T, config::add_login_info_options>) {
             add_login_info(opts);
         } else if constexpr (std::is_same_v<T, config::add_role_options>) {

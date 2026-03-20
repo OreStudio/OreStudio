@@ -24,7 +24,7 @@
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
 #include "ores.variability/service/feature_flags_service.hpp"
 #include "ores.iam/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -42,7 +42,7 @@ namespace ores::http_server::routes {
 class variability_routes final {
 public:
     variability_routes(database::context ctx,
-        std::shared_ptr<variability::service::system_flags_service> system_flags,
+        std::shared_ptr<variability::service::system_settings_service> system_flags,
         std::shared_ptr<iam::service::auth_session_service> sessions);
 
     /**
@@ -65,7 +65,7 @@ private:
 
     database::context ctx_;
     variability::service::feature_flags_service feature_flags_service_;
-    std::shared_ptr<variability::service::system_flags_service> system_flags_;
+    std::shared_ptr<variability::service::system_settings_service> system_flags_;
     std::shared_ptr<iam::service::auth_session_service> sessions_;
 };
 

@@ -17,29 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_CLI_CONFIG_ADD_SYSTEM_SETTING_OPTIONS_HPP
+#define ORES_CLI_CONFIG_ADD_SYSTEM_SETTING_OPTIONS_HPP
+
+#include <iosfwd>
+#include <string>
+#include <optional>
 
 namespace ores::cli::config {
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        system_settings
-    };
+/**
+ * @brief Configuration for adding a system setting entity via command-line arguments.
+ */
+struct add_system_setting_options final {
+    std::string setting_name;
+    std::string modified_by;
+    std::optional<std::string> value;
+    std::optional<std::string> data_type;
+    std::optional<std::string> description;
+};
+
+std::ostream& operator<<(std::ostream& s, const add_system_setting_options& v);
 
 }
 

@@ -30,7 +30,7 @@ using namespace ores::http::domain;
 namespace asio = boost::asio;
 
 variability_routes::variability_routes(database::context ctx,
-    std::shared_ptr<variability::service::system_flags_service> system_flags,
+    std::shared_ptr<variability::service::system_settings_service> system_flags,
     std::shared_ptr<iam::service::auth_session_service> sessions)
     : ctx_(std::move(ctx))
     , feature_flags_service_(ctx_)

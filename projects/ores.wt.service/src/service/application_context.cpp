@@ -23,8 +23,8 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
-#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.variability/eventing/system_setting_changed_event.hpp"
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -90,11 +90,11 @@ void application_context::setup_services() {
     authorization_service_ = std::make_shared<iam::service::authorization_service>(
         *db_context_);
 
-    // Create system flags service and refresh cache from database
-    // (System flags are seeded via SQL scripts in the database template)
-    system_flags_service_ = std::make_shared<variability::service::system_flags_service>(
+    // Create system settings service and refresh cache from database
+    // (System settings are seeded via SQL scripts in the database template)
+    system_settings_service_ = std::make_shared<variability::service::system_settings_service>(
         *db_context_, database::service::tenant_context::system_tenant_id);
-    system_flags_service_->refresh();
+    system_settings_service_->refresh();
 
     account_service_ = std::make_unique<iam::service::account_service>(
         *db_context_);
@@ -121,19 +121,19 @@ void application_context::setup_eventing() {
     event_source_ = std::make_unique<eventing::service::postgres_event_source>(
         *db_context_, *event_bus_);
 
-    // Register feature flags mapping for system_flags cache invalidation
+    // Register system settings mapping for cache invalidation
     eventing::service::registrar::register_mapping<
-        variability::eventing::feature_flags_changed_event>(
-        *event_source_, "ores.variability.feature_flag", "ores_feature_flags");
+        variability::eventing::system_setting_changed_event>(
+        *event_source_, "ores.variability.system_setting", "ores_system_settings");
 
-    // Subscribe to feature flag changes to refresh system_flags cache
-    flags_subscription_ = event_bus_->subscribe<variability::eventing::feature_flags_changed_event>(
-        [this](const variability::eventing::feature_flags_changed_event& e) {
-            BOOST_LOG_SEV(lg(), info) << "Feature flags changed notification received, "
-                                      << "refreshing system_flags cache ("
-                                      << e.flag_names.size() << " flags changed)";
-            system_flags_service_->refresh();
-            is_bootstrap_mode_ = system_flags_service_->is_bootstrap_mode_enabled();
+    // Subscribe to system settings changes to refresh service cache
+    flags_subscription_ = event_bus_->subscribe<variability::eventing::system_setting_changed_event>(
+        [this](const variability::eventing::system_setting_changed_event& e) {
+            BOOST_LOG_SEV(lg(), info) << "System settings changed notification received, "
+                                      << "refreshing settings cache ("
+                                      << e.setting_names.size() << " settings changed)";
+            system_settings_service_->refresh();
+            is_bootstrap_mode_ = system_settings_service_->is_bootstrap_mode_enabled();
         });
 
     BOOST_LOG_SEV(lg(), info) << "Eventing infrastructure setup complete";
@@ -173,8 +173,8 @@ void application_context::check_bootstrap_mode() {
         authorization_service_);
     bootstrap_svc.initialize_bootstrap_state();
 
-    system_flags_service_->refresh();
-    is_bootstrap_mode_ = system_flags_service_->is_bootstrap_mode_enabled();
+    system_settings_service_->refresh();
+    is_bootstrap_mode_ = system_settings_service_->is_bootstrap_mode_enabled();
 
     if (is_bootstrap_mode_) {
         BOOST_LOG_SEV(lg(), warn) << "*** SYSTEM IN BOOTSTRAP MODE ***";

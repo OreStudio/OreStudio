@@ -47,7 +47,7 @@
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
 
 namespace ores::iam::messaging {
 
@@ -141,7 +141,7 @@ inline bool auth_is_tenant_bootstrap_mode(
         auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
         if (!tid_result) return false;
         auto tenant_ctx = ctx.with_tenant(*tid_result, "");
-        variability::service::system_flags_service sfs(tenant_ctx, tenant_id_str);
+        variability::service::system_settings_service sfs(tenant_ctx, tenant_id_str);
         sfs.refresh();
         return sfs.is_bootstrap_mode_enabled();
     } catch (const std::exception& e) {

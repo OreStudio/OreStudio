@@ -760,6 +760,42 @@ end;
 $$ language plpgsql;
 
 -- =============================================================================
+-- Variability: System Settings
+-- =============================================================================
+
+/**
+ * Upsert a system setting (insert if absent; never overwrites an existing value).
+ */
+create or replace function ores_variability_system_settings_upsert_fn(
+    p_tenant_id uuid,
+    p_name text,
+    p_value text,
+    p_data_type text,
+    p_description text
+) returns void as $$
+begin
+    perform ores_seed_validate_not_empty_fn(p_name, 'System setting name');
+    perform ores_seed_validate_not_empty_fn(p_data_type, 'System setting data_type');
+
+    insert into ores_variability_system_settings_tbl (
+        tenant_id, name, value, data_type, description,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to)
+    values (
+        p_tenant_id, p_name, p_value, p_data_type, p_description,
+        current_user, current_user, 'system.new_record', 'System seed data',
+        current_timestamp, ores_utility_infinity_timestamp_fn())
+    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Created system setting: % = % (%)', p_name, p_value, p_data_type;
+    else
+        raise notice 'System setting already exists: %', p_name;
+    end if;
+end;
+$$ language plpgsql;
+
+-- =============================================================================
 -- Variability: Feature Flags
 -- =============================================================================
 

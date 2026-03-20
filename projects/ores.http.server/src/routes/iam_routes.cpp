@@ -84,7 +84,7 @@ parsed_principal parse_principal(const std::string& principal) {
 namespace reason = database::domain::change_reason_constants;
 
 iam_routes::iam_routes(database::context ctx,
-    std::shared_ptr<variability::service::system_flags_service> system_flags,
+    std::shared_ptr<variability::service::system_settings_service> system_flags,
     std::shared_ptr<iam::service::auth_session_service> sessions,
     std::shared_ptr<iam::service::authorization_service> auth_service,
     std::shared_ptr<ores::security::jwt::jwt_authenticator> authenticator,

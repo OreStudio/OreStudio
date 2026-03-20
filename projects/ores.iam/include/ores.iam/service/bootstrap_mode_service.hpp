@@ -24,7 +24,7 @@
 #include <string>
 #include "ores.iam/repository/account_repository.hpp"
 #include "ores.iam/service/authorization_service.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 
@@ -109,7 +109,7 @@ public:
 
 private:
     repository::account_repository account_repo_;
-    variability::service::system_flags_service system_flags_service_;
+    variability::service::system_settings_service system_settings_service_;
     std::shared_ptr<authorization_service> auth_service_;
     database::context ctx_;
 };

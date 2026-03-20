@@ -21,7 +21,7 @@
 #include "ores.cli/config/add_change_reason_category_options.hpp"
 #include "ores.cli/config/add_change_reason_options.hpp"
 #include "ores.cli/config/add_country_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
@@ -936,106 +936,106 @@ TEST_CASE("test_change_reason_categories_list_help", change_reason_categories_ta
 }
 
 // ==========================================================================
-// Feature flags parser tests
+// System settings parser tests
 // ==========================================================================
-const std::string feature_flags_tags("[feature_flags_parser]");
+const std::string system_settings_tags("[system_settings_parser]");
 
-TEST_CASE("test_feature_flags_help_with_no_operation", feature_flags_tags) {
+TEST_CASE("test_system_settings_help_with_no_operation", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "feature-flags", "--help"};
+    std::vector<std::string> args = {"variability", "system-settings", "--help"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
 
     CHECK(!result.has_value());
     CHECK(!info.str().empty());
-    CHECK(info.str().find("feature-flags") != std::string::npos);
+    CHECK(info.str().find("system-settings") != std::string::npos);
 }
 
-TEST_CASE("test_feature_flags_no_operation", feature_flags_tags) {
+TEST_CASE("test_system_settings_no_operation", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "feature-flags"};
+    std::vector<std::string> args = {"variability", "system-settings"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
-TEST_CASE("test_feature_flags_invalid_operation", feature_flags_tags) {
+TEST_CASE("test_system_settings_invalid_operation", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "feature-flags", "invalid_op"};
+    std::vector<std::string> args = {"variability", "system-settings", "invalid_op"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
-TEST_CASE("test_feature_flags_list_operation", feature_flags_tags) {
+TEST_CASE("test_system_settings_list_operation", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "feature-flags", "list"};
+    std::vector<std::string> args = {"variability", "system-settings", "list"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
 
     REQUIRE(result.has_value());
     REQUIRE(result->exporting.has_value());
-    CHECK(result->exporting->target_entity == entity::feature_flags);
+    CHECK(result->exporting->target_entity == entity::system_settings);
     CHECK(result->exporting->target_format == format::json);
 }
 
-TEST_CASE("test_feature_flags_delete_operation", feature_flags_tags) {
+TEST_CASE("test_system_settings_delete_operation", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "feature-flags", "delete", "--key",
-                                     "dark_mode"};
+    std::vector<std::string> args = {"variability", "system-settings", "delete", "--key",
+                                     "system.dark_mode"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);
 
     REQUIRE(result.has_value());
     REQUIRE(result->deleting.has_value());
-    CHECK(result->deleting->target_entity == entity::feature_flags);
-    CHECK(result->deleting->key == "dark_mode");
+    CHECK(result->deleting->target_entity == entity::system_settings);
+    CHECK(result->deleting->key == "system.dark_mode");
 }
 
-TEST_CASE("test_feature_flags_add_missing_required_fields", feature_flags_tags) {
+TEST_CASE("test_system_settings_add_missing_required_fields", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "feature-flags", "add"};
+    std::vector<std::string> args = {"variability", "system-settings", "add"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);
 }
 
-TEST_CASE("test_feature_flags_add_with_all_fields", feature_flags_tags) {
+TEST_CASE("test_system_settings_add_with_all_fields", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
     std::vector<std::string> args = {
-        "variability",   "feature-flags",       "add",       "--name", "dark_mode",
-        "--description", "Enable dark mode UI", "--enabled", "true",   "--modified-by",
+        "variability",   "system-settings",       "add",       "--name", "system.dark_mode",
+        "--description", "Enable dark mode UI", "--value", "true",   "--modified-by",
         "admin"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
@@ -1043,22 +1043,22 @@ TEST_CASE("test_feature_flags_add_with_all_fields", feature_flags_tags) {
 
     REQUIRE(result.has_value());
     REQUIRE(result->adding.has_value());
-    const auto& opts = std::get<ores::cli::config::add_feature_flag_options>(*result->adding);
-    CHECK(opts.flag_name == "dark_mode");
+    const auto& opts = std::get<ores::cli::config::add_system_setting_options>(*result->adding);
+    CHECK(opts.setting_name == "system.dark_mode");
     CHECK(opts.modified_by == "admin");
     REQUIRE(opts.description.has_value());
     CHECK(*opts.description == "Enable dark mode UI");
-    REQUIRE(opts.enabled.has_value());
-    CHECK(*opts.enabled == true);
+    REQUIRE(opts.value.has_value());
+    CHECK(*opts.value == "true");
 }
 
-TEST_CASE("test_feature_flags_list_help", feature_flags_tags) {
+TEST_CASE("test_system_settings_list_help", system_settings_tags) {
     auto lg = make_logger(test_suite);
 
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"variability", "feature-flags", "list", "--help"};
+    std::vector<std::string> args = {"variability", "system-settings", "list", "--help"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     auto result = p.parse(args, info, error);

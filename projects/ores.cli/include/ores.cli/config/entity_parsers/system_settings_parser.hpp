@@ -17,29 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_CLI_CONFIG_ENTITY_HPP
-#define ORES_CLI_CONFIG_ENTITY_HPP
+#ifndef ORES_CLI_CONFIG_ENTITY_PARSERS_SYSTEM_SETTINGS_PARSER_HPP
+#define ORES_CLI_CONFIG_ENTITY_PARSERS_SYSTEM_SETTINGS_PARSER_HPP
 
-namespace ores::cli::config {
+#include <optional>
+#include <iosfwd>
+#include <boost/program_options.hpp>
+#include "ores.cli/config/options.hpp"
 
-    /**
-     * @brief List of available entities to target.
-     */
-    enum class entity {
-        // refdata
-        currencies,
-        countries,
-        // iam
-        accounts,
-        roles,
-        permissions,
-        login_info,
-        // dq
-        change_reasons,
-        change_reason_categories,
-        // variability
-        system_settings
-    };
+namespace ores::cli::config::entity_parsers {
+
+/**
+ * @brief Handles parsing of system_settings entity commands.
+ */
+std::optional<options>
+handle_system_settings_command(bool has_help,
+    const boost::program_options::parsed_options& po,
+    std::ostream& info,
+    boost::program_options::variables_map& vm);
 
 }
 

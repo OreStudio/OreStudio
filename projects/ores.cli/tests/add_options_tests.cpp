@@ -20,7 +20,7 @@
 #include "ores.cli/config/add_options.hpp"
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 
 #include <sstream>
@@ -234,8 +234,8 @@ TEST_CASE("add_options_visit_pattern", tags) {
             entity_type = "currency";
         } else if constexpr (std::is_same_v<T, add_account_options>) {
             entity_type = "account";
-        } else if constexpr (std::is_same_v<T, add_feature_flag_options>) {
-            entity_type = "feature_flag";
+        } else if constexpr (std::is_same_v<T, add_system_setting_options>) {
+            entity_type = "system_setting";
         } else if constexpr (std::is_same_v<T, add_login_info_options>) {
             entity_type = "login_info";
         }

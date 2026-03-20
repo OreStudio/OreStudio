@@ -53,8 +53,8 @@ Key internal components:
 | =heartbeat_sender= | Publishes =work.heartbeat= on a timer while engine is running        |
 | =http_client=      | HTTP download (GET) and upload (PUT) for job files                   |
 
-Dependencies: =ores.compute= (domain + messaging), =ores.nats=, HTTP client
-library (libcurl via vcpkg).
+Dependencies: =ores.compute= (domain + messaging), =ores.nats=, Boost Beast
+(HTTP client), Boost.Iostreams (tar.gz extraction) — all already in vcpkg.
 
 * Configuration
 
@@ -66,8 +66,9 @@ wrapper-specific fields:
 struct options final {
     std::optional<ores::logging::logging_options> logging;
     ores::nats::config::nats_options nats;
-    std::string host_id;   // UUID of this node's host record
-    std::string work_dir;  // temp directory for job inputs/outputs
+    std::string host_id;                          // UUID of this node's host record
+    std::string work_dir;                         // temp directory for job inputs/outputs
+    std::uint32_t heartbeat_interval_seconds{30}; // how often to send heartbeat while running
 };
 #+end_src
 
@@ -127,6 +128,12 @@ actual temp file paths and spawns the subprocess with the resulting argv.
 This allows each app version to define its own CLI convention without
 changes to the wrapper.
 
+** Package bundle format
+
+Engine bundles are =.tar.gz= archives. The wrapper extracts them using
+=boost::iostreams= with zlib compression filter — already available in the
+vcpkg dependency graph, no new dependencies required.
+
 ** Package caching
 
 Engine bundles are cached by =app_version_id= under =work_dir/packages/=:
@@ -179,8 +186,8 @@ JetStream                wrapper                    compute service
 Only =results.submit= failure causes a NACK. All other failures are
 reported to the server and ACKed so the message is not redelivered.
 
-* Open questions
+* Implementation notes
 
-- What archive format for the package bundle? (tar.gz / zip)
-- What HTTP client library? (libcurl already in vcpkg, or use a lighter wrapper)
-- Heartbeat interval — should it be configurable or a fixed constant?
+- HTTP client: Boost Beast (already in vcpkg)
+- Package bundle format: =.tar.gz= via =boost::iostreams= (already in vcpkg)
+- Heartbeat interval: configurable via =--heartbeat-interval-seconds= (default 30)

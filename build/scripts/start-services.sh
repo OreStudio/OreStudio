@@ -122,6 +122,23 @@ launch() {
     printf "  start   %-38s PID %d\n" "$name" "$pid"
 }
 
+# Like launch() but uses $binary as the executable while $name is used for
+# PID file and display only. Needed when multiple instances share one binary.
+launch_binary() {
+    local name="$1"; local binary="$2"; shift 2
+    local pid_file="$RUN_DIR/$name.pid"
+
+    if is_running "$name"; then
+        printf "  skip    %-38s PID %d\n" "$name" "$(cat "$pid_file")"
+        return
+    fi
+
+    (cd "$BIN_DIR" && exec "./$binary" "$@") &
+    local pid=$!
+    echo "$pid" > "$pid_file"
+    printf "  start   %-38s PID %d\n" "$name" "$pid"
+}
+
 launch_nats_service() {
     local name="$1"
     launch "$name" \
@@ -143,10 +160,11 @@ launch_wrapper_node() {
     local work_dir="$RUN_DIR/wrappers/node_${n}"
     mkdir -p "$work_dir"
     local name="ores.compute.wrapper.node${n}"
-    launch "$name" \
+    launch_binary "$name" "ores.compute.wrapper" \
         --log-enabled \
         --log-level "$LOG_LEVEL" \
         --log-directory ../log \
+        --log-filename "${name}.log" \
         --nats-url "$NATS_URL" \
         --host-id "$host_id" \
         --tenant-id "$NATS_PREFIX" \

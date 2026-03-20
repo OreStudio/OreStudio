@@ -60,6 +60,7 @@ Passwords are read from environment variables (set via .env or CI environment):
     ORES_REPORTING_SERVICE_DB_PASSWORD  Password for the Reporting domain service user
     ORES_TELEMETRY_SERVICE_DB_PASSWORD  Password for the Telemetry domain service user
     ORES_TRADING_SERVICE_DB_PASSWORD    Password for the Trading domain service user
+    ORES_COMPUTE_SERVICE_DB_PASSWORD    Password for the Compute domain service user
 
 Optional arguments:
     -D, --database NAME                 Database name (default: ${DEFAULT_DB_NAME})
@@ -121,6 +122,7 @@ MISSING_PASSWORDS=()
 [[ -z "${ORES_REPORTING_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_REPORTING_SERVICE_DB_PASSWORD")
 [[ -z "${ORES_TELEMETRY_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TELEMETRY_SERVICE_DB_PASSWORD")
 [[ -z "${ORES_TRADING_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TRADING_SERVICE_DB_PASSWORD")
+[[ -z "${ORES_COMPUTE_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_COMPUTE_SERVICE_DB_PASSWORD")
 
 if [[ ${#MISSING_PASSWORDS[@]} -gt 0 ]]; then
     echo "Error: Missing required password environment variables:" >&2
@@ -205,6 +207,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v reporting_service_password="${ORES_REPORTING_SERVICE_DB_PASSWORD}" \
     -v telemetry_service_password="${ORES_TELEMETRY_SERVICE_DB_PASSWORD}" \
     -v trading_service_password="${ORES_TRADING_SERVICE_DB_PASSWORD}" \
+    -v compute_service_password="${ORES_COMPUTE_SERVICE_DB_PASSWORD}" \
     -v db_name="${DB_NAME}"
 
 # Phases 2–4: Create database, schema, and metadata via shared helper

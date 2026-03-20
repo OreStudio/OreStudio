@@ -53,6 +53,7 @@ constexpr std::string_view scheduler_service   = "ores_scheduler_service";
 constexpr std::string_view reporting_service   = "ores_reporting_service";
 constexpr std::string_view telemetry_service   = "ores_telemetry_service";
 constexpr std::string_view trading_service     = "ores_trading_service";
+constexpr std::string_view compute_service     = "ores_compute_service";
 
 }
 

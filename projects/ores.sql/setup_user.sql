@@ -189,6 +189,7 @@ create user ores_scheduler_service   with password :'scheduler_service_password'
 create user ores_reporting_service   with password :'reporting_service_password'   in role ores_rw;
 create user ores_telemetry_service   with password :'telemetry_service_password'   in role ores_rw;
 create user ores_trading_service     with password :'trading_service_password'     in role ores_rw;
+create user ores_compute_service     with password :'compute_service_password'     in role ores_rw;
 create user ores_http_user     with password :'http_password'     in role ores_rw;
 create user ores_test_ddl_user with password :'test_ddl_password' in role ores_owner createdb;
 create user ores_test_dml_user with password :'test_dml_password' in role ores_rw;
@@ -212,6 +213,7 @@ alter role ores_scheduler_service   set search_path to public;
 alter role ores_reporting_service   set search_path to public;
 alter role ores_telemetry_service   set search_path to public;
 alter role ores_trading_service     set search_path to public;
+alter role ores_compute_service     set search_path to public;
 alter role ores_http_user set search_path to public;
 alter role ores_test_ddl_user set search_path to public;
 alter role ores_test_dml_user set search_path to public;

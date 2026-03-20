@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/FeatureFlagHistoryDialog.hpp"
+#include "ores.qt/SystemSettingHistoryDialog.hpp"
 
 #include <QIcon>
 #include <QLabel>
@@ -36,20 +36,20 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-const QIcon& FeatureFlagHistoryDialog::getHistoryIcon() const {
+const QIcon& SystemSettingHistoryDialog::getHistoryIcon() const {
     static const QIcon historyIcon = IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor);
     return historyIcon;
 }
 
-FeatureFlagHistoryDialog::FeatureFlagHistoryDialog(QString name,
+SystemSettingHistoryDialog::SystemSettingHistoryDialog(QString name,
     ClientManager* clientManager, QWidget* parent)
-    : QWidget(parent), ui_(new Ui::FeatureFlagHistoryDialog),
+    : QWidget(parent), ui_(new Ui::SystemSettingHistoryDialog),
       clientManager_(clientManager),
       flagName_(std::move(name)),
       toolBar_(nullptr), reloadAction_(nullptr),
       openAction_(nullptr), revertAction_(nullptr) {
 
-    BOOST_LOG_SEV(lg(), info) << "Creating feature flag history widget for: "
+    BOOST_LOG_SEV(lg(), info) << "Creating system setting history widget for: "
                               << flagName_.toStdString();
 
     ui_->setupUi(this);
@@ -90,8 +90,8 @@ FeatureFlagHistoryDialog::FeatureFlagHistoryDialog(QString name,
     updateButtonStates();
 }
 
-FeatureFlagHistoryDialog::~FeatureFlagHistoryDialog() {
-    BOOST_LOG_SEV(lg(), info) << "Destroying feature flag history widget";
+SystemSettingHistoryDialog::~SystemSettingHistoryDialog() {
+    BOOST_LOG_SEV(lg(), info) << "Destroying system setting history widget";
 
     // Disconnect and cancel any active QFutureWatcher objects
     const auto watchers = findChildren<QFutureWatcherBase*>();
@@ -102,12 +102,12 @@ FeatureFlagHistoryDialog::~FeatureFlagHistoryDialog() {
     }
 }
 
-void FeatureFlagHistoryDialog::loadHistory() {
-    BOOST_LOG_SEV(lg(), info) << "Loading feature flag history for: "
+void SystemSettingHistoryDialog::loadHistory() {
+    BOOST_LOG_SEV(lg(), info) << "Loading system setting history for: "
                               << flagName_.toStdString();
 
     using HistoryResult = std::expected<variability::messaging::get_setting_history_response, std::string>;
-    QPointer<FeatureFlagHistoryDialog> self = this;
+    QPointer<SystemSettingHistoryDialog> self = this;
     const auto flagName = flagName_.toStdString();
 
     QFuture<HistoryResult> future =
@@ -151,7 +151,7 @@ void FeatureFlagHistoryDialog::loadHistory() {
     watcher->setFuture(future);
 }
 
-void FeatureFlagHistoryDialog::onHistoryLoaded() {
+void SystemSettingHistoryDialog::onHistoryLoaded() {
     BOOST_LOG_SEV(lg(), info) << "History loaded successfully: "
                               << history_.size() << " versions";
 
@@ -188,7 +188,7 @@ void FeatureFlagHistoryDialog::onHistoryLoaded() {
 
     if (!history_.empty()) {
         const auto& latest = history_[0];
-        ui_->titleLabel->setText(QString("Feature Flag History: %1")
+        ui_->titleLabel->setText(QString("System Setting History: %1")
             .arg(QString::fromStdString(latest.name)));
     }
 
@@ -198,18 +198,18 @@ void FeatureFlagHistoryDialog::onHistoryLoaded() {
         .arg(history_.size()));
 }
 
-void FeatureFlagHistoryDialog::onHistoryLoadError(const QString& error_msg) {
+void SystemSettingHistoryDialog::onHistoryLoadError(const QString& error_msg) {
     BOOST_LOG_SEV(lg(), error) << "Error loading history: "
                                << error_msg.toStdString();
 
-    emit errorOccurred(QString("Failed to load feature flag history: %1")
+    emit errorOccurred(QString("Failed to load system setting history: %1")
         .arg(error_msg));
     MessageBoxHelper::critical(this, "History Load Error",
-        QString("Failed to load feature flag history:\n%1")
+        QString("Failed to load system setting history:\n%1")
         .arg(error_msg));
 }
 
-void FeatureFlagHistoryDialog::onVersionSelected(int index) {
+void SystemSettingHistoryDialog::onVersionSelected(int index) {
     if (index < 0 || index >= static_cast<int>(history_.size()))
         return;
 
@@ -219,7 +219,7 @@ void FeatureFlagHistoryDialog::onVersionSelected(int index) {
     displayFullDetailsTab(index);
 }
 
-void FeatureFlagHistoryDialog::displayChangesTab(int version_index) {
+void SystemSettingHistoryDialog::displayChangesTab(int version_index) {
     ui_->changesTableWidget->setRowCount(0);
 
     if (version_index >= static_cast<int>(history_.size()))
@@ -260,7 +260,7 @@ void FeatureFlagHistoryDialog::displayChangesTab(int version_index) {
     }
 }
 
-void FeatureFlagHistoryDialog::displayFullDetailsTab(int version_index) {
+void SystemSettingHistoryDialog::displayFullDetailsTab(int version_index) {
     if (version_index >= static_cast<int>(history_.size()))
         return;
 
@@ -274,7 +274,7 @@ void FeatureFlagHistoryDialog::displayFullDetailsTab(int version_index) {
     ui_->recordedAtValue->setText(relative_time_helper::format(flag.recorded_at));
 }
 
-FeatureFlagHistoryDialog::DiffResult FeatureFlagHistoryDialog::
+SystemSettingHistoryDialog::DiffResult SystemSettingHistoryDialog::
 calculateDiff(const variability::domain::system_setting& current,
     const variability::domain::system_setting& previous) {
 
@@ -299,7 +299,7 @@ calculateDiff(const variability::domain::system_setting& current,
     return diffs;
 }
 
-void FeatureFlagHistoryDialog::setupToolbar() {
+void SystemSettingHistoryDialog::setupToolbar() {
     toolBar_ = new QToolBar(this);
     toolBar_->setMovable(false);
     toolBar_->setFloatable(false);
@@ -310,7 +310,7 @@ void FeatureFlagHistoryDialog::setupToolbar() {
         Icon::ArrowClockwise, IconUtils::DefaultIconColor));
     reloadAction_->setToolTip("Reload history from server");
     connect(reloadAction_, &QAction::triggered, this,
-        &FeatureFlagHistoryDialog::onReloadClicked);
+        &SystemSettingHistoryDialog::onReloadClicked);
     toolBar_->addAction(reloadAction_);
 
     toolBar_->addSeparator();
@@ -321,16 +321,16 @@ void FeatureFlagHistoryDialog::setupToolbar() {
         Icon::Edit, IconUtils::DefaultIconColor));
     openAction_->setToolTip("Open this version in read-only mode");
     connect(openAction_, &QAction::triggered, this,
-        &FeatureFlagHistoryDialog::onOpenClicked);
+        &SystemSettingHistoryDialog::onOpenClicked);
     toolBar_->addAction(openAction_);
 
     // Create Revert action
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
-    revertAction_->setToolTip("Revert feature flag to this version");
+    revertAction_->setToolTip("Revert system setting to this version");
     connect(revertAction_, &QAction::triggered, this,
-        &FeatureFlagHistoryDialog::onRevertClicked);
+        &SystemSettingHistoryDialog::onRevertClicked);
     toolBar_->addAction(revertAction_);
 
     // Add toolbar to layout
@@ -339,7 +339,7 @@ void FeatureFlagHistoryDialog::setupToolbar() {
         mainLayout->insertWidget(0, toolBar_);
 }
 
-void FeatureFlagHistoryDialog::updateButtonStates() {
+void SystemSettingHistoryDialog::updateButtonStates() {
     const int index = selectedVersionIndex();
     const bool hasSelection = index >= 0 &&
         index < static_cast<int>(history_.size());
@@ -351,23 +351,23 @@ void FeatureFlagHistoryDialog::updateButtonStates() {
         revertAction_->setEnabled(hasSelection);
 }
 
-int FeatureFlagHistoryDialog::selectedVersionIndex() const {
+int SystemSettingHistoryDialog::selectedVersionIndex() const {
     return ui_->versionListWidget->currentRow();
 }
 
-void FeatureFlagHistoryDialog::onOpenClicked() {
+void SystemSettingHistoryDialog::onOpenClicked() {
     const int index = selectedVersionIndex();
     if (index < 0 || index >= static_cast<int>(history_.size()))
         return;
 
     const auto& flag = history_[index];
-    BOOST_LOG_SEV(lg(), info) << "Opening feature flag version "
+    BOOST_LOG_SEV(lg(), info) << "Opening system setting version "
                               << flag.version << " in read-only mode";
 
     emit openVersionRequested(flag, flag.version);
 }
 
-void FeatureFlagHistoryDialog::onRevertClicked() {
+void SystemSettingHistoryDialog::onRevertClicked() {
     const int index = selectedVersionIndex();
     if (index < 0 || index >= static_cast<int>(history_.size()))
         return;
@@ -391,7 +391,7 @@ void FeatureFlagHistoryDialog::onRevertClicked() {
                               << previous.version;
 
     // Confirm with user
-    auto reply = MessageBoxHelper::question(this, "Revert Feature Flag",
+    auto reply = MessageBoxHelper::question(this, "Revert System Setting",
         QString("Are you sure you want to revert '%1' from version %2 back to version %3?\n\n"
                 "This will create a new version with the data from version %3.")
             .arg(flagName_)
@@ -410,14 +410,14 @@ void FeatureFlagHistoryDialog::onRevertClicked() {
     emit revertVersionRequested(flagToRevert);
 }
 
-void FeatureFlagHistoryDialog::onReloadClicked() {
-    BOOST_LOG_SEV(lg(), info) << "Reload requested for feature flag history: "
+void SystemSettingHistoryDialog::onReloadClicked() {
+    BOOST_LOG_SEV(lg(), info) << "Reload requested for system setting history: "
                               << flagName_.toStdString();
     emit statusChanged(QString("Reloading history for %1...").arg(flagName_));
     loadHistory();
 }
 
-QSize FeatureFlagHistoryDialog::sizeHint() const {
+QSize SystemSettingHistoryDialog::sizeHint() const {
     QSize baseSize = QWidget::sizeHint();
 
     const int minimumWidth = 800;
@@ -427,11 +427,11 @@ QSize FeatureFlagHistoryDialog::sizeHint() const {
              qMax(baseSize.height(), minimumHeight) };
 }
 
-void FeatureFlagHistoryDialog::markAsStale() {
-    BOOST_LOG_SEV(lg(), info) << "Feature flag history marked as stale for: "
+void SystemSettingHistoryDialog::markAsStale() {
+    BOOST_LOG_SEV(lg(), info) << "System setting history marked as stale for: "
                               << flagName_.toStdString() << ", reloading...";
 
-    emit statusChanged(QString("Feature flag %1 was modified - reloading history...")
+    emit statusChanged(QString("System setting %1 was modified - reloading history...")
         .arg(flagName_));
 
     // Reload history data

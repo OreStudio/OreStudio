@@ -40,7 +40,7 @@ while maintaining clear table categorization through naming conventions.
 │  • Images, tags, image-tag mappings                             │
 │                                                                 │
 │  Variability (ores_variability_* prefix):                       │
-│  • Feature flags for runtime configuration                      │
+│  • System settings for runtime configuration                    │
 │                                                                 │
 │  Geo (ores_geo_* prefix):                                       │
 │  • IP to country mappings                                       │
@@ -197,7 +197,7 @@ exists yet (e.g. by using a sentinel system account).
 | Category       | Tables                              | Write Source                    |
 |----------------+-------------------------------------+---------------------------------|
 | Geo            | =ores_geo_ip2country_tbl=           | Publication                     |
-| Variability    | =ores_variability_feature_flags_tbl=| Operational                     |
+| Variability    | =ores_variability_system_settings_tbl=| Operational                   |
 
 * Schema Architecture
 
@@ -228,9 +228,9 @@ The ORES database is organised into four domains:
 - =image_tags= (junction): many-to-many image-to-tag mapping
 - =currencies= (temporal): ISO 4217 currency definitions with formatting and optional image_id for flags
 
-** Variability (Feature Flags)
+** Variability (System Settings)
 
-- =feature_flags= (temporal): feature toggles for runtime configuration
+- =system_settings= (temporal): typed system settings for runtime configuration
 
 * Schema Design Patterns
 
@@ -426,7 +426,7 @@ Additional tables populated via operational processes (not publication):
 |------------+-----------------------------------------+-------------------------------------------|
 | IAM        | =ores_iam_accounts_tbl=                 | User registration                         |
 |            | =ores_iam_login_info_tbl=               | Login tracking                            |
-| Variability| =ores_variability_feature_flags_tbl=    | Runtime configuration                     |
+| Variability| =ores_variability_system_settings_tbl=  | Runtime configuration                     |
 
 * Multi-Environment Architecture
 

@@ -26,7 +26,7 @@
 namespace ores::iam::domain {
 
 /**
- * @brief Dumps the feature flags object to a stream in JSON format.
+ * @brief Dumps the login_info object to a stream in JSON format.
  */
 std::ostream& operator<<(std::ostream& s, const login_info& v);
 

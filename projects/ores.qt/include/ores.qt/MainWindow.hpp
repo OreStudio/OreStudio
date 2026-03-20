@@ -55,7 +55,7 @@ class CountryController;
 class AccountController;
 class RoleController;
 class TenantController;
-class FeatureFlagController;
+class SystemSettingController;
 class ChangeReasonCategoryController;
 class ChangeReasonController;
 class OriginDimensionController;
@@ -508,12 +508,12 @@ private:
     std::unique_ptr<TenantController> tenantController_;
 
     /**
-     * @brief Controller managing all feature flag windows and operations.
+     * @brief Controller managing all system setting windows and operations.
      *
-     * Created after successful login, handles feature flag list and detail windows.
+     * Created after successful login, handles system setting list and detail windows.
      * Only accessible to admin users.
      */
-    std::unique_ptr<FeatureFlagController> featureFlagController_;
+    std::unique_ptr<SystemSettingController> systemSettingController_;
 
     /**
      * @brief Controller managing change reason category windows.

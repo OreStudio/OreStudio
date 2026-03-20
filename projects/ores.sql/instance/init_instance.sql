@@ -24,15 +24,15 @@
  * This script handles any instance-specific initialization that should NOT
  * be part of the template.
  *
- * Currently, all seed data (permissions, roles, system flags) is included
+ * Currently, all seed data (permissions, roles, system settings) is included
  * in the template via create_schema.sql, so this script only outputs a
  * confirmation message.
  *
  * This script is idempotent and can be safely run multiple times.
  */
 
--- Display system flags for verification
-select name, enabled, description
-from ores_variability_feature_flags_tbl
+-- Display system settings for verification
+select name, data_type, value, description
+from ores_variability_system_settings_tbl
 where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
 order by name;

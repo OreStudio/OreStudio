@@ -51,10 +51,10 @@ struct signup_result {
  *
  * This service handles the signup workflow, allowing users to create their
  * own accounts when self-registration is enabled via the system.user_signups
- * feature flag.
+ * system setting.
  *
  * The service validates:
- * - Feature flags (signup enabled, authorization not required)
+ * - System settings (signup enabled, authorization not required)
  * - Username uniqueness
  * - Email uniqueness and format
  * - Password policy compliance
@@ -77,7 +77,7 @@ public:
      * @brief Constructs a signup_service.
      *
      * @param ctx The database context for repository access.
-     * @param system_flags Shared system flags service for flag access.
+     * @param system_flags Shared system settings service for settings access.
      * @param auth_service Shared authorization service for role assignment.
      */
     signup_service(database::context ctx,

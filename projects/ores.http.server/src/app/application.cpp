@@ -80,12 +80,12 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     eventing::service::event_bus event_bus;
     eventing::service::postgres_event_source event_source(ctx, event_bus);
 
-    // Register system settings mapping for system_flags cache invalidation
+    // Register system settings mapping for system settings cache invalidation
     eventing::service::registrar::register_mapping<
         variability::eventing::system_setting_changed_event>(
         event_source, "ores.variability.system_setting", "ores_system_settings");
 
-    // Subscribe to system settings changes to refresh system_flags cache
+    // Subscribe to system settings changes to refresh system settings cache
     auto flags_sub = event_bus.subscribe<variability::eventing::system_setting_changed_event>(
         [&system_flags](const variability::eventing::system_setting_changed_event& e) {
             BOOST_LOG_SEV(lg(), info) << "System settings changed notification received, "
@@ -155,7 +155,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     routes::risk_routes risk(ctx, sessions);
     risk.register_routes(router, registry);
 
-    // Register Variability routes (feature flags)
+    // Register Variability routes (system settings)
     routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);
 

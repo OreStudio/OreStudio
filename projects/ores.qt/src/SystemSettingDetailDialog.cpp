@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/FeatureFlagDetailDialog.hpp"
+#include "ores.qt/SystemSettingDetailDialog.hpp"
 
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -25,9 +25,10 @@
 #include <QToolBar>
 #include <QIcon>
 #include <QComboBox>
+#include <QJsonDocument>
 #include <QMdiSubWindow>
 #include <QMetaObject>
-#include "ui_FeatureFlagDetailDialog.h"
+#include "ui_SystemSettingDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -38,8 +39,10 @@ namespace ores::qt {
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
 
-FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
-    : DetailDialogBase(parent), ui_(new Ui::FeatureFlagDetailDialog), isDirty_(false),
+SystemSettingDetailDialog::SystemSettingDetailDialog(QWidget* parent)
+    : DetailDialogBase(parent), ui_(new Ui::SystemSettingDetailDialog),
+      intValidator_(new QIntValidator(this)),
+      isDirty_(false),
       isAddMode_(false), isReadOnly_(false), clientManager_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
@@ -57,7 +60,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     revertAction_ = new QAction("Revert", this);
     revertAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowRotateCounterclockwise, IconUtils::DefaultIconColor));
-    revertAction_->setToolTip("Revert feature flag to this historical version");
+    revertAction_->setToolTip("Revert system setting to this historical version");
     toolBar_->addAction(revertAction_);
     revertAction_->setVisible(false);
 
@@ -69,7 +72,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
         Icon::ArrowPrevious, IconUtils::DefaultIconColor));
     firstVersionAction_->setToolTip(tr("First version"));
     connect(firstVersionAction_, &QAction::triggered, this,
-        &FeatureFlagDetailDialog::onFirstVersionClicked);
+        &SystemSettingDetailDialog::onFirstVersionClicked);
     toolBar_->addAction(firstVersionAction_);
     firstVersionAction_->setVisible(false);
 
@@ -78,7 +81,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
         Icon::ArrowLeft, IconUtils::DefaultIconColor));
     prevVersionAction_->setToolTip(tr("Previous version"));
     connect(prevVersionAction_, &QAction::triggered, this,
-        &FeatureFlagDetailDialog::onPrevVersionClicked);
+        &SystemSettingDetailDialog::onPrevVersionClicked);
     toolBar_->addAction(prevVersionAction_);
     prevVersionAction_->setVisible(false);
 
@@ -87,7 +90,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
         Icon::ArrowRight, IconUtils::DefaultIconColor));
     nextVersionAction_->setToolTip(tr("Next version"));
     connect(nextVersionAction_, &QAction::triggered, this,
-        &FeatureFlagDetailDialog::onNextVersionClicked);
+        &SystemSettingDetailDialog::onNextVersionClicked);
     toolBar_->addAction(nextVersionAction_);
     nextVersionAction_->setVisible(false);
 
@@ -96,7 +99,7 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
         Icon::ArrowNext, IconUtils::DefaultIconColor));
     lastVersionAction_->setToolTip(tr("Last version"));
     connect(lastVersionAction_, &QAction::triggered, this,
-        &FeatureFlagDetailDialog::onLastVersionClicked);
+        &SystemSettingDetailDialog::onLastVersionClicked);
     toolBar_->addAction(lastVersionAction_);
     lastVersionAction_->setVisible(false);
 
@@ -116,33 +119,46 @@ FeatureFlagDetailDialog::FeatureFlagDetailDialog(QWidget* parent)
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
     connect(ui_->saveButton, &QPushButton::clicked, this,
-        &FeatureFlagDetailDialog::onSaveClicked);
+        &SystemSettingDetailDialog::onSaveClicked);
     connect(ui_->deleteButton, &QPushButton::clicked, this,
-        &FeatureFlagDetailDialog::onDeleteClicked);
+        &SystemSettingDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this,
-        &FeatureFlagDetailDialog::onCloseClicked);
+        &SystemSettingDetailDialog::onCloseClicked);
+
+    // Integer validator for the line edit page
+    ui_->valueLineEdit->setValidator(intValidator_);
+
+    // Connect data type selector
+    connect(ui_->dataTypeComboBox, &QComboBox::currentIndexChanged, this,
+        &SystemSettingDetailDialog::onDataTypeChanged);
 
     // Connect signals for editable fields to detect changes
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
-        &FeatureFlagDetailDialog::onFieldChanged);
-    connect(ui_->enabledComboBox, &QComboBox::currentIndexChanged, this,
-        &FeatureFlagDetailDialog::onFieldChanged);
+        &SystemSettingDetailDialog::onFieldChanged);
+    connect(ui_->dataTypeComboBox, &QComboBox::currentIndexChanged, this,
+        &SystemSettingDetailDialog::onFieldChanged);
+    connect(ui_->valueBoolCombo, &QComboBox::currentIndexChanged, this,
+        &SystemSettingDetailDialog::onFieldChanged);
+    connect(ui_->valueLineEdit, &QLineEdit::textChanged, this,
+        &SystemSettingDetailDialog::onFieldChanged);
+    connect(ui_->valueTextEdit, &QPlainTextEdit::textChanged, this,
+        &SystemSettingDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
-        &FeatureFlagDetailDialog::onFieldChanged);
+        &SystemSettingDetailDialog::onFieldChanged);
 
     // Initially disable save button
     updateSaveButtonState();
 }
 
-void FeatureFlagDetailDialog::setClientManager(ClientManager* clientManager) {
+void SystemSettingDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 }
 
-void FeatureFlagDetailDialog::setUsername(const std::string& username) {
+void SystemSettingDetailDialog::setUsername(const std::string& username) {
     modifiedByUsername_ = username;
 }
 
-FeatureFlagDetailDialog::~FeatureFlagDetailDialog() {
+SystemSettingDetailDialog::~SystemSettingDetailDialog() {
     // Cancel any pending operations. The QPointer in the lambdas ensures
     // they safely handle this dialog being destroyed without blocking.
     const auto watchers = findChildren<QFutureWatcherBase*>();
@@ -153,11 +169,11 @@ FeatureFlagDetailDialog::~FeatureFlagDetailDialog() {
     delete ui_;
 }
 
-QTabWidget* FeatureFlagDetailDialog::tabWidget() const { return ui_->tabWidget; }
-QWidget* FeatureFlagDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
-ProvenanceWidget* FeatureFlagDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
+QTabWidget* SystemSettingDetailDialog::tabWidget() const { return ui_->tabWidget; }
+QWidget* SystemSettingDetailDialog::provenanceTab() const { return ui_->provenanceTab; }
+ProvenanceWidget* SystemSettingDetailDialog::provenanceWidget() const { return ui_->provenanceWidget; }
 
-void FeatureFlagDetailDialog::setFeatureFlag(
+void SystemSettingDetailDialog::setSystemSetting(
     const variability::domain::system_setting& flag) {
     currentFlag_ = flag;
     isAddMode_ = flag.name.empty();
@@ -165,7 +181,7 @@ void FeatureFlagDetailDialog::setFeatureFlag(
     setCreateMode(isAddMode_);
 
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
-    ui_->enabledComboBox->setCurrentIndex((flag.value == "true") ? 0 : 1);  // 0=Yes, 1=No
+    populateValueWidgets(flag);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     populateProvenance(currentFlag_.version, currentFlag_.modified_by,
                        currentFlag_.performed_by, currentFlag_.recorded_at,
@@ -176,7 +192,7 @@ void FeatureFlagDetailDialog::setFeatureFlag(
     updateSaveButtonState();
 }
 
-void FeatureFlagDetailDialog::setCreateMode(bool createMode) {
+void SystemSettingDetailDialog::setCreateMode(bool createMode) {
     isAddMode_ = createMode;
 
     // Name is editable only in create mode
@@ -185,20 +201,24 @@ void FeatureFlagDetailDialog::setCreateMode(bool createMode) {
     setProvenanceEnabled(!createMode);
 }
 
-variability::domain::system_setting FeatureFlagDetailDialog::getFeatureFlag() const {
+variability::domain::system_setting SystemSettingDetailDialog::getSystemSetting() const {
     variability::domain::system_setting flag = currentFlag_;
     flag.name = ui_->nameEdit->text().toStdString();
-    flag.value = (ui_->enabledComboBox->currentIndex() == 0) ? "true" : "false";
-    flag.data_type = "boolean";
+    flag.data_type = ui_->dataTypeComboBox->currentText().toStdString();
+    flag.value = currentValueText();
     flag.description = ui_->descriptionEdit->toPlainText().toStdString();
     flag.modified_by = modifiedByUsername_.empty() ? "qt_user" : modifiedByUsername_;
 
     return flag;
 }
 
-void FeatureFlagDetailDialog::clearDialog() {
+void SystemSettingDetailDialog::clearDialog() {
     ui_->nameEdit->clear();
-    ui_->enabledComboBox->setCurrentIndex(1);  // Default to No
+    ui_->dataTypeComboBox->setCurrentIndex(0);  // Default to boolean
+    ui_->valueBoolCombo->setCurrentIndex(1);    // Default to false
+    ui_->valueLineEdit->clear();
+    ui_->valueTextEdit->clear();
+    ui_->valueStack->setCurrentIndex(0);
     ui_->descriptionEdit->clear();
     clearProvenance();
 
@@ -208,11 +228,11 @@ void FeatureFlagDetailDialog::clearDialog() {
     updateSaveButtonState();
 }
 
-void FeatureFlagDetailDialog::save() {
+void SystemSettingDetailDialog::save() {
     onSaveClicked();
 }
 
-void FeatureFlagDetailDialog::onSaveClicked() {
+void SystemSettingDetailDialog::onSaveClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Save clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
@@ -223,21 +243,50 @@ void FeatureFlagDetailDialog::onSaveClicked() {
     if (ui_->nameEdit->text().trimmed().isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Validation failed: name is empty";
         MessageBoxHelper::warning(this, "Validation Error",
-            "Feature flag name is required.");
+            "System setting name is required.");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Save clicked for feature flag: "
+    // Validate value against data type
+    const std::string dataType = ui_->dataTypeComboBox->currentText().toStdString();
+    if (dataType == "integer") {
+        const QString val = ui_->valueLineEdit->text().trimmed();
+        if (val.isEmpty()) {
+            MessageBoxHelper::warning(this, "Validation Error",
+                "An integer value is required.");
+            return;
+        }
+        bool ok = false;
+        val.toInt(&ok);
+        if (!ok) {
+            MessageBoxHelper::warning(this, "Validation Error",
+                QString("'%1' is not a valid integer.").arg(val));
+            return;
+        }
+    } else if (dataType == "json") {
+        const QString val = ui_->valueTextEdit->toPlainText().trimmed();
+        if (!val.isEmpty()) {
+            QJsonParseError err;
+            QJsonDocument::fromJson(val.toUtf8(), &err);
+            if (err.error != QJsonParseError::NoError) {
+                MessageBoxHelper::warning(this, "Validation Error",
+                    QString("Invalid JSON: %1").arg(err.errorString()));
+                return;
+            }
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Save clicked for system setting: "
                                << currentFlag_.name;
 
-    QPointer<FeatureFlagDetailDialog> self = this;
-    const variability::domain::system_setting flagToSave = getFeatureFlag();
+    QPointer<SystemSettingDetailDialog> self = this;
+    const variability::domain::system_setting flagToSave = getSystemSetting();
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, flagToSave]() -> FutureResult {
             if (!self) return {false, ""};
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending save feature flag request for: "
+            BOOST_LOG_SEV(lg(), debug) << "Sending save system setting request for: "
                                        << flagToSave.name;
 
             variability::messaging::save_setting_request request;
@@ -263,18 +312,18 @@ void FeatureFlagDetailDialog::onSaveClicked() {
         watcher->deleteLater();
 
         if (success) {
-            BOOST_LOG_SEV(lg(), debug) << "Feature flag saved successfully";
+            BOOST_LOG_SEV(lg(), debug) << "System setting saved successfully";
 
             self->isDirty_ = false;
             emit self->isDirtyChanged(false);
             self->updateSaveButtonState();
 
-            emit self->featureFlagSaved(QString::fromStdString(flagToSave.name));
-            self->notifySaveSuccess(tr("Feature flag '%1' saved")
+            emit self->systemSettingSaved(QString::fromStdString(flagToSave.name));
+            self->notifySaveSuccess(tr("System setting '%1' saved")
                 .arg(QString::fromStdString(flagToSave.name)));
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Feature flag save failed: " << message;
-            emit self->errorMessage(QString("Failed to save feature flag: %1")
+            BOOST_LOG_SEV(lg(), error) << "System setting save failed: " << message;
+            emit self->errorMessage(QString("Failed to save system setting: %1")
                 .arg(QString::fromStdString(message)));
             MessageBoxHelper::critical(self, "Save Failed",
                 QString::fromStdString(message));
@@ -284,7 +333,7 @@ void FeatureFlagDetailDialog::onSaveClicked() {
     watcher->setFuture(future);
 }
 
-void FeatureFlagDetailDialog::onDeleteClicked() {
+void SystemSettingDetailDialog::onDeleteClicked() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Delete clicked but client not connected.";
         emit errorMessage("Not connected to server. Please login.");
@@ -296,11 +345,11 @@ void FeatureFlagDetailDialog::onDeleteClicked() {
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Delete request for feature flag: "
+    BOOST_LOG_SEV(lg(), debug) << "Delete request for system setting: "
                                << currentFlag_.name;
 
-    auto reply = MessageBoxHelper::question(this, "Delete Feature Flag",
-        QString("Are you sure you want to delete feature flag '%1'?")
+    auto reply = MessageBoxHelper::question(this, "Delete System Setting",
+        QString("Are you sure you want to delete system setting '%1'?")
             .arg(QString::fromStdString(currentFlag_.name)),
         QMessageBox::Yes | QMessageBox::No);
 
@@ -309,14 +358,14 @@ void FeatureFlagDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QPointer<FeatureFlagDetailDialog> self = this;
+    QPointer<SystemSettingDetailDialog> self = this;
     const std::string name = currentFlag_.name;
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, name]() -> FutureResult {
             if (!self) return {false, ""};
 
-            BOOST_LOG_SEV(lg(), debug) << "Sending delete feature flag request for: "
+            BOOST_LOG_SEV(lg(), debug) << "Sending delete system setting request for: "
                                        << name;
 
             variability::messaging::delete_setting_request request{name};
@@ -340,14 +389,14 @@ self->clientManager_->process_authenticated_request(std::move(request));
         watcher->deleteLater();
 
         if (success) {
-            BOOST_LOG_SEV(lg(), debug) << "Feature flag deleted successfully.";
-            emit self->statusMessage(QString("Successfully deleted feature flag: %1")
+            BOOST_LOG_SEV(lg(), debug) << "System setting deleted successfully.";
+            emit self->statusMessage(QString("Successfully deleted system setting: %1")
                 .arg(QString::fromStdString(name)));
-            emit self->featureFlagDeleted(QString::fromStdString(name));
+            emit self->systemSettingDeleted(QString::fromStdString(name));
             self->requestClose();
         } else {
-            BOOST_LOG_SEV(lg(), error) << "Feature flag deletion failed: " << message;
-            emit self->errorMessage(QString("Failed to delete feature flag: %1")
+            BOOST_LOG_SEV(lg(), error) << "System setting deletion failed: " << message;
+            emit self->errorMessage(QString("Failed to delete system setting: %1")
                 .arg(QString::fromStdString(message)));
             MessageBoxHelper::critical(self, "Delete Failed",
                 QString::fromStdString(message));
@@ -357,27 +406,30 @@ self->clientManager_->process_authenticated_request(std::move(request));
     watcher->setFuture(future);
 }
 
-void FeatureFlagDetailDialog::onFieldChanged() {
+void SystemSettingDetailDialog::onFieldChanged() {
     isDirty_ = true;
     emit isDirtyChanged(true);
     updateSaveButtonState();
 }
 
-void FeatureFlagDetailDialog::updateSaveButtonState() {
+void SystemSettingDetailDialog::updateSaveButtonState() {
     ui_->saveButton->setEnabled(isDirty_);
     ui_->deleteButton->setEnabled(!isAddMode_);
 }
 
-QString FeatureFlagDetailDialog::featureFlagName() const {
+QString SystemSettingDetailDialog::systemSettingName() const {
     return QString::fromStdString(currentFlag_.name);
 }
 
-void FeatureFlagDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
+void SystemSettingDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     isReadOnly_ = readOnly;
 
     // Disable all editable controls in read-only mode
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->enabledComboBox->setEnabled(!readOnly);
+    ui_->dataTypeComboBox->setEnabled(!readOnly);
+    ui_->valueBoolCombo->setEnabled(!readOnly);
+    ui_->valueLineEdit->setReadOnly(readOnly);
+    ui_->valueTextEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
 
     ui_->saveButton->setVisible(!readOnly);
@@ -390,7 +442,7 @@ void FeatureFlagDetailDialog::setReadOnly(bool readOnly, int versionNumber) {
     }
 }
 
-void FeatureFlagDetailDialog::setHistory(
+void SystemSettingDetailDialog::setHistory(
     const std::vector<variability::domain::system_setting>& history,
     int versionNumber) {
     BOOST_LOG_SEV(lg(), debug) << "Setting history with " << history.size()
@@ -415,7 +467,7 @@ void FeatureFlagDetailDialog::setHistory(
     showVersionNavActions(true);
 }
 
-void FeatureFlagDetailDialog::showVersionNavActions(bool visible) {
+void SystemSettingDetailDialog::showVersionNavActions(bool visible) {
     if (firstVersionAction_)
         firstVersionAction_->setVisible(visible);
     if (prevVersionAction_)
@@ -426,7 +478,7 @@ void FeatureFlagDetailDialog::showVersionNavActions(bool visible) {
         lastVersionAction_->setVisible(visible);
 }
 
-void FeatureFlagDetailDialog::displayCurrentVersion() {
+void SystemSettingDetailDialog::displayCurrentVersion() {
     if (currentHistoryIndex_ < 0 ||
         currentHistoryIndex_ >= static_cast<int>(history_.size())) {
         return;
@@ -436,7 +488,7 @@ void FeatureFlagDetailDialog::displayCurrentVersion() {
 
     // Update UI with current version data
     ui_->nameEdit->setText(QString::fromStdString(flag.name));
-    ui_->enabledComboBox->setCurrentIndex((flag.value == "true") ? 0 : 1);
+    populateValueWidgets(flag);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(flag.description));
     populateProvenance(flag.version, flag.modified_by, flag.performed_by,
                        flag.recorded_at, flag.change_reason_code, flag.change_commentary);
@@ -447,7 +499,7 @@ void FeatureFlagDetailDialog::displayCurrentVersion() {
     QWidget* parent = parentWidget();
     while (parent) {
         if (auto* mdiSubWindow = qobject_cast<QMdiSubWindow*>(parent)) {
-            mdiSubWindow->setWindowTitle(QString("Feature Flag: %1 v%2")
+            mdiSubWindow->setWindowTitle(QString("System Setting: %1 v%2")
                 .arg(QString::fromStdString(flag.name))
                 .arg(flag.version));
             break;
@@ -459,7 +511,7 @@ void FeatureFlagDetailDialog::displayCurrentVersion() {
                                << " (index " << currentHistoryIndex_ << ")";
 }
 
-void FeatureFlagDetailDialog::updateVersionNavButtonStates() {
+void SystemSettingDetailDialog::updateVersionNavButtonStates() {
     if (history_.empty()) {
         if (firstVersionAction_) firstVersionAction_->setEnabled(false);
         if (prevVersionAction_) prevVersionAction_->setEnabled(false);
@@ -482,13 +534,13 @@ void FeatureFlagDetailDialog::updateVersionNavButtonStates() {
     if (lastVersionAction_) lastVersionAction_->setEnabled(!atNewest);
 }
 
-void FeatureFlagDetailDialog::onFirstVersionClicked() {
+void SystemSettingDetailDialog::onFirstVersionClicked() {
     // Go to oldest (highest index)
     currentHistoryIndex_ = static_cast<int>(history_.size()) - 1;
     displayCurrentVersion();
 }
 
-void FeatureFlagDetailDialog::onPrevVersionClicked() {
+void SystemSettingDetailDialog::onPrevVersionClicked() {
     // Go to older version (higher index)
     if (currentHistoryIndex_ < static_cast<int>(history_.size()) - 1) {
         currentHistoryIndex_++;
@@ -496,7 +548,7 @@ void FeatureFlagDetailDialog::onPrevVersionClicked() {
     }
 }
 
-void FeatureFlagDetailDialog::onNextVersionClicked() {
+void SystemSettingDetailDialog::onNextVersionClicked() {
     // Go to newer version (lower index)
     if (currentHistoryIndex_ > 0) {
         currentHistoryIndex_--;
@@ -504,10 +556,73 @@ void FeatureFlagDetailDialog::onNextVersionClicked() {
     }
 }
 
-void FeatureFlagDetailDialog::onLastVersionClicked() {
+void SystemSettingDetailDialog::onLastVersionClicked() {
     // Go to latest (index 0)
     currentHistoryIndex_ = 0;
     displayCurrentVersion();
+}
+
+void SystemSettingDetailDialog::populateValueWidgets(
+    const variability::domain::system_setting& flag) {
+
+    const QString dt = QString::fromStdString(flag.data_type);
+    // Set data type combo (block signals to avoid triggering onFieldChanged)
+    {
+        QSignalBlocker blocker(ui_->dataTypeComboBox);
+        const int idx = ui_->dataTypeComboBox->findText(dt);
+        ui_->dataTypeComboBox->setCurrentIndex(idx >= 0 ? idx : 0);
+    }
+
+    switchValuePage(flag.data_type);
+
+    // Populate the correct page widget (block signals)
+    const QString val = QString::fromStdString(flag.value);
+    if (flag.data_type == "boolean") {
+        QSignalBlocker blocker(ui_->valueBoolCombo);
+        ui_->valueBoolCombo->setCurrentIndex(val == "true" ? 0 : 1);
+    } else if (flag.data_type == "integer" || flag.data_type == "string") {
+        QSignalBlocker blocker(ui_->valueLineEdit);
+        ui_->valueLineEdit->setText(val);
+    } else {
+        QSignalBlocker blocker(ui_->valueTextEdit);
+        ui_->valueTextEdit->setPlainText(val);
+    }
+}
+
+void SystemSettingDetailDialog::switchValuePage(const std::string& data_type) {
+    if (data_type == "boolean") {
+        ui_->valueStack->setCurrentWidget(ui_->boolPage);
+        ui_->valueHintLabel->setText(tr("Accepted values: true, false"));
+        ui_->valueLineEdit->setValidator(nullptr);
+    } else if (data_type == "integer") {
+        ui_->valueStack->setCurrentWidget(ui_->linePage);
+        ui_->valueHintLabel->setText(tr("Must be a whole number"));
+        ui_->valueLineEdit->setValidator(intValidator_);
+    } else if (data_type == "string") {
+        ui_->valueStack->setCurrentWidget(ui_->linePage);
+        ui_->valueHintLabel->setText(tr("Free-form text value"));
+        ui_->valueLineEdit->setValidator(nullptr);
+    } else {
+        ui_->valueStack->setCurrentWidget(ui_->textPage);
+        ui_->valueHintLabel->setText(tr("Must be valid JSON"));
+        ui_->valueLineEdit->setValidator(nullptr);
+    }
+}
+
+std::string SystemSettingDetailDialog::currentValueText() const {
+    const std::string dt = ui_->dataTypeComboBox->currentText().toStdString();
+    if (dt == "boolean") {
+        return ui_->valueBoolCombo->currentText().toStdString();
+    } else if (dt == "integer" || dt == "string") {
+        return ui_->valueLineEdit->text().toStdString();
+    } else {
+        return ui_->valueTextEdit->toPlainText().toStdString();
+    }
+}
+
+void SystemSettingDetailDialog::onDataTypeChanged(int /*index*/) {
+    const std::string dt = ui_->dataTypeComboBox->currentText().toStdString();
+    switchValuePage(dt);
 }
 
 }

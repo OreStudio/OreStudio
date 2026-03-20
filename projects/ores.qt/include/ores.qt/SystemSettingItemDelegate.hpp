@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_FEATURE_FLAG_ITEM_DELEGATE_HPP
-#define ORES_QT_FEATURE_FLAG_ITEM_DELEGATE_HPP
+#ifndef ORES_QT_SYSTEM_SETTING_ITEM_DELEGATE_HPP
+#define ORES_QT_SYSTEM_SETTING_ITEM_DELEGATE_HPP
 
 #include <QStyledItemDelegate>
 #include <QFont>
@@ -26,16 +26,16 @@
 namespace ores::qt {
 
 /**
- * @brief Custom delegate for rendering feature flag table cells.
+ * @brief Custom delegate for rendering system setting table cells.
  *
- * This delegate provides custom rendering for the feature flags table,
+ * This delegate provides custom rendering for the system settings table,
  * including badge-style rendering for the Enabled column.
  */
-class FeatureFlagItemDelegate : public QStyledItemDelegate {
+class SystemSettingItemDelegate : public QStyledItemDelegate {
     Q_OBJECT
 
 public:
-    explicit FeatureFlagItemDelegate(QObject* parent = nullptr);
+    explicit SystemSettingItemDelegate(QObject* parent = nullptr);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;

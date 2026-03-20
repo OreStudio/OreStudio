@@ -22,8 +22,8 @@
 /**
  * @brief Event types for the variability module.
  *
- * Contains feature_flags_changed_event for notifying subscribers when
- * feature flags are created, updated, or deleted.
+ * Contains system_setting_changed_event for notifying subscribers when
+ * system settings are created, updated, or deleted.
  */
 namespace ores::variability::eventing {}
 

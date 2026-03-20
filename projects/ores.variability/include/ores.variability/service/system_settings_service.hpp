@@ -34,12 +34,9 @@ namespace ores::variability::service {
 /**
  * @brief Service for managing typed system settings.
  *
- * Replaces both feature_flags_service and system_flags_service. Provides
- * typed accessors (get_bool, get_int, get_string, get_json) that return
- * compile-time defaults from the registry when a setting is absent from the DB.
- *
- * Named convenience methods are preserved for callers that previously used
- * system_flags_service so changes in those call sites are minimal.
+ * Service for managing typed system settings. Provides typed accessors
+ * (get_bool, get_int, get_string, get_json) that return compile-time defaults
+ * from the registry when a setting is absent from the DB.
  */
 class system_settings_service {
 private:
@@ -134,7 +131,7 @@ public:
     void refresh();
 
     // -------------------------------------------------------------------------
-    // Convenience methods (preserve API from system_flags_service)
+    // Convenience methods
     // -------------------------------------------------------------------------
 
     [[nodiscard]] bool is_bootstrap_mode_enabled() const;

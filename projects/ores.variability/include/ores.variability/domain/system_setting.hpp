@@ -28,8 +28,8 @@ namespace ores::variability::domain {
 /**
  * @brief Represents a typed system setting in the domain layer.
  *
- * Replaces feature_flags with support for boolean, integer, string, and
- * json value types. System-wide settings use the system tenant; per-tenant
+ * Supports boolean, integer, string, and json value types. System-wide
+ * settings use the system tenant; per-tenant
  * settings use the tenant's own tenant_id.
  */
 struct system_setting final {

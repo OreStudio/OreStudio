@@ -158,8 +158,8 @@ begin
     -- Assets: Images
     delete from ores_assets_images_tbl where tenant_id = p_tenant_id;
 
-    -- Variability: Feature flags
-    delete from ores_variability_feature_flags_tbl where tenant_id = p_tenant_id;
+    -- Variability: System settings
+    delete from ores_variability_system_settings_tbl where tenant_id = p_tenant_id;
 
     raise notice 'Tenant data purge complete: % (id: %)', v_tenant_code, p_tenant_id;
 end;

@@ -20,10 +20,9 @@
 
 -- =============================================================================
 -- Unified typed system settings table.
--- Replaces ores_variability_feature_flags_tbl with support for boolean,
--- integer, string, and json value types. Uses name as natural key.
--- System-wide settings use the system tenant; per-tenant settings use the
--- tenant's own tenant_id.
+-- Supports boolean, integer, string, and json value types. Uses name as
+-- natural key. System-wide settings use the system tenant; per-tenant
+-- settings use the tenant's own tenant_id.
 -- =============================================================================
 
 create table if not exists "ores_variability_system_settings_tbl" (

@@ -63,8 +63,8 @@ using FutureResult = std::pair<bool, std::string>;
 namespace reason = dq::domain::change_reason_constants;
 
 namespace {
-    // Event type name for feature flag changes
-    constexpr std::string_view feature_flag_event_name =
+    // Event type name for system setting changes
+    constexpr std::string_view system_setting_event_name =
         eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
 
     // Feature flag name for synthetic data generation
@@ -260,11 +260,11 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 
     if (clientManager_) {
-        // Connect to feature flag notifications for generate action visibility
+        // Connect to system setting notifications for generate action visibility
         connect(clientManager_, &ClientManager::notificationReceived,
-                this, &CurrencyDetailDialog::onFeatureFlagNotification);
+                this, &CurrencyDetailDialog::onSystemSettingNotification);
 
-        // Subscribe to feature flag events when logged in/reconnected
+        // Subscribe to system setting events when logged in/reconnected
         connect(clientManager_, &ClientManager::loggedIn,
                 this, &CurrencyDetailDialog::onConnectionEstablished);
         connect(clientManager_, &ClientManager::reconnected,
@@ -1049,12 +1049,12 @@ void CurrencyDetailDialog::onGenerateClicked() {
     }
 }
 
-void CurrencyDetailDialog::onFeatureFlagNotification(
+void CurrencyDetailDialog::onSystemSettingNotification(
     const QString& eventType, const QDateTime& timestamp,
     const QStringList& entityIds) {
 
-    // Check if this is a feature flag change event
-    if (eventType != QString::fromStdString(std::string{feature_flag_event_name})) {
+    // Check if this is a system setting change event
+    if (eventType != QString::fromStdString(std::string{system_setting_event_name})) {
         return;
     }
 
@@ -1064,12 +1064,12 @@ void CurrencyDetailDialog::onFeatureFlagNotification(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Feature flag notification received in detail dialog";
+    BOOST_LOG_SEV(lg(), debug) << "System setting notification received in detail dialog";
     updateGenerateActionVisibility();
 }
 
 void CurrencyDetailDialog::onConnectionEstablished() {
-    clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+    clientManager_->subscribeToEvent(std::string{system_setting_event_name});
 
     // Use QTimer to delay the visibility check until after event loop processes
     QTimer::singleShot(100, this, &CurrencyDetailDialog::updateGenerateActionVisibility);

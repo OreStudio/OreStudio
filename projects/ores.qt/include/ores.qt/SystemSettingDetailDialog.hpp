@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_FEATURE_FLAG_DETAIL_DIALOG_HPP
-#define ORES_QT_FEATURE_FLAG_DETAIL_DIALOG_HPP
+#ifndef ORES_QT_SYSTEM_SETTING_DETAIL_DIALOG_HPP
+#define ORES_QT_SYSTEM_SETTING_DETAIL_DIALOG_HPP
 
 #include <vector>
 #include <QAction>
+#include <QIntValidator>
 #include <QToolBar>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
@@ -29,23 +30,23 @@
 #include "ores.variability/domain/system_setting.hpp"
 
 namespace Ui {
-class FeatureFlagDetailDialog;
+class SystemSettingDetailDialog;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Dialog widget for creating and editing feature flags.
+ * @brief Dialog widget for creating and editing system settings.
  *
- * This widget provides a form for entering feature flag details,
+ * This widget provides a form for entering system setting details,
  * with save and delete capabilities.
  */
-class FeatureFlagDetailDialog : public DetailDialogBase {
+class SystemSettingDetailDialog : public DetailDialogBase {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.feature_flag_detail_dialog";
+        "ores.qt.system_setting_detail_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,14 +55,14 @@ private:
     }
 
 public:
-    explicit FeatureFlagDetailDialog(QWidget* parent = nullptr);
-    ~FeatureFlagDetailDialog() override;
+    explicit SystemSettingDetailDialog(QWidget* parent = nullptr);
+    ~SystemSettingDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
 
-    void setFeatureFlag(const variability::domain::system_setting& flag);
-    variability::domain::system_setting getFeatureFlag() const;
+    void setSystemSetting(const variability::domain::system_setting& flag);
+    variability::domain::system_setting getSystemSetting() const;
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly, int versionNumber = 0);
     void setHistory(const std::vector<variability::domain::system_setting>& history,
@@ -69,14 +70,14 @@ public:
     void clearDialog();
     void save();
 
-    QString featureFlagName() const;
+    QString systemSettingName() const;
     bool isDirty() const { return isDirty_; }
     bool isReadOnly() const { return isReadOnly_; }
 
 signals:
     void isDirtyChanged(bool dirty);
-    void featureFlagSaved(const QString& name);
-    void featureFlagDeleted(const QString& name);
+    void systemSettingSaved(const QString& name);
+    void systemSettingDeleted(const QString& name);
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -88,6 +89,7 @@ private slots:
     void onSaveClicked();
     void onDeleteClicked();
     void onFieldChanged();
+    void onDataTypeChanged(int index);
 
     // Version navigation slots
     void onFirstVersionClicked();
@@ -101,13 +103,17 @@ private:
     void displayCurrentVersion();
     void updateVersionNavButtonStates();
     void showVersionNavActions(bool visible);
+    void populateValueWidgets(const variability::domain::system_setting& flag);
+    void switchValuePage(const std::string& data_type);
+    std::string currentValueText() const;
 
 private:
-    Ui::FeatureFlagDetailDialog* ui_;
+    Ui::SystemSettingDetailDialog* ui_;
     QToolBar* toolBar_;
     QAction* revertAction_;
 
     variability::domain::system_setting currentFlag_;
+    QIntValidator* intValidator_;
     bool isDirty_;
     bool isAddMode_;
     bool isReadOnly_;

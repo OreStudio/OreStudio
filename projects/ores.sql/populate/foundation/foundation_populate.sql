@@ -190,6 +190,6 @@ union all
 select 'Roles', count(*)
 from ores_iam_roles_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
-select 'System Flags', count(*)
-from ores_variability_feature_flags_tbl where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
+select 'System Settings', count(*)
+from ores_variability_system_settings_tbl where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

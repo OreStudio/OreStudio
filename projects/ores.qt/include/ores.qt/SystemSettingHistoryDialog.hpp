@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_FEATURE_FLAG_HISTORY_DIALOG_HPP
-#define ORES_QT_FEATURE_FLAG_HISTORY_DIALOG_HPP
+#ifndef ORES_QT_SYSTEM_SETTING_HISTORY_DIALOG_HPP
+#define ORES_QT_SYSTEM_SETTING_HISTORY_DIALOG_HPP
 
 #include <memory>
 #include <QPair>
@@ -30,23 +30,23 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.variability/domain/system_setting.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ui_FeatureFlagHistoryDialog.h"
+#include "ui_SystemSettingHistoryDialog.h"
 
 namespace Ui {
-class FeatureFlagHistoryDialog;
+class SystemSettingHistoryDialog;
 }
 
 namespace ores::qt {
 
 /**
- * @brief Widget for displaying feature flag version history.
+ * @brief Widget for displaying system setting version history.
  */
-class FeatureFlagHistoryDialog : public QWidget {
+class SystemSettingHistoryDialog : public QWidget {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.feature_flag_history_dialog";
+        "ores.qt.system_setting_history_dialog";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -57,10 +57,10 @@ private:
     const QIcon& getHistoryIcon() const;
 
 public:
-    explicit FeatureFlagHistoryDialog(QString name,
+    explicit SystemSettingHistoryDialog(QString name,
         ClientManager* clientManager,
         QWidget* parent = nullptr);
-    ~FeatureFlagHistoryDialog() override;
+    ~SystemSettingHistoryDialog() override;
 
     void loadHistory();
 
@@ -69,13 +69,13 @@ public:
     /**
      * @brief Mark the history data as stale and reload.
      *
-     * Called when a notification is received indicating this feature flag has
+     * Called when a notification is received indicating this system setting has
      * changed on the server. Automatically reloads the history data.
      */
     void markAsStale();
 
     /**
-     * @brief Returns the name of the feature flag.
+     * @brief Returns the name of the system setting.
      */
     [[nodiscard]] QString flagName() const { return flagName_; }
 
@@ -92,14 +92,14 @@ signals:
 
     /**
      * @brief Emitted when user requests to open a version in read-only mode.
-     * @param flag The feature flag data at the selected version.
+     * @param flag The system setting data at the selected version.
      * @param versionNumber The version number being viewed.
      */
     void openVersionRequested(const variability::domain::system_setting& flag, int versionNumber);
 
     /**
      * @brief Emitted when user requests to revert to a selected version.
-     * @param flag The feature flag data to revert to.
+     * @param flag The system setting data to revert to.
      */
     void revertVersionRequested(const variability::domain::system_setting& flag);
 
@@ -129,7 +129,7 @@ private:
     void updateButtonStates();
     int selectedVersionIndex() const;
 
-    std::unique_ptr<Ui::FeatureFlagHistoryDialog> ui_;
+    std::unique_ptr<Ui::SystemSettingHistoryDialog> ui_;
     ClientManager* clientManager_;
     QString flagName_;
     std::vector<variability::domain::system_setting> history_;

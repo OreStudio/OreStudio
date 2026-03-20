@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>FeatureFlagHistoryDialog</class>
- <widget class="QWidget" name="FeatureFlagHistoryDialog">
+ <class>SystemSettingHistoryDialog</class>
+ <widget class="QWidget" name="SystemSettingHistoryDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Feature Flag History</string>
+   <string>System Setting History</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -23,7 +23,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Feature Flag History: system.debug_mode</string>
+      <string>System Setting History: system.debug_mode</string>
      </property>
     </widget>
    </item>

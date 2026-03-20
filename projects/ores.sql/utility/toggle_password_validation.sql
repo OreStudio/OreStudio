@@ -40,16 +40,18 @@
     \set new_value 0
 \endif
 
--- Update the flag using the upsert function
-select ores_variability_feature_flags_upsert_fn(
+-- Update the setting using the upsert function
+select ores_variability_system_settings_upsert_fn(
+    ores_iam_system_tenant_id_fn(),
     'system.disable_password_validation',
-    :new_value::boolean,
+    case when :new_value::boolean then 'true' else 'false' end,
+    'boolean',
     'When enabled, disables strict password validation. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
 -- Show the updated state
-select name, enabled, description, modified_by, valid_from
-from ores_variability_feature_flags_tbl
+select name, data_type, value, description, modified_by, valid_from
+from ores_variability_system_settings_tbl
 where name = 'system.disable_password_validation'
   and valid_to = ores_utility_infinity_timestamp_fn();
 

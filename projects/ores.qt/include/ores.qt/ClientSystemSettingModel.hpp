@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_CLIENT_FEATURE_FLAG_MODEL_HPP
-#define ORES_QT_CLIENT_FEATURE_FLAG_MODEL_HPP
+#ifndef ORES_QT_CLIENT_SYSTEM_SETTING_MODEL_HPP
+#define ORES_QT_CLIENT_SYSTEM_SETTING_MODEL_HPP
 
 #include <vector>
 #include <QFutureWatcher>
@@ -32,17 +32,17 @@
 namespace ores::qt {
 
 /**
- * @brief Model for displaying feature flags fetched from the server.
+ * @brief Model for displaying system settings fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches feature flag data
+ * This model extends QAbstractTableModel and fetches system setting data
  * asynchronously using the ores.comms client.
  */
-class ClientFeatureFlagModel final : public QAbstractTableModel {
+class ClientSystemSettingModel final : public QAbstractTableModel {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.client_feature_flag_model";
+        "ores.qt.client_system_setting_model";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -63,9 +63,9 @@ public:
         ColumnCount
     };
 
-    explicit ClientFeatureFlagModel(ClientManager* clientManager,
+    explicit ClientSystemSettingModel(ClientManager* clientManager,
                                     QObject* parent = nullptr);
-    ~ClientFeatureFlagModel() override = default;
+    ~ClientSystemSettingModel() override = default;
 
     // QAbstractTableModel interface
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -75,17 +75,17 @@ public:
         int role = Qt::DisplayRole) const override;
 
     /**
-     * @brief Refresh feature flag data from server asynchronously.
+     * @brief Refresh system setting data from server asynchronously.
      */
     void refresh();
 
     /**
-     * @brief Get feature flag at the specified row.
+     * @brief Get system setting at the specified row.
      *
      * @param row The row index.
-     * @return The feature flag, or nullptr if row is invalid.
+     * @return The system setting, or nullptr if row is invalid.
      */
-    const variability::domain::system_setting* getFeatureFlag(int row) const;
+    const variability::domain::system_setting* getSystemSetting(int row) const;
 
 signals:
     /**
@@ -99,7 +99,7 @@ signals:
     void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
-    void onFeatureFlagsLoaded();
+    void onSystemSettingsLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
@@ -118,8 +118,8 @@ private:
     QFutureWatcher<FetchResult>* watcher_;
     bool is_fetching_{false};
 
-    using FeatureFlagKeyExtractor = std::string(*)(const variability::domain::system_setting&);
-    RecencyTracker<variability::domain::system_setting, FeatureFlagKeyExtractor> recencyTracker_;
+    using SystemSettingKeyExtractor = std::string(*)(const variability::domain::system_setting&);
+    RecencyTracker<variability::domain::system_setting, SystemSettingKeyExtractor> recencyTracker_;
     RecencyPulseManager* pulseManager_;
 };
 

@@ -35,8 +35,8 @@ namespace ores::iam::service {
  *
  * The bootstrap_mode_service manages the system's bootstrap mode, which is
  * a special state where only the initial administrator account can be created.
- * The service uses the feature_flags table to persist the bootstrap mode state
- * with the flag name "system.bootstrap_mode".
+ * The service uses the system_settings table to persist the bootstrap mode state
+ * with the setting name "system.bootstrap_mode".
  *
  * Bootstrap mode logic:
  * - enabled=true: System is in bootstrap mode (no admin accounts exist)
@@ -74,8 +74,8 @@ public:
     /**
      * @brief Checks if the system is currently in bootstrap mode.
      *
-     * Queries the feature_flags table for the system.bootstrap_mode flag.
-     * If the flag is enabled (true), the system is in bootstrap mode.
+     * Queries the system_settings table for the system.bootstrap_mode setting.
+     * If the setting is enabled (true), the system is in bootstrap mode.
      *
      * @return true if system is in bootstrap mode, false otherwise
      */
@@ -85,13 +85,13 @@ public:
      * @brief Initializes the bootstrap mode state on system startup.
      *
      * This method should be called during service initialization. It ensures
-     * the bootstrap mode feature flag exists and is set correctly based on
+     * the bootstrap mode system setting exists and is set correctly based on
      * whether admin accounts exist in the system.
      *
      * Logic:
-     * - If flag doesn't exist and no admin accounts exist: create flag with enabled=true
-     * - If flag doesn't exist and admin accounts exist: create flag with enabled=false
-     * - If flag exists: verify it matches reality (admin accounts exist = flag should be false)
+     * - If setting doesn't exist and no admin accounts exist: create setting with enabled=true
+     * - If setting doesn't exist and admin accounts exist: create setting with enabled=false
+     * - If setting exists: verify it matches reality (admin accounts exist = setting should be false)
      */
     void initialize_bootstrap_state();
 
@@ -99,7 +99,7 @@ public:
      * @brief Transitions the system from bootstrap mode to secure mode.
      *
      * This method is called after the first admin account is successfully created.
-     * It updates the system.bootstrap_mode feature flag from enabled=true to
+     * It updates the system.bootstrap_mode system setting from enabled=true to
      * enabled=false using bitemporal versioning.
      *
      * This operation is idempotent - calling it when already in secure mode

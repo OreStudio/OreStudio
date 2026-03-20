@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/ClientFeatureFlagModel.hpp"
+#include "ores.qt/ClientSystemSettingModel.hpp"
 
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -31,41 +31,41 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-    std::string feature_flag_key_extractor(const variability::domain::system_setting& e) {
+    std::string system_setting_key_extractor(const variability::domain::system_setting& e) {
         return e.name;
     }
 }
 
-ClientFeatureFlagModel::ClientFeatureFlagModel(ClientManager* clientManager,
+ClientSystemSettingModel::ClientSystemSettingModel(ClientManager* clientManager,
                                                QObject* parent)
     : QAbstractTableModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
-      recencyTracker_(feature_flag_key_extractor),
+      recencyTracker_(system_setting_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
-            this, &ClientFeatureFlagModel::onFeatureFlagsLoaded);
+            this, &ClientSystemSettingModel::onSystemSettingsLoaded);
 
     connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
-            this, &ClientFeatureFlagModel::onPulseStateChanged);
+            this, &ClientSystemSettingModel::onPulseStateChanged);
     connect(pulseManager_, &RecencyPulseManager::pulsing_complete,
-            this, &ClientFeatureFlagModel::onPulsingComplete);
+            this, &ClientSystemSettingModel::onPulsingComplete);
 }
 
-int ClientFeatureFlagModel::rowCount(const QModelIndex& parent) const {
+int ClientSystemSettingModel::rowCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return static_cast<int>(flags_.size());
 }
 
-int ClientFeatureFlagModel::columnCount(const QModelIndex& parent) const {
+int ClientSystemSettingModel::columnCount(const QModelIndex& parent) const {
     if (parent.isValid())
         return 0;
     return ColumnCount;
 }
 
-QVariant ClientFeatureFlagModel::data(const QModelIndex& index, int role) const {
+QVariant ClientSystemSettingModel::data(const QModelIndex& index, int role) const {
     if (!index.isValid())
         return {};
 
@@ -100,7 +100,7 @@ QVariant ClientFeatureFlagModel::data(const QModelIndex& index, int role) const 
     return {};
 }
 
-QVariant ClientFeatureFlagModel::headerData(int section, Qt::Orientation orientation,
+QVariant ClientSystemSettingModel::headerData(int section, Qt::Orientation orientation,
                                             int role) const {
     if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
         return {};
@@ -121,7 +121,7 @@ QVariant ClientFeatureFlagModel::headerData(int section, Qt::Orientation orienta
     }
 }
 
-void ClientFeatureFlagModel::refresh() {
+void ClientSystemSettingModel::refresh() {
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), debug) << "Already fetching, ignoring refresh request";
         return;
@@ -134,9 +134,9 @@ void ClientFeatureFlagModel::refresh() {
     }
 
     is_fetching_ = true;
-    BOOST_LOG_SEV(lg(), debug) << "Starting feature flags fetch";
+    BOOST_LOG_SEV(lg(), debug) << "Starting system settings fetch";
 
-    QPointer<ClientFeatureFlagModel> self = this;
+    QPointer<ClientSystemSettingModel> self = this;
     QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
             if (!self || !self->clientManager_) {
@@ -156,22 +156,22 @@ void ClientFeatureFlagModel::refresh() {
             }
 
             BOOST_LOG_SEV(lg(), debug) << "Fetched " << response_result->settings.size()
-                                       << " feature flags";
+                                       << " system settings";
             return {.success = true, .flags = std::move(response_result->settings),
                     .error_message = {}, .error_details = {}};
-        }, "feature flags");
+        }, "system settings");
     });
 
     watcher_->setFuture(future);
 }
 
-void ClientFeatureFlagModel::onFeatureFlagsLoaded() {
+void ClientSystemSettingModel::onSystemSettingsLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();
 
     if (!result.success) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to fetch feature flags: "
+        BOOST_LOG_SEV(lg(), error) << "Failed to fetch system settings: "
                                    << result.error_message.toStdString();
         emit loadError(result.error_message, result.error_details);
         return;
@@ -185,33 +185,33 @@ void ClientFeatureFlagModel::onFeatureFlagsLoaded() {
     if (has_recent && !pulseManager_->is_pulsing()) {
         pulseManager_->start_pulsing();
         BOOST_LOG_SEV(lg(), debug) << "Found " << recencyTracker_.recent_count()
-                                   << " feature flags newer than last reload";
+                                   << " system settings newer than last reload";
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << flags_.size() << " feature flags";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << flags_.size() << " system settings";
     emit dataLoaded();
 }
 
 const variability::domain::system_setting*
-ClientFeatureFlagModel::getFeatureFlag(int row) const {
+ClientSystemSettingModel::getSystemSetting(int row) const {
     if (row < 0 || row >= static_cast<int>(flags_.size()))
         return nullptr;
     return &flags_[row];
 }
 
-void ClientFeatureFlagModel::onPulseStateChanged(bool /*isOn*/) {
+void ClientSystemSettingModel::onPulseStateChanged(bool /*isOn*/) {
     if (!flags_.empty()) {
         emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
             {Qt::ForegroundRole});
     }
 }
 
-void ClientFeatureFlagModel::onPulsingComplete() {
+void ClientSystemSettingModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
     recencyTracker_.clear();
 }
 
-QVariant ClientFeatureFlagModel::recency_foreground_color(const std::string& name) const {
+QVariant ClientSystemSettingModel::recency_foreground_color(const std::string& name) const {
     if (recencyTracker_.is_recent(name) && pulseManager_->is_pulse_on()) {
         return color_constants::stale_indicator;
     }

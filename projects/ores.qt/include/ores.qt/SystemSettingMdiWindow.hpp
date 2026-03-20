@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_FEATURE_FLAG_MDI_WINDOW_HPP
-#define ORES_QT_FEATURE_FLAG_MDI_WINDOW_HPP
+#ifndef ORES_QT_SYSTEM_SETTING_MDI_WINDOW_HPP
+#define ORES_QT_SYSTEM_SETTING_MDI_WINDOW_HPP
 
 #include <QTableView>
 #include <QVBoxLayout>
@@ -28,22 +28,22 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.qt/ClientFeatureFlagModel.hpp"
+#include "ores.qt/ClientSystemSettingModel.hpp"
 
 namespace ores::qt {
 
 /**
- * @brief MDI window for displaying and managing feature flags.
+ * @brief MDI window for displaying and managing system settings.
  *
  * This window provides functionality for viewing, creating, editing,
- * and deleting feature flags.
+ * and deleting system settings.
  */
-class FeatureFlagMdiWindow : public EntityListMdiWindow {
+class SystemSettingMdiWindow : public EntityListMdiWindow {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.feature_flag_mdi_window";
+        "ores.qt.system_setting_mdi_window";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -52,21 +52,21 @@ private:
     }
 
 public:
-    explicit FeatureFlagMdiWindow(ClientManager* clientManager,
+    explicit SystemSettingMdiWindow(ClientManager* clientManager,
                                   const QString& username,
                                   QWidget* parent = nullptr);
-    ~FeatureFlagMdiWindow() override;
+    ~SystemSettingMdiWindow() override;
 
-    ClientFeatureFlagModel* featureFlagModel() const { return featureFlagModel_.get(); }
+    ClientSystemSettingModel* systemSettingModel() const { return systemSettingModel_.get(); }
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void selectionChanged(int selection_count);
     void addNewRequested();
-    void showFeatureFlagDetails(const variability::domain::system_setting& flag);
+    void showSystemSettingDetails(const variability::domain::system_setting& flag);
     void showHistoryRequested(const QString& name);
-    void featureFlagDeleted(const QString& name);
+    void systemSettingDeleted(const QString& name);
 
 public slots:
     void doReload() override;
@@ -77,7 +77,7 @@ public slots:
 
 protected:
     QString normalRefreshTooltip() const override {
-        return tr("Refresh feature flags");
+        return tr("Refresh system settings");
     }
 
 private slots:
@@ -93,7 +93,7 @@ private:
 
 private:
     QVBoxLayout* verticalLayout_;
-    QTableView* featureFlagTableView_;
+    QTableView* systemSettingTableView_;
     QToolBar* toolBar_;
 
     QAction* reloadAction_;
@@ -102,7 +102,7 @@ private:
     QAction* deleteAction_;
     QAction* historyAction_;
 
-    std::unique_ptr<ClientFeatureFlagModel> featureFlagModel_;
+    std::unique_ptr<ClientSystemSettingModel> systemSettingModel_;
     QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
     QString username_;

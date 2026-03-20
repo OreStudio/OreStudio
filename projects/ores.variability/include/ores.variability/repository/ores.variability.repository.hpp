@@ -23,7 +23,7 @@
  * @brief Database persistence layer for variability domain types.
  *
  * Provides ORM support using sqlgen including entities, mappers, and
- * repositories for feature_flag. Supports temporal versioning with
+ * repositories for system_setting. Supports temporal versioning with
  * valid_from/valid_to fields.
  */
 namespace ores::variability::repository {}

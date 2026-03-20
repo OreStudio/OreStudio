@@ -28,7 +28,7 @@
  * Functions are organized by domain:
  * - Data Quality: Datasets, dimensions, catalogs, coding schemes
  * - IAM: Roles, permissions, role-permission assignments
- * - Variability: Feature flags
+ * - Variability: System settings
  *
  * Naming convention: ores_{component}_{entities}_{action}_fn
  * Examples:
@@ -796,11 +796,11 @@ end;
 $$ language plpgsql;
 
 -- =============================================================================
--- Variability: Feature Flags
+-- Variability: Feature Flags (legacy - kept for backward compatibility)
 -- =============================================================================
 
 /**
- * Upsert a system feature flag.
+ * Upsert a system feature flag (legacy function).
  */
 create or replace function ores_variability_feature_flags_upsert_fn(
     p_tenant_id uuid,
@@ -821,9 +821,9 @@ begin
     on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
     if found then
-        raise notice 'Created system flag: % (default: %)', p_name, p_enabled;
+        raise notice 'Created system setting (legacy): % (default: %)', p_name, p_enabled;
     else
-        raise notice 'System flag already exists: %', p_name;
+        raise notice 'System setting (legacy) already exists: %', p_name;
     end if;
 end;
 $$ language plpgsql;

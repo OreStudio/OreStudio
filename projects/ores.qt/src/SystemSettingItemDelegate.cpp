@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/FeatureFlagItemDelegate.hpp"
-#include "ores.qt/ClientFeatureFlagModel.hpp"
+#include "ores.qt/SystemSettingItemDelegate.hpp"
+#include "ores.qt/ClientSystemSettingModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
 
@@ -37,7 +37,7 @@ const QColor disabled_badge_text(255, 255, 255);
 
 }
 
-FeatureFlagItemDelegate::FeatureFlagItemDelegate(QObject* parent)
+SystemSettingItemDelegate::SystemSettingItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent) {
     monospaceFont_ = FontUtils::monospace();
 
@@ -46,13 +46,13 @@ FeatureFlagItemDelegate::FeatureFlagItemDelegate(QObject* parent)
     badgeFont_.setBold(true);
 }
 
-void FeatureFlagItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
+void SystemSettingItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
                                     const QModelIndex& index) const {
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
 
     // Handle badge column for Enabled
-    if (index.column() == ClientFeatureFlagModel::Enabled) {
+    if (index.column() == ClientSystemSettingModel::Enabled) {
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
@@ -79,13 +79,13 @@ void FeatureFlagItemDelegate::paint(QPainter* painter, const QStyleOptionViewIte
 
     // Apply formatting based on column
     switch (index.column()) {
-        case ClientFeatureFlagModel::Name:
+        case ClientSystemSettingModel::Name:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case ClientFeatureFlagModel::ModifiedBy:
+        case ClientSystemSettingModel::ModifiedBy:
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
-        case ClientFeatureFlagModel::RecordedAt:
+        case ClientSystemSettingModel::RecordedAt:
             opt.font = monospaceFont_;
             opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
             break;
@@ -96,11 +96,11 @@ void FeatureFlagItemDelegate::paint(QPainter* painter, const QStyleOptionViewIte
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 }
 
-QSize FeatureFlagItemDelegate::sizeHint(const QStyleOptionViewItem& option,
+QSize SystemSettingItemDelegate::sizeHint(const QStyleOptionViewItem& option,
                                         const QModelIndex& index) const {
     QSize size = QStyledItemDelegate::sizeHint(option, index);
 
-    if (index.column() == ClientFeatureFlagModel::Enabled) {
+    if (index.column() == ClientSystemSettingModel::Enabled) {
         size.setHeight(qMax(size.height(), 24));
         size.setWidth(qMax(size.width(), 50));
     }

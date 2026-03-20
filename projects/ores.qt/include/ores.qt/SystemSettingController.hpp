@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_FEATURE_FLAG_CONTROLLER_HPP
-#define ORES_QT_FEATURE_FLAG_CONTROLLER_HPP
+#ifndef ORES_QT_SYSTEM_SETTING_CONTROLLER_HPP
+#define ORES_QT_SYSTEM_SETTING_CONTROLLER_HPP
 
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
@@ -27,21 +27,21 @@
 
 namespace ores::qt {
 
-class FeatureFlagMdiWindow;
-class FeatureFlagDetailDialog;
+class SystemSettingMdiWindow;
+class SystemSettingDetailDialog;
 
 /**
- * @brief Controller for feature flag management windows.
+ * @brief Controller for system setting management windows.
  *
- * Manages the lifecycle of feature flag list and detail windows,
- * handling creation, editing, and deletion of feature flags.
+ * Manages the lifecycle of system setting list and detail windows,
+ * handling creation, editing, and deletion of system settings.
  */
-class FeatureFlagController final : public EntityController {
+class SystemSettingController final : public EntityController {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.feature_flag_controller";
+        "ores.qt.system_setting_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -50,14 +50,14 @@ private:
     }
 
 public:
-    FeatureFlagController(
+    SystemSettingController(
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         const QString& username,
         QObject* parent = nullptr);
 
-    ~FeatureFlagController() override;
+    ~SystemSettingController() override;
 
     void showListWindow() override;
     void closeAllWindows() override;
@@ -67,13 +67,13 @@ private slots:
     void onAddNewRequested();
     void onShowDetails(const variability::domain::system_setting& flag);
     void onShowHistory(const QString& name);
-    void onFeatureFlagSaved(const QString& name);
-    void onFeatureFlagDeleted(const QString& name);
+    void onSystemSettingSaved(const QString& name);
+    void onSystemSettingDeleted(const QString& name);
     void onNotificationReceived(const QString& eventType, const QDateTime& timestamp,
                                 const QStringList& entityIds, const QString& tenantId);
-    void onOpenFeatureFlagVersion(const variability::domain::system_setting& flag,
+    void onOpenSystemSettingVersion(const variability::domain::system_setting& flag,
                                   int versionNumber);
-    void onRevertFeatureFlag(const variability::domain::system_setting& flag);
+    void onRevertSystemSetting(const variability::domain::system_setting& flag);
 
 private:
     void showDetailWindow(const variability::domain::system_setting& flag,
@@ -82,7 +82,7 @@ private:
     void refreshListWindow();
 
 private:
-    FeatureFlagMdiWindow* listWindow_;
+    SystemSettingMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };
 

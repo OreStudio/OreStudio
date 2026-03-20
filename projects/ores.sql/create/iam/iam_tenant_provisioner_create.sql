@@ -378,14 +378,15 @@ begin
     -- New tenants start in bootstrap mode so the tenant provisioning wizard
     -- appears on first login. The wizard clears this flag on completion.
 
-    perform ores_variability_feature_flags_upsert_fn(
+    perform ores_variability_system_settings_upsert_fn(
         v_new_tenant_id,
         'system.bootstrap_mode',
-        true,
+        'true',
+        'boolean',
         'Indicates whether the tenant is in bootstrap mode (waiting for initial setup).'
     );
 
-    raise notice 'Seeded bootstrap mode flag for tenant: %', p_code;
+    raise notice 'Seeded bootstrap mode system setting for tenant: %', p_code;
 
     -- =========================================================================
     -- Provisioning complete

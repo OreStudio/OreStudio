@@ -25,12 +25,12 @@
  * This script is idempotent - running it multiple times will not create
  * duplicate entries or overwrite existing values.
  *
- * Also migrates any existing rows from the feature_flags table that have
- * not yet been copied across.
+ * Also migrates any existing rows from the legacy feature_flags table that
+ * have not yet been copied across.
  */
 
 -- -----------------------------------------------------------------------------
--- Migrate existing feature flags (boolean type, idempotent)
+-- Migrate existing legacy feature flags (boolean type, idempotent)
 -- -----------------------------------------------------------------------------
 insert into ores_variability_system_settings_tbl
     (tenant_id, name, value, data_type, description,

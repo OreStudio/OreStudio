@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.qt/FeatureFlagMdiWindow.hpp"
+#include "ores.qt/SystemSettingMdiWindow.hpp"
 
 #include <vector>
 #include <QtConcurrent>
@@ -26,7 +26,7 @@
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/FeatureFlagItemDelegate.hpp"
+#include "ores.qt/SystemSettingItemDelegate.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -36,25 +36,25 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-FeatureFlagMdiWindow::
-FeatureFlagMdiWindow(ClientManager* clientManager,
+SystemSettingMdiWindow::
+SystemSettingMdiWindow(ClientManager* clientManager,
                      const QString& username,
                      QWidget* parent)
     : EntityListMdiWindow(parent),
       verticalLayout_(new QVBoxLayout(this)),
-      featureFlagTableView_(new QTableView(this)),
+      systemSettingTableView_(new QTableView(this)),
       toolBar_(new QToolBar(this)),
       reloadAction_(new QAction("Reload", this)),
       addAction_(new QAction("Add", this)),
       editAction_(new QAction("Edit", this)),
       deleteAction_(new QAction("Delete", this)),
       historyAction_(new QAction("History", this)),
-      featureFlagModel_(std::make_unique<ClientFeatureFlagModel>(clientManager)),
+      systemSettingModel_(std::make_unique<ClientSystemSettingModel>(clientManager)),
       proxyModel_(new QSortFilterProxyModel(this)),
       clientManager_(clientManager),
       username_(username) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating feature flag MDI window";
+    BOOST_LOG_SEV(lg(), debug) << "Creating system setting MDI window";
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
@@ -66,89 +66,88 @@ FeatureFlagMdiWindow(ClientManager* clientManager,
 
     addAction_->setIcon(IconUtils::createRecoloredIcon(
             Icon::Add, IconUtils::DefaultIconColor));
-    addAction_->setToolTip("Add new feature flag");
-    connect(addAction_, &QAction::triggered, this, &FeatureFlagMdiWindow::addNew);
+    addAction_->setToolTip("Add new system setting");
+    connect(addAction_, &QAction::triggered, this, &SystemSettingMdiWindow::addNew);
     toolBar_->addAction(addAction_);
 
     editAction_->setIcon(IconUtils::createRecoloredIcon(
             Icon::Edit, IconUtils::DefaultIconColor));
-    editAction_->setToolTip("Edit selected feature flag");
+    editAction_->setToolTip("Edit selected system setting");
     connect(editAction_, &QAction::triggered, this,
-        &FeatureFlagMdiWindow::editSelected);
+        &SystemSettingMdiWindow::editSelected);
     toolBar_->addAction(editAction_);
 
     deleteAction_->setIcon(IconUtils::createRecoloredIcon(
             Icon::Delete, IconUtils::DefaultIconColor));
-    deleteAction_->setToolTip("Delete selected feature flag(s)");
+    deleteAction_->setToolTip("Delete selected system setting(s)");
     connect(deleteAction_, &QAction::triggered, this,
-        &FeatureFlagMdiWindow::deleteSelected);
+        &SystemSettingMdiWindow::deleteSelected);
     toolBar_->addAction(deleteAction_);
 
     toolBar_->addSeparator();
 
     historyAction_->setIcon(IconUtils::createRecoloredIcon(
             Icon::History, IconUtils::DefaultIconColor));
-    historyAction_->setToolTip("Show version history for selected feature flag");
+    historyAction_->setToolTip("Show version history for selected system setting");
     connect(historyAction_, &QAction::triggered, this,
-        &FeatureFlagMdiWindow::showHistory);
+        &SystemSettingMdiWindow::showHistory);
     toolBar_->addAction(historyAction_);
 
     verticalLayout_->addWidget(toolBar_);
-    verticalLayout_->addWidget(loadingBar());
-    verticalLayout_->addWidget(featureFlagTableView_);
+    verticalLayout_->addWidget(systemSettingTableView_);
 
-    featureFlagTableView_->setObjectName("featureFlagTableView");
-    featureFlagTableView_->setAlternatingRowColors(true);
-    featureFlagTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-    featureFlagTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    featureFlagTableView_->setWordWrap(false);
+    systemSettingTableView_->setObjectName("systemSettingTableView");
+    systemSettingTableView_->setAlternatingRowColors(true);
+    systemSettingTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    systemSettingTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    systemSettingTableView_->setWordWrap(false);
 
-    proxyModel_->setSourceModel(featureFlagModel_.get());
-    featureFlagTableView_->setModel(proxyModel_);
-    featureFlagTableView_->setItemDelegate(new FeatureFlagItemDelegate(this));
-    featureFlagTableView_->setSortingEnabled(true);
-    featureFlagTableView_->sortByColumn(0, Qt::AscendingOrder);
+    proxyModel_->setSourceModel(systemSettingModel_.get());
+    systemSettingTableView_->setModel(proxyModel_);
+    systemSettingTableView_->setItemDelegate(new SystemSettingItemDelegate(this));
+    systemSettingTableView_->setSortingEnabled(true);
+    systemSettingTableView_->sortByColumn(0, Qt::AscendingOrder);
 
-    featureFlagTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    systemSettingTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
-    initializeTableSettings(featureFlagTableView_, featureFlagModel_.get(),
-        "FeatureFlagMdiWindow",
+    initializeTableSettings(systemSettingTableView_, systemSettingModel_.get(),
+        "SystemSettingMdiWindow",
         {}, {900, 400}, 1);
 
     // Connect signals
-    connect(featureFlagModel_.get(), &ClientFeatureFlagModel::dataLoaded,
-            this, &FeatureFlagMdiWindow::onDataLoaded);
-    connect(featureFlagModel_.get(), &ClientFeatureFlagModel::loadError,
-            this, &FeatureFlagMdiWindow::onLoadError);
-    connect(featureFlagTableView_, &QTableView::doubleClicked,
-            this, &FeatureFlagMdiWindow::onRowDoubleClicked);
-    connect(featureFlagTableView_->selectionModel(),
+    connect(systemSettingModel_.get(), &ClientSystemSettingModel::dataLoaded,
+            this, &SystemSettingMdiWindow::onDataLoaded);
+    connect(systemSettingModel_.get(), &ClientSystemSettingModel::loadError,
+            this, &SystemSettingMdiWindow::onLoadError);
+    connect(systemSettingTableView_, &QTableView::doubleClicked,
+            this, &SystemSettingMdiWindow::onRowDoubleClicked);
+    connect(systemSettingTableView_->selectionModel(),
         &QItemSelectionModel::selectionChanged,
-            this, &FeatureFlagMdiWindow::onSelectionChanged);
+            this, &SystemSettingMdiWindow::onSelectionChanged);
 
     // Connect connection state signals
     if (clientManager_) {
         connect(clientManager_, &ClientManager::connected, this,
-            &FeatureFlagMdiWindow::onConnectionStateChanged);
+            &SystemSettingMdiWindow::onConnectionStateChanged);
         connect(clientManager_, &ClientManager::disconnected, this,
-            &FeatureFlagMdiWindow::onConnectionStateChanged);
+            &SystemSettingMdiWindow::onConnectionStateChanged);
     }
 
     updateActionStates();
 
-    emit statusChanged("Loading feature flags...");
+    emit statusChanged("Loading system settings...");
 
     // Initial load
     if (clientManager_->isConnected()) {
-        featureFlagModel_->refresh();
+        systemSettingModel_->refresh();
     } else {
         emit statusChanged("Disconnected - Offline");
         toolBar_->setEnabled(false);
     }
 }
 
-FeatureFlagMdiWindow::~FeatureFlagMdiWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Destroying feature flag MDI window";
+SystemSettingMdiWindow::~SystemSettingMdiWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Destroying system setting MDI window";
 
     // Cancel any pending operations. The QPointer in the lambdas ensures
     // they safely handle this window being destroyed without blocking.
@@ -159,7 +158,7 @@ FeatureFlagMdiWindow::~FeatureFlagMdiWindow() {
     }
 }
 
-void FeatureFlagMdiWindow::onConnectionStateChanged() {
+void SystemSettingMdiWindow::onConnectionStateChanged() {
     const bool connected = clientManager_ && clientManager_->isConnected();
     toolBar_->setEnabled(connected);
 
@@ -170,74 +169,74 @@ void FeatureFlagMdiWindow::onConnectionStateChanged() {
     }
 }
 
-void FeatureFlagMdiWindow::doReload() {
+void SystemSettingMdiWindow::reload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
     if (!clientManager_->isConnected()) {
         emit statusChanged("Cannot reload - Disconnected");
         return;
     }
-    emit statusChanged("Reloading feature flags...");
-    featureFlagModel_->refresh();
+    emit statusChanged("Reloading system settings...");
+    clearStaleIndicator();
+    systemSettingModel_->refresh();
 }
 
-void FeatureFlagMdiWindow::addNew() {
-    BOOST_LOG_SEV(lg(), debug) << "Add new feature flag requested";
+void SystemSettingMdiWindow::addNew() {
+    BOOST_LOG_SEV(lg(), debug) << "Add new system setting requested";
     emit addNewRequested();
 }
 
-void FeatureFlagMdiWindow::onDataLoaded() {
-    endLoading();
-    const auto loaded = featureFlagModel_->rowCount();
+void SystemSettingMdiWindow::onDataLoaded() {
+    const auto loaded = systemSettingModel_->rowCount();
 
-    const QString message = QString("Loaded %1 feature flags").arg(loaded);
+    const QString message = QString("Loaded %1 system settings").arg(loaded);
     emit statusChanged(message);
-    BOOST_LOG_SEV(lg(), debug) << "Feature flag data loaded successfully: "
+    BOOST_LOG_SEV(lg(), debug) << "System setting data loaded successfully: "
                                << loaded << " flags";
 
-    if (featureFlagModel_->rowCount() > 0 &&
-        featureFlagTableView_->selectionModel()->selectedRows().isEmpty()) {
-        featureFlagTableView_->selectRow(0);
+    if (systemSettingModel_->rowCount() > 0 &&
+        systemSettingTableView_->selectionModel()->selectedRows().isEmpty()) {
+        systemSettingTableView_->selectRow(0);
         BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
     }
 }
 
-void FeatureFlagMdiWindow::onLoadError(const QString& error_message,
+void SystemSettingMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
     endLoading();
     emit errorOccurred(error_message);
-    BOOST_LOG_SEV(lg(), error) << "Error loading feature flags: "
+    BOOST_LOG_SEV(lg(), error) << "Error loading system settings: "
                                << error_message.toStdString();
 
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
 }
 
-void FeatureFlagMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
+void SystemSettingMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
     if (!index.isValid()) {
         return;
     }
 
     // Map proxy index to source index
     const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
-    const auto* flag = featureFlagModel_->getFeatureFlag(sourceIndex.row());
+    const auto* flag = systemSettingModel_->getSystemSetting(sourceIndex.row());
     if (!flag) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get feature flag for row: "
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get system setting for row: "
                                   << sourceIndex.row();
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Emitting showFeatureFlagDetails for: "
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showSystemSettingDetails for: "
                                << flag->name;
-    emit showFeatureFlagDetails(*flag);
+    emit showSystemSettingDetails(*flag);
 }
 
-void FeatureFlagMdiWindow::onSelectionChanged() {
-    const int selection_count = featureFlagTableView_->selectionModel()->selectedRows().count();
+void SystemSettingMdiWindow::onSelectionChanged() {
+    const int selection_count = systemSettingTableView_->selectionModel()->selectedRows().count();
     updateActionStates();
     emit selectionChanged(selection_count);
 }
 
-void FeatureFlagMdiWindow::editSelected() {
-    const auto selected = featureFlagTableView_->selectionModel()->selectedRows();
+void SystemSettingMdiWindow::editSelected() {
+    const auto selected = systemSettingTableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
         return;
@@ -246,8 +245,8 @@ void FeatureFlagMdiWindow::editSelected() {
     onRowDoubleClicked(selected.first());
 }
 
-void FeatureFlagMdiWindow::deleteSelected() {
-    const auto selected = featureFlagTableView_->selectionModel()->selectedRows();
+void SystemSettingMdiWindow::deleteSelected() {
+    const auto selected = systemSettingTableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
         return;
@@ -255,36 +254,36 @@ void FeatureFlagMdiWindow::deleteSelected() {
 
     if (!clientManager_->isConnected()) {
         MessageBoxHelper::warning(this, "Disconnected",
-            "Cannot delete feature flag while disconnected.");
+            "Cannot delete system setting while disconnected.");
         return;
     }
 
     std::vector<std::string> names;
     for (const auto& index : selected) {
         const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
-        const auto* flag = featureFlagModel_->getFeatureFlag(sourceIndex.row());
+        const auto* flag = systemSettingModel_->getSystemSetting(sourceIndex.row());
         if (flag)
             names.push_back(flag->name);
     }
 
     if (names.empty()) {
-        BOOST_LOG_SEV(lg(), warn) << "No valid feature flags to delete";
+        BOOST_LOG_SEV(lg(), warn) << "No valid system settings to delete";
         return;
     }
 
     BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << names.size()
-                               << " feature flags";
+                               << " system settings";
 
     QString confirmMessage;
     if (names.size() == 1) {
-        confirmMessage = QString("Are you sure you want to delete feature flag '%1'?")
+        confirmMessage = QString("Are you sure you want to delete system setting '%1'?")
             .arg(QString::fromStdString(names[0]));
     } else {
-        confirmMessage = QString("Are you sure you want to delete %1 feature flags?")
+        confirmMessage = QString("Are you sure you want to delete %1 system settings?")
             .arg(names.size());
     }
 
-    auto reply = MessageBoxHelper::question(this, "Delete Feature Flag",
+    auto reply = MessageBoxHelper::question(this, "Delete System Setting",
         confirmMessage, QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) {
@@ -292,7 +291,7 @@ void FeatureFlagMdiWindow::deleteSelected() {
         return;
     }
 
-    QPointer<FeatureFlagMdiWindow> self = this;
+    QPointer<SystemSettingMdiWindow> self = this;
     using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
 
     auto task = [self, names]() -> DeleteResult {
@@ -300,7 +299,7 @@ void FeatureFlagMdiWindow::deleteSelected() {
         if (!self) return {};
 
         for (const auto& name : names) {
-            BOOST_LOG_SEV(lg(), debug) << "Deleting feature flag: " << name;
+            BOOST_LOG_SEV(lg(), debug) << "Deleting system setting: " << name;
 
             variability::messaging::delete_setting_request request;
             request.name = name;
@@ -333,12 +332,12 @@ void FeatureFlagMdiWindow::deleteSelected() {
             auto [success, message] = result;
 
             if (success) {
-                BOOST_LOG_SEV(lg(), debug) << "Feature flag deleted successfully: "
+                BOOST_LOG_SEV(lg(), debug) << "System setting deleted successfully: "
                                            << name;
                 success_count++;
-                emit self->featureFlagDeleted(QString::fromStdString(name));
+                emit self->systemSettingDeleted(QString::fromStdString(name));
             } else {
-                BOOST_LOG_SEV(lg(), error) << "Feature flag deletion failed: "
+                BOOST_LOG_SEV(lg(), error) << "System setting deletion failed: "
                                            << name << " - " << message;
                 failure_count++;
                 if (first_error.isEmpty()) {
@@ -347,25 +346,25 @@ void FeatureFlagMdiWindow::deleteSelected() {
             }
         }
 
-        self->featureFlagModel_->refresh();
+        self->systemSettingModel_->refresh();
         if (failure_count == 0) {
             QString msg = success_count == 1
-                ? "Successfully deleted 1 feature flag"
-                : QString("Successfully deleted %1 feature flags").arg(success_count);
+                ? "Successfully deleted 1 system setting"
+                : QString("Successfully deleted %1 system settings").arg(success_count);
             emit self->statusChanged(msg);
         } else if (success_count == 0) {
             QString msg = QString("Failed to delete %1 %2: %3")
                 .arg(failure_count)
-                .arg(failure_count == 1 ? "feature flag" : "feature flags")
+                .arg(failure_count == 1 ? "system setting" : "system settings")
                 .arg(first_error);
             emit self->errorOccurred(msg);
             MessageBoxHelper::critical(self, "Delete Failed", msg);
         } else {
             QString msg = QString("Deleted %1 %2, failed to delete %3 %4")
                 .arg(success_count)
-                .arg(success_count == 1 ? "feature flag" : "feature flags")
+                .arg(success_count == 1 ? "system setting" : "system settings")
                 .arg(failure_count)
-                .arg(failure_count == 1 ? "feature flag" : "feature flags");
+                .arg(failure_count == 1 ? "system setting" : "system settings");
             emit self->statusChanged(msg);
             MessageBoxHelper::warning(self, "Partial Success", msg);
         }
@@ -375,8 +374,8 @@ void FeatureFlagMdiWindow::deleteSelected() {
     watcher->setFuture(future);
 }
 
-void FeatureFlagMdiWindow::updateActionStates() {
-    const int selection_count = featureFlagTableView_
+void SystemSettingMdiWindow::updateActionStates() {
+    const int selection_count = systemSettingTableView_
         ->selectionModel()->selectedRows().count();
     const bool hasSingleSelection = selection_count == 1;
     const bool hasSelection = selection_count > 0;
@@ -386,25 +385,25 @@ void FeatureFlagMdiWindow::updateActionStates() {
     historyAction_->setEnabled(hasSingleSelection);
 }
 
-void FeatureFlagMdiWindow::setupReloadAction() {
+void SystemSettingMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &SystemSettingMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
-void FeatureFlagMdiWindow::showHistory() {
-    const auto selected = featureFlagTableView_->selectionModel()->selectedRows();
+void SystemSettingMdiWindow::showHistory() {
+    const auto selected = systemSettingTableView_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         BOOST_LOG_SEV(lg(), warn) << "Show history requested but no row selected";
         return;
     }
 
     const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
-    const auto* flag = featureFlagModel_->getFeatureFlag(sourceIndex.row());
+    const auto* flag = systemSettingModel_->getSystemSetting(sourceIndex.row());
     if (!flag) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get feature flag for row: "
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get system setting for row: "
                                   << sourceIndex.row();
         return;
     }

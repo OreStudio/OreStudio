@@ -20,6 +20,9 @@
 #include "ores.refdata/service/purpose_type_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -48,7 +51,9 @@ void purpose_type_service::save_type(const domain::purpose_type& pt) {
         throw std::invalid_argument("Purpose type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving purpose type: " << pt.code;
-    repo_.write(ctx_, pt);
+    auto t = pt;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved purpose type: " << pt.code;
 }
 
@@ -59,7 +64,10 @@ void purpose_type_service::save_types(
             throw std::invalid_argument("Purpose type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " purpose types";
-    repo_.write(ctx_, types);
+    auto stamped = types;
+    for (auto& t : stamped)
+        stamp(t, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void purpose_type_service::remove_type(const std::string& code) {

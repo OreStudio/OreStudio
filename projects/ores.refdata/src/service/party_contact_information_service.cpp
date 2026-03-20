@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 party_contact_information_service::party_contact_information_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::party_contact_information> party_contact_information_service::list_party_contact_informations() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party contact informations";
@@ -67,7 +70,9 @@ void party_contact_information_service::save_party_contact_information(const dom
         throw std::invalid_argument("Party Contact Information ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving party contact information: " << party_contact_information.id;
-    repo_.write(party_contact_information);
+    auto pci = party_contact_information;
+    stamp(pci, ctx_);
+    repo_.write(pci);
     BOOST_LOG_SEV(lg(), info) << "Saved party contact information: " << party_contact_information.id;
 }
 
@@ -79,7 +84,10 @@ void party_contact_information_service::save_party_contact_informations(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_contact_informations.size()
                                << " party contact informations";
-    repo_.write(party_contact_informations);
+    auto stamped = party_contact_informations;
+    for (auto& pci : stamped)
+        stamp(pci, ctx_);
+    repo_.write(stamped);
 }
 
 void party_contact_information_service::remove_party_contact_information(const boost::uuids::uuid& id) {

@@ -106,6 +106,7 @@ public:
     get_book_history(const boost::uuids::uuid& id);
 
 private:
+    context ctx_;
     repository::book_repository repo_;
 };
 

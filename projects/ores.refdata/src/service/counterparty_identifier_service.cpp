@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 counterparty_identifier_service::counterparty_identifier_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::counterparty_identifier> counterparty_identifier_service::list_counterparty_identifiers() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all counterparty identifiers";
@@ -67,7 +70,9 @@ void counterparty_identifier_service::save_counterparty_identifier(const domain:
         throw std::invalid_argument("Counterparty Identifier ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving counterparty identifier: " << counterparty_identifier.id;
-    repo_.write(counterparty_identifier);
+    auto ci = counterparty_identifier;
+    stamp(ci, ctx_);
+    repo_.write(ci);
     BOOST_LOG_SEV(lg(), info) << "Saved counterparty identifier: " << counterparty_identifier.id;
 }
 
@@ -78,7 +83,10 @@ void counterparty_identifier_service::save_counterparty_identifiers(
             throw std::invalid_argument("Counterparty Identifier ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_identifiers.size() << " counterparty identifiers";
-    repo_.write(counterparty_identifiers);
+    auto stamped = counterparty_identifiers;
+    for (auto& ci : stamped)
+        stamp(ci, ctx_);
+    repo_.write(stamped);
 }
 
 void counterparty_identifier_service::remove_counterparty_identifier(const boost::uuids::uuid& id) {

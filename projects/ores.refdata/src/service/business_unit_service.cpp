@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 business_unit_service::business_unit_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::business_unit> business_unit_service::list_business_units() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all business units";
@@ -59,7 +62,9 @@ void business_unit_service::save_business_unit(const domain::business_unit& busi
         throw std::invalid_argument("Business Unit ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving business unit: " << business_unit.id;
-    repo_.write(business_unit);
+    auto bu = business_unit;
+    stamp(bu, ctx_);
+    repo_.write(bu);
     BOOST_LOG_SEV(lg(), info) << "Saved business unit: " << business_unit.id;
 }
 
@@ -70,7 +75,10 @@ void business_unit_service::save_business_units(
             throw std::invalid_argument("Business Unit ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << business_units.size() << " business units";
-    repo_.write(business_units);
+    auto stamped = business_units;
+    for (auto& bu : stamped)
+        stamp(bu, ctx_);
+    repo_.write(stamped);
 }
 
 void business_unit_service::remove_business_unit(const boost::uuids::uuid& id) {

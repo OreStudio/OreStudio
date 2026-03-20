@@ -112,6 +112,7 @@ public:
     get_party_identifier_history(const boost::uuids::uuid& id);
 
 private:
+    context ctx_;
     repository::party_identifier_repository repo_;
 };
 

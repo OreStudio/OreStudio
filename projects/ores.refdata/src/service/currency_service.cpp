@@ -22,6 +22,9 @@
 #include <algorithm>
 #include <unordered_set>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -50,7 +53,9 @@ void currency_service::save_currency(const domain::currency& currency) {
         throw std::invalid_argument("Currency ISO code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving currency: " << currency.iso_code;
-    repo_.write(ctx_, currency);
+    auto c = currency;
+    stamp(c, ctx_);
+    repo_.write(ctx_, c);
 }
 
 void currency_service::save_currencies(
@@ -60,7 +65,10 @@ void currency_service::save_currencies(
             throw std::invalid_argument("Currency ISO code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << currencies.size() << " currencies";
-    repo_.write(ctx_, currencies);
+    auto stamped = currencies;
+    for (auto& c : stamped)
+        stamp(c, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void currency_service::delete_currency(const std::string& iso_code) {

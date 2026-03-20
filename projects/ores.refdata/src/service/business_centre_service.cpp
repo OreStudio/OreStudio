@@ -19,6 +19,10 @@
  */
 #include "ores.refdata/service/business_centre_service.hpp"
 
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
+
 namespace ores::refdata::service {
 
 using namespace ores::logging;
@@ -46,7 +50,9 @@ void business_centre_service::save_business_centre(
         throw std::invalid_argument("Business centre code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving business centre: " << bc.code;
-    repo_.write(ctx_, bc);
+    auto b = bc;
+    stamp(b, ctx_);
+    repo_.write(ctx_, b);
 }
 
 void business_centre_service::save_business_centres(
@@ -56,7 +62,10 @@ void business_centre_service::save_business_centres(
             throw std::invalid_argument("Business centre code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << business_centres.size() << " business centres";
-    repo_.write(ctx_, business_centres);
+    auto stamped = business_centres;
+    for (auto& b : stamped)
+        stamp(b, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void business_centre_service::delete_business_centre(const std::string& code) {

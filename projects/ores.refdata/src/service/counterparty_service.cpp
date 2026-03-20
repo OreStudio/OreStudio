@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 counterparty_service::counterparty_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::counterparty> counterparty_service::list_counterparties(
     std::uint32_t offset, std::uint32_t limit) {
@@ -66,7 +69,9 @@ void counterparty_service::save_counterparty(const domain::counterparty& counter
         throw std::invalid_argument("Counterparty ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving counterparty: " << counterparty.id;
-    repo_.write(counterparty);
+    auto c = counterparty;
+    stamp(c, ctx_);
+    repo_.write(c);
     BOOST_LOG_SEV(lg(), info) << "Saved counterparty: " << counterparty.id;
 }
 
@@ -77,7 +82,10 @@ void counterparty_service::save_counterparties(
             throw std::invalid_argument("Counterparty ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparties.size() << " counterparties";
-    repo_.write(counterparties);
+    auto stamped = counterparties;
+    for (auto& c : stamped)
+        stamp(c, ctx_);
+    repo_.write(stamped);
 }
 
 void counterparty_service::remove_counterparty(const boost::uuids::uuid& id) {

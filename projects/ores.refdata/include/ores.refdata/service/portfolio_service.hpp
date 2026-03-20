@@ -106,6 +106,7 @@ public:
     get_portfolio_history(const boost::uuids::uuid& id);
 
 private:
+    context ctx_;
     repository::portfolio_repository repo_;
 };
 

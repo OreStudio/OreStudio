@@ -20,6 +20,9 @@
 #include "ores.refdata/service/party_type_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -48,7 +51,9 @@ void party_type_service::save_type(const domain::party_type& type) {
         throw std::invalid_argument("Party type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving party type: " << type.code;
-    repo_.write(ctx_, type);
+    auto t = type;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved party type: " << type.code;
 }
 
@@ -58,7 +63,10 @@ void party_type_service::save_types(const std::vector<domain::party_type>& types
             throw std::invalid_argument("Party type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " party types";
-    repo_.write(ctx_, types);
+    auto stamped = types;
+    for (auto& t : stamped)
+        stamp(t, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void party_type_service::remove_type(const std::string& code) {

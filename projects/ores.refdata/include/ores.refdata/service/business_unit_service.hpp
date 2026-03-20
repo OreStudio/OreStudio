@@ -106,6 +106,7 @@ public:
     get_business_unit_history(const boost::uuids::uuid& id);
 
 private:
+    context ctx_;
     repository::business_unit_repository repo_;
 };
 

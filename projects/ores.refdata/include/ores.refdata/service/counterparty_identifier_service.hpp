@@ -112,6 +112,7 @@ public:
     get_counterparty_identifier_history(const boost::uuids::uuid& id);
 
 private:
+    context ctx_;
     repository::counterparty_identifier_repository repo_;
 };
 

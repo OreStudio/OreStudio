@@ -20,6 +20,9 @@
 #include "ores.refdata/service/currency_market_tier_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -45,7 +48,9 @@ void currency_market_tier_service::save_type(const domain::currency_market_tier&
     if (v.code.empty())
         throw std::invalid_argument("Currency Market Tier code cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving currency market tier: " << v.code;
-    repo_.write(ctx_, v);
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved currency market tier: " << v.code;
 }
 
@@ -56,7 +61,10 @@ void currency_market_tier_service::save_types(
             throw std::invalid_argument("Currency Market Tier code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " currency market tiers";
-    repo_.write(ctx_, types);
+    auto stamped = types;
+    for (auto& t : stamped)
+        stamp(t, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void currency_market_tier_service::remove_type(const std::string& code) {

@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 party_identifier_service::party_identifier_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::party_identifier> party_identifier_service::list_party_identifiers() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all party identifiers";
@@ -67,7 +70,9 @@ void party_identifier_service::save_party_identifier(const domain::party_identif
         throw std::invalid_argument("Party Identifier ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving party identifier: " << party_identifier.id;
-    repo_.write(party_identifier);
+    auto pi = party_identifier;
+    stamp(pi, ctx_);
+    repo_.write(pi);
     BOOST_LOG_SEV(lg(), info) << "Saved party identifier: " << party_identifier.id;
 }
 
@@ -78,7 +83,10 @@ void party_identifier_service::save_party_identifiers(
             throw std::invalid_argument("Party Identifier ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_identifiers.size() << " party identifiers";
-    repo_.write(party_identifiers);
+    auto stamped = party_identifiers;
+    for (auto& pi : stamped)
+        stamp(pi, ctx_);
+    repo_.write(stamped);
 }
 
 void party_identifier_service::remove_party_identifier(const boost::uuids::uuid& id) {

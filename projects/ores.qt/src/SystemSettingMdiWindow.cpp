@@ -169,7 +169,7 @@ void SystemSettingMdiWindow::onConnectionStateChanged() {
     }
 }
 
-void SystemSettingMdiWindow::reload() {
+void SystemSettingMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
     if (!clientManager_->isConnected()) {
         emit statusChanged("Cannot reload - Disconnected");
@@ -388,7 +388,7 @@ void SystemSettingMdiWindow::updateActionStates() {
 void SystemSettingMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &SystemSettingMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

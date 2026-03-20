@@ -2757,8 +2757,8 @@ void MainWindow::onLoginSuccess(const QString& username) {
     if (roleController_) {
         roleController_->setUsername(username);
     }
-    if (featureFlagController_) {
-        featureFlagController_->setUsername(username);
+    if (systemSettingController_) {
+        systemSettingController_->setUsername(username);
     }
     if (changeReasonCategoryController_) {
         changeReasonCategoryController_->setUsername(username);

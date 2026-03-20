@@ -1,0 +1,186 @@
+:PROPERTIES:
+:ID: f703b8ae-bd05-4b55-9e18-856f61920ddd
+:END:
+#+title: Compute Wrapper Design
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+=ores.compute.wrapper= is a standalone executable that runs on compute nodes
+(managed or volunteer). It subscribes to the JetStream work queue, processes
+one workunit at a time, and submits results back to the compute service.
+
+** Goals
+
+- Run on any node (managed VM, cloud instance, or volunteer machine)
+- Support many different engine types via a per-app-version invocation manifest
+- Require no database access — communicates exclusively via NATS
+- Be operationally simple: one binary, one config file, one systemd unit
+
+** Out of scope
+
+- GUI / tray icon for volunteer nodes (future)
+- Concurrent job execution (future)
+- Self-registration / zero-touch provisioning (future)
+
+* Architecture
+
+=ores.compute.wrapper= is a new project at =projects/ores.compute.wrapper/=,
+following the same structure as =ores.compute.service=:
+
+#+begin_example
+projects/ores.compute.wrapper/
+  include/ores.compute.wrapper/
+    app/application.hpp
+    config/options.hpp
+    config/parser.hpp
+  src/
+    app/application.cpp
+    config/options.cpp
+    config/parser.cpp
+    main.cpp
+  CMakeLists.txt
+#+end_example
+
+Key internal components:
+
+| Component          | Responsibility                                                       |
+|--------------------+----------------------------------------------------------------------|
+| =application=      | Top-level async loop, NATS setup, JetStream subscription             |
+| =job_runner=       | Downloads inputs, spawns subprocess, uploads output, submits result  |
+| =heartbeat_sender= | Publishes =work.heartbeat= on a timer while engine is running        |
+| =http_client=      | HTTP download (GET) and upload (PUT) for job files                   |
+
+Dependencies: =ores.compute= (domain + messaging), =ores.nats=, HTTP client
+library (libcurl via vcpkg).
+
+* Configuration
+
+The wrapper shares the same CLI conventions as all other ores services.
+Its =options= struct omits =database= (no DB access needed) and adds two
+wrapper-specific fields:
+
+#+begin_src cpp
+struct options final {
+    std::optional<ores::logging::logging_options> logging;
+    ores::nats::config::nats_options nats;
+    std::string host_id;   // UUID of this node's host record
+    std::string work_dir;  // temp directory for job inputs/outputs
+};
+#+end_src
+
+All standard NATS flags (=--nats-url=, =--nats-credentials=,
+=--nats-subject-prefix=) are inherited from =nats_options=. Environment
+variable overrides follow the same pattern as other services.
+
+** Node provisioning
+
+Admin provisions a new node via CLI:
+
+#+begin_src sh
+ores.cli hosts add --external-id my-node --location "us-east-1" \
+  --cpu-count 8 --ram-mb 16384 --modified-by admin
+#+end_src
+
+This creates the =host= record and issues a per-node JWT credentials file.
+The admin copies the credentials file to the node. Self-registration is
+deferred to a future iteration.
+
+* Protocol changes
+
+** Extended =work_assignment_event=
+
+The JetStream assignment message is extended to carry everything the wrapper
+needs — no additional round trips required:
+
+#+begin_src cpp
+struct work_assignment_event {
+    std::string result_id;
+    std::string workunit_id;
+    std::string app_version_id;
+    std::string package_uri;   // engine bundle (cached by app_version_id)
+    std::string input_uri;     // job input data
+    std::string config_uri;    // job config (passed through to engine)
+    std::string output_uri;    // pre-assigned upload location for output
+};
+#+end_src
+
+The server populates all fields at dispatch time (when the workunit is saved
+and results are created).
+
+* Engine invocation
+
+Each =app_version= package bundle contains a =manifest.json= at its root
+describing how to invoke the engine:
+
+#+begin_src json
+{
+  "executable": "bin/ore",
+  "args": ["--input", "{input}", "--output", "{output}", "--config", "{config}"]
+}
+#+end_src
+
+The wrapper substitutes =={input}==, =={output}==, =={config}== with the
+actual temp file paths and spawns the subprocess with the resulting argv.
+This allows each app version to define its own CLI convention without
+changes to the wrapper.
+
+** Package caching
+
+Engine bundles are cached by =app_version_id= under =work_dir/packages/=:
+
+#+begin_example
+work_dir/
+  packages/
+    <app_version_id>/     ← extracted bundle, reused across jobs
+      manifest.json
+      bin/ore
+      ...
+  jobs/
+    <result_id>/          ← per-job scratch space, deleted after ACK
+      input
+      config
+      output
+#+end_example
+
+The wrapper only downloads and extracts the package if the directory does
+not already exist.
+
+* Data flow
+
+#+begin_example
+JetStream                wrapper                    compute service
+   |                        |                              |
+   |--[deliver assignment]->|                              |
+   |                        |--[HTTP GET input_uri]-->  [storage]
+   |                        |--[HTTP GET config_uri]--> [storage]
+   |                        |                              |
+   |                        |--[spawn engine subprocess]   |
+   |                        |   (blocks until exit)        |
+   |                        |--[heartbeat (timer)]-------->|
+   |                        |                              |
+   |                        |--[HTTP PUT output_uri]-->  [storage]
+   |                        |--[results.submit]----------->|
+   |                        |<--[response: success/fail]---|
+   |<--[ACK / NACK]---------|                              |
+#+end_example
+
+* Error handling
+
+| Scenario                  | Behaviour                                                             |
+|---------------------------+-----------------------------------------------------------------------|
+| HTTP download fails       | Submit =outcome=failed= with HTTP error message. ACK.                 |
+| Engine exits non-zero     | Submit =outcome=failed= with exit code + last N lines of stderr. ACK. |
+| HTTP upload fails         | Submit =outcome=failed=, no =output_uri=. ACK.                        |
+| =results.submit= fails    | Log error. NACK — JetStream redelivers, reaper catches stale result.  |
+
+Only =results.submit= failure causes a NACK. All other failures are
+reported to the server and ACKed so the message is not redelivered.
+
+* Open questions
+
+- What archive format for the package bundle? (tar.gz / zip)
+- What HTTP client library? (libcurl already in vcpkg, or use a lighter wrapper)
+- Heartbeat interval — should it be configurable or a fixed constant?

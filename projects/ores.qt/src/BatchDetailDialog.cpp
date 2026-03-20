@@ -187,9 +187,50 @@ void BatchDetailDialog::onSaveClicked() {
 
     BOOST_LOG_SEV(lg(), info) << "Saving compute batch: " << batch_.external_ref;
 
-    // Save not yet implemented for compute entities
-    MessageBoxHelper::warning(this, "Not Implemented",
-        "Save operation is not yet implemented for this entity.");
+    using FutureResult = std::pair<bool, std::string>;
+    QPointer<BatchDetailDialog> self = this;
+    const compute::domain::batch batchToSave = batch_;
+
+    QFuture<FutureResult> future =
+        QtConcurrent::run([self, batchToSave]() -> FutureResult {
+            if (!self) return {false, ""};
+
+            compute::messaging::save_batch_request request;
+            request.batch = batchToSave;
+
+            auto result =
+                self->clientManager_->process_authenticated_request(
+                    std::move(request));
+
+            if (!result) return {false, "Failed to communicate with server"};
+            return {result->success, result->message};
+        });
+
+    auto* watcher = new QFutureWatcher<FutureResult>(this);
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
+        [self, watcher, batchToSave]() {
+        if (!self) return;
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
+            emit self->batchSaved(
+                QString::fromStdString(batchToSave.external_ref));
+            self->notifySaveSuccess(
+                tr("Batch '%1' saved").arg(
+                    QString::fromStdString(batchToSave.external_ref)));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Batch save failed: " << message;
+            emit self->errorMessage(
+                QString("Failed to save batch: %1").arg(
+                    QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Save Failed",
+                QString::fromStdString(message));
+        }
+    });
+    watcher->setFuture(future);
 }
 
 void BatchDetailDialog::onDeleteClicked() {

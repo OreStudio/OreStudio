@@ -54,6 +54,19 @@ struct save_app_version_response {
     std::string message;
 };
 
+struct get_app_version_history_request {
+    using response_type = struct get_app_version_history_response;
+    static constexpr std::string_view nats_subject =
+        "compute.v1.app-versions.history";
+    std::string id;
+};
+
+struct get_app_version_history_response {
+    bool success = true;
+    std::string message;
+    std::vector<ores::compute::domain::app_version> versions;
+};
+
 }
 
 #endif

@@ -187,9 +187,47 @@ void AppDetailDialog::onSaveClicked() {
 
     BOOST_LOG_SEV(lg(), info) << "Saving compute app: " << app_.name;
 
-    // Save not yet implemented for compute entities
-    MessageBoxHelper::warning(this, "Not Implemented",
-        "Save operation is not yet implemented for this entity.");
+    using FutureResult = std::pair<bool, std::string>;
+    QPointer<AppDetailDialog> self = this;
+    const compute::domain::app appToSave = app_;
+
+    QFuture<FutureResult> future =
+        QtConcurrent::run([self, appToSave]() -> FutureResult {
+            if (!self) return {false, ""};
+
+            compute::messaging::save_app_request request;
+            request.app = appToSave;
+
+            auto result =
+                self->clientManager_->process_authenticated_request(
+                    std::move(request));
+
+            if (!result) return {false, "Failed to communicate with server"};
+            return {result->success, result->message};
+        });
+
+    auto* watcher = new QFutureWatcher<FutureResult>(this);
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
+        [self, watcher, appToSave]() {
+        if (!self) return;
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
+            emit self->appSaved(QString::fromStdString(appToSave.name));
+            self->notifySaveSuccess(
+                tr("App '%1' saved").arg(QString::fromStdString(appToSave.name)));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "App save failed: " << message;
+            emit self->errorMessage(
+                QString("Failed to save app: %1").arg(QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Save Failed",
+                QString::fromStdString(message));
+        }
+    });
+    watcher->setFuture(future);
 }
 
 void AppDetailDialog::onDeleteClicked() {

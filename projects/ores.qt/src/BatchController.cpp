@@ -27,10 +27,18 @@
 #include "ores.qt/BatchDetailDialog.hpp"
 #include "ores.qt/BatchHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.compute/eventing/batch_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view batch_event_name =
+        eventing::domain::event_traits<
+            compute::eventing::batch_changed_event>::name;
+}
 
 BatchController::BatchController(
     QMainWindow* mainWindow,
@@ -39,7 +47,7 @@ BatchController::BatchController(
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
+          batch_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 

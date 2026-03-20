@@ -54,6 +54,19 @@ struct save_batch_response {
     std::string message;
 };
 
+struct get_batch_history_request {
+    using response_type = struct get_batch_history_response;
+    static constexpr std::string_view nats_subject =
+        "compute.v1.batches.history";
+    std::string id;
+};
+
+struct get_batch_history_response {
+    bool success = true;
+    std::string message;
+    std::vector<ores::compute::domain::batch> versions;
+};
+
 }
 
 #endif

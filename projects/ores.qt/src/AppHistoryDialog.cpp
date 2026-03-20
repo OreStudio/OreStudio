@@ -27,6 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.compute/messaging/app_protocol.hpp"
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -123,8 +124,42 @@ void AppHistoryDialog::loadHistory() {
     BOOST_LOG_SEV(lg(), debug) << "Loading history for compute app: " << code_.toStdString();
     emit statusChanged(tr("Loading history..."));
 
-    // History not yet implemented for compute entities
-    emit errorOccurred("History loading is not yet implemented for this entity.");
+    using HistoryResult = std::pair<bool, std::vector<compute::domain::app>>;
+    QPointer<AppHistoryDialog> self = this;
+    const std::string id = boost::uuids::to_string(id_);
+
+    QFuture<HistoryResult> future =
+        QtConcurrent::run([self, id]() -> HistoryResult {
+            if (!self) return {false, {}};
+
+            compute::messaging::get_app_history_request request;
+            request.id = id;
+
+            auto result =
+                self->clientManager_->process_authenticated_request(
+                    std::move(request));
+
+            if (!result || !result->success) return {false, {}};
+            return {true, std::move(result->versions)};
+        });
+
+    auto* watcher = new QFutureWatcher<HistoryResult>(this);
+    connect(watcher, &QFutureWatcher<HistoryResult>::finished, self,
+        [self, watcher]() {
+        if (!self) return;
+        auto [success, versions] = watcher->result();
+        watcher->deleteLater();
+
+        if (!success) {
+            emit self->errorOccurred(tr("Failed to load history"));
+            return;
+        }
+
+        self->versions_ = std::move(versions);
+        self->updateVersionList();
+        emit self->statusChanged(tr("History loaded."));
+    });
+    watcher->setFuture(future);
 }
 
 void AppHistoryDialog::updateVersionList() {

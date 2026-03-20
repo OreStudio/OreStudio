@@ -97,6 +97,26 @@ public:
             << "Completed " << msg.subject;
     }
 
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(batch_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto ctx = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        get_batch_history_response resp;
+        try {
+            if (auto req = decode<get_batch_history_request>(msg)) {
+                service::batch_service svc(ctx);
+                resp.versions = svc.history(req->id);
+            }
+        } catch (const std::exception& e) {
+            resp.success = false;
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(batch_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

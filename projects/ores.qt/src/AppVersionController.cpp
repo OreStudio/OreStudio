@@ -27,10 +27,18 @@
 #include "ores.qt/AppVersionDetailDialog.hpp"
 #include "ores.qt/AppVersionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.compute/eventing/app_version_changed_event.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+
+namespace {
+    constexpr std::string_view app_version_event_name =
+        eventing::domain::event_traits<
+            compute::eventing::app_version_changed_event>::name;
+}
 
 AppVersionController::AppVersionController(
     QMainWindow* mainWindow,
@@ -39,7 +47,7 @@ AppVersionController::AppVersionController(
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
+          app_version_event_name, parent),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 

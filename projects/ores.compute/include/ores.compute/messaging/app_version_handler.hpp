@@ -98,6 +98,26 @@ public:
             << "Completed " << msg.subject;
     }
 
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto ctx = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        get_app_version_history_response resp;
+        try {
+            if (auto req = decode<get_app_version_history_request>(msg)) {
+                service::app_version_service svc(ctx);
+                resp.versions = svc.history(req->id);
+            }
+        } catch (const std::exception& e) {
+            resp.success = false;
+            resp.message = e.what();
+        }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(app_version_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;

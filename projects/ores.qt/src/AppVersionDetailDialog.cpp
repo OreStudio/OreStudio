@@ -187,9 +187,50 @@ void AppVersionDetailDialog::onSaveClicked() {
 
     BOOST_LOG_SEV(lg(), info) << "Saving app version: " << app_version_.wrapper_version;
 
-    // Save not yet implemented for compute entities
-    MessageBoxHelper::warning(this, "Not Implemented",
-        "Save operation is not yet implemented for this entity.");
+    using FutureResult = std::pair<bool, std::string>;
+    QPointer<AppVersionDetailDialog> self = this;
+    const compute::domain::app_version versionToSave = app_version_;
+
+    QFuture<FutureResult> future =
+        QtConcurrent::run([self, versionToSave]() -> FutureResult {
+            if (!self) return {false, ""};
+
+            compute::messaging::save_app_version_request request;
+            request.app_version = versionToSave;
+
+            auto result =
+                self->clientManager_->process_authenticated_request(
+                    std::move(request));
+
+            if (!result) return {false, "Failed to communicate with server"};
+            return {result->success, result->message};
+        });
+
+    auto* watcher = new QFutureWatcher<FutureResult>(this);
+    connect(watcher, &QFutureWatcher<FutureResult>::finished, self,
+        [self, watcher, versionToSave]() {
+        if (!self) return;
+        auto [success, message] = watcher->result();
+        watcher->deleteLater();
+
+        if (success) {
+            self->hasChanges_ = false;
+            self->updateSaveButtonState();
+            emit self->app_versionSaved(
+                QString::fromStdString(versionToSave.wrapper_version));
+            self->notifySaveSuccess(
+                tr("App version '%1' saved").arg(
+                    QString::fromStdString(versionToSave.wrapper_version)));
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "App version save failed: " << message;
+            emit self->errorMessage(
+                QString("Failed to save app version: %1").arg(
+                    QString::fromStdString(message)));
+            MessageBoxHelper::critical(self, "Save Failed",
+                QString::fromStdString(message));
+        }
+    });
+    watcher->setFuture(future);
 }
 
 void AppVersionDetailDialog::onDeleteClicked() {

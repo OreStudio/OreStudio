@@ -86,6 +86,12 @@
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
+#include "ores.qt/HostController.hpp"
+#include "ores.qt/AppController.hpp"
+#include "ores.qt/AppVersionController.hpp"
+#include "ores.qt/BatchController.hpp"
+#include "ores.qt/WorkunitController.hpp"
+#include "ores.qt/ResultController.hpp"
 #include "ores.qt/ReportTypeController.hpp"
 #include "ores.qt/ConcurrencyPolicyController.hpp"
 #include "ores.qt/ReportDefinitionController.hpp"
@@ -770,6 +776,46 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(ui_->ActionJobDefinitions, &QAction::triggered, this, [this]() {
         if (jobDefinitionController_)
             jobDefinitionController_->showListWindow();
+    });
+
+    // Compute grid menu
+    auto* computeMenu = menuBar()->addMenu(tr("Compute"));
+    auto* actionHosts = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor),
+        tr("Hosts"));
+    auto* actionApps = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor),
+        tr("Apps"));
+    auto* actionAppVersions = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor),
+        tr("App Versions"));
+    auto* actionBatches = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor),
+        tr("Batches"));
+    auto* actionWorkunits = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor),
+        tr("Workunits"));
+    auto* actionResults = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor),
+        tr("Results"));
+
+    connect(actionHosts, &QAction::triggered, this, [this]() {
+        if (hostController_) hostController_->showListWindow();
+    });
+    connect(actionApps, &QAction::triggered, this, [this]() {
+        if (appController_) appController_->showListWindow();
+    });
+    connect(actionAppVersions, &QAction::triggered, this, [this]() {
+        if (appVersionController_) appVersionController_->showListWindow();
+    });
+    connect(actionBatches, &QAction::triggered, this, [this]() {
+        if (batchController_) batchController_->showListWindow();
+    });
+    connect(actionWorkunits, &QAction::triggered, this, [this]() {
+        if (workunitController_) workunitController_->showListWindow();
+    });
+    connect(actionResults, &QAction::triggered, this, [this]() {
+        if (resultController_) resultController_->showListWindow();
     });
 
     // Connect Reporting actions to controllers
@@ -1896,6 +1942,97 @@ void MainWindow::createControllers() {
     connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    // Create compute grid controllers
+    hostController_ = std::make_unique<HostController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(hostController_.get(), &HostController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(hostController_.get(), &HostController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(hostController_.get(), &HostController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(hostController_.get(), &HostController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    appController_ = std::make_unique<AppController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(appController_.get(), &AppController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appController_.get(), &AppController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appController_.get(), &AppController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(appController_.get(), &AppController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    appVersionController_ = std::make_unique<AppVersionController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(appVersionController_.get(), &AppVersionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appVersionController_.get(), &AppVersionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appVersionController_.get(), &AppVersionController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(appVersionController_.get(), &AppVersionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    batchController_ = std::make_unique<BatchController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(batchController_.get(), &BatchController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(batchController_.get(), &BatchController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(batchController_.get(), &BatchController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(batchController_.get(), &BatchController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    workunitController_ = std::make_unique<WorkunitController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(workunitController_.get(), &WorkunitController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(workunitController_.get(), &WorkunitController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(workunitController_.get(), &WorkunitController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(workunitController_.get(), &WorkunitController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    resultController_ = std::make_unique<ResultController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    connect(resultController_.get(), &ResultController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(resultController_.get(), &ResultController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(resultController_.get(), &ResultController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(resultController_.get(), &ResultController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create reporting controllers

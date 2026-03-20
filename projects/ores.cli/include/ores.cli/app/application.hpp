@@ -120,6 +120,7 @@ private:
     void add_country(const config::add_country_options& cfg) const;
     void add_change_reason(const config::add_change_reason_options& cfg) const;
     void add_change_reason_category(const config::add_change_reason_category_options& cfg) const;
+    void add_compute_host(const config::add_compute_host_options& cfg) const;
     void add_compute_app(const config::add_compute_app_options& cfg) const;
     void add_compute_app_version(const config::add_compute_app_version_options& cfg) const;
     void add_compute_batch(const config::add_compute_batch_options& cfg) const;

@@ -1235,6 +1235,28 @@ add_change_reason_category(const config::add_change_reason_category_options& cfg
 }
 
 void application::
+add_compute_host(const config::add_compute_host_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding compute host: " << cfg.external_id;
+
+    compute::domain::host record;
+    record.id = boost::uuids::random_generator()();
+    record.external_id = cfg.external_id;
+    record.location = cfg.location.value_or("");
+    record.cpu_count = cfg.cpu_count.value_or(0);
+    record.ram_mb = cfg.ram_mb.value_or(0);
+    record.gpu_type = cfg.gpu_type.value_or("");
+    record.credit_total = 0.0;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+
+    compute::repository::host_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added compute host: " << record.external_id << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added compute host: " << record.external_id;
+}
+
+void application::
 add_compute_app(const config::add_compute_app_options& cfg) const {
     BOOST_LOG_SEV(lg(), info) << "Adding compute app: " << cfg.name;
 
@@ -1331,6 +1353,8 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_change_reason(opts);
         } else if constexpr (std::is_same_v<T, config::add_change_reason_category_options>) {
             add_change_reason_category(opts);
+        } else if constexpr (std::is_same_v<T, config::add_compute_host_options>) {
+            add_compute_host(opts);
         } else if constexpr (std::is_same_v<T, config::add_compute_app_options>) {
             add_compute_app(opts);
         } else if constexpr (std::is_same_v<T, config::add_compute_app_version_options>) {

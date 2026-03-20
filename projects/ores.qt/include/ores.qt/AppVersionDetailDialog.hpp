@@ -20,6 +20,7 @@
 #ifndef ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 #define ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 
+#include <QString>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -60,6 +61,7 @@ public:
     void setVersion(const compute::domain::app_version& app_version);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+    void setHttpBaseUrl(const std::string& url);
 
 signals:
     void app_versionSaved(const QString& code);
@@ -70,6 +72,8 @@ private slots:
     void onDeleteClicked();
     void onCodeChanged(const QString& text);
     void onFieldChanged();
+    void onBrowsePackageClicked();
+    void onUploadPackageClicked();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -88,7 +92,9 @@ private:
     Ui::AppVersionDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
+    std::string httpBaseUrl_;
     compute::domain::app_version app_version_;
+    QString selectedPackageFilePath_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

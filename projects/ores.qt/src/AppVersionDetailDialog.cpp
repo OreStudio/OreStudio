@@ -19,10 +19,16 @@
  */
 #include "ores.qt/AppVersionDetailDialog.hpp"
 
+#include <QFile>
 #include <QMessageBox>
+#include <QFileDialog>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QNetworkAccessManager>
+#include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include "ui_AppVersionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
@@ -69,6 +75,11 @@ void AppVersionDetailDialog::setupUi() {
 
     ui_->closeButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+
+    ui_->uploadPackageButton->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ArrowSync, IconUtils::DefaultIconColor));
+    ui_->uploadPackageButton->setToolTip(
+        tr("Upload the selected package file to the server"));
 }
 
 void AppVersionDetailDialog::setupConnections() {
@@ -78,10 +89,16 @@ void AppVersionDetailDialog::setupConnections() {
             &AppVersionDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this,
             &AppVersionDetailDialog::onCloseClicked);
+    connect(ui_->browsePackageButton, &QPushButton::clicked, this,
+            &AppVersionDetailDialog::onBrowsePackageClicked);
+    connect(ui_->uploadPackageButton, &QPushButton::clicked, this,
+            &AppVersionDetailDialog::onUploadPackageClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &AppVersionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
+            &AppVersionDetailDialog::onFieldChanged);
+    connect(ui_->platformEdit, &QLineEdit::textChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
@@ -93,6 +110,10 @@ void AppVersionDetailDialog::setClientManager(ClientManager* clientManager) {
 
 void AppVersionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
+}
+
+void AppVersionDetailDialog::setHttpBaseUrl(const std::string& url) {
+    httpBaseUrl_ = url;
 }
 
 void AppVersionDetailDialog::setVersion(
@@ -117,15 +138,20 @@ void AppVersionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
+    ui_->platformEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->minRamSpinBox->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
+    ui_->browsePackageButton->setEnabled(!readOnly);
 }
 
 void AppVersionDetailDialog::updateUiFromVersion() {
     ui_->codeEdit->setText(QString::fromStdString(app_version_.wrapper_version));
     ui_->nameEdit->setText(QString::fromStdString(app_version_.engine_version));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(app_version_.platform));
+    ui_->platformEdit->setText(QString::fromStdString(app_version_.platform));
+    ui_->minRamSpinBox->setValue(app_version_.min_ram_mb);
+    ui_->descriptionEdit->setPlainText(QString::fromStdString(app_version_.package_uri));
 
     populateProvenance(app_version_.version,
                        app_version_.modified_by,
@@ -143,7 +169,10 @@ void AppVersionDetailDialog::updateVersionFromUi() {
         app_version_.wrapper_version = ui_->codeEdit->text().trimmed().toStdString();
     }
     app_version_.engine_version = ui_->nameEdit->text().trimmed().toStdString();
-    app_version_.platform = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    app_version_.platform = ui_->platformEdit->text().trimmed().toStdString();
+    app_version_.min_ram_mb = ui_->minRamSpinBox->value();
+    app_version_.package_uri = "packages/" +
+        boost::uuids::to_string(app_version_.id) + "/package";
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
 }
@@ -164,10 +193,86 @@ void AppVersionDetailDialog::updateSaveButtonState() {
 }
 
 bool AppVersionDetailDialog::validateInput() {
-    const QString wrapper_version_val = ui_->codeEdit->text().trimmed();
-    const QString name_val = ui_->nameEdit->text().trimmed();
+    const QString wrapper_version = ui_->codeEdit->text().trimmed();
+    const QString engine_version = ui_->nameEdit->text().trimmed();
+    return !wrapper_version.isEmpty() && !engine_version.isEmpty();
+}
 
-    return !wrapper_version_val.isEmpty() && !name_val.isEmpty();
+void AppVersionDetailDialog::onBrowsePackageClicked() {
+    const QString path = QFileDialog::getOpenFileName(
+        this, tr("Select Engine Package"),
+        QString(),
+        tr("Package Files (*.tar.gz);;All Files (*)"));
+
+    if (!path.isEmpty()) {
+        selectedPackageFilePath_ = path;
+        ui_->packageFilePathEdit->setText(path);
+        ui_->uploadPackageButton->setEnabled(true);
+    }
+}
+
+void AppVersionDetailDialog::onUploadPackageClicked() {
+    if (selectedPackageFilePath_.isEmpty()) {
+        MessageBoxHelper::warning(this, "No File Selected",
+            "Please browse for a package file first.");
+        return;
+    }
+
+    if (httpBaseUrl_.empty()) {
+        MessageBoxHelper::warning(this, "No Server URL",
+            "HTTP base URL is not configured. Cannot upload package.");
+        return;
+    }
+
+    const std::string id_str = boost::uuids::to_string(app_version_.id);
+    const QString url = QString::fromStdString(
+        httpBaseUrl_ + "/packages/" + id_str + "/package");
+
+    auto* file = new QFile(selectedPackageFilePath_, this);
+    if (!file->open(QIODevice::ReadOnly)) {
+        MessageBoxHelper::critical(this, "File Error",
+            tr("Cannot open file: %1").arg(selectedPackageFilePath_));
+        file->deleteLater();
+        return;
+    }
+
+    ui_->uploadPackageButton->setEnabled(false);
+    ui_->uploadPackageButton->setText(tr("Uploading..."));
+
+    auto* networkManager = new QNetworkAccessManager(this);
+    QNetworkRequest request{QUrl(url)};
+    request.setHeader(QNetworkRequest::ContentTypeHeader,
+                      QByteArray("application/octet-stream"));
+
+    QPointer<AppVersionDetailDialog> self = this;
+    auto* reply = networkManager->post(request, file);
+
+    connect(reply, &QNetworkReply::finished, this,
+            [self, reply, file, networkManager]() {
+        if (!self) { reply->deleteLater(); file->deleteLater();
+                     networkManager->deleteLater(); return; }
+
+        reply->deleteLater();
+        file->deleteLater();
+        networkManager->deleteLater();
+
+        self->ui_->uploadPackageButton->setEnabled(true);
+        self->ui_->uploadPackageButton->setText(tr("Upload Package"));
+
+        if (reply->error() != QNetworkReply::NoError) {
+            BOOST_LOG_SEV(lg(), error) << "Package upload failed: "
+                                       << reply->errorString().toStdString();
+            MessageBoxHelper::critical(self, tr("Upload Failed"),
+                reply->errorString());
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Package uploaded successfully for app_version: "
+                                  << boost::uuids::to_string(self->app_version_.id);
+        emit self->statusMessage(tr("Package uploaded successfully"));
+        MessageBoxHelper::information(self, tr("Upload Complete"),
+            tr("Package uploaded successfully."));
+    });
 }
 
 void AppVersionDetailDialog::onSaveClicked() {
@@ -179,7 +284,7 @@ void AppVersionDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in all required fields.");
+            "Please fill in all required fields (wrapper version, engine version).");
         return;
     }
 
@@ -248,8 +353,6 @@ void AppVersionDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
-
-    BOOST_LOG_SEV(lg(), info) << "Deleting app version: " << app_version_.wrapper_version;
 
     // Delete not yet implemented for compute entities
     MessageBoxHelper::warning(this, "Not Implemented",

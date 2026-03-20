@@ -53,6 +53,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     Qt6::Gui
     Qt6::Widgets
     Qt6::Concurrent
+    Qt6::Network
     Qt6::Svg
     Qt6::Charts)
 # Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)

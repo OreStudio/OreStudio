@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ResultMdiWindow.hpp"
 
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
@@ -47,10 +48,19 @@ ResultMdiWindow::ResultMdiWindow(
       proxyModel_(nullptr),
       paginationWidget_(nullptr),
       reloadAction_(nullptr),
+      autoRefreshAction_(nullptr),
       addAction_(nullptr),
       editAction_(nullptr),
       deleteAction_(nullptr),
-      historyAction_(nullptr) {
+      historyAction_(nullptr),
+      autoRefreshTimer_(nullptr) {
+
+    autoRefreshTimer_ = new QTimer(this);
+    autoRefreshTimer_->setInterval(5000);  // 5 seconds
+    connect(autoRefreshTimer_, &QTimer::timeout, this, [this]() {
+        if (clientManager_ && clientManager_->isConnected())
+            reload();
+    });
 
     setupUi();
     setupConnections();
@@ -86,6 +96,16 @@ void ResultMdiWindow::setupToolbar() {
             &ResultMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
+
+    autoRefreshAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ArrowSync, IconUtils::DefaultIconColor),
+        tr("Auto-Refresh"));
+    autoRefreshAction_->setToolTip(tr("Toggle automatic refresh every 5 seconds"));
+    autoRefreshAction_->setCheckable(true);
+    autoRefreshAction_->setChecked(false);
+    connect(autoRefreshAction_, &QAction::toggled, this,
+            &ResultMdiWindow::onAutoRefreshToggled);
 
     toolbar_->addSeparator();
 
@@ -305,6 +325,16 @@ void ResultMdiWindow::deleteSelected() {
     // Delete not yet implemented for compute entities
     MessageBoxHelper::warning(this, "Not Implemented",
         "Delete operation is not yet implemented for this entity.");
+}
+
+void ResultMdiWindow::onAutoRefreshToggled(bool checked) {
+    if (checked) {
+        BOOST_LOG_SEV(lg(), info) << "Auto-refresh enabled for results";
+        autoRefreshTimer_->start();
+    } else {
+        BOOST_LOG_SEV(lg(), info) << "Auto-refresh disabled for results";
+        autoRefreshTimer_->stop();
+    }
 }
 
 }

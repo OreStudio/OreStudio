@@ -20,6 +20,7 @@
 #ifndef ORES_QT_WORKUNIT_DETAIL_DIALOG_HPP
 #define ORES_QT_WORKUNIT_DETAIL_DIALOG_HPP
 
+#include <QString>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -32,11 +33,11 @@ class WorkunitDetailDialog;
 namespace ores::qt {
 
 /**
- * @brief Detail dialog for viewing and editing workunit records.
+ * @brief Dialog for submitting a new workunit to the compute grid.
  *
- * This dialog allows viewing, creating, and editing workunits.
- * It supports both create mode (for new records) and edit mode (for
- * existing records).
+ * Allows the user to specify the batch and app version UUIDs, upload
+ * input and config files, and set scheduling parameters. On submit,
+ * files are uploaded via HTTP and the workunit is registered via NATS.
  */
 class WorkunitDetailDialog final : public DetailDialogBase {
     Q_OBJECT
@@ -57,19 +58,21 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
+    void setHttpBaseUrl(const std::string& url);
     void setWorkunit(const compute::domain::workunit& workunit);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
 signals:
-    void workunitSaved(const QString& code);
-    void workunitDeleted(const QString& code);
+    void workunitSaved(const QString& id);
+    void workunitDeleted(const QString& id);
 
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
-    void onCodeChanged(const QString& text);
     void onFieldChanged();
+    void onBrowseInputClicked();
+    void onBrowseConfigClicked();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -84,11 +87,15 @@ private:
     void updateWorkunitFromUi();
     void updateSaveButtonState();
     bool validateInput();
+    void saveWorkunitViaNats();
 
     Ui::WorkunitDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
+    std::string httpBaseUrl_;
     compute::domain::workunit workunit_;
+    QString selectedInputFilePath_;
+    QString selectedConfigFilePath_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

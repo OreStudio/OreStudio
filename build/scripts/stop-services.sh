@@ -113,6 +113,19 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Phase 0: compute wrapper nodes (stopped first — outermost layer)
+# ---------------------------------------------------------------------------
+
+echo "[Phase 0: compute wrapper nodes]"
+phase0_pids=()
+for n in 1 2 3 4 5; do
+    stop_service "ores.compute.wrapper.node${n}"
+    [[ -n "$STOP_PID" ]] && phase0_pids+=("$STOP_PID")
+done
+echo ""
+wait_for_pids "compute wrapper nodes" "${phase0_pids[@]}"
+
+# ---------------------------------------------------------------------------
 # Phase 1: front-end servers (WT and HTTP)
 # ---------------------------------------------------------------------------
 

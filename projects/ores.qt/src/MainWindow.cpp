@@ -92,6 +92,7 @@
 #include "ores.qt/BatchController.hpp"
 #include "ores.qt/WorkunitController.hpp"
 #include "ores.qt/ResultController.hpp"
+#include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ReportTypeController.hpp"
 #include "ores.qt/ConcurrencyPolicyController.hpp"
 #include "ores.qt/ReportDefinitionController.hpp"
@@ -780,6 +781,10 @@ MainWindow::MainWindow(QWidget* parent) :
 
     // Compute grid menu
     auto* computeMenu = menuBar()->addMenu(tr("Compute"));
+    auto* actionDashboard = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+        tr("Dashboard"));
+    computeMenu->addSeparator();
     auto* actionHosts = computeMenu->addAction(
         IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor),
         tr("Hosts"));
@@ -799,6 +804,9 @@ MainWindow::MainWindow(QWidget* parent) :
         IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor),
         tr("Results"));
 
+    connect(actionDashboard, &QAction::triggered, this, [this]() {
+        if (computeDashboardController_) computeDashboardController_->showDashboard();
+    });
     connect(actionHosts, &QAction::triggered, this, [this]() {
         if (hostController_) hostController_->showListWindow();
     });
@@ -1977,6 +1985,8 @@ void MainWindow::createControllers() {
 
     appVersionController_ = std::make_unique<AppVersionController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    if (!httpBaseUrl_.empty())
+        appVersionController_->setHttpBaseUrl(httpBaseUrl_);
     connect(appVersionController_.get(), &AppVersionController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -2007,6 +2017,8 @@ void MainWindow::createControllers() {
 
     workunitController_ = std::make_unique<WorkunitController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+    if (!httpBaseUrl_.empty())
+        workunitController_->setHttpBaseUrl(httpBaseUrl_);
     connect(workunitController_.get(), &WorkunitController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -2033,6 +2045,25 @@ void MainWindow::createControllers() {
     connect(resultController_.get(), &ResultController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(resultController_.get(), &ResultController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    computeDashboardController_ = std::make_unique<ComputeDashboardController>(
+        this, mdiArea_, clientManager_, this);
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(computeDashboardController_.get(),
+            &ComputeDashboardController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create reporting controllers
@@ -2505,6 +2536,16 @@ void MainWindow::onSetRecordingDirectoryTriggered() {
     if (clientManager_) {
         clientManager_->setRecordingDirectory(newDir.toStdString());
     }
+}
+
+void MainWindow::setHttpBaseUrl(const std::string& url) {
+    httpBaseUrl_ = url;
+    BOOST_LOG_SEV(lg(), info) << "HTTP base URL set: " << url;
+
+    if (appVersionController_)
+        appVersionController_->setHttpBaseUrl(url);
+    if (workunitController_)
+        workunitController_->setHttpBaseUrl(url);
 }
 
 void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {

@@ -20,6 +20,7 @@
 #ifndef ORES_QT_APP_VERSION_CONTROLLER_HPP
 #define ORES_QT_APP_VERSION_CONTROLLER_HPP
 
+#include <string>
 #include <QMdiArea>
 #include <QMainWindow>
 #include "ores.qt/EntityController.hpp"
@@ -63,6 +64,7 @@ public:
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
+    void setHttpBaseUrl(const std::string& url);
 
 signals:
     void statusMessage(const QString& message);
@@ -86,6 +88,7 @@ private:
 
     AppVersionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
+    std::string httpBaseUrl_;
 };
 
 }

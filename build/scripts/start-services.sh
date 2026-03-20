@@ -132,6 +132,28 @@ launch_nats_service() {
         --nats-subject-prefix "$NATS_PREFIX"
 }
 
+launch_wrapper_node() {
+    local n="$1"
+    local host_id_var="ORES_COMPUTE_WRAPPER_NODE_${n}_HOST_ID"
+    local host_id="${!host_id_var:-}"
+    if [[ -z "$host_id" ]]; then
+        echo "  skip    ores.compute.wrapper.node${n} (no host ID in .env)"
+        return
+    fi
+    local work_dir="$RUN_DIR/wrappers/node_${n}"
+    mkdir -p "$work_dir"
+    local name="ores.compute.wrapper.node${n}"
+    launch "$name" \
+        --log-enabled \
+        --log-level "$LOG_LEVEL" \
+        --log-directory ../log \
+        --nats-url "$NATS_URL" \
+        --host-id "$host_id" \
+        --tenant-id "$NATS_PREFIX" \
+        --work-dir "$work_dir" \
+        --http-base-url "http://localhost:$HTTP_PORT"
+}
+
 wait_for_ready() {
     local name="$1"
     local log_file="$LOG_DIR/$name.log"
@@ -207,6 +229,15 @@ launch ores.wt.service \
     --docroot . \
     --http-port "$WT_PORT"
 echo ""
+
+# 5. Compute wrapper nodes (test environment grid)
+if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
+    echo "[Compute wrapper nodes]"
+    for n in 1 2 3 4 5; do
+        launch_wrapper_node "$n"
+    done
+    echo ""
+fi
 
 echo "Logs : $LOG_DIR"
 echo "Stop : ./build/scripts/stop-services.sh --preset $PRESET"

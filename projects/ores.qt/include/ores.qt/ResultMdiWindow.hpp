@@ -20,6 +20,7 @@
 #ifndef ORES_QT_RESULT_MDI_WINDOW_HPP
 #define ORES_QT_RESULT_MDI_WINDOW_HPP
 
+#include <QTimer>
 #include <QToolBar>
 #include <QTableView>
 #include <QSortFilterProxyModel>
@@ -80,6 +81,7 @@ private slots:
     void onLoadError(const QString& error_message, const QString& details = {});
     void onSelectionChanged();
     void onDoubleClicked(const QModelIndex& index);
+    void onAutoRefreshToggled(bool checked);
 
 protected:
     QString normalRefreshTooltip() const override {
@@ -104,10 +106,14 @@ private:
 
     // Toolbar actions
     QAction* reloadAction_;
+    QAction* autoRefreshAction_;
     QAction* addAction_;
     QAction* editAction_;
     QAction* deleteAction_;
     QAction* historyAction_;
+
+    // Auto-refresh timer (5 second interval)
+    QTimer* autoRefreshTimer_;
 };
 
 }

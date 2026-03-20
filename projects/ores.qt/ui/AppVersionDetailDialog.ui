@@ -6,20 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>500</height>
+    <width>640</width>
+    <height>520</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
-    <height>500</height>
+    <width>640</width>
+    <height>520</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -34,62 +28,86 @@
       <layout class="QVBoxLayout" name="generalLayout">
        <item>
         <widget class="QGroupBox" name="basicInfoGroup">
-         <property name="title">
-          <string>Basic Information</string>
-         </property>
+         <property name="title"><string>Basic Information</string></property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="labelWrapperVersion">
-            <property name="text">
-             <string>Wrapper Version:</string>
-            </property>
+            <property name="text"><string>Wrapper Version:</string></property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLineEdit" name="codeEdit">
-            <property name="placeholderText">
-             <string>Enter app version wrapper version</string>
-            </property>
+            <property name="placeholderText"><string>e.g. 1.0.0</string></property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelName">
-            <property name="text">
-             <string>Name:</string>
-            </property>
+           <widget class="QLabel" name="labelEngineVersion">
+            <property name="text"><string>Engine Version:</string></property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QLineEdit" name="nameEdit">
-            <property name="placeholderText">
-             <string>Enter display name</string>
-            </property>
+            <property name="placeholderText"><string>e.g. 1.2.3</string></property>
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="labelDescription">
-            <property name="text">
-             <string>Description:</string>
-            </property>
+           <widget class="QLabel" name="labelPlatform">
+            <property name="text"><string>Platform:</string></property>
            </widget>
           </item>
           <item row="2" column="1">
+           <widget class="QLineEdit" name="platformEdit">
+            <property name="placeholderText"><string>e.g. linux-x86_64</string></property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelMinRam">
+            <property name="text"><string>Min RAM (MB):</string></property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QSpinBox" name="minRamSpinBox">
+            <property name="minimum"><number>0</number></property>
+            <property name="maximum"><number>1048576</number></property>
+            <property name="singleStep"><number>256</number></property>
+            <property name="value"><number>512</number></property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelPackageFile">
+            <property name="text"><string>Package File:</string></property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <layout class="QHBoxLayout" name="packageLayout">
+            <item>
+             <widget class="QLineEdit" name="packageFilePathEdit">
+              <property name="readOnly"><bool>true</bool></property>
+              <property name="placeholderText"><string>No file selected</string></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="browsePackageButton">
+              <property name="text"><string>Browse...</string></property>
+              <property name="maximumWidth"><number>80</number></property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelDescription">
+            <property name="text"><string>Description:</string></property>
+           </widget>
+          </item>
+          <item row="5" column="1">
            <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>80</height>
-             </size>
+             <size><width>0</width><height>60</height></size>
             </property>
             <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>150</height>
-             </size>
+             <size><width>16777215</width><height>100</height></size>
             </property>
-            <property name="placeholderText">
-             <string>Enter a description</string>
-            </property>
+            <property name="placeholderText"><string>Optional description</string></property>
            </widget>
           </item>
          </layout>
@@ -97,14 +115,9 @@
        </item>
        <item>
         <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
          <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+          <size><width>20</width><height>20</height></size>
          </property>
         </spacer>
        </item>
@@ -124,39 +137,32 @@
     <layout class="QHBoxLayout" name="buttonLayout">
      <item>
       <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
        <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
+        <size><width>40</width><height>20</height></size>
        </property>
       </spacer>
      </item>
      <item>
       <widget class="QPushButton" name="deleteButton">
-       <property name="text">
-        <string>Delete</string>
-       </property>
+       <property name="text"><string>Delete</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="uploadPackageButton">
+       <property name="text"><string>Upload Package</string></property>
+       <property name="enabled"><bool>false</bool></property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="closeButton">
-       <property name="text">
-        <string>Close</string>
-       </property>
+       <property name="text"><string>Close</string></property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="saveButton">
-       <property name="text">
-        <string>Save</string>
-       </property>
-       <property name="default">
-        <bool>true</bool>
-       </property>
+       <property name="text"><string>Save</string></property>
+       <property name="default"><bool>true</bool></property>
       </widget>
      </item>
     </layout>

@@ -17,35 +17,30 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_QT_WORKUNIT_CONTROLLER_HPP
-#define ORES_QT_WORKUNIT_CONTROLLER_HPP
+#ifndef ORES_QT_COMPUTE_DASHBOARD_CONTROLLER_HPP
+#define ORES_QT_COMPUTE_DASHBOARD_CONTROLLER_HPP
 
-#include <string>
+#include <QObject>
+#include <QPointer>
 #include <QMdiArea>
 #include <QMainWindow>
-#include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.compute/domain/workunit.hpp"
-#include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
 
-class WorkunitMdiWindow;
-class DetachableMdiSubWindow;
+class ComputeDashboardMdiWindow;
 
 /**
- * @brief Controller for managing workunit windows and operations.
- *
- * Manages the lifecycle of workunit list, detail, and history windows.
- * Handles event subscriptions and coordinates between windows.
+ * @brief Controller for the compute grid dashboard window.
  */
-class WorkunitController final : public EntityController {
+class ComputeDashboardController final : public QObject {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.workunit_controller";
+        "ores.qt.compute_dashboard_controller";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -54,41 +49,28 @@ private:
     }
 
 public:
-    WorkunitController(
+    ComputeDashboardController(
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
-        const QString& username,
         QObject* parent = nullptr);
 
-    void showListWindow() override;
-    void closeAllWindows() override;
-    void reloadListWindow() override;
-    void setHttpBaseUrl(const std::string& url);
+    void showDashboard();
+    void closeAllWindows();
 
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
-
-protected:
-    EntityListMdiWindow* listWindow() const override;
-
-private slots:
-    void onShowDetails(const compute::domain::workunit& workunit);
-    void onAddNewRequested();
-    void onShowHistory(const compute::domain::workunit& workunit);
-    void onRevertVersion(const compute::domain::workunit& workunit);
-    void onOpenVersion(const compute::domain::workunit& workunit,
-                       int versionNumber);
+    void detachableWindowCreated(DetachableMdiSubWindow* window);
+    void detachableWindowDestroyed(DetachableMdiSubWindow* window);
 
 private:
-    void showAddWindow();
-    void showDetailWindow(const compute::domain::workunit& workunit);
-    void showHistoryWindow(const compute::domain::workunit& workunit);
+    QMainWindow* mainWindow_;
+    QMdiArea* mdiArea_;
+    ClientManager* clientManager_;
 
-    WorkunitMdiWindow* listWindow_;
-    DetachableMdiSubWindow* listMdiSubWindow_;
-    std::string httpBaseUrl_;
+    QPointer<ComputeDashboardMdiWindow> dashboardWindow_;
+    QPointer<DetachableMdiSubWindow> dashboardSubWindow_;
 };
 
 }

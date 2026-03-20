@@ -6,24 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>500</height>
+    <width>640</width>
+    <height>540</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
-    <height>500</height>
+    <width>640</width>
+    <height>540</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Workunit Details</string>
+   <string>Submit Workunit</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -34,62 +28,92 @@
       <layout class="QVBoxLayout" name="generalLayout">
        <item>
         <widget class="QGroupBox" name="basicInfoGroup">
-         <property name="title">
-          <string>Basic Information</string>
-         </property>
+         <property name="title"><string>Job Parameters</string></property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="labelInputUri">
-            <property name="text">
-             <string>Input Uri:</string>
-            </property>
+           <widget class="QLabel" name="labelBatchId">
+            <property name="text"><string>Batch ID:</string></property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="codeEdit">
-            <property name="placeholderText">
-             <string>Enter workunit input uri</string>
-            </property>
+           <widget class="QLineEdit" name="batchIdEdit">
+            <property name="placeholderText"><string>UUID of the batch</string></property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="labelName">
-            <property name="text">
-             <string>Name:</string>
-            </property>
+           <widget class="QLabel" name="labelAppVersionId">
+            <property name="text"><string>App Version ID:</string></property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="nameEdit">
-            <property name="placeholderText">
-             <string>Enter display name</string>
-            </property>
+           <widget class="QLineEdit" name="appVersionIdEdit">
+            <property name="placeholderText"><string>UUID of the app version</string></property>
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="labelDescription">
-            <property name="text">
-             <string>Description:</string>
-            </property>
+           <widget class="QLabel" name="labelInputFile">
+            <property name="text"><string>Input File:</string></property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QPlainTextEdit" name="descriptionEdit">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>80</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>150</height>
-             </size>
-            </property>
-            <property name="placeholderText">
-             <string>Enter a description</string>
-            </property>
+           <layout class="QHBoxLayout" name="inputFileLayout">
+            <item>
+             <widget class="QLineEdit" name="inputFilePathEdit">
+              <property name="readOnly"><bool>true</bool></property>
+              <property name="placeholderText"><string>Select input file to upload</string></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="browseInputButton">
+              <property name="text"><string>Browse...</string></property>
+              <property name="maximumWidth"><number>80</number></property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelConfigFile">
+            <property name="text"><string>Config File:</string></property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <layout class="QHBoxLayout" name="configFileLayout">
+            <item>
+             <widget class="QLineEdit" name="configFilePathEdit">
+              <property name="readOnly"><bool>true</bool></property>
+              <property name="placeholderText"><string>Select config file to upload</string></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="browseConfigButton">
+              <property name="text"><string>Browse...</string></property>
+              <property name="maximumWidth"><number>80</number></property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelPriority">
+            <property name="text"><string>Priority:</string></property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="prioritySpinBox">
+            <property name="minimum"><number>1</number></property>
+            <property name="maximum"><number>100</number></property>
+            <property name="value"><number>50</number></property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelRedundancy">
+            <property name="text"><string>Target Redundancy:</string></property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QSpinBox" name="redundancySpinBox">
+            <property name="minimum"><number>1</number></property>
+            <property name="maximum"><number>10</number></property>
+            <property name="value"><number>1</number></property>
            </widget>
           </item>
          </layout>
@@ -97,14 +121,9 @@
        </item>
        <item>
         <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
          <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
+          <size><width>20</width><height>20</height></size>
          </property>
         </spacer>
        </item>
@@ -124,39 +143,26 @@
     <layout class="QHBoxLayout" name="buttonLayout">
      <item>
       <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
        <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
+        <size><width>40</width><height>20</height></size>
        </property>
       </spacer>
      </item>
      <item>
       <widget class="QPushButton" name="deleteButton">
-       <property name="text">
-        <string>Delete</string>
-       </property>
+       <property name="text"><string>Delete</string></property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="closeButton">
-       <property name="text">
-        <string>Close</string>
-       </property>
+       <property name="text"><string>Close</string></property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="saveButton">
-       <property name="text">
-        <string>Save</string>
-       </property>
-       <property name="default">
-        <bool>true</bool>
-       </property>
+       <property name="text"><string>Submit</string></property>
+       <property name="default"><bool>true</bool></property>
       </widget>
      </item>
     </layout>

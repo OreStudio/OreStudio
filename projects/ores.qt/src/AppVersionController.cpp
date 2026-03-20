@@ -54,6 +54,10 @@ AppVersionController::AppVersionController(
     BOOST_LOG_SEV(lg(), debug) << "AppVersionController created";
 }
 
+void AppVersionController::setHttpBaseUrl(const std::string& url) {
+    httpBaseUrl_ = url;
+}
+
 void AppVersionController::showListWindow() {
     BOOST_LOG_SEV(lg(), debug) << "showListWindow called";
 
@@ -150,6 +154,7 @@ void AppVersionController::showAddWindow() {
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setHttpBaseUrl(httpBaseUrl_);
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &AppVersionDetailDialog::statusMessage,
@@ -192,6 +197,7 @@ void AppVersionController::showDetailWindow(
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setHttpBaseUrl(httpBaseUrl_);
     detailDialog->setCreateMode(false);
     detailDialog->setVersion(app_version);
 

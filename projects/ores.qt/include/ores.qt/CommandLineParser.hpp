@@ -21,6 +21,7 @@
 #define ORES_QT_COMMAND_LINE_PARSER_HPP
 
 #include <optional>
+#include <string>
 #include <QCoreApplication>
 #include <QCommandLineParser>
 #include <QString>
@@ -82,6 +83,13 @@ public:
      * @return Instance color or invalid QColor
      */
     [[nodiscard]] QColor instanceColor() const;
+
+    /**
+     * @brief Get the HTTP base URL for the compute service.
+     *
+     * Returns empty string if not specified on the command line.
+     */
+    [[nodiscard]] std::string httpBaseUrl() const;
 
 
 private:

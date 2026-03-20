@@ -46,6 +46,10 @@ WorkunitController::WorkunitController(
     BOOST_LOG_SEV(lg(), debug) << "WorkunitController created";
 }
 
+void WorkunitController::setHttpBaseUrl(const std::string& url) {
+    httpBaseUrl_ = url;
+}
+
 void WorkunitController::showListWindow() {
     BOOST_LOG_SEV(lg(), debug) << "showListWindow called";
 
@@ -142,6 +146,7 @@ void WorkunitController::showAddWindow() {
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setHttpBaseUrl(httpBaseUrl_);
     detailDialog->setCreateMode(true);
 
     connect(detailDialog, &WorkunitDetailDialog::statusMessage,
@@ -184,6 +189,7 @@ void WorkunitController::showDetailWindow(
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
+    detailDialog->setHttpBaseUrl(httpBaseUrl_);
     detailDialog->setCreateMode(false);
     detailDialog->setWorkunit(workunit);
 

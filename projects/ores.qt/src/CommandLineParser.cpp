@@ -85,6 +85,13 @@ void CommandLineParser::setupOptions() {
         "color"
     });
 
+    // Compute service options
+    parser_.addOption({
+        "http-base-url",
+        "HTTP base URL for the ORE compute service (e.g., http://localhost:8080).",
+        "url"
+    });
+
 }
 
 void CommandLineParser::process(const QCoreApplication& app) {
@@ -152,6 +159,10 @@ QString CommandLineParser::instanceName() const {
     return parser_.value("instance-name");
 }
 
+
+std::string CommandLineParser::httpBaseUrl() const {
+    return parser_.value("http-base-url").toStdString();
+}
 
 QColor CommandLineParser::instanceColor() const {
     const QString colorStr = parser_.value("instance-color");

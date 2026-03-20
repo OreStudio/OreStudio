@@ -19,6 +19,8 @@
  */
 #include "ores.compute.wrapper/app/application.hpp"
 
+#include <algorithm>
+
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
@@ -318,8 +320,12 @@ application::run(boost::asio::io_context& /*io_ctx*/,
     // tenant share the load and survive restarts.
     const std::string work_subject =
         "compute.v1.work.assignments." + cfg.tenant_id;
-    const std::string durable_name = "ores.compute.wrapper." + cfg.tenant_id;
-    const std::string queue_group  = "ores.compute.wrapper";
+
+    // NATS consumer (durable) names cannot contain dots; replace with hyphens.
+    std::string sanitised_tenant = cfg.tenant_id;
+    std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '-');
+    const std::string durable_name = "ores-compute-wrapper-" + sanitised_tenant;
+    const std::string queue_group  = "ores-compute-wrapper";
 
     BOOST_LOG_SEV(lg(), info) << "Subscribing to: " << work_subject;
 

@@ -166,6 +166,7 @@ launch_wrapper_node() {
         --log-directory ../log \
         --log-filename "${name}.log" \
         --nats-url "$NATS_URL" \
+        --nats-subject-prefix "$NATS_PREFIX" \
         --host-id "$host_id" \
         --tenant-id "$NATS_PREFIX" \
         --work-dir "$work_dir" \
@@ -250,6 +251,9 @@ echo ""
 
 # 5. Compute wrapper nodes (test environment grid)
 if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
+    # Provision JetStream streams before launching nodes.
+    "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX"
+
     echo "[Compute wrapper nodes]"
     for n in 1 2 3 4 5; do
         launch_wrapper_node "$n"

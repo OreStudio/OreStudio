@@ -151,6 +151,14 @@ void CatalogMdiWindow::setupConnections() {
             this, &CatalogMdiWindow::onHistoryClicked);
     connect(refreshAction_, &QAction::triggered,
             this, &CatalogMdiWindow::onRefreshClicked);
+
+    connect(model_, &ClientCatalogModel::loadFinished,
+            this, [this]() { endLoading(); });
+    connect(model_, &ClientCatalogModel::errorOccurred,
+            this, [this](const QString& message) {
+                endLoading();
+                emit errorOccurred(message);
+            });
 }
 
 void CatalogMdiWindow::updateActionStates() {

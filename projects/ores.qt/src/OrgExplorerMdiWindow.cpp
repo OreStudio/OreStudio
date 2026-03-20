@@ -240,6 +240,7 @@ void OrgExplorerMdiWindow::doReload() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot reload: not connected.";
+        endLoading();
         return;
     }
 
@@ -344,6 +345,7 @@ void OrgExplorerMdiWindow::onUnitsLoaded() {
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load business units: "
                                    << result.error_message.toStdString();
+        endLoading();
         return;
     }
 
@@ -361,6 +363,7 @@ void OrgExplorerMdiWindow::onBooksLoaded() {
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load books: "
                                    << result.error_message.toStdString();
+        endLoading();
         return;
     }
 
@@ -377,6 +380,7 @@ void OrgExplorerMdiWindow::onCounterpartiesLoaded() {
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load counterparties: "
                                    << result.error_message.toStdString();
+        endLoading();
         return;
     }
 

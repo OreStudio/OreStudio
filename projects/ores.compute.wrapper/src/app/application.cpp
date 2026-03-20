@@ -349,6 +349,7 @@ application::run(boost::asio::io_context& /*io_ctx*/,
             process_assignment(nats, *evt, cfg, lg());
         });
 
+    BOOST_LOG_SEV(lg(), info) << "Service ready.";
     BOOST_LOG_SEV(lg(), info) << "Waiting for work assignments...";
     nats.drain();
 

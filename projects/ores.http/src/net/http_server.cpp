@@ -108,11 +108,13 @@ asio::awaitable<void> http_server::run() {
     acceptor_->set_option(asio::socket_base::reuse_address(true));
 
     running_.store(true);
-    BOOST_LOG_SEV(lg(), info) << "HTTP server started, accepting connections";
+    BOOST_LOG_SEV(lg(), info) << "Service ready.";
+    BOOST_LOG_SEV(lg(), info) << "Waiting for requests...";
+    BOOST_LOG_SEV(lg(), info) << "Accepting connections on port " << options_.port << ".";
 
     co_await accept_connections();
 
-    BOOST_LOG_SEV(lg(), info) << "HTTP server stopped";
+    BOOST_LOG_SEV(lg(), info) << "Service stopped.";
 }
 
 asio::awaitable<void> http_server::accept_connections() {

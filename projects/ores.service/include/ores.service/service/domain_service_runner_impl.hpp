@@ -97,7 +97,8 @@ run(boost::asio::io_context& io_ctx,
     if (on_started)
         on_started(io_ctx);
 
-    BOOST_LOG_SEV(lg, info) << "Service ready. Waiting for requests...";
+    BOOST_LOG_SEV(lg, info) << "Service ready.";
+    BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg, info) << "Shutdown signal received. Draining...";

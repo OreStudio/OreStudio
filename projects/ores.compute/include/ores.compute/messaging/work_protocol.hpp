@@ -46,10 +46,18 @@ struct pull_work_response {
  * @brief Payload published to the COMPUTE JetStream stream on workunit dispatch.
  *
  * Subject: compute.v1.work.assignments.{tenant_id}
+ *
+ * Contains everything the wrapper needs to execute the job — no additional
+ * round trips to the server are required.
  */
 struct work_assignment_event {
     std::string result_id;
     std::string workunit_id;
+    std::string app_version_id; // identifies the cached package
+    std::string package_uri;    // engine bundle (.tar.gz) to download and cache
+    std::string input_uri;      // job input data (HTTP GET)
+    std::string config_uri;     // job config passed through to engine (HTTP GET)
+    std::string output_uri;     // pre-assigned upload location for result (HTTP PUT)
 };
 
 struct heartbeat_message {

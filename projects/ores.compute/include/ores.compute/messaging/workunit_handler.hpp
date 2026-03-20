@@ -37,6 +37,7 @@
 #include "ores.compute/messaging/work_protocol.hpp"
 #include "ores.compute/service/workunit_service.hpp"
 #include "ores.compute/service/result_service.hpp"
+#include "ores.compute/service/app_version_service.hpp"
 
 namespace ores::compute::messaging {
 
@@ -95,8 +96,20 @@ public:
                 service::result_service result_svc(ctx);
                 const auto wu_id_str =
                     boost::uuids::to_string(req->workunit.id);
+                const auto av_id_str =
+                    boost::uuids::to_string(req->workunit.app_version_id);
                 const auto tenant_id_str = ctx.tenant_id().to_string();
                 const auto redundancy = req->workunit.target_redundancy;
+
+                // Look up app_version once to get the package_uri.
+                service::app_version_service av_svc(ctx);
+                const auto av = av_svc.find(av_id_str);
+                const auto package_uri = av ? av->package_uri : std::string{};
+                if (!av) {
+                    BOOST_LOG_SEV(workunit_handler_lg(), warn)
+                        << "app_version not found: " << av_id_str
+                        << " — package_uri will be empty in assignment event";
+                }
 
                 for (int i = 0; i < redundancy; ++i) {
                     domain::result r;
@@ -110,8 +123,13 @@ public:
 
                     const auto result_id_str = boost::uuids::to_string(r.id);
                     const auto event = work_assignment_event{
-                        .result_id = result_id_str,
-                        .workunit_id = wu_id_str};
+                        .result_id      = result_id_str,
+                        .workunit_id    = wu_id_str,
+                        .app_version_id = av_id_str,
+                        .package_uri    = package_uri,
+                        .input_uri      = req->workunit.input_uri,
+                        .config_uri     = req->workunit.config_uri,
+                        .output_uri     = "results/" + result_id_str + "/output"};
                     const auto json = rfl::json::write(event);
                     const auto* p =
                         reinterpret_cast<const std::byte*>(json.data());

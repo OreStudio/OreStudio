@@ -42,6 +42,7 @@ target_link_libraries(${lib_target_name}
         ores.service.lib
         ores.security.lib
         ores.compute.lib
+        ores.eventing.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib

@@ -38,8 +38,12 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
+        ores.nats.lib
     PRIVATE
+        ores.service.lib
+        ores.security.lib
         ores.utility.lib
+        ores.logging.lib
         ores.platform.lib
         faker-cxx::faker-cxx
         libfort::fort)

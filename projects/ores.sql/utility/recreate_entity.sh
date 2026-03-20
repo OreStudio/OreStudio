@@ -28,6 +28,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SQL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+# Source .env if present (local development). In CI, env vars are exported directly.
+CHECKOUT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+ENV_FILE="${CHECKOUT_ROOT}/.env"
+if [[ -f "${ENV_FILE}" ]]; then
+    set -o allexport
+    # shellcheck source=/dev/null
+    source "${ENV_FILE}"
+    set +o allexport
+fi
+
 # Database connection defaults
 DB_HOST="${ORES_TEST_DB_HOST:-localhost}"
 DB_PORT="${ORES_TEST_DB_PORT:-5432}"

@@ -67,6 +67,7 @@ void TenantMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -83,7 +84,7 @@ void TenantMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &TenantMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -168,19 +169,20 @@ void TenantMdiWindow::setupConnections() {
             this, &TenantMdiWindow::onDoubleClicked);
 }
 
-void TenantMdiWindow::reload() {
+void TenantMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading tenants";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading tenants..."));
     model_->refresh();
 }
 
 void TenantMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 tenants").arg(model_->rowCount()));
 }
 
 void TenantMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

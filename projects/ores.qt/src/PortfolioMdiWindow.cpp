@@ -70,6 +70,7 @@ void PortfolioMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -89,7 +90,7 @@ void PortfolioMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &PortfolioMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -196,14 +197,14 @@ void PortfolioMdiWindow::setupConnections() {
     });
 }
 
-void PortfolioMdiWindow::reload() {
+void PortfolioMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading portfolios";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading portfolios..."));
     model_->refresh();
 }
 
 void PortfolioMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 portfolios").arg(loaded).arg(total));
@@ -215,6 +216,7 @@ void PortfolioMdiWindow::onDataLoaded() {
 
 void PortfolioMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

@@ -66,7 +66,7 @@ signals:
     void showRoleDetails(const iam::domain::role& role);
 
 public slots:
-    void reload() override;
+    void doReload() override;
     void viewSelected();
 
 protected:

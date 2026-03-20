@@ -74,6 +74,7 @@ void TreatmentDimensionMdiWindow::setupUi() {
         ClientTreatmentDimensionModel::kSettingsGroup,
         ClientTreatmentDimensionModel::defaultHiddenColumns(), ClientTreatmentDimensionModel::kDefaultWindowSize, 1);
 
+    layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
 }
 
@@ -139,12 +140,14 @@ void TreatmentDimensionMdiWindow::setupConnections() {
 }
 
 void TreatmentDimensionMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 treatment dimensions").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void TreatmentDimensionMdiWindow::onLoadError(const QString& error_message,
                                                const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -250,8 +253,7 @@ void TreatmentDimensionMdiWindow::updateActionStates() {
     historyAction_->setEnabled(singleSelection);
 }
 
-void TreatmentDimensionMdiWindow::reload() {
-    clearStaleIndicator();
+void TreatmentDimensionMdiWindow::doReload() {
     model_->refresh();
 }
 

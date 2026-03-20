@@ -20,6 +20,9 @@
 #include "ores.refdata/service/monetary_nature_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -45,7 +48,9 @@ void monetary_nature_service::save_type(const domain::monetary_nature& v) {
     if (v.code.empty())
         throw std::invalid_argument("Currency Asset Class code cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving currency asset class: " << v.code;
-    repo_.write(ctx_, v);
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved currency asset class: " << v.code;
 }
 
@@ -56,7 +61,10 @@ void monetary_nature_service::save_types(
             throw std::invalid_argument("Currency Asset Class code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " monetary natures";
-    repo_.write(ctx_, types);
+    auto stamped = types;
+    for (auto& t : stamped)
+        stamp(t, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void monetary_nature_service::remove_type(const std::string& code) {

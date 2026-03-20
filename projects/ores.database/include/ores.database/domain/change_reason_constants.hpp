@@ -42,6 +42,13 @@ namespace codes {
 constexpr std::string_view new_record = "system.new_record";
 
 /**
+ * @brief Used for data loaded from external sources (e.g. ORE XML import).
+ *
+ * Requires data lineage commentary for auditability.
+ */
+constexpr std::string_view external_data_import = "system.external_data_import";
+
+/**
  * @brief Used for updates that don't change material business data.
  *
  * Examples: password changes, email updates, touch operations (version bump

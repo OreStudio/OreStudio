@@ -92,7 +92,7 @@ public slots:
      *
      * Fires parallel async fetches for portfolios, books, and counterparties.
      */
-    void reload() override;
+    void doReload() override;
 
 signals:
     void statusChanged(const QString& msg);

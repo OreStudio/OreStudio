@@ -71,7 +71,7 @@ signals:
     void accountDeleted(const boost::uuids::uuid& account_id);
 
 public slots:
-    void reload() override;
+    void doReload() override;
     void addNew();
     void editSelected();
     void deleteSelected();

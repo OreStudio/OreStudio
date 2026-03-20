@@ -81,6 +81,7 @@ void PortfolioExplorerMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     splitter_ = new QSplitter(Qt::Horizontal, this);
 
@@ -102,7 +103,7 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
         tr("Reload"));
     reloadAction_->setToolTip(tr("Refresh portfolio/book tree"));
     connect(reloadAction_, &QAction::triggered, this,
-            &PortfolioExplorerMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_,
         IconUtils::iconPath(Icon::ArrowClockwise));
@@ -149,8 +150,22 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
         tr("Import ORE"));
     importAction_->setToolTip(tr("Import ORE directory data into OreStudio"));
     connect(importAction_, &QAction::triggered, this, [this]() {
-        if (oreImportController_)
+        if (!oreImportController_)
+            return;
+        const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
+        if (node && node->kind == PortfolioTreeNode::Kind::Portfolio) {
+            oreImportController_->trigger(this, node->portfolio.id,
+                                          node->portfolio.name);
+        } else if (node && node->kind == PortfolioTreeNode::Kind::Book) {
+            const auto* par = node->parent;
+            if (par && par->kind == PortfolioTreeNode::Kind::Portfolio)
+                oreImportController_->trigger(this, par->portfolio.id,
+                                              par->portfolio.name);
+            else
+                oreImportController_->trigger(this);
+        } else {
             oreImportController_->trigger(this);
+        }
     });
 }
 
@@ -284,9 +299,7 @@ void PortfolioExplorerMdiWindow::setupEventSubscriptions() {
         subscribe_all();
 }
 
-void PortfolioExplorerMdiWindow::reload() {
-    clearStaleIndicator();
-
+void PortfolioExplorerMdiWindow::doReload() {
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot reload: not connected.";
         return;
@@ -455,6 +468,7 @@ void PortfolioExplorerMdiWindow::rebuildTree() {
     treeModel_->load(party_name, portfolios_, books_);
     treeView_->expandAll();
     updateBreadcrumb(nullptr);
+    endLoading();
 
     // Fetch trade counts for each book in the background
     QList<boost::uuids::uuid> book_ids;

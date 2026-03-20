@@ -22,6 +22,9 @@
 #include <algorithm>
 #include <unordered_set>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -50,7 +53,9 @@ void country_service::save_country(const domain::country& country) {
         throw std::invalid_argument("Country alpha2 code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving country: " << country.alpha2_code;
-    repo_.write(ctx_, country);
+    auto c = country;
+    stamp(c, ctx_);
+    repo_.write(ctx_, c);
 }
 
 void country_service::save_countries(const std::vector<domain::country>& countries) {
@@ -59,7 +64,10 @@ void country_service::save_countries(const std::vector<domain::country>& countri
             throw std::invalid_argument("Country alpha2 code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << countries.size() << " countries";
-    repo_.write(ctx_, countries);
+    auto stamped = countries;
+    for (auto& c : stamped)
+        stamp(c, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void country_service::delete_country(const std::string& alpha2_code) {

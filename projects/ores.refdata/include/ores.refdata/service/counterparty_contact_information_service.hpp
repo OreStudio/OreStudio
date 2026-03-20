@@ -112,6 +112,7 @@ public:
     get_counterparty_contact_information_history(const boost::uuids::uuid& id);
 
 private:
+    context ctx_;
     repository::counterparty_contact_information_repository repo_;
 };
 

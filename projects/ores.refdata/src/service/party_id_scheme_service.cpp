@@ -20,6 +20,9 @@
 #include "ores.refdata/service/party_id_scheme_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -50,7 +53,9 @@ void party_id_scheme_service::save_scheme(
         throw std::invalid_argument("Party ID scheme code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving party ID scheme: " << scheme.code;
-    repo_.write(ctx_, scheme);
+    auto s = scheme;
+    stamp(s, ctx_);
+    repo_.write(ctx_, s);
     BOOST_LOG_SEV(lg(), info) << "Saved party ID scheme: " << scheme.code;
 }
 
@@ -61,7 +66,10 @@ void party_id_scheme_service::save_schemes(
             throw std::invalid_argument("Party ID scheme code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << schemes.size() << " party ID schemes";
-    repo_.write(ctx_, schemes);
+    auto stamped = schemes;
+    for (auto& s : stamped)
+        stamp(s, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void party_id_scheme_service::remove_scheme(const std::string& code) {

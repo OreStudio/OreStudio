@@ -20,6 +20,9 @@
 #include "ores.refdata/service/book_status_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -48,7 +51,9 @@ void book_status_service::save_status(const domain::book_status& status) {
         throw std::invalid_argument("Party status code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving book status: " << status.code;
-    repo_.write(ctx_, status);
+    auto s = status;
+    stamp(s, ctx_);
+    repo_.write(ctx_, s);
     BOOST_LOG_SEV(lg(), info) << "Saved book status: " << status.code;
 }
 
@@ -59,7 +64,10 @@ void book_status_service::save_statuses(
             throw std::invalid_argument("Book status code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << statuses.size() << " book statuses";
-    repo_.write(ctx_, statuses);
+    auto stamped = statuses;
+    for (auto& s : stamped)
+        stamp(s, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void book_status_service::remove_status(const std::string& code) {

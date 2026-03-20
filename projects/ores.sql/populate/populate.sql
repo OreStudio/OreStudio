@@ -83,6 +83,22 @@
 \echo '--- Reporting Layer ---'
 \ir reporting/reporting_populate.sql
 
+-- =============================================================================
+-- FSM Layer (must precede Trading — activity types reference FSM transitions)
+-- =============================================================================
+
+\echo ''
+\echo '--- FSM Layer ---'
+\ir dq/dq_fsm_populate.sql
+
+-- =============================================================================
+-- Trading Layer
+-- =============================================================================
+
+\echo ''
+\echo '--- Trading Layer ---'
+\ir trading/populate_trading.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 

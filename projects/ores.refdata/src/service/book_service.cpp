@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 book_service::book_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::book> book_service::list_books() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all books";
@@ -59,7 +62,9 @@ void book_service::save_book(const domain::book& book) {
         throw std::invalid_argument("Book ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving book: " << book.id;
-    repo_.write(book);
+    auto b = book;
+    stamp(b, ctx_);
+    repo_.write(b);
     BOOST_LOG_SEV(lg(), info) << "Saved book: " << book.id;
 }
 
@@ -69,7 +74,10 @@ void book_service::save_books(const std::vector<domain::book>& books) {
             throw std::invalid_argument("Book ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << books.size() << " books";
-    repo_.write(books);
+    auto stamped = books;
+    for (auto& b : stamped)
+        stamp(b, ctx_);
+    repo_.write(stamped);
 }
 
 void book_service::remove_book(const boost::uuids::uuid& id) {

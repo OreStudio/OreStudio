@@ -699,6 +699,13 @@ MainWindow::MainWindow(QWidget* parent) :
                     ui_->statusbar->showMessage(msg, 5000);
                 });
 
+        // Mark stale after an ORE import so the reload indicator flashes
+        if (oreImportController_) {
+            connect(oreImportController_.get(),
+                    &OreImportController::importCompleted,
+                    window, &EntityListMdiWindow::markAsStale);
+        }
+
         auto* subWindow = new DetachableMdiSubWindow(this);
         subWindow->setWidget(window);
         subWindow->setWindowTitle(tr("Portfolio Explorer"));

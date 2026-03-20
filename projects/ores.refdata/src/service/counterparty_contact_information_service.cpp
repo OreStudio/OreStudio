@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 counterparty_contact_information_service::counterparty_contact_information_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::counterparty_contact_information> counterparty_contact_information_service::list_counterparty_contact_informations() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all counterparty contact informations";
@@ -67,7 +70,9 @@ void counterparty_contact_information_service::save_counterparty_contact_informa
         throw std::invalid_argument("Counterparty Contact Information ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving counterparty contact information: " << counterparty_contact_information.id;
-    repo_.write(counterparty_contact_information);
+    auto cci = counterparty_contact_information;
+    stamp(cci, ctx_);
+    repo_.write(cci);
     BOOST_LOG_SEV(lg(), info) << "Saved counterparty contact information: " << counterparty_contact_information.id;
 }
 
@@ -79,7 +84,10 @@ void counterparty_contact_information_service::save_counterparty_contact_informa
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_contact_informations.size()
                                << " counterparty contact informations";
-    repo_.write(counterparty_contact_informations);
+    auto stamped = counterparty_contact_informations;
+    for (auto& cci : stamped)
+        stamp(cci, ctx_);
+    repo_.write(stamped);
 }
 
 void counterparty_contact_information_service::remove_counterparty_contact_information(const boost::uuids::uuid& id) {

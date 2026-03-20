@@ -93,7 +93,7 @@ public slots:
      *
      * Fires parallel async fetches for business units, books, and counterparties.
      */
-    void reload() override;
+    void doReload() override;
 
 signals:
     void statusChanged(const QString& msg);

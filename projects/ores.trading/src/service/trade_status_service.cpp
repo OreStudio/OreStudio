@@ -24,6 +24,7 @@
 #include <boost/uuid/nil_generator.hpp>
 #include "ores.dq/repository/fsm_transition_repository.hpp"
 #include "ores.trading/repository/activity_type_repository.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::service {
 
@@ -37,9 +38,14 @@ boost::uuids::uuid trade_status_service::resolve_status(
     BOOST_LOG_SEV(lg(), debug)
         << "Resolving trade status for activity type: " << activity_type_code;
 
+    // Activity types and FSM transitions are system-level configuration seeded
+    // under the system tenant; use a system context for both lookups.
+    const auto sys_ctx = ctx.with_tenant(
+        utility::uuid::tenant_id::system(), ctx.actor());
+
     // Step 1: Load the activity type to find the linked FSM transition.
     repository::activity_type_repository at_repo;
-    const auto at_results = at_repo.read_latest(ctx, activity_type_code);
+    const auto at_results = at_repo.read_latest(sys_ctx, activity_type_code);
     if (at_results.empty()) {
         throw std::invalid_argument(
             "Unknown activity type code: " + activity_type_code);
@@ -55,7 +61,7 @@ boost::uuids::uuid trade_status_service::resolve_status(
 
     // Step 3: Load the FSM transition.
     dq::repository::fsm_transition_repository tr_repo;
-    const auto transition = tr_repo.find_by_id(ctx, *at.fsm_transition_id);
+    const auto transition = tr_repo.find_by_id(sys_ctx, *at.fsm_transition_id);
     if (!transition.has_value()) {
         throw std::logic_error(
             "FSM transition not found for id: "

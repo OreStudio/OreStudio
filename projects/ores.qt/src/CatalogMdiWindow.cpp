@@ -72,6 +72,7 @@ void CatalogMdiWindow::setupUi() {
         ClientCatalogModel::kSettingsGroup,
         ClientCatalogModel::defaultHiddenColumns(), ClientCatalogModel::kDefaultWindowSize, 1);
 
+    layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
 }
 
@@ -150,6 +151,14 @@ void CatalogMdiWindow::setupConnections() {
             this, &CatalogMdiWindow::onHistoryClicked);
     connect(refreshAction_, &QAction::triggered,
             this, &CatalogMdiWindow::onRefreshClicked);
+
+    connect(model_, &ClientCatalogModel::loadFinished,
+            this, [this]() { endLoading(); });
+    connect(model_, &ClientCatalogModel::errorOccurred,
+            this, [this](const QString& message) {
+                endLoading();
+                emit errorOccurred(message);
+            });
 }
 
 void CatalogMdiWindow::updateActionStates() {
@@ -159,8 +168,7 @@ void CatalogMdiWindow::updateActionStates() {
     historyAction_->setEnabled(hasSelection);
 }
 
-void CatalogMdiWindow::reload() {
-    clearStaleIndicator();
+void CatalogMdiWindow::doReload() {
     model_->loadData();
 }
 

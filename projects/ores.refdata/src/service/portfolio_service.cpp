@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 portfolio_service::portfolio_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::portfolio> portfolio_service::list_portfolios() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all portfolios";
@@ -59,7 +62,9 @@ void portfolio_service::save_portfolio(const domain::portfolio& portfolio) {
         throw std::invalid_argument("Portfolio ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving portfolio: " << portfolio.id;
-    repo_.write(portfolio);
+    auto p = portfolio;
+    stamp(p, ctx_);
+    repo_.write(p);
     BOOST_LOG_SEV(lg(), info) << "Saved portfolio: " << portfolio.id;
 }
 
@@ -70,7 +75,10 @@ void portfolio_service::save_portfolios(
             throw std::invalid_argument("Portfolio ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << portfolios.size() << " portfolios";
-    repo_.write(portfolios);
+    auto stamped = portfolios;
+    for (auto& p : stamped)
+        stamp(p, ctx_);
+    repo_.write(stamped);
 }
 
 void portfolio_service::remove_portfolio(const boost::uuids::uuid& id) {

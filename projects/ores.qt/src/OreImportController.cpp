@@ -18,6 +18,10 @@
  *
  */
 #include "ores.qt/OreImportController.hpp"
+
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
 #include "ores.qt/OreImportWizard.hpp"
 
 namespace ores::qt {
@@ -29,10 +33,12 @@ OreImportController::OreImportController(ClientManager* clientManager,
     : QObject(parent),
       clientManager_(clientManager) {}
 
-void OreImportController::trigger(QWidget* parent) {
+void OreImportController::trigger(QWidget* parent,
+                                   std::optional<boost::uuids::uuid> portfolioId,
+                                   const std::string& portfolioName) {
     BOOST_LOG_SEV(lg(), info) << "Opening ORE import wizard";
 
-    OreImportWizard wizard(clientManager_, parent);
+    OreImportWizard wizard(clientManager_, portfolioId, portfolioName, parent);
 
     if (wizard.exec() == QDialog::Accepted && wizard.importSuccess()) {
         BOOST_LOG_SEV(lg(), info) << "ORE import wizard accepted";

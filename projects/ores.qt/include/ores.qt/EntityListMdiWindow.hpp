@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QIcon>
 #include <QCloseEvent>
+#include <QProgressBar>
 #include <QSplitter>
 #include <QTableView>
 #include "ores.logging/make_logger.hpp"
@@ -95,10 +96,20 @@ public slots:
     /**
      * @brief Reload data from the server.
      *
-     * Subclasses must implement this to refresh their data.
-     * Implementations should call clearStaleIndicator() first.
+     * Clears the stale indicator, shows the loading bar, disables the reload
+     * action, then delegates to doReload(). Subclasses must not override this.
      */
-    virtual void reload() = 0;
+    void reload();
+
+protected:
+    /**
+     * @brief Subclass implementation of the reload operation.
+     *
+     * Called by reload() after the loading state has been set up.
+     * Do NOT call clearStaleIndicator() or beginLoading() here — the base
+     * class handles both before invoking doReload().
+     */
+    virtual void doReload() = 0;
 
     /**
      * @brief Save window settings (column visibility, window size, etc.).
@@ -145,6 +156,31 @@ protected:
     void initializeStaleIndicator(QAction* refreshAction, const QString& iconPath);
 
     /**
+     * @brief Return the shared loading progress bar.
+     *
+     * Subclasses insert this widget into their layout in setupUi(), placing
+     * it between the toolbar and the table view:
+     *   layout->addWidget(toolbar_);
+     *   layout->addWidget(loadingBar());   // <-- add this line
+     *   layout->addWidget(tableView_);
+     */
+    QProgressBar* loadingBar();
+
+    /**
+     * @brief Show the loading bar and disable the reload action.
+     *
+     * Call at the start of reload(), after clearStaleIndicator().
+     */
+    void beginLoading();
+
+    /**
+     * @brief Hide the loading bar and re-enable the reload action.
+     *
+     * Call from onDataLoaded() and onLoadError().
+     */
+    void endLoading();
+
+    /**
      * @brief Get the normal (non-stale) tooltip text for the refresh action.
      *
      * Override this to customize the tooltip text.
@@ -176,6 +212,9 @@ private:
     QIcon pulseReloadIcon_;
     bool pulseState_{false};
     int pulseCount_{0};
+
+    // Loading indicator
+    QProgressBar* loadingBar_{nullptr};
 
     // Table settings members
     QTableView* settingsTableView_{nullptr};

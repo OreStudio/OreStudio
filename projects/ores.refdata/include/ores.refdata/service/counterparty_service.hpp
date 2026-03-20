@@ -113,6 +113,7 @@ public:
     get_counterparty_history(const boost::uuids::uuid& id);
 
 private:
+    context ctx_;
     repository::counterparty_repository repo_;
 };
 

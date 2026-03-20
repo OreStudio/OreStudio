@@ -20,8 +20,11 @@
 #ifndef ORES_QT_ORE_IMPORT_CONTROLLER_HPP
 #define ORES_QT_ORE_IMPORT_CONTROLLER_HPP
 
+#include <optional>
+#include <string>
 #include <QObject>
 #include <QWidget>
+#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 
@@ -56,9 +59,14 @@ public:
     /**
      * @brief Show the ORE import wizard modal dialog.
      *
-     * @param parent Widget to use as the dialog parent (for centering).
+     * @param parent      Widget to use as the dialog parent (for centering).
+     * @param portfolioId If set, imported portfolios are placed under this
+     *                    existing portfolio instead of the root.
+     * @param portfolioName Display name for the pre-selected portfolio.
      */
-    void trigger(QWidget* parent = nullptr);
+    void trigger(QWidget* parent = nullptr,
+                 std::optional<boost::uuids::uuid> portfolioId = std::nullopt,
+                 const std::string& portfolioName = "");
 
 signals:
     /**

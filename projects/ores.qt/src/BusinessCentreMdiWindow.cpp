@@ -68,6 +68,7 @@ void BusinessCentreMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -87,7 +88,7 @@ void BusinessCentreMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &BusinessCentreMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -194,14 +195,14 @@ void BusinessCentreMdiWindow::setupConnections() {
     });
 }
 
-void BusinessCentreMdiWindow::reload() {
+void BusinessCentreMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading business centres";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading business centres..."));
     model_->refresh();
 }
 
 void BusinessCentreMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
 
@@ -218,6 +219,7 @@ void BusinessCentreMdiWindow::onDataLoaded() {
 
 void BusinessCentreMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

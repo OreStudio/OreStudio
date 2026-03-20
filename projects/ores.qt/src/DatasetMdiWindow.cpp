@@ -75,6 +75,7 @@ void DatasetMdiWindow::setupUi() {
         ClientDatasetModel::kSettingsGroup,
         ClientDatasetModel::defaultHiddenColumns(), ClientDatasetModel::kDefaultWindowSize, 1);
 
+    layout->addWidget(loadingBar());
     layout->addWidget(tableView_);
 }
 
@@ -140,12 +141,14 @@ void DatasetMdiWindow::setupConnections() {
 }
 
 void DatasetMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 datasets").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void DatasetMdiWindow::onLoadError(const QString& error_message,
                                     const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
@@ -252,8 +255,7 @@ void DatasetMdiWindow::updateActionStates() {
     historyAction_->setEnabled(singleSelection);
 }
 
-void DatasetMdiWindow::reload() {
-    clearStaleIndicator();
+void DatasetMdiWindow::doReload() {
     model_->refresh();
 }
 

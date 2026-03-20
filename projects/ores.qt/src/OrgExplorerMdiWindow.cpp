@@ -70,6 +70,7 @@ void OrgExplorerMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     splitter_ = new QSplitter(Qt::Horizontal, this);
 
@@ -91,7 +92,7 @@ void OrgExplorerMdiWindow::setupToolbar() {
         tr("Reload"));
     reloadAction_->setToolTip(tr("Refresh organisational tree"));
     connect(reloadAction_, &QAction::triggered, this,
-            &OrgExplorerMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_,
         IconUtils::iconPath(Icon::ArrowClockwise));
@@ -235,11 +236,11 @@ void OrgExplorerMdiWindow::setupEventSubscriptions() {
         subscribe_all();
 }
 
-void OrgExplorerMdiWindow::reload() {
-    clearStaleIndicator();
+void OrgExplorerMdiWindow::doReload() {
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         BOOST_LOG_SEV(lg(), warn) << "Cannot reload: not connected.";
+        endLoading();
         return;
     }
 
@@ -344,6 +345,7 @@ void OrgExplorerMdiWindow::onUnitsLoaded() {
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load business units: "
                                    << result.error_message.toStdString();
+        endLoading();
         return;
     }
 
@@ -361,6 +363,7 @@ void OrgExplorerMdiWindow::onBooksLoaded() {
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load books: "
                                    << result.error_message.toStdString();
+        endLoading();
         return;
     }
 
@@ -377,6 +380,7 @@ void OrgExplorerMdiWindow::onCounterpartiesLoaded() {
     if (!result.success) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load counterparties: "
                                    << result.error_message.toStdString();
+        endLoading();
         return;
     }
 
@@ -417,6 +421,7 @@ void OrgExplorerMdiWindow::rebuildTree() {
     treeView_->expandAll();
     updateBreadcrumb(nullptr);
     updateActionStates();
+    endLoading();
 
     // Fetch trade counts for each book in the background
     QList<boost::uuids::uuid> book_ids;

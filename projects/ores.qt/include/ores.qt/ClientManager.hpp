@@ -35,6 +35,7 @@
 #include <QDateTime>
 #include "ores.shell/service/nats_session.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
+#include "ores.nats/service/subscription.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.iam/domain/session.hpp"
@@ -398,11 +399,11 @@ public:
     }
 
     // =========================================================================
-    // Event Subscriptions (stubbed - NATS subscriptions TODO)
+    // Event Subscriptions
     // =========================================================================
 
-    void subscribeToEvent(const std::string&) {}
-    void unsubscribeFromEvent(const std::string&) {}
+    void subscribeToEvent(const std::string& subject);
+    void unsubscribeFromEvent(const std::string& subject);
 
 signals:
     void connected();
@@ -453,6 +454,9 @@ private:
     boost::uuids::uuid current_party_id_;
     QString current_party_name_;
     QString current_party_category_;
+
+    // Active NATS event subscriptions keyed by subject
+    std::unordered_map<std::string, nats::service::subscription> nats_subscriptions_;
 };
 
 }

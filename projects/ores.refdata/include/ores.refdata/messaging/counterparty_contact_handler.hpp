@@ -44,7 +44,6 @@ inline auto& counterparty_contact_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class counterparty_contact_handler {
@@ -99,7 +98,6 @@ public:
             return;
         }
         try {
-            stamp(req->data, ctx);
             svc.save_counterparty_contact_information(req->data);
             BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug)
                 << "Completed " << msg.subject;

@@ -21,13 +21,16 @@
 
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
 using namespace ores::logging;
 
 party_service::party_service(context ctx)
-    : repo_(ctx) {}
+    : ctx_(ctx), repo_(ctx) {}
 
 std::vector<domain::party> party_service::list_parties() {
     BOOST_LOG_SEV(lg(), debug) << "Listing all parties";
@@ -71,7 +74,9 @@ void party_service::save_party(const domain::party& party) {
         throw std::invalid_argument("Party ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving party: " << party.id;
-    repo_.write(party);
+    auto p = party;
+    stamp(p, ctx_);
+    repo_.write(p);
     BOOST_LOG_SEV(lg(), info) << "Saved party: " << party.id;
 }
 
@@ -81,7 +86,10 @@ void party_service::save_parties(const std::vector<domain::party>& parties) {
             throw std::invalid_argument("Party ID cannot be nil.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parties.size() << " parties";
-    repo_.write(parties);
+    auto stamped = parties;
+    for (auto& p : stamped)
+        stamp(p, ctx_);
+    repo_.write(stamped);
 }
 
 void party_service::remove_party(const boost::uuids::uuid& id) {

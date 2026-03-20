@@ -89,9 +89,13 @@ ore_import_plan ore_import_planner::plan() {
         id = uuid_gen();
     }
 
-    // Optional wrapping parent portfolio
+    // Determine the parent portfolio UUID for all imported top-level nodes.
+    // Priority: existing_parent_portfolio_id > create_parent_portfolio.
     std::optional<boost::uuids::uuid> parent_portfolio_id;
-    if (choices_.create_parent_portfolio && !choices_.parent_portfolio_name.empty()) {
+    if (choices_.existing_parent_portfolio_id) {
+        // Use a pre-existing portfolio — no new portfolio is created.
+        parent_portfolio_id = choices_.existing_parent_portfolio_id;
+    } else if (choices_.create_parent_portfolio && !choices_.parent_portfolio_name.empty()) {
         const auto parent_uuid = uuid_gen();
         parent_portfolio_id = parent_uuid;
 

@@ -64,6 +64,7 @@ void DatasetBundleMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -83,7 +84,7 @@ void DatasetBundleMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &DatasetBundleMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -177,14 +178,14 @@ void DatasetBundleMdiWindow::setupConnections() {
     });
 }
 
-void DatasetBundleMdiWindow::reload() {
+void DatasetBundleMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading dataset bundles";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading dataset bundles..."));
     model_->refresh();
 }
 
 void DatasetBundleMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 dataset bundles").arg(loaded).arg(total));
@@ -196,6 +197,7 @@ void DatasetBundleMdiWindow::onDataLoaded() {
 
 void DatasetBundleMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

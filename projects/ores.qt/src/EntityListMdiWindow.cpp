@@ -21,6 +21,7 @@
 
 #include <QHeaderView>
 #include <QMenu>
+#include <QProgressBar>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/UiPersistence.hpp"
@@ -97,6 +98,33 @@ void EntityListMdiWindow::onPulseTimeout() {
         pulseTimer_->stop();
         refreshAction_->setIcon(pulseReloadIcon_);
     }
+}
+
+void EntityListMdiWindow::reload() {
+    clearStaleIndicator();
+    beginLoading();
+    doReload();
+}
+
+QProgressBar* EntityListMdiWindow::loadingBar() {
+    if (!loadingBar_) {
+        loadingBar_ = new QProgressBar(this);
+        loadingBar_->setRange(0, 0);  // indeterminate (marquee) mode
+        loadingBar_->setFixedHeight(4);
+        loadingBar_->setTextVisible(false);
+        loadingBar_->hide();
+    }
+    return loadingBar_;
+}
+
+void EntityListMdiWindow::beginLoading() {
+    if (loadingBar_) loadingBar_->show();
+    if (refreshAction_) refreshAction_->setEnabled(false);
+}
+
+void EntityListMdiWindow::endLoading() {
+    if (loadingBar_) loadingBar_->hide();
+    if (refreshAction_) refreshAction_->setEnabled(true);
 }
 
 void EntityListMdiWindow::initializeTableSettings(

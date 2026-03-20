@@ -56,7 +56,7 @@ public:
     ~QueueMonitorMdiWindow() override = default;
 
 public slots:
-    void reload() override;
+    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);

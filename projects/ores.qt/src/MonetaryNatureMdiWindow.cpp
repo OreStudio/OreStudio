@@ -63,6 +63,7 @@ void MonetaryNatureMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -82,7 +83,7 @@ void MonetaryNatureMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &MonetaryNatureMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -176,14 +177,14 @@ void MonetaryNatureMdiWindow::setupConnections() {
     });
 }
 
-void MonetaryNatureMdiWindow::reload() {
+void MonetaryNatureMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading monetary naturees";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading monetary naturees..."));
     model_->refresh();
 }
 
 void MonetaryNatureMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 monetary naturees").arg(loaded).arg(total));
@@ -195,6 +196,7 @@ void MonetaryNatureMdiWindow::onDataLoaded() {
 
 void MonetaryNatureMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

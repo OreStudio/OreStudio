@@ -112,6 +112,15 @@ struct import_choices {
     trade_defaults defaults;
 
     /**
+     * @brief UUID of a pre-existing portfolio to use as parent.
+     *
+     * When set, all imported top-level portfolios are attached under this
+     * portfolio instead of creating a new parent portfolio. The
+     * create_parent_portfolio flag and parent_portfolio_name are ignored.
+     */
+    std::optional<boost::uuids::uuid> existing_parent_portfolio_id;
+
+    /**
      * @brief Party that owns the imported entities.
      *
      * Taken from ClientManager::currentPartyId() in the wizard.

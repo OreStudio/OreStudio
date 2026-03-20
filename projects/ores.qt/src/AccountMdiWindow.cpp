@@ -143,6 +143,7 @@ AccountMdiWindow(ClientManager* clientManager,
     toolBar_->addAction(sessionsAction_);
 
     verticalLayout_->addWidget(toolBar_);
+    verticalLayout_->addWidget(loadingBar());
     verticalLayout_->addWidget(accountTableView_);
     verticalLayout_->addWidget(pagination_widget_);
 
@@ -246,14 +247,13 @@ void AccountMdiWindow::onConnectionStateChanged() {
     }
 }
 
-void AccountMdiWindow::reload() {
+void AccountMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reload requested";
     if (!clientManager_->isConnected()) {
         emit statusChanged("Cannot reload - Disconnected");
         return;
     }
     emit statusChanged("Reloading accounts...");
-    clearStaleIndicator();
     accountModel_->refresh();
 }
 
@@ -263,6 +263,7 @@ void AccountMdiWindow::addNew() {
 }
 
 void AccountMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = accountModel_->rowCount();
     const auto total = accountModel_->total_available_count();
 
@@ -290,6 +291,7 @@ void AccountMdiWindow::onDataLoaded() {
 
 void AccountMdiWindow::onLoadError(const QString& error_message,
                                     const QString& details) {
+    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading accounts: "
                               << error_message.toStdString();
@@ -924,7 +926,7 @@ void AccountMdiWindow::updateActionStates() {
 void AccountMdiWindow::setupReloadAction() {
     reloadAction_->setIcon(IconUtils::createRecoloredIcon(
         Icon::ArrowSync, IconUtils::DefaultIconColor));
-    connect(reloadAction_, &QAction::triggered, this, &AccountMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }

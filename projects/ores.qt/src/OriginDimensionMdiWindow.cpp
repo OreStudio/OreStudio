@@ -65,6 +65,7 @@ void OriginDimensionMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -81,7 +82,7 @@ void OriginDimensionMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &OriginDimensionMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -157,19 +158,20 @@ void OriginDimensionMdiWindow::setupConnections() {
             this, &OriginDimensionMdiWindow::onDoubleClicked);
 }
 
-void OriginDimensionMdiWindow::reload() {
+void OriginDimensionMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading origin dimensions";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading origin dimensions..."));
     model_->refresh();
 }
 
 void OriginDimensionMdiWindow::onDataLoaded() {
+    endLoading();
     emit statusChanged(tr("Loaded %1 origin dimensions").arg(model_->rowCount()));
 }
 
 void OriginDimensionMdiWindow::onLoadError(const QString& error_message,
                                             const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

@@ -22,7 +22,10 @@
 #include <stdexcept>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/nil_generator.hpp>
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.trading/service/trade_status_service.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::trading::service {
 
@@ -80,6 +83,7 @@ void trade_service::save_trade(const domain::trade& v) {
         throw std::invalid_argument("Trade id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving trade: " << v.id;
     auto t = v;
+    stamp(t, ctx_);
     const std::optional<boost::uuids::uuid> current =
         t.status_id.is_nil() ? std::nullopt
                              : std::make_optional(t.status_id);
@@ -97,6 +101,7 @@ void trade_service::save_trades(const std::vector<domain::trade>& trades) {
     BOOST_LOG_SEV(lg(), debug) << "Saving " << trades.size() << " trades";
     auto resolved = trades;
     for (auto& t : resolved) {
+        stamp(t, ctx_);
         const std::optional<boost::uuids::uuid> current =
             t.status_id.is_nil() ? std::nullopt
                                  : std::make_optional(t.status_id);

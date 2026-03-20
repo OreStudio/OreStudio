@@ -32,6 +32,7 @@
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.trading/service/activity_type_service.hpp"
 #include "ores.trading/service/trade_service.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::messaging {
 
@@ -45,7 +46,6 @@ inline auto& trade_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class trade_handler {
@@ -58,9 +58,13 @@ public:
     void list_activity_types(ores::nats::message msg) {
         BOOST_LOG_SEV(trade_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        const auto req_ctx = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
-        service::activity_type_service svc(ctx);
+        // Activity types are system-level configuration; look them up under
+        // the system tenant so all tenants see the same standard set.
+        const auto sys_ctx = req_ctx.with_tenant(
+            ores::utility::uuid::tenant_id::system(), req_ctx.actor());
+        service::activity_type_service svc(sys_ctx);
         get_activity_types_response resp;
         try {
             resp.activity_types = svc.list_types();
@@ -114,8 +118,6 @@ public:
         service::trade_service svc(ctx);
         if (auto req = decode<save_trade_request>(msg)) {
             try {
-                for (auto& t : req->trades)
-                    stamp(t, ctx);
                 svc.save_trades(req->trades);
                 BOOST_LOG_SEV(trade_handler_lg(), debug)
                     << "Completed " << msg.subject;

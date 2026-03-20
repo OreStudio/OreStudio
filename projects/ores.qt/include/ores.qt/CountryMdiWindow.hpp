@@ -70,7 +70,7 @@ signals:
     void showCountryHistory(const QString& alpha2_code);
 
 public slots:
-    void reload() override;
+    void doReload() override;
     void addNew();
     void editSelected();
     void deleteSelected();

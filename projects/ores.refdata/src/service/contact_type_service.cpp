@@ -20,6 +20,9 @@
 #include "ores.refdata/service/contact_type_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::refdata::service {
 
@@ -48,7 +51,9 @@ void contact_type_service::save_type(const domain::contact_type& type) {
         throw std::invalid_argument("Contact type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving contact type: " << type.code;
-    repo_.write(ctx_, type);
+    auto t = type;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved contact type: " << type.code;
 }
 
@@ -59,7 +64,10 @@ void contact_type_service::save_types(
             throw std::invalid_argument("Contact type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " contact types";
-    repo_.write(ctx_, types);
+    auto stamped = types;
+    for (auto& t : stamped)
+        stamp(t, ctx_);
+    repo_.write(ctx_, stamped);
 }
 
 void contact_type_service::remove_type(const std::string& code) {

@@ -69,7 +69,7 @@ signals:
     void featureFlagDeleted(const QString& name);
 
 public slots:
-    void reload() override;
+    void doReload() override;
     void addNew();
     void editSelected();
     void deleteSelected();

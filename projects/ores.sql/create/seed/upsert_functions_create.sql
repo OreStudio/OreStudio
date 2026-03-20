@@ -795,36 +795,43 @@ begin
 end;
 $$ language plpgsql;
 
--- =============================================================================
--- Variability: Feature Flags (legacy - kept for backward compatibility)
--- =============================================================================
-
 /**
- * Upsert a system feature flag (legacy function).
+ * Bitemporal update of a system setting: expires the current row and inserts
+ * a new one with the supplied value. Used by stored procedures that need to
+ * change an existing setting (e.g. exiting bootstrap mode).
  */
-create or replace function ores_variability_feature_flags_upsert_fn(
+create or replace function ores_variability_system_settings_set_fn(
     p_tenant_id uuid,
     p_name text,
-    p_enabled boolean,
-    p_description text
+    p_value text,
+    p_data_type text,
+    p_description text,
+    p_modified_by text,
+    p_change_reason_code text,
+    p_commentary text
 ) returns void as $$
 begin
-    perform ores_seed_validate_not_empty_fn(p_name, 'System flag name');
+    perform ores_seed_validate_not_empty_fn(p_name, 'System setting name');
+    perform ores_seed_validate_not_empty_fn(p_data_type, 'System setting data_type');
 
-    -- Insert flag if it doesn't exist (preserve existing values)
-    -- Cast boolean to integer for the enabled column
-    insert into ores_variability_feature_flags_tbl (tenant_id, name, enabled, description, modified_by,
-        performed_by, change_reason_code, change_commentary, valid_from, valid_to)
-    values (p_tenant_id, p_name, p_enabled::int, p_description, current_user,
-            current_user, 'system.new_record', 'System seed data',
-            current_timestamp, ores_utility_infinity_timestamp_fn())
-    on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+    -- Close the current row (bitemporal expiry)
+    update ores_variability_system_settings_tbl
+    set valid_to = current_timestamp
+    where tenant_id = p_tenant_id
+      and name = p_name
+      and valid_to = ores_utility_infinity_timestamp_fn();
 
-    if found then
-        raise notice 'Created system setting (legacy): % (default: %)', p_name, p_enabled;
-    else
-        raise notice 'System setting (legacy) already exists: %', p_name;
-    end if;
+    -- Insert new value
+    insert into ores_variability_system_settings_tbl (
+        tenant_id, name, value, data_type, description,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to)
+    values (
+        p_tenant_id, p_name, p_value, p_data_type, p_description,
+        p_modified_by, p_modified_by, p_change_reason_code, p_commentary,
+        current_timestamp, ores_utility_infinity_timestamp_fn());
+
+    raise notice 'Updated system setting: % = % (%)', p_name, p_value, p_data_type;
 end;
 $$ language plpgsql;
 

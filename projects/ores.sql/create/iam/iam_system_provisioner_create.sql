@@ -163,10 +163,14 @@ begin
     -- =========================================================================
     -- Exit bootstrap mode
     -- =========================================================================
-    perform ores_variability_feature_flags_upsert_fn(
+    perform ores_variability_system_settings_set_fn(
         v_system_tenant_id,
         'system.bootstrap_mode',
-        false,
+        'false',
+        'boolean',
+        'Indicates whether the system is in bootstrap mode (waiting for initial admin account).',
+        v_actor,
+        'system.initial_load',
         'Bootstrap mode disabled - system now in secure mode'
     );
 

@@ -18,7 +18,5 @@
  *
  */
 
-\ir ./variability_feature_flags_create.sql
-\ir ./variability_feature_flags_notify_trigger_create.sql
 \ir ./variability_system_settings_create.sql
 \ir ./variability_system_settings_notify_trigger_create.sql

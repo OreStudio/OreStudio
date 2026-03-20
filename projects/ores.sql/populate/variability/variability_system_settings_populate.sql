@@ -24,27 +24,7 @@
  * Seeds the system_settings table with well-known system settings.
  * This script is idempotent - running it multiple times will not create
  * duplicate entries or overwrite existing values.
- *
- * Also migrates any existing rows from the legacy feature_flags table that
- * have not yet been copied across.
  */
-
--- -----------------------------------------------------------------------------
--- Migrate existing legacy feature flags (boolean type, idempotent)
--- -----------------------------------------------------------------------------
-insert into ores_variability_system_settings_tbl
-    (tenant_id, name, value, data_type, description,
-     modified_by, performed_by, change_reason_code, change_commentary)
-select
-    tenant_id,
-    name,
-    case when enabled = 1 then 'true' else 'false' end,
-    'boolean',
-    coalesce(description, ''),
-    modified_by, performed_by, change_reason_code, change_commentary
-from ores_variability_feature_flags_tbl
-where valid_to = ores_utility_infinity_timestamp_fn()
-on conflict (tenant_id, name) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
 
 -- -----------------------------------------------------------------------------
 -- Seed system settings with their default values (insert-if-absent)

@@ -33,7 +33,7 @@ namespace crypto = ores::security::crypto;
 namespace validation = ores::security::validation;
 
 signup_service::signup_service(database::context ctx,
-    std::shared_ptr<variability::service::system_flags_service> system_flags,
+    std::shared_ptr<variability::service::system_settings_service> system_flags,
     std::shared_ptr<authorization_service> auth_service)
     : account_repo_(ctx),
       login_info_repo_(ctx),

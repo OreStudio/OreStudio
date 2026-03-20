@@ -22,9 +22,8 @@
 /**
  * @brief Service layer for the variability module.
  *
- * Contains business logic services including feature_flags_service for
- * querying and managing flags, flag_initializer for setup, and
- * system_flags_service for accessing well-known system flags.
+ * Contains business logic services including system_settings_service for
+ * managing typed system settings and flag_initializer for setup.
  */
 namespace ores::variability::service {}
 

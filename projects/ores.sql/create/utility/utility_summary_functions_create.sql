@@ -86,8 +86,8 @@ BEGIN
     FROM ores_iam_roles_tbl
     WHERE valid_to = ores_utility_infinity_timestamp_fn()
     UNION ALL
-    SELECT 'Foundation', 'System Flags', count(*)
-    FROM ores_variability_feature_flags_tbl
+    SELECT 'Foundation', 'System Settings', count(*)
+    FROM ores_variability_system_settings_tbl
     WHERE name LIKE 'system.%' AND valid_to = ores_utility_infinity_timestamp_fn()
     ORDER BY 2;
 END;

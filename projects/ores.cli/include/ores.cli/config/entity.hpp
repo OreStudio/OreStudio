@@ -38,7 +38,7 @@ namespace ores::cli::config {
         change_reasons,
         change_reason_categories,
         // variability
-        feature_flags
+        system_settings
     };
 
 }

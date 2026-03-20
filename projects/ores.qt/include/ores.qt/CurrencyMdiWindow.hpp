@@ -89,7 +89,7 @@ private slots:
     void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
     void onConnectionStateChanged();
-    void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
+    void onSystemSettingNotification(const QString& eventType, const QDateTime& timestamp,
                                     const QStringList& entityIds);
 
 protected:

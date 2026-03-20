@@ -89,11 +89,11 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::
 -- Variability Component Permissions
 -- =============================================================================
 
--- Feature flags permissions
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:create', 'Create new feature flags');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:read', 'View feature flag status');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:update', 'Modify feature flag settings');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:delete', 'Delete feature flags');
+-- System settings permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:create', 'Create new system settings');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:read', 'View system setting values');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:update', 'Modify system setting values');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::flags:delete', 'Delete system settings');
 
 -- Variability component wildcard
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'variability::*', 'Full access to all variability operations');

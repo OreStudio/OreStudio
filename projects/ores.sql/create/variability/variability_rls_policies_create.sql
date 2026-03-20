@@ -22,7 +22,7 @@
 -- Row-Level Security Policies for Variability Tables
 -- =============================================================================
 -- These policies enforce strict tenant isolation for variability data.
--- Each tenant can only see and modify their own feature flags. All tenants
+-- Each tenant can only see and modify their own system settings. All tenants
 -- are fully isolated, including the system tenant.
 
 -- -----------------------------------------------------------------------------
@@ -31,6 +31,19 @@
 alter table ores_variability_feature_flags_tbl enable row level security;
 
 create policy ores_variability_feature_flags_tbl_tenant_isolation_policy on ores_variability_feature_flags_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
+-- System Settings
+-- -----------------------------------------------------------------------------
+alter table ores_variability_system_settings_tbl enable row level security;
+
+create policy ores_variability_system_settings_tbl_tenant_isolation_policy on ores_variability_system_settings_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

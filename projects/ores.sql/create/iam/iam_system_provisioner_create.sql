@@ -38,7 +38,7 @@
 --   - Must be called in system tenant context
 --   - SuperAdmin role must already be seeded (via iam_roles_populate.sql)
 --   - System party must already exist (via refdata_system_party_populate.sql)
---   - system.bootstrap_mode feature flag must exist (via variability_system_flags_populate.sql)
+--   - system.bootstrap_mode system setting must exist (via variability_system_settings_populate.sql)
 --
 -- Parameters:
 --   p_principal:     Username for the new admin account

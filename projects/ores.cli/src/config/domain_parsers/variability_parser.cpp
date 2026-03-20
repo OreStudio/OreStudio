@@ -18,7 +18,7 @@
  *
  */
 #include "ores.cli/config/domain_parsers/variability_parser.hpp"
-#include "ores.cli/config/entity_parsers/feature_flags_parser.hpp"
+#include "ores.cli/config/entity_parsers/system_settings_parser.hpp"
 #include "ores.cli/config/parser_exception.hpp"
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
@@ -39,18 +39,18 @@ namespace ores::cli::config::domain_parsers {
         using ores::cli::config::parser_exception;
         namespace entity_parsers = ores::cli::config::entity_parsers;
 
-        const std::string feature_flags_command_name("feature-flags");
-        const std::string feature_flags_command_desc("Manage feature flags (list, delete, add).");
+        const std::string system_settings_command_name("system-settings");
+        const std::string system_settings_command_desc("Manage system settings (list, delete, add).");
 
         const std::string domain_name("variability");
-        const std::string domain_desc("variability: Feature flags and variability.");
+        const std::string domain_desc("variability: System settings and variability.");
 
         void print_domain_help(std::ostream& info) {
             info << domain_desc << std::endl << std::endl;
 
             const unsigned int command_width(20);
             info << "  " << std::setfill(' ') << std::left << std::setw(command_width)
-                 << feature_flags_command_name << feature_flags_command_desc << std::endl;
+                 << system_settings_command_name << system_settings_command_desc << std::endl;
 
             info << std::endl
                  << "Use: ores.cli variability <entity> <operation> --help for details."
@@ -58,12 +58,12 @@ namespace ores::cli::config::domain_parsers {
         }
 
         void validate_entity_name(const std::string& entity_name) {
-            const bool is_valid(entity_name == feature_flags_command_name);
+            const bool is_valid(entity_name == system_settings_command_name);
 
             if (!is_valid) {
                 BOOST_THROW_EXCEPTION(
                     parser_exception(std::format("Invalid or unsupported entity: {}. "
-                                                 "Available entities: feature-flags",
+                                                 "Available entities: system-settings",
                                                  entity_name)));
             }
         }
@@ -115,8 +115,8 @@ namespace ores::cli::config::domain_parsers {
                           .allow_unregistered()
                           .run();
 
-        if (entity_name == feature_flags_command_name) {
-            return entity_parsers::handle_feature_flags_command(has_help, new_po, info, vm);
+        if (entity_name == system_settings_command_name) {
+            return entity_parsers::handle_system_settings_command(has_help, new_po, info, vm);
         }
 
         return {};

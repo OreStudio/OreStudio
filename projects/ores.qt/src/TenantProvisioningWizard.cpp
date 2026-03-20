@@ -40,7 +40,8 @@
 #include "ores.refdata/messaging/party_protocol.hpp"
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
 #include "ores.synthetic/messaging/generate_organisation_protocol.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/domain/system_setting.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
@@ -95,15 +96,16 @@ void TenantProvisioningWizard::setupPages() {
 void TenantProvisioningWizard::clearBootstrapFlag() {
     BOOST_LOG_SEV(lg(), info) << "Clearing tenant bootstrap mode flag";
 
-    variability::domain::feature_flags flag;
-    flag.name = "system.bootstrap_mode";
-    flag.enabled = false;
-    flag.description = "Bootstrap mode disabled after tenant setup";
-    flag.modified_by = clientManager_->currentUsername();
-    flag.change_reason_code = std::string(reason::codes::new_record);
-    flag.change_commentary = "Tenant setup wizard completed";
-    variability::messaging::save_feature_flag_request req;
-    req.data = std::move(flag);
+    variability::domain::system_setting setting;
+    setting.name = "system.bootstrap_mode";
+    setting.value = "false";
+    setting.data_type = "boolean";
+    setting.description = "Bootstrap mode disabled after tenant setup";
+    setting.modified_by = clientManager_->currentUsername();
+    setting.change_reason_code = std::string(reason::codes::new_record);
+    setting.change_commentary = "Tenant setup wizard completed";
+    variability::messaging::save_setting_request req;
+    req.data = std::move(setting);
 
     auto result = clientManager_->process_authenticated_request(std::move(req));
     if (!result) {

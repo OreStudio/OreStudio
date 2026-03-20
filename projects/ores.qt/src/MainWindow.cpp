@@ -53,7 +53,7 @@
 #include "ores.qt/AccountController.hpp"
 #include "ores.qt/RoleController.hpp"
 #include "ores.qt/TenantController.hpp"
-#include "ores.qt/FeatureFlagController.hpp"
+#include "ores.qt/SystemSettingController.hpp"
 #include "ores.qt/ChangeReasonCategoryController.hpp"
 #include "ores.qt/ChangeReasonController.hpp"
 #include "ores.qt/OriginDimensionController.hpp"
@@ -522,10 +522,10 @@ MainWindow::MainWindow(QWidget* parent) :
         showTenantOnboardingWizard();
     });
 
-    // Connect Feature Flags action to controller (admin only)
+    // Connect System Settings action to controller (admin only)
     connect(ui_->ActionFeatureFlags, &QAction::triggered, this, [this]() {
-        if (featureFlagController_)
-            featureFlagController_->showListWindow();
+        if (systemSettingController_)
+            systemSettingController_->showListWindow();
     });
 
     // Connect Change Reason Categories action to controller (admin only)
@@ -1297,22 +1297,22 @@ void MainWindow::createControllers() {
     connect(tenantController_.get(), &TenantController::onboardRequested,
             this, &MainWindow::showTenantOnboardingWizard);
 
-    // Create feature flag controller (admin only functionality)
-    featureFlagController_ = std::make_unique<FeatureFlagController>(
+    // Create system setting controller (admin only functionality)
+    systemSettingController_ = std::make_unique<SystemSettingController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
 
-    // Connect feature flag controller signals to status bar and window lifecycle
-    connect(featureFlagController_.get(), &FeatureFlagController::statusMessage,
+    // Connect system setting controller signals to status bar and window lifecycle
+    connect(systemSettingController_.get(), &SystemSettingController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
-    connect(featureFlagController_.get(), &FeatureFlagController::errorMessage,
+    connect(systemSettingController_.get(), &SystemSettingController::errorMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
     });
-    connect(featureFlagController_.get(), &FeatureFlagController::detachableWindowCreated,
+    connect(systemSettingController_.get(), &SystemSettingController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
-    connect(featureFlagController_.get(), &FeatureFlagController::detachableWindowDestroyed,
+    connect(systemSettingController_.get(), &SystemSettingController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create change reason category controller (admin only functionality)
@@ -2757,8 +2757,8 @@ void MainWindow::onLoginSuccess(const QString& username) {
     if (roleController_) {
         roleController_->setUsername(username);
     }
-    if (featureFlagController_) {
-        featureFlagController_->setUsername(username);
+    if (systemSettingController_) {
+        systemSettingController_->setUsername(username);
     }
     if (changeReasonCategoryController_) {
         changeReasonCategoryController_->setUsername(username);

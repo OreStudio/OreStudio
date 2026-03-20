@@ -27,7 +27,7 @@
 #include "ores.cli/config/entity_parsers/change_reasons_parser.hpp"
 #include "ores.cli/config/entity_parsers/countries_parser.hpp"
 #include "ores.cli/config/entity_parsers/currencies_parser.hpp"
-#include "ores.cli/config/entity_parsers/feature_flags_parser.hpp"
+#include "ores.cli/config/entity_parsers/system_settings_parser.hpp"
 #include "ores.cli/config/entity_parsers/login_info_parser.hpp"
 #include "ores.cli/config/entity_parsers/permissions_parser.hpp"
 #include "ores.cli/config/entity_parsers/roles_parser.hpp"
@@ -61,7 +61,7 @@ namespace {
     const std::string dq_domain_desc("Data quality: change-reasons, change-reason-categories.");
 
     const std::string variability_domain_name("variability");
-    const std::string variability_domain_desc("Feature flags and variability: feature-flags.");
+    const std::string variability_domain_desc("System settings and variability: system-settings.");
 
     const std::string operation_arg("operation");
 

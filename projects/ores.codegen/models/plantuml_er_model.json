@@ -7667,14 +7667,14 @@
     },
     {
       "name": "variability",
-      "description": "Feature Flags",
+      "description": "System Settings",
       "color": "#E8F5E9",
       "order": 5,
       "tables": [
         {
-          "name": "ores_variability_feature_flags_tbl",
+          "name": "ores_variability_system_settings_tbl",
           "component": "variability",
-          "entity": "feature_flags",
+          "entity": "system_settings",
           "classification": "temporal",
           "stereotype": "<<temporal>>",
           "color": "#C6F0D8",

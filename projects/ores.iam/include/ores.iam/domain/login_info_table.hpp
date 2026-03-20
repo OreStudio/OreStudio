@@ -26,7 +26,7 @@
 namespace ores::iam::domain {
 
 /**
- * @brief Converts feature flags to table format.
+ * @brief Converts login_info to table format.
  */
 std::string convert_to_table(const std::vector<login_info>& v);
 

@@ -27,8 +27,8 @@
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/bootstrap_mode_service.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
-#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.variability/eventing/system_setting_changed_event.hpp"
 #include "ores.refdata/service/currency_service.hpp"
 #include "ores.refdata/service/country_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -78,8 +78,8 @@ public:
         return *authorization_service_;
     }
 
-    variability::service::system_flags_service& system_flags_service() {
-        return *system_flags_service_;
+    variability::service::system_settings_service& system_settings_service() {
+        return *system_settings_service_;
     }
 
     refdata::service::currency_service& currency_service() {
@@ -108,7 +108,7 @@ private:
     std::unique_ptr<iam::service::account_service> account_service_;
     std::unique_ptr<iam::service::account_setup_service> account_setup_service_;
     std::shared_ptr<iam::service::authorization_service> authorization_service_;
-    std::shared_ptr<variability::service::system_flags_service> system_flags_service_;
+    std::shared_ptr<variability::service::system_settings_service> system_settings_service_;
     std::unique_ptr<refdata::service::currency_service> currency_service_;
     std::unique_ptr<refdata::service::country_service> country_service_;
 

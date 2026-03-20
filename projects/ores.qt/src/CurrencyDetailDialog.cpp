@@ -53,8 +53,8 @@
 #include "ores.refdata/messaging/currency_market_tier_protocol.hpp"
 #include "ores.refdata/generators/currency_generator.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.variability/eventing/feature_flags_changed_event.hpp"
-#include "ores.variability/messaging/feature_flags_protocol.hpp"
+#include "ores.variability/eventing/system_setting_changed_event.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 
@@ -63,9 +63,9 @@ using FutureResult = std::pair<bool, std::string>;
 namespace reason = dq::domain::change_reason_constants;
 
 namespace {
-    // Event type name for feature flag changes
-    constexpr std::string_view feature_flag_event_name =
-        eventing::domain::event_traits<variability::eventing::feature_flags_changed_event>::name;
+    // Event type name for system setting changes
+    constexpr std::string_view system_setting_event_name =
+        eventing::domain::event_traits<variability::eventing::system_setting_changed_event>::name;
 
     // Feature flag name for synthetic data generation
     constexpr std::string_view synthetic_generation_flag = "system.synthetic_data_generation";
@@ -260,11 +260,11 @@ void CurrencyDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
 
     if (clientManager_) {
-        // Connect to feature flag notifications for generate action visibility
+        // Connect to system setting notifications for generate action visibility
         connect(clientManager_, &ClientManager::notificationReceived,
-                this, &CurrencyDetailDialog::onFeatureFlagNotification);
+                this, &CurrencyDetailDialog::onSystemSettingNotification);
 
-        // Subscribe to feature flag events when logged in/reconnected
+        // Subscribe to system setting events when logged in/reconnected
         connect(clientManager_, &ClientManager::loggedIn,
                 this, &CurrencyDetailDialog::onConnectionEstablished);
         connect(clientManager_, &ClientManager::reconnected,
@@ -973,27 +973,27 @@ void CurrencyDetailDialog::updateGenerateActionVisibility() {
         if (!self || !self->clientManager_)
             return false;
 
-        variability::messaging::get_feature_flags_request request;
+        variability::messaging::list_settings_request request;
         auto result = self->clientManager_->
             process_authenticated_request(std::move(request));
 
         if (!result) {
-            BOOST_LOG_SEV(lg(), debug) << "Feature flags request failed";
+            BOOST_LOG_SEV(lg(), debug) << "System settings request failed";
             return false;
         }
 
-        // Find our specific flag
-        auto it = std::find_if(result->feature_flags.begin(), result->feature_flags.end(),
-            [](const auto& flag) {
-                return flag.name == synthetic_generation_flag;
+        // Find our specific setting
+        auto it = std::find_if(result->settings.begin(), result->settings.end(),
+            [](const auto& s) {
+                return s.name == synthetic_generation_flag;
             });
 
-        if (it == result->feature_flags.end()) {
-            BOOST_LOG_SEV(lg(), debug) << "Feature flag not found: " << synthetic_generation_flag;
+        if (it == result->settings.end()) {
+            BOOST_LOG_SEV(lg(), debug) << "System setting not found: " << synthetic_generation_flag;
             return false;
         }
 
-        return it->enabled;
+        return (it->value == "true");
     }).then(this, [self](bool enabled) {
         if (self && self->generateAction_ && !self->isReadOnly_) {
             self->generateAction_->setVisible(enabled);
@@ -1049,12 +1049,12 @@ void CurrencyDetailDialog::onGenerateClicked() {
     }
 }
 
-void CurrencyDetailDialog::onFeatureFlagNotification(
+void CurrencyDetailDialog::onSystemSettingNotification(
     const QString& eventType, const QDateTime& timestamp,
     const QStringList& entityIds) {
 
-    // Check if this is a feature flag change event
-    if (eventType != QString::fromStdString(std::string{feature_flag_event_name})) {
+    // Check if this is a system setting change event
+    if (eventType != QString::fromStdString(std::string{system_setting_event_name})) {
         return;
     }
 
@@ -1064,12 +1064,12 @@ void CurrencyDetailDialog::onFeatureFlagNotification(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Feature flag notification received in detail dialog";
+    BOOST_LOG_SEV(lg(), debug) << "System setting notification received in detail dialog";
     updateGenerateActionVisibility();
 }
 
 void CurrencyDetailDialog::onConnectionEstablished() {
-    clientManager_->subscribeToEvent(std::string{feature_flag_event_name});
+    clientManager_->subscribeToEvent(std::string{system_setting_event_name});
 
     // Use QTimer to delay the visibility check until after event loop processes
     QTimer::singleShot(100, this, &CurrencyDetailDialog::updateGenerateActionVisibility);

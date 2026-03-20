@@ -27,5 +27,6 @@
  * Naming convention: ores_{component}_{entities}_{action}_fn
  */
 
--- Feature Flags
-drop function if exists ores_variability_feature_flags_upsert_fn(text, boolean, text);
+-- System Settings (legacy feature flags function)
+drop function if exists ores_variability_feature_flags_upsert_fn(uuid, text, boolean, text);
+drop function if exists ores_variability_system_settings_upsert_fn(uuid, text, text, text, text);

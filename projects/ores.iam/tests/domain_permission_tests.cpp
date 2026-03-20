@@ -80,7 +80,7 @@ TEST_CASE("create_flags_permission", tags) {
     permission sut;
     sut.id = boost::uuids::random_generator()();
     sut.code = flags_update;
-    sut.description = "Allows updating feature flags";
+    sut.description = "Allows updating system settings";
     BOOST_LOG_SEV(lg, info) << "Permission: " << sut;
 
     CHECK(sut.code == "variability::flags:update");

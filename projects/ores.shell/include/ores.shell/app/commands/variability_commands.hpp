@@ -34,7 +34,7 @@ namespace ores::shell::app::commands {
 /**
  * @brief Manages commands related to variability subsystem.
  *
- * Handles feature flags, configuration toggles, and other
+ * Handles system settings, configuration toggles, and other
  * variability-related operations.
  */
 class variability_commands {
@@ -58,57 +58,59 @@ public:
         service::nats_session& session);
 
     /**
-     * @brief Process a list feature flags request.
+     * @brief Process a list settings request.
      *
-     * Retrieves all feature flags from the server and displays them.
+     * Retrieves all system settings from the server and displays them.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
      */
-    static void process_list_feature_flags(std::ostream& out,
+    static void process_list_settings(std::ostream& out,
         service::nats_session& session);
 
     /**
-     * @brief Process an add feature flag request.
+     * @brief Process a save setting request.
      *
-     * Creates a new feature flag with the provided details.
+     * Creates or updates a system setting with the provided details.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param name Unique flag name
-     * @param enabled Whether the flag is enabled ("true" or "false")
+     * @param name Unique setting name
+     * @param value Setting value
+     * @param data_type Setting data type (boolean, integer, string, json)
      * @param description Human-readable description
      * @param change_reason_code Code identifying the reason for the change
      * @param change_commentary Free-text commentary
      */
-    static void process_add_feature_flag(std::ostream& out,
+    static void process_save_setting(std::ostream& out,
         service::nats_session& session,
-        std::string name, std::string enabled, std::string description,
+        std::string name, std::string value, std::string data_type,
+        std::string description,
         std::string change_reason_code, std::string change_commentary);
 
     /**
-     * @brief Process a delete feature flag request.
+     * @brief Process a delete setting request.
      *
-     * Deletes a feature flag by its name. Requires authentication.
+     * Deletes a system setting by its name. Requires authentication.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param name Name of the feature flag to delete
+     * @param name Name of the setting to delete
      */
-    static void process_delete_feature_flag(std::ostream& out,
+    static void process_delete_setting(std::ostream& out,
         service::nats_session& session,
         std::string name);
 
     /**
-     * @brief Process a get feature flag history request.
+     * @brief Process a get setting history request.
      *
-     * Retrieves the version history for a feature flag by its name.
+     * Retrieves the version history for a system setting by its name.
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param name Name of the feature flag
+     * @param name Name of the setting
      */
-    static void process_get_feature_flag_history(std::ostream& out,
+    static void process_get_setting_history(std::ostream& out,
         service::nats_session& session,
         std::string name);
 };

@@ -22,8 +22,7 @@
 /**
  * @brief Domain types for system variability.
  *
- * Contains core entity types for feature flags and system configuration
- * including feature_flag and system_flags types with JSON I/O support.
+ * Contains core system settings types with JSON I/O support.
  */
 namespace ores::variability::domain {}
 

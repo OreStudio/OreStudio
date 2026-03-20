@@ -148,7 +148,7 @@ private slots:
     void onNextVersionClicked();
     void onLastVersionClicked();
 
-    void onFeatureFlagNotification(const QString& eventType, const QDateTime& timestamp,
+    void onSystemSettingNotification(const QString& eventType, const QDateTime& timestamp,
         const QStringList& entityIds);
     void onConnectionEstablished();
 

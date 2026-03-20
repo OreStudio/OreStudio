@@ -1,0 +1,324 @@
+#+TITLE: JWT Token Refresh: Configurable Lifetimes, Proactive Renewal, Session Expiry
+#+DATE: 2026-03-20
+#+AUTHOR: ORE Studio Team
+
+* Context
+
+JWT tokens are currently issued with a hardcoded 8-hour lifetime in
+=ores.iam/include/ores.iam/messaging/auth_handler.hpp=. When a token expires,
+=make_request_context()= in =ores.service= silently falls back to a system-level
+database context rather than returning an error. The Qt client receives no
+notification and the user has no indication that their session has expired.
+
+This plan introduces:
+
+- Configurable token lifetimes stored in the system settings table (depends on
+  the system settings unification PR)
+- A =iam.v1.auth.refresh= NATS subject for token renewal
+- A fix to the silent fallback bug in =request_context.cpp=
+- Proactive refresh in the Qt =nats_session= (fires at ~80% of token lifetime)
+- Reactive handling of =token_expired= errors returned to the client
+- A session-expired UI flow: dialog → disconnect → login screen
+
+*Prerequisite:* The system settings unification PR must be merged before Phase 1
+of this plan. Phases 2–5 can proceed once the system settings registry exists.
+
+* Current State
+
+| Location | Detail |
+|----------|--------|
+| =ores.iam/include/ores.iam/messaging/auth_handler.hpp= line 280 | Hardcoded =std::chrono::hours(8)= for session token |
+| =ores.iam/include/ores.iam/messaging/auth_handler.hpp= line 318 | Hardcoded =std::chrono::minutes(5)= for party-selection token |
+| =ores.service/src/service/request_context.cpp= | =make_request_context()= silently falls back to system context on JWT failure |
+| =ores.security/include/ores.security/jwt/jwt_error.hpp= | =jwt_error::expired_token = 1= exists; no corresponding general =error_code= |
+| =ores.shell/src/service/nats_session.cpp= | =authenticated_request()= attaches =Authorization: Bearer= header |
+| =ores.qt/= | No refresh timer; no session expiry signal or dialog |
+
+* Key Decisions
+
+** Token lifetime best practice
+
+15–30 minutes is the industry standard for access tokens. 8 hours is
+inappropriate — it creates a large window of exposure if a token is
+intercepted. The new defaults:
+
+| Setting key | Default | Meaning |
+|-------------|---------|---------|
+| =iam.token.access_lifetime_seconds= | =1800= (30 min) | Lifetime of every issued JWT |
+| =iam.token.party_selection_lifetime_seconds= | =300= (5 min) | Party-selection step token |
+| =iam.token.max_session_seconds= | =28800= (8 h) | Hard ceiling; re-login required regardless of refresh activity |
+| =iam.token.refresh_threshold_fraction= | =0.80= (stored as integer 80) | Fire proactive refresh at this fraction of lifetime |
+
+All four are registered in the system settings definition registry (Phase 1).
+The =max_session_seconds= ceiling is enforced by the IAM refresh handler: it
+refuses to issue a new token if =original_iat + max_session_seconds < now=.
+
+** Refresh model: proactive timer + reactive retry
+
+The Qt client runs a =QTimer= that fires at =lifetime × threshold_fraction=
+seconds after the last token was issued. On fire it calls =iam.v1.auth.refresh=
+with the current token. If the response is a new token the timer is reset; if
+the response is =max_session_exceeded= the session-expired flow is triggered.
+
+Additionally, if any NATS reply carries =X-Error: token_expired= the client
+immediately attempts a refresh. If the refresh also fails (truly expired or
+max session exceeded) the session-expired flow is triggered.
+
+** =iam.v1.auth.refresh= subject
+
+Request payload: none (the current JWT is in the =Authorization: Bearer= header).
+The handler validates the token (ignoring expiry), checks max session ceiling,
+issues a fresh token with the same =account_id= / =tenant_id= / =roles=.
+
+** Error propagation
+
+=make_request_context()= must not silently fall back. When JWT validation fails
+it returns an =expected<request_context, error>= with a new =error_code=
+value =token_expired=. Each domain handler that calls =make_request_context()=
+propagates this as a NATS reply with header =X-Error: token_expired= and an
+empty body.
+
+* Phase 1 — Register Token Settings in System Settings
+
+*PR:* =[iam] Register JWT token lifetime settings=
+
+*Depends on:* system settings unification PR merged.
+
+| File | Action |
+|------|--------|
+| =projects/ores.iam/include/ores.iam/domain/token_settings.hpp= | *NEW* — =struct token_settings { int access_lifetime_s; int party_selection_lifetime_s; int max_session_s; int refresh_threshold_pct; }= |
+| =projects/ores.iam/src/domain/token_settings.cpp= | *NEW* — =token_settings load(const variability::system_settings_service&)= |
+| =projects/ores.variability/include/ores.variability/domain/settings_registry.hpp= | *UPDATE* — add four =iam.token.*= entries with integer type and documented defaults |
+
+The four settings keys and their defaults:
+
+#+begin_src cpp
+// In settings_registry definitions
+{ "iam.token.access_lifetime_seconds",       data_type::integer, "1800"  },
+{ "iam.token.party_selection_lifetime_seconds", data_type::integer, "300" },
+{ "iam.token.max_session_seconds",            data_type::integer, "28800" },
+{ "iam.token.refresh_threshold_pct",          data_type::integer, "80"    },
+#+end_src
+
+=token_settings::load()= fetches all four from the service and returns a typed
+struct. Called once at service startup and cached; the IAM service subscribes to
+=ores.variability.v1.events.system_setting_changed= to reload on change.
+
+*Working state:* Four settings exist in the DB with defaults. IAM can read them
+at startup.
+
+* Phase 2 — IAM: Configurable Lifetimes + Refresh Subject
+
+*PR:* =[iam] Configurable token lifetimes and iam.v1.auth.refresh=
+
+| File | Action |
+|------|--------|
+| =projects/ores.iam/include/ores.iam/messaging/auth_handler.hpp= | *UPDATE* — replace hardcoded durations with =token_settings= values |
+| =projects/ores.iam/src/messaging/auth_handler.cpp= | *UPDATE* — =handle_login=, =handle_select_party=: use settings; add =handle_refresh= |
+| =projects/ores.iam/include/ores.iam/messaging/registrar.hpp/cpp= | *UPDATE* — subscribe to =ores.iam.v1.auth.refresh= |
+
+=handle_refresh= logic:
+
+#+begin_src cpp
+message handle_refresh(const nats::message& msg, const request_context& ctx) {
+    // ctx was built with validate_ignore_expiry = true
+    // (token may be near/just-past expiry — still trusted for identity)
+
+    const auto now = std::chrono::system_clock::now();
+    const auto original_iat = ctx.claims().issued_at;
+    const auto max_session = std::chrono::seconds(settings_.max_session_s);
+
+    if (original_iat + max_session < now)
+        return error_reply(msg, "max_session_exceeded");
+
+    // Issue fresh token with same identity, new iat/exp
+    const auto new_token = jwt_issuer_.issue(
+        ctx.claims().account_id,
+        ctx.claims().tenant_id,
+        ctx.claims().roles,
+        std::chrono::seconds(settings_.access_lifetime_s));
+
+    refresh_response resp{ .token = new_token };
+    return msgpack_reply(msg, resp);
+}
+#+end_src
+
+The login/select-party handlers read lifetimes from =token_settings= instead of
+hardcoded constants.
+
+The IAM registrar listens on =ores.variability.v1.events.system_setting_changed=
+and reloads =token_settings= when any =iam.token.*= key changes.
+
+*Working state:* =iam.v1.auth.refresh= is live. Login issues 30-min tokens.
+Shell and Qt clients still use 8h tokens until rebuilt/reconnected.
+
+* Phase 3 — Fix Silent Fallback in =request_context.cpp=
+
+*PR:* =[service] Propagate token_expired error instead of silent fallback=
+
+| File | Action |
+|------|--------|
+| =projects/ores.service/src/service/request_context.cpp= | *UPDATE* — return error on JWT failure instead of falling back |
+| =projects/ores.service/include/ores.service/error_code.hpp= | *UPDATE* — add =token_expired= to =error_code= enum |
+| All domain handler =.cpp= files (10 services) | *UPDATE* — propagate =token_expired= as =X-Error= NATS header |
+
+=make_request_context()= change:
+
+#+begin_src cpp
+// BEFORE (silent fallback):
+auto result = jwt_auth_.validate(token);
+if (!result) {
+    // fell through to system context — WRONG
+    return make_system_context(db_);
+}
+
+// AFTER:
+auto result = jwt_auth_.validate(token);
+if (!result) {
+    if (result.error() == jwt_error::expired_token)
+        return std::unexpected(error_code::token_expired);
+    return std::unexpected(error_code::unauthorized);
+}
+#+end_src
+
+Each domain handler that calls =make_request_context()= gains an early-exit:
+
+#+begin_src cpp
+auto ctx = make_request_context(msg, db_pool_);
+if (!ctx) {
+    if (ctx.error() == error_code::token_expired)
+        return nats_error_reply(msg, "token_expired");
+    return nats_error_reply(msg, "unauthorized");
+}
+#+end_src
+
+*Working state:* Expired tokens produce explicit =token_expired= replies instead
+of wrong data.
+
+* Phase 4 — Shell: Refresh on =token_expired=
+
+*PR:* =[shell] Handle token_expired: attempt refresh, re-issue command=
+
+| File | Action |
+|------|--------|
+| =projects/ores.shell/src/service/nats_session.cpp= | *UPDATE* — =authenticated_request()= checks for =X-Error: token_expired= header; calls =refresh()= and retries once |
+| =projects/ores.shell/src/service/nats_session.hpp= | *UPDATE* — add =refresh()= private method |
+
+#+begin_src cpp
+message nats_session::authenticated_request(std::string_view subject, ...) {
+    auto reply = client_.request_sync(subject, data, auth_headers());
+    if (reply.header("X-Error") == "token_expired") {
+        refresh();  // calls iam.v1.auth.refresh; updates session_.jwt
+        reply = client_.request_sync(subject, data, auth_headers());
+    }
+    if (reply.header("X-Error") == "max_session_exceeded") {
+        throw session_expired_error("Session has expired. Please log in again.");
+    }
+    return reply;
+}
+#+end_src
+
+*Working state:* Shell commands transparently refresh tokens. If max session
+is exceeded the error message tells the user to re-authenticate.
+
+* Phase 5 — Qt Client: Proactive Timer + Session Expiry UI
+
+*PR:* =[qt] Proactive JWT refresh timer and session-expired dialog=
+
+| File | Action |
+|------|--------|
+| =projects/ores.qt/include/ores.qt/service/nats_session.hpp= | *UPDATE* — add =QTimer* refresh_timer_=; =Q_SIGNAL void sessionExpired()=; =refresh()= slot |
+| =projects/ores.qt/src/service/nats_session.cpp= | *UPDATE* — start timer after login/select-party; refresh handler; reactive retry |
+| =projects/ores.qt/include/ores.qt/ui/client_manager.hpp= | *UPDATE* — expose =sessionExpired()= signal; stop timer on disconnect |
+| =projects/ores.qt/src/ui/main_window.cpp= | *UPDATE* — connect =sessionExpired()= to =on_session_expired()= slot |
+| =projects/ores.qt/src/ui/main_window.cpp= | *UPDATE* — =on_session_expired()=: show dialog, call =disconnect()=, show =LoginDialog= |
+
+** Timer setup (after successful login or party selection)
+
+#+begin_src cpp
+void nats_session::arm_refresh_timer(int lifetime_seconds, int threshold_pct) {
+    const int fire_after_ms =
+        static_cast<int>(lifetime_seconds * (threshold_pct / 100.0) * 1000);
+    refresh_timer_->setSingleShot(true);
+    refresh_timer_->start(fire_after_ms);
+}
+#+end_src
+
+=login()= and =select_party()= call =arm_refresh_timer()= with the token's
+=exp - iat= duration (decoded from the JWT) and the threshold from =token_settings=
+(fetched once during =login()= via =ores.variability.v1.settings.get=).
+
+** Refresh slot
+
+#+begin_src cpp
+void nats_session::refresh() {
+    auto reply = client_.request_sync(
+        "ores.iam.v1.auth.refresh", {}, auth_headers());
+
+    if (reply.header("X-Error") == "max_session_exceeded") {
+        emit sessionExpired();
+        return;
+    }
+
+    auto resp = rfl::msgpack::read<refresh_response>(reply.data());
+    set_auth(login_info{ .jwt = resp.token, /* other fields preserved */ });
+    arm_refresh_timer(decoded_lifetime(resp.token), threshold_pct_);
+}
+#+end_src
+
+** Reactive: error on any response
+
+#+begin_src cpp
+// In authenticated_request() or per-request path:
+if (reply.header("X-Error") == "token_expired") {
+    refresh();  // emits sessionExpired() if max session exceeded
+    if (session_expired_) return {};   // guard: don't retry after expire
+    reply = /* retry original request */;
+}
+#+end_src
+
+** Session expired UI
+
+#+begin_src cpp
+void MainWindow::on_session_expired() {
+    QMessageBox::warning(this, "Session Expired",
+        "Your session has expired after the maximum allowed duration.\n"
+        "Please log in again to continue.");
+    client_manager_->disconnect();
+    show_login_dialog();
+}
+#+end_src
+
+=disconnect()= stops the refresh timer and clears =login_info=.
+
+*Working state:* Full Qt application handles token expiry transparently for
+short interruptions and gracefully (dialog + re-login) for max-session expiry.
+
+* Risks and Mitigations
+
+| Risk | Mitigation |
+|------|------------|
+| Clock skew between IAM server and clients | JWT exp validated server-side only; clients use wall-clock delta from iat decoded at login |
+| Refresh storm on fleet restart | Timer fires at threshold fraction of lifetime; stagger is natural since all sessions start at different times |
+| Refresh during high-latency request | Refresh is a separate subject; =authenticated_request()= retries once after refresh — one extra round trip |
+| UI freezes during synchronous refresh | Qt =nats_session= posts refresh reply to the Qt event loop via =QMetaObject::invokeMethod=; the timer callback is already on the Qt thread |
+| =max_session_exceeded= mid-request | Reactive path emits =sessionExpired()= which triggers disconnect before any further requests |
+| Shell scripts long-running (> 30 min) | Shell =nats_session= does reactive refresh on =token_expired=; one transparent retry per command |
+
+* Deletions / Simplifications
+
+| What | Why |
+|------|-----|
+| Hardcoded =std::chrono::hours(8)= in =auth_handler.hpp= | Replaced by =token_settings::access_lifetime_s= |
+| Hardcoded =std::chrono::minutes(5)= in =auth_handler.hpp= | Replaced by =token_settings::party_selection_lifetime_s= |
+| Silent fallback path in =request_context.cpp= | Replaced by explicit =error_code::token_expired= return |
+
+* Phase Summary
+
+| Phase | PR Title | Depends On |
+|-------|----------|------------|
+| 1 | =[iam] Register JWT token lifetime settings= | System settings unification PR |
+| 2 | =[iam] Configurable token lifetimes and iam.v1.auth.refresh= | Phase 1 |
+| 3 | =[service] Propagate token_expired error instead of silent fallback= | Phase 2 |
+| 4 | =[shell] Handle token_expired: attempt refresh, re-issue command= | Phase 3 |
+| 5 | =[qt] Proactive JWT refresh timer and session-expired dialog= | Phase 3 |

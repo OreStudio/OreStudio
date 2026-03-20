@@ -1,0 +1,416 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.qt/SystemSettingMdiWindow.hpp"
+
+#include <vector>
+#include <QtConcurrent>
+#include <QFutureWatcher>
+#include <QtWidgets/QHeaderView>
+#include <QMessageBox>
+#include <QSortFilterProxyModel>
+#include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/SystemSettingItemDelegate.hpp"
+#include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.variability/messaging/system_settings_protocol.hpp"
+
+namespace ores::qt {
+
+using namespace ores::logging;
+
+SystemSettingMdiWindow::
+SystemSettingMdiWindow(ClientManager* clientManager,
+                     const QString& username,
+                     QWidget* parent)
+    : EntityListMdiWindow(parent),
+      verticalLayout_(new QVBoxLayout(this)),
+      systemSettingTableView_(new QTableView(this)),
+      toolBar_(new QToolBar(this)),
+      reloadAction_(new QAction("Reload", this)),
+      addAction_(new QAction("Add", this)),
+      editAction_(new QAction("Edit", this)),
+      deleteAction_(new QAction("Delete", this)),
+      historyAction_(new QAction("History", this)),
+      systemSettingModel_(std::make_unique<ClientSystemSettingModel>(clientManager)),
+      proxyModel_(new QSortFilterProxyModel(this)),
+      clientManager_(clientManager),
+      username_(username) {
+
+    BOOST_LOG_SEV(lg(), debug) << "Creating system setting MDI window";
+
+    toolBar_->setMovable(false);
+    toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    // Setup reload action with normal and stale icons
+    setupReloadAction();
+    toolBar_->addAction(reloadAction_);
+
+    toolBar_->addSeparator();
+
+    addAction_->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Add, IconUtils::DefaultIconColor));
+    addAction_->setToolTip("Add new system setting");
+    connect(addAction_, &QAction::triggered, this, &SystemSettingMdiWindow::addNew);
+    toolBar_->addAction(addAction_);
+
+    editAction_->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Edit, IconUtils::DefaultIconColor));
+    editAction_->setToolTip("Edit selected system setting");
+    connect(editAction_, &QAction::triggered, this,
+        &SystemSettingMdiWindow::editSelected);
+    toolBar_->addAction(editAction_);
+
+    deleteAction_->setIcon(IconUtils::createRecoloredIcon(
+            Icon::Delete, IconUtils::DefaultIconColor));
+    deleteAction_->setToolTip("Delete selected system setting(s)");
+    connect(deleteAction_, &QAction::triggered, this,
+        &SystemSettingMdiWindow::deleteSelected);
+    toolBar_->addAction(deleteAction_);
+
+    toolBar_->addSeparator();
+
+    historyAction_->setIcon(IconUtils::createRecoloredIcon(
+            Icon::History, IconUtils::DefaultIconColor));
+    historyAction_->setToolTip("Show version history for selected system setting");
+    connect(historyAction_, &QAction::triggered, this,
+        &SystemSettingMdiWindow::showHistory);
+    toolBar_->addAction(historyAction_);
+
+    verticalLayout_->addWidget(toolBar_);
+    verticalLayout_->addWidget(systemSettingTableView_);
+
+    systemSettingTableView_->setObjectName("systemSettingTableView");
+    systemSettingTableView_->setAlternatingRowColors(true);
+    systemSettingTableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    systemSettingTableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    systemSettingTableView_->setWordWrap(false);
+
+    proxyModel_->setSourceModel(systemSettingModel_.get());
+    systemSettingTableView_->setModel(proxyModel_);
+    systemSettingTableView_->setItemDelegate(new SystemSettingItemDelegate(this));
+    systemSettingTableView_->setSortingEnabled(true);
+    systemSettingTableView_->sortByColumn(0, Qt::AscendingOrder);
+
+    systemSettingTableView_->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
+    initializeTableSettings(systemSettingTableView_, systemSettingModel_.get(),
+        "SystemSettingMdiWindow",
+        {}, {900, 400}, 1);
+
+    // Connect signals
+    connect(systemSettingModel_.get(), &ClientSystemSettingModel::dataLoaded,
+            this, &SystemSettingMdiWindow::onDataLoaded);
+    connect(systemSettingModel_.get(), &ClientSystemSettingModel::loadError,
+            this, &SystemSettingMdiWindow::onLoadError);
+    connect(systemSettingTableView_, &QTableView::doubleClicked,
+            this, &SystemSettingMdiWindow::onRowDoubleClicked);
+    connect(systemSettingTableView_->selectionModel(),
+        &QItemSelectionModel::selectionChanged,
+            this, &SystemSettingMdiWindow::onSelectionChanged);
+
+    // Connect connection state signals
+    if (clientManager_) {
+        connect(clientManager_, &ClientManager::connected, this,
+            &SystemSettingMdiWindow::onConnectionStateChanged);
+        connect(clientManager_, &ClientManager::disconnected, this,
+            &SystemSettingMdiWindow::onConnectionStateChanged);
+    }
+
+    updateActionStates();
+
+    emit statusChanged("Loading system settings...");
+
+    // Initial load
+    if (clientManager_->isConnected()) {
+        systemSettingModel_->refresh();
+    } else {
+        emit statusChanged("Disconnected - Offline");
+        toolBar_->setEnabled(false);
+    }
+}
+
+SystemSettingMdiWindow::~SystemSettingMdiWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Destroying system setting MDI window";
+
+    // Cancel any pending operations. The QPointer in the lambdas ensures
+    // they safely handle this window being destroyed without blocking.
+    const auto watchers = findChildren<QFutureWatcherBase*>();
+    for (auto* watcher : watchers) {
+        disconnect(watcher, nullptr, this, nullptr);
+        watcher->cancel();
+    }
+}
+
+void SystemSettingMdiWindow::onConnectionStateChanged() {
+    const bool connected = clientManager_ && clientManager_->isConnected();
+    toolBar_->setEnabled(connected);
+
+    if (connected) {
+        emit statusChanged("Connected");
+    } else {
+        emit statusChanged("Disconnected - Offline");
+    }
+}
+
+void SystemSettingMdiWindow::doReload() {
+    BOOST_LOG_SEV(lg(), debug) << "Reload requested";
+    if (!clientManager_->isConnected()) {
+        emit statusChanged("Cannot reload - Disconnected");
+        return;
+    }
+    emit statusChanged("Reloading system settings...");
+    clearStaleIndicator();
+    systemSettingModel_->refresh();
+}
+
+void SystemSettingMdiWindow::addNew() {
+    BOOST_LOG_SEV(lg(), debug) << "Add new system setting requested";
+    emit addNewRequested();
+}
+
+void SystemSettingMdiWindow::onDataLoaded() {
+    const auto loaded = systemSettingModel_->rowCount();
+
+    const QString message = QString("Loaded %1 system settings").arg(loaded);
+    emit statusChanged(message);
+    BOOST_LOG_SEV(lg(), debug) << "System setting data loaded successfully: "
+                               << loaded << " flags";
+
+    if (systemSettingModel_->rowCount() > 0 &&
+        systemSettingTableView_->selectionModel()->selectedRows().isEmpty()) {
+        systemSettingTableView_->selectRow(0);
+        BOOST_LOG_SEV(lg(), debug) << "Auto-selected first row";
+    }
+}
+
+void SystemSettingMdiWindow::onLoadError(const QString& error_message,
+                                        const QString& details) {
+    endLoading();
+    emit errorOccurred(error_message);
+    BOOST_LOG_SEV(lg(), error) << "Error loading system settings: "
+                               << error_message.toStdString();
+
+    MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);
+}
+
+void SystemSettingMdiWindow::onRowDoubleClicked(const QModelIndex& index) {
+    if (!index.isValid()) {
+        return;
+    }
+
+    // Map proxy index to source index
+    const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+    const auto* flag = systemSettingModel_->getSystemSetting(sourceIndex.row());
+    if (!flag) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get system setting for row: "
+                                  << sourceIndex.row();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showSystemSettingDetails for: "
+                               << flag->name;
+    emit showSystemSettingDetails(*flag);
+}
+
+void SystemSettingMdiWindow::onSelectionChanged() {
+    const int selection_count = systemSettingTableView_->selectionModel()->selectedRows().count();
+    updateActionStates();
+    emit selectionChanged(selection_count);
+}
+
+void SystemSettingMdiWindow::editSelected() {
+    const auto selected = systemSettingTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Edit requested but no row selected";
+        return;
+    }
+
+    onRowDoubleClicked(selected.first());
+}
+
+void SystemSettingMdiWindow::deleteSelected() {
+    const auto selected = systemSettingTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Delete requested but no row selected";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, "Disconnected",
+            "Cannot delete system setting while disconnected.");
+        return;
+    }
+
+    std::vector<std::string> names;
+    for (const auto& index : selected) {
+        const QModelIndex sourceIndex = proxyModel_->mapToSource(index);
+        const auto* flag = systemSettingModel_->getSystemSetting(sourceIndex.row());
+        if (flag)
+            names.push_back(flag->name);
+    }
+
+    if (names.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "No valid system settings to delete";
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Delete requested for " << names.size()
+                               << " system settings";
+
+    QString confirmMessage;
+    if (names.size() == 1) {
+        confirmMessage = QString("Are you sure you want to delete system setting '%1'?")
+            .arg(QString::fromStdString(names[0]));
+    } else {
+        confirmMessage = QString("Are you sure you want to delete %1 system settings?")
+            .arg(names.size());
+    }
+
+    auto reply = MessageBoxHelper::question(this, "Delete System Setting",
+        confirmMessage, QMessageBox::Yes | QMessageBox::No);
+
+    if (reply != QMessageBox::Yes) {
+        BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user.";
+        return;
+    }
+
+    QPointer<SystemSettingMdiWindow> self = this;
+    using DeleteResult = std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
+
+    auto task = [self, names]() -> DeleteResult {
+        DeleteResult results;
+        if (!self) return {};
+
+        for (const auto& name : names) {
+            BOOST_LOG_SEV(lg(), debug) << "Deleting system setting: " << name;
+
+            variability::messaging::delete_setting_request request;
+            request.name = name;
+            auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
+
+            if (!response_result) {
+                BOOST_LOG_SEV(lg(), error) << "Failed to send delete request";
+                results.push_back({name,
+                    {false, "Failed to communicate with server"}});
+                continue;
+            }
+
+            results.push_back({name, {response_result->success, response_result->error_message}});
+        }
+
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished,
+            self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [name, result] : results) {
+            auto [success, message] = result;
+
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "System setting deleted successfully: "
+                                           << name;
+                success_count++;
+                emit self->systemSettingDeleted(QString::fromStdString(name));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "System setting deletion failed: "
+                                           << name << " - " << message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
+            }
+        }
+
+        self->systemSettingModel_->refresh();
+        if (failure_count == 0) {
+            QString msg = success_count == 1
+                ? "Successfully deleted 1 system setting"
+                : QString("Successfully deleted %1 system settings").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "system setting" : "system settings")
+                .arg(first_error);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg = QString("Deleted %1 %2, failed to delete %3 %4")
+                .arg(success_count)
+                .arg(success_count == 1 ? "system setting" : "system settings")
+                .arg(failure_count)
+                .arg(failure_count == 1 ? "system setting" : "system settings");
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
+}
+
+void SystemSettingMdiWindow::updateActionStates() {
+    const int selection_count = systemSettingTableView_
+        ->selectionModel()->selectedRows().count();
+    const bool hasSingleSelection = selection_count == 1;
+    const bool hasSelection = selection_count > 0;
+
+    editAction_->setEnabled(hasSingleSelection);
+    deleteAction_->setEnabled(hasSelection);
+    historyAction_->setEnabled(hasSingleSelection);
+}
+
+void SystemSettingMdiWindow::setupReloadAction() {
+    reloadAction_->setIcon(IconUtils::createRecoloredIcon(
+        Icon::ArrowSync, IconUtils::DefaultIconColor));
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
+
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
+}
+
+void SystemSettingMdiWindow::showHistory() {
+    const auto selected = systemSettingTableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Show history requested but no row selected";
+        return;
+    }
+
+    const QModelIndex sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* flag = systemSettingModel_->getSystemSetting(sourceIndex.row());
+    if (!flag) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get system setting for row: "
+                                  << sourceIndex.row();
+        return;
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Emitting showHistoryRequested for: "
+                               << flag->name;
+    emit showHistoryRequested(QString::fromStdString(flag->name));
+}
+
+}

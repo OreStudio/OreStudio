@@ -18,7 +18,7 @@
  *
  */
 #include "ores.variability/messaging/registrar.hpp"
-#include "ores.variability/messaging/feature_flag_handler.hpp"
+#include "ores.variability/messaging/system_setting_handler.hpp"
 
 namespace ores::variability::messaging {
 
@@ -28,32 +28,31 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
     constexpr auto queue = "ores.variability.service";
-
     subs.push_back(nats.queue_subscribe(
-        std::string(get_feature_flags_request::nats_subject), queue,
+        std::string(list_settings_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            feature_flag_handler h(nats, ctx, verifier);
+            system_setting_handler h(nats, ctx, verifier);
             h.list(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
-        std::string(save_feature_flag_request::nats_subject), queue,
+        std::string(save_setting_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            feature_flag_handler h(nats, ctx, verifier);
+            system_setting_handler h(nats, ctx, verifier);
             h.save(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
-        std::string(delete_feature_flag_request::nats_subject), queue,
+        std::string(delete_setting_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            feature_flag_handler h(nats, ctx, verifier);
+            system_setting_handler h(nats, ctx, verifier);
             h.remove(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
-        std::string(get_feature_flag_history_request::nats_subject), queue,
+        std::string(get_setting_history_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
-            feature_flag_handler h(nats, ctx, verifier);
+            system_setting_handler h(nats, ctx, verifier);
             h.history(std::move(msg));
         }));
 

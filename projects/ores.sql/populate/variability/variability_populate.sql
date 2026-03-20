@@ -1,13 +1,13 @@
 /* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
- * Variability (Feature Flags) Master Include File
+ * Variability (System Settings) Master Include File
  *
  * Includes all variability SQL files.
  */
 
 -- =============================================================================
--- System Flags
+-- System Settings
 -- =============================================================================
 
-\echo '--- System Flags ---'
-\ir variability_system_flags_populate.sql
+\echo '--- System Settings ---'
+\ir variability_system_settings_populate.sql

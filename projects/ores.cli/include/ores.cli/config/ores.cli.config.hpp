@@ -24,7 +24,7 @@
  *
  * Contains command-line option definitions, parsers, and entity-specific
  * parsers for importing data from configuration files (accounts, currencies,
- * feature flags, login info).
+ * system settings, login info).
  */
 namespace ores::cli::config {}
 

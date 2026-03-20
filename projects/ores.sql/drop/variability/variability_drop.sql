@@ -18,7 +18,9 @@
  *
  */
 
--- Trigger depends on flags table
+-- Triggers depend on their respective tables
+\ir ./variability_system_settings_notify_trigger_drop.sql
+\ir ./variability_system_settings_drop.sql
 \ir ./variability_feature_flags_notify_trigger_drop.sql
 \ir ./variability_feature_flags_drop.sql
 

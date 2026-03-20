@@ -9,14 +9,14 @@
 NATS messaging reference for [[id:1EE1B07C-3EC4-9BC4-1C4B-5BD458A8B2E5][ores.variability]]. All subjects use the
 =variability.v1.>= namespace. See [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] for transport details.
 
-* Feature Flags
+* System Settings
 
 | Subject | Description |
 |---------+-------------|
-| =variability.v1.feature-flags.list= | Retrieve all feature flags |
-| =variability.v1.feature-flags.save= | Create or update a feature flag |
-| =variability.v1.feature-flags.delete= | Delete a feature flag by name |
-| =variability.v1.feature-flags.history= | Retrieve version history for a feature flag |
+| =variability.v1.settings.list= | Retrieve all system settings |
+| =variability.v1.settings.save= | Create or update a system setting |
+| =variability.v1.settings.delete= | Delete a system setting by name |
+| =variability.v1.settings.history= | Retrieve version history for a system setting |
 
 * Useful Pages
 

@@ -95,7 +95,7 @@ The system is organised into four architectural layers:
 - [[id:19aeecd4-03ab-4d23-b2bc-9d96aaa64120][ores.http.server]]: RESTful HTTP API server for ORE Studio. Alternative to
   NATS for web clients and integrations.
 - [[id:fe36240a-7a64-4332-9e82-8d976d458c73][ores.wt]]: Web application built with Wt framework for browser-based access.
-  Account management, currency operations, feature flags via web UI.
+  Account management, currency operations, system settings via web UI.
 - Depends on: All layers
 
 * Useful Pages

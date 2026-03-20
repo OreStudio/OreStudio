@@ -24,7 +24,7 @@
 #include <variant>
 #include "ores.cli/config/add_currency_options.hpp"
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_feature_flag_options.hpp"
+#include "ores.cli/config/add_system_setting_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/config/add_role_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
@@ -44,7 +44,7 @@ namespace ores::cli::config {
 using add_options = std::variant<
     add_currency_options,
     add_account_options,
-    add_feature_flag_options,
+    add_system_setting_options,
     add_login_info_options,
     add_role_options,
     add_permission_options,

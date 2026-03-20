@@ -28,7 +28,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.variability/service/system_flags_service.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
 #include "ores.iam/service/auth_session_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/repository/session_repository.hpp"
@@ -40,7 +40,7 @@
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
-#include "ores.variability/eventing/feature_flags_changed_event.hpp"
+#include "ores.variability/eventing/system_setting_changed_event.hpp"
 #include "ores.utility/version/version.hpp"
 
 namespace ores::http_server::app {
@@ -68,7 +68,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
 
     // Initialize shared services
     BOOST_LOG_SEV(lg(), info) << "Initializing shared services...";
-    auto system_flags = std::make_shared<variability::service::system_flags_service>(
+    auto system_flags = std::make_shared<variability::service::system_settings_service>(
         ctx, database::service::tenant_context::system_tenant_id);
     system_flags->refresh();
     auto sessions = std::make_shared<iam::service::auth_session_service>();
@@ -80,17 +80,17 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     eventing::service::event_bus event_bus;
     eventing::service::postgres_event_source event_source(ctx, event_bus);
 
-    // Register feature flags mapping for system_flags cache invalidation
+    // Register system settings mapping for system settings cache invalidation
     eventing::service::registrar::register_mapping<
-        variability::eventing::feature_flags_changed_event>(
-        event_source, "ores.variability.feature_flag", "ores_feature_flags");
+        variability::eventing::system_setting_changed_event>(
+        event_source, "ores.variability.system_setting", "ores_system_settings");
 
-    // Subscribe to feature flag changes to refresh system_flags cache
-    auto flags_sub = event_bus.subscribe<variability::eventing::feature_flags_changed_event>(
-        [&system_flags](const variability::eventing::feature_flags_changed_event& e) {
-            BOOST_LOG_SEV(lg(), info) << "Feature flags changed notification received, "
-                                      << "refreshing system_flags cache ("
-                                      << e.flag_names.size() << " flags changed)";
+    // Subscribe to system settings changes to refresh system settings cache
+    auto flags_sub = event_bus.subscribe<variability::eventing::system_setting_changed_event>(
+        [&system_flags](const variability::eventing::system_setting_changed_event& e) {
+            BOOST_LOG_SEV(lg(), info) << "System settings changed notification received, "
+                                      << "refreshing settings cache ("
+                                      << e.setting_names.size() << " settings changed)";
             system_flags->refresh();
         });
 
@@ -155,7 +155,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     routes::risk_routes risk(ctx, sessions);
     risk.register_routes(router, registry);
 
-    // Register Variability routes (feature flags)
+    // Register Variability routes (system settings)
     routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);
 

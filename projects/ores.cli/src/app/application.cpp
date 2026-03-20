@@ -106,6 +106,7 @@
 #include "ores.cli/config/add_compute_app_options.hpp"
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
+#include "ores.cli/config/add_compute_workunit_options.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -1326,6 +1327,46 @@ add_compute_batch(const config::add_compute_batch_options& cfg) const {
 }
 
 void application::
+add_compute_workunit(const config::add_compute_workunit_options& cfg) const {
+    BOOST_LOG_SEV(lg(), info) << "Adding compute workunit for batch: " << cfg.batch_id;
+
+    boost::uuids::uuid batch_id;
+    try {
+        batch_id = boost::lexical_cast<boost::uuids::uuid>(cfg.batch_id);
+    } catch (const boost::bad_lexical_cast&) {
+        BOOST_THROW_EXCEPTION(
+            application_exception(std::format("Invalid batch ID UUID: {}", cfg.batch_id)));
+    }
+
+    boost::uuids::uuid app_version_id;
+    try {
+        app_version_id = boost::lexical_cast<boost::uuids::uuid>(cfg.app_version_id);
+    } catch (const boost::bad_lexical_cast&) {
+        BOOST_THROW_EXCEPTION(
+            application_exception(std::format("Invalid app version ID UUID: {}", cfg.app_version_id)));
+    }
+
+    compute::domain::workunit record;
+    record.id = boost::uuids::random_generator()();
+    record.batch_id = batch_id;
+    record.app_version_id = app_version_id;
+    record.input_uri = cfg.input_uri;
+    record.config_uri = cfg.config_uri;
+    record.priority = cfg.priority.value_or(0);
+    record.target_redundancy = cfg.target_redundancy.value_or(1);
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+
+    compute::repository::workunit_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added compute workunit: "
+                   << boost::uuids::to_string(record.id) << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added compute workunit: "
+                              << boost::uuids::to_string(record.id);
+}
+
+void application::
 add_data(const std::optional<config::add_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No add configuration found.";
@@ -1361,6 +1402,8 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_compute_app_version(opts);
         } else if constexpr (std::is_same_v<T, config::add_compute_batch_options>) {
             add_compute_batch(opts);
+        } else if constexpr (std::is_same_v<T, config::add_compute_workunit_options>) {
+            add_compute_workunit(opts);
         } else {
             []<bool flag = false>() {
                 static_assert(flag, "unhandled type in std::visit for add_data");

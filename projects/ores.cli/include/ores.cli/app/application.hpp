@@ -44,6 +44,7 @@
 #include "ores.cli/config/add_compute_app_options.hpp"
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
+#include "ores.cli/config/add_compute_workunit_options.hpp"
 
 namespace ores::cli::app {
 
@@ -124,6 +125,7 @@ private:
     void add_compute_app(const config::add_compute_app_options& cfg) const;
     void add_compute_app_version(const config::add_compute_app_version_options& cfg) const;
     void add_compute_batch(const config::add_compute_batch_options& cfg) const;
+    void add_compute_workunit(const config::add_compute_workunit_options& cfg) const;
     void add_data(const std::optional<config::add_options>& ocfg) const;
 
 public:

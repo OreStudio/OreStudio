@@ -35,6 +35,7 @@
 #include "ores.cli/config/add_compute_app_options.hpp"
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
+#include "ores.cli/config/add_compute_workunit_options.hpp"
 
 namespace ores::cli::config {
 
@@ -58,7 +59,8 @@ using add_options = std::variant<
     add_compute_host_options,
     add_compute_app_options,
     add_compute_app_version_options,
-    add_compute_batch_options
+    add_compute_batch_options,
+    add_compute_workunit_options
 >;
 
 std::ostream& operator<<(std::ostream& s, const add_options& v);

@@ -55,4 +55,10 @@ workunit_service::history(const std::string& id) {
     return repo_.read_all(ctx_, id);
 }
 
+std::vector<domain::workunit>
+workunit_service::list_by_batch(const std::string& batch_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing workunits by batch: " << batch_id;
+    return repo_.read_by_batch(ctx_, batch_id);
+}
+
 }

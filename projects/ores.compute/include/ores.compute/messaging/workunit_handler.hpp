@@ -21,8 +21,11 @@
 #define ORES_COMPUTE_MESSAGING_WORKUNIT_HANDLER_HPP
 
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <rfl/json.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -31,7 +34,9 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute/messaging/workunit_protocol.hpp"
+#include "ores.compute/messaging/work_protocol.hpp"
 #include "ores.compute/service/workunit_service.hpp"
+#include "ores.compute/service/result_service.hpp"
 
 namespace ores::compute::messaging {
 
@@ -81,11 +86,44 @@ public:
             ctx_, msg, verifier_);
         if (auto req = decode<save_workunit_request>(msg)) {
             try {
-                service::workunit_service svc(ctx);
+                service::workunit_service wu_svc(ctx);
                 stamp(req->workunit, ctx);
-                svc.save(req->workunit);
-                reply(nats_, msg,
-                    save_workunit_response{.success = true});
+                wu_svc.save(req->workunit);
+
+                // Dispatcher: create target_redundancy result rows (state=2 Unsent)
+                // and publish each as a JetStream assignment event.
+                service::result_service result_svc(ctx);
+                const auto wu_id_str =
+                    boost::uuids::to_string(req->workunit.id);
+                const auto tenant_id_str = ctx.tenant_id().to_string();
+                const auto redundancy = req->workunit.target_redundancy;
+
+                for (int i = 0; i < redundancy; ++i) {
+                    domain::result r;
+                    r.id = boost::uuids::random_generator()();
+                    r.workunit_id = req->workunit.id;
+                    r.server_state = 2; // Unsent
+                    r.change_reason_code = "system.dispatch";
+                    r.change_commentary = "Created on workunit dispatch";
+                    stamp(r, ctx);
+                    result_svc.save(r);
+
+                    const auto result_id_str = boost::uuids::to_string(r.id);
+                    const auto event = work_assignment_event{
+                        .result_id = result_id_str,
+                        .workunit_id = wu_id_str};
+                    const auto json = rfl::json::write(event);
+                    const auto* p =
+                        reinterpret_cast<const std::byte*>(json.data());
+                    nats_.js_publish(
+                        "compute.v1.work.assignments." + tenant_id_str,
+                        std::span<const std::byte>(p, json.size()));
+                    BOOST_LOG_SEV(workunit_handler_lg(), debug)
+                        << "Dispatched result " << result_id_str
+                        << " for workunit " << wu_id_str;
+                }
+
+                reply(nats_, msg, save_workunit_response{.success = true});
             } catch (const std::exception& e) {
                 reply(nats_, msg, save_workunit_response{
                     .success = false, .message = e.what()});

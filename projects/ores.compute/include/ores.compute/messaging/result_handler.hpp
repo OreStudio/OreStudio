@@ -22,7 +22,10 @@
 
 #include <optional>
 #include <stdexcept>
+#include <algorithm>
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -32,6 +35,8 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute/messaging/result_protocol.hpp"
 #include "ores.compute/service/result_service.hpp"
+#include "ores.compute/service/workunit_service.hpp"
+#include "ores.compute/service/batch_service.hpp"
 
 namespace ores::compute::messaging {
 
@@ -81,8 +86,8 @@ public:
             ctx_, msg, verifier_);
         if (auto req = decode<submit_result_request>(msg)) {
             try {
-                service::result_service svc(ctx);
-                auto existing = svc.find(req->result_id);
+                service::result_service result_svc(ctx);
+                auto existing = result_svc.find(req->result_id);
                 if (!existing) {
                     reply(nats_, msg, submit_result_response{
                         .success = false,
@@ -90,14 +95,69 @@ public:
                     return;
                 }
                 auto r = *existing;
-                r.server_state = 5;
+                r.server_state = 5; // Done
                 r.output_uri = req->output_uri;
                 r.received_at = std::chrono::system_clock::now();
                 r.outcome = req->outcome;
+                r.change_reason_code = "system.submit";
+                r.change_commentary = "Output received from wrapper";
                 stamp(r, ctx);
-                svc.save(r);
-                reply(nats_, msg,
-                    submit_result_response{.success = true});
+                result_svc.save(r);
+
+                // Validator: if we now have enough successful results,
+                // set the canonical_result_id on the workunit.
+                service::workunit_service wu_svc(ctx);
+                const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
+                const auto wu_opt = wu_svc.find(wu_id_str);
+                if (wu_opt && wu_opt->canonical_result_id == boost::uuids::uuid{}) {
+                    const auto wu_results =
+                        result_svc.list_by_workunit(wu_id_str);
+                    const int done = static_cast<int>(
+                        std::ranges::count_if(wu_results, [](const auto& res) {
+                            return res.server_state == 5;
+                        }));
+                    if (done >= wu_opt->target_redundancy) {
+                        auto wu = *wu_opt;
+                        wu.canonical_result_id = r.id;
+                        wu.change_reason_code = "system.validate";
+                        wu.change_commentary = "Canonical result accepted";
+                        stamp(wu, ctx);
+                        wu_svc.save(wu);
+                        BOOST_LOG_SEV(result_handler_lg(), info)
+                            << "Validator: canonical result set for workunit "
+                            << wu_id_str;
+
+                        // Assimilator: if all workunits in the batch have a
+                        // canonical result, close the batch.
+                        const auto batch_id_str =
+                            boost::uuids::to_string(wu.batch_id);
+                        const auto batch_wus =
+                            wu_svc.list_by_batch(batch_id_str);
+                        const bool all_done = std::ranges::all_of(
+                            batch_wus, [](const auto& w) {
+                                return w.canonical_result_id != boost::uuids::uuid{};
+                            });
+                        if (all_done) {
+                            service::batch_service batch_svc(ctx);
+                            const auto batch_opt =
+                                batch_svc.find(batch_id_str);
+                            if (batch_opt) {
+                                auto batch = *batch_opt;
+                                batch.status = "closed";
+                                batch.change_reason_code = "system.assimilate";
+                                batch.change_commentary =
+                                    "All workunits complete";
+                                stamp(batch, ctx);
+                                batch_svc.save(batch);
+                                BOOST_LOG_SEV(result_handler_lg(), info)
+                                    << "Assimilator: batch "
+                                    << batch_id_str << " closed";
+                            }
+                        }
+                    }
+                }
+
+                reply(nats_, msg, submit_result_response{.success = true});
             } catch (const std::exception& e) {
                 reply(nats_, msg, submit_result_response{
                     .success = false, .message = e.what()});

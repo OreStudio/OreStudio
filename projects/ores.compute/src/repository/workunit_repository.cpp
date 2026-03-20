@@ -92,6 +92,21 @@ workunit_repository::read_all(context ctx, const std::string& id) {
         lg(), "Reading all workunit versions by id.");
 }
 
+std::vector<domain::workunit>
+workunit_repository::read_by_batch(context ctx, const std::string& batch_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading workunits by batch: " << batch_id;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workunit_entity>> |
+        where("tenant_id"_c == tid && "batch_id"_c == batch_id
+            && "valid_to"_c == max.value());
+
+    return execute_read_query<workunit_entity, domain::workunit>(
+        ctx, query,
+        [](const auto& entities) { return workunit_mapper::map(entities); },
+        lg(), "Reading workunits by batch.");
+}
+
 void workunit_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing workunit: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));

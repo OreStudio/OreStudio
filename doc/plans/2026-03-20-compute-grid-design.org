@@ -18,14 +18,14 @@ reaper, which is a scheduled job in ~ores.scheduler~.
 |-------+-------------------------------------------+--------|
 | 1     | SQL schema (7 tables + RLS + triggers)    | ✅ Done |
 | 1     | ~ores.compute~ component (domain + repo)  | ✅ Done |
-| 2     | Generators                                | TODO   |
-| 2     | Messaging layer                           | TODO   |
-| 3     | ~ores.compute.service~ executable         | TODO   |
-| 4     | JetStream dispatch (in save_workunit)     | TODO   |
-| 4     | Work-pull + result-submit handlers        | TODO   |
-| 4     | Heartbeat handler                         | TODO   |
-| 5     | Validator (event-driven)                  | TODO   |
-| 5     | Assimilator (event-driven)                | TODO   |
+| 2     | Generators                                | ✅ Done |
+| 2     | Messaging layer                           | ✅ Done |
+| 3     | ~ores.compute.service~ executable         | ✅ Done |
+| 4     | JetStream dispatch (in save_workunit)     | ✅ Done |
+| 4     | Work-pull + result-submit handlers        | ✅ Done |
+| 4     | Heartbeat handler                         | ✅ Done |
+| 5     | Validator (event-driven)                  | ✅ Done |
+| 5     | Assimilator (event-driven)                | ✅ Done |
 | 5     | Reaper scheduler job                      | TODO   |
 | 6     | Qt list windows                           | TODO   |
 | 6     | CLI commands                              | TODO   |

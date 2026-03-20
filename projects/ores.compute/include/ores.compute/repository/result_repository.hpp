@@ -57,6 +57,12 @@ public:
     std::vector<domain::result>
     read_all(context ctx, const std::string& id);
 
+    std::vector<domain::result>
+    read_by_workunit(context ctx, const std::string& workunit_id);
+
+    std::vector<domain::result>
+    read_by_state(context ctx, int server_state);
+
     void remove(context ctx, const std::string& id);
 };
 

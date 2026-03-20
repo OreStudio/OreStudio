@@ -57,6 +57,9 @@ public:
     std::vector<domain::workunit>
     read_all(context ctx, const std::string& id);
 
+    std::vector<domain::workunit>
+    read_by_batch(context ctx, const std::string& batch_id);
+
     void remove(context ctx, const std::string& id);
 };
 

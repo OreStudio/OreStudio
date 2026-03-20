@@ -57,6 +57,10 @@ public:
 
     std::vector<domain::result> history(const std::string& id);
 
+    std::vector<domain::result> list_by_workunit(const std::string& workunit_id);
+
+    std::vector<domain::result> list_by_state(int server_state);
+
 private:
     context ctx_;
     repository::result_repository repo_;

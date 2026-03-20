@@ -57,6 +57,8 @@ public:
 
     std::vector<domain::workunit> history(const std::string& id);
 
+    std::vector<domain::workunit> list_by_batch(const std::string& batch_id);
+
 private:
     context ctx_;
     repository::workunit_repository repo_;

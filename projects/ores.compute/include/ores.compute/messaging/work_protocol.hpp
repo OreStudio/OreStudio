@@ -39,6 +39,17 @@ struct pull_work_response {
     std::string app_version_id;
     std::string input_uri;
     std::string config_uri;
+    std::string message;
+};
+
+/**
+ * @brief Payload published to the COMPUTE JetStream stream on workunit dispatch.
+ *
+ * Subject: compute.v1.work.assignments.{tenant_id}
+ */
+struct work_assignment_event {
+    std::string result_id;
+    std::string workunit_id;
 };
 
 struct heartbeat_message {

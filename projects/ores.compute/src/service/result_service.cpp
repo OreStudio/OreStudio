@@ -53,4 +53,16 @@ std::vector<domain::result> result_service::history(const std::string& id) {
     return repo_.read_all(ctx_, id);
 }
 
+std::vector<domain::result>
+result_service::list_by_workunit(const std::string& workunit_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing results by workunit: " << workunit_id;
+    return repo_.read_by_workunit(ctx_, workunit_id);
+}
+
+std::vector<domain::result>
+result_service::list_by_state(int server_state) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing results by state: " << server_state;
+    return repo_.read_by_state(ctx_, server_state);
+}
+
 }

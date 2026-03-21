@@ -20,6 +20,7 @@
 #include "ores.compute.service/app/application.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <rfl/json.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/service_accounts.hpp"
@@ -34,7 +35,10 @@
 #include "ores.compute/eventing/app_changed_event.hpp"
 #include "ores.compute/eventing/app_version_changed_event.hpp"
 #include "ores.compute/eventing/batch_changed_event.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include "ores.compute/messaging/registrar.hpp"
+#include "ores.compute.service/app/compute_grid_poller.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 
 namespace ores::compute::service::app {
@@ -148,11 +152,26 @@ application::run(boost::asio::io_context& io_ctx,
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";
 
+    // Create a separate context for the poller so the main context can be
+    // moved into run() for the subscription handlers.
+    auto poller_ctx = make_context(cfg.database);
+    const auto telemetry_interval = cfg.telemetry_interval_seconds;
+
     co_await ores::service::service::run(
         io_ctx, nats, make_context(cfg.database), "ores.compute.service",
         [](auto& n, auto c, auto v) {
             return ores::compute::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
+        },
+        [telemetry_interval, poller_ctx = std::move(poller_ctx)]
+        (boost::asio::io_context& ioc) mutable {
+            if (telemetry_interval > 0) {
+                auto poller = std::make_shared<app::compute_grid_poller>(
+                    telemetry_interval, std::move(poller_ctx));
+                boost::asio::co_spawn(ioc,
+                    [poller]() { return poller->run(); },
+                    boost::asio::detached);
+            }
         });
 
     event_source.stop();

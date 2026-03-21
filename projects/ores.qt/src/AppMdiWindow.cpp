@@ -184,6 +184,7 @@ void AppMdiWindow::doReload() {
 }
 
 void AppMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 compute apps").arg(loaded).arg(total));
@@ -195,6 +196,7 @@ void AppMdiWindow::onDataLoaded() {
 
 void AppMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

@@ -184,6 +184,7 @@ void WorkunitMdiWindow::doReload() {
 }
 
 void WorkunitMdiWindow::onDataLoaded() {
+    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 workunits").arg(loaded).arg(total));
@@ -195,6 +196,7 @@ void WorkunitMdiWindow::onDataLoaded() {
 
 void WorkunitMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
+    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

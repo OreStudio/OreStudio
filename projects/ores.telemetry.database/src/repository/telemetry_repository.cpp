@@ -20,6 +20,7 @@
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 #include <format>
+#include <unordered_map>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/helpers.hpp"
@@ -633,23 +634,24 @@ telemetry_repository::list_service_samples(context ctx) {
 
     const auto qry = sqlgen::read<std::vector<service_sample_entity>> |
         where("sampled_at"_c >= cutoff_ts) |
-        order_by("service_name"_c.asc(), "instance_id"_c.asc(),
-                 "sampled_at"_c.desc());
+        order_by("sampled_at"_c.desc());
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
     ensure_success(r, lg());
 
-    // Keep only the first (most recent) row per (service_name, instance_id).
-    std::vector<domain::service_sample> result;
-    std::string last_key;
+    // Keep only the most recent row per (service_name, instance_id).
+    std::unordered_map<std::string, domain::service_sample> seen;
     for (const auto& entity : *r) {
         const auto key = entity.service_name.value() + "|"
             + entity.instance_id.value();
-        if (key != last_key) {
-            result.push_back(telemetry_mapper::to_domain(entity));
-            last_key = key;
-        }
+        if (!seen.contains(key))
+            seen.emplace(key, telemetry_mapper::to_domain(entity));
     }
+
+    std::vector<domain::service_sample> result;
+    result.reserve(seen.size());
+    for (auto& [_, sample] : seen)
+        result.push_back(std::move(sample));
 
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
                                << " active service instance(s)";

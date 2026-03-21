@@ -38,7 +38,15 @@ namespace ores::cli::config {
         change_reasons,
         change_reason_categories,
         // variability
-        system_settings
+        feature_flags,
+        system_settings,
+        // compute
+        compute_hosts,
+        compute_apps,
+        compute_app_versions,
+        compute_batches,
+        compute_workunits,
+        compute_results
     };
 
 }

@@ -49,9 +49,10 @@ COMPONENT_PREFIXES = {
     'ores_mq_': {'name': 'mq', 'description': 'Message Queue (pgmq)', 'schema': 'public', 'color': '#FBE9E7', 'order': 10},
     'ores_scheduler_': {'name': 'scheduler', 'description': 'Job Scheduler (pg_cron)', 'schema': 'public', 'color': '#F1F8E9', 'order': 11},
     'ores_reporting_': {'name': 'reporting', 'description': 'Reporting & Analytics', 'schema': 'public', 'color': '#E0F7FA', 'order': 12},
-    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 13},
-    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 14},
-    'ores_database_': {'name': 'database', 'description': 'Database Infrastructure', 'schema': 'public', 'color': '#EFEBE9', 'order': 15},
+    'ores_compute_': {'name': 'compute', 'description': 'Distributed Compute Grid (BOINC)', 'schema': 'public', 'color': '#EDE7F6', 'order': 13},
+    'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 14},
+    'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 15},
+    'ores_database_': {'name': 'database', 'description': 'Database Infrastructure', 'schema': 'public', 'color': '#EFEBE9', 'order': 16},
 }
 
 # Valid schema names for pattern matching

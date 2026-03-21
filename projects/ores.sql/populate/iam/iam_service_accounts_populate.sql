@@ -151,6 +151,13 @@ select ores_iam_service_accounts_upsert_fn(
     'System service account for Trading NATS domain service'
 );
 
+-- Compute domain service
+select ores_iam_service_accounts_upsert_fn(
+    'ores_compute_service',
+    'compute_service@system.ores',
+    'System service account for Compute Grid NATS domain service'
+);
+
 -- Summary
 select 'Service Accounts' as entity, count(*) as count
 from ores_iam_accounts_tbl

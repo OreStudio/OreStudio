@@ -34,6 +34,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.ore.lib
     ores.refdata.lib
     ores.trading.lib
+    ores.compute.lib
     ores.scheduler.lib
     ores.reporting.lib
     ores.nats.lib
@@ -52,6 +53,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     Qt6::Gui
     Qt6::Widgets
     Qt6::Concurrent
+    Qt6::Network
     Qt6::Svg
     Qt6::Charts)
 # Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)

@@ -60,6 +60,17 @@ done < "$ENV_FILE"
 EXPECTED_SERVICES["ores.http.server"]=1
 EXPECTED_SERVICES["ores.wt.service"]=1
 
+# Add compute wrapper nodes if the binary exists and host IDs are configured.
+if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
+    source "$ENV_FILE" 2>/dev/null || true
+    for n in 1 2 3 4 5; do
+        host_id_var="ORES_GRID_NODE_${n}_HOST_ID"
+        if [[ -n "${!host_id_var:-}" ]]; then
+            EXPECTED_SERVICES["ores.compute.wrapper.node${n}"]=1
+        fi
+    done
+fi
+
 echo "ORE Studio service status ($PRESET)"
 echo ""
 printf "  %-10s %-38s %s\n" "STATUS" "SERVICE" "DETAIL"
@@ -92,11 +103,7 @@ for svc in $(printf '%s\n' "${!EXPECTED_SERVICES[@]}" | sort); do
 
     # Determine the readiness string for this service.
     # NATS domain services log "Service ready"; HTTP and WT use different markers.
-    case "$svc" in
-        ores.http.server)  ready_pattern="HTTP server started, accepting connections" ;;
-        ores.wt.service)   ready_pattern="wthttp: started server:" ;;
-        *)                 ready_pattern="Service ready" ;;
-    esac
+    ready_pattern="Service ready"
 
     # Process is alive — check whether it logged the readiness marker.
     if [[ -f "$log_file" ]] && grep -q "$ready_pattern" "$log_file" 2>/dev/null; then

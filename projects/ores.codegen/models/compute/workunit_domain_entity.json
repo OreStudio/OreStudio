@@ -1,0 +1,135 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "entity_singular": "workunit",
+    "entity_plural": "workunits",
+    "entity_title": "Workunit",
+    "has_tenant_id": true,
+    "brief": "An abstract job template within a compute batch.",
+    "description": "Defines the problem to be solved: which app version to use, where the input\ndata lives, and how many times to run it for redundancy. The BOINC equivalent\nof 'workunit'. Does not track execution state — that belongs to results.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the workunit."
+    },
+
+    "columns": [
+      {
+        "name": "batch_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "FK reference to ores_compute_batches_tbl."
+      },
+      {
+        "name": "app_version_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "FK reference to ores_compute_app_versions_tbl."
+      },
+      {
+        "name": "input_uri",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "URI pointing to the zipped input data bundle in object storage."
+      },
+      {
+        "name": "config_uri",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "URI pointing to the engine config file (ORE XML, Llama JSON, etc.)."
+      },
+      {
+        "name": "priority",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "1",
+        "description": "Scheduling priority; higher values are dispatched sooner."
+      },
+      {
+        "name": "target_redundancy",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "1",
+        "description": "Number of independent results required before this workunit is complete."
+      },
+      {
+        "name": "canonical_result_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": true,
+        "description": "FK to the validated canonical result; NULL until the Validator accepts a result."
+      }
+    ],
+
+    "indexes": [
+      {
+        "name": "batch_id",
+        "columns": "tenant_id, batch_id",
+        "unique": false,
+        "current_only": true
+      },
+      {
+        "name": "app_version_id",
+        "columns": "tenant_id, app_version_id",
+        "unique": false,
+        "current_only": true
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_workunits_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "workunit",
+      "entity_plural_short": "workunits",
+      "entity_singular_words": "workunit",
+      "entity_plural_words": "workunits"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "wu"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/workunit.hpp",
+      "domain_class": "compute::domain::workunit",
+      "protocol_include": "ores.compute/messaging/workunit_protocol.hpp",
+      "collection_name": "workunits",
+      "item_var": "workunit",
+      "key_field": "input_uri",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_workunits_request",
+      "get_response_class": "compute::messaging::list_workunits_response",
+
+      "columns": [
+        {"enum_name": "BatchId",         "field": "batch_id",         "header": "Batch ID",         "is_uuid": true,   "width": 160},
+        {"enum_name": "AppVersionId",    "field": "app_version_id",   "header": "App Version ID",   "is_uuid": true,   "width": 160},
+        {"enum_name": "InputUri",        "field": "input_uri",        "header": "Input URI",        "is_string": true, "width": 200},
+        {"enum_name": "Priority",        "field": "priority",         "header": "Priority",         "is_int": true,    "width": 70},
+        {"enum_name": "TargetRedundancy","field": "target_redundancy","header": "Redundancy",       "is_int": true,    "width": 80},
+        {"enum_name": "Version",         "field": "version",          "header": "Version",          "is_int": true,    "width": 60},
+        {"enum_name": "ModifiedBy",      "field": "modified_by",      "header": "Modified By",      "is_string": true, "width": 120}
+      ],
+
+      "settings_group": "WorkunitListWindow",
+      "window_title": "Workunits",
+      "icon": "FlashFlow"
+    }
+  }
+}

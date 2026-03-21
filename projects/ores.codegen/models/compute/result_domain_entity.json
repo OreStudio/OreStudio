@@ -1,0 +1,141 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "entity_singular": "result",
+    "entity_plural": "results",
+    "entity_title": "Result",
+    "has_tenant_id": true,
+    "brief": "A specific execution instance of a workunit assigned to a host.",
+    "description": "Bridges the workunit definition and the actual execution on a grid node.\nTracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),\nand the location of output data. The BOINC equivalent of 'result'.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the result."
+    },
+
+    "columns": [
+      {
+        "name": "workunit_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "FK reference to ores_compute_workunits_tbl."
+      },
+      {
+        "name": "host_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": true,
+        "description": "FK reference to ores_compute_hosts_tbl; NULL until the result is dispatched."
+      },
+      {
+        "name": "pgmq_msg_id",
+        "type": "bigint",
+        "cpp_type": "std::int64_t",
+        "nullable": true,
+        "description": "PGMQ lease pointer; NULL when not actively queued."
+      },
+      {
+        "name": "server_state",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "default": "1",
+        "description": "State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done."
+      },
+      {
+        "name": "outcome",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": true,
+        "description": "Result outcome code: 1=Success, 3=ClientError, 4=NoReply."
+      },
+      {
+        "name": "output_uri",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "URI where the wrapper uploaded the zipped output; NULL until completed."
+      },
+      {
+        "name": "received_at",
+        "type": "timestamp with time zone",
+        "cpp_type": "std::chrono::system_clock::time_point",
+        "nullable": true,
+        "description": "Timestamp when the output was received by the server pool."
+      }
+    ],
+
+    "indexes": [
+      {
+        "name": "workunit_id",
+        "columns": "tenant_id, workunit_id",
+        "unique": false,
+        "current_only": true
+      },
+      {
+        "name": "host_id",
+        "columns": "tenant_id, host_id",
+        "unique": false,
+        "current_only": true
+      },
+      {
+        "name": "server_state",
+        "columns": "tenant_id, server_state",
+        "unique": false,
+        "current_only": true
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_results_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "result",
+      "entity_plural_short": "results",
+      "entity_singular_words": "compute result",
+      "entity_plural_words": "compute results"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>", "<cstdint>", "<chrono>", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "r"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/result.hpp",
+      "domain_class": "compute::domain::result",
+      "protocol_include": "ores.compute/messaging/result_protocol.hpp",
+      "collection_name": "results",
+      "item_var": "result",
+      "key_field": "modified_by",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_results_request",
+      "get_response_class": "compute::messaging::list_results_response",
+
+      "columns": [
+        {"enum_name": "WorkunitId",  "field": "workunit_id",  "header": "Workunit ID",  "is_uuid": true,      "width": 160},
+        {"enum_name": "HostId",      "field": "host_id",      "header": "Host ID",      "is_uuid": true,      "width": 160},
+        {"enum_name": "ServerState", "field": "server_state", "header": "State",        "is_int": true,       "width": 70},
+        {"enum_name": "Outcome",     "field": "outcome",      "header": "Outcome",      "is_int": true,       "width": 70},
+        {"enum_name": "OutputUri",   "field": "output_uri",   "header": "Output URI",   "is_string": true,    "width": 200},
+        {"enum_name": "ReceivedAt",  "field": "received_at",  "header": "Received At",  "is_timestamp": true, "width": 140},
+        {"enum_name": "Version",     "field": "version",      "header": "Version",      "is_int": true,       "width": 60},
+        {"enum_name": "ModifiedBy",  "field": "modified_by",  "header": "Modified By",  "is_string": true,    "width": 120}
+      ],
+
+      "settings_group": "ResultListWindow",
+      "window_title": "Results",
+      "icon": "CheckmarkCircle"
+    }
+  }
+}

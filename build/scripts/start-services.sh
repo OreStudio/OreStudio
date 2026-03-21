@@ -122,6 +122,23 @@ launch() {
     printf "  start   %-38s PID %d\n" "$name" "$pid"
 }
 
+# Like launch() but uses $binary as the executable while $name is used for
+# PID file and display only. Needed when multiple instances share one binary.
+launch_binary() {
+    local name="$1"; local binary="$2"; shift 2
+    local pid_file="$RUN_DIR/$name.pid"
+
+    if is_running "$name"; then
+        printf "  skip    %-38s PID %d\n" "$name" "$(cat "$pid_file")"
+        return
+    fi
+
+    (cd "$BIN_DIR" && exec "./$binary" "$@") &
+    local pid=$!
+    echo "$pid" > "$pid_file"
+    printf "  start   %-38s PID %d\n" "$name" "$pid"
+}
+
 launch_nats_service() {
     local name="$1"
     launch "$name" \
@@ -130,6 +147,30 @@ launch_nats_service() {
         --log-directory ../log \
         --nats-url "$NATS_URL" \
         --nats-subject-prefix "$NATS_PREFIX"
+}
+
+launch_wrapper_node() {
+    local n="$1"
+    local host_id_var="ORES_GRID_NODE_${n}_HOST_ID"
+    local host_id="${!host_id_var:-}"
+    if [[ -z "$host_id" ]]; then
+        echo "  skip    ores.compute.wrapper.node${n} (no host ID in .env)"
+        return
+    fi
+    local work_dir="$RUN_DIR/wrappers/node_${n}"
+    mkdir -p "$work_dir"
+    local name="ores.compute.wrapper.node${n}"
+    launch_binary "$name" "ores.compute.wrapper" \
+        --log-enabled \
+        --log-level "$LOG_LEVEL" \
+        --log-directory ../log \
+        --log-filename "${name}.log" \
+        --nats-url "$NATS_URL" \
+        --nats-subject-prefix "$NATS_PREFIX" \
+        --host-id "$host_id" \
+        --tenant-id "$NATS_PREFIX" \
+        --work-dir "$work_dir" \
+        --http-base-url "http://localhost:$HTTP_PORT"
 }
 
 wait_for_ready() {
@@ -207,6 +248,18 @@ launch ores.wt.service \
     --docroot . \
     --http-port "$WT_PORT"
 echo ""
+
+# 5. Compute wrapper nodes (test environment grid)
+if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
+    # Provision JetStream streams before launching nodes.
+    "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX"
+
+    echo "[Compute wrapper nodes]"
+    for n in 1 2 3 4 5; do
+        launch_wrapper_node "$n"
+    done
+    echo ""
+fi
 
 echo "Logs : $LOG_DIR"
 echo "Stop : ./build/scripts/stop-services.sh --preset $PRESET"

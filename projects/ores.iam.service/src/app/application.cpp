@@ -73,7 +73,8 @@ application::run(boost::asio::io_context& io_ctx,
         nats, std::move(ctx), std::move(signer));
     BOOST_LOG_SEV(lg(), info) << "Registered " << subs.size() << " subscription(s).";
 
-    BOOST_LOG_SEV(lg(), info) << "Service ready. Waiting for requests...";
+    BOOST_LOG_SEV(lg(), info) << "Service ready.";
+    BOOST_LOG_SEV(lg(), info) << "Waiting for requests...";
     boost::asio::signal_set signals(io_ctx, SIGINT, SIGTERM);
     co_await signals.async_wait(boost::asio::use_awaitable);
 

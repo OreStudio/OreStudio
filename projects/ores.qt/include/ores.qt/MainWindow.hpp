@@ -79,6 +79,13 @@ class BusinessCentreController;
 class BusinessUnitController;
 class BusinessUnitTypeController;
 class JobDefinitionController;
+class HostController;
+class AppController;
+class AppVersionController;
+class BatchController;
+class WorkunitController;
+class ResultController;
+class ComputeDashboardController;
 class ReportTypeController;
 class ConcurrencyPolicyController;
 class ReportDefinitionController;
@@ -161,6 +168,11 @@ public:
      * @param color Optional color for the instance banner
      */
     void setInstanceInfo(const QString& name, const QColor& color = QColor());
+
+    /**
+     * @brief Set the HTTP base URL for compute service file uploads.
+     */
+    void setHttpBaseUrl(const std::string& url);
 
     /**
      * @brief Update the window title to reflect current state.
@@ -638,6 +650,13 @@ private:
     std::unique_ptr<CurrencyMarketTierController> currencyMarketTierController_;
     std::unique_ptr<TradeController> tradeController_;
     std::unique_ptr<JobDefinitionController> jobDefinitionController_;
+    std::unique_ptr<HostController> hostController_;
+    std::unique_ptr<AppController> appController_;
+    std::unique_ptr<AppVersionController> appVersionController_;
+    std::unique_ptr<BatchController> batchController_;
+    std::unique_ptr<WorkunitController> workunitController_;
+    std::unique_ptr<ResultController> resultController_;
+    std::unique_ptr<ComputeDashboardController> computeDashboardController_;
     std::unique_ptr<ReportTypeController> reportTypeController_;
     std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;
     std::unique_ptr<ReportDefinitionController> reportDefinitionController_;
@@ -658,6 +677,9 @@ private:
 
     /** @brief Username of currently logged-in user */
     std::string username_;
+
+    /** @brief HTTP base URL for compute service file uploads */
+    std::string httpBaseUrl_;
 
     /** @brief Name of currently selected party (empty if no party) */
     QString party_name_;

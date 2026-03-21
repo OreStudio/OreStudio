@@ -1,0 +1,83 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "compute",
+    "entity_singular": "batch",
+    "entity_plural": "batches",
+    "entity_title": "Batch",
+    "has_tenant_id": true,
+    "brief": "A logical grouping of workunits forming a financial computation batch.",
+    "description": "Tracks the lifecycle of a collection of workunits that together constitute a\nfinancial computation (e.g., a risk report run). The Assimilator monitors\nbatch completion to trigger downstream report generation.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the batch."
+    },
+
+    "natural_keys": [
+      {
+        "column": "external_ref",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "External reference linking this batch to the originating finance system or project."
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "'open'",
+        "description": "Lifecycle status: open, processing, assimilating, or closed."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_compute_batches_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "batch",
+      "entity_plural_short": "batches",
+      "entity_singular_words": "compute batch",
+      "entity_plural_words": "compute batches"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<string>"]
+      },
+      "iterator_var": "b"
+    },
+
+    "qt": {
+      "domain_include": "ores.compute/domain/batch.hpp",
+      "domain_class": "compute::domain::batch",
+      "protocol_include": "ores.compute/messaging/batch_protocol.hpp",
+      "collection_name": "batches",
+      "item_var": "batch",
+      "key_field": "external_ref",
+      "has_uuid_primary_key": true,
+      "has_pagination": true,
+
+      "get_request_class": "compute::messaging::list_batches_request",
+      "get_response_class": "compute::messaging::list_batches_response",
+
+      "columns": [
+        {"enum_name": "ExternalRef", "field": "external_ref", "header": "Reference",   "is_string": true, "width": 200},
+        {"enum_name": "Status",      "field": "status",       "header": "Status",      "is_string": true, "width": 100},
+        {"enum_name": "Version",     "field": "version",      "header": "Version",     "is_int": true,    "width": 60},
+        {"enum_name": "ModifiedBy",  "field": "modified_by",  "header": "Modified By", "is_string": true, "width": 120}
+      ],
+
+      "settings_group": "BatchListWindow",
+      "window_title": "Compute Batches",
+      "icon": "TextBulletListSquare"
+    }
+  }
+}

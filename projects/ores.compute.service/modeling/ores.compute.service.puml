@@ -1,0 +1,94 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.compute.service Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace compute #F2F2F2 {
+        namespace service #F2F2F2 {
+
+            namespace app #F2F2F2 {
+                class application {
+                    + run(io_ctx: io_context&, cfg: options): awaitable<void>
+                    - make_context(db_opts: database_options): context
+                }
+            }
+
+            namespace messaging #F2F2F2 {
+                class host_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class app_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class app_version_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class batch_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class workunit_handler {
+                    + handle_list(req): response
+                    + handle_save(req): response
+                }
+                class result_handler {
+                    + handle_list(req): response
+                    + handle_submit(req): response
+                }
+                class work_handler {
+                    + pull(msg): void
+                    + heartbeat(msg): void
+                    + reap(msg): void
+                }
+                class registrar {
+                    + register_all(nats: client&, db: context&): void
+                }
+            }
+
+            namespace config #F2F2F2 {
+                class options {
+                    + logging: optional<logging_options>
+                    + nats: nats_options
+                    + database: database_options
+                }
+                class parser {
+                    + {static} parse(argc: int, argv: char**): options
+                }
+            }
+
+            app::application --> messaging::registrar : uses
+            app::application --> config::options : configured by
+            messaging::registrar --> messaging::host_handler : registers
+            messaging::registrar --> messaging::app_handler : registers
+            messaging::registrar --> messaging::app_version_handler : registers
+            messaging::registrar --> messaging::batch_handler : registers
+            messaging::registrar --> messaging::workunit_handler : registers
+            messaging::registrar --> messaging::result_handler : registers
+            messaging::registrar --> messaging::work_handler : registers
+        }
+    }
+}
+
+@enduml

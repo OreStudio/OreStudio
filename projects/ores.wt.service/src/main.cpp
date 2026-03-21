@@ -159,12 +159,14 @@ int run(int argc, char* argv[]) {
     server.addEntryPoint(Wt::EntryPointType::Application, &create_application);
 
     if (server.start()) {
+        BOOST_LOG_SEV(lg, info) << "Service ready.";
+        BOOST_LOG_SEV(lg, info) << "Waiting for requests...";
         Wt::WServer::waitForShutdown();
         server.stop();
     }
 
     app_ctx.stop_eventing();
-    BOOST_LOG_SEV(lg, info) << "ORE Studio Web stopped";
+    BOOST_LOG_SEV(lg, info) << "Service stopped.";
 
     return EXIT_SUCCESS;
 }

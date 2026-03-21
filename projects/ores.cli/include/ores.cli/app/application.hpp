@@ -41,6 +41,10 @@
 #include "ores.cli/config/add_country_options.hpp"
 #include "ores.cli/config/add_change_reason_options.hpp"
 #include "ores.cli/config/add_change_reason_category_options.hpp"
+#include "ores.cli/config/add_compute_app_options.hpp"
+#include "ores.cli/config/add_compute_app_version_options.hpp"
+#include "ores.cli/config/add_compute_batch_options.hpp"
+#include "ores.cli/config/add_compute_workunit_options.hpp"
 
 namespace ores::cli::app {
 
@@ -89,6 +93,12 @@ private:
     void export_countries(const config::export_options& cfg) const;
     void export_change_reasons(const config::export_options& cfg) const;
     void export_change_reason_categories(const config::export_options& cfg) const;
+    void export_compute_hosts(const config::export_options& cfg) const;
+    void export_compute_apps(const config::export_options& cfg) const;
+    void export_compute_app_versions(const config::export_options& cfg) const;
+    void export_compute_batches(const config::export_options& cfg) const;
+    void export_compute_workunits(const config::export_options& cfg) const;
+    void export_compute_results(const config::export_options& cfg) const;
     void export_data(const std::optional<config::export_options>& ocfg) const;
 
     void delete_currency(const config::delete_options& cfg) const;
@@ -111,6 +121,11 @@ private:
     void add_country(const config::add_country_options& cfg) const;
     void add_change_reason(const config::add_change_reason_options& cfg) const;
     void add_change_reason_category(const config::add_change_reason_category_options& cfg) const;
+    void add_compute_host(const config::add_compute_host_options& cfg) const;
+    void add_compute_app(const config::add_compute_app_options& cfg) const;
+    void add_compute_app_version(const config::add_compute_app_version_options& cfg) const;
+    void add_compute_batch(const config::add_compute_batch_options& cfg) const;
+    void add_compute_workunit(const config::add_compute_workunit_options& cfg) const;
     void add_data(const std::optional<config::add_options>& ocfg) const;
 
 public:

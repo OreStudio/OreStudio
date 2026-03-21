@@ -161,6 +161,7 @@ Derived from ORES_*_SERVICE_DB_USER entries in the checkout .env."
 (prodigy-define-tag :name 'nats-service)
 (prodigy-define-tag :name 'http-server)
 (prodigy-define-tag :name 'wt-server)
+(prodigy-define-tag :name 'compute-wrapper)
 
 ;; =============================================================================
 ;; Dynamic service registration
@@ -261,6 +262,36 @@ Uses BASE directly; build type and checkout are already visible as tags."
           :on-output qt-on-output
           :stop-signal 'sigint
           :kill-process-buffer-on-stop t)))
+
+    ;; Compute wrapper nodes (test grid — 5 local nodes)
+    (let* ((dotenv    (ores/load-dotenv-for-prodigy))
+           (http-port (ores/get-port 'http build-type))
+           (tenant-id (format "ores.dev.%s" ores/checkout-label)))
+      (dotimes (i 5)
+        (let* ((n        (1+ i))
+               (id-key   (format "ORES_COMPUTE_WRAPPER_NODE_%d_HOST_ID" n))
+               (host-id  (or (cdr (assoc id-key dotenv)) ""))
+               (work-dir (expand-file-name
+                          (format "build/output/%s/publish/run/wrappers/node_%d"
+                                  preset n)
+                          ores/project-root)))
+          (unless (string-empty-p host-id)
+            (prodigy-define-service
+              :name    (ores/service-name
+                        (format "ORE Studio Compute Node %d" n) preset)
+              :cwd     bin
+              :command (concat bin "/ores.compute.wrapper")
+              :args    `(,@common-args
+                         "--nats-url"    "nats://localhost:4222"
+                         "--host-id"     ,host-id
+                         "--tenant-id"   ,tenant-id
+                         "--work-dir"    ,work-dir
+                         "--http-base-url"
+                         ,(format "http://localhost:%d" http-port))
+              :tags    `(,@common-tags compute-wrapper)
+              :env     dotenv
+              :stop-signal 'sigint
+              :kill-process-buffer-on-stop t)))))
 
     ;; HTTP Server
     (prodigy-define-service

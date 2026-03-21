@@ -40,7 +40,7 @@ message(STATUS "CMake Version: ${CMAKE_VERSION}")
 enable_testing()
 configure_file(CTestCustom.cmake CTestCustom.cmake COPYONLY)
 
-project(OreStudio VERSION 0.0.15 LANGUAGES CXX
+project(OreStudio VERSION 0.0.14 LANGUAGES CXX
     DESCRIPTION "UI and other utilities for the Open Source Risk Engine (ORE).")
 
 # Copy all binaries into the publish directory.
@@ -194,7 +194,7 @@ target_link_libraries(ores.openssl_cleanup INTERFACE OpenSSL::Crypto)
 
 # Qt
 set(QT_NO_PRIVATE_MODULE_WARNING ON)
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Svg Charts)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Concurrent Network Svg Charts)
 
 # Reflect CPP
 find_package(pugixml CONFIG REQUIRED)

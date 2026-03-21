@@ -98,6 +98,12 @@ int main(int argc, char *argv[]) {
                                 << (instanceColor.isValid() ? instanceColor.name().toStdString() : "none");
     }
 
+    // Set HTTP base URL for compute service file uploads
+    const std::string httpBaseUrl = parser.httpBaseUrl();
+    if (!httpBaseUrl.empty()) {
+        mainWindow.setHttpBaseUrl(httpBaseUrl);
+    }
+
 QTimer::singleShot(splashDuration, &splash, SLOT(close()));
     QTimer::singleShot(splashDuration, &mainWindow, SLOT(show()));
 

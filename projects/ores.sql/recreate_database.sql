@@ -42,6 +42,7 @@
  *       -v assets_service_password='...' -v synthetic_service_password='...' \
  *       -v scheduler_service_password='...' -v reporting_service_password='...' \
  *       -v telemetry_service_password='...' -v trading_service_password='...' \
+ *       -v compute_service_password='...' \
  *       -f recreate_database.sql
  *
  * Variables:
@@ -64,6 +65,7 @@
  *   :reporting_service_password - password for Reporting domain service
  *   :telemetry_service_password - password for Telemetry domain service
  *   :trading_service_password   - password for Trading domain service
+ *   :compute_service_password   - password for Compute domain service
  */
 \pset pager off
 \pset tuples_only on
@@ -285,6 +287,18 @@ $$;
 alter  user ores_trading_service with password :'trading_service_password';
 grant  ores_rw to ores_trading_service;
 alter  role ores_trading_service set search_path to public;
+
+-- Compute domain service
+do $$
+begin
+    if not exists (select 1 from pg_roles where rolname = 'ores_compute_service') then
+        create user ores_compute_service;
+    end if;
+end
+$$;
+alter  user ores_compute_service with password :'compute_service_password';
+grant  ores_rw to ores_compute_service;
+alter  role ores_compute_service set search_path to public;
 
 -- HTTP user
 do $$

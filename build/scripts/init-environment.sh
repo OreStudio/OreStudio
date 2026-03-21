@@ -102,6 +102,15 @@ gen_password() {
 }
 
 # ---------------------------------------------------------------------------
+# UUID generator — produces a canonical UUID v4-formatted string
+# ---------------------------------------------------------------------------
+gen_uuid() {
+    local h; h="$(openssl rand -hex 16)"
+    printf '%s-%s-%s-%s-%s' \
+        "${h:0:8}" "${h:8:4}" "${h:12:4}" "${h:16:4}" "${h:20:12}"
+}
+
+# ---------------------------------------------------------------------------
 # Discover NATS domain services from projects/ores.*.service directories
 # ---------------------------------------------------------------------------
 SERVICE_COMPONENTS=()
@@ -236,6 +245,15 @@ EOF
     echo "# Note: excluded from GITHUB_ENV export since services don't run in CI."
     echo "# ---------------------------------------------------------------------------"
     echo "ORES_IAM_SERVICE_JWT_PRIVATE_KEY=\"${JWT_KEY_ONELINE}\""
+    echo ""
+    echo "# ---------------------------------------------------------------------------"
+    echo "# Compute wrapper node host IDs (one per test node)"
+    echo "# Each ID must match a host record in the compute.hosts table."
+    echo "# Re-run recreate_database.sh after regenerating to keep IDs in sync."
+    echo "# ---------------------------------------------------------------------------"
+    for n in 1 2 3 4 5; do
+        echo "ORES_GRID_NODE_${n}_HOST_ID=$(gen_uuid)"
+    done
 } >> "${ENV_FILE}"
 
 chmod 600 "${ENV_FILE}"

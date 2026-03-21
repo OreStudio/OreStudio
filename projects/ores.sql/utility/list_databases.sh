@@ -22,6 +22,17 @@
 
 set -e
 
+# Source .env if present (local development). In CI, env vars are exported directly.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHECKOUT_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
+ENV_FILE="${CHECKOUT_ROOT}/.env"
+if [[ -f "${ENV_FILE}" ]]; then
+    set -o allexport
+    # shellcheck source=/dev/null
+    source "${ENV_FILE}"
+    set +o allexport
+fi
+
 usage() {
     cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
@@ -83,7 +94,8 @@ fi
 
 # Query databases with creation time from filesystem
 # pg_stat_file requires superuser, falls back to empty if not available
-PGPASSWORD="${PGPASSWORD}" psql -h "${HOST}" -p "${PORT}" -U postgres -At -F $'\t' -c "
+# PGCONNECT_TIMEOUT limits how long we wait for an unreachable host.
+PGPASSWORD="${PGPASSWORD}" PGCONNECT_TIMEOUT=3 psql -h "${HOST}" -p "${PORT}" -U postgres -At -F $'\t' -c "
 SELECT
     datname,
     COALESCE(

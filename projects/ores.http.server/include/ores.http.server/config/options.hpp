@@ -21,6 +21,7 @@
 #define ORES_HTTP_SERVER_CONFIG_OPTIONS_HPP
 
 #include <iosfwd>
+#include <string>
 #include <optional>
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
@@ -46,6 +47,11 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+
+    /**
+     * @brief Root directory for compute grid file storage (packages, inputs, outputs).
+     */
+    std::string compute_storage_dir{"/var/ores/http-server/compute"};
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

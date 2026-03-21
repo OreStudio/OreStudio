@@ -22,6 +22,3 @@
 -- Drop Row-Level Security Policies for Variability Tables
 -- =============================================================================
 -- Must be dropped before the corresponding tables are dropped.
-
--- Feature Flags
-drop policy if exists ores_variability_feature_flags_tbl_tenant_isolation_policy on "ores_variability_feature_flags_tbl";

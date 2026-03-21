@@ -1,0 +1,121 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.compute Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace compute #F2F2F2 {
+
+        namespace domain #F2F2F2 {
+            class host {
+                + id: uuid
+                + external_id: string
+                + location: string
+                + cpu_count: int
+                + ram_mb: int64
+                + gpu_type: string
+                + last_rpc_time: time_point
+                + credit_total: double
+                + modified_by: string
+                + performed_by: string
+            }
+            class app {
+                + id: uuid
+                + name: string
+                + description: string
+                + modified_by: string
+                + performed_by: string
+            }
+            class app_version {
+                + id: uuid
+                + app_id: uuid
+                + wrapper_version: string
+                + engine_version: string
+                + package_uri: string
+                + platform: string
+                + min_ram_mb: int
+                + modified_by: string
+            }
+            class batch {
+                + id: uuid
+                + external_ref: string
+                + status: string
+                + modified_by: string
+            }
+            class workunit {
+                + id: uuid
+                + batch_id: uuid
+                + app_version_id: uuid
+                + input_uri: string
+                + config_uri: string
+                + priority: int
+                + target_redundancy: int
+                + canonical_result_id: uuid
+                + modified_by: string
+            }
+            class result {
+                + id: uuid
+                + workunit_id: uuid
+                + host_id: uuid
+                + server_state: string
+                + outcome: int
+                + output_uri: string
+                + received_at: time_point
+            }
+
+            app_version --> app : app_id
+            workunit --> batch : batch_id
+            workunit --> app_version : app_version_id
+            result --> workunit : workunit_id
+            result --> host : host_id
+            workunit ..> result : canonical_result_id
+        }
+
+        namespace messaging #F2F2F2 {
+            class work_assignment_event {
+                + result_id: string
+                + workunit_id: string
+                + app_version_id: string
+                + input_uri: string
+                + config_uri: string
+                + output_uri: string
+                + package_uri: string
+            }
+            class heartbeat_message {
+                + host_id: string
+                + {static} nats_subject: string
+            }
+            class submit_result_request {
+                + result_id: string
+                + output_uri: string
+                + outcome: int
+                + {static} nats_subject: string
+            }
+            class submit_result_response {
+                + success: bool
+                + message: string
+            }
+        }
+
+    }
+}
+
+@enduml

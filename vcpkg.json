@@ -34,7 +34,8 @@
         "catch2",
         "libfort",
         "croncpp",
-        "cnats"
+        "cnats",
+        "libarchive"
     ],
     "default-features": [ "wt" ],
     "features": {

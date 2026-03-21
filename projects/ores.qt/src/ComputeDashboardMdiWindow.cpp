@@ -19,9 +19,12 @@
  */
 #include "ores.qt/ComputeDashboardMdiWindow.hpp"
 
+#include <chrono>
+#include <set>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPointer>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.compute/messaging/host_protocol.hpp"
@@ -36,6 +39,7 @@ namespace {
 
 struct DashboardCounts {
     int total_hosts = 0;
+    int idle_agents = 0;
     int total_workunits = 0;
     int total_results = 0;
     bool success = false;
@@ -97,7 +101,7 @@ void ComputeDashboardMdiWindow::setupUi() {
     };
 
     gridLayout->addWidget(makeStatBox(tr("Total Hosts"),     totalHostsLabel_),      0, 0);
-    gridLayout->addWidget(makeStatBox(tr("Online Hosts"),    onlineHostsLabel_),     0, 1);
+    gridLayout->addWidget(makeStatBox(tr("Idle Agents"),     onlineHostsLabel_),     0, 1);
     gridLayout->addWidget(makeStatBox(tr("Total Workunits"), pendingWorkunitLabel_), 1, 0);
     gridLayout->addWidget(makeStatBox(tr("Active Workunits"),activeWorkunitLabel_),  1, 1);
     gridLayout->addWidget(makeStatBox(tr("Total Results"),   totalResultsLabel_),    2, 0);
@@ -153,14 +157,48 @@ void ComputeDashboardMdiWindow::loadCounts() {
 
             DashboardCounts counts;
 
-            // Hosts: fetch with limit=1 to get total_available_count
+            // Hosts: fetch all (grids are small) to compute total and idle count.
+            // A host is "online" when its last_rpc_time is within the 5-minute
+            // reaper threshold. A host is "idle" when it is online and has no
+            // InProgress result currently assigned to it.
+            std::set<std::string> online_host_ids;
             {
                 compute::messaging::list_hosts_request req;
-                req.limit = 1;
+                req.limit = 1000;
                 auto resp = self->clientManager_->
                     process_authenticated_request(std::move(req));
                 if (resp) {
                     counts.total_hosts = resp->total_available_count;
+                    const auto now = std::chrono::system_clock::now();
+                    constexpr auto online_threshold = std::chrono::minutes(5);
+                    for (const auto& h : resp->hosts) {
+                        if (h.last_rpc_time ==
+                                std::chrono::system_clock::time_point{})
+                            continue;
+                        if (now - h.last_rpc_time <= online_threshold)
+                            online_host_ids.insert(boost::uuids::to_string(h.id));
+                    }
+                }
+            }
+
+            // Results: fetch all to find hosts currently busy (InProgress = 4).
+            {
+                compute::messaging::list_results_request req;
+                req.limit = 10000;
+                auto resp = self->clientManager_->
+                    process_authenticated_request(std::move(req));
+                if (resp) {
+                    counts.total_results = resp->total_available_count;
+                    std::set<std::string> busy_host_ids;
+                    for (const auto& r : resp->results) {
+                        if (r.server_state == 4)  // InProgress
+                            busy_host_ids.insert(
+                                boost::uuids::to_string(r.host_id));
+                    }
+                    for (const auto& id : online_host_ids) {
+                        if (!busy_host_ids.count(id))
+                            ++counts.idle_agents;
+                    }
                 }
             }
 
@@ -172,17 +210,6 @@ void ComputeDashboardMdiWindow::loadCounts() {
                     process_authenticated_request(std::move(req));
                 if (resp) {
                     counts.total_workunits = resp->total_available_count;
-                }
-            }
-
-            // Results
-            {
-                compute::messaging::list_results_request req;
-                req.limit = 1;
-                auto resp = self->clientManager_->
-                    process_authenticated_request(std::move(req));
-                if (resp) {
-                    counts.total_results = resp->total_available_count;
                 }
             }
 
@@ -207,18 +234,21 @@ void ComputeDashboardMdiWindow::loadCounts() {
         }
 
         self->updateCountLabel(self->totalHostsLabel_,     counts.total_hosts);
-        self->updateCountLabel(self->onlineHostsLabel_,    0);  // Not yet tracked
+        self->updateCountLabel(self->onlineHostsLabel_,   counts.idle_agents);
         self->updateCountLabel(self->pendingWorkunitLabel_,counts.total_workunits);
         self->updateCountLabel(self->activeWorkunitLabel_, 0);  // Not yet tracked
         self->updateCountLabel(self->totalResultsLabel_,   counts.total_results);
         self->updateCountLabel(self->recentResultsLabel_,  0);  // Not yet tracked
 
-        emit self->statusChanged(tr("Dashboard updated: %1 hosts, %2 workunits, %3 results")
-            .arg(counts.total_hosts)
-            .arg(counts.total_workunits)
-            .arg(counts.total_results));
+        emit self->statusChanged(
+            tr("Dashboard updated: %1 hosts, %2 idle, %3 workunits, %4 results")
+                .arg(counts.total_hosts)
+                .arg(counts.idle_agents)
+                .arg(counts.total_workunits)
+                .arg(counts.total_results));
 
         BOOST_LOG_SEV(lg(), debug) << "Dashboard: hosts=" << counts.total_hosts
+                                   << " idle=" << counts.idle_agents
                                    << " workunits=" << counts.total_workunits
                                    << " results=" << counts.total_results;
     });

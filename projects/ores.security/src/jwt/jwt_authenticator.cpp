@@ -222,6 +222,103 @@ std::expected<jwt_claims, jwt_error> jwt_authenticator::validate(
     }
 }
 
+std::expected<jwt_claims, jwt_error> jwt_authenticator::validate_allow_expired(
+    const std::string& token) const {
+
+    if (!configured_) {
+        BOOST_LOG_SEV(lg(), error) << "JWT authenticator not configured";
+        return std::unexpected(jwt_error::invalid_token);
+    }
+
+    BOOST_LOG_SEV(lg(), trace) << "Validating JWT token (allow expired)";
+
+    try {
+        auto decoded = ::jwt::decode<json_traits>(token);
+
+        // Build verifier with a very large leeway so expired tokens are accepted.
+        // The signature is still verified — only the expiry check is relaxed.
+        constexpr auto max_leeway = std::chrono::seconds(
+            std::chrono::years(100).count());
+
+        auto verifier = ::jwt::verify<json_traits>()
+            .leeway(max_leeway);
+
+        switch (algorithm_) {
+        case algorithm_type::hs256:
+            verifier = verifier.allow_algorithm(::jwt::algorithm::hs256{secret_});
+            break;
+        case algorithm_type::rs256_signer:
+            verifier = verifier.allow_algorithm(
+                ::jwt::algorithm::rs256(public_key_, private_key_, "", ""));
+            break;
+        case algorithm_type::rs256_verifier:
+            verifier = verifier.allow_algorithm(
+                ::jwt::algorithm::rs256(public_key_, "", "", ""));
+            break;
+        }
+
+        if (!issuer_.empty())
+            verifier = verifier.with_issuer(issuer_);
+
+        verifier.verify(decoded);
+
+        // Re-use validate() to extract claims now that the token is accepted.
+        // Call validate_allow_expired recursively would loop; instead inline
+        // the claims extraction (same as in validate()).
+        jwt_claims claims;
+
+        if (decoded.has_subject())   claims.subject = decoded.get_subject();
+        if (decoded.has_issuer())    claims.issuer  = decoded.get_issuer();
+        if (decoded.has_audience()) {
+            auto aud_set = decoded.get_audience();
+            if (!aud_set.empty()) claims.audience = *aud_set.begin();
+        }
+        if (decoded.has_expires_at()) claims.expires_at = decoded.get_expires_at();
+        if (decoded.has_issued_at())  claims.issued_at  = decoded.get_issued_at();
+
+        if (decoded.has_payload_claim("roles")) {
+            for (const auto& r : decoded.get_payload_claim("roles").as_array())
+                claims.roles.push_back(std::string(r.as_string()));
+        }
+        if (decoded.has_payload_claim("username"))
+            claims.username = decoded.get_payload_claim("username").as_string();
+        if (decoded.has_payload_claim("email"))
+            claims.email = decoded.get_payload_claim("email").as_string();
+        if (decoded.has_payload_claim("session_id"))
+            claims.session_id = decoded.get_payload_claim("session_id").as_string();
+        if (decoded.has_payload_claim("session_start")) {
+            auto ts = decoded.get_payload_claim("session_start").as_integer();
+            claims.session_start_time = std::chrono::system_clock::from_time_t(ts);
+        }
+        if (decoded.has_payload_claim("tenant_id"))
+            claims.tenant_id = decoded.get_payload_claim("tenant_id").as_string();
+        if (decoded.has_payload_claim("party_id"))
+            claims.party_id = decoded.get_payload_claim("party_id").as_string();
+        if (decoded.has_payload_claim("visible_party_ids")) {
+            for (const auto& v :
+                    decoded.get_payload_claim("visible_party_ids").as_array())
+                claims.visible_party_ids.push_back(std::string(v.as_string()));
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "JWT claims extracted (allow expired), subject: "
+            << claims.subject;
+
+        return claims;
+
+    } catch (const ::jwt::error::token_verification_exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT verification failed: " << e.what();
+        std::string msg = e.what();
+        if (msg.find("signature") != std::string::npos)
+            return std::unexpected(jwt_error::invalid_signature);
+        if (msg.find("issuer") != std::string::npos)
+            return std::unexpected(jwt_error::invalid_issuer);
+        return std::unexpected(jwt_error::invalid_token);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "JWT decode error: " << e.what();
+        return std::unexpected(jwt_error::invalid_token);
+    }
+}
+
 std::optional<std::string> jwt_authenticator::create_token(
     const jwt_claims& claims) const {
 

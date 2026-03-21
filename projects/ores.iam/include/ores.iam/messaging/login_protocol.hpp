@@ -68,6 +68,26 @@ struct public_key_request {
     static constexpr std::string_view nats_subject = "iam.v1.auth.public-key";
 };
 
+/**
+ * @brief Request to refresh a JWT token.
+ *
+ * The current token is passed in the Authorization: Bearer header.
+ * No request body is needed — identity is taken from the token claims.
+ */
+struct refresh_request {
+    using response_type = struct refresh_response;
+    static constexpr std::string_view nats_subject = "iam.v1.auth.refresh";
+};
+
+/**
+ * @brief Response to a token refresh request.
+ */
+struct refresh_response {
+    bool success = false;
+    std::string token;
+    std::string message;
+};
+
 }
 
 #endif

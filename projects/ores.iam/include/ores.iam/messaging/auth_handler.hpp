@@ -48,6 +48,7 @@
 #include "ores.iam/service/account_setup_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.variability/service/system_settings_service.hpp"
+#include "ores.iam/domain/token_settings.hpp"
 
 namespace ores::iam::messaging {
 
@@ -162,7 +163,21 @@ public:
     auth_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
         ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {
+        reload_token_settings();
+    }
+
+    void reload_token_settings() {
+        try {
+            variability::service::system_settings_service svc(ctx_);
+            svc.refresh();
+            token_settings_ = domain::token_settings::load(svc);
+        } catch (const std::exception& e) {
+            using namespace ores::logging;
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Failed to load token settings, using defaults: " << e.what();
+        }
+    }
 
     void signup(ores::nats::message msg) {
         using namespace ores::logging;
@@ -277,7 +292,8 @@ public:
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
                 claims.issued_at = now;
-                claims.expires_at = now + std::chrono::hours(8);
+                claims.expires_at = now + std::chrono::seconds(
+                    token_settings_.access_lifetime_s);
                 claims.username = acct.username;
                 claims.email = acct.email;
                 claims.tenant_id = acct.tenant_id.to_string();
@@ -315,7 +331,8 @@ public:
                 security::jwt::jwt_claims claims;
                 claims.subject = boost::uuids::to_string(acct.id);
                 claims.issued_at = now;
-                claims.expires_at = now + std::chrono::minutes(5);
+                claims.expires_at = now + std::chrono::seconds(
+                    token_settings_.party_selection_lifetime_s);
                 claims.audience = "select_party_only";
                 claims.username = acct.username;
                 claims.email = acct.email;
@@ -430,10 +447,84 @@ public:
         }
     }
 
+    void refresh(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+
+        const auto token = auth_extract_bearer_token(msg);
+        if (token.empty()) {
+            reply(nats_, msg, refresh_response{
+                .success = false, .message = "Missing Authorization header"});
+            return;
+        }
+
+        try {
+            // Validate token ignoring expiry — we still verify the signature.
+            auto claims_result = signer_.validate_allow_expired(token);
+            if (!claims_result) {
+                reply(nats_, msg, refresh_response{
+                    .success = false, .message = "Invalid token"});
+                return;
+            }
+
+            // Enforce max session ceiling using session_start_time embedded
+            // in the token at login.
+            const auto now = std::chrono::system_clock::now();
+            if (claims_result->session_start_time) {
+                const auto session_age = now - *claims_result->session_start_time;
+                const auto max_session = std::chrono::seconds(
+                    token_settings_.max_session_s);
+                if (session_age >= max_session) {
+                    BOOST_LOG_SEV(auth_handler_lg(), info)
+                        << "Max session exceeded for subject: "
+                        << claims_result->subject;
+                    reply(nats_, msg, refresh_response{
+                        .success = false, .message = "max_session_exceeded"});
+                    return;
+                }
+            }
+
+            // Issue a fresh token carrying the same identity claims.
+            security::jwt::jwt_claims new_claims;
+            new_claims.subject          = claims_result->subject;
+            new_claims.issued_at        = now;
+            new_claims.expires_at       = now + std::chrono::seconds(
+                                            token_settings_.access_lifetime_s);
+            new_claims.username         = claims_result->username;
+            new_claims.email            = claims_result->email;
+            new_claims.tenant_id        = claims_result->tenant_id;
+            new_claims.party_id         = claims_result->party_id;
+            new_claims.session_id       = claims_result->session_id;
+            new_claims.session_start_time = claims_result->session_start_time;
+            new_claims.roles            = claims_result->roles;
+            new_claims.visible_party_ids = claims_result->visible_party_ids;
+
+            const auto new_token = signer_.create_token(new_claims).value_or("");
+            if (new_token.empty()) {
+                reply(nats_, msg, refresh_response{
+                    .success = false, .message = "Token creation failed"});
+                return;
+            }
+
+            BOOST_LOG_SEV(auth_handler_lg(), debug)
+                << "Completed " << msg.subject << " for subject: "
+                << claims_result->subject;
+            reply(nats_, msg, refresh_response{
+                .success = true, .token = new_token});
+
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, refresh_response{
+                .success = false, .message = e.what()});
+        }
+    }
+
 private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
+    domain::token_settings token_settings_;
 };
 
 } // namespace ores::iam::messaging

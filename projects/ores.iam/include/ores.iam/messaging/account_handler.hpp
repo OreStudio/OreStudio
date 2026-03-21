@@ -44,6 +44,8 @@
 #include "ores.iam/service/account_service.hpp"
 #include "ores.iam/service/authorization_service.hpp"
 #include "ores.iam/service/account_setup_service.hpp"
+#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.iam/domain/token_settings.hpp"
 
 namespace ores::iam::messaging {
 
@@ -125,7 +127,21 @@ public:
     account_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
         ores::security::jwt::jwt_authenticator signer)
-        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
+        : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {
+        reload_token_settings();
+    }
+
+    void reload_token_settings() {
+        try {
+            variability::service::system_settings_service svc(ctx_);
+            svc.refresh();
+            token_settings_ = domain::token_settings::load(svc);
+        } catch (const std::exception& e) {
+            using namespace ores::logging;
+            BOOST_LOG_SEV(account_handler_lg(), warn)
+                << "Failed to load token settings, using defaults: " << e.what();
+        }
+    }
 
     void list(ores::nats::message msg) {
         using namespace ores::logging;
@@ -546,7 +562,8 @@ public:
             new_claims.subject = claims_result->subject;
             new_claims.issued_at = std::chrono::system_clock::now();
             new_claims.expires_at =
-                new_claims.issued_at + std::chrono::hours(8);
+                new_claims.issued_at + std::chrono::seconds(
+                    token_settings_.access_lifetime_s);
             new_claims.username = claims_result->username;
             new_claims.email = claims_result->email;
             new_claims.tenant_id = tenant_id_str;
@@ -636,6 +653,7 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;
+    domain::token_settings token_settings_;
 };
 
 } // namespace ores::iam::messaging

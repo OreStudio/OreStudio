@@ -80,6 +80,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         public_key_request::nats_subject, qg,
         [ah](ores::nats::message msg) { ah->public_key(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        refresh_request::nats_subject, qg,
+        [ah](ores::nats::message msg) { ah->refresh(std::move(msg)); }));
 
     // --- Bootstrap ---
     auto bh = std::make_shared<bootstrap_handler>(nats, ctx, signer);
@@ -227,6 +230,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_tenant_type_history_request::nats_subject, qg,
         [tth](ores::nats::message msg) { tth->history(std::move(msg)); }));
+
+    // --- Reload token settings on variability change ---
+    // Subscribe to the system_setting_changed event so that any update to
+    // iam.token.* settings takes effect without restarting the IAM service.
+    constexpr std::string_view settings_changed_subject =
+        "ores.variability.system_setting_changed";
+    subs.push_back(nats.queue_subscribe(
+        settings_changed_subject, qg,
+        [ah, acth](ores::nats::message) {
+            ah->reload_token_settings();
+            acth->reload_token_settings();
+        }));
 
     BOOST_LOG_SEV(lg(), debug) << "Registered " << subs.size()
         << " IAM message handlers.";

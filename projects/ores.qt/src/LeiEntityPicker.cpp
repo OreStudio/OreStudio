@@ -65,7 +65,6 @@ LeiEntityPicker::LeiEntityPicker(ClientManager* clientManager,
 }
 
 void LeiEntityPicker::setupUI() {
-    WidgetUtils::setupComboBoxes(this);
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -122,6 +121,10 @@ void LeiEntityPicker::setupUI() {
     connect(tableView_->selectionModel(),
         &QItemSelectionModel::selectionChanged,
         this, &LeiEntityPicker::onSelectionChanged);
+
+    // Apply combo box defaults after all widgets are created so that
+    // countryFilter_ gets the BoundedListView and maxVisibleItems treatment.
+    WidgetUtils::setupComboBoxes(this);
 }
 
 QString LeiEntityPicker::selectedLei() const {

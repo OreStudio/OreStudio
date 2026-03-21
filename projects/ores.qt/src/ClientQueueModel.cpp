@@ -28,7 +28,7 @@ namespace ores::qt {
 using namespace ores::logging;
 
 ClientQueueModel::ClientQueueModel(ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)) {
 

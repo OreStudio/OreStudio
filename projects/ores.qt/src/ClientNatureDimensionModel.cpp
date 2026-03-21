@@ -37,7 +37,7 @@ namespace {
 
 ClientNatureDimensionModel::ClientNatureDimensionModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(nature_dimension_key_extractor),

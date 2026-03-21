@@ -41,7 +41,7 @@ namespace {
 ClientCountryModel::
 ClientCountryModel(ClientManager* clientManager, ImageCache* imageCache,
     QObject* parent)
-    : QAbstractTableModel(parent), clientManager_(clientManager),
+    : AbstractClientModel(parent), clientManager_(clientManager),
       imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(country_key_extractor),

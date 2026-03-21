@@ -152,6 +152,7 @@ void ChangeReasonMdiWindow::setupConnections() {
             this, &ChangeReasonMdiWindow::onDataLoaded);
     connect(model_, &ClientChangeReasonModel::loadError,
             this, &ChangeReasonMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ChangeReasonMdiWindow::onSelectionChanged);
@@ -166,13 +167,11 @@ void ChangeReasonMdiWindow::doReload() {
 }
 
 void ChangeReasonMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 reasons").arg(model_->rowCount()));
 }
 
 void ChangeReasonMdiWindow::onLoadError(const QString& error_message,
                                          const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

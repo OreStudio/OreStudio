@@ -37,7 +37,7 @@ namespace {
 
 ClientDataDomainModel::ClientDataDomainModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(data_domain_key_extractor),

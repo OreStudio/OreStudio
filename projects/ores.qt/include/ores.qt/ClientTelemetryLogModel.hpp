@@ -24,6 +24,7 @@
 #include <optional>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -37,7 +38,7 @@ namespace ores::qt {
  * This model fetches telemetry logs asynchronously, with optional filtering
  * by session ID, log level, and other criteria.
  */
-class ClientTelemetryLogModel final : public QAbstractTableModel {
+class ClientTelemetryLogModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -142,8 +143,6 @@ public:
     }
 
 signals:
-    void dataLoaded();
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onLogsLoaded();

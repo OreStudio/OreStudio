@@ -24,6 +24,7 @@
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
@@ -33,7 +34,7 @@
 
 namespace ores::qt {
 
-class ClientDataDomainModel final : public QAbstractTableModel {
+class ClientDataDomainModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -146,8 +147,6 @@ public:
     const dq::domain::data_domain* getDomain(int row) const;
 
 signals:
-    void dataLoaded();
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onDomainsLoaded();

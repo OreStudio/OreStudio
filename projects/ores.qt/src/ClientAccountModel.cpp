@@ -44,7 +44,7 @@ namespace {
 
 ClientAccountModel::
 ClientAccountModel(ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent), clientManager_(clientManager),
+    : AbstractClientModel(parent), clientManager_(clientManager),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
       recencyTracker_(account_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {

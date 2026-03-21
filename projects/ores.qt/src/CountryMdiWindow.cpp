@@ -149,6 +149,7 @@ CountryMdiWindow(ClientManager* clientManager,
             this, &CountryMdiWindow::onDataLoaded);
     connect(countryModel_.get(), &ClientCountryModel::loadError,
             this, &CountryMdiWindow::onLoadError);
+    connectModel(countryModel_.get());
     connect(countryTableView_, &QTableView::doubleClicked,
             this, &CountryMdiWindow::onRowDoubleClicked);
     connect(countryTableView_->selectionModel(),
@@ -244,7 +245,6 @@ void CountryMdiWindow::addNew() {
 }
 
 void CountryMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = countryModel_->rowCount();
     const auto total = countryModel_->total_available_count();
 
@@ -275,7 +275,6 @@ void CountryMdiWindow::onDataLoaded() {
 
 void CountryMdiWindow::onLoadError(const QString& error_message,
                                     const QString& details) {
-    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading countries: "
                               << error_message.toStdString();

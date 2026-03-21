@@ -157,6 +157,7 @@ void BusinessCentreMdiWindow::setupConnections() {
             this, &BusinessCentreMdiWindow::onDataLoaded);
     connect(model_, &ClientBusinessCentreModel::loadError,
             this, &BusinessCentreMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &BusinessCentreMdiWindow::onSelectionChanged);
@@ -202,7 +203,6 @@ void BusinessCentreMdiWindow::doReload() {
 }
 
 void BusinessCentreMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
 
@@ -219,7 +219,6 @@ void BusinessCentreMdiWindow::onDataLoaded() {
 
 void BusinessCentreMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

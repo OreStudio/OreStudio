@@ -219,6 +219,7 @@ CurrencyMdiWindow(ClientManager* clientManager,
             this, &CurrencyMdiWindow::onDataLoaded);
     connect(currencyModel_.get(), &ClientCurrencyModel::loadError,
             this, &CurrencyMdiWindow::onLoadError);
+    connectModel(currencyModel_.get());
     connect(currencyTableView_, &QTableView::doubleClicked,
             this, &CurrencyMdiWindow::onRowDoubleClicked);
     connect(currencyTableView_->selectionModel(),
@@ -340,7 +341,6 @@ void CurrencyMdiWindow::addNew() {
 }
 
 void CurrencyMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = currencyModel_->rowCount();
     const auto total = currencyModel_->total_available_count();
 
@@ -371,7 +371,6 @@ void CurrencyMdiWindow::onDataLoaded() {
 
 void CurrencyMdiWindow::onLoadError(const QString& error_message,
                                      const QString& details) {
-    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading currencies: "
                               << error_message.toStdString();

@@ -37,7 +37,7 @@ namespace {
 
 ClientOriginDimensionModel::ClientOriginDimensionModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(origin_dimension_key_extractor),

@@ -152,6 +152,7 @@ void JobDefinitionMdiWindow::setupConnections() {
             this, &JobDefinitionMdiWindow::onDataLoaded);
     connect(model_, &ClientJobDefinitionModel::loadError,
             this, &JobDefinitionMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &JobDefinitionMdiWindow::onSelectionChanged);
@@ -186,7 +187,6 @@ void JobDefinitionMdiWindow::doReload() {
 }
 
 void JobDefinitionMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 job definitions").arg(loaded).arg(total));
@@ -198,7 +198,6 @@ void JobDefinitionMdiWindow::onDataLoaded() {
 
 void JobDefinitionMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

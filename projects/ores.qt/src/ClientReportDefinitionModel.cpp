@@ -41,7 +41,7 @@ namespace {
 
 ClientReportDefinitionModel::ClientReportDefinitionModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(report_definition_key_extractor),

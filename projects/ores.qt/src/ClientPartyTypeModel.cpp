@@ -37,7 +37,7 @@ namespace {
 
 ClientPartyTypeModel::ClientPartyTypeModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(party_type_key_extractor),

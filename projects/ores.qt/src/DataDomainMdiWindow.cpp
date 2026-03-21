@@ -129,6 +129,7 @@ void DataDomainMdiWindow::setupConnections() {
             this, &DataDomainMdiWindow::onDataLoaded);
     connect(model_, &ClientDataDomainModel::loadError,
             this, &DataDomainMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_, &QTableView::doubleClicked,
             this, &DataDomainMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -142,14 +143,12 @@ void DataDomainMdiWindow::setupConnections() {
 }
 
 void DataDomainMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 data domains").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void DataDomainMdiWindow::onLoadError(const QString& error_message,
                                        const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

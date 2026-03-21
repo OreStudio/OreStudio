@@ -38,7 +38,7 @@ namespace {
 
 ClientReportInstanceModel::ClientReportInstanceModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(report_instance_key_extractor),

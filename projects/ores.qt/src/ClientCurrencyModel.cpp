@@ -42,7 +42,7 @@ namespace {
 ClientCurrencyModel::
 ClientCurrencyModel(ClientManager* clientManager, ImageCache* imageCache,
     QObject* parent)
-    : QAbstractTableModel(parent), clientManager_(clientManager),
+    : AbstractClientModel(parent), clientManager_(clientManager),
       imageCache_(imageCache),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)),
       recencyTracker_(currency_key_extractor),

@@ -127,6 +127,7 @@ void TreatmentDimensionMdiWindow::setupConnections() {
             this, &TreatmentDimensionMdiWindow::onDataLoaded);
     connect(model_, &ClientTreatmentDimensionModel::loadError,
             this, &TreatmentDimensionMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_, &QTableView::doubleClicked,
             this, &TreatmentDimensionMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -140,14 +141,12 @@ void TreatmentDimensionMdiWindow::setupConnections() {
 }
 
 void TreatmentDimensionMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 treatment dimensions").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void TreatmentDimensionMdiWindow::onLoadError(const QString& error_message,
                                                const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

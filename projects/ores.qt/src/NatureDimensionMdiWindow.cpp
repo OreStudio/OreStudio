@@ -138,6 +138,7 @@ void NatureDimensionMdiWindow::setupConnections() {
             this, &NatureDimensionMdiWindow::onDataLoaded);
     connect(model_, &ClientNatureDimensionModel::loadError,
             this, &NatureDimensionMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &NatureDimensionMdiWindow::onSelectionChanged);
     connect(tableView_, &QTableView::doubleClicked,
@@ -151,13 +152,11 @@ void NatureDimensionMdiWindow::doReload() {
 }
 
 void NatureDimensionMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 nature dimensions").arg(model_->rowCount()));
 }
 
 void NatureDimensionMdiWindow::onLoadError(const QString& error_message,
                                             const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

@@ -172,6 +172,7 @@ void CounterpartyMdiWindow::setupConnections() {
             this, &CounterpartyMdiWindow::onDataLoaded);
     connect(model_, &ClientCounterpartyModel::loadError,
             this, &CounterpartyMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &CounterpartyMdiWindow::onSelectionChanged);
@@ -217,7 +218,6 @@ void CounterpartyMdiWindow::doReload() {
 }
 
 void CounterpartyMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
 
@@ -234,7 +234,6 @@ void CounterpartyMdiWindow::onDataLoaded() {
 
 void CounterpartyMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

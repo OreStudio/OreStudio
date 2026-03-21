@@ -23,6 +23,7 @@
 #include <vector>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
@@ -39,7 +40,7 @@ class ImageCache;
  * This model extends QAbstractTableModel and fetches portfolio
  * data asynchronously using the ores.comms client.
  */
-class ClientPortfolioModel final : public QAbstractTableModel {
+class ClientPortfolioModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -117,12 +118,10 @@ signals:
     /**
      * @brief Emitted when data has been successfully loaded.
      */
-    void dataLoaded();
 
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onPortfoliosLoaded();

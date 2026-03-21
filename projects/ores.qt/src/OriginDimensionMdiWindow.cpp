@@ -151,6 +151,7 @@ void OriginDimensionMdiWindow::setupConnections() {
             this, &OriginDimensionMdiWindow::onDataLoaded);
     connect(model_, &ClientOriginDimensionModel::loadError,
             this, &OriginDimensionMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &OriginDimensionMdiWindow::onSelectionChanged);
@@ -165,13 +166,11 @@ void OriginDimensionMdiWindow::doReload() {
 }
 
 void OriginDimensionMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 origin dimensions").arg(model_->rowCount()));
 }
 
 void OriginDimensionMdiWindow::onLoadError(const QString& error_message,
                                             const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

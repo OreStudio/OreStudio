@@ -171,6 +171,7 @@ void BusinessUnitMdiWindow::setupConnections() {
             this, &BusinessUnitMdiWindow::onDataLoaded);
     connect(model_, &ClientBusinessUnitModel::loadError,
             this, &BusinessUnitMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &BusinessUnitMdiWindow::onSelectionChanged);
@@ -205,7 +206,6 @@ void BusinessUnitMdiWindow::doReload() {
 }
 
 void BusinessUnitMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 business units").arg(loaded).arg(total));
@@ -217,7 +217,6 @@ void BusinessUnitMdiWindow::onDataLoaded() {
 
 void BusinessUnitMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

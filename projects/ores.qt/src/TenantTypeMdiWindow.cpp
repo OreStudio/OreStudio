@@ -151,6 +151,7 @@ void TenantTypeMdiWindow::setupConnections() {
             this, &TenantTypeMdiWindow::onDataLoaded);
     connect(model_, &ClientTenantTypeModel::loadError,
             this, &TenantTypeMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &TenantTypeMdiWindow::onSelectionChanged);
@@ -165,13 +166,11 @@ void TenantTypeMdiWindow::doReload() {
 }
 
 void TenantTypeMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 tenant types").arg(model_->rowCount()));
 }
 
 void TenantTypeMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

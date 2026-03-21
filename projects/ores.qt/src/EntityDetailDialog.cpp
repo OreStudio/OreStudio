@@ -46,7 +46,6 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
@@ -1162,38 +1161,14 @@ void EntityDetailDialog::onSaveClicked() {
 
     updateEntityFromUi();
 
-    // For updates (not creates), require change reason
-    if (!createMode_) {
-        namespace reason = dq::domain::change_reason_constants;
-
-        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
-            BOOST_LOG_SEV(lg(), warn) << "Change reasons not loaded, cannot save.";
-            emit errorMessage("Change reasons not loaded. Please try again.");
-            return;
-        }
-
-        auto reasons = changeReasonCache_->getReasonsForAmend(
-            std::string{reason::categories::common});
-        if (reasons.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "No change reasons available for common category.";
-            emit errorMessage("No change reasons available. Please contact administrator.");
-            return;
-        }
-
-        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
-            hasChanges_, this);
-        if (dialog.exec() != QDialog::Accepted) {
-            BOOST_LOG_SEV(lg(), debug) << "Save cancelled - change reason dialog rejected.";
-            return;
-        }
-
-        entity_.change_reason_code = dialog.selectedReasonCode();
-        entity_.change_commentary = dialog.commentary();
-
-        BOOST_LOG_SEV(lg(), debug) << "Change reason selected: "
-                                   << entity_.change_reason_code
-                                   << ", commentary: " << entity_.change_commentary;
-    }
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    entity_.change_reason_code = crSel->reason_code;
+    entity_.change_commentary = crSel->commentary;
 
     BOOST_LOG_SEV(lg(), info) << "Saving " << typeName << ": " << entity_.short_code;
 

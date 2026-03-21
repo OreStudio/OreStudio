@@ -33,13 +33,11 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-namespace reason = dq::domain::change_reason_constants;
 
 BookDetailDialog::BookDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
@@ -370,24 +368,14 @@ void BookDetailDialog::onSaveClicked() {
         return;
     }
 
-    if (!createMode_) {
-        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
-            emit errorMessage("Change reasons not loaded. Please try again.");
-            return;
-        }
-        auto reasons = changeReasonCache_->getReasonsForAmend(
-            std::string{reason::categories::common});
-        if (reasons.empty()) {
-            emit errorMessage("No change reasons available. Please contact administrator.");
-            return;
-        }
-        ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Amend,
-                               hasChanges_, this);
-        if (dlg.exec() != QDialog::Accepted)
-            return;
-        book_.change_reason_code = dlg.selectedReasonCode();
-        book_.change_commentary  = dlg.commentary();
-    }
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    book_.change_reason_code = crSel->reason_code;
+    book_.change_commentary  = crSel->commentary;
 
     updateBookFromUi();
 
@@ -457,19 +445,9 @@ void BookDetailDialog::onDeleteClicked() {
         return;
     }
 
-    if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
-        auto reasons = changeReasonCache_->getReasonsForAmend(
-            std::string{reason::categories::common});
-        if (!reasons.empty()) {
-            ChangeReasonDialog dlg(reasons,
-                ChangeReasonDialog::OperationType::Delete, true, this);
-            if (dlg.exec() != QDialog::Accepted)
-                return;
-            BOOST_LOG_SEV(lg(), info) << "Delete reason: "
-                << dlg.selectedReasonCode() << " — "
-                << dlg.commentary();
-        }
-    }
+    const auto crSel = promptChangeReason(changeReasonCache_,
+        ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting book: " << book_.name;
 

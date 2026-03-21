@@ -33,14 +33,12 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.scheduler/rfl/reflectors.hpp"
 #include "ores.scheduler/messaging/scheduler_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
-namespace reason = dq::domain::change_reason_constants;
 
 JobDefinitionDetailDialog::JobDefinitionDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
@@ -216,27 +214,14 @@ void JobDefinitionDetailDialog::onSaveClicked() {
         return;
     }
 
-    // Change reason dialog (amend mode only)
-    std::string change_reason_code;
-    std::string change_commentary;
-    if (!createMode_) {
-        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
-            emit errorMessage(tr("Change reasons not loaded. Please try again."));
-            return;
-        }
-        auto reasons = changeReasonCache_->getReasonsForAmend(
-            std::string{reason::categories::common});
-        if (reasons.empty()) {
-            emit errorMessage(tr("No change reasons available. Please contact administrator."));
-            return;
-        }
-        ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Amend,
-                               hasChanges_, this);
-        if (dlg.exec() != QDialog::Accepted)
-            return;
-        change_reason_code = dlg.selectedReasonCode();
-        change_commentary  = dlg.commentary();
-    }
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    std::string change_reason_code = crSel->reason_code;
+    std::string change_commentary  = crSel->commentary;
 
     updateDefinitionFromUi();
 
@@ -310,25 +295,11 @@ void JobDefinitionDetailDialog::onUnscheduleClicked() {
         return;
     }
 
-    // Change reason dialog for delete
-    std::string change_reason_code;
-    std::string change_commentary;
-    if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
-        emit errorMessage(tr("Change reasons not loaded. Please try again."));
-        return;
-    }
-    auto reasons = changeReasonCache_->getReasonsForDelete(
-        std::string{reason::categories::common});
-    if (reasons.empty()) {
-        emit errorMessage(tr("No change reasons available. Please contact administrator."));
-        return;
-    }
-    ChangeReasonDialog dlg(reasons, ChangeReasonDialog::OperationType::Delete,
-                           false, this);
-    if (dlg.exec() != QDialog::Accepted)
-        return;
-    change_reason_code = dlg.selectedReasonCode();
-    change_commentary  = dlg.commentary();
+    const auto crSel = promptChangeReason(changeReasonCache_,
+        ChangeReasonDialog::OperationType::Delete, false);
+    if (!crSel) return;
+    std::string change_reason_code = crSel->reason_code;
+    std::string change_commentary  = crSel->commentary;
 
     BOOST_LOG_SEV(lg(), info) << "Unscheduling job definition: " << definition_.job_name;
 

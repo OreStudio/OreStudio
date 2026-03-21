@@ -43,7 +43,6 @@
 #include "ores.iam/messaging/account_protocol.hpp"
 #include "ores.iam/messaging/account_party_protocol.hpp"
 #include "ores.iam/messaging/authorization_protocol.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 
@@ -554,17 +553,11 @@ void AccountDetailDialog::onSaveClicked() {
         std::string changeReasonCode;
         std::string changeCommentary;
         if (needsPartySave || needsRoleSave) {
-            namespace reason = dq::domain::change_reason_constants;
-            std::vector<dq::domain::change_reason> reasons;
-            if (changeReasonCache_ && changeReasonCache_->isLoaded()) {
-                reasons = changeReasonCache_->getReasonsForAmend(
-                    std::string{reason::categories::common});
-            }
-            ChangeReasonDialog dialog(reasons,
-                ChangeReasonDialog::OperationType::Amend, true, this);
-            if (dialog.exec() != QDialog::Accepted) return;
-            changeReasonCode = dialog.selectedReasonCode();
-            changeCommentary = dialog.commentary();
+            const auto crSel = promptChangeReason(changeReasonCache_,
+                ChangeReasonDialog::OperationType::Amend, true, "common");
+            if (!crSel) return;
+            changeReasonCode = crSel->reason_code;
+            changeCommentary = crSel->commentary;
         }
 
         QPointer<AccountDetailDialog> self = this;

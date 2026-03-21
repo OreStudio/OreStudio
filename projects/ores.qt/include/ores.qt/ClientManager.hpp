@@ -35,6 +35,7 @@
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QDateTime>
 #include "ores.shell/service/nats_session.hpp"
+#include "ores.shell/service/session_expired_error.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -348,10 +349,13 @@ public:
                     result.error().what());
             }
             return std::move(*result);
+        } catch (const shell::service::session_expired_error& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Session expired: " << e.what();
+            QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
+            return std::unexpected(std::string(e.what()));
         } catch (const std::exception& e) {
-            const std::string msg = e.what();
-            notifySessionExpiredIfNeeded(msg);
-            return std::unexpected(msg);
+            return std::unexpected(std::string(e.what()));
         }
     }
 
@@ -450,14 +454,6 @@ private:
      * Emits sessionExpired() if the server returns max_session_exceeded.
      */
     void onRefreshTimer();
-
-    /**
-     * @brief Emit sessionExpired() (queued) if @p error_msg signals expiry.
-     *
-     * Called from process_authenticated_request() when authenticated_request()
-     * throws so the UI is notified even via the reactive path.
-     */
-    void notifySessionExpiredIfNeeded(const std::string& error_msg);
 
     // NATS session for connection and authentication
     shell::service::nats_session session_;

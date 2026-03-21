@@ -204,7 +204,7 @@ LoginResult ClientManager::login(const std::string& username,
             });
         }
 
-        arm_refresh_timer(1800); // default access lifetime; matches iam.token.access_lifetime_seconds
+        arm_refresh_timer(response.access_lifetime_s);
         emit loggedIn();
         return {
             .success = true,
@@ -452,7 +452,7 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
 
         current_party_id_ = party_id;
         current_party_name_ = party_name;
-        arm_refresh_timer(1800); // new token issued; reset refresh timer
+        arm_refresh_timer(result->access_lifetime_s);
         BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString();
         return true;
 
@@ -546,8 +546,6 @@ void ClientManager::onRefreshTimer() {
     try {
         auto result = process_authenticated_request(iam::messaging::refresh_request{});
         if (!result) {
-            // notifySessionExpiredIfNeeded() was already called inside
-            // process_authenticated_request() if this is a session expiry.
             BOOST_LOG_SEV(lg(), warn) << "Proactive refresh failed: " << result.error();
             return;
         }
@@ -558,17 +556,10 @@ void ClientManager::onRefreshTimer() {
         auto updated = session_.auth();
         updated.jwt = result->token;
         session_.set_auth(updated);
-        arm_refresh_timer(1800);
+        arm_refresh_timer(result->access_lifetime_s);
         BOOST_LOG_SEV(lg(), info) << "Proactive JWT refresh succeeded";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Proactive refresh exception: " << e.what();
-    }
-}
-
-void ClientManager::notifySessionExpiredIfNeeded(const std::string& error_msg) {
-    if (error_msg.find("Session has expired") != std::string::npos) {
-        BOOST_LOG_SEV(lg(), warn) << "Session expired detected — emitting sessionExpired()";
-        QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
     }
 }
 

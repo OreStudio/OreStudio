@@ -29,6 +29,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.telemetry/messaging/registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::telemetry::service::app {
 
@@ -77,7 +78,7 @@ application::run(boost::asio::io_context& io_ctx,
             return ores::telemetry::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
         },
-        [monitor_url, monitor_interval, poller_ctx = std::move(poller_ctx)]
+        [monitor_url, monitor_interval, poller_ctx = std::move(poller_ctx), &nats]
         (boost::asio::io_context& ioc) mutable {
             if (!monitor_url.empty()) {
                 auto poller = std::make_shared<nats_poller>(
@@ -86,6 +87,11 @@ application::run(boost::asio::io_context& io_ctx,
                     [poller]() { return poller->run(); },
                     boost::asio::detached);
             }
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                "ores.telemetry.service", "1.0", nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
         });
     co_return;
 }

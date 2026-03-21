@@ -42,6 +42,7 @@
 #include "ores.compute/messaging/registrar.hpp"
 #include "ores.compute.service/app/compute_grid_poller.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::compute::service::app {
 
@@ -191,7 +192,7 @@ application::run(boost::asio::io_context& io_ctx,
             return ores::compute::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
         },
-        [telemetry_interval, poller_ctx = std::move(poller_ctx)]
+        [telemetry_interval, poller_ctx = std::move(poller_ctx), &nats]
         (boost::asio::io_context& ioc) mutable {
             if (telemetry_interval > 0) {
                 auto poller = std::make_shared<app::compute_grid_poller>(
@@ -200,6 +201,11 @@ application::run(boost::asio::io_context& io_ctx,
                     [poller]() { return poller->run(); },
                     boost::asio::detached);
             }
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                "ores.compute.service", "1.0", nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
         });
 
     event_source.stop();

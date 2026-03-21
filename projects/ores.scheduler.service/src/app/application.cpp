@@ -34,6 +34,7 @@
 #include "ores.scheduler/service/mq_action_handler.hpp"
 #include "ores.scheduler/service/nats_publish_action_handler.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::scheduler::service::app {
 
@@ -87,8 +88,13 @@ application::run(boost::asio::io_context& io_ctx,
             return ores::scheduler::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
         },
-        [loop](boost::asio::io_context& ioc) {
+        [loop, &nats](boost::asio::io_context& ioc) {
             boost::asio::co_spawn(ioc, loop->run(ioc), boost::asio::detached);
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                "ores.scheduler.service", "1.0", nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
         });
     co_return;
 }

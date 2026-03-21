@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,32 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam/repository/session_entity.hpp"
+#ifndef ORES_SHELL_SERVICE_SESSION_EXPIRED_ERROR_HPP
+#define ORES_SHELL_SERVICE_SESSION_EXPIRED_ERROR_HPP
 
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#include <stdexcept>
 
-namespace ores::iam::repository {
+namespace ores::shell::service {
 
-std::ostream& operator<<(std::ostream& s, const session_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::ostream& operator<<(std::ostream& s, const session_statistics_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::ostream& operator<<(std::ostream& s, const session_sample_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
-
-std::ostream& operator<<(std::ostream& s, const auth_event_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+/**
+ * @brief Thrown when a session reaches its maximum allowed duration.
+ *
+ * Raised by nats_session::refresh() and nats_session::authenticated_request()
+ * when the server returns max_session_exceeded. Catching this specific type
+ * allows callers to distinguish a session expiry from other transport errors.
+ */
+class session_expired_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
 
 }
+
+#endif

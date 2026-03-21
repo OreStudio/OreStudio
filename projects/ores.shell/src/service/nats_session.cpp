@@ -21,7 +21,10 @@
 
 #include <span>
 #include <stdexcept>
+#include <rfl/json.hpp>
 #include "ores.nats/service/client.hpp"
+#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.shell/service/session_expired_error.hpp"
 
 namespace ores::shell::service {
 
@@ -96,7 +99,53 @@ ores::nats::message nats_session::authenticated_request(std::string_view subject
     auto data = std::span<const std::byte>(begin, json_body.size());
     std::unordered_map<std::string, std::string> headers;
     headers["Authorization"] = "Bearer " + auth_->jwt;
-    return client_->request_sync(subject, data, std::move(headers), timeout);
+    auto reply = client_->request_sync(subject, data, headers, timeout);
+
+    const auto x_error_it = reply.headers.find("X-Error");
+    if (x_error_it != reply.headers.end()) {
+        if (x_error_it->second == "token_expired") {
+            BOOST_LOG_SEV(lg(), info) << "Token expired, attempting refresh";
+            refresh();
+            headers["Authorization"] = "Bearer " + auth_->jwt;
+            reply = client_->request_sync(subject, data, std::move(headers), timeout);
+            // If the retry itself fails with max_session_exceeded, refresh()
+            // will have already thrown — no further check needed here.
+        } else if (x_error_it->second == "max_session_exceeded") {
+            throw session_expired_error(
+                "Session has expired after the maximum allowed duration. "
+                "Please log in again.");
+        }
+    }
+    return reply;
+}
+
+void nats_session::refresh() {
+    if (!client_ || !auth_) {
+        throw std::runtime_error("Cannot refresh: not connected or not authenticated");
+    }
+    std::unordered_map<std::string, std::string> headers;
+    headers["Authorization"] = "Bearer " + auth_->jwt;
+    auto reply = client_->request_sync(
+        iam::messaging::refresh_request::nats_subject, std::span<const std::byte>{},
+        std::move(headers));
+
+    const auto x_error_it = reply.headers.find("X-Error");
+    if (x_error_it != reply.headers.end() &&
+        x_error_it->second == "max_session_exceeded") {
+        throw std::runtime_error(
+            "Session has expired after the maximum allowed duration. "
+            "Please log in again.");
+    }
+
+    const std::string_view sv(
+        reinterpret_cast<const char*>(reply.data.data()), reply.data.size());
+    auto result = rfl::json::read<iam::messaging::refresh_response>(sv);
+    if (!result || !result->success || result->token.empty()) {
+        const auto msg = result ? result->message : "refresh parse error";
+        throw std::runtime_error("Token refresh failed: " + msg);
+    }
+    auth_->jwt = result->token;
+    BOOST_LOG_SEV(lg(), info) << "JWT refreshed successfully";
 }
 
 std::shared_ptr<ores::nats::service::client> nats_session::get_client() const {

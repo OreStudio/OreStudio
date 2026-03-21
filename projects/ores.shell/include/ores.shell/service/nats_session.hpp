@@ -119,6 +119,14 @@ public:
     [[nodiscard]] std::shared_ptr<ores::nats::service::client> get_client() const;
 
 private:
+    /**
+     * @brief Attempt to refresh the JWT by calling iam.v1.auth.refresh.
+     *
+     * Updates auth_->jwt on success. Throws std::runtime_error with
+     * "Session has expired" if the server returns max_session_exceeded.
+     */
+    void refresh();
+
     std::shared_ptr<ores::nats::service::client> client_;
     std::optional<login_info> auth_;
 };

@@ -161,6 +161,21 @@ struct nats_server_sample_entity {
 };
 
 /**
+ * @brief Entity for a single service heartbeat sample.
+ *
+ * Maps to the ores_telemetry_service_samples_tbl hypertable.
+ */
+struct service_sample_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_telemetry_service_samples_tbl";
+
+    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> sampled_at;
+    sqlgen::PrimaryKey<std::string> service_name;
+    sqlgen::PrimaryKey<std::string> instance_id;
+    std::string version;
+};
+
+/**
  * @brief Entity for a single JetStream stream metrics sample.
  *
  * Maps to the ores_telemetry_nats_stream_samples_tbl hypertable.

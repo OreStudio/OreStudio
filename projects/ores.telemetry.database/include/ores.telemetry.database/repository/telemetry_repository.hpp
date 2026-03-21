@@ -34,6 +34,7 @@
 #include "ores.telemetry/domain/nats_server_sample.hpp"
 #include "ores.telemetry/domain/nats_stream_sample.hpp"
 #include "ores.telemetry/domain/nats_samples_query.hpp"
+#include "ores.telemetry/domain/service_sample.hpp"
 
 namespace ores::telemetry::database::repository {
 
@@ -183,6 +184,23 @@ public:
      */
     std::vector<domain::nats_stream_sample> query_stream_samples(context ctx,
         const domain::nats_stream_samples_query& q);
+
+    /**
+     * @brief Inserts a single service heartbeat sample.
+     *
+     * Called by the telemetry service each time it receives a heartbeat
+     * publish from a domain service.
+     */
+    void insert_service_sample(context ctx,
+        const domain::service_sample& sample);
+
+    /**
+     * @brief Returns the latest heartbeat per (service_name, instance_id).
+     *
+     * Used by the service dashboard to determine which services are
+     * currently running and when they were last seen.
+     */
+    std::vector<domain::service_sample> list_service_samples(context ctx);
 };
 
 }

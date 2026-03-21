@@ -39,6 +39,7 @@ namespace ores::dq::messaging {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 namespace {
@@ -67,8 +68,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             const auto items = svc.list_catalogs(
@@ -95,8 +101,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -116,8 +127,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             for (const auto& code : req->codes)
@@ -137,8 +153,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             const auto history = svc.get_catalog_history(req->code);
@@ -167,8 +188,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             const auto items = svc.list_data_domains();
@@ -192,8 +218,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -213,8 +244,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             for (const auto& name : req->names)
@@ -234,8 +270,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             const auto history = svc.get_data_domain_history(req->name);
@@ -264,8 +305,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_service svc(ctx);
         try {
             const auto items = svc.list_methodologies(
@@ -292,8 +338,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -313,8 +364,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_service svc(ctx);
         try {
             for (const auto& code : req->codes)
@@ -334,8 +390,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_service svc(ctx);
         try {
             const auto history = svc.get_methodology_history(
@@ -365,8 +426,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             const auto items = svc.list_subject_areas(
@@ -393,8 +459,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -414,8 +485,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             for (const auto& key : req->keys)
@@ -435,8 +511,13 @@ public:
             BOOST_LOG_SEV(data_organization_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::data_organization_service svc(ctx);
         try {
             const auto history = svc.get_subject_area_history(

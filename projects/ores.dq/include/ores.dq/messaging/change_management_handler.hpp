@@ -37,6 +37,7 @@ namespace ores::dq::messaging {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 namespace {
@@ -61,8 +62,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             const auto items = svc.list_categories();
@@ -83,8 +89,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -105,8 +116,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             svc.remove_categories(req->codes);
@@ -126,8 +142,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             const auto history = svc.get_category_history(req->code);
@@ -152,8 +173,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             const auto items = svc.list_reasons();
@@ -174,8 +200,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -195,8 +226,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             svc.remove_reasons(req->codes);
@@ -215,8 +251,13 @@ public:
             BOOST_LOG_SEV(change_management_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::change_management_service svc(ctx);
         try {
             const auto history = svc.get_reason_history(req->code);

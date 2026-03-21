@@ -121,6 +121,7 @@ inline std::string acct_lookup_tenant_name(
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 
 class account_handler {
 public:
@@ -148,8 +149,13 @@ public:
         BOOST_LOG_SEV(account_handler_lg(), debug)
             << "Handling " << msg.subject;
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             auto accounts = svc.list_accounts();
             get_accounts_response resp;
@@ -177,8 +183,13 @@ public:
             return;
         }
         try {
-            const auto base_ctx = ores::service::service::make_request_context(
+            auto base_ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!base_ctx_expected) {
+                error_reply(nats_, msg, base_ctx_expected.error());
+                return;
+            }
+            const auto& base_ctx = *base_ctx_expected;
 
             // Parse principal: if username@hostname, route to that tenant's
             // context so accounts can be created in any tenant by a system
@@ -232,8 +243,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.delete_account(sg(req->account_id));
@@ -260,8 +276,13 @@ public:
             return;
         }
         lock_account_response resp;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
@@ -291,8 +312,13 @@ public:
             return;
         }
         unlock_account_response resp;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
@@ -316,8 +342,13 @@ public:
         BOOST_LOG_SEV(account_handler_lg(), debug)
             << "Handling " << msg.subject;
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             auto infos = svc.list_login_info();
             BOOST_LOG_SEV(account_handler_lg(), debug)
@@ -343,8 +374,13 @@ public:
             return;
         }
         reset_password_response resp;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id_str : req->account_ids) {
@@ -398,8 +434,13 @@ public:
             }
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             auto err = svc.change_password(account_id,
                 req->new_password);
@@ -431,8 +472,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.update_account(sg(req->account_id), req->email,
@@ -477,8 +523,13 @@ public:
             }
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             auto err = svc.update_my_email(account_id, req->email);
             if (err.empty()) {
@@ -529,8 +580,13 @@ public:
             boost::uuids::string_generator sg;
             auto account_id = sg(claims_result->subject);
 
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             boost::uuids::uuid requested_party_id =
                 sg(req->party_id);
             repository::account_party_repository ap_repo(ctx);
@@ -622,8 +678,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_service svc(ctx);
             auto accounts = svc.get_account_history(req->username);
             account_version_history avh;

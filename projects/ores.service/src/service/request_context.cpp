@@ -24,6 +24,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.security/jwt/jwt_error.hpp"
 
 namespace ores::service::service {
 
@@ -38,7 +39,8 @@ static auto& lg() {
 
 } // namespace
 
-ores::database::context make_request_context(
+std::expected<ores::database::context, ores::service::error_code>
+make_request_context(
     const ores::database::context& base_ctx,
     const ores::nats::message& msg,
     const std::optional<ores::security::jwt::jwt_authenticator>& verifier) {
@@ -48,24 +50,27 @@ ores::database::context make_request_context(
 
     const auto it = msg.headers.find("Authorization");
     if (it == msg.headers.end())
-        return base_ctx;
+        return std::unexpected(ores::service::error_code::unauthorized);
 
     const auto& val = it->second;
     if (!val.starts_with("Bearer "))
-        return base_ctx;
+        return std::unexpected(ores::service::error_code::unauthorized);
 
     const auto token = val.substr(7);
     auto claims = verifier->validate(token);
-    if (!claims)
-        return base_ctx;
+    if (!claims) {
+        if (claims.error() == ores::security::jwt::jwt_error::expired_token)
+            return std::unexpected(ores::service::error_code::token_expired);
+        return std::unexpected(ores::service::error_code::unauthorized);
+    }
 
     const auto tenant_id_str = claims->tenant_id.value_or("");
     if (tenant_id_str.empty())
-        return base_ctx;
+        return std::unexpected(ores::service::error_code::unauthorized);
 
     auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
     if (!tid_result)
-        return base_ctx;
+        return std::unexpected(ores::service::error_code::unauthorized);
 
     if (!claims->party_id || claims->party_id->empty())
         return base_ctx.with_tenant(*tid_result, claims->username.value_or(""));

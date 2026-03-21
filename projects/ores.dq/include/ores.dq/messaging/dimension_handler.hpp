@@ -37,6 +37,7 @@ namespace ores::dq::messaging {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 namespace {
@@ -65,8 +66,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             const auto items = svc.list_nature_dimensions();
@@ -90,8 +96,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -111,8 +122,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             svc.remove_nature_dimensions(req->codes);
@@ -132,8 +148,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             const auto history = svc.get_nature_dimension_history(req->code);
@@ -162,8 +183,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             const auto items = svc.list_origin_dimensions();
@@ -187,8 +213,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -208,8 +239,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             svc.remove_origin_dimensions(req->codes);
@@ -229,8 +265,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             const auto history = svc.get_origin_dimension_history(req->code);
@@ -259,8 +300,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             const auto items = svc.list_treatment_dimensions();
@@ -284,8 +330,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -306,8 +357,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             svc.remove_treatment_dimensions(req->codes);
@@ -327,8 +383,13 @@ public:
             BOOST_LOG_SEV(dimension_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dimension_service svc(ctx);
         try {
             const auto history =

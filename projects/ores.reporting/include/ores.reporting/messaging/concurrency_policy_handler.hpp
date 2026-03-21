@@ -44,6 +44,7 @@ inline auto& concurrency_policy_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class concurrency_policy_handler {
@@ -56,8 +57,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::concurrency_policy_service svc(ctx);
         get_concurrency_policies_response resp;
         try {
@@ -73,8 +79,13 @@ public:
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<save_concurrency_policy_request>(msg)) {
             service::concurrency_policy_service svc(ctx);
             try {
@@ -97,8 +108,13 @@ public:
     void del(ores::nats::message msg) {
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<delete_concurrency_policy_request>(msg)) {
             service::concurrency_policy_service svc(ctx);
             try {
@@ -121,8 +137,13 @@ public:
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(concurrency_policy_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<get_concurrency_policy_history_request>(msg)) {
             service::concurrency_policy_service svc(ctx);
             try {

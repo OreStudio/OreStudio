@@ -38,6 +38,7 @@ namespace ores::dq::messaging {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 namespace {
@@ -62,8 +63,13 @@ public:
             BOOST_LOG_SEV(dataset_bundle_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_bundle_service svc(ctx);
         try {
             const auto items = svc.list_bundles();
@@ -87,8 +93,13 @@ public:
             BOOST_LOG_SEV(dataset_bundle_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_bundle_service svc(ctx);
         try {
             for (auto& b : req->bundles)
@@ -109,8 +120,13 @@ public:
             BOOST_LOG_SEV(dataset_bundle_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_bundle_service svc(ctx);
         try {
             boost::uuids::string_generator gen;
@@ -132,8 +148,13 @@ public:
             BOOST_LOG_SEV(dataset_bundle_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::dataset_bundle_service svc(ctx);
         try {
             const auto hist = svc.get_bundle_history(

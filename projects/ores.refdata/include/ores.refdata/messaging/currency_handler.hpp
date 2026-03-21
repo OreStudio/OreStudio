@@ -45,6 +45,7 @@ inline auto& currency_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class currency_handler {
@@ -57,8 +58,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::currency_service svc(ctx);
         get_currencies_response resp;
         auto req = decode<get_currencies_request>(msg);
@@ -86,8 +92,13 @@ public:
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::currency_service svc(ctx);
         auto req = decode<save_currency_request>(msg);
         if (!req) {
@@ -111,8 +122,13 @@ public:
     void del(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::currency_service svc(ctx);
         auto req = decode<delete_currency_request>(msg);
         if (!req) {
@@ -136,8 +152,13 @@ public:
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(currency_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::currency_service svc(ctx);
         auto req = decode<get_currency_history_request>(msg);
         if (!req) {

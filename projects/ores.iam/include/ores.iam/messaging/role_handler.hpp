@@ -51,6 +51,7 @@ inline auto& role_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 
 class role_handler {
 public:
@@ -64,8 +65,13 @@ public:
         BOOST_LOG_SEV(role_handler_lg(), debug)
             << "Handling " << msg.subject;
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::authorization_service svc(ctx);
             auto roles = svc.list_roles();
             BOOST_LOG_SEV(role_handler_lg(), debug)
@@ -90,8 +96,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.assign_role(sg(req->account_id),
@@ -120,8 +131,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
             const auto caller_id = sg(ctx.actor());
             service::authorization_service svc(ctx);
@@ -161,8 +177,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::authorization_service svc(ctx);
             boost::uuids::string_generator sg;
             auto roles = svc.get_account_roles(
@@ -190,8 +211,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
 
             // Parse principal: username@hostname
             const auto at_pos = req->principal.rfind('@');
@@ -265,8 +291,13 @@ public:
         }
         try {
             // Authenticate and check roles:revoke permission
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             boost::uuids::string_generator sg;
             const auto caller_id = sg(ctx.actor());
             service::authorization_service caller_svc(ctx);

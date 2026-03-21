@@ -29,6 +29,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include "ores.service/error_code.hpp"
 
 namespace ores::service::messaging {
 
@@ -99,6 +100,19 @@ void reply(ores::nats::service::client& nats,
     const auto json = rfl::json::write(resp);
     const auto* p = reinterpret_cast<const std::byte*>(json.data());
     nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
+}
+
+// Publish an error reply with an X-Error header.
+// The reply subject is used if present; no-op otherwise.
+inline void error_reply(ores::nats::service::client& nats,
+    const ores::nats::message& msg,
+    ores::service::error_code code) {
+    if (msg.reply_subject.empty()) return;
+    const std::string_view error_str =
+        (code == ores::service::error_code::token_expired)
+        ? "token_expired" : "unauthorized";
+    nats.publish(msg.reply_subject, std::span<const std::byte>{},
+        {{"X-Error", std::string(error_str)}});
 }
 
 // Deserialise the message payload from JSON into Req.

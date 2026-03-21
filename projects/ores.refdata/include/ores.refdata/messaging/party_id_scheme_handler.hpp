@@ -43,6 +43,7 @@ inline auto& party_id_scheme_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class party_id_scheme_handler {
@@ -55,8 +56,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::party_id_scheme_service svc(ctx);
         get_party_id_schemes_response resp;
         try {
@@ -75,8 +81,13 @@ public:
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::party_id_scheme_service svc(ctx);
         auto req = decode<save_party_id_scheme_request>(msg);
         if (!req) {
@@ -101,8 +112,13 @@ public:
     void del(ores::nats::message msg) {
         BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::party_id_scheme_service svc(ctx);
         auto req = decode<delete_party_id_scheme_request>(msg);
         if (!req) {
@@ -127,8 +143,13 @@ public:
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(party_id_scheme_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::party_id_scheme_service svc(ctx);
         auto req = decode<get_party_id_scheme_history_request>(msg);
         if (!req) {

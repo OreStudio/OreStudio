@@ -47,6 +47,7 @@ inline auto& account_party_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 
 class account_party_handler {
 public:
@@ -115,8 +116,13 @@ public:
             return;
         }
         try {
-            const auto ctx = ores::service::service::make_request_context(
+            auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+            if (!ctx_expected) {
+                error_reply(nats_, msg, ctx_expected.error());
+                return;
+            }
+            const auto& ctx = *ctx_expected;
             service::account_party_service svc(ctx);
             for (auto ap : req->account_parties) {
                 stamp(ap, ctx);

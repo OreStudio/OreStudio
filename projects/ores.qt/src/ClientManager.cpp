@@ -42,6 +42,9 @@ ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event
                              QObject* parent)
     : QObject(parent), event_bus_(std::move(event_bus)) {
     BOOST_LOG_SEV(lg(), debug) << "ClientManager created";
+    refresh_timer_ = new QTimer(this);
+    refresh_timer_->setSingleShot(true);
+    connect(refresh_timer_, &QTimer::timeout, this, &ClientManager::onRefreshTimer);
 }
 
 ClientManager::~ClientManager() {
@@ -201,6 +204,7 @@ LoginResult ClientManager::login(const std::string& username,
             });
         }
 
+        arm_refresh_timer(1800); // default access lifetime; matches iam.token.access_lifetime_seconds
         emit loggedIn();
         return {
             .success = true,
@@ -378,6 +382,8 @@ void ClientManager::unsubscribeFromEvent(const std::string& subject) {
 
 void ClientManager::disconnect() {
     BOOST_LOG_SEV(lg(), info) << "Disconnecting";
+    if (refresh_timer_)
+        refresh_timer_->stop();
     nats_subscriptions_.clear();
     if (session_.is_logged_in()) {
         logout();
@@ -446,6 +452,7 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
 
         current_party_id_ = party_id;
         current_party_name_ = party_name;
+        arm_refresh_timer(1800); // new token issued; reset refresh timer
         BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString();
         return true;
 
@@ -521,6 +528,47 @@ ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "getSessionSamples failed: " << e.what();
         return std::nullopt;
+    }
+}
+
+void ClientManager::arm_refresh_timer(int lifetime_s) {
+    if (!refresh_timer_) return;
+    // Fire at 80% of token lifetime so the token is refreshed before it expires.
+    const int fire_ms = static_cast<int>(lifetime_s * 0.8 * 1000);
+    refresh_timer_->stop();
+    refresh_timer_->start(fire_ms);
+    BOOST_LOG_SEV(lg(), debug) << "Refresh timer armed for " << (fire_ms / 1000) << "s";
+}
+
+void ClientManager::onRefreshTimer() {
+    if (!session_.is_logged_in()) return;
+    BOOST_LOG_SEV(lg(), info) << "Proactive JWT refresh triggered";
+    try {
+        auto result = process_authenticated_request(iam::messaging::refresh_request{});
+        if (!result) {
+            // notifySessionExpiredIfNeeded() was already called inside
+            // process_authenticated_request() if this is a session expiry.
+            BOOST_LOG_SEV(lg(), warn) << "Proactive refresh failed: " << result.error();
+            return;
+        }
+        if (!result->success || result->token.empty()) {
+            BOOST_LOG_SEV(lg(), warn) << "Proactive refresh: server returned failure";
+            return;
+        }
+        auto updated = session_.auth();
+        updated.jwt = result->token;
+        session_.set_auth(updated);
+        arm_refresh_timer(1800);
+        BOOST_LOG_SEV(lg(), info) << "Proactive JWT refresh succeeded";
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error) << "Proactive refresh exception: " << e.what();
+    }
+}
+
+void ClientManager::notifySessionExpiredIfNeeded(const std::string& error_msg) {
+    if (error_msg.find("Session has expired") != std::string::npos) {
+        BOOST_LOG_SEV(lg(), warn) << "Session expired detected — emitting sessionExpired()";
+        QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
     }
 }
 

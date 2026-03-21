@@ -36,6 +36,7 @@
 #include <QFont>
 #include <QIcon>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QSettings>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -466,6 +467,13 @@ MainWindow::MainWindow(QWidget* parent) :
     connect(clientManager_, &ClientManager::reconnected, this, [this]() {
         connectionStatusIconLabel_->setPixmap(connectedIcon_.pixmap(16, 16));
         ui_->statusbar->showMessage("Reconnected to server.", 5000);
+    });
+    connect(clientManager_, &ClientManager::sessionExpired, this, [this]() {
+        QMessageBox::warning(this, "Session Expired",
+            "Your session has expired after the maximum allowed duration.\n"
+            "Please log in again to continue.");
+        clientManager_->disconnect();
+        showLoginDialog();
     });
 
     // Load caches when logged in (not just connected - bootstrap mode doesn't auth)

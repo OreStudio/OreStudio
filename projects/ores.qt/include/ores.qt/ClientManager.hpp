@@ -31,6 +31,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
 #include <QObject>
+#include <QTimer>
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QDateTime>
 #include "ores.shell/service/nats_session.hpp"
@@ -348,7 +349,9 @@ public:
             }
             return std::move(*result);
         } catch (const std::exception& e) {
-            return std::unexpected(std::string(e.what()));
+            const std::string msg = e.what();
+            notifySessionExpiredIfNeeded(msg);
+            return std::unexpected(msg);
         }
     }
 
@@ -413,6 +416,15 @@ signals:
     void reconnected();
     void connectionError(const QString& message);
 
+    /**
+     * @brief Emitted when the session can no longer be refreshed.
+     *
+     * Fired either by the proactive refresh timer (max_session_exceeded) or
+     * reactively when authenticated_request() throws after a failed refresh.
+     * Connect to this signal to show the session-expired dialog and re-login.
+     */
+    void sessionExpired();
+
     void notificationReceived(const QString& eventType, const QDateTime& timestamp,
                               const QStringList& entityIds, const QString& tenantId,
                               int payloadType, const QByteArray& payload);
@@ -423,6 +435,30 @@ signals:
     void streamingStopped();
 
 private:
+    /**
+     * @brief Start/restart the proactive refresh timer.
+     *
+     * Fires at 80% of @p lifetime_s seconds so the token is refreshed
+     * before it expires. Call after every successful login or party selection.
+     */
+    void arm_refresh_timer(int lifetime_s);
+
+    /**
+     * @brief Called by refresh_timer_; sends iam.v1.auth.refresh.
+     *
+     * Updates the stored JWT on success and re-arms the timer.
+     * Emits sessionExpired() if the server returns max_session_exceeded.
+     */
+    void onRefreshTimer();
+
+    /**
+     * @brief Emit sessionExpired() (queued) if @p error_msg signals expiry.
+     *
+     * Called from process_authenticated_request() when authenticated_request()
+     * throws so the UI is notified even via the reactive path.
+     */
+    void notifySessionExpiredIfNeeded(const std::string& error_msg);
+
     // NATS session for connection and authentication
     shell::service::nats_session session_;
 
@@ -457,6 +493,9 @@ private:
 
     // Active NATS event subscriptions keyed by subject
     std::unordered_map<std::string, nats::service::subscription> nats_subscriptions_;
+
+    // Proactive token refresh timer (fires before token expires)
+    QTimer* refresh_timer_ = nullptr;
 };
 
 }

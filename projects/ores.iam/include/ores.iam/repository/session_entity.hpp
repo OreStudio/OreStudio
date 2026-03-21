@@ -169,6 +169,67 @@ struct session_sample_entity {
 
 std::ostream& operator<<(std::ostream& s, const session_sample_entity& v);
 
+/**
+ * @brief Entity for a single authentication event in the auth events hypertable.
+ *
+ * Records logins, logouts, token refreshes, and related outcomes.
+ * No RLS — this is a system-level audit log.
+ */
+struct auth_event_entity {
+    constexpr static const char* schema = "public";
+    constexpr static const char* tablename = "ores_iam_auth_events_tbl";
+
+    /**
+     * @brief UUID for this event — part of composite primary key.
+     */
+    sqlgen::PrimaryKey<std::string> id;
+
+    /**
+     * @brief Event timestamp — part of composite primary key and partition column.
+     */
+    sqlgen::PrimaryKey<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> event_time;
+
+    /**
+     * @brief Tenant identifier. Empty string if unknown (e.g. failed login
+     * before tenant resolution).
+     */
+    std::string tenant_id;
+
+    /**
+     * @brief Account identifier. Empty string if unknown.
+     */
+    std::string account_id;
+
+    /**
+     * @brief Event type: login_success, login_failure, logout,
+     * token_refresh, max_session_exceeded, signup_success, signup_failure.
+     */
+    std::string event_type;
+
+    /**
+     * @brief Username associated with the event. May be empty for
+     * events without a resolved account.
+     */
+    std::string username;
+
+    /**
+     * @brief Session UUID. Empty string if no session was established.
+     */
+    std::string session_id;
+
+    /**
+     * @brief Party UUID. Empty string if no party was selected.
+     */
+    std::string party_id;
+
+    /**
+     * @brief Error detail for failure events. Empty string for success events.
+     */
+    std::string error_detail;
+};
+
+std::ostream& operator<<(std::ostream& s, const auth_event_entity& v);
+
 }
 
 #endif

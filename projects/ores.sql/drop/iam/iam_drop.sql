@@ -37,6 +37,7 @@
 \ir ./iam_permissions_drop.sql
 
 -- Sessions and login
+\ir ./iam_auth_events_drop.sql
 \ir ./iam_session_stats_drop.sql
 \ir ./iam_sessions_drop.sql
 \ir ./iam_login_info_drop.sql

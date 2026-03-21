@@ -58,8 +58,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(app_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::app_service svc(ctx);
         list_apps_response resp;
         try {
@@ -77,8 +82,13 @@ public:
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(app_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<save_app_request>(msg)) {
             try {
                 service::app_service svc(ctx);
@@ -100,8 +110,13 @@ public:
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(app_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         get_app_history_response resp;
         try {
             if (auto req = decode<get_app_history_request>(msg)) {

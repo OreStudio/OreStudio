@@ -63,6 +63,7 @@ inline auto& job_definition_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class job_definition_handler {
@@ -75,8 +76,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::job_definition_service svc(ctx);
         get_job_definitions_response resp;
         try {
@@ -94,8 +100,13 @@ public:
     void schedule(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<schedule_job_request>(msg)) {
             try {
                 service::job_definition_service svc(ctx);
@@ -117,8 +128,13 @@ public:
     void unschedule(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<unschedule_job_request>(msg)) {
             try {
                 service::job_definition_service svc(ctx);
@@ -139,8 +155,13 @@ public:
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<get_job_history_request>(msg)) {
             try {
                 service::job_definition_service svc(ctx);

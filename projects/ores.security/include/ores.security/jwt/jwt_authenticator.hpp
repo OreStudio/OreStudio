@@ -81,6 +81,15 @@ public:
     std::expected<jwt_claims, jwt_error> validate(const std::string& token) const;
 
     /**
+     * @brief Validates a JWT token and extracts claims, ignoring expiry.
+     *
+     * Used by the refresh handler: the token may be near or just past its
+     * expiry time but is still trusted for identity (signature is verified).
+     */
+    std::expected<jwt_claims, jwt_error>
+    validate_allow_expired(const std::string& token) const;
+
+    /**
      * @brief Creates a new JWT token with the given claims.
      *
      * Supported for HS256 and RS256 signer instances.

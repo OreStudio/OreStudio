@@ -80,6 +80,37 @@ inline constexpr std::array system_setting_definitions = {
         .default_value = "false",
         .description = "Enables synthetic test data generation in the UI. "
         "FOR TESTING/DEVELOPMENT ONLY."
+    },
+    // -------------------------------------------------------------------------
+    // IAM token lifetime settings
+    // -------------------------------------------------------------------------
+    system_setting_definition{
+        .name = "iam.token.access_lifetime_seconds",
+        .data_type = "integer",
+        .default_value = "1800",
+        .description = "Lifetime in seconds of every issued JWT access token. "
+        "Default is 1800 (30 minutes)."
+    },
+    system_setting_definition{
+        .name = "iam.token.party_selection_lifetime_seconds",
+        .data_type = "integer",
+        .default_value = "300",
+        .description = "Lifetime in seconds of the short-lived party-selection "
+        "step token. Default is 300 (5 minutes)."
+    },
+    system_setting_definition{
+        .name = "iam.token.max_session_seconds",
+        .data_type = "integer",
+        .default_value = "28800",
+        .description = "Hard ceiling in seconds after which a session must "
+        "re-authenticate regardless of refresh activity. Default is 28800 (8 hours)."
+    },
+    system_setting_definition{
+        .name = "iam.token.refresh_threshold_pct",
+        .data_type = "integer",
+        .default_value = "80",
+        .description = "Percentage of token lifetime at which the client "
+        "proactively requests a token refresh. Default is 80 (80%)."
     }
 };
 

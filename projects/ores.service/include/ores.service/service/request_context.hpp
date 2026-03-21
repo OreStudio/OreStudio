@@ -20,10 +20,12 @@
 #ifndef ORES_SERVICE_SERVICE_REQUEST_CONTEXT_HPP
 #define ORES_SERVICE_SERVICE_REQUEST_CONTEXT_HPP
 
+#include <expected>
 #include <optional>
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include "ores.service/error_code.hpp"
 
 namespace ores::service::service {
 
@@ -32,14 +34,21 @@ namespace ores::service::service {
  *
  * Extracts the Bearer JWT from the Authorization header, validates it, and
  * returns a context scoped to the tenant + party encoded in the claims.
- * Falls back to @p base_ctx at any validation or parse failure so that
- * callers never receive an unusable context.
  *
- * @param base_ctx  Service-level context (tenant-neutral) to fall back to.
+ * If @p verifier is empty the base context is returned directly (service does
+ * not require authentication). Otherwise:
+ * - Missing or malformed Authorization header → error_code::unauthorized
+ * - Valid but expired token                   → error_code::token_expired
+ * - Invalid token (bad signature, etc.)       → error_code::unauthorized
+ * - Valid token                               → scoped database context
+ *
+ * @param base_ctx  Service-level context (tenant-neutral), returned as-is when
+ *                  no verifier is present.
  * @param msg       Inbound NATS message whose headers may carry a Bearer token.
  * @param verifier  JWT authenticator. If empty, @p base_ctx is returned as-is.
  */
-ores::database::context make_request_context(
+std::expected<ores::database::context, ores::service::error_code>
+make_request_context(
     const ores::database::context& base_ctx,
     const ores::nats::message& msg,
     const std::optional<ores::security::jwt::jwt_authenticator>& verifier);

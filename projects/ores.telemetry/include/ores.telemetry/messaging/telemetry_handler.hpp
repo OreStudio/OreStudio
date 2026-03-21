@@ -43,6 +43,7 @@ inline auto& telemetry_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class telemetry_handler {
@@ -55,8 +56,13 @@ public:
     void logs_list(ores::nats::message msg) {
         BOOST_LOG_SEV(telemetry_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         // No telemetry query service implemented yet; return empty.
         if (decode<get_telemetry_logs_request>(msg)) {
             BOOST_LOG_SEV(telemetry_handler_lg(), debug)
@@ -71,8 +77,13 @@ public:
     void nats_server_samples_list(ores::nats::message msg) {
         BOOST_LOG_SEV(telemetry_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (decode<get_nats_server_samples_request>(msg)) {
             BOOST_LOG_SEV(telemetry_handler_lg(), debug)
                 << "Completed " << msg.subject;
@@ -87,8 +98,13 @@ public:
     void nats_stream_samples_list(ores::nats::message msg) {
         BOOST_LOG_SEV(telemetry_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (decode<get_nats_stream_samples_request>(msg)) {
             BOOST_LOG_SEV(telemetry_handler_lg(), debug)
                 << "Completed " << msg.subject;

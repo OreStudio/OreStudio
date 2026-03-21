@@ -47,6 +47,7 @@ inline auto& image_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class image_handler {
@@ -63,8 +64,13 @@ public:
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         try {
             service::assets_service svc(ctx);
             const auto images = svc.get_images(req->image_ids);
@@ -83,8 +89,13 @@ public:
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         try {
             repository::image_repository repo;
             std::vector<domain::image> images;
@@ -117,8 +128,13 @@ public:
             BOOST_LOG_SEV(image_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         try {
             repository::image_repository repo;
             stamp(req->data, ctx);

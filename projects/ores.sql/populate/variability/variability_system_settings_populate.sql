@@ -84,8 +84,39 @@ select ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn()
     'Enables synthetic test data generation in the UI. FOR TESTING/DEVELOPMENT ONLY.'
 );
 
+-- -----------------------------------------------------------------------------
+-- IAM token lifetime settings
+-- -----------------------------------------------------------------------------
+select ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'iam.token.access_lifetime_seconds',
+    '1800',
+    'integer',
+    'Lifetime in seconds of every issued JWT access token. Default is 1800 (30 minutes).'
+);
+
+select ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'iam.token.party_selection_lifetime_seconds',
+    '300',
+    'integer',
+    'Lifetime in seconds of the short-lived party-selection step token. Default is 300 (5 minutes).'
+);
+
+select ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'iam.token.max_session_seconds',
+    '28800',
+    'integer',
+    'Hard ceiling in seconds after which a session must re-authenticate regardless of refresh activity. Default is 28800 (8 hours).'
+);
+
+select ores_variability_system_settings_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'iam.token.refresh_threshold_pct',
+    '80',
+    'integer',
+    'Percentage of token lifetime at which the client proactively requests a token refresh. Default is 80 (80%).'
+);
+
 -- Show summary
 select name, data_type, value, description
 from ores_variability_system_settings_tbl
-where name like 'system.%' and valid_to = ores_utility_infinity_timestamp_fn()
+where valid_to = ores_utility_infinity_timestamp_fn()
 order by name;

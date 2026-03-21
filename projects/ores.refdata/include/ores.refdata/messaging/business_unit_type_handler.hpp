@@ -45,6 +45,7 @@ inline auto& business_unit_type_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class business_unit_type_handler {
@@ -57,8 +58,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(business_unit_type_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         repository::business_unit_type_repository repo(ctx);
         get_business_unit_types_response resp;
         try {
@@ -77,8 +83,13 @@ public:
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(business_unit_type_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         repository::business_unit_type_repository repo(ctx);
         auto req = decode<save_business_unit_type_request>(msg);
         if (!req) {
@@ -103,8 +114,13 @@ public:
     void del(ores::nats::message msg) {
         BOOST_LOG_SEV(business_unit_type_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         repository::business_unit_type_repository repo(ctx);
         auto req = decode<delete_business_unit_type_request>(msg);
         if (!req) {
@@ -131,8 +147,13 @@ public:
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(business_unit_type_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         repository::business_unit_type_repository repo(ctx);
         auto req = decode<get_business_unit_type_history_request>(msg);
         if (!req) {

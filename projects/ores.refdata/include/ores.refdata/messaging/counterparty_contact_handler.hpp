@@ -44,6 +44,7 @@ inline auto& counterparty_contact_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class counterparty_contact_handler {
@@ -56,8 +57,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::counterparty_contact_information_service svc(ctx);
         auto req =
             decode<get_counterparty_contact_informations_request>(msg);
@@ -87,8 +93,13 @@ public:
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::counterparty_contact_information_service svc(ctx);
         auto req =
             decode<save_counterparty_contact_information_request>(msg);
@@ -116,8 +127,13 @@ public:
     void del(ores::nats::message msg) {
         BOOST_LOG_SEV(counterparty_contact_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::counterparty_contact_information_service svc(ctx);
         auto req =
             decode<delete_counterparty_contact_information_request>(msg);

@@ -37,6 +37,7 @@ namespace ores::dq::messaging {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 namespace {
@@ -66,8 +67,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             const auto items = svc.list_authority_types();
@@ -92,8 +98,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -116,8 +127,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             svc.remove_authority_types(req->types);
@@ -139,8 +155,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             const auto history = svc.get_authority_type_history(req->type);
@@ -169,8 +190,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             const auto items = svc.list_coding_schemes(
@@ -197,8 +223,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -218,8 +249,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             svc.remove_coding_schemes(req->codes);
@@ -238,8 +274,13 @@ public:
             BOOST_LOG_SEV(coding_scheme_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             return;
         }
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::coding_scheme_service svc(ctx);
         try {
             const auto hist = svc.get_coding_scheme_history(req->code);

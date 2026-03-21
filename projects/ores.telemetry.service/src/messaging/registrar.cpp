@@ -17,11 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/messaging/registrar.hpp"
+#include "ores.telemetry.service/messaging/registrar.hpp"
 #include "telemetry_handler.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
 
-namespace ores::telemetry::messaging {
+namespace ores::telemetry::service::messaging {
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
@@ -71,4 +71,4 @@ registrar::register_handlers(ores::nats::service::client& nats,
     return subs;
 }
 
-} // namespace ores::telemetry::messaging
+} // namespace ores::telemetry::service::messaging

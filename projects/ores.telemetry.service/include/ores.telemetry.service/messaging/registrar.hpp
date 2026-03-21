@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_MESSAGING_REGISTRAR_HPP
-#define ORES_TELEMETRY_MESSAGING_REGISTRAR_HPP
+#ifndef ORES_TELEMETRY_SERVICE_MESSAGING_REGISTRAR_HPP
+#define ORES_TELEMETRY_SERVICE_MESSAGING_REGISTRAR_HPP
 
 #include <optional>
 #include <vector>
@@ -27,7 +27,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
-namespace ores::telemetry::messaging {
+namespace ores::telemetry::service::messaging {
 
 class registrar {
 public:

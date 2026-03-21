@@ -27,7 +27,7 @@
 #include "ores.telemetry.service/app/application_exception.hpp"
 #include "ores.telemetry.service/app/nats_poller.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.telemetry/messaging/registrar.hpp"
+#include "ores.telemetry.service/messaging/registrar.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 
@@ -80,7 +80,7 @@ application::run(boost::asio::io_context& io_ctx,
     co_await ores::service::service::run(
         io_ctx, nats, make_context(cfg.database), "ores.telemetry.service",
         [](auto& n, auto c, auto v) {
-            return ores::telemetry::messaging::registrar::register_handlers(
+            return ores::telemetry::service::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
         },
         [monitor_url, monitor_interval, poller_ctx = std::move(poller_ctx), &nats]

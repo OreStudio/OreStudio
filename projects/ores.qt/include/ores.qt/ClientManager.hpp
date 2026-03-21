@@ -439,9 +439,6 @@ signals:
     void streamingStopped();
 
 private:
-    // Default token lifetime in seconds (fallback before server response is received)
-    static constexpr int default_access_lifetime_s = 1800;
-
     // Fraction of token lifetime at which the proactive refresh fires
     static constexpr double refresh_lifetime_ratio = 0.8;
 

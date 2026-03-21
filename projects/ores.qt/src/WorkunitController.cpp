@@ -19,6 +19,8 @@
  */
 #include "ores.qt/WorkunitController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.compute/eventing/workunit_changed_event.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -33,6 +35,12 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
+namespace {
+    constexpr std::string_view workunit_event_name =
+        eventing::domain::event_traits<
+            compute::eventing::workunit_changed_event>::name;
+}
+
 WorkunitController::WorkunitController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
@@ -41,7 +49,7 @@ WorkunitController::WorkunitController(
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
-          std::string_view{}, parent),
+          workunit_event_name, parent),
       changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {

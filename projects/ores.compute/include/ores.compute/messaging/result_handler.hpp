@@ -49,6 +49,7 @@ inline auto& result_handler_lg() {
 } // namespace
 
 using ores::service::messaging::reply;
+using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using namespace ores::logging;
@@ -63,8 +64,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(result_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::result_service svc(ctx);
         list_results_response resp;
         try {
@@ -82,8 +88,13 @@ public:
     void submit(ores::nats::message msg) {
         BOOST_LOG_SEV(result_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<submit_result_request>(msg)) {
             try {
                 service::result_service result_svc(ctx);

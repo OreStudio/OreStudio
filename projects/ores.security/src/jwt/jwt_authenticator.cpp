@@ -237,11 +237,11 @@ std::expected<jwt_claims, jwt_error> jwt_authenticator::validate_allow_expired(
 
         // Build verifier with a very large leeway so expired tokens are accepted.
         // The signature is still verified — only the expiry check is relaxed.
-        constexpr auto max_leeway = std::chrono::seconds(
-            std::chrono::years(100).count());
+        // leeway() takes a size_t count of seconds; 3153600000 = 100 years.
+        constexpr size_t max_leeway_s = 3153600000UL;
 
         auto verifier = ::jwt::verify<json_traits>()
-            .leeway(max_leeway);
+            .leeway(max_leeway_s);
 
         switch (algorithm_) {
         case algorithm_type::hs256:

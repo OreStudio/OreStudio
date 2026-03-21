@@ -69,6 +69,9 @@ ProvenanceWidget* AppVersionDetailDialog::provenanceWidget() const {
 }
 
 void AppVersionDetailDialog::setupUi() {
+    // Populate platform checkboxes with known platforms (all unchecked initially)
+    populatePlatformsList();
+
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
@@ -101,7 +104,7 @@ void AppVersionDetailDialog::setupConnections() {
             &AppVersionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
-    connect(ui_->platformEdit, &QLineEdit::textChanged, this,
+    connect(ui_->platformsList, &QListWidget::itemChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
@@ -182,6 +185,23 @@ void AppVersionDetailDialog::populateAppCombo() {
     ui_->appCombo->blockSignals(false);
 }
 
+void AppVersionDetailDialog::populatePlatformsList() {
+    ui_->platformsList->blockSignals(true);
+    ui_->platformsList->clear();
+    for (const auto& [code, label] : known_platforms_) {
+        auto* item = new QListWidgetItem(
+            QString::fromLatin1(label), ui_->platformsList);
+        item->setData(Qt::UserRole, QString::fromLatin1(code));
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        const bool checked = std::find(
+            app_version_.platforms.begin(),
+            app_version_.platforms.end(),
+            std::string{code}) != app_version_.platforms.end();
+        item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+    }
+    ui_->platformsList->blockSignals(false);
+}
+
 void AppVersionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
@@ -213,7 +233,7 @@ void AppVersionDetailDialog::setReadOnly(bool readOnly) {
     ui_->appCombo->setEnabled(!readOnly);
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->platformEdit->setReadOnly(readOnly);
+    ui_->platformsList->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->minRamSpinBox->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -236,7 +256,7 @@ void AppVersionDetailDialog::updateUiFromVersion() {
 
     ui_->codeEdit->setText(QString::fromStdString(app_version_.wrapper_version));
     ui_->nameEdit->setText(QString::fromStdString(app_version_.engine_version));
-    ui_->platformEdit->setText(QString::fromStdString(app_version_.platform));
+    populatePlatformsList();
     ui_->minRamSpinBox->setValue(app_version_.min_ram_mb);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(app_version_.package_uri));
 
@@ -265,7 +285,13 @@ void AppVersionDetailDialog::updateVersionFromUi() {
         app_version_.wrapper_version = ui_->codeEdit->text().trimmed().toStdString();
     }
     app_version_.engine_version = ui_->nameEdit->text().trimmed().toStdString();
-    app_version_.platform = ui_->platformEdit->text().trimmed().toStdString();
+    app_version_.platforms.clear();
+    for (int i = 0; i < ui_->platformsList->count(); ++i) {
+        const auto* item = ui_->platformsList->item(i);
+        if (item && item->checkState() == Qt::Checked)
+            app_version_.platforms.push_back(
+                item->data(Qt::UserRole).toString().toStdString());
+    }
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
     app_version_.package_uri = "packages/" +
         boost::uuids::to_string(app_version_.id) + "/package";
@@ -292,7 +318,15 @@ bool AppVersionDetailDialog::validateInput() {
     const QString wrapper_version = ui_->codeEdit->text().trimmed();
     const QString engine_version = ui_->nameEdit->text().trimmed();
     const QString app_id = ui_->appCombo->currentData().toString();
-    return !wrapper_version.isEmpty() && !engine_version.isEmpty() && !app_id.isEmpty();
+    if (wrapper_version.isEmpty() || engine_version.isEmpty() || app_id.isEmpty())
+        return false;
+
+    // Require at least one platform to be checked
+    for (int i = 0; i < ui_->platformsList->count(); ++i) {
+        if (ui_->platformsList->item(i)->checkState() == Qt::Checked)
+            return true;
+    }
+    return false;
 }
 
 void AppVersionDetailDialog::onBrowsePackageClicked() {

@@ -42,7 +42,6 @@ struct app_version_entity {
     std::string wrapper_version;
     std::string engine_version;
     std::string package_uri;
-    std::string platform;
     int min_ram_mb;
     std::string modified_by;
     std::string performed_by;

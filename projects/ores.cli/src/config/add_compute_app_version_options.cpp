@@ -20,6 +20,7 @@
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 
 #include <ostream>
+#include <numeric>
 
 namespace ores::cli::config {
 
@@ -27,7 +28,9 @@ std::ostream& operator<<(std::ostream& s, const add_compute_app_version_options&
     s << "{ app_id: " << v.app_id
       << ", wrapper_version: " << v.wrapper_version
       << ", engine_version: " << v.engine_version
-      << ", platform: " << v.platform
+      << ", platforms: [" << std::accumulate(v.platforms.begin(), v.platforms.end(),
+             std::string{}, [](const std::string& a, const std::string& b) {
+                 return a.empty() ? b : a + ", " + b; }) << "]"
       << ", modified_by: " << v.modified_by;
 
     if (v.package_uri) s << ", package_uri: " << *v.package_uri;

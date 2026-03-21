@@ -84,8 +84,14 @@ QVariant ClientAppVersionModel::data(
             return QString::fromStdString(app_version.wrapper_version);
         case EngineVersion:
             return QString::fromStdString(app_version.engine_version);
-        case Platform:
-            return QString::fromStdString(app_version.platform);
+        case Platform: {
+            QString platforms;
+            for (const auto& p : app_version.platforms) {
+                if (!platforms.isEmpty()) platforms += ", ";
+                platforms += QString::fromStdString(p);
+            }
+            return platforms;
+        }
         case MinRamMb:
             return static_cast<qlonglong>(app_version.min_ram_mb);
         case PackageUri:

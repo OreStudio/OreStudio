@@ -20,6 +20,7 @@
 #include "ores.compute/repository/app_version_repository.hpp"
 
 #include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.compute/domain/app_version_json_io.hpp" // IWYU pragma: keep.
@@ -41,6 +42,21 @@ void app_version_repository::write(context ctx, const domain::app_version& v) {
     BOOST_LOG_SEV(lg(), debug) << "Writing app version: " << v.id;
     execute_write_query(ctx, app_version_mapper::map(v),
         lg(), "Writing app version to database.");
+
+    // Sync junction table: replace all platform rows for this id
+    const std::string id_str = boost::uuids::to_string(v.id);
+    execute_parameterized_command(ctx,
+        "DELETE FROM ores_compute_app_version_platforms_tbl"
+        " WHERE app_version_id = $1::uuid",
+        {id_str}, lg(), "Removing old platform entries for app version.");
+
+    for (const auto& platform : v.platforms) {
+        execute_parameterized_command(ctx,
+            "INSERT INTO ores_compute_app_version_platforms_tbl"
+            " (app_version_id, platform_code) VALUES ($1::uuid, $2)"
+            " ON CONFLICT DO NOTHING",
+            {id_str, platform}, lg(), "Inserting platform entry for app version.");
+    }
 }
 
 void app_version_repository::write(
@@ -48,6 +64,25 @@ void app_version_repository::write(
     BOOST_LOG_SEV(lg(), debug) << "Writing app versions. Count: " << v.size();
     execute_write_query(ctx, app_version_mapper::map(v),
         lg(), "Writing app versions to database.");
+}
+
+static void attach_platforms(database::context ctx,
+    std::vector<domain::app_version>& app_versions,
+    logging::logger_t& lg) {
+
+    if (app_versions.empty())
+        return;
+
+    const auto platform_map = execute_raw_grouped_query(ctx,
+        "SELECT app_version_id::text, platform_code"
+        " FROM ores_compute_app_version_platforms_tbl",
+        lg, "Reading app version platforms");
+
+    for (auto& av : app_versions) {
+        const auto id_str = boost::uuids::to_string(av.id);
+        if (auto it = platform_map.find(id_str); it != platform_map.end())
+            av.platforms = it->second;
+    }
 }
 
 std::vector<domain::app_version>
@@ -58,10 +93,13 @@ app_version_repository::read_latest(context ctx) {
         where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
         order_by("id"_c);
 
-    return execute_read_query<app_version_entity, domain::app_version>(
+    auto r = execute_read_query<app_version_entity, domain::app_version>(
         ctx, query,
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(), "Reading latest app versions");
+
+    attach_platforms(ctx, r, lg());
+    return r;
 }
 
 std::vector<domain::app_version>
@@ -72,10 +110,13 @@ app_version_repository::read_latest(context ctx, const std::string& id) {
     const auto query = sqlgen::read<std::vector<app_version_entity>> |
         where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
-    return execute_read_query<app_version_entity, domain::app_version>(
+    auto r = execute_read_query<app_version_entity, domain::app_version>(
         ctx, query,
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(), "Reading latest app version by id.");
+
+    attach_platforms(ctx, r, lg());
+    return r;
 }
 
 std::vector<domain::app_version>
@@ -86,10 +127,13 @@ app_version_repository::read_all(context ctx, const std::string& id) {
         where("tenant_id"_c == tid && "id"_c == id) |
         order_by("version"_c.desc());
 
-    return execute_read_query<app_version_entity, domain::app_version>(
+    auto r = execute_read_query<app_version_entity, domain::app_version>(
         ctx, query,
         [](const auto& entities) { return app_version_mapper::map(entities); },
         lg(), "Reading all app version versions by id.");
+
+    attach_platforms(ctx, r, lg());
+    return r;
 }
 
 void app_version_repository::remove(context ctx, const std::string& id) {

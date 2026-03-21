@@ -81,7 +81,6 @@ insert into ores_compute_app_versions_tbl (
     wrapper_version,
     engine_version,
     package_uri,
-    platform,
     min_ram_mb,
     modified_by,
     performed_by,
@@ -98,7 +97,6 @@ select
     '1.0.0',
     '9.0.0',
     'https://ore.example.com/packages/ore-9.0.0-linux-x86_64.tar.gz',
-    'linux-x86_64',
     512,
     'system',
     'system',
@@ -111,3 +109,10 @@ where not exists (
     where id = 'c0ffee00-0000-0000-0000-000000000002'::uuid
       and valid_to = ores_utility_infinity_timestamp_fn()
 );
+
+-- -------------------------------------------------------------------------
+-- ORE App Version Platform (linux-x86_64)
+-- -------------------------------------------------------------------------
+insert into ores_compute_app_version_platforms_tbl (app_version_id, platform_code)
+values ('c0ffee00-0000-0000-0000-000000000002'::uuid, 'linux-x86_64')
+on conflict (app_version_id, platform_code) do nothing;

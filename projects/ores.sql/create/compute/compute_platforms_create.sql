@@ -18,23 +18,23 @@
  *
  */
 
--- =============================================================================
--- Drop Compute Grid Tables
--- =============================================================================
+-- Reference table: known compute platform identifiers
+create table if not exists "ores_compute_platforms_tbl" (
+    "code"        text primary key,
+    "description" text not null default ''
+);
 
-\ir ./compute_node_samples_drop.sql
-\ir ./compute_grid_samples_drop.sql
-\ir ./compute_results_notify_trigger_drop.sql
-\ir ./compute_results_drop.sql
-\ir ./compute_workunits_notify_trigger_drop.sql
-\ir ./compute_workunits_drop.sql
-\ir ./compute_batch_dependencies_drop.sql
-\ir ./compute_batches_notify_trigger_drop.sql
-\ir ./compute_batches_drop.sql
-\ir ./compute_hosts_notify_trigger_drop.sql
-\ir ./compute_hosts_drop.sql
-\ir ./compute_platforms_drop.sql
-\ir ./compute_app_versions_notify_trigger_drop.sql
-\ir ./compute_app_versions_drop.sql
-\ir ./compute_apps_notify_trigger_drop.sql
-\ir ./compute_apps_drop.sql
+-- Seed the known platforms
+insert into ores_compute_platforms_tbl (code, description) values
+    ('linux-x86_64',   'Linux x86-64'),
+    ('linux-arm64',    'Linux ARM64'),
+    ('windows-x86_64', 'Windows x86-64'),
+    ('macos-arm64',    'macOS Apple Silicon')
+on conflict (code) do nothing;
+
+-- Junction table: supported platforms per app version
+create table if not exists "ores_compute_app_version_platforms_tbl" (
+    "app_version_id" uuid not null,
+    "platform_code"  text not null references ores_compute_platforms_tbl(code),
+    primary key (app_version_id, platform_code)
+);

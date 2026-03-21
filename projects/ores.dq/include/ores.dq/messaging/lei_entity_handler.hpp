@@ -21,6 +21,7 @@
 #define ORES_DQ_MESSAGING_LEI_ENTITY_HANDLER_HPP
 
 #include <optional>
+#include <rfl/json.hpp>
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -55,11 +56,22 @@ public:
 
     void summary(ores::nats::message msg) {
         BOOST_LOG_SEV(lei_entity_handler_lg(), debug) << "Handling " << msg.subject;
-        auto req = decode<get_lei_entities_summary_request>(msg);
-        if (!req) {
-            BOOST_LOG_SEV(lei_entity_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+        const std::string_view data(
+            reinterpret_cast<const char*>(msg.data.data()), msg.data.size());
+        const auto parsed = rfl::json::read<get_lei_entities_summary_request>(data);
+        if (!parsed) {
+            const auto err = parsed.error().what();
+            BOOST_LOG_SEV(lei_entity_handler_lg(), error)
+                << "Failed to decode " << msg.subject
+                << ": " << err
+                << " (payload: " << data << ")";
+            get_lei_entities_summary_response err_resp;
+            err_resp.success = false;
+            err_resp.error_message = std::string("Failed to decode request: ") + err;
+            reply(nats_, msg, err_resp);
             return;
         }
+        const auto& req = *parsed;
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -70,7 +82,7 @@ public:
         get_lei_entities_summary_response resp;
         try {
             using namespace ores::database::repository;
-            if (req->country_filter.empty()) {
+            if (req.country_filter.empty()) {
                 const std::string sql =
                     "SELECT * FROM ores_dq_lei_entities_distinct_countries_fn()";
                 auto rows = execute_raw_multi_column_query(
@@ -85,9 +97,9 @@ public:
                     "SELECT * FROM ores_dq_lei_entities_summary_by_country_fn($1, $2, $3)";
                 auto rows = execute_parameterized_multi_column_query(
                     ctx, sql,
-                    {req->country_filter,
-                     std::to_string(req->limit),
-                     std::to_string(req->offset)},
+                    {req.country_filter,
+                     std::to_string(req.limit),
+                     std::to_string(req.offset)},
                     lei_entity_handler_lg(),
                     "listing LEI entities by country");
                 for (const auto& row : rows) {

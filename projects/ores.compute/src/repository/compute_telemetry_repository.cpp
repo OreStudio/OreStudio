@@ -19,12 +19,13 @@
  */
 #include "ores.compute/repository/compute_telemetry_repository.hpp"
 
-#include <unordered_map>
+#include <chrono>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sqlgen/postgres.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.compute/repository/grid_sample_entity.hpp"
 #include "ores.compute/repository/node_sample_entity.hpp"
 
@@ -166,29 +167,143 @@ compute_telemetry_repository::latest_node_samples(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest compute node samples";
     const auto tid = ctx.tenant_id().to_string();
 
-    // Fetch a recent window (last 100 rows across all nodes), then keep
-    // the newest sample per host in C++.
-    const auto qry = sqlgen::read<std::vector<node_sample_entity>> |
-        where("tenant_id"_c == tid) |
-        order_by("sampled_at"_c.desc()) |
-        sqlgen::limit(100);
+    // DISTINCT ON (host_id) returns exactly one row per host — the most
+    // recent — in a single efficient database query.
+    const std::string sql = R"(
+        SELECT DISTINCT ON (host_id)
+            sampled_at, tenant_id, host_id,
+            tasks_completed, tasks_failed, tasks_since_last,
+            avg_task_duration_ms, max_task_duration_ms,
+            input_bytes_fetched, output_bytes_uploaded,
+            seconds_since_hb
+        FROM ores_compute_node_samples_tbl
+        WHERE tenant_id = $1
+        ORDER BY host_id, sampled_at DESC
+    )";
 
-    const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
-    ensure_success(r, lg());
-
-    // Deduplicate: keep first (newest) occurrence of each host_id.
-    std::unordered_map<std::string, domain::node_sample> seen;
-    for (const auto& e : *r) {
-        const std::string& hid = e.host_id.value();
-        if (!seen.count(hid))
-            seen.emplace(hid, from_entity(e));
-    }
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {tid}, lg(), "reading latest node samples");
 
     std::vector<domain::node_sample> result;
-    result.reserve(seen.size());
-    for (auto& [_, s] : seen)
+    result.reserve(rows.size());
+    for (const auto& row : rows) {
+        if (row.size() < 11) continue;
+        domain::node_sample s;
+        s.sampled_at            = timestamp_to_timepoint(
+            std::string_view{row[0].value_or("")});
+        s.tenant_id             = utility::uuid::tenant_id::from_string(
+            row[1].value_or("")).value();
+        s.host_id               = boost::lexical_cast<boost::uuids::uuid>(
+            row[2].value_or(""));
+        s.tasks_completed       = row[3] ? std::stoi(*row[3]) : 0;
+        s.tasks_failed          = row[4] ? std::stoi(*row[4]) : 0;
+        s.tasks_since_last      = row[5] ? std::stoi(*row[5]) : 0;
+        s.avg_task_duration_ms  = row[6] ? std::stoll(*row[6]) : 0;
+        s.max_task_duration_ms  = row[7] ? std::stoll(*row[7]) : 0;
+        s.input_bytes_fetched   = row[8] ? std::stoll(*row[8]) : 0;
+        s.output_bytes_uploaded = row[9] ? std::stoll(*row[9]) : 0;
+        s.seconds_since_hb      = row[10] ? std::stoi(*row[10]) : 0;
         result.push_back(std::move(s));
+    }
     return result;
+}
+
+domain::grid_sample
+compute_telemetry_repository::compute_grid_stats(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
+    const auto tid = ctx.tenant_id().to_string();
+
+    // Single CTE query to aggregate all stats without loading full tables.
+    const std::string sql = R"(
+        WITH
+          host_stats AS (
+            SELECT
+              COUNT(*)                                                          AS total_hosts,
+              COUNT(*) FILTER (WHERE last_rpc_time > NOW() - INTERVAL '5 minutes') AS online_hosts
+            FROM ores_compute_hosts_tbl
+            WHERE tenant_id = $1
+          ),
+          result_stats AS (
+            SELECT
+              COUNT(*) FILTER (WHERE server_state = 1)  AS results_inactive,
+              COUNT(*) FILTER (WHERE server_state = 2)  AS results_unsent,
+              COUNT(*) FILTER (WHERE server_state = 4)  AS results_in_progress,
+              COUNT(*) FILTER (WHERE server_state = 5)  AS results_done,
+              COUNT(DISTINCT host_id) FILTER (WHERE server_state = 4) AS busy_hosts,
+              COUNT(*) FILTER (WHERE server_state = 5
+                AND received_at > NOW() - INTERVAL '24 hours'
+                AND outcome = 1) AS outcomes_success,
+              COUNT(*) FILTER (WHERE server_state = 5
+                AND received_at > NOW() - INTERVAL '24 hours'
+                AND outcome = 3) AS outcomes_client_error,
+              COUNT(*) FILTER (WHERE server_state = 5
+                AND received_at > NOW() - INTERVAL '24 hours'
+                AND outcome = 4) AS outcomes_no_reply
+            FROM ores_compute_results_tbl
+            WHERE tenant_id = $1
+          ),
+          workunit_count AS (
+            SELECT COUNT(*) AS total_workunits
+            FROM ores_compute_workunits_tbl
+            WHERE tenant_id = $1
+          ),
+          batch_stats AS (
+            SELECT COUNT(*) AS total_batches
+            FROM ores_compute_batches_tbl
+            WHERE tenant_id = $1
+          ),
+          active_batches AS (
+            SELECT COUNT(DISTINCT wu.batch_id) AS active_batches
+            FROM ores_compute_results_tbl r
+            JOIN ores_compute_workunits_tbl wu
+              ON r.workunit_id = wu.id AND wu.tenant_id = $1
+            WHERE r.tenant_id = $1 AND r.server_state = 4
+          )
+        SELECT
+          h.total_hosts,
+          h.online_hosts,
+          GREATEST(h.online_hosts - r.busy_hosts, 0) AS idle_hosts,
+          r.results_inactive,
+          r.results_unsent,
+          r.results_in_progress,
+          r.results_done,
+          r.outcomes_success,
+          r.outcomes_client_error,
+          r.outcomes_no_reply,
+          w.total_workunits,
+          b.total_batches,
+          a.active_batches
+        FROM host_stats h, result_stats r, workunit_count w,
+             batch_stats b, active_batches a
+    )";
+
+    const auto rows = execute_parameterized_multi_column_query(
+        ctx, sql, {tid}, lg(), "computing grid stats");
+
+    domain::grid_sample sample;
+    sample.sampled_at = std::chrono::system_clock::now();
+
+    if (!rows.empty() && rows.front().size() >= 13) {
+        const auto& row = rows.front();
+        auto to_int = [](const std::optional<std::string>& v) -> int {
+            return v ? std::stoi(*v) : 0;
+        };
+        sample.total_hosts           = to_int(row[0]);
+        sample.online_hosts          = to_int(row[1]);
+        sample.idle_hosts            = to_int(row[2]);
+        sample.results_inactive      = to_int(row[3]);
+        sample.results_unsent        = to_int(row[4]);
+        sample.results_in_progress   = to_int(row[5]);
+        sample.results_done          = to_int(row[6]);
+        sample.outcomes_success      = to_int(row[7]);
+        sample.outcomes_client_error = to_int(row[8]);
+        sample.outcomes_no_reply     = to_int(row[9]);
+        sample.total_workunits       = to_int(row[10]);
+        sample.total_batches         = to_int(row[11]);
+        sample.active_batches        = to_int(row[12]);
+    }
+
+    return sample;
 }
 
 }

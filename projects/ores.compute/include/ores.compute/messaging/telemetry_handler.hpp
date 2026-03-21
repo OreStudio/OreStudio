@@ -95,12 +95,8 @@ public:
                 resp.outcomes_client_error = grid->outcomes_client_error;
                 resp.outcomes_no_reply    = grid->outcomes_no_reply;
 
-                const auto tt = std::chrono::system_clock::to_time_t(
+                resp.sampled_at = std::format("{:%Y-%m-%dT%H:%M:%SZ}",
                     grid->sampled_at);
-                char buf[32];
-                std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ",
-                    std::gmtime(&tt));
-                resp.sampled_at = buf;
             }
 
             const auto nodes = repo.latest_node_samples(ctx);

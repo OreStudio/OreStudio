@@ -71,11 +71,20 @@ public:
     /**
      * @brief Return the most recent sample per node for the context's tenant.
      *
-     * Fetches the last 100 rows ordered by sampled_at descending and
-     * deduplicates to one row per host_id, keeping the newest.
+     * Uses DISTINCT ON (host_id) to return exactly one row per host,
+     * the one with the most recent sampled_at, in a single database query.
      */
     std::vector<domain::node_sample>
     latest_node_samples(context ctx);
+
+    /**
+     * @brief Compute current grid statistics using SQL aggregations.
+     *
+     * Runs a single parameterized CTE query against the compute domain tables
+     * (hosts, results, workunits, batches) to return counts and breakdowns
+     * without loading full tables into memory. Sets sampled_at to now().
+     */
+    domain::grid_sample compute_grid_stats(context ctx);
 };
 
 }

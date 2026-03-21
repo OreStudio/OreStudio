@@ -24,7 +24,7 @@
 #include <atomic>
 #include <chrono>
 #include <csignal>
-#include <ctime>
+#include <format>
 #include <filesystem>
 #include <fstream>
 #include <mutex>
@@ -55,12 +55,7 @@ namespace {
  * @brief Format a time_point as ISO-8601 UTC string (YYYY-MM-DDTHH:MM:SSZ).
  */
 std::string to_iso8601(std::chrono::system_clock::time_point tp) {
-    const auto t = std::chrono::system_clock::to_time_t(tp);
-    std::tm tm{};
-    gmtime_r(&t, &tm);
-    char buf[32];
-    std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", &tm);
-    return buf;
+    return std::format("{:%Y-%m-%dT%H:%M:%SZ}", tp);
 }
 
 /**

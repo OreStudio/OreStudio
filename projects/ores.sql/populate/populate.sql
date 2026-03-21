@@ -99,6 +99,15 @@
 \echo '--- Trading Layer ---'
 \ir trading/populate_trading.sql
 
+-- =============================================================================
+-- Compute Layer
+-- =============================================================================
+
+\echo ''
+\echo '--- Compute Layer ---'
+\ir compute/compute_populate.sql
+\ir compute/compute_ore_app_seed.sql
+
 \echo ''
 \echo '=== System Population Complete ==='
 
@@ -176,4 +185,11 @@ from ores_dq_currencies_artefact_tbl
 union all
 select 'Catalogues: Artefact IP Ranges', count(*)
 from ores_dq_ip2country_artefact_tbl
+-- Compute
+union all
+select 'Compute: Apps', count(*)
+from ores_compute_apps_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Compute: App Versions', count(*)
+from ores_compute_app_versions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

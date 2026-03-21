@@ -533,8 +533,7 @@ ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
 
 void ClientManager::arm_refresh_timer(int lifetime_s) {
     if (!refresh_timer_) return;
-    // Fire at 80% of token lifetime so the token is refreshed before it expires.
-    const int fire_ms = static_cast<int>(lifetime_s * 0.8 * 1000);
+    const int fire_ms = static_cast<int>(lifetime_s * refresh_lifetime_ratio * 1000);
     refresh_timer_->stop();
     refresh_timer_->start(fire_ms);
     BOOST_LOG_SEV(lg(), debug) << "Refresh timer armed for " << (fire_ms / 1000) << "s";

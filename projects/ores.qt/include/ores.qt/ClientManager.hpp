@@ -351,8 +351,7 @@ public:
             return std::move(*result);
         } catch (const shell::service::session_expired_error& e) {
             using namespace ores::logging;
-            BOOST_LOG_SEV(lg(), warn)
-                << "Session expired: " << e.what();
+            BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
             QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
             return std::unexpected(std::string(e.what()));
         } catch (const std::exception& e) {
@@ -440,11 +439,15 @@ signals:
     void streamingStopped();
 
 private:
+    // Fraction of token lifetime at which the proactive refresh fires
+    static constexpr double refresh_lifetime_ratio = 0.8;
+
     /**
      * @brief Start/restart the proactive refresh timer.
      *
-     * Fires at 80% of @p lifetime_s seconds so the token is refreshed
-     * before it expires. Call after every successful login or party selection.
+     * Fires at refresh_lifetime_ratio of @p lifetime_s seconds so the token
+     * is refreshed before it expires. Call after every successful login or
+     * party selection.
      */
     void arm_refresh_timer(int lifetime_s);
 

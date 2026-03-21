@@ -140,6 +140,7 @@ void PurposeTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new purpose type";
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void PurposeTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << pt.code;
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +303,7 @@ void PurposeTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(pt);
@@ -347,6 +350,7 @@ void PurposeTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(pt);

@@ -140,6 +140,7 @@ void TenantTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenant type";
 
     auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void TenantTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << tenant_type.type;
 
     auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +303,7 @@ void TenantTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(tenant_type);
@@ -347,6 +350,7 @@ void TenantTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenantTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(tenant_type);

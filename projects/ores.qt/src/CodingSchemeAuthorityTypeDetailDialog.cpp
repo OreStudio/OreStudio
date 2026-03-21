@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_CodingSchemeAuthorityTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -123,6 +124,16 @@ void CodingSchemeAuthorityTypeDetailDialog::onSaveClicked() {
     at.modified_by = username_;
     at.version = isCreateMode_ ? 0 : authorityType_.version;
 
+    {
+        const auto crOpType = isCreateMode_
+            ? ChangeReasonDialog::OperationType::Create
+            : ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true,
+            isCreateMode_ ? "system" : "common");
+        if (!crSel) return;
+        at.change_commentary = crSel->commentary;
+    }
+
     QPointer<CodingSchemeAuthorityTypeDetailDialog> self = this;
 
     struct SaveResult { bool success; std::string message; };
@@ -163,6 +174,12 @@ void CodingSchemeAuthorityTypeDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     QPointer<CodingSchemeAuthorityTypeDetailDialog> self = this;
     QString code = ui_->codeEdit->text();

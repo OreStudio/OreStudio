@@ -27,6 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 
@@ -153,6 +154,15 @@ void NatureDimensionDetailDialog::onSaveClicked() {
     }
 
     updateDimensionFromUi();
+
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    dimension_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving nature dimension: " << dimension_.code;
 
     QPointer<NatureDimensionDetailDialog> self = this;
@@ -202,6 +212,12 @@ void NatureDimensionDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     BOOST_LOG_SEV(lg(), info) << "Deleting nature dimension: " << dimension_.code;
 

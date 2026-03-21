@@ -148,6 +148,7 @@ void BatchController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new compute batch";
 
     auto* detailDialog = new BatchDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -190,6 +191,7 @@ void BatchController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << batch.external_ref;
 
     auto* detailDialog = new BatchDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -312,6 +314,7 @@ void BatchController::onOpenVersion(
     }
 
     auto* detailDialog = new BatchDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setBatch(batch);
@@ -358,6 +361,7 @@ void BatchController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BatchDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setBatch(batch);

@@ -140,6 +140,7 @@ void BookStatusController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new book status";
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void BookStatusController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << status.code;
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +303,7 @@ void BookStatusController::onOpenVersion(
     }
 
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setStatus(status);
@@ -347,6 +350,7 @@ void BookStatusController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BookStatusDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setStatus(status);

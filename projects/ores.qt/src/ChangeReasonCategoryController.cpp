@@ -186,6 +186,7 @@ void ChangeReasonCategoryController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new category";
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -230,6 +231,7 @@ void ChangeReasonCategoryController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << category.code;
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -372,6 +374,7 @@ void ChangeReasonCategoryController::onOpenVersion(
     }
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCategory(category);
@@ -419,6 +422,7 @@ void ChangeReasonCategoryController::onRevertVersion(
     // The history dialog already shows the confirmation and prepares the data.
     // We just need to save it as a new version.
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCategory(category);

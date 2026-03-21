@@ -140,6 +140,7 @@ void PartyTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new party type";
 
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void PartyTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +303,7 @@ void PartyTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);
@@ -347,6 +350,7 @@ void PartyTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PartyTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);

@@ -147,6 +147,7 @@ void OriginDimensionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new origin dimension";
 
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -189,6 +190,7 @@ void OriginDimensionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dimension.code;
 
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -308,6 +310,7 @@ void OriginDimensionController::onOpenVersion(
     }
 
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);
@@ -354,6 +357,7 @@ void OriginDimensionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new OriginDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);

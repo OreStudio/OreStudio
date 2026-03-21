@@ -147,6 +147,7 @@ void DatasetController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new dataset";
 
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -188,6 +189,7 @@ void DatasetController::showDetailWindow(const dq::domain::dataset& dataset) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dataset.id;
 
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -302,6 +304,7 @@ void DatasetController::onOpenVersion(
     }
 
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->loadLookupData();
@@ -348,6 +351,7 @@ void DatasetController::onRevertVersion(
                               << dataset.version;
 
     auto* detailDialog = new DatasetDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->loadLookupData();

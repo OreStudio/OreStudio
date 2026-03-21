@@ -27,6 +27,7 @@
 #include "ui_ResultDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.compute/messaging/result_protocol.hpp"
 
 namespace ores::qt {
@@ -185,6 +186,15 @@ void ResultDetailDialog::onSaveClicked() {
 
     updateResultFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    result_.change_reason_code = crSel->reason_code;
+    result_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving compute result: " << result_.modified_by;
 
     // Save not yet implemented for compute entities
@@ -207,6 +217,10 @@ void ResultDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute result: " << result_.modified_by;
 

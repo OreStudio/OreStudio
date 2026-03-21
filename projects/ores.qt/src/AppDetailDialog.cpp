@@ -27,6 +27,7 @@
 #include "ui_AppDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.compute/messaging/app_protocol.hpp"
 
 namespace ores::qt {
@@ -185,6 +186,15 @@ void AppDetailDialog::onSaveClicked() {
 
     updateAppFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    app_.change_reason_code = crSel->reason_code;
+    app_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving compute app: " << app_.name;
 
     using FutureResult = std::pair<bool, std::string>;
@@ -245,6 +255,10 @@ void AppDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute app: " << app_.name;
 

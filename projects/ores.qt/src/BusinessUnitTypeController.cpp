@@ -141,6 +141,7 @@ void BusinessUnitTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business unit type";
 
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -183,6 +184,7 @@ void BusinessUnitTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -305,6 +307,7 @@ void BusinessUnitTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);
@@ -351,6 +354,7 @@ void BusinessUnitTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessUnitTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);

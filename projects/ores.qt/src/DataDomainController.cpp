@@ -141,6 +141,7 @@ void DataDomainController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new data domain";
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -183,6 +184,7 @@ void DataDomainController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << domain.name;
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -297,6 +299,7 @@ void DataDomainController::onOpenVersion(
     }
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDomain(domain);
@@ -342,6 +345,7 @@ void DataDomainController::onRevertVersion(
                               << domain.version;
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDomain(domain);

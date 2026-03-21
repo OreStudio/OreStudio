@@ -141,6 +141,7 @@ void MethodologyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new methodology";
 
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -181,6 +182,7 @@ void MethodologyController::showDetailWindow(const dq::domain::methodology& meth
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << methodology.id;
 
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -294,6 +296,7 @@ void MethodologyController::onOpenVersion(
     }
 
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setMethodology(methodology);
@@ -339,6 +342,7 @@ void MethodologyController::onRevertVersion(
                               << methodology.version;
 
     auto* detailDialog = new MethodologyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setMethodology(methodology);

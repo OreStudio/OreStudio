@@ -140,6 +140,7 @@ void ResultController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new compute result";
 
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void ResultController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << result.modified_by;
 
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -304,6 +306,7 @@ void ResultController::onOpenVersion(
     }
 
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setResult(result);
@@ -350,6 +353,7 @@ void ResultController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setResult(result);

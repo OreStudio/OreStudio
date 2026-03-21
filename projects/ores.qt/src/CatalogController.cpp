@@ -147,6 +147,7 @@ void CatalogController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new catalog";
 
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -187,6 +188,7 @@ void CatalogController::showDetailWindow(const dq::domain::catalog& catalog) {
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << catalog.name;
 
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -302,6 +304,7 @@ void CatalogController::onOpenVersion(
     }
 
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCatalog(catalog);
@@ -346,6 +349,7 @@ void CatalogController::onRevertVersion(const dq::domain::catalog& catalog) {
                               << catalog.version;
 
     auto* detailDialog = new CatalogDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCatalog(catalog);

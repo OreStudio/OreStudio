@@ -151,6 +151,7 @@ void NatureDimensionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new nature dimension";
 
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -193,6 +194,7 @@ void NatureDimensionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dimension.code;
 
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -312,6 +314,7 @@ void NatureDimensionController::onOpenVersion(
     }
 
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);
@@ -358,6 +361,7 @@ void NatureDimensionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);

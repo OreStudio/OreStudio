@@ -26,6 +26,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include "ui_MethodologyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
@@ -135,6 +136,16 @@ void MethodologyDetailDialog::onSaveClicked() {
         methodology.implementation_details = implementation.toStdString();
     }
 
+    {
+        const auto crOpType = isCreateMode_
+            ? ChangeReasonDialog::OperationType::Create
+            : ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true,
+            isCreateMode_ ? "system" : "common");
+        if (!crSel) return;
+        methodology.change_commentary = crSel->commentary;
+    }
+
     QPointer<MethodologyDetailDialog> self = this;
     boost::uuids::uuid methodologyId = methodology.id;
 
@@ -176,6 +187,12 @@ void MethodologyDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     QPointer<MethodologyDetailDialog> self = this;
     boost::uuids::uuid methodologyId = methodology_.id;

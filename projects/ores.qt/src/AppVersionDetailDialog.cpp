@@ -33,6 +33,7 @@
 #include "ui_AppVersionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.compute/messaging/app_version_protocol.hpp"
 
 namespace ores::qt {
@@ -290,6 +291,15 @@ void AppVersionDetailDialog::onSaveClicked() {
 
     updateVersionFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    app_version_.change_reason_code = crSel->reason_code;
+    app_version_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving app version: " << app_version_.wrapper_version;
 
     using FutureResult = std::pair<bool, std::string>;
@@ -353,6 +363,10 @@ void AppVersionDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     // Delete not yet implemented for compute entities
     MessageBoxHelper::warning(this, "Not Implemented",

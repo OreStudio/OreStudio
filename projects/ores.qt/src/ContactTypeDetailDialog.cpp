@@ -26,6 +26,7 @@
 #include "ui_ContactTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.refdata/messaging/contact_type_protocol.hpp"
 
 namespace ores::qt {
@@ -180,6 +181,15 @@ void ContactTypeDetailDialog::onSaveClicked() {
 
     updateTypeFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving contact type: " << type_.code;
 
     QPointer<ContactTypeDetailDialog> self = this;
@@ -246,6 +256,10 @@ void ContactTypeDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting contact type: " << type_.code;
 

@@ -144,6 +144,7 @@ void WorkunitController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new workunit";
 
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHttpBaseUrl(httpBaseUrl_);
@@ -187,6 +188,7 @@ void WorkunitController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << workunit.input_uri;
 
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHttpBaseUrl(httpBaseUrl_);
@@ -310,6 +312,7 @@ void WorkunitController::onOpenVersion(
     }
 
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setWorkunit(workunit);
@@ -356,6 +359,7 @@ void WorkunitController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setWorkunit(workunit);

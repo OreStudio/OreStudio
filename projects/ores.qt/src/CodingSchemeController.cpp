@@ -144,6 +144,7 @@ void CodingSchemeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new coding scheme";
 
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -185,6 +186,7 @@ void CodingSchemeController::showDetailWindow(const dq::domain::coding_scheme& s
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << scheme.code;
 
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -300,6 +302,7 @@ void CodingSchemeController::onOpenVersion(
     }
 
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->loadLookupData();
@@ -346,6 +349,7 @@ void CodingSchemeController::onRevertVersion(
                               << scheme.version;
 
     auto* detailDialog = new CodingSchemeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->loadLookupData();

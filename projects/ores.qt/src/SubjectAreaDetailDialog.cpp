@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_SubjectAreaDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/data_organization_protocol.hpp"
@@ -182,6 +183,16 @@ void SubjectAreaDetailDialog::onSaveClicked() {
     subject_area.modified_by = username_;
     subject_area.version = isCreateMode_ ? 0 : subject_area_.version;
 
+    {
+        const auto crOpType = isCreateMode_
+            ? ChangeReasonDialog::OperationType::Create
+            : ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true,
+            isCreateMode_ ? "system" : "common");
+        if (!crSel) return;
+        subject_area.change_commentary = crSel->commentary;
+    }
+
     QPointer<SubjectAreaDetailDialog> self = this;
 
     struct SaveResult { bool success; std::string message; };
@@ -223,6 +234,12 @@ void SubjectAreaDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     QPointer<SubjectAreaDetailDialog> self = this;
     QString name = ui_->nameEdit->text();

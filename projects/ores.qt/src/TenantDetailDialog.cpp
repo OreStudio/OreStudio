@@ -27,6 +27,7 @@
 #include "ui_TenantDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.iam/messaging/tenant_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -225,6 +226,15 @@ void TenantDetailDialog::onSaveClicked() {
 
     updateTenantFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    tenant_.change_reason_code = crSel->reason_code;
+    tenant_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving tenant: " << tenant_.code;
 
     QPointer<TenantDetailDialog> self = this;
@@ -291,6 +301,10 @@ void TenantDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting tenant: " << tenant_.code;
 

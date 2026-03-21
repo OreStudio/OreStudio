@@ -26,6 +26,7 @@
 #include "ui_ReportTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.reporting/messaging/report_type_protocol.hpp"
 
 namespace ores::qt {
@@ -181,6 +182,15 @@ void ReportTypeDetailDialog::onSaveClicked() {
 
     updateTypeFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving report type: " << type_.code;
 
     QPointer<ReportTypeDetailDialog> self = this;
@@ -247,6 +257,10 @@ void ReportTypeDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting report type: " << type_.code;
 

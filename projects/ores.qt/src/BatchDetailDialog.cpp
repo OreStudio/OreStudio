@@ -27,6 +27,7 @@
 #include "ui_BatchDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.compute/messaging/batch_protocol.hpp"
 
 namespace ores::qt {
@@ -185,6 +186,15 @@ void BatchDetailDialog::onSaveClicked() {
 
     updateBatchFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    batch_.change_reason_code = crSel->reason_code;
+    batch_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving compute batch: " << batch_.external_ref;
 
     using FutureResult = std::pair<bool, std::string>;
@@ -248,6 +258,10 @@ void BatchDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute batch: " << batch_.external_ref;
 

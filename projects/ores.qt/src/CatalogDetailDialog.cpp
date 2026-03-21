@@ -23,6 +23,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include "ui_CatalogDetailDialog.h"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -127,6 +128,15 @@ void CatalogDetailDialog::onSaveClicked() {
     }
 
     updateCatalogFromUi();
+
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, true,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    catalog_.change_commentary = crSel->commentary;
+
     emit statusMessage(tr("Saving catalog..."));
 
     QPointer<CatalogDetailDialog> self = this;
@@ -181,6 +191,12 @@ void CatalogDetailDialog::onDeleteClicked() {
 
     if (result != QMessageBox::Yes)
         return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
         emit errorMessage(tr("Not connected to server"));

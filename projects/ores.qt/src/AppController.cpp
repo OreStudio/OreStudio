@@ -148,6 +148,7 @@ void AppController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new compute app";
 
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -190,6 +191,7 @@ void AppController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << app.name;
 
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -312,6 +314,7 @@ void AppController::onOpenVersion(
     }
 
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setApp(app);
@@ -358,6 +361,7 @@ void AppController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setApp(app);

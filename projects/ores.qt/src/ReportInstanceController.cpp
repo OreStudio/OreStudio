@@ -140,6 +140,7 @@ void ReportInstanceController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new report instance";
 
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void ReportInstanceController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << instance.name;
 
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -304,6 +306,7 @@ void ReportInstanceController::onOpenVersion(
     }
 
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setInstance(instance);
@@ -350,6 +353,7 @@ void ReportInstanceController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setInstance(instance);

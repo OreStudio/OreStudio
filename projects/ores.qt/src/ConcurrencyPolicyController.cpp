@@ -140,6 +140,7 @@ void ConcurrencyPolicyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new concurrency policy";
 
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void ConcurrencyPolicyController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << policy.code;
 
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +303,7 @@ void ConcurrencyPolicyController::onOpenVersion(
     }
 
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPolicy(policy);
@@ -347,6 +350,7 @@ void ConcurrencyPolicyController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPolicy(policy);

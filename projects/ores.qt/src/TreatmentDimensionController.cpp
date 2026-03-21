@@ -145,6 +145,7 @@ void TreatmentDimensionController::showAddWindow() {
 
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -188,6 +189,7 @@ void TreatmentDimensionController::showDetailWindow(
 
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -303,6 +305,7 @@ void TreatmentDimensionController::onOpenVersion(
 
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);
@@ -348,6 +351,7 @@ void TreatmentDimensionController::onRevertVersion(
                               << dimension.version;
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);

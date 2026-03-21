@@ -140,6 +140,7 @@ void MonetaryNatureController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new monetary nature";
 
     auto* detailDialog = new MonetaryNatureDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void MonetaryNatureController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new MonetaryNatureDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +303,7 @@ void MonetaryNatureController::onOpenVersion(
     }
 
     auto* detailDialog = new MonetaryNatureDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setClass(type);
@@ -347,6 +350,7 @@ void MonetaryNatureController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new MonetaryNatureDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setClass(type);

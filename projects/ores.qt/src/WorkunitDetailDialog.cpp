@@ -33,6 +33,7 @@
 #include "ui_WorkunitDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.compute/messaging/workunit_protocol.hpp"
 
 namespace ores::qt {
@@ -273,6 +274,15 @@ void WorkunitDetailDialog::onSaveClicked() {
 
     updateWorkunitFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    workunit_.change_reason_code = crSel->reason_code;
+    workunit_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Submitting workunit: "
                               << boost::uuids::to_string(workunit_.id);
 
@@ -450,6 +460,12 @@ void WorkunitDetailDialog::onDeleteClicked() {
 
     if (reply != QMessageBox::Yes)
         return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     // Delete not yet implemented for compute entities
     MessageBoxHelper::warning(this, "Not Implemented",

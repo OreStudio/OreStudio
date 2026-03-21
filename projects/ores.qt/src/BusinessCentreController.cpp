@@ -142,6 +142,7 @@ void BusinessCentreController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business centre";
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
@@ -185,6 +186,7 @@ void BusinessCentreController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << business_centre.code;
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
@@ -308,6 +310,7 @@ void BusinessCentreController::onOpenVersion(
     }
 
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
@@ -355,6 +358,7 @@ void BusinessCentreController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessCentreDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());

@@ -140,6 +140,7 @@ void CurrencyMarketTierController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new currency market tier";
 
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void CurrencyMarketTierController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +303,7 @@ void CurrencyMarketTierController::onOpenVersion(
     }
 
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setTier(type);
@@ -347,6 +350,7 @@ void CurrencyMarketTierController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new CurrencyMarketTierDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setTier(type);

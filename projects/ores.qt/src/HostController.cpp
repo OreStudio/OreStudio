@@ -140,6 +140,7 @@ void HostController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new compute host";
 
     auto* detailDialog = new HostDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +183,7 @@ void HostController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << host.external_id;
 
     auto* detailDialog = new HostDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -304,6 +306,7 @@ void HostController::onOpenVersion(
     }
 
     auto* detailDialog = new HostDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHost(host);
@@ -350,6 +353,7 @@ void HostController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new HostDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHost(host);

@@ -193,6 +193,7 @@ void SystemSettingController::showDetailWindow(
 
     // Create detail dialog
     auto* detailDialog = new SystemSettingDetailDialog();
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 

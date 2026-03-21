@@ -298,6 +298,7 @@ void TradeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new trade";
 
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -340,6 +341,7 @@ void TradeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << trade.external_id;
 
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -462,6 +464,7 @@ void TradeController::onOpenVersion(
     }
 
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setTrade(trade);
@@ -508,6 +511,7 @@ void TradeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TradeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setTrade(trade);

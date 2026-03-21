@@ -189,6 +189,7 @@ void ChangeReasonController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new change reason";
 
     auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 
@@ -239,6 +240,7 @@ void ChangeReasonController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << reason.code;
 
     auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 
@@ -387,6 +389,7 @@ void ChangeReasonController::onOpenVersion(
     }
 
     auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setChangeReason(reason);
@@ -434,6 +437,7 @@ void ChangeReasonController::onRevertVersion(
     // The history dialog already shows the confirmation and prepares the data.
     // We just need to save it as a new version.
     auto* detailDialog = new ChangeReasonDetailDialog(mainWindow_);
+    detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 

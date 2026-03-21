@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_CodingSchemeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -244,6 +245,16 @@ void CodingSchemeDetailDialog::onSaveClicked() {
         scheme.uri = uri.toStdString();
     }
 
+    {
+        const auto crOpType = isCreateMode_
+            ? ChangeReasonDialog::OperationType::Create
+            : ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true,
+            isCreateMode_ ? "system" : "common");
+        if (!crSel) return;
+        scheme.change_commentary = crSel->commentary;
+    }
+
     QPointer<CodingSchemeDetailDialog> self = this;
 
     struct SaveResult { bool success; std::string message; };
@@ -284,6 +295,12 @@ void CodingSchemeDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     QPointer<CodingSchemeDetailDialog> self = this;
     QString code = ui_->codeEdit->text();

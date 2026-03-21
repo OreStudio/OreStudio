@@ -149,6 +149,7 @@ void SubjectAreaController::showAddWindow() {
 
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -197,6 +198,7 @@ void SubjectAreaController::showDetailWindow(
 
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -321,6 +323,7 @@ void SubjectAreaController::onOpenVersion(
 
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setSubjectArea(subject_area);
@@ -367,6 +370,7 @@ void SubjectAreaController::onRevertVersion(
                               << subject_area.version;
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setSubjectArea(subject_area);

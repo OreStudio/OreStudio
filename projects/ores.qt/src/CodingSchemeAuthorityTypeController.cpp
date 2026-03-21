@@ -143,6 +143,7 @@ void CodingSchemeAuthorityTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new authority type";
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -185,6 +186,7 @@ void CodingSchemeAuthorityTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << authorityType.code;
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -299,6 +301,7 @@ void CodingSchemeAuthorityTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setAuthorityType(authorityType);
@@ -344,6 +347,7 @@ void CodingSchemeAuthorityTypeController::onRevertVersion(
                               << authorityType.version;
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    // TODO: wire changeReasonCache_
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setAuthorityType(authorityType);

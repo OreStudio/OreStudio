@@ -26,6 +26,7 @@
 #include "ui_PartyStatusDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.refdata/messaging/party_status_protocol.hpp"
 
 namespace ores::qt {
@@ -180,6 +181,15 @@ void PartyStatusDetailDialog::onSaveClicked() {
 
     updateStatusFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    status_.change_reason_code = crSel->reason_code;
+    status_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving party status: " << status_.code;
 
     QPointer<PartyStatusDetailDialog> self = this;
@@ -246,6 +256,10 @@ void PartyStatusDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting party status: " << status_.code;
 

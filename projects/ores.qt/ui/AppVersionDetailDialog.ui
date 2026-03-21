@@ -31,41 +31,51 @@
          <property name="title"><string>Basic Information</string></property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
+           <widget class="QLabel" name="labelApp">
+            <property name="text"><string>App:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="appCombo">
+            <property name="toolTip"><string>Parent application for this version</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
            <widget class="QLabel" name="labelWrapperVersion">
             <property name="text"><string>Wrapper Version:</string></property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QLineEdit" name="codeEdit">
             <property name="placeholderText"><string>e.g. 1.0.0</string></property>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QLabel" name="labelEngineVersion">
             <property name="text"><string>Engine Version:</string></property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="2" column="1">
            <widget class="QLineEdit" name="nameEdit">
             <property name="placeholderText"><string>e.g. 1.2.3</string></property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QLabel" name="labelPlatform">
             <property name="text"><string>Platform:</string></property>
            </widget>
           </item>
-          <item row="2" column="1">
+          <item row="3" column="1">
            <widget class="QLineEdit" name="platformEdit">
             <property name="placeholderText"><string>e.g. linux-x86_64</string></property>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="labelMinRam">
             <property name="text"><string>Min RAM (MB):</string></property>
            </widget>
           </item>
-          <item row="3" column="1">
+          <item row="4" column="1">
            <widget class="QSpinBox" name="minRamSpinBox">
             <property name="minimum"><number>0</number></property>
             <property name="maximum"><number>1048576</number></property>
@@ -73,12 +83,12 @@
             <property name="value"><number>512</number></property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelPackageFile">
             <property name="text"><string>Package File:</string></property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="5" column="1">
            <layout class="QHBoxLayout" name="packageLayout">
             <item>
              <widget class="QLineEdit" name="packageFilePathEdit">
@@ -94,12 +104,12 @@
             </item>
            </layout>
           </item>
-          <item row="5" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="labelDescription">
             <property name="text"><string>Description:</string></property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="6" column="1">
            <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size><width>0</width><height>60</height></size>

@@ -21,9 +21,11 @@
 #define ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 
 #include <QString>
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.compute/domain/app.hpp"
 #include "ores.compute/domain/app_version.hpp"
 
 namespace Ui {
@@ -84,16 +86,24 @@ protected:
 private:
     void setupUi();
     void setupConnections();
+    void loadApps();
+    void populateAppCombo();
     void updateUiFromVersion();
     void updateVersionFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    struct AppEntry {
+        std::string id;   // UUID string
+        std::string name;
+    };
 
     Ui::AppVersionDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
     std::string httpBaseUrl_;
     compute::domain::app_version app_version_;
+    std::vector<AppEntry> appEntries_;
     QString selectedPackageFilePath_;
     bool createMode_{true};
     bool readOnly_{false};

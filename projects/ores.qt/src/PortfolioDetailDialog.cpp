@@ -31,7 +31,6 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 
@@ -185,10 +184,6 @@ void PortfolioDetailDialog::setUsername(const std::string& username) {
     username_ = username;
 }
 
-void PortfolioDetailDialog::setChangeReasonCache(ChangeReasonCache* cache) {
-    changeReasonCache_ = cache;
-}
-
 void PortfolioDetailDialog::setPortfolio(
     const refdata::domain::portfolio& portfolio) {
     portfolio_ = portfolio;
@@ -318,7 +313,7 @@ void PortfolioDetailDialog::onSaveClicked() {
     const auto crOpType = createMode_
         ? ChangeReasonDialog::OperationType::Create
         : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, hasChanges_,
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
         createMode_ ? "system" : "common");
     if (!crSel) return;
     portfolio_.change_reason_code = crSel->reason_code;
@@ -393,7 +388,7 @@ void PortfolioDetailDialog::onDeleteClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(changeReasonCache_,
+    const auto crSel = promptChangeReason(
         ChangeReasonDialog::OperationType::Delete, false);
     if (!crSel) return;
 

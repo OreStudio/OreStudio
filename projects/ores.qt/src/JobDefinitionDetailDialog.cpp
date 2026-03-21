@@ -31,7 +31,6 @@
 #include "ores.qt/CronExpressionWidget.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.scheduler/rfl/reflectors.hpp"
 #include "ores.scheduler/messaging/scheduler_protocol.hpp"
@@ -100,10 +99,6 @@ void JobDefinitionDetailDialog::setupConnections() {
 
 void JobDefinitionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
-}
-
-void JobDefinitionDetailDialog::setChangeReasonCache(ChangeReasonCache* cache) {
-    changeReasonCache_ = cache;
 }
 
 void JobDefinitionDetailDialog::setUsername(const std::string& username) {
@@ -217,7 +212,7 @@ void JobDefinitionDetailDialog::onSaveClicked() {
     const auto crOpType = createMode_
         ? ChangeReasonDialog::OperationType::Create
         : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, hasChanges_,
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
         createMode_ ? "system" : "common");
     if (!crSel) return;
     std::string change_reason_code = crSel->reason_code;
@@ -295,7 +290,7 @@ void JobDefinitionDetailDialog::onUnscheduleClicked() {
         return;
     }
 
-    const auto crSel = promptChangeReason(changeReasonCache_,
+    const auto crSel = promptChangeReason(
         ChangeReasonDialog::OperationType::Delete, false);
     if (!crSel) return;
     std::string change_reason_code = crSel->reason_code;

@@ -64,11 +64,10 @@ void DetailDialogBase::clearProvenance() {
 }
 
 std::optional<DetailDialogBase::change_reason_selection>
-DetailDialogBase::promptChangeReason(ChangeReasonCache* cache,
-                                     ChangeReasonDialog::OperationType opType,
+DetailDialogBase::promptChangeReason(ChangeReasonDialog::OperationType opType,
                                      bool isDirty,
                                      std::string_view category) {
-    if (!cache || !cache->isLoaded()) {
+    if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
         emit errorMessage(tr("Change reasons not loaded. Please try again."));
         return std::nullopt;
     }
@@ -77,13 +76,13 @@ DetailDialogBase::promptChangeReason(ChangeReasonCache* cache,
     std::vector<dq::domain::change_reason> reasons;
     switch (opType) {
         case ChangeReasonDialog::OperationType::Create:
-            reasons = cache->getReasonsForNew(cat);
+            reasons = changeReasonCache_->getReasonsForNew(cat);
             break;
         case ChangeReasonDialog::OperationType::Amend:
-            reasons = cache->getReasonsForAmend(cat);
+            reasons = changeReasonCache_->getReasonsForAmend(cat);
             break;
         case ChangeReasonDialog::OperationType::Delete:
-            reasons = cache->getReasonsForDelete(cat);
+            reasons = changeReasonCache_->getReasonsForDelete(cat);
             break;
     }
 

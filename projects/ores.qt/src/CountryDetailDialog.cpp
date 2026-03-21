@@ -34,7 +34,6 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/FlagSelectorDialog.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
@@ -48,7 +47,7 @@ CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     : DetailDialogBase(parent), ui_(new Ui::CountryDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false), flagChanged_(false),
       historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr), changeReasonCache_(nullptr),
+      clientManager_(nullptr), imageCache_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
       nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
@@ -191,10 +190,6 @@ void CountryDetailDialog::setImageCache(ImageCache* imageCache) {
     }
 }
 
-void CountryDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
-    changeReasonCache_ = changeReasonCache;
-}
-
 CountryDetailDialog::~CountryDetailDialog() {
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
@@ -293,7 +288,7 @@ void CountryDetailDialog::onSaveClicked() {
     const auto crOpType = isAddMode_
         ? ChangeReasonDialog::OperationType::Create
         : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, isDirty_,
+    const auto crSel = promptChangeReason(crOpType, isDirty_,
         isAddMode_ ? "system" : "common");
     if (!crSel) return;
     country.change_reason_code = crSel->reason_code;

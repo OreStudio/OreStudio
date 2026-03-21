@@ -29,7 +29,6 @@
 #include "ui_ReportDefinitionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
 #include "ores.reporting/messaging/report_type_protocol.hpp"
@@ -105,11 +104,6 @@ void ReportDefinitionDetailDialog::setClientManager(ClientManager* clientManager
 
 void ReportDefinitionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
-}
-
-void ReportDefinitionDetailDialog::setChangeReasonCache(
-    ChangeReasonCache* changeReasonCache) {
-    changeReasonCache_ = changeReasonCache;
 }
 
 void ReportDefinitionDetailDialog::setDefinition(
@@ -362,7 +356,7 @@ void ReportDefinitionDetailDialog::onSaveClicked() {
     const auto crOpType = createMode_
         ? ChangeReasonDialog::OperationType::Create
         : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, hasChanges_,
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
         createMode_ ? "system" : "common");
     if (!crSel) return;
     definition_.change_reason_code = crSel->reason_code;

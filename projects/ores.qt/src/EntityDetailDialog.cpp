@@ -43,7 +43,6 @@
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
@@ -59,7 +58,6 @@ EntityDetailDialog::EntityDetailDialog(
       ui_(new Ui::EntityDetailDialog),
       clientManager_(nullptr),
       imageCache_(nullptr),
-      changeReasonCache_(nullptr),
       identifierTable_(nullptr),
       identifierToolbar_(nullptr),
       contactTable_(nullptr),
@@ -224,10 +222,6 @@ void EntityDetailDialog::setImageCache(ImageCache* imageCache) {
     imageCache_ = imageCache;
     setup_flag_combo(this, ui_->businessCenterCombo, imageCache_,
                      FlagSource::BusinessCentre);
-}
-
-void EntityDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
-    changeReasonCache_ = changeReasonCache;
 }
 
 void EntityDetailDialog::setUsername(const std::string& username) {
@@ -1164,7 +1158,7 @@ void EntityDetailDialog::onSaveClicked() {
     const auto crOpType = createMode_
         ? ChangeReasonDialog::OperationType::Create
         : ChangeReasonDialog::OperationType::Amend;
-    const auto crSel = promptChangeReason(changeReasonCache_, crOpType, hasChanges_,
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
         createMode_ ? "system" : "common");
     if (!crSel) return;
     entity_.change_reason_code = crSel->reason_code;

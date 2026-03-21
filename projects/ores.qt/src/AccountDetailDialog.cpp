@@ -18,7 +18,6 @@
  *
  */
 #include "ores.qt/AccountDetailDialog.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/PasswordMatchIndicator.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
@@ -171,10 +170,6 @@ void AccountDetailDialog::setClientManager(ClientManager* clientManager) {
     if (partiesWidget_) {
         partiesWidget_->setClientManager(clientManager);
     }
-}
-
-void AccountDetailDialog::setChangeReasonCache(ChangeReasonCache* cache) {
-    changeReasonCache_ = cache;
 }
 
 void AccountDetailDialog::setUsername(const std::string& username) {
@@ -553,7 +548,7 @@ void AccountDetailDialog::onSaveClicked() {
         std::string changeReasonCode;
         std::string changeCommentary;
         if (needsPartySave || needsRoleSave) {
-            const auto crSel = promptChangeReason(changeReasonCache_,
+            const auto crSel = promptChangeReason(
                 ChangeReasonDialog::OperationType::Amend, true, "common");
             if (!crSel) return;
             changeReasonCode = crSel->reason_code;

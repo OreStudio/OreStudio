@@ -90,6 +90,15 @@ public:
      */
     bool isCloseConfirmed() const { return closeConfirmed_; }
 
+    /**
+     * @brief Inject the shared change reason cache.
+     *
+     * Controllers call this immediately after constructing any detail dialog.
+     * Once set, derived classes can call promptChangeReason() without passing
+     * the cache explicitly.
+     */
+    void setChangeReasonCache(ChangeReasonCache* cache) { changeReasonCache_ = cache; }
+
 signals:
     /**
      * @brief Emitted when the dialog wants to close its container window.
@@ -192,34 +201,35 @@ protected:
      * @brief Show the change reason dialog and return the user's selection.
      *
      * Handles all three operation types (Create, Amend, Delete) uniformly.
-     * Returns std::nullopt if the cache is not ready, no reasons are
-     * available, or the user cancels the dialog.
+     * Uses the cache injected via setChangeReasonCache(). Returns std::nullopt
+     * if the cache is not ready, no reasons are available, or the user cancels.
      *
      * Usage in onSaveClicked():
      * @code
-     * const auto opType = isAddMode_
+     * const auto opType = createMode_
      *     ? ChangeReasonDialog::OperationType::Create
      *     : ChangeReasonDialog::OperationType::Amend;
-     * const auto sel = promptChangeReason(changeReasonCache_, opType, isDirty_);
+     * const auto sel = promptChangeReason(opType, hasChanges_,
+     *     createMode_ ? "system" : "common");
      * if (!sel) return;
-     * // use sel->reason_code and sel->commentary
+     * entity_.change_reason_code = sel->reason_code;
+     * entity_.change_commentary  = sel->commentary;
      * @endcode
      *
-     * @param cache     The shared cache to load reasons from.
      * @param opType    Create, Amend, or Delete.
      * @param isDirty   Whether any fields have been modified (used by Amend
      *                  to enable/disable the non-material-update reason).
-     * @param category  Category code to filter reasons (default: "common";
-     *                  use "system" for Create to get new-record reasons).
+     * @param category  Category code to filter reasons (default: "system" for
+     *                  Create; use "common" for Amend/Delete).
      */
     std::optional<change_reason_selection>
-    promptChangeReason(ChangeReasonCache* cache,
-                       ChangeReasonDialog::OperationType opType,
+    promptChangeReason(ChangeReasonDialog::OperationType opType,
                        bool isDirty,
                        std::string_view category = "system");
 
 private:
     bool closeConfirmed_ = false;
+    ChangeReasonCache* changeReasonCache_ = nullptr;
 };
 
 }

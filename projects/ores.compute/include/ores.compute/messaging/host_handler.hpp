@@ -46,6 +46,7 @@ inline auto& host_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::error_reply;
 using namespace ores::logging;
 
 class host_handler {
@@ -58,8 +59,13 @@ public:
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(host_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         service::host_service svc(ctx);
         list_hosts_response resp;
         try {
@@ -77,8 +83,13 @@ public:
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(host_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<save_host_request>(msg)) {
             try {
                 service::host_service svc(ctx);
@@ -100,8 +111,13 @@ public:
     void remove(ores::nats::message msg) {
         BOOST_LOG_SEV(host_handler_lg(), debug)
             << "Handling " << msg.subject;
-        const auto ctx = ores::service::service::make_request_context(
+        auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<delete_host_request>(msg)) {
             try {
                 service::host_service svc(ctx);

@@ -21,11 +21,12 @@
 -- =============================================================================
 -- Row-Level Security Policies for Compute Grid Tables
 -- =============================================================================
--- All compute grid tables are tenant-scoped. RLS enforces tenant isolation
--- so that each tenant can only see and modify their own rows.
+-- Apps and app versions are system-owned global registries: readable by all
+-- tenants, writable only by the current tenant (system admin writes them).
+-- Hosts, batches, workunits, and results are strictly tenant-scoped.
 
 -- -----------------------------------------------------------------------------
--- Apps
+-- Apps (global registry — system tenant records visible to all tenants)
 -- -----------------------------------------------------------------------------
 alter table ores_compute_apps_tbl enable row level security;
 
@@ -33,13 +34,14 @@ create policy ores_compute_apps_tenant_isolation_policy
 on ores_compute_apps_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_iam_system_tenant_id_fn()  -- system apps visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
--- App Versions
+-- App Versions (global registry — system tenant records visible to all tenants)
 -- -----------------------------------------------------------------------------
 alter table ores_compute_app_versions_tbl enable row level security;
 
@@ -47,6 +49,7 @@ create policy ores_compute_app_versions_tenant_isolation_policy
 on ores_compute_app_versions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_iam_system_tenant_id_fn()  -- system app versions visible to all
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()

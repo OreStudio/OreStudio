@@ -48,7 +48,6 @@ void variability_routes::register_routes(std::shared_ptr<http::net::router> rout
         .description("Retrieve all system settings")
         .tags({"system-settings"})
         .auth_required()
-        .response<variability::messaging::list_settings_response>()
         .handler([this](const http_request& req) { return handle_list_system_settings(req); });
     router->add_route(list_settings.build());
     registry->register_route(list_settings.build());

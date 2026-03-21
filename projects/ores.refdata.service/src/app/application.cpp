@@ -64,6 +64,9 @@ application::application() = default;
 
 namespace {
 
+constexpr std::string_view service_name = "ores.refdata.service";
+constexpr std::string_view service_version = "1.0";
+
 auto& pub_lg() {
     static auto instance = make_logger("ores.refdata.service.app");
     return instance;
@@ -145,7 +148,7 @@ application::run(boost::asio::io_context& io_ctx,
         },
         [&nats](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
-                "ores.refdata.service", "1.0", nats);
+                std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc,
                 [hb]() { return hb->run(); },
                 boost::asio::detached);

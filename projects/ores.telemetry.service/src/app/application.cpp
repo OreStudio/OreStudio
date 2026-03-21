@@ -35,6 +35,11 @@ namespace ores::telemetry::service::app {
 
 using namespace ores::logging;
 
+namespace {
+constexpr std::string_view service_name = "ores.telemetry.service";
+constexpr std::string_view service_version = "1.0";
+}
+
 ores::database::context application::make_context(
     const ores::database::database_options& db_opts) {
     using ores::database::context_factory;
@@ -88,7 +93,7 @@ application::run(boost::asio::io_context& io_ctx,
                     boost::asio::detached);
             }
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
-                "ores.telemetry.service", "1.0", nats);
+                std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc,
                 [hb]() { return hb->run(); },
                 boost::asio::detached);

@@ -20,7 +20,6 @@
 #ifndef ORES_SERVICE_SERVICE_HEARTBEAT_PUBLISHER_HPP
 #define ORES_SERVICE_SERVICE_HEARTBEAT_PUBLISHER_HPP
 
-#include <algorithm>
 #include <string>
 #include <cstdint>
 #include <boost/asio/awaitable.hpp>
@@ -116,9 +115,9 @@ private:
             hb.version = version_;
 
             const auto json = rfl::json::write(hb);
-            std::vector<std::byte> data(json.size());
-            std::transform(json.begin(), json.end(), data.begin(),
-                [](char c) { return std::byte(c); });
+            std::vector<std::byte> data(
+                reinterpret_cast<const std::byte*>(json.data()),
+                reinterpret_cast<const std::byte*>(json.data() + json.size()));
             nats_.publish(
                 telemetry::messaging::service_heartbeat_message::nats_subject,
                 std::move(data));

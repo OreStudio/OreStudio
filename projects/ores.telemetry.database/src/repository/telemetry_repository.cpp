@@ -20,7 +20,7 @@
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 #include <format>
-#include <unordered_map>
+#include <map>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/helpers.hpp"
@@ -640,17 +640,17 @@ telemetry_repository::list_service_samples(context ctx) {
     ensure_success(r, lg());
 
     // Keep only the most recent row per (service_name, instance_id).
-    std::unordered_map<std::string, domain::service_sample> seen;
+    // Rows are ordered by sampled_at desc so try_emplace keeps the first seen.
+    std::map<std::pair<std::string, std::string>, domain::service_sample> latest;
     for (const auto& entity : *r) {
-        const auto key = entity.service_name.value() + "|"
-            + entity.instance_id.value();
-        if (!seen.contains(key))
-            seen.emplace(key, telemetry_mapper::to_domain(entity));
+        latest.try_emplace(
+            {entity.service_name.value(), entity.instance_id.value()},
+            telemetry_mapper::to_domain(entity));
     }
 
     std::vector<domain::service_sample> result;
-    result.reserve(seen.size());
-    for (auto& [_, sample] : seen)
+    result.reserve(latest.size());
+    for (auto& [_, sample] : latest)
         result.push_back(std::move(sample));
 
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()

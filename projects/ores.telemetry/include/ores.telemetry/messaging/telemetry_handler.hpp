@@ -144,6 +144,8 @@ public:
                 resp.samples = repo.list_service_samples(ctx);
                 resp.success = true;
             } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to list service samples: " << e.what();
                 resp.success = false;
                 resp.message = e.what();
             }

@@ -187,7 +187,7 @@ void PublicationHistoryDialog::refresh() {
             // Empty dataset_id (nil UUID) = get recent publications across all datasets
             request.limit = 100;
 
-            auto result = clientManager_->process_request(std::move(request));
+            auto result = clientManager_->process_authenticated_request(std::move(request));
             if (result) {
                 return FetchResult{
                     .success = true,

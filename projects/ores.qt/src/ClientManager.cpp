@@ -44,7 +44,7 @@ ClientManager::ClientManager(std::shared_ptr<eventing::service::event_bus> event
     BOOST_LOG_SEV(lg(), debug) << "ClientManager created";
     refresh_timer_ = new QTimer(this);
     refresh_timer_->setSingleShot(true);
-    connect(refresh_timer_, &QTimer::timeout, this, &ClientManager::onRefreshTimer);
+    QObject::connect(refresh_timer_, &QTimer::timeout, this, &ClientManager::onRefreshTimer);
 }
 
 ClientManager::~ClientManager() {

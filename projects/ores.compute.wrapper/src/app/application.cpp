@@ -426,7 +426,7 @@ void extract_tar_gz(const fs::path& archive_path, const fs::path& dest_dir) {
     archive_write_disk_set_standard_lookup(out);
 
     const int open_rc = archive_read_open_filename(
-        a, archive_path.c_str(), 16384);
+        a, archive_path.string().c_str(), 16384);
     if (open_rc != ARCHIVE_OK) {
         archive_read_free(a);
         archive_write_free(out);

@@ -350,6 +350,7 @@ public:
             }
             return std::move(*result);
         } catch (const shell::service::session_expired_error& e) {
+            using namespace ores::logging;
             BOOST_LOG_SEV(lg(), warn)
                 << "Session expired: " << e.what();
             QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);

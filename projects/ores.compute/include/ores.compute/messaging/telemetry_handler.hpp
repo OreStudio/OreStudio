@@ -154,10 +154,8 @@ public:
 
         try {
             domain::node_sample s;
-            s.sampled_at = std::chrono::system_clock::now();
-            s.tenant_id  = utility::uuid::tenant_id::from_string(
-                parsed->tenant_id).value();
-            s.host_id = boost::lexical_cast<boost::uuids::uuid>(
+            s.sampled_at           = std::chrono::system_clock::now();
+            s.host_id              = boost::lexical_cast<boost::uuids::uuid>(
                 parsed->host_id);
             s.tasks_completed      = parsed->tasks_completed;
             s.tasks_failed         = parsed->tasks_failed;
@@ -168,11 +166,21 @@ public:
             s.output_bytes_uploaded = parsed->output_bytes_uploaded;
             s.seconds_since_hb     = parsed->seconds_since_hb;
 
-            // Use system tenant context for the write; the tenant_id is
-            // embedded in the sample itself.
             repository::compute_telemetry_repository repo;
-            auto write_ctx = ctx_.with_tenant(s.tenant_id, "telemetry_handler");
-            repo.insert_node_sample(write_ctx, s);
+
+            // The wrapper's --tenant-id is a NATS routing label (e.g.
+            // "ores.dev.local1"), not a database UUID.  Attempt to parse it as
+            // a UUID; if that fails, fall back to the service's own context.
+            const auto tid = utility::uuid::tenant_id::from_string(
+                parsed->tenant_id);
+            if (tid) {
+                s.tenant_id = *tid;
+                auto write_ctx = ctx_.with_tenant(*tid, "telemetry_handler");
+                repo.insert_node_sample(write_ctx, s);
+            } else {
+                s.tenant_id = ctx_.tenant_id();
+                repo.insert_node_sample(ctx_, s);
+            }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(telemetry_handler_lg(), error)
                 << "Failed to persist node sample: " << e.what();

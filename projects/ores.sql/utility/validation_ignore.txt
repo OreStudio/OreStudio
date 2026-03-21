@@ -107,6 +107,7 @@ TENANT_002 ores_iam_login_info_tbl
 # =============================================================================
 TENANT_002 ores_iam_sessions_tbl
 TENANT_002 ores_iam_session_samples_tbl
+TENANT_002 ores_iam_auth_events_tbl
 TENANT_002 ores_telemetry_logs_tbl
 
 # =============================================================================

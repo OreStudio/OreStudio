@@ -24,7 +24,6 @@
 #include <atomic>
 #include <chrono>
 #include <csignal>
-#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -32,6 +31,9 @@
 #include <thread>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/process/v2/environment.hpp>
+#include <boost/process/v2/process.hpp>
 #include <rfl/json.hpp>
 #include "ores.utility/version/version.hpp"
 #include "ores.nats/service/client.hpp"
@@ -246,10 +248,20 @@ void process_assignment(ores::nats::service::client& nats,
                 pkg_archive);
 
             fs::create_directories(pkg_cache_dir);
-            const auto tar_cmd = "tar -xzf " + pkg_archive.string() +
-                " -C " + pkg_cache_dir.string();
-            if (std::system(tar_cmd.c_str()) != 0) // NOLINT(cert-env33-c)
-                throw std::runtime_error("Failed to unpack: " + pkg_archive.string());
+            {
+                namespace bp2 = boost::process::v2;
+                boost::asio::io_context proc_ioc;
+                const std::vector<std::string> tar_args{
+                    "-xzf", pkg_archive.string(),
+                    "-C", pkg_cache_dir.string()};
+                bp2::process tar_proc(
+                    boost::asio::any_io_executor(proc_ioc.get_executor()),
+                    bp2::environment::find_executable("tar"), tar_args);
+                tar_proc.wait();
+                if (tar_proc.exit_code() != 0)
+                    throw std::runtime_error(
+                        "Failed to unpack: " + pkg_archive.string());
+            }
         }
 
         const auto mf = read_manifest(pkg_cache_dir);
@@ -267,20 +279,19 @@ void process_assignment(ores::nats::service::client& nats,
         net::http_client::download(make_url(cfg.http_base_url, evt.input_uri), input_path);
         net::http_client::download(make_url(cfg.http_base_url, evt.config_uri), config_path);
 
-        // 3. Spawn engine — build a shell command from the manifest args
+        // 3. Spawn engine using Boost.Process to avoid shell injection.
         const fs::path exe = pkg_cache_dir / mf.executable;
         const auto args = substitute_args(mf.args,
             input_path.string(), config_path.string(), output_path.string());
 
-        // Build the full command string (simple shell invocation)
-        std::string cmd = exe.string();
-        for (const auto& arg : args) {
-            cmd += ' ';
-            cmd += arg; // simple quoting: relies on paths without spaces
-        }
-
-        BOOST_LOG_SEV(lg, info) << "Launching engine: " << cmd;
-        const int exit_code = std::system(cmd.c_str()); // NOLINT(cert-env33-c)
+        BOOST_LOG_SEV(lg, info) << "Launching engine: " << exe.string();
+        namespace bp2 = boost::process::v2;
+        boost::asio::io_context proc_ioc;
+        bp2::process engine_proc(
+            boost::asio::any_io_executor(proc_ioc.get_executor()),
+            boost::filesystem::path(exe.string()), args);
+        engine_proc.wait();
+        const int exit_code = engine_proc.exit_code();
 
         if (exit_code != 0) {
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;

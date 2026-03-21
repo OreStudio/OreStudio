@@ -19,6 +19,7 @@
  */
 #include "ores.compute/domain/workunit_table.hpp"
 
+#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -28,12 +29,23 @@ std::string convert_to_table(const std::vector<workunit>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header
+          << "ID" << "Batch ID" << "App Version ID" << "Input URI"
+          << "Config URI" << "Priority" << "Target Redundancy"
+          << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& wu : v) {
-        table << fort::endr;
+        table << boost::uuids::to_string(wu.id)
+              << boost::uuids::to_string(wu.batch_id)
+              << boost::uuids::to_string(wu.app_version_id)
+              << wu.input_uri << wu.config_uri
+              << wu.priority << wu.target_redundancy
+              << wu.modified_by << wu.recorded_at << fort::endr;
     }
-    return table.to_string();
+
+    std::ostringstream ss;
+    ss << std::endl << table.to_string() << std::endl;
+    return ss.str();
 }
 
 }

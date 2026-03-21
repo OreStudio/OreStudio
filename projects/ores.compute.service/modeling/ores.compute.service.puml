@@ -28,8 +28,7 @@ namespace ores #F2F2F2 {
             namespace app #F2F2F2 {
                 class application {
                     + run(io_ctx: io_context&, cfg: options): awaitable<void>
-                    - dispatch_pending(): void
-                    - reap_stale_results(): void
+                    - make_context(db_opts: database_options): context
                 }
             }
 
@@ -59,8 +58,9 @@ namespace ores #F2F2F2 {
                     + handle_submit(req): response
                 }
                 class work_handler {
-                    + handle_dispatch(): void
-                    + handle_heartbeat(msg): void
+                    + pull(msg): void
+                    + heartbeat(msg): void
+                    + reap(msg): void
                 }
                 class registrar {
                     + register_all(nats: client&, db: context&): void
@@ -69,11 +69,9 @@ namespace ores #F2F2F2 {
 
             namespace config #F2F2F2 {
                 class options {
+                    + logging: optional<logging_options>
                     + nats: nats_options
-                    + database: db_options
-                    + heartbeat_timeout_seconds: uint32_t
-                    + dispatch_interval_seconds: uint32_t
-                    + reaper_interval_seconds: uint32_t
+                    + database: database_options
                 }
                 class parser {
                     + {static} parse(argc: int, argv: char**): options

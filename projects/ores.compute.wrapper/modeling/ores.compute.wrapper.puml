@@ -39,17 +39,7 @@ namespace ores #F2F2F2 {
             }
 
             namespace app #F2F2F2 {
-                class heartbeat_sender {
-                    + start(): void
-                    + stop(): void
-                    - run(): void
-                    - send_heartbeat(): void
-                    - nats_: client&
-                    - host_id_: string
-                    - interval_: uint32_t
-                    - stop_: atomic<bool>
-                    - thread_: thread
-                }
+                note "heartbeat_sender is an anonymous-namespace\nhelper class inside application.cpp" as N1
                 class application {
                     + run(io_ctx: io_context&, cfg: options): awaitable<void>
                 }
@@ -70,7 +60,6 @@ namespace ores #F2F2F2 {
             }
 
             app::application --> net::http_client : uses
-            app::application --> app::heartbeat_sender : creates
             app::application --> config::options : configured by
             config::parser ..> config::options : creates
         }

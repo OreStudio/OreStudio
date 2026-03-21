@@ -55,6 +55,7 @@ public:
      * @brief Type of operation requiring a change reason.
      */
     enum class OperationType {
+        Create,  ///< Creating a new entity
         Amend,   ///< Updating an existing entity
         Delete   ///< Deleting an entity
     };
@@ -62,11 +63,12 @@ public:
     /**
      * @brief Construct the dialog.
      *
-     * @param reasons List of applicable change reasons
-     * @param operation Type of operation (Amend or Delete)
+     * @param reasons List of applicable change reasons (from ChangeReasonCache)
+     * @param operation Type of operation (Create, Amend or Delete)
      * @param hasFieldChanges True if any entity fields have been modified. When false,
      *        this is a "touch" operation and only "common.non_material_update" is valid.
      *        When true, "common.non_material_update" is disabled.
+     *        Ignored for Create operations (all reasons are always enabled).
      * @param parent Parent widget
      */
     explicit ChangeReasonDialog(

@@ -215,6 +215,24 @@ void ChangeReasonCache::onNotificationReceived(const QString& eventType,
     }
 }
 
+std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForNew(
+    const std::string& category_code) const {
+
+    std::vector<dq::domain::change_reason> result;
+    for (const auto& reason : reasons_) {
+        if (reason.applies_to_new && reason.category_code == category_code) {
+            result.push_back(reason);
+        }
+    }
+
+    std::sort(result.begin(), result.end(),
+        [](const auto& a, const auto& b) {
+            return a.display_order < b.display_order;
+        });
+
+    return result;
+}
+
 std::vector<dq::domain::change_reason> ChangeReasonCache::getReasonsForAmend(
     const std::string& category_code) const {
 

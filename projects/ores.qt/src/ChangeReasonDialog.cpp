@@ -62,9 +62,15 @@ ChangeReasonDialog::ChangeReasonDialog(
 
 void ChangeReasonDialog::setupUi() {
     WidgetUtils::setupComboBoxes(this);
-    const QString title = (operation_ == OperationType::Amend)
-        ? tr("Change Reason Required")
-        : tr("Deletion Reason Required");
+
+    QString title;
+    if (operation_ == OperationType::Create) {
+        title = tr("New Record Reason");
+    } else if (operation_ == OperationType::Amend) {
+        title = tr("Change Reason Required");
+    } else {
+        title = tr("Deletion Reason Required");
+    }
     setWindowTitle(title);
     setMinimumWidth(450);
 
@@ -72,7 +78,9 @@ void ChangeReasonDialog::setupUi() {
 
     // Header label
     auto* headerLabel = new QLabel(this);
-    if (operation_ == OperationType::Amend) {
+    if (operation_ == OperationType::Create) {
+        headerLabel->setText(tr("Please select a reason for creating this record:"));
+    } else if (operation_ == OperationType::Amend) {
         headerLabel->setText(tr("Please select a reason for this change:"));
     } else {
         headerLabel->setText(tr("Please select a reason for this deletion:"));
@@ -87,34 +95,33 @@ void ChangeReasonDialog::setupUi() {
     reasonCombo_ = new QComboBox(this);
     reasonCombo_->setMinimumWidth(300);
 
-    // The touch reason code - only valid when no fields have changed
+    // The touch reason code — only relevant for Amend (touch vs. material change)
     static const std::string touchReasonCode{reason::codes::non_material_update};
 
     for (std::size_t i = 0; i < reasons_.size(); ++i) {
-        const auto& reason = reasons_[i];
-        QString displayText = QString::fromStdString(reason.code);
-        reasonCombo_->addItem(displayText, QString::fromStdString(reason.code));
+        const auto& r = reasons_[i];
+        reasonCombo_->addItem(QString::fromStdString(r.code),
+                              QString::fromStdString(r.code));
 
-        // Get the model to enable/disable items
         auto* model = qobject_cast<QStandardItemModel*>(reasonCombo_->model());
         if (model) {
             QStandardItem* item = model->item(static_cast<int>(i));
             if (item) {
-                bool isTouchReason = (reason.code == touchReasonCode);
-
-                // Touch reason is only valid when no fields changed
-                // Other reasons are only valid when fields have changed
-                if (hasFieldChanges_) {
-                    // Fields changed: disable touch, enable others
-                    item->setEnabled(!isTouchReason);
-                    if (isTouchReason) {
-                        item->setToolTip(tr("Not available when fields have been modified"));
-                    }
+                if (operation_ == OperationType::Create) {
+                    // For Create all reasons are always enabled
+                    item->setEnabled(true);
                 } else {
-                    // No fields changed (touch operation): only enable touch
-                    item->setEnabled(isTouchReason);
-                    if (!isTouchReason) {
-                        item->setToolTip(tr("Only available when fields have been modified"));
+                    bool isTouchReason = (r.code == touchReasonCode);
+                    if (hasFieldChanges_) {
+                        item->setEnabled(!isTouchReason);
+                        if (isTouchReason)
+                            item->setToolTip(
+                                tr("Not available when fields have been modified"));
+                    } else {
+                        item->setEnabled(isTouchReason);
+                        if (!isTouchReason)
+                            item->setToolTip(
+                                tr("Only available when fields have been modified"));
                     }
                 }
             }
@@ -157,9 +164,13 @@ void ChangeReasonDialog::setupUi() {
     buttonBox_ = new QDialogButtonBox(
         QDialogButtonBox::Save | QDialogButtonBox::Cancel, this);
     saveButton_ = buttonBox_->button(QDialogButtonBox::Save);
-    saveButton_->setText(operation_ == OperationType::Amend
-        ? tr("Save")
-        : tr("Confirm Delete"));
+    if (operation_ == OperationType::Create) {
+        saveButton_->setText(tr("Create"));
+    } else if (operation_ == OperationType::Amend) {
+        saveButton_->setText(tr("Save"));
+    } else {
+        saveButton_->setText(tr("Confirm Delete"));
+    }
 
     mainLayout->addWidget(buttonBox_);
 

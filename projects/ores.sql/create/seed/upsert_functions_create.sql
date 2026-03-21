@@ -351,6 +351,7 @@ create or replace function ores_dq_change_reasons_upsert_fn(
     p_code text,
     p_description text,
     p_category_code text,
+    p_applies_to_new boolean,
     p_applies_to_amend boolean,
     p_applies_to_delete boolean,
     p_requires_commentary boolean,
@@ -361,12 +362,12 @@ begin
 
     insert into ores_dq_change_reasons_tbl (
         tenant_id, code, description, category_code,
-        applies_to_amend, applies_to_delete, requires_commentary, display_order,
+        applies_to_new, applies_to_amend, applies_to_delete, requires_commentary, display_order,
         modified_by, performed_by, change_commentary, valid_from, valid_to
     )
     values (
         p_tenant_id, p_code, p_description, p_category_code,
-        p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
+        p_applies_to_new, p_applies_to_amend, p_applies_to_delete, p_requires_commentary, p_display_order,
         current_user, current_user, 'System seed data - standard regulatory taxonomy',
         current_timestamp, ores_utility_infinity_timestamp_fn()
     )

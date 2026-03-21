@@ -1,0 +1,541 @@
+:PROPERTIES:
+:ID: 7a4e9c1b-3f2d-4e8a-b6d5-0c1e2f3a4b5c
+:END:
+#+title: Compute Grid End-to-End Improvements
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+This plan covers the improvements needed to make the compute grid fully
+functional for end-to-end testing. The work falls into eight areas, ordered by
+dependency.
+
+** Goals
+
+- Complete the eventing pipeline for workunit and result entities so that list
+  windows mark themselves stale on server-side changes.
+- Ensure UUIDs are generated correctly for all new compute entities.
+- Make the change reason dialog symmetric: shown for all operation types (create,
+  amend, delete), driven by data, with no code duplication across dialogs.
+- Add a platforms junction table for app versions.
+- Add combo boxes for app selection in app_version dialogs and batch/app_version
+  selection in workunit dialogs.
+- Provide SQL scripts to seed the ORE application and its standard platform
+  entries.
+
+** Scope
+
+All work is confined to: ~ores.compute~, ~ores.compute.service~, ~ores.qt~,
+~ores.dq~, and ~ores.sql~.
+
+* Area 1: Complete Eventing for Workunit and Result
+
+** Problem
+
+~WorkunitController~ and ~ResultController~ pass ~std::string_view{}~ (empty)
+to ~EntityController~, so they never subscribe to change notifications. List
+windows therefore never mark themselves stale and users must manually reload.
+
+The DB notification triggers already exist:
+- ~compute_workunits_notify_trigger_create.sql~
+- ~compute_results_notify_trigger_create.sql~
+
+The missing pieces are: event type structs, registration in the service
+application, and controller subscriptions.
+
+Note: ~app~, ~app_version~, and ~batch~ already have full eventing and require
+no changes.
+
+** Changes required
+
+*** 1a. Create event type headers
+
+Create two new files following the pattern in
+~ores.compute/include/ores.compute/eventing/app_changed_event.hpp~:
+
+- ~projects/ores.compute/include/ores.compute/eventing/workunit_changed_event.hpp~
+  - Event name: ~"ores.compute.workunit_changed"~
+  - DB channel: ~"ores_compute_workunits"~
+- ~projects/ores.compute/include/ores.compute/eventing/result_changed_event.hpp~
+  - Event name: ~"ores.compute.result_changed"~
+  - DB channel: ~"ores_compute_results"~
+
+Each struct contains: ~timestamp~, ~ids~, ~tenant_id~.
+
+*** 1b. Register in application.cpp
+
+In ~projects/ores.compute.service/src/app/application.cpp~, add to the event
+pipeline (after the three existing registrations):
+
+#+begin_src cpp
+ev::service::registrar::register_mapping<cev::workunit_changed_event>(
+    *postgres_event_source, "ores_compute_workunits");
+ev::service::registrar::register_mapping<cev::result_changed_event>(
+    *postgres_event_source, "ores_compute_results");
+
+event_bus.subscribe<cev::workunit_changed_event>(
+    [&nats](const auto& e) {
+        publish_entity_change(nats, "ores.compute.workunit_changed", e);
+    });
+event_bus.subscribe<cev::result_changed_event>(
+    [&nats](const auto& e) {
+        publish_entity_change(nats, "ores.compute.result_changed", e);
+    });
+#+end_src
+
+*** 1c. Update Qt controllers
+
+In ~WorkunitController.cpp~ and ~ResultController.cpp~, add the include:
+
+#+begin_src cpp
+#include "ores.eventing/domain/event_traits.hpp"
+#include "ores.compute/eventing/workunit_changed_event.hpp"  // or result
+#+end_src
+
+And pass the event name to ~EntityController~:
+
+#+begin_src cpp
+constexpr auto workunit_event_name =
+    eventing::domain::event_traits<
+        compute::eventing::workunit_changed_event>::name;
+
+WorkunitController::WorkunitController(...)
+    : EntityController(mainWindow, mdiArea, clientManager, username,
+          workunit_event_name, parent), ...
+#+end_src
+
+Override ~listWindow()~ in the controller headers to return the list window
+pointer.
+
+** Commit
+
+~[compute] Add eventing for workunit and result entities~
+
+* Area 2: Fix UUID Generation
+
+** Problem
+
+App versions (and possibly batches, workunits) are created with all-zeros UUIDs
+because the Qt detail dialogs send an empty ~boost::uuids::uuid{}~ instead of a
+random UUID.
+
+** Changes required
+
+In each detail dialog's ~onSaveClicked()~ (or wherever the domain object is
+constructed for the save request), check if the UUID is nil and generate one if
+so:
+
+#+begin_src cpp
+#include <boost/uuid/random_generator.hpp>
+
+// When constructing a new entity (isAddMode_):
+if (entity.id.is_nil())
+    entity.id = boost::uuids::random_generator{}();
+#+end_src
+
+Files to check and fix:
+- ~AppVersionDetailDialog.cpp~
+- ~BatchDetailDialog.cpp~
+- ~WorkunitDetailDialog.cpp~
+- ~AppDetailDialog.cpp~ (verify)
+
+Alternatively, the server-side ~stamp()~ function could generate missing UUIDs.
+Check whether the handlers call ~stamp()~ before insert and whether ~stamp()~
+already handles nil UUIDs. If not, add UUID generation there so the fix is
+centralised.
+
+** Commit
+
+~[compute] Fix UUID generation for new compute entities~
+
+* Area 3: Symmetric Change Reasons
+
+** Problem
+
+The current design is inconsistent across dialogs and operation types:
+
+- Change reasons are only shown for amend and delete; new records silently
+  default to ~system.new_record~ (hardcoded).
+- The ~change_reason~ domain type has ~applies_to_amend~ and ~applies_to_delete~
+  booleans but no ~applies_to_new~, so there is no data-driven way to determine
+  which reasons apply to create operations.
+- The change reason prompt is copy-pasted into every detail dialog's
+  ~onSaveClicked()~, leading to drift and duplication across all entities.
+
+** Design
+
+The solution has three layers:
+
+1. *Data model*: add ~applies_to_new~ to the ~change_reason~ domain type and
+   SQL schema, seed ~system.new_record~ and ~system.initial_load~ with
+   ~applies_to_new = true~.
+2. *Cache*: add ~getReasonsForNew(category_code)~ to ~ChangeReasonCache~,
+   matching the existing ~getReasonsForAmend~ / ~getReasonsForDelete~ pattern.
+3. *UI centralisation*: add ~promptChangeReason()~ to ~DetailDialogBase~ as a
+   single protected helper that encapsulates the entire dialog flow for all
+   three operation types. Every detail dialog calls this one method; no
+   duplication.
+
+*** 3a. Add ~applies_to_new~ to the domain type
+
+In ~projects/ores.dq/include/ores.dq/domain/change_reason.hpp~:
+
+#+begin_src cpp
+bool applies_to_new    = false;  // add alongside applies_to_amend / applies_to_delete
+bool applies_to_amend  = true;
+bool applies_to_delete = true;
+#+end_src
+
+*** 3b. Update the SQL schema
+
+In ~projects/ores.sql/create/dq/dq_change_reasons_create.sql~, add the column:
+
+#+begin_src sql
+applies_to_new     boolean not null default false,
+#+end_src
+
+*** 3c. Update the seed data
+
+In ~projects/ores.sql/populate/dq/dq_change_reasons_populate.sql~, set
+~applies_to_new = true~ for the relevant system reasons:
+
+| Code                         | applies_to_new |
+|------------------------------+----------------|
+| ~system.new_record~          | true           |
+| ~system.initial_load~        | true           |
+| ~system.external_data_import~| false          |
+| ~system.import~              | false          |
+| (all common/trade reasons)   | false          |
+
+*** 3d. Update the messaging protocol
+
+Add ~applies_to_new~ to ~get_change_reasons_response~ (and the corresponding
+~change_reason~ message type) so the Qt client receives the new field.
+
+*** 3e. Add ~getReasonsForNew~ to ~ChangeReasonCache~
+
+In ~ChangeReasonCache.hpp~ / ~ChangeReasonCache.cpp~, add:
+
+#+begin_src cpp
+// Returns reasons where applies_to_new == true for the given category,
+// sorted by display_order.
+std::vector<dq::domain::change_reason>
+getReasonsForNew(const std::string& category_code) const;
+#+end_src
+
+Implementation mirrors ~getReasonsForAmend~, filtering on ~applies_to_new~.
+
+*** 3f. Extend ~ChangeReasonDialog~
+
+Add ~OperationType::Create~ to the enum:
+
+#+begin_src cpp
+enum class OperationType { Amend, Delete, Create };
+#+end_src
+
+The ~Create~ variant behaves identically to ~Amend~ — it shows a combo box of
+reasons (populated from the ~getReasonsForNew~ list) and an optional/required
+commentary textarea. The dialog title changes to "Creating New Record". No
+hardcoded strings; the reason list is fully data-driven.
+
+*** 3g. Centralise in ~DetailDialogBase::promptChangeReason~
+
+Add a protected helper to ~DetailDialogBase~ that owns the entire change reason
+flow. All detail dialogs call this one method instead of duplicating the logic.
+
+Return type:
+
+#+begin_src cpp
+struct change_reason_selection {
+    std::string reason_code;
+    std::string commentary;
+};
+#+end_src
+
+Signature:
+
+#+begin_src cpp
+// Returns nullopt if the user cancelled the dialog.
+std::optional<change_reason_selection>
+promptChangeReason(ChangeReasonCache* cache,
+                   ChangeReasonDialog::OperationType opType,
+                   bool isDirty,
+                   std::string_view categoryCode = "common");
+#+end_src
+
+Implementation:
+
+#+begin_src cpp
+std::optional<change_reason_selection>
+DetailDialogBase::promptChangeReason(ChangeReasonCache* cache,
+                                     ChangeReasonDialog::OperationType opType,
+                                     bool isDirty,
+                                     std::string_view categoryCode)
+{
+    if (!cache || !cache->isLoaded()) {
+        emit errorMessage(tr("Change reasons not loaded. Please try again."));
+        return std::nullopt;
+    }
+
+    const auto cat = std::string{categoryCode};
+    std::vector<dq::domain::change_reason> reasons;
+    switch (opType) {
+        case ChangeReasonDialog::OperationType::Create:
+            reasons = cache->getReasonsForNew(cat);   break;
+        case ChangeReasonDialog::OperationType::Amend:
+            reasons = cache->getReasonsForAmend(cat); break;
+        case ChangeReasonDialog::OperationType::Delete:
+            reasons = cache->getReasonsForDelete(cat); break;
+    }
+
+    if (reasons.empty()) {
+        emit errorMessage(
+            tr("No change reasons available. Please contact administrator."));
+        return std::nullopt;
+    }
+
+    ChangeReasonDialog dlg(reasons, opType, isDirty, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return std::nullopt;
+
+    return change_reason_selection{
+        dlg.selectedReasonCode(),
+        dlg.commentary()
+    };
+}
+#+end_src
+
+*** 3h. Update every detail dialog to use the helper
+
+In every ~onSaveClicked()~ across all entities (compute and non-compute), replace
+the inline change reason block with:
+
+#+begin_src cpp
+const auto opType = isAddMode_
+    ? ChangeReasonDialog::OperationType::Create
+    : ChangeReasonDialog::OperationType::Amend;
+
+const auto sel = promptChangeReason(changeReasonCache_, opType, isDirty_);
+if (!sel) return;
+
+// Use sel->reason_code and sel->commentary when building the request.
+#+end_src
+
+And in every ~onDeleteClicked()~:
+
+#+begin_src cpp
+const auto sel = promptChangeReason(changeReasonCache_,
+    ChangeReasonDialog::OperationType::Delete, false);
+if (!sel) return;
+#+end_src
+
+Files to update:
+- All compute detail dialogs: ~AppDetailDialog~, ~AppVersionDetailDialog~,
+  ~BatchDetailDialog~, ~WorkunitDetailDialog~
+- All existing entity detail dialogs that already use ~ChangeReasonDialog~
+  inline: ~PartyDetailDialog~, ~CounterpartyDetailDialog~, ~CurrencyDetailDialog~,
+  ~CountryDetailDialog~, and any others
+
+*** 3i. Wire ~ChangeReasonCache~ into compute controllers
+
+~AppController~, ~AppVersionController~, ~BatchController~, ~WorkunitController~
+must receive a ~ChangeReasonCache*~ and pass it to detail dialogs, following the
+same pattern as ~PartyController~ / ~CounterpartyController~.
+
+** Commits
+
+#+begin_example
+[dq] Add applies_to_new to change_reason domain type and SQL schema
+[qt] Add ChangeReasonCache::getReasonsForNew
+[qt] Add ChangeReasonDialog::Create operation type
+[qt] Add DetailDialogBase::promptChangeReason helper
+[qt] Use promptChangeReason in all detail dialogs
+[compute] Wire ChangeReasonCache into compute controllers
+#+end_example
+
+* Area 4: Platforms Junction Table
+
+** Problem
+
+The ~platform~ field on ~app_version~ is currently a plain string.
+For the ORE use case, a single app version may support multiple platforms
+(e.g., ~linux-x86_64~, ~linux-arm64~). A junction table is needed.
+
+** Changes required
+
+*** 4a. SQL schema
+
+New file ~projects/ores.sql/create/compute/compute_platforms_create.sql~:
+
+#+begin_src sql
+-- Reference table: known platform identifiers
+create table ores_compute_platforms_tbl (
+    code        text primary key,   -- e.g. linux-x86_64
+    description text not null default ''
+);
+
+-- Junction table linking app_versions to supported platforms
+create table ores_compute_app_version_platforms_tbl (
+    app_version_id uuid not null
+        references ores_compute_app_versions_tbl(id) on delete cascade,
+    platform_code  text not null
+        references ores_compute_platforms_tbl(code),
+    primary key (app_version_id, platform_code)
+);
+#+end_src
+
+Seed data (in the same file or a separate seed script):
+
+#+begin_src sql
+insert into ores_compute_platforms_tbl (code, description) values
+    ('linux-x86_64',  'Linux x86-64'),
+    ('linux-arm64',   'Linux ARM64'),
+    ('windows-x86_64','Windows x86-64'),
+    ('macos-arm64',   'macOS Apple Silicon');
+#+end_src
+
+Remove the ~platform text~ column from ~ores_compute_app_versions_tbl~. Update
+~compute_app_versions_create.sql~ and the corresponding drop file.
+
+*** 4b. Domain and repository updates
+
+- Remove ~platform~ from ~app_version~ domain struct.
+- Add ~std::vector<std::string> platforms~ to ~app_version~.
+- Update ~app_version_repository~ to insert/delete junction rows on save and
+  join-fetch on read.
+- Update the messaging protocol (request/response) to carry ~platforms~ as a
+  vector.
+
+*** 4c. Qt dialog update
+
+- In ~AppVersionDetailDialog~: replace the platform line edit with a multi-select
+  widget (e.g., a ~QListWidget~ with checkboxes).
+- Populate the list from a ~list_platforms~ request or seed-known values.
+
+** Commit
+
+~[compute] Add platform junction table for app versions~
+
+* Area 5: App → App Version Linkage (Combo Box)
+
+** Problem
+
+The ~AppVersionDetailDialog~ has an ~app_id~ field displayed as a plain UUID
+text box. Users cannot identify which app an app version belongs to and cannot
+select a parent app when creating a new one.
+
+** Changes required
+
+- In ~AppVersionDetailDialog~, replace the ~app_id~ line edit with a ~QComboBox~
+  populated with ~(name → id)~ pairs from a ~list_apps_request~.
+- Use ~LookupFetcher~ to fetch apps asynchronously before the dialog becomes
+  interactive (same pattern as business-centre combos in ~PartyDetailDialog~).
+- Display the app name; store the UUID internally.
+- In read-only mode, show the app name as a label.
+
+** Commit
+
+~[qt] Add app combo box to AppVersionDetailDialog~
+
+* Area 6: Workunit Combo Boxes
+
+** Problem
+
+~WorkunitDetailDialog~ displays ~batch_id~ and ~app_version_id~ as plain UUID
+text boxes. Users cannot select from available batches and app versions.
+
+** Changes required
+
+- Add a ~batch_id~ ~QComboBox~ populated with ~(external_ref → id)~ pairs via
+  ~list_batches_request~. Filter to active batches only.
+- Add an ~app_version_id~ ~QComboBox~ populated with
+  ~(app_name + version → id)~ pairs via ~list_app_versions_request~.
+- Both combos fetched via ~LookupFetcher~ before the dialog becomes interactive.
+- Display human-readable text; store UUID internally.
+
+** Commit
+
+~[qt] Add batch and app_version combo boxes to WorkunitDetailDialog~
+
+* Area 7: System App Seed Scripts
+
+** Problem
+
+The ORE application and its standard app version need to be created in the
+database before any workunits can be submitted. Doing this manually through the
+UI is error-prone and not repeatable.
+
+** Design
+
+Create a JSON metadata file ~external/packages/ore/metadata.json~:
+
+#+begin_src json
+{
+  "application": {
+    "id": "<stable-uuid>",
+    "name": "ORE",
+    "description": "Open Source Risk Engine — QuantLib-based risk analytics engine for market risk, counterparty credit risk, XVA, and sensitivity analysis."
+  },
+  "app_versions": [
+    {
+      "id": "<stable-uuid>",
+      "wrapper_version": "1.0.0",
+      "engine_version": "9.0.0",
+      "package_uri": "https://ore.example.com/packages/ore-9.0.0-linux-x86_64.tar.gz",
+      "platforms": ["linux-x86_64"],
+      "min_ram_mb": 512
+    }
+  ]
+}
+#+end_src
+
+A hand-written seed script reads this data and produces idempotent INSERTs:
+
+#+begin_src sql
+-- projects/ores.sql/seed/compute/compute_ore_app_seed.sql
+insert into ores_compute_apps_tbl
+    (id, tenant_id, name, description, version, modified_by, performed_by, recorded_at)
+values (
+    '<stable-uuid>',
+    ores_iam_system_tenant_id_fn(),
+    'ORE',
+    'Open Source Risk Engine — ...',
+    1, 'system', 'system', now()
+) on conflict (id) do nothing;
+-- app_version and platform rows follow
+#+end_src
+
+The seed script is applied by ~recreate_database.sh~ after schema creation.
+UUIDs are hardcoded in the metadata so the seed is always idempotent.
+
+** Commit
+
+~[sql] Add ORE application and app version seed data~
+
+* Implementation Sequence
+
+The recommended order (minimises blocking):
+
+1. *Area 3* (change reasons) — foundational; ~DetailDialogBase~ helper applies
+   to all dialogs; implement data model first, then cache, then UI.
+   Sub-sequence: domain type → SQL → seed → protocol → cache → dialog →
+   base helper → all dialog callsites.
+2. *Area 1* (eventing) — independent; unblocks list-window stale indicators.
+3. *Area 2* (UUID generation) — independent; critical for data integrity.
+4. *Area 7* (ORE seed data) — needed before Areas 5 & 6 can be tested.
+5. *Area 5* (app combo in app_version) — needs Area 7 to have apps to select.
+6. *Area 6* (workunit combos) — needs Areas 5 & 7; app_versions must exist.
+7. *Area 4* (platforms junction) — schema-breaking change; do last; coordinate
+   with Areas 5 & 6.
+
+* Open Questions
+
+1. Should ~performed_by~ be checked independently? The plan assumes ~stamp()~ in
+   the handlers sets it correctly from the JWT service account. Verify this is
+   working for all compute handlers before closing this item.
+
+2. For the platforms junction table (Area 4), should the initial platform list
+   be driven by ~metadata.json~ or seeded separately? Recommendation: seed
+   separately so platforms are tenant-independent reference data.

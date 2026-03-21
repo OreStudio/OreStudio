@@ -94,6 +94,7 @@
 #include "ores.qt/WorkunitController.hpp"
 #include "ores.qt/ResultController.hpp"
 #include "ores.qt/ComputeDashboardController.hpp"
+#include "ores.qt/ServiceDashboardController.hpp"
 #include "ores.qt/ReportTypeController.hpp"
 #include "ores.qt/ConcurrencyPolicyController.hpp"
 #include "ores.qt/ReportDefinitionController.hpp"
@@ -271,6 +272,7 @@ MainWindow::MainWindow(QWidget* parent) :
     recordOnIcon_ = IconUtils::createRecoloredIcon(Icon::RecordFilled, IconUtils::RecordingOnColor);
     ui_->ActionRecordSession->setIcon(recordOffIcon_);
     ui_->ActionEventViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor));
+    ui_->ActionServiceDashboard->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionTelemetryViewer->setIcon(IconUtils::createRecoloredIcon(Icon::DocumentTable, IconUtils::DefaultIconColor));
     ui_->ActionShell->setIcon(IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor));
 
@@ -342,6 +344,11 @@ MainWindow::MainWindow(QWidget* parent) :
         mdiArea_->addSubWindow(eventViewerWindow_);
         allDetachableWindows_.append(eventViewerWindow_);
         eventViewerWindow_->show();
+    });
+
+    connect(ui_->ActionServiceDashboard, &QAction::triggered, this, [this]() {
+        if (serviceDashboardController_)
+            serviceDashboardController_->showDashboard();
     });
 
     // Connect Telemetry Viewer action
@@ -1237,7 +1244,8 @@ void MainWindow::updateMenuState() {
     ui_->ActionMyAccount->setEnabled(isLoggedIn);
     ui_->ActionMySessions->setEnabled(isLoggedIn);
 
-    // Telemetry viewer needs authentication to load sessions/logs
+    // Telemetry viewer and service dashboard need authentication
+    ui_->ActionServiceDashboard->setEnabled(isLoggedIn);
     ui_->ActionTelemetryViewer->setEnabled(isLoggedIn);
 
     // Shell requires authentication for auto-login
@@ -2105,6 +2113,25 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(computeDashboardController_.get(),
             &ComputeDashboardController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    serviceDashboardController_ = std::make_unique<ServiceDashboardController>(
+        this, mdiArea_, clientManager_, this);
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(serviceDashboardController_.get(),
+            &ServiceDashboardController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     // Create reporting controllers

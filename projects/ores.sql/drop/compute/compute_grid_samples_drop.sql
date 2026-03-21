@@ -18,22 +18,4 @@
  *
  */
 
--- =============================================================================
--- Drop Compute Grid Tables
--- =============================================================================
-
-\ir ./compute_node_samples_drop.sql
-\ir ./compute_grid_samples_drop.sql
-\ir ./compute_results_notify_trigger_drop.sql
-\ir ./compute_results_drop.sql
-\ir ./compute_workunits_notify_trigger_drop.sql
-\ir ./compute_workunits_drop.sql
-\ir ./compute_batch_dependencies_drop.sql
-\ir ./compute_batches_notify_trigger_drop.sql
-\ir ./compute_batches_drop.sql
-\ir ./compute_hosts_notify_trigger_drop.sql
-\ir ./compute_hosts_drop.sql
-\ir ./compute_app_versions_notify_trigger_drop.sql
-\ir ./compute_app_versions_drop.sql
-\ir ./compute_apps_notify_trigger_drop.sql
-\ir ./compute_apps_drop.sql
+drop table if exists ores_compute_grid_samples_tbl cascade;

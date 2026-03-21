@@ -792,7 +792,7 @@ void DataLibrarianWindow::fetchBundleMembers() {
 
     auto task = [self]() -> std::vector<dq::domain::dataset_bundle_member> {
         dq::messaging::get_dataset_bundle_members_request request;
-        auto result = self->clientManager_->process_request(std::move(request));
+        auto result = self->clientManager_->process_authenticated_request(std::move(request));
         if (result) {
             return std::move(result->members);
         }

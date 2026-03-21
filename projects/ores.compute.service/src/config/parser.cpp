@@ -46,6 +46,8 @@ using boost::program_options::options_description;
 using ores::compute::service::config::options;
 using ores::compute::service::config::parser_exception;
 
+const std::string telemetry_interval_arg("telemetry-interval");
+
 options_description make_options_description() {
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
@@ -57,6 +59,13 @@ options_description make_options_description() {
     r.add(logging_configuration::make_options_description("ores.compute.service.log"));
     r.add(database_configuration::make_options_description());
     r.add(nats_configuration::make_options_description());
+
+    options_description telemetry("Telemetry Options");
+    telemetry.add_options()
+        (telemetry_interval_arg.c_str(),
+            value<std::uint32_t>()->default_value(30),
+            "Compute grid telemetry sample interval in seconds (0 = disabled)");
+    r.add(telemetry);
     return r;
 }
 
@@ -113,6 +122,8 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.logging = logging_configuration::read_options(vm);
     r.nats = nats_configuration::read_options(vm);
     r.database = database_configuration::read_options(vm);
+    if (vm.count(telemetry_interval_arg))
+        r.telemetry_interval_seconds = vm[telemetry_interval_arg].as<std::uint32_t>();
     return r;
 }
 

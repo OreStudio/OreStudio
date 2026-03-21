@@ -201,7 +201,7 @@ void LeiEntityPicker::load() {
             if (!self) return {false, "Widget destroyed", {}};
 
             dq::messaging::get_lei_entities_summary_request request;
-            auto result = self->clientManager_->process_request(
+            auto result = self->clientManager_->process_authenticated_request(
                 std::move(request));
 
             if (!result) {
@@ -288,7 +288,7 @@ void LeiEntityPicker::loadEntitiesForCountry(const QString& country) {
 
             dq::messaging::get_lei_entities_summary_request request;
             request.country_filter = countryStd;
-            auto result = self->clientManager_->process_request(
+            auto result = self->clientManager_->process_authenticated_request(
                 std::move(request));
 
             if (!result) {

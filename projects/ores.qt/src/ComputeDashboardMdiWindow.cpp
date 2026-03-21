@@ -24,9 +24,7 @@
 #include <QPointer>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.compute/messaging/host_protocol.hpp"
-#include "ores.compute/messaging/workunit_protocol.hpp"
-#include "ores.compute/messaging/result_protocol.hpp"
+#include "ores.compute/messaging/telemetry_protocol.hpp"
 
 namespace ores::qt {
 
@@ -34,12 +32,16 @@ using namespace ores::logging;
 
 namespace {
 
-struct DashboardCounts {
-    int total_hosts = 0;
-    int total_workunits = 0;
-    int total_results = 0;
-    bool success = false;
+struct GridStats {
+    bool success{false};
     QString error;
+
+    int total_hosts{0};
+    int idle_hosts{0};
+    int total_workunits{0};
+    int results_in_progress{0};
+    int results_done{0};
+    int outcomes_success{0};
 };
 
 }
@@ -53,12 +55,11 @@ ComputeDashboardMdiWindow::ComputeDashboardMdiWindow(
       refreshAction_(nullptr),
       autoRefreshAction_(nullptr),
       totalHostsLabel_(nullptr),
-      onlineHostsLabel_(nullptr),
-      pendingWorkunitLabel_(nullptr),
-      activeWorkunitLabel_(nullptr),
-      completedWorkunitLabel_(nullptr),
-      totalResultsLabel_(nullptr),
-      recentResultsLabel_(nullptr),
+      idleHostsLabel_(nullptr),
+      totalWorkunitLabel_(nullptr),
+      inProgressLabel_(nullptr),
+      completedLabel_(nullptr),
+      successfulLabel_(nullptr),
       autoRefreshTimer_(nullptr) {
 
     autoRefreshTimer_ = new QTimer(this);
@@ -96,12 +97,12 @@ void ComputeDashboardMdiWindow::setupUi() {
         return box;
     };
 
-    gridLayout->addWidget(makeStatBox(tr("Total Hosts"),     totalHostsLabel_),      0, 0);
-    gridLayout->addWidget(makeStatBox(tr("Online Hosts"),    onlineHostsLabel_),     0, 1);
-    gridLayout->addWidget(makeStatBox(tr("Total Workunits"), pendingWorkunitLabel_), 1, 0);
-    gridLayout->addWidget(makeStatBox(tr("Active Workunits"),activeWorkunitLabel_),  1, 1);
-    gridLayout->addWidget(makeStatBox(tr("Total Results"),   totalResultsLabel_),    2, 0);
-    gridLayout->addWidget(makeStatBox(tr("Recent Results"),  recentResultsLabel_),   2, 1);
+    gridLayout->addWidget(makeStatBox(tr("Total Hosts"),       totalHostsLabel_),   0, 0);
+    gridLayout->addWidget(makeStatBox(tr("Idle Hosts"),        idleHostsLabel_),    0, 1);
+    gridLayout->addWidget(makeStatBox(tr("Total Workunits"),   totalWorkunitLabel_),1, 0);
+    gridLayout->addWidget(makeStatBox(tr("In Progress"),       inProgressLabel_),   1, 1);
+    gridLayout->addWidget(makeStatBox(tr("Completed"),         completedLabel_),    2, 0);
+    gridLayout->addWidget(makeStatBox(tr("Successful (24h)"),  successfulLabel_),   2, 1);
 
     mainLayout->addWidget(grid);
     mainLayout->addStretch();
@@ -140,87 +141,78 @@ void ComputeDashboardMdiWindow::refresh() {
 
     refreshAction_->setEnabled(false);
     emit statusChanged(tr("Refreshing compute dashboard..."));
-    loadCounts();
+    loadStats();
 }
 
-void ComputeDashboardMdiWindow::loadCounts() {
+void ComputeDashboardMdiWindow::loadStats() {
     QPointer<ComputeDashboardMdiWindow> self = this;
 
-    QFuture<DashboardCounts> future =
-        QtConcurrent::run([self]() -> DashboardCounts {
+    QFuture<GridStats> future =
+        QtConcurrent::run([self]() -> GridStats {
             if (!self || !self->clientManager_)
                 return {};
 
-            DashboardCounts counts;
+            auto resp = self->clientManager_->process_authenticated_request(
+                compute::messaging::get_grid_stats_request{});
 
-            // Hosts: fetch with limit=1 to get total_available_count
-            {
-                compute::messaging::list_hosts_request req;
-                req.limit = 1;
-                auto resp = self->clientManager_->
-                    process_authenticated_request(std::move(req));
-                if (resp) {
-                    counts.total_hosts = resp->total_available_count;
-                }
+            if (!resp || !resp->success) {
+                GridStats r;
+                r.error = QString::fromStdString(
+                    resp ? resp->message : "Failed to contact compute service");
+                return r;
             }
 
-            // Workunits
-            {
-                compute::messaging::list_workunits_request req;
-                req.limit = 1;
-                auto resp = self->clientManager_->
-                    process_authenticated_request(std::move(req));
-                if (resp) {
-                    counts.total_workunits = resp->total_available_count;
-                }
-            }
-
-            // Results
-            {
-                compute::messaging::list_results_request req;
-                req.limit = 1;
-                auto resp = self->clientManager_->
-                    process_authenticated_request(std::move(req));
-                if (resp) {
-                    counts.total_results = resp->total_available_count;
-                }
-            }
-
-            counts.success = true;
-            return counts;
+            GridStats r;
+            r.success           = true;
+            r.total_hosts       = resp->total_hosts;
+            r.idle_hosts        = resp->idle_hosts;
+            r.total_workunits   = resp->total_workunits;
+            r.results_in_progress = resp->results_in_progress;
+            r.results_done      = resp->results_done;
+            r.outcomes_success  = resp->outcomes_success;
+            return r;
         });
 
-    auto* watcher = new QFutureWatcher<DashboardCounts>(this);
-    connect(watcher, &QFutureWatcher<DashboardCounts>::finished, this,
+    auto* watcher = new QFutureWatcher<GridStats>(this);
+    connect(watcher, &QFutureWatcher<GridStats>::finished, this,
             [self, watcher]() {
-        auto counts = watcher->result();
+        const auto stats = watcher->result();
         watcher->deleteLater();
 
         if (!self) return;
 
         self->refreshAction_->setEnabled(true);
 
-        if (!counts.success) {
-            BOOST_LOG_SEV(lg(), error) << "Dashboard load failed";
-            emit self->errorOccurred(tr("Failed to load dashboard statistics"));
+        if (!stats.success) {
+            const QString msg = stats.error.isEmpty()
+                ? tr("Failed to load dashboard statistics")
+                : stats.error;
+            BOOST_LOG_SEV(lg(), error) << "Dashboard load failed: "
+                                       << msg.toStdString();
+            emit self->errorOccurred(msg);
             return;
         }
 
-        self->updateCountLabel(self->totalHostsLabel_,     counts.total_hosts);
-        self->updateCountLabel(self->onlineHostsLabel_,    0);  // Not yet tracked
-        self->updateCountLabel(self->pendingWorkunitLabel_,counts.total_workunits);
-        self->updateCountLabel(self->activeWorkunitLabel_, 0);  // Not yet tracked
-        self->updateCountLabel(self->totalResultsLabel_,   counts.total_results);
-        self->updateCountLabel(self->recentResultsLabel_,  0);  // Not yet tracked
+        self->updateCountLabel(self->totalHostsLabel_,    stats.total_hosts);
+        self->updateCountLabel(self->idleHostsLabel_,     stats.idle_hosts);
+        self->updateCountLabel(self->totalWorkunitLabel_, stats.total_workunits);
+        self->updateCountLabel(self->inProgressLabel_,    stats.results_in_progress);
+        self->updateCountLabel(self->completedLabel_,     stats.results_done);
+        self->updateCountLabel(self->successfulLabel_,    stats.outcomes_success);
 
-        emit self->statusChanged(tr("Dashboard updated: %1 hosts, %2 workunits, %3 results")
-            .arg(counts.total_hosts)
-            .arg(counts.total_workunits)
-            .arg(counts.total_results));
+        emit self->statusChanged(
+            tr("Dashboard updated: %1 hosts, %2 idle, %3 workunits, %4 in progress")
+                .arg(stats.total_hosts)
+                .arg(stats.idle_hosts)
+                .arg(stats.total_workunits)
+                .arg(stats.results_in_progress));
 
-        BOOST_LOG_SEV(lg(), debug) << "Dashboard: hosts=" << counts.total_hosts
-                                   << " workunits=" << counts.total_workunits
-                                   << " results=" << counts.total_results;
+        BOOST_LOG_SEV(lg(), debug) << "Dashboard: hosts=" << stats.total_hosts
+                                   << " idle=" << stats.idle_hosts
+                                   << " workunits=" << stats.total_workunits
+                                   << " in_progress=" << stats.results_in_progress
+                                   << " done=" << stats.results_done
+                                   << " successful_24h=" << stats.outcomes_success;
     });
     watcher->setFuture(future);
 }

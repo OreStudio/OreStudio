@@ -35,8 +35,9 @@ namespace ores::qt {
 /**
  * @brief MDI window showing a summary of the compute grid state.
  *
- * Displays aggregate counts: total/online hosts, pending/running/completed
- * workunits, and recent results. Auto-refreshes every 10 seconds.
+ * Stats are loaded from a single get_grid_stats NATS request which reads
+ * the latest row from the ores_compute_grid_samples_tbl TimescaleDB hypertable.
+ * Auto-refreshes every 10 seconds when enabled.
  */
 class ComputeDashboardMdiWindow final : public QWidget {
     Q_OBJECT
@@ -72,7 +73,7 @@ private slots:
 private:
     void setupUi();
     void setupToolbar();
-    void loadCounts();
+    void loadStats();
     void updateCountLabel(QLabel* label, int value);
 
     ClientManager* clientManager_;
@@ -81,18 +82,13 @@ private:
     QAction* refreshAction_;
     QAction* autoRefreshAction_;
 
-    // Host stats
-    QLabel* totalHostsLabel_;
-    QLabel* onlineHostsLabel_;
-
-    // Workunit stats
-    QLabel* pendingWorkunitLabel_;
-    QLabel* activeWorkunitLabel_;
-    QLabel* completedWorkunitLabel_;
-
-    // Result stats
-    QLabel* totalResultsLabel_;
-    QLabel* recentResultsLabel_;
+    // Grid stats labels (sourced from get_grid_stats_response)
+    QLabel* totalHostsLabel_;      // total_hosts
+    QLabel* idleHostsLabel_;       // idle_hosts
+    QLabel* totalWorkunitLabel_;   // total_workunits
+    QLabel* inProgressLabel_;      // results_in_progress
+    QLabel* completedLabel_;       // results_done
+    QLabel* successfulLabel_;      // outcomes_success (last 24 h)
 
     // Auto-refresh timer (10 seconds)
     QTimer* autoRefreshTimer_;

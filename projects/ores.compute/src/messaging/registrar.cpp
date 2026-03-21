@@ -35,6 +35,8 @@
 #include "ores.compute/messaging/workunit_handler.hpp"
 #include "ores.compute/messaging/result_handler.hpp"
 #include "ores.compute/messaging/work_handler.hpp"
+#include "ores.compute/messaging/telemetry_protocol.hpp"
+#include "ores.compute/messaging/telemetry_handler.hpp"
 
 namespace ores::compute::messaging {
 
@@ -136,6 +138,18 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.subscribe(
         reap_work_message::nats_subject,
         [wh](ores::nats::message msg) { wh->reap(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Telemetry
+    // ----------------------------------------------------------------
+    auto th = std::make_shared<telemetry_handler>(nats, ctx, verifier);
+    subs.push_back(nats.queue_subscribe(
+        get_grid_stats_request::nats_subject, "ores.compute.service",
+        [th](ores::nats::message msg) { th->get_grid_stats(std::move(msg)); }));
+    // Node sample publishes are fire-and-forget from wrapper nodes.
+    subs.push_back(nats.subscribe(
+        node_sample_message::nats_subject,
+        [th](ores::nats::message msg) { th->ingest_node_sample(std::move(msg)); }));
 
     return subs;
 }

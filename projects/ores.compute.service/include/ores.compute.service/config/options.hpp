@@ -21,6 +21,7 @@
 #define ORES_COMPUTE_SERVICE_CONFIG_OPTIONS_HPP
 
 #include <iosfwd>
+#include <cstdint>
 #include <optional>
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
@@ -44,6 +45,12 @@ struct options final {
      * @brief Configuration related to database operations.
      */
     ores::database::database_options database;
+    /**
+     * @brief Interval in seconds between compute grid telemetry samples.
+     *
+     * Set to 0 to disable the grid poller entirely.
+     */
+    std::uint32_t telemetry_interval_seconds{30};
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

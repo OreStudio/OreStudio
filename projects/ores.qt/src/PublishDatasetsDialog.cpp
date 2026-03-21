@@ -268,7 +268,7 @@ void ReviewPage::resolveDependencies() {
     }
 
     // Send request
-    auto result = wizard_->clientManager()->process_request(std::move(request));
+    auto result = wizard_->clientManager()->process_authenticated_request(std::move(request));
 
     if (!result) {
         // Fall back to just the selected datasets
@@ -437,7 +437,7 @@ void ProgressPage::performPublish() {
     request.resolve_dependencies = false;  // Already resolved
 
     // Send request
-    auto result = wizard_->clientManager()->process_request(std::move(request));
+    auto result = wizard_->clientManager()->process_authenticated_request(std::move(request));
 
     if (!result) {
         statusLabel_->setText(tr("Publication failed!"));

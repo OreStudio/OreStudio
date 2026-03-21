@@ -50,6 +50,7 @@ inline auto& work_handler_lg() {
 } // namespace
 
 using ores::service::messaging::reply;
+using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;

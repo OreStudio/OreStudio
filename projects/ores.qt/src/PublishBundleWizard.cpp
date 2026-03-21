@@ -138,7 +138,7 @@ void BundleSummaryPage::loadMembers() {
     dq::messaging::get_dataset_bundle_members_by_bundle_request request;
     request.bundle_code = wizard_->bundleCode().toStdString();
 
-    auto result = wizard_->clientManager()->process_request(std::move(request));
+    auto result = wizard_->clientManager()->process_authenticated_request(std::move(request));
 
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to load bundle members.";

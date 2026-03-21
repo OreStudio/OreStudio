@@ -159,6 +159,12 @@ struct select_party_response {
     std::string username;
     std::string tenant_name;
     std::string party_name;
+    /**
+     * @brief Token lifetime in seconds for the newly issued token.
+     *
+     * Clients re-arm the proactive refresh timer using this value.
+     */
+    int access_lifetime_s = 1800;
 };
 
 struct get_accounts_request_typed {

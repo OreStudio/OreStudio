@@ -24,6 +24,7 @@
 #include <rfl/json.hpp>
 #include "ores.nats/service/client.hpp"
 #include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.shell/service/session_expired_error.hpp"
 
 namespace ores::shell::service {
 
@@ -110,7 +111,7 @@ ores::nats::message nats_session::authenticated_request(std::string_view subject
             // If the retry itself fails with max_session_exceeded, refresh()
             // will have already thrown — no further check needed here.
         } else if (x_error_it->second == "max_session_exceeded") {
-            throw std::runtime_error(
+            throw session_expired_error(
                 "Session has expired after the maximum allowed duration. "
                 "Please log in again.");
         }

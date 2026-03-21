@@ -199,32 +199,24 @@ public:
                 req->principal, req->email, req->password, svc_acct::iam);
             BOOST_LOG_SEV(auth_handler_lg(), debug)
                 << "Completed " << msg.subject;
-            try {
-                repository::auth_event_repository ev_repo(ctx_);
+            record_auth_event(ctx_, "signup_success", [&](auto& ev_repo) {
                 ev_repo.record_signup_success(
                     std::chrono::system_clock::now(),
                     acct.tenant_id.to_string(),
                     boost::uuids::to_string(acct.id),
                     acct.username);
-            } catch (const std::exception& ev_err) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Failed to record signup_success event: " << ev_err.what();
-            }
+            });
             reply(nats_, msg, signup_response{
                 .success = true,
                 .account_id = boost::uuids::to_string(acct.id)});
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            try {
-                repository::auth_event_repository ev_repo(ctx_);
+            record_auth_event(ctx_, "signup_failure", [&](auto& ev_repo) {
                 ev_repo.record_signup_failure(
                     std::chrono::system_clock::now(),
                     "", req->principal, e.what());
-            } catch (const std::exception& ev_err) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Failed to record signup_failure event: " << ev_err.what();
-            }
+            });
             reply(nats_, msg, signup_response{
                 .success = false, .message = e.what()});
         }
@@ -335,6 +327,7 @@ public:
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.access_lifetime_s = token_settings_.access_lifetime_s;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
                     resp.available_parties.push_back(party_summary{
@@ -346,8 +339,7 @@ public:
                 }
                 BOOST_LOG_SEV(auth_handler_lg(), debug)
                     << "Completed " << msg.subject;
-                try {
-                    repository::auth_event_repository ev_repo(login_ctx);
+                record_auth_event(login_ctx, "login_success", [&](auto& ev_repo) {
                     ev_repo.record_login_success(
                         now,
                         acct.tenant_id.to_string(),
@@ -355,10 +347,7 @@ public:
                         acct.username,
                         session_id_str,
                         boost::uuids::to_string(party_id));
-                } catch (const std::exception& ev_err) {
-                    BOOST_LOG_SEV(auth_handler_lg(), warn)
-                        << "Failed to record login_success event: " << ev_err.what();
-                }
+                });
                 reply(nats_, msg, resp);
             } else {
                 // Multiple parties: issue a short-lived select-party token.
@@ -383,6 +372,7 @@ public:
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.access_lifetime_s = token_settings_.party_selection_lifetime_s;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
                     resp.available_parties.push_back(party_summary{
@@ -400,15 +390,11 @@ public:
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
-            try {
-                repository::auth_event_repository ev_repo(ctx_);
+            record_auth_event(ctx_, "login_failure", [&](auto& ev_repo) {
                 ev_repo.record_login_failure(
                     std::chrono::system_clock::now(),
                     "", req->principal, e.what());
-            } catch (const std::exception& ev_err) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Failed to record login_failure event: " << ev_err.what();
-            }
+            });
             login_response resp;
             resp.success = false;
             resp.error_message = e.what();
@@ -483,19 +469,14 @@ public:
                 // Record logout event from the validated claims.
                 auto claims_result = signer_.validate_allow_expired(token);
                 if (claims_result) {
-                    try {
-                        const auto logout_time = std::chrono::system_clock::now();
-                        repository::auth_event_repository ev_repo(ctx_);
+                    record_auth_event(ctx_, "logout", [&](auto& ev_repo) {
                         ev_repo.record_logout(
-                            logout_time,
+                            std::chrono::system_clock::now(),
                             claims_result->tenant_id.value_or(""),
                             claims_result->subject,
                             claims_result->username.value_or(""),
                             claims_result->session_id.value_or(""));
-                    } catch (const std::exception& ev_err) {
-                        BOOST_LOG_SEV(auth_handler_lg(), warn)
-                            << "Failed to record logout event: " << ev_err.what();
-                    }
+                    });
                 }
             }
             BOOST_LOG_SEV(auth_handler_lg(), debug)
@@ -541,19 +522,14 @@ public:
                     BOOST_LOG_SEV(auth_handler_lg(), info)
                         << "Max session exceeded for subject: "
                         << claims_result->subject;
-                    try {
-                        repository::auth_event_repository ev_repo(ctx_);
+                    record_auth_event(ctx_, "max_session_exceeded", [&](auto& ev_repo) {
                         ev_repo.record_max_session_exceeded(
                             now,
                             claims_result->tenant_id.value_or(""),
                             claims_result->subject,
                             claims_result->username.value_or(""),
                             claims_result->session_id.value_or(""));
-                    } catch (const std::exception& ev_err) {
-                        BOOST_LOG_SEV(auth_handler_lg(), warn)
-                            << "Failed to record max_session_exceeded event: "
-                            << ev_err.what();
-                    }
+                    });
                     reply(nats_, msg, refresh_response{
                         .success = false, .message = "max_session_exceeded"});
                     return;
@@ -585,20 +561,18 @@ public:
             BOOST_LOG_SEV(auth_handler_lg(), debug)
                 << "Completed " << msg.subject << " for subject: "
                 << claims_result->subject;
-            try {
-                repository::auth_event_repository ev_repo(ctx_);
+            record_auth_event(ctx_, "token_refresh", [&](auto& ev_repo) {
                 ev_repo.record_token_refresh(
                     now,
                     claims_result->tenant_id.value_or(""),
                     claims_result->subject,
                     claims_result->username.value_or(""),
                     claims_result->session_id.value_or(""));
-            } catch (const std::exception& ev_err) {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Failed to record token_refresh event: " << ev_err.what();
-            }
+            });
             reply(nats_, msg, refresh_response{
-                .success = true, .token = new_token});
+                .success = true,
+                .token = new_token,
+                .access_lifetime_s = token_settings_.access_lifetime_s});
 
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(auth_handler_lg(), error)
@@ -609,6 +583,25 @@ public:
     }
 
 private:
+    /**
+     * @brief Records an auth telemetry event, swallowing any exceptions.
+     *
+     * Used to avoid boilerplate try/catch around every event recording site.
+     */
+    template <typename Func>
+    void record_auth_event(const ores::database::context& ctx,
+        const char* event_name, Func&& fn) {
+        try {
+            repository::auth_event_repository ev_repo(ctx);
+            fn(ev_repo);
+        } catch (const std::exception& ev_err) {
+            using namespace ores::logging;
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Failed to record " << event_name
+                << " event: " << ev_err.what();
+        }
+    }
+
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     ores::security::jwt::jwt_authenticator signer_;

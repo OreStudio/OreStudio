@@ -52,6 +52,13 @@ struct login_response {
     std::string message;
     std::string selected_party_id;
     std::vector<party_summary> available_parties;
+    /**
+     * @brief Token lifetime in seconds as configured on the server.
+     *
+     * Clients use this to arm the proactive refresh timer so that the
+     * timer interval tracks any server-side configuration changes.
+     */
+    int access_lifetime_s = 1800;
 };
 
 struct logout_request {
@@ -86,6 +93,12 @@ struct refresh_response {
     bool success = false;
     std::string token;
     std::string message;
+    /**
+     * @brief Token lifetime in seconds for the newly issued token.
+     *
+     * Clients re-arm the proactive refresh timer using this value.
+     */
+    int access_lifetime_s = 1800;
 };
 
 }

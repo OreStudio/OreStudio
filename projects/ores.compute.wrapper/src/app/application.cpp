@@ -24,8 +24,10 @@
 #include <atomic>
 #include <chrono>
 #include <csignal>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
+#include <mutex>
 #include <sstream>
 #include <span>
 #include <thread>
@@ -40,6 +42,7 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.compute/messaging/work_protocol.hpp"
 #include "ores.compute/messaging/result_protocol.hpp"
+#include "ores.compute/messaging/telemetry_protocol.hpp"
 #include "ores.compute.wrapper/net/http_client.hpp"
 
 namespace ores::compute::wrapper::app {
@@ -49,17 +52,212 @@ using namespace ores::logging;
 namespace {
 
 /**
+ * @brief Format a time_point as ISO-8601 UTC string (YYYY-MM-DDTHH:MM:SSZ).
+ */
+std::string to_iso8601(std::chrono::system_clock::time_point tp) {
+    const auto t = std::chrono::system_clock::to_time_t(tp);
+    std::tm tm{};
+    gmtime_r(&t, &tm);
+    char buf[32];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%SZ", &tm);
+    return buf;
+}
+
+/**
+ * @brief Accumulates per-node execution metrics and publishes them to NATS
+ *        at a fixed interval.
+ *
+ * Publishes node_sample_message to compute.v1.telemetry.node_samples every
+ * telemetry_interval_seconds. Cumulative counters (tasks_completed,
+ * tasks_failed) increase monotonically; interval counters (tasks_since_last,
+ * durations, bytes) are reset after each publish.
+ */
+class node_stats_reporter {
+public:
+    node_stats_reporter(ores::nats::service::client& nats,
+        const std::string& host_id,
+        const std::string& tenant_id,
+        std::uint32_t interval_seconds)
+        : nats_(nats), host_id_(host_id), tenant_id_(tenant_id),
+          interval_(interval_seconds) {}
+
+    void start() {
+        stop_ = false;
+        thread_ = std::thread([this]() { run(); });
+    }
+
+    void stop() {
+        stop_ = true;
+        if (thread_.joinable())
+            thread_.join();
+    }
+
+    /**
+     * @brief Record a successfully completed task.
+     *
+     * @param duration_ms  Wall-clock duration of engine execution (ms).
+     * @param input_bytes  Bytes of input data fetched for this task.
+     * @param output_bytes Bytes of output data uploaded for this task.
+     */
+    void record_task_completed(std::int64_t duration_ms,
+                                std::int64_t input_bytes,
+                                std::int64_t output_bytes) {
+        ++tasks_completed_;
+        std::lock_guard lock(interval_mutex_);
+        ++tasks_since_last_;
+        duration_sum_ += duration_ms;
+        if (duration_ms > max_duration_)
+            max_duration_ = duration_ms;
+        input_bytes_ += input_bytes;
+        output_bytes_ += output_bytes;
+    }
+
+    /**
+     * @brief Record a failed task.
+     */
+    void record_task_failed() {
+        ++tasks_failed_;
+    }
+
+    /**
+     * @brief Notify that a heartbeat was successfully sent.
+     *
+     * Used to compute seconds_since_hb in the published sample.
+     */
+    void notify_heartbeat() {
+        std::lock_guard lock(hb_mutex_);
+        last_heartbeat_ = std::chrono::steady_clock::now();
+        heartbeat_ever_sent_ = true;
+    }
+
+private:
+    inline static std::string_view logger_name =
+        "ores.compute.wrapper.app.node_stats_reporter";
+    static auto& lg() {
+        static auto instance = ores::logging::make_logger(logger_name);
+        return instance;
+    }
+
+    void run() {
+        using namespace std::chrono_literals;
+        while (!stop_) {
+            // Sleep in 1-second ticks for responsive shutdown.
+            for (std::uint32_t i = 0; i < interval_ && !stop_; ++i) {
+                std::this_thread::sleep_for(1s);
+            }
+            if (!stop_)
+                publish_sample();
+        }
+    }
+
+    void publish_sample() {
+        // Snapshot and reset interval accumulators under the lock.
+        int tasks_since_last = 0;
+        std::int64_t duration_sum = 0;
+        std::int64_t max_duration = 0;
+        std::int64_t input_bytes = 0;
+        std::int64_t output_bytes = 0;
+        {
+            std::lock_guard lock(interval_mutex_);
+            tasks_since_last = tasks_since_last_;
+            duration_sum     = duration_sum_;
+            max_duration     = max_duration_;
+            input_bytes      = input_bytes_;
+            output_bytes     = output_bytes_;
+            tasks_since_last_ = 0;
+            duration_sum_     = 0;
+            max_duration_     = 0;
+            input_bytes_      = 0;
+            output_bytes_     = 0;
+        }
+
+        // Compute seconds since last heartbeat.
+        int seconds_since_hb = 0;
+        {
+            std::lock_guard lock(hb_mutex_);
+            if (heartbeat_ever_sent_) {
+                const auto elapsed =
+                    std::chrono::steady_clock::now() - last_heartbeat_;
+                seconds_since_hb = static_cast<int>(
+                    std::chrono::duration_cast<std::chrono::seconds>(elapsed)
+                    .count());
+            }
+        }
+
+        const std::int64_t avg_ms =
+            (tasks_since_last > 0) ? (duration_sum / tasks_since_last) : 0;
+
+        compute::messaging::node_sample_message msg;
+        msg.tenant_id            = tenant_id_;
+        msg.host_id              = host_id_;
+        msg.sampled_at           = to_iso8601(std::chrono::system_clock::now());
+        msg.tasks_completed      = tasks_completed_.load();
+        msg.tasks_failed         = tasks_failed_.load();
+        msg.tasks_since_last     = tasks_since_last;
+        msg.avg_task_duration_ms = avg_ms;
+        msg.max_task_duration_ms = max_duration;
+        msg.input_bytes_fetched  = input_bytes;
+        msg.output_bytes_uploaded = output_bytes;
+        msg.seconds_since_hb     = seconds_since_hb;
+
+        try {
+            const auto json = rfl::json::write(msg);
+            const auto* p = reinterpret_cast<const std::byte*>(json.data());
+            nats_.publish(compute::messaging::node_sample_message::nats_subject,
+                std::span<const std::byte>(p, json.size()));
+            BOOST_LOG_SEV(lg(), debug)
+                << "Published node telemetry sample: tasks_since_last="
+                << tasks_since_last
+                << " avg_ms=" << avg_ms
+                << " input_bytes=" << input_bytes
+                << " output_bytes=" << output_bytes;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Node telemetry publish failed: " << e.what();
+        }
+    }
+
+    ores::nats::service::client& nats_;
+    std::string host_id_;
+    std::string tenant_id_;
+    std::uint32_t interval_;
+    std::atomic<bool> stop_{false};
+    std::thread thread_;
+
+    // Cumulative counters (individually atomic — no lock needed).
+    std::atomic<int> tasks_completed_{0};
+    std::atomic<int> tasks_failed_{0};
+
+    // Per-interval accumulators (protected by interval_mutex_).
+    std::mutex interval_mutex_;
+    int tasks_since_last_{0};
+    std::int64_t duration_sum_{0};
+    std::int64_t max_duration_{0};
+    std::int64_t input_bytes_{0};
+    std::int64_t output_bytes_{0};
+
+    // Last heartbeat tracking (protected by hb_mutex_).
+    std::mutex hb_mutex_;
+    std::chrono::steady_clock::time_point last_heartbeat_{};
+    bool heartbeat_ever_sent_{false};
+};
+
+/**
  * @brief Sends heartbeat messages on a background thread while a job is running.
  *
  * Publishes to compute.v1.work.heartbeat every heartbeat_interval_seconds.
+ * Optionally notifies a node_stats_reporter each time a heartbeat is sent,
+ * so the reporter can track seconds_since_hb accurately.
  * Stops when stop_ is set to true.
  */
 class heartbeat_sender {
 public:
     heartbeat_sender(ores::nats::service::client& nats,
         const std::string& host_id,
-        std::uint32_t interval_seconds)
-        : nats_(nats), host_id_(host_id), interval_(interval_seconds) {}
+        std::uint32_t interval_seconds,
+        node_stats_reporter* reporter = nullptr)
+        : nats_(nats), host_id_(host_id), interval_(interval_seconds),
+          reporter_(reporter) {}
 
     void start() {
         stop_ = false;
@@ -99,6 +297,8 @@ private:
             const auto* p = reinterpret_cast<const std::byte*>(json.data());
             nats_.publish(compute::messaging::heartbeat_message::nats_subject,
                 std::span<const std::byte>(p, json.size()));
+            if (reporter_)
+                reporter_->notify_heartbeat();
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn) << "Heartbeat publish failed: " << e.what();
         }
@@ -107,6 +307,7 @@ private:
     ores::nats::service::client& nats_;
     std::string host_id_;
     std::uint32_t interval_;
+    node_stats_reporter* reporter_;
     std::atomic<bool> stop_{false};
     std::thread thread_;
 };
@@ -292,21 +493,26 @@ void extract_tar_gz(const fs::path& archive_path, const fs::path& dest_dir) {
  * 3. Spawn the engine subprocess with substituted argument placeholders.
  * 4. Upload the output file on success.
  * 5. Submit the result via NATS.
+ * 6. If a reporter is provided, record the task outcome and timing.
  */
 void process_assignment(ores::nats::service::client& nats,
     const compute::messaging::work_assignment_event& evt,
     const config::options& cfg,
+    node_stats_reporter* reporter,
     auto& lg) {
 
     BOOST_LOG_SEV(lg, info) << "Processing assignment: result=" << evt.result_id
                              << " workunit=" << evt.workunit_id
                              << " app_version=" << evt.app_version_id;
 
-    heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds);
+    heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
     hb.start();
 
     int outcome = 0;
     std::string output_uri = evt.output_uri;
+    std::int64_t input_bytes = 0;
+    std::int64_t output_bytes = 0;
+    std::int64_t duration_ms = 0;
 
     try {
         // 1. Download and unpack package if not cached
@@ -338,6 +544,10 @@ void process_assignment(ores::nats::service::client& nats,
         net::http_client::download(make_url(cfg.http_base_url, evt.input_uri), input_path);
         net::http_client::download(make_url(cfg.http_base_url, evt.config_uri), config_path);
 
+        // Measure downloaded input bytes for telemetry.
+        if (fs::exists(input_path))
+            input_bytes = static_cast<std::int64_t>(fs::file_size(input_path));
+
         // 3. Spawn engine using Boost.Process to avoid shell injection.
         const fs::path exe = pkg_cache_dir / mf.executable;
         const auto args = substitute_args(mf.args,
@@ -346,10 +556,16 @@ void process_assignment(ores::nats::service::client& nats,
         BOOST_LOG_SEV(lg, info) << "Launching engine: " << exe.string();
         namespace bp2 = boost::process::v2;
         boost::asio::io_context proc_ioc;
+
+        const auto engine_start = std::chrono::steady_clock::now();
         bp2::process engine_proc(
             boost::asio::any_io_executor(proc_ioc.get_executor()),
             boost::filesystem::path(exe.string()), args);
         engine_proc.wait();
+        const auto engine_end = std::chrono::steady_clock::now();
+        duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            engine_end - engine_start).count();
+
         const int exit_code = engine_proc.exit_code();
 
         if (exit_code != 0) {
@@ -358,6 +574,8 @@ void process_assignment(ores::nats::service::client& nats,
         } else {
             // 4. Upload output
             BOOST_LOG_SEV(lg, info) << "Uploading output: " << evt.result_id;
+            if (fs::exists(output_path))
+                output_bytes = static_cast<std::int64_t>(fs::file_size(output_path));
             net::http_client::upload(make_url(cfg.http_base_url, evt.output_uri), output_path);
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
         }
@@ -367,6 +585,15 @@ void process_assignment(ores::nats::service::client& nats,
     }
 
     hb.stop();
+
+    // Record outcome in the telemetry reporter.
+    if (reporter) {
+        if (outcome == 0)
+            reporter->record_task_completed(duration_ms, input_bytes, output_bytes);
+        else
+            reporter->record_task_failed();
+    }
+
     submit_result(nats, evt.result_id, output_uri, outcome, lg);
 }
 
@@ -382,11 +609,25 @@ application::run(boost::asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << "Tenant ID : " << cfg.tenant_id;
     BOOST_LOG_SEV(lg(), info) << "Work dir  : " << cfg.work_dir;
     BOOST_LOG_SEV(lg(), info) << "Heartbeat : " << cfg.heartbeat_interval_seconds << "s";
+    BOOST_LOG_SEV(lg(), info) << "Telemetry : "
+        << (cfg.telemetry_interval_seconds > 0
+            ? std::to_string(cfg.telemetry_interval_seconds) + "s"
+            : "disabled");
     BOOST_LOG_SEV(lg(), info) << "HTTP Base : " << (cfg.http_base_url.empty() ? "(none)" : cfg.http_base_url);
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
     BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url;
+
+    // Start telemetry reporter if enabled.
+    std::unique_ptr<node_stats_reporter> reporter;
+    if (cfg.telemetry_interval_seconds > 0) {
+        reporter = std::make_unique<node_stats_reporter>(
+            nats, cfg.host_id, cfg.tenant_id, cfg.telemetry_interval_seconds);
+        reporter->start();
+        BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter started ("
+            << cfg.telemetry_interval_seconds << "s interval).";
+    }
 
     // Subscribe to work assignments for our tenant.
     // Uses a durable queue consumer so multiple wrapper instances on the same
@@ -402,9 +643,10 @@ application::run(boost::asio::io_context& io_ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Subscribing to: " << work_subject;
 
+    node_stats_reporter* raw_reporter = reporter.get();
     auto sub = nats.js_queue_subscribe(
         work_subject, durable_name, queue_group,
-        [&nats, &cfg, this](ores::nats::message msg) {
+        [&nats, &cfg, raw_reporter, this](ores::nats::message msg) {
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
                 msg.data.size());
@@ -419,7 +661,7 @@ application::run(boost::asio::io_context& io_ctx,
                 return;
             }
 
-            process_assignment(nats, *evt, cfg, lg());
+            process_assignment(nats, *evt, cfg, raw_reporter, lg());
         });
 
     BOOST_LOG_SEV(lg(), info) << "Service ready.";
@@ -430,6 +672,12 @@ application::run(boost::asio::io_context& io_ctx,
 
     BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
     nats.drain();
+
+    if (reporter) {
+        reporter->stop();
+        BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter stopped.";
+    }
+
     BOOST_LOG_SEV(lg(), info) << "Service stopped.";
 
     co_return;

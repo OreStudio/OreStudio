@@ -64,6 +64,13 @@ struct options final {
     std::uint32_t heartbeat_interval_seconds{30};
 
     /**
+     * @brief Interval in seconds between telemetry node-sample publishes.
+     *
+     * Set to 0 to disable telemetry publishing entirely.
+     */
+    std::uint32_t telemetry_interval_seconds{30};
+
+    /**
      * @brief Base URL of the HTTP server for file transfers (e.g. http://localhost:8080).
      *
      * The wrapper appends compute API paths to this URL when downloading inputs

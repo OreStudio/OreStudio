@@ -32,22 +32,22 @@
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
            <widget class="QLabel" name="labelBatchId">
-            <property name="text"><string>Batch ID:</string></property>
+            <property name="text"><string>Batch:</string></property>
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="batchIdEdit">
-            <property name="placeholderText"><string>UUID of the batch</string></property>
+           <widget class="QComboBox" name="batchCombo">
+            <property name="toolTip"><string>Batch this workunit belongs to</string></property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QLabel" name="labelAppVersionId">
-            <property name="text"><string>App Version ID:</string></property>
+            <property name="text"><string>App Version:</string></property>
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QLineEdit" name="appVersionIdEdit">
-            <property name="placeholderText"><string>UUID of the app version</string></property>
+           <widget class="QComboBox" name="appVersionCombo">
+            <property name="toolTip"><string>App version to execute this workunit</string></property>
            </widget>
           </item>
           <item row="2" column="0">

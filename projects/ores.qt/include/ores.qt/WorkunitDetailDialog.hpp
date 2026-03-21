@@ -21,9 +21,12 @@
 #define ORES_QT_WORKUNIT_DETAIL_DIALOG_HPP
 
 #include <QString>
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.compute/domain/batch.hpp"
+#include "ores.compute/domain/app_version.hpp"
 #include "ores.compute/domain/workunit.hpp"
 
 namespace Ui {
@@ -81,8 +84,17 @@ protected:
     bool hasUnsavedChanges() const override { return hasChanges_; }
 
 private:
+    struct IdEntry {
+        std::string id;
+        std::string label;
+    };
+
     void setupUi();
     void setupConnections();
+    void loadBatches();
+    void loadAppVersions();
+    void populateBatchCombo();
+    void populateAppVersionCombo();
     void updateUiFromWorkunit();
     void updateWorkunitFromUi();
     void updateSaveButtonState();
@@ -94,6 +106,8 @@ private:
     std::string username_;
     std::string httpBaseUrl_;
     compute::domain::workunit workunit_;
+    std::vector<IdEntry> batchEntries_;
+    std::vector<IdEntry> appVersionEntries_;
     QString selectedInputFilePath_;
     QString selectedConfigFilePath_;
     bool createMode_{true};

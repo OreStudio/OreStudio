@@ -36,13 +36,16 @@ set_target_properties(${lib_target_name}
 target_include_directories(${lib_target_name} PUBLIC
     ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
+find_package(LibArchive REQUIRED)
+
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.compute.lib
         ores.nats.lib
         ores.utility.lib
         ores.telemetry.lib
-        Boost::boost)
+        Boost::boost
+        LibArchive::LibArchive)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 

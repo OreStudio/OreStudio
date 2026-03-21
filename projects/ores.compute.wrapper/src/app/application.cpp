@@ -32,8 +32,9 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/process/v2/environment.hpp>
 #include <boost/process/v2/process.hpp>
+#include <archive.h>
+#include <archive_entry.h>
 #include <rfl/json.hpp>
 #include "ores.utility/version/version.hpp"
 #include "ores.nats/service/client.hpp"
@@ -213,6 +214,77 @@ std::vector<std::string> substitute_args(const std::vector<std::string>& tmpl,
 }
 
 /**
+ * @brief Extract a .tar.gz archive to a destination directory using libarchive.
+ *
+ * Throws std::runtime_error on failure.
+ */
+void extract_tar_gz(const fs::path& archive_path, const fs::path& dest_dir) {
+    struct archive* a = archive_read_new();
+    archive_read_support_filter_gzip(a);
+    archive_read_support_format_tar(a);
+
+    struct archive* out = archive_write_disk_new();
+    archive_write_disk_set_options(out,
+        ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM |
+        ARCHIVE_EXTRACT_ACL  | ARCHIVE_EXTRACT_FFLAGS);
+    archive_write_disk_set_standard_lookup(out);
+
+    const int open_rc = archive_read_open_filename(
+        a, archive_path.c_str(), 16384);
+    if (open_rc != ARCHIVE_OK) {
+        archive_read_free(a);
+        archive_write_free(out);
+        throw std::runtime_error(
+            "Failed to open archive: " + archive_path.string() +
+            " — " + archive_error_string(a));
+    }
+
+    struct archive_entry* entry = nullptr;
+    while (true) {
+        const int r = archive_read_next_header(a, &entry);
+        if (r == ARCHIVE_EOF) break;
+        if (r < ARCHIVE_OK)
+            throw std::runtime_error(
+                std::string("archive read error: ") + archive_error_string(a));
+
+        // Rebase entry path under dest_dir
+        const std::string entry_path =
+            (dest_dir / archive_entry_pathname(entry)).string();
+        archive_entry_set_pathname(entry, entry_path.c_str());
+
+        const int wh = archive_write_header(out, entry);
+        if (wh < ARCHIVE_OK)
+            throw std::runtime_error(
+                std::string("archive write header error: ") +
+                archive_error_string(out));
+
+        if (archive_entry_size(entry) > 0) {
+            const void* buff = nullptr;
+            std::size_t size = 0;
+            la_int64_t offset = 0;
+            while (true) {
+                const int rd = archive_read_data_block(a, &buff, &size, &offset);
+                if (rd == ARCHIVE_EOF) break;
+                if (rd < ARCHIVE_OK)
+                    throw std::runtime_error(
+                        std::string("archive data read error: ") +
+                        archive_error_string(a));
+                if (archive_write_data_block(out, buff, size, offset) < ARCHIVE_OK)
+                    throw std::runtime_error(
+                        std::string("archive data write error: ") +
+                        archive_error_string(out));
+            }
+        }
+        archive_write_finish_entry(out);
+    }
+
+    archive_read_close(a);
+    archive_read_free(a);
+    archive_write_close(out);
+    archive_write_free(out);
+}
+
+/**
  * @brief Process one work assignment.
  *
  * 1. Download and cache the engine package (if not already cached).
@@ -248,20 +320,7 @@ void process_assignment(ores::nats::service::client& nats,
                 pkg_archive);
 
             fs::create_directories(pkg_cache_dir);
-            {
-                namespace bp2 = boost::process::v2;
-                boost::asio::io_context proc_ioc;
-                const std::vector<std::string> tar_args{
-                    "-xzf", pkg_archive.string(),
-                    "-C", pkg_cache_dir.string()};
-                bp2::process tar_proc(
-                    boost::asio::any_io_executor(proc_ioc.get_executor()),
-                    bp2::environment::find_executable("tar"), tar_args);
-                tar_proc.wait();
-                if (tar_proc.exit_code() != 0)
-                    throw std::runtime_error(
-                        "Failed to unpack: " + pkg_archive.string());
-            }
+            extract_tar_gz(pkg_archive, pkg_cache_dir);
         }
 
         const auto mf = read_manifest(pkg_cache_dir);

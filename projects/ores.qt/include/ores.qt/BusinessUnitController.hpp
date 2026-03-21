@@ -33,6 +33,7 @@ namespace ores::qt {
 
 class BusinessUnitMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing business unit windows and operations.
@@ -59,6 +60,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ImageCache* imageCache,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -90,6 +92,7 @@ private:
     void showHistoryWindow(const refdata::domain::business_unit& business_unit);
 
     ImageCache* imageCache_;
+    ChangeReasonCache* changeReasonCache_{nullptr};
     BusinessUnitMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

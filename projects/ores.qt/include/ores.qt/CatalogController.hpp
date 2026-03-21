@@ -31,6 +31,7 @@ namespace ores::qt {
 
 class CatalogMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing catalog-related windows.
@@ -52,6 +53,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -74,6 +76,7 @@ private:
     void showDetailWindow(const dq::domain::catalog& catalog);
     void showHistoryWindow(const QString& name);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     QPointer<CatalogMdiWindow> listWindow_;
     QPointer<DetachableMdiSubWindow> listMdiSubWindow_;
 };

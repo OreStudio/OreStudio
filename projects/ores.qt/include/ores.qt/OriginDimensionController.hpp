@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class OriginDimensionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing origin dimension windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const dq::domain::origin_dimension& dimension);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     OriginDimensionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class TradeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing trade windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -87,6 +89,7 @@ private:
     void showDetailWindow(const trading::domain::trade& trade);
     void showHistoryWindow(const trading::domain::trade& trade);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     TradeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

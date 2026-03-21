@@ -29,6 +29,7 @@ namespace ores::qt {
 
 class SystemSettingMdiWindow;
 class SystemSettingDetailDialog;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for system setting management windows.
@@ -54,6 +55,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -82,6 +84,7 @@ private:
     void refreshListWindow();
 
 private:
+    ChangeReasonCache* changeReasonCache_{nullptr};
     SystemSettingMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

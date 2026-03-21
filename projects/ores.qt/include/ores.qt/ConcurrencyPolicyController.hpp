@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class ConcurrencyPolicyMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing concurrency policy windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const reporting::domain::concurrency_policy& policy);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     ConcurrencyPolicyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

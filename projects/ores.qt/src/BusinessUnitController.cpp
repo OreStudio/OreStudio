@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/BusinessUnitController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -37,11 +38,13 @@ BusinessUnitController::BusinessUnitController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ImageCache* imageCache,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -152,7 +155,8 @@ void BusinessUnitController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new business unit";
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
@@ -196,7 +200,8 @@ void BusinessUnitController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << business_unit.unit_code;
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
@@ -320,7 +325,8 @@ void BusinessUnitController::onOpenVersion(
     }
 
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());
@@ -368,7 +374,8 @@ void BusinessUnitController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new BusinessUnitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setUsername(username_.toStdString());

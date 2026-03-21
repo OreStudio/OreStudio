@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class BatchMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing compute batch windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const compute::domain::batch& batch);
     void showHistoryWindow(const compute::domain::batch& batch);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     BatchMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

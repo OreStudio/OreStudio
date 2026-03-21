@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SubjectAreaController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -43,10 +44,12 @@ SubjectAreaController::SubjectAreaController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
                        subject_area_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -149,7 +152,8 @@ void SubjectAreaController::showAddWindow() {
 
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -198,7 +202,8 @@ void SubjectAreaController::showDetailWindow(
 
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -323,7 +328,8 @@ void SubjectAreaController::onOpenVersion(
 
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setSubjectArea(subject_area);
@@ -370,7 +376,8 @@ void SubjectAreaController::onRevertVersion(
                               << subject_area.version;
 
     auto* detailDialog = new SubjectAreaDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setSubjectArea(subject_area);

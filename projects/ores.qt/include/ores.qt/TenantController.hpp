@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class TenantMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing tenant windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -85,6 +87,7 @@ private:
     void showDetailWindow(const iam::domain::tenant& tenant);
     void showHistoryWindow(const iam::domain::tenant& tenant);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     TenantMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

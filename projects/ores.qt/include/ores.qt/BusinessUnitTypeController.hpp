@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class BusinessUnitTypeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing business unit type windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const refdata::domain::business_unit_type& type);
     void showHistoryWindow(const refdata::domain::business_unit_type& type);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     BusinessUnitTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

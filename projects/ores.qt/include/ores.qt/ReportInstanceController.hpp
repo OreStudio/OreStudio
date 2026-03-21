@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class ReportInstanceMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing report instance windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const reporting::domain::report_instance& instance);
     void showHistoryWindow(const reporting::domain::report_instance& instance);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     ReportInstanceMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

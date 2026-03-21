@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/WorkunitController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -36,10 +37,12 @@ WorkunitController::WorkunitController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -144,7 +147,8 @@ void WorkunitController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new workunit";
 
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHttpBaseUrl(httpBaseUrl_);
@@ -188,7 +192,8 @@ void WorkunitController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << workunit.input_uri;
 
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHttpBaseUrl(httpBaseUrl_);
@@ -312,7 +317,8 @@ void WorkunitController::onOpenVersion(
     }
 
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setWorkunit(workunit);
@@ -359,7 +365,8 @@ void WorkunitController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new WorkunitDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setWorkunit(workunit);

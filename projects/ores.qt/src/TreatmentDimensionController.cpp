@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/TreatmentDimensionController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -43,10 +44,12 @@ TreatmentDimensionController::TreatmentDimensionController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           treatment_dimension_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -145,7 +148,8 @@ void TreatmentDimensionController::showAddWindow() {
 
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -189,7 +193,8 @@ void TreatmentDimensionController::showDetailWindow(
 
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -305,7 +310,8 @@ void TreatmentDimensionController::onOpenVersion(
 
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);
@@ -351,7 +357,8 @@ void TreatmentDimensionController::onRevertVersion(
                               << dimension.version;
 
     auto* detailDialog = new TreatmentDimensionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);

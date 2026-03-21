@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ResultController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -36,10 +37,12 @@ ResultController::ResultController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -140,7 +143,8 @@ void ResultController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new compute result";
 
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -183,7 +187,8 @@ void ResultController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << result.modified_by;
 
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -306,7 +311,8 @@ void ResultController::onOpenVersion(
     }
 
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setResult(result);
@@ -353,7 +359,8 @@ void ResultController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ResultDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setResult(result);

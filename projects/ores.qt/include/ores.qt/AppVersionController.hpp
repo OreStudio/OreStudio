@@ -33,6 +33,7 @@ namespace ores::qt {
 
 class AppVersionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing app version windows and operations.
@@ -58,6 +59,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -86,6 +88,7 @@ private:
     void showDetailWindow(const compute::domain::app_version& app_version);
     void showHistoryWindow(const compute::domain::app_version& app_version);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     AppVersionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
     std::string httpBaseUrl_;

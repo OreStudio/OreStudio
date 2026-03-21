@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/TenantController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -43,10 +44,12 @@ TenantController::TenantController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           tenant_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -149,7 +152,8 @@ void TenantController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new tenant";
 
     auto* detailDialog = new TenantDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -192,7 +196,8 @@ void TenantController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << tenant.code;
 
     auto* detailDialog = new TenantDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -315,7 +320,8 @@ void TenantController::onOpenVersion(
     }
 
     auto* detailDialog = new TenantDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setTenant(tenant);
@@ -362,7 +368,8 @@ void TenantController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new TenantDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setTenant(tenant);

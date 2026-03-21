@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ConcurrencyPolicyController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -36,10 +37,12 @@ ConcurrencyPolicyController::ConcurrencyPolicyController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -140,7 +143,8 @@ void ConcurrencyPolicyController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new concurrency policy";
 
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -183,7 +187,8 @@ void ConcurrencyPolicyController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << policy.code;
 
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -303,7 +308,8 @@ void ConcurrencyPolicyController::onOpenVersion(
     }
 
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPolicy(policy);
@@ -350,7 +356,8 @@ void ConcurrencyPolicyController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ConcurrencyPolicyDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setPolicy(policy);

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/DataDomainController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -43,10 +44,12 @@ DataDomainController::DataDomainController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
                        data_domain_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -141,7 +144,8 @@ void DataDomainController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new data domain";
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -184,7 +188,8 @@ void DataDomainController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << domain.name;
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -299,7 +304,8 @@ void DataDomainController::onOpenVersion(
     }
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDomain(domain);
@@ -345,7 +351,8 @@ void DataDomainController::onRevertVersion(
                               << domain.version;
 
     auto* detailDialog = new DataDomainDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDomain(domain);

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/SystemSettingController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include "ores.qt/IconUtils.hpp"
@@ -45,9 +46,11 @@ SystemSettingController::SystemSettingController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -193,7 +196,8 @@ void SystemSettingController::showDetailWindow(
 
     // Create detail dialog
     auto* detailDialog = new SystemSettingDetailDialog();
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
 

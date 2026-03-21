@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/AppVersionController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -44,10 +45,12 @@ AppVersionController::AppVersionController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           app_version_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -152,7 +155,8 @@ void AppVersionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new app version";
 
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHttpBaseUrl(httpBaseUrl_);
@@ -196,7 +200,8 @@ void AppVersionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << app_version.wrapper_version;
 
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setHttpBaseUrl(httpBaseUrl_);
@@ -320,7 +325,8 @@ void AppVersionController::onOpenVersion(
     }
 
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setVersion(app_version);
@@ -367,7 +373,8 @@ void AppVersionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
-    // TODO: wire changeReasonCache_
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setVersion(app_version);

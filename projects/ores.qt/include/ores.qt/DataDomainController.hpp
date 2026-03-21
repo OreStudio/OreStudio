@@ -31,6 +31,7 @@ namespace ores::qt {
 
 class DataDomainMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 class DataDomainController final : public EntityController {
     Q_OBJECT
@@ -50,6 +51,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -77,6 +79,7 @@ private:
     void showDetailWindow(const dq::domain::data_domain& domain);
     void showHistoryWindow(const QString& name);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     DataDomainMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class HostMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing compute host windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const compute::domain::host& host);
     void showHistoryWindow(const compute::domain::host& host);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     HostMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

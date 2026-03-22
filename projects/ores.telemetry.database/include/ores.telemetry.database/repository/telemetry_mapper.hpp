@@ -24,6 +24,7 @@
 #include "ores.telemetry/domain/telemetry_stats.hpp"
 #include "ores.telemetry/domain/nats_server_sample.hpp"
 #include "ores.telemetry/domain/nats_stream_sample.hpp"
+#include "ores.telemetry/domain/service_sample.hpp"
 #include "ores.telemetry.database/repository/telemetry_entity.hpp"
 
 namespace ores::telemetry::database::repository {
@@ -73,6 +74,12 @@ public:
 
     static domain::nats_stream_sample to_domain(
         const nats_stream_sample_entity& entity);
+
+    static service_sample_entity to_entity(
+        const domain::service_sample& sample);
+
+    static domain::service_sample to_domain(
+        const service_sample_entity& entity);
 };
 
 }

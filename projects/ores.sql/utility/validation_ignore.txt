@@ -177,3 +177,10 @@ TENANT_003 ores_reporting_risk_report_config_books_tbl
 # =============================================================================
 TENANT_001 ores_compute_platforms_tbl
 TENANT_001 ores_compute_app_version_platforms_tbl
+
+# =============================================================================
+# Service samples table - system-level time-series, not tenant-specific.
+# Heartbeats originate from internal services (not user requests); there is no
+# tenant context. tenant_id has no meaning in this monitoring table.
+# =============================================================================
+TENANT_001 ores_telemetry_service_samples_tbl

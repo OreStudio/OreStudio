@@ -209,4 +209,24 @@ domain::nats_stream_sample telemetry_mapper::to_domain(
     return r;
 }
 
+service_sample_entity telemetry_mapper::to_entity(
+    const domain::service_sample& sample) {
+    service_sample_entity r;
+    r.sampled_at = timepoint_to_timestamp(sample.sampled_at, lg());
+    r.service_name = sample.service_name;
+    r.instance_id = sample.instance_id;
+    r.version = sample.version;
+    return r;
+}
+
+domain::service_sample telemetry_mapper::to_domain(
+    const service_sample_entity& entity) {
+    domain::service_sample r;
+    r.sampled_at = timestamp_to_timepoint(entity.sampled_at.value());
+    r.service_name = entity.service_name.value();
+    r.instance_id = entity.instance_id.value();
+    r.version = entity.version;
+    return r;
+}
+
 }

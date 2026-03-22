@@ -17,10 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.telemetry/messaging/registrar.hpp"
-#include "ores.telemetry/messaging/telemetry_handler.hpp"
+#include "ores.telemetry.service/messaging/registrar.hpp"
+#include "telemetry_handler.hpp"
+#include "ores.telemetry/messaging/service_samples_protocol.hpp"
 
-namespace ores::telemetry::messaging {
+namespace ores::telemetry::service::messaging {
+
+using namespace ores::telemetry::messaging;
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
@@ -50,7 +53,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.nats_stream_samples_list(std::move(msg));
         }));
 
+    // Heartbeat: fire-and-forget, no reply needed. We still use
+    // queue_subscribe so that exactly one telemetry instance processes
+    // each heartbeat even when multiple instances are running.
+    subs.push_back(nats.queue_subscribe(
+        std::string(service_heartbeat_message::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            telemetry_handler h(nats, ctx, verifier);
+            h.service_heartbeat(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_service_samples_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            telemetry_handler h(nats, ctx, verifier);
+            h.service_samples_list(std::move(msg));
+        }));
+
     return subs;
 }
 
-} // namespace ores::telemetry::messaging
+} // namespace ores::telemetry::service::messaging

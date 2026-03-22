@@ -20,6 +20,7 @@
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 #include <format>
+#include <map>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.database/repository/helpers.hpp"
@@ -602,6 +603,58 @@ telemetry_repository::query_stream_samples(context ctx,
 
     BOOST_LOG_SEV(lg(), debug) << "Query returned " << result.size()
                                << " stream sample(s)";
+    return result;
+}
+
+void telemetry_repository::insert_service_sample(context ctx,
+    const domain::service_sample& sample) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+    BOOST_LOG_SEV(lg(), trace) << "Inserting service heartbeat: "
+                               << sample.service_name
+                               << " instance=" << sample.instance_id;
+
+    const auto r = sqlgen::session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(telemetry_mapper::to_entity(sample)))
+        .and_then(commit);
+    ensure_success(r, lg());
+}
+
+std::vector<domain::service_sample>
+telemetry_repository::list_service_samples(context ctx) {
+    ores::telemetry::log::skip_telemetry_guard guard;
+    BOOST_LOG_SEV(lg(), debug) << "Listing latest service heartbeat samples";
+
+    // Fetch all rows from the last 5 minutes so we can pick
+    // the most recent per (service_name, instance_id) in C++.
+    // This avoids a DISTINCT ON which sqlgen doesn't model directly.
+    const auto cutoff = std::chrono::system_clock::now()
+        - std::chrono::minutes(5);
+    const auto cutoff_ts = timepoint_to_timestamp(cutoff, lg());
+
+    const auto qry = sqlgen::read<std::vector<service_sample_entity>> |
+        where("sampled_at"_c >= cutoff_ts) |
+        order_by("sampled_at"_c.desc());
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(qry);
+    ensure_success(r, lg());
+
+    // Keep only the most recent row per (service_name, instance_id).
+    // Rows are ordered by sampled_at desc so try_emplace keeps the first seen.
+    std::map<std::pair<std::string, std::string>, domain::service_sample> latest;
+    for (const auto& entity : *r) {
+        latest.try_emplace(
+            {entity.service_name.value(), entity.instance_id.value()},
+            telemetry_mapper::to_domain(entity));
+    }
+
+    std::vector<domain::service_sample> result;
+    result.reserve(latest.size());
+    for (auto& [_, sample] : latest)
+        result.push_back(std::move(sample));
+
+    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
+                               << " active service instance(s)";
     return result;
 }
 

@@ -34,7 +34,10 @@
 #include "ores.refdata/eventing/book_changed_event.hpp"
 #include "ores.refdata/eventing/portfolio_changed_event.hpp"
 #include "ores.refdata/messaging/registrar.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::refdata::service::app {
 
@@ -60,6 +63,9 @@ ores::database::context application::make_context(
 application::application() = default;
 
 namespace {
+
+constexpr std::string_view service_name = "ores.refdata.service";
+constexpr std::string_view service_version = "1.0";
 
 auto& pub_lg() {
     static auto instance = make_logger("ores.refdata.service.app");
@@ -139,6 +145,13 @@ application::run(boost::asio::io_context& io_ctx,
         [](auto& n, auto c, auto v) {
             return ores::refdata::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
+        },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
         });
 
     event_source.stop();

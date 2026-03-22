@@ -173,6 +173,7 @@
       <addaction name="separator"/>
       <addaction name="ActionSetRecordingDirectory"/>
      </widget>
+     <addaction name="ActionServiceDashboard"/>
      <addaction name="ActionTelemetryViewer"/>
      <addaction name="ActionEventViewer"/>
      <addaction name="ActionShell"/>
@@ -394,6 +395,14 @@
    </property>
    <property name="toolTip">
     <string>View domain events in real-time</string>
+   </property>
+  </action>
+  <action name="ActionServiceDashboard">
+   <property name="text">
+    <string>&amp;Service Dashboard...</string>
+   </property>
+   <property name="toolTip">
+    <string>View live status of all running services</string>
    </property>
   </action>
   <action name="ActionTelemetryViewer">

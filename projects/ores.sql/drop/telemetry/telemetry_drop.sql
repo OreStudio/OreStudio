@@ -23,3 +23,4 @@
 \ir ./telemetry_logs_drop.sql
 \ir ./nats_server_samples_drop.sql
 \ir ./nats_stream_samples_drop.sql
+\ir ./service_samples_drop.sql

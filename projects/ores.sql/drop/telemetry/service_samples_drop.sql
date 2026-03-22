@@ -1,4 +1,4 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,26 +17,5 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TELEMETRY_MESSAGING_REGISTRAR_HPP
-#define ORES_TELEMETRY_MESSAGING_REGISTRAR_HPP
 
-#include <optional>
-#include <vector>
-#include "ores.nats/service/client.hpp"
-#include "ores.nats/service/subscription.hpp"
-#include "ores.database/domain/context.hpp"
-#include "ores.security/jwt/jwt_authenticator.hpp"
-
-namespace ores::telemetry::messaging {
-
-class registrar {
-public:
-    static std::vector<ores::nats::service::subscription>
-    register_handlers(ores::nats::service::client& nats,
-        ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier = std::nullopt);
-};
-
-}
-
-#endif
+drop table if exists ores_telemetry_service_samples_tbl;

@@ -425,8 +425,13 @@ void extract_tar_gz(const fs::path& archive_path, const fs::path& dest_dir) {
         ARCHIVE_EXTRACT_ACL  | ARCHIVE_EXTRACT_FFLAGS);
     archive_write_disk_set_standard_lookup(out);
 
+#ifdef _WIN32
+    const int open_rc = archive_read_open_filename_w(
+        a, archive_path.c_str(), 16384);
+#else
     const int open_rc = archive_read_open_filename(
         a, archive_path.c_str(), 16384);
+#endif
     if (open_rc != ARCHIVE_OK) {
         archive_read_free(a);
         archive_write_free(out);

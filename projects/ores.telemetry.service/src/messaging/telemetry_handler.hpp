@@ -20,7 +20,9 @@
 #ifndef ORES_TELEMETRY_MESSAGING_TELEMETRY_HANDLER_HPP
 #define ORES_TELEMETRY_MESSAGING_TELEMETRY_HANDLER_HPP
 
+#include <chrono>
 #include <optional>
+#include <stdexcept>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -30,6 +32,8 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.telemetry/messaging/telemetry_protocol.hpp"
 #include "ores.telemetry/messaging/nats_samples_protocol.hpp"
+#include "ores.telemetry/messaging/service_samples_protocol.hpp"
+#include "ores.telemetry.database/repository/telemetry_repository.hpp"
 
 namespace ores::telemetry::messaging {
 
@@ -93,6 +97,65 @@ public:
             BOOST_LOG_SEV(telemetry_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
+    }
+
+    /**
+     * @brief Receives a fire-and-forget service heartbeat and stores it.
+     *
+     * The message is a plain publish (no reply-to). We decode the payload,
+     * stamp sampled_at with the current time, and persist via the repository.
+     */
+    void service_heartbeat(ores::nats::message msg) {
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto hb = decode<service_heartbeat_message>(msg);
+        if (!hb) {
+            BOOST_LOG_SEV(telemetry_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            return;
+        }
+        domain::service_sample sample;
+        sample.sampled_at = std::chrono::system_clock::now();
+        sample.service_name = hb->service_name;
+        sample.instance_id = hb->instance_id;
+        sample.version = hb->version;
+
+        database::repository::telemetry_repository repo;
+        repo.insert_service_sample(ctx_, sample);
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            << "Stored heartbeat: " << sample.service_name
+            << " instance=" << sample.instance_id;
+    }
+
+    void service_samples_list(ores::nats::message msg) {
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (decode<get_service_samples_request>(msg)) {
+            database::repository::telemetry_repository repo;
+            get_service_samples_response resp;
+            try {
+                resp.samples = repo.list_service_samples(ctx);
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to list service samples: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(telemetry_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            << "Completed " << msg.subject;
     }
 
     void nats_stream_samples_list(ores::nats::message msg) {

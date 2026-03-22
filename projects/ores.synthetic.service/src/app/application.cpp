@@ -25,11 +25,19 @@
 #include "ores.synthetic.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.synthetic/messaging/registrar.hpp"
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
 #include "ores.service/service/domain_service_runner.hpp"
+#include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::synthetic::service::app {
 
 using namespace ores::logging;
+
+namespace {
+constexpr std::string_view service_name = "ores.synthetic.service";
+constexpr std::string_view service_version = "1.0";
+}
 
 ores::database::context application::make_context(
     const ores::database::database_options& db_opts) {
@@ -67,6 +75,13 @@ application::run(boost::asio::io_context& io_ctx,
         [](auto& n, auto c, auto v) {
             return ores::synthetic::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
+        },
+        [&nats](boost::asio::io_context& ioc) {
+            auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
+                std::string(service_name), std::string(service_version), nats);
+            boost::asio::co_spawn(ioc,
+                [hb]() { return hb->run(); },
+                boost::asio::detached);
         });
     co_return;
 }

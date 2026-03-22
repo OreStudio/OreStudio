@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>640</width>
-    <height>520</height>
+    <height>550</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>640</width>
-    <height>520</height>
+    <height>550</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -61,26 +61,11 @@
            </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="labelPlatform">
-            <property name="text"><string>Platforms:</string></property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QListWidget" name="platformsList">
-            <property name="minimumSize">
-             <size><width>0</width><height>80</height></size>
-            </property>
-            <property name="maximumSize">
-             <size><width>16777215</width><height>100</height></size>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
            <widget class="QLabel" name="labelMinRam">
             <property name="text"><string>Min RAM (MB):</string></property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="3" column="1">
            <widget class="QSpinBox" name="minRamSpinBox">
             <property name="minimum"><number>0</number></property>
             <property name="maximum"><number>1048576</number></property>
@@ -88,12 +73,12 @@
             <property name="value"><number>512</number></property>
            </widget>
           </item>
-          <item row="5" column="0">
+          <item row="4" column="0">
            <widget class="QLabel" name="labelPackageFile">
             <property name="text"><string>Package File:</string></property>
            </widget>
           </item>
-          <item row="5" column="1">
+          <item row="4" column="1">
            <layout class="QHBoxLayout" name="packageLayout">
             <item>
              <widget class="QLineEdit" name="packageFilePathEdit">
@@ -109,12 +94,12 @@
             </item>
            </layout>
           </item>
-          <item row="6" column="0">
+          <item row="5" column="0">
            <widget class="QLabel" name="labelDescription">
             <property name="text"><string>Description:</string></property>
            </widget>
           </item>
-          <item row="6" column="1">
+          <item row="5" column="1">
            <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size><width>0</width><height>60</height></size>
@@ -135,6 +120,74 @@
           <size><width>20</width><height>20</height></size>
          </property>
         </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="platformsTab">
+      <attribute name="title"><string>Platforms</string></attribute>
+      <layout class="QVBoxLayout" name="platformsTabLayout">
+       <item>
+        <widget class="QGroupBox" name="platformsGroup">
+         <property name="title"><string>Supported Platforms</string></property>
+         <layout class="QHBoxLayout" name="platformsHLayout">
+          <item>
+           <layout class="QVBoxLayout" name="availableLayout">
+            <item>
+             <widget class="QLabel" name="labelAvailable">
+              <property name="text"><string>Available</string></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="availablePlatformsList"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="buttonsLayout">
+            <item>
+             <spacer name="buttonTopSpacer">
+              <property name="orientation"><enum>Qt::Vertical</enum></property>
+              <property name="sizeHint" stdset="0">
+               <size><width>20</width><height>40</height></size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="addPlatformButton">
+              <property name="text"><string>&gt;</string></property>
+              <property name="maximumWidth"><number>40</number></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="removePlatformButton">
+              <property name="text"><string>&lt;</string></property>
+              <property name="maximumWidth"><number>40</number></property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="buttonBottomSpacer">
+              <property name="orientation"><enum>Qt::Vertical</enum></property>
+              <property name="sizeHint" stdset="0">
+               <size><width>20</width><height>40</height></size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="assignedLayout">
+            <item>
+             <widget class="QLabel" name="labelAssigned">
+              <property name="text"><string>Assigned</string></property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="assignedPlatformsList"/>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>

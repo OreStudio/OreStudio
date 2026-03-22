@@ -293,7 +293,7 @@ begin
         ) values (
             p_target_tenant_id,
             coalesce(v_existing_image_id, r.image_id), 0, r.key, r.description, r.svg_data,
-            coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
+            coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;
@@ -482,7 +482,7 @@ begin
             p_target_tenant_id,
             r.alpha2_code, 0, r.alpha3_code, r.numeric_code, r.name, r.official_name,
             v_coding_scheme_code, v_resolved_image_id,
-            coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
+            coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;
@@ -689,7 +689,7 @@ begin
             r.iso_code, 0, r.name, r.numeric_code, r.symbol, r.fraction_symbol,
             r.fractions_per_unit, r.rounding_type, r.rounding_precision, r.format, r.monetary_nature, r.market_tier,
             v_coding_scheme_code, v_resolved_image_id,
-            coalesce(ores_iam_current_actor_fn(), current_user), current_user, 'system.external_data_import',
+            coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
             'Imported from DQ dataset: ' || v_dataset_name
         )
         returning version into v_new_version;

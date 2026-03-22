@@ -26,6 +26,34 @@
 -- Hosts, batches, workunits, and results are strictly tenant-scoped.
 
 -- -----------------------------------------------------------------------------
+-- Platforms (global registry — system tenant records visible to all tenants;
+-- write access restricted to system tenant only)
+-- -----------------------------------------------------------------------------
+alter table ores_compute_platforms_tbl enable row level security;
+
+create policy ores_compute_platforms_tenant_isolation_policy
+on ores_compute_platforms_tbl
+for select using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_iam_system_tenant_id_fn()  -- system platforms visible to all
+);
+
+-- -----------------------------------------------------------------------------
+-- App Version Platforms (tenant-scoped junction table)
+-- -----------------------------------------------------------------------------
+alter table ores_compute_app_version_platforms_tbl enable row level security;
+
+create policy ores_compute_app_version_platforms_tenant_isolation_policy
+on ores_compute_app_version_platforms_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+    or tenant_id = ores_iam_system_tenant_id_fn()  -- system app version platforms visible to all
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Apps (global registry — system tenant records visible to all tenants)
 -- -----------------------------------------------------------------------------
 alter table ores_compute_apps_tbl enable row level security;

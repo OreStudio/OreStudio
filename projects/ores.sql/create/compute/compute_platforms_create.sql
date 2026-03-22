@@ -18,23 +18,108 @@
  *
  */
 
--- Reference table: known compute platform identifiers
+-- =============================================================================
+-- Compute Platforms (bitemporal, system-owned)
+-- =============================================================================
+-- Known compute platform identifiers using Rust target triple codes.
+-- Records are owned by the system tenant and visible to all tenants via RLS.
+-- Only the system tenant may write; regular tenants have read-only access.
+
 create table if not exists "ores_compute_platforms_tbl" (
-    "code"        text primary key,
-    "description" text not null default ''
+    "id"                  uuid not null,
+    "tenant_id"           uuid not null,
+    "version"             integer not null,
+    "code"                text not null,
+    "display_name"        text not null,
+    "description"         text not null,
+    "os_family"           text not null,
+    "cpu_arch"            text not null,
+    "abi"                 text,
+    "is_active"           boolean not null default true,
+    "modified_by"         text not null,
+    "performed_by"        text not null,
+    "change_reason_code"  text not null,
+    "change_commentary"   text not null,
+    "valid_from"          timestamp with time zone not null,
+    "valid_to"            timestamp with time zone not null,
+    primary key (id, tenant_id, valid_from, valid_to),
+    exclude using gist (
+        id WITH =,
+        tenant_id WITH =,
+        tstzrange(valid_from, valid_to) WITH &&
+    ),
+    check ("valid_from" < "valid_to"),
+    check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid)
 );
 
--- Seed the known platforms
-insert into ores_compute_platforms_tbl (code, description) values
-    ('linux-x86_64',   'Linux x86-64'),
-    ('linux-arm64',    'Linux ARM64'),
-    ('windows-x86_64', 'Windows x86-64'),
-    ('macos-arm64',    'macOS Apple Silicon')
-on conflict (code) do nothing;
+-- Unique code for active records (Rust target triple must be globally unique)
+create unique index if not exists ores_compute_platforms_code_uniq_idx
+on "ores_compute_platforms_tbl" (code)
+where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Junction table: supported platforms per app version
-create table if not exists "ores_compute_app_version_platforms_tbl" (
-    "app_version_id" uuid not null,
-    "platform_code"  text not null references ores_compute_platforms_tbl(code),
-    primary key (app_version_id, platform_code)
-);
+-- Version uniqueness for optimistic concurrency
+create unique index if not exists ores_compute_platforms_version_uniq_idx
+on "ores_compute_platforms_tbl" (id, version)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create unique index if not exists ores_compute_platforms_id_uniq_idx
+on "ores_compute_platforms_tbl" (id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create index if not exists ores_compute_platforms_tenant_idx
+on "ores_compute_platforms_tbl" (tenant_id)
+where valid_to = ores_utility_infinity_timestamp_fn();
+
+create or replace function ores_compute_platforms_insert_fn()
+returns trigger as $$
+declare
+    current_version integer;
+begin
+    -- Validate tenant_id
+    NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Version management
+    select version into current_version
+    from "ores_compute_platforms_tbl"
+    where id = NEW.id
+      and valid_to = ores_utility_infinity_timestamp_fn()
+    for update;
+
+    if found then
+        if NEW.version != 0 and NEW.version != current_version then
+            raise exception 'Version conflict: expected version %, but current version is %',
+                NEW.version, current_version
+                using errcode = 'P0002';
+        end if;
+        NEW.version = current_version + 1;
+
+        update "ores_compute_platforms_tbl"
+        set valid_to = current_timestamp
+        where id = NEW.id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+          and valid_from < current_timestamp;
+    else
+        NEW.version = 1;
+    end if;
+
+    NEW.valid_from = current_timestamp;
+    NEW.valid_to = ores_utility_infinity_timestamp_fn();
+    NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
+    return NEW;
+end;
+$$ language plpgsql;
+
+create or replace trigger ores_compute_platforms_insert_trg
+before insert on "ores_compute_platforms_tbl"
+for each row execute function ores_compute_platforms_insert_fn();
+
+create or replace rule ores_compute_platforms_delete_rule as
+on delete to "ores_compute_platforms_tbl" do instead
+    update "ores_compute_platforms_tbl"
+    set valid_to = current_timestamp
+    where id = OLD.id
+      and valid_to = ores_utility_infinity_timestamp_fn();

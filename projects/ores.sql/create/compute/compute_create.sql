@@ -29,6 +29,8 @@
 \ir ./compute_app_versions_create.sql
 \ir ./compute_app_versions_notify_trigger_create.sql
 \ir ./compute_platforms_create.sql
+\ir ./compute_app_version_platforms_create.sql
+\ir ./compute_app_version_platforms_notify_trigger_create.sql
 \ir ./compute_hosts_create.sql
 \ir ./compute_hosts_notify_trigger_create.sql
 \ir ./compute_batches_create.sql

@@ -61,6 +61,7 @@ public:
     struct resolved_connection {
         std::string host;
         int port{0};
+        int http_port{8080};
         std::string username;
         std::string password;    ///< decrypted
         std::string name;

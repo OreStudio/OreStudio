@@ -136,6 +136,13 @@ void sqlite_context::initialize_schema() {
         // Column already exists, ignore
     }
 
+    // Migration: Add http_port column to environments if it doesn't exist
+    try {
+        conn->execute("ALTER TABLE environments ADD COLUMN http_port INTEGER NOT NULL DEFAULT 8080");
+    } catch (...) {
+        // Column already exists, ignore
+    }
+
     // Migration: migrate old server_environments → connections if old table exists.
     // We probe the table directly: execute() returns an error Result when the
     // table is absent, so checking the Result avoids exception-based control flow.

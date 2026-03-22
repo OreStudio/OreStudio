@@ -80,8 +80,6 @@ void AppDetailDialog::setupConnections() {
     connect(ui_->closeButton, &QPushButton::clicked, this,
             &AppDetailDialog::onCloseClicked);
 
-    connect(ui_->codeEdit, &QLineEdit::textChanged, this,
-            &AppDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &AppDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
@@ -104,7 +102,6 @@ void AppDetailDialog::setApp(
 
 void AppDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
@@ -116,7 +113,6 @@ void AppDetailDialog::setCreateMode(bool createMode) {
 
 void AppDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -124,7 +120,6 @@ void AppDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void AppDetailDialog::updateUiFromApp() {
-    ui_->codeEdit->setText(QString::fromStdString(app_.name));
     ui_->nameEdit->setText(QString::fromStdString(app_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(app_.description));
 
@@ -140,18 +135,10 @@ void AppDetailDialog::updateUiFromApp() {
 }
 
 void AppDetailDialog::updateAppFromUi() {
-    if (createMode_) {
-        app_.name = ui_->codeEdit->text().trimmed().toStdString();
-    }
     app_.name = ui_->nameEdit->text().trimmed().toStdString();
     app_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     app_.modified_by = username_;
     app_.performed_by = username_;
-}
-
-void AppDetailDialog::onCodeChanged(const QString& /* text */) {
-    hasChanges_ = true;
-    updateSaveButtonState();
 }
 
 void AppDetailDialog::onFieldChanged() {
@@ -165,10 +152,7 @@ void AppDetailDialog::updateSaveButtonState() {
 }
 
 bool AppDetailDialog::validateInput() {
-    const QString code_val = ui_->codeEdit->text().trimmed();
-    const QString name_val = ui_->nameEdit->text().trimmed();
-
-    return !code_val.isEmpty() && !name_val.isEmpty();
+    return !ui_->nameEdit->text().trimmed().isEmpty();
 }
 
 void AppDetailDialog::onSaveClicked() {

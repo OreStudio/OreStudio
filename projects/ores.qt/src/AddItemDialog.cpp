@@ -109,6 +109,12 @@ void AddItemDialog::setupUI() {
     portSpinBox_->setValue(55555);
     formLayout->addRow(portLabel_, portSpinBox_);
 
+    httpPortLabel_ = new QLabel(tr("HTTP Port:"), this);
+    httpPortSpinBox_ = new QSpinBox(this);
+    httpPortSpinBox_->setRange(1, 65535);
+    httpPortSpinBox_->setValue(8080);
+    formLayout->addRow(httpPortLabel_, httpPortSpinBox_);
+
     namespaceLabel_ = new QLabel(tr("Namespace:"), this);
     namespaceEdit_ = new QLineEdit(this);
     namespaceEdit_->setPlaceholderText(tr("e.g., ores.dev.local1"));
@@ -301,6 +307,8 @@ void AddItemDialog::updateFieldVisibility() {
     portLabel_->setVisible(isEnvironment || isConnection);
     portSpinBox_->setVisible(isEnvironment || isConnection);
     portSpinBox_->setEnabled(isEnvironment || isConnection);
+    httpPortLabel_->setVisible(isEnvironment);
+    httpPortSpinBox_->setVisible(isEnvironment);
 
     // Namespace: Environment (editable), Connection (read-only from env)
     namespaceLabel_->setVisible(isEnvironment || isConnection);
@@ -413,6 +421,7 @@ void AddItemDialog::setEnvironment(const connections::domain::environment& env) 
     nameEdit_->setText(QString::fromStdString(env.name));
     hostEdit_->setText(QString::fromStdString(env.host));
     portSpinBox_->setValue(env.port);
+    httpPortSpinBox_->setValue(env.http_port);
     namespaceEdit_->setText(QString::fromStdString(env.subject_prefix));
     descriptionEdit_->setPlainText(QString::fromStdString(env.description));
 
@@ -443,6 +452,7 @@ connections::domain::environment AddItemDialog::getEnvironment() const {
     env.name = nameEdit_->text().trimmed().toStdString();
     env.host = hostEdit_->text().trimmed().toStdString();
     env.port = portSpinBox_->value();
+    env.http_port = httpPortSpinBox_->value();
     env.subject_prefix = namespaceEdit_->text().trimmed().toStdString();
     env.description = descriptionEdit_->toPlainText().trimmed().toStdString();
 

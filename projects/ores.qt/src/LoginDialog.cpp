@@ -540,6 +540,11 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
     if (result.success) {
         BOOST_LOG_SEV(lg(), debug) << "Login was successful";
 
+        // Emit discovered HTTP base URL so MainWindow can configure it
+        if (!result.http_base_url.empty()) {
+            emit httpBaseUrlDiscovered(QString::fromStdString(result.http_base_url));
+        }
+
         if (result.password_reset_required) {
             BOOST_LOG_SEV(lg(), info) << "Password reset required";
             statusLabel_->setText("Password change required...");

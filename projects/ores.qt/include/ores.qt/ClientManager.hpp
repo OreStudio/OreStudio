@@ -75,6 +75,11 @@ struct LoginResult {
     bool tenant_bootstrap_mode = false;
     boost::uuids::uuid selected_party_id;
     std::vector<PartyInfo> available_parties;
+    /**
+     * @brief HTTP base URL discovered from the HTTP server via NATS.
+     * Empty if discovery failed or the HTTP server has no NATS support.
+     */
+    std::string http_base_url;
 };
 
 /**

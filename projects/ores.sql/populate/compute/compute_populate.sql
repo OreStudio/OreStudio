@@ -36,7 +36,7 @@ select
     'send_mq_message',
     '{"subject":"compute.v1.work.reap"}',
     1,
-    'system', 'system', 'system.new_record', '',
+    current_user, current_user, 'system.new_record', '',
     current_timestamp, ores_utility_infinity_timestamp_fn()
 where not exists (
     select 1 from ores_scheduler_job_definitions_tbl

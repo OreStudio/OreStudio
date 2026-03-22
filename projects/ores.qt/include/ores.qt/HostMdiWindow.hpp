@@ -28,7 +28,7 @@
 #include "ores.qt/ClientHostModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.compute/domain/host.hpp"
+#include "ores.compute.api/domain/host.hpp"
 
 namespace ores::qt {
 

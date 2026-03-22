@@ -29,7 +29,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/account_party.hpp"
+#include "ores.iam.api/domain/account_party.hpp"
 #include "ores.refdata/domain/party.hpp"
 
 namespace ores::qt {

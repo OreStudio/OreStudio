@@ -34,7 +34,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 
 namespace ores::qt {
 

@@ -28,7 +28,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.iam.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.iam/messaging/registrar.hpp"
+#include "ores.iam.core/messaging/registrar.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 
 namespace ores::iam::service::app {

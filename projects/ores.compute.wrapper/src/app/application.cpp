@@ -40,9 +40,9 @@
 #include <rfl/json.hpp>
 #include "ores.utility/version/version.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.compute/messaging/work_protocol.hpp"
-#include "ores.compute/messaging/result_protocol.hpp"
-#include "ores.compute/messaging/telemetry_protocol.hpp"
+#include "ores.compute.api/messaging/work_protocol.hpp"
+#include "ores.compute.api/messaging/result_protocol.hpp"
+#include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.wrapper/net/http_client.hpp"
 
 namespace ores::compute::wrapper::app {

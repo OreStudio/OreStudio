@@ -31,7 +31,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.refdata/messaging/party_protocol.hpp"
 
 namespace ores::qt {

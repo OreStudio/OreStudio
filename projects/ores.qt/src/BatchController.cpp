@@ -29,7 +29,7 @@
 #include "ores.qt/BatchHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.compute/eventing/batch_changed_event.hpp"
+#include "ores.compute.api/eventing/batch_changed_event.hpp"
 
 namespace ores::qt {
 

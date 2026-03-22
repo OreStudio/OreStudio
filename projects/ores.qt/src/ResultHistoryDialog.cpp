@@ -26,7 +26,7 @@
 #include "ui_ResultHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.compute/messaging/result_protocol.hpp"
+#include "ores.compute.api/messaging/result_protocol.hpp"
 
 namespace ores::qt {
 

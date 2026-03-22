@@ -23,7 +23,7 @@
 #include <boost/asio/this_coro.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/system/system_error.hpp>
-#include "ores.compute/repository/compute_telemetry_repository.hpp"
+#include "ores.compute.core/repository/compute_telemetry_repository.hpp"
 
 namespace ores::compute::service::app {
 

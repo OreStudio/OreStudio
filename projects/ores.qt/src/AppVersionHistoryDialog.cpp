@@ -26,7 +26,7 @@
 #include "ui_AppVersionHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.compute/messaging/app_version_protocol.hpp"
+#include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {

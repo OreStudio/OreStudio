@@ -20,7 +20,7 @@
 #include "ores.qt/ResultController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.compute/eventing/result_changed_event.hpp"
+#include "ores.compute.api/eventing/result_changed_event.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>

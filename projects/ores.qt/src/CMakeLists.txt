@@ -35,7 +35,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.http.lib
     ores.refdata.lib
     ores.trading.lib
-    ores.compute.lib
+    ores.compute.api.lib
     ores.scheduler.lib
     ores.reporting.lib
     ores.nats.lib
@@ -43,7 +43,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.dq.lib
     ores.synthetic.lib
     ores.assets.lib
-    ores.iam.lib
+    ores.iam.api.lib
     ores.connections.lib
     ores.eventing.lib
     ores.variability.lib

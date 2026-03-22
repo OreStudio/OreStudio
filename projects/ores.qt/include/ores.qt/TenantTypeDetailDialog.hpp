@@ -23,7 +23,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/tenant_type.hpp"
+#include "ores.iam.api/domain/tenant_type.hpp"
 
 namespace Ui {
 class TenantTypeDetailDialog;

@@ -28,9 +28,9 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <cli/cli.h>
-#include "ores.iam/messaging/authorization_protocol.hpp"
-#include "ores.iam/domain/role_table_io.hpp"  // IWYU pragma: keep.
-#include "ores.iam/domain/permission_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/domain/role_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam.api/domain/permission_table_io.hpp"  // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 

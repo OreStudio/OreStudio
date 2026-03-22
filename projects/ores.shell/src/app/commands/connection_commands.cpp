@@ -25,7 +25,7 @@
 #include <cli/cli.h>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
-#include "ores.iam/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 
 namespace ores::shell::app::commands {
 

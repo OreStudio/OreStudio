@@ -124,6 +124,16 @@ jobs:
         with:
           doNotCache: false
 
+      - name: Cache CMake build output
+        uses: actions/cache@v5
+        with:
+          path: build/output/linux-gcc-debug-ninja
+          key: cmake-linux-gcc-debug-ninja-${{ github.sha }}
+          restore-keys: |
+            cmake-linux-gcc-debug-ninja-${{ github.ref }}-
+            cmake-linux-gcc-debug-ninja-refs/heads/main-
+            cmake-linux-gcc-debug-ninja-
+
       - name: Run CTest workflow
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)

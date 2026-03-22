@@ -27,9 +27,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.iam/messaging/account_protocol.hpp"
-#include "ores.iam/messaging/account_party_protocol.hpp"
-#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {

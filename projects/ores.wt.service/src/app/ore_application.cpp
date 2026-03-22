@@ -25,7 +25,7 @@
 #include "ores.wt.service/app/account_list_widget.hpp"
 #include "ores.wt.service/app/account_dialog.hpp"
 #include "ores.wt.service/service/application_context.hpp"
-#include "ores.iam/domain/login_info.hpp"
+#include "ores.iam.api/domain/login_info.hpp"
 #include "ores.refdata/domain/currency.hpp"
 #include "ores.refdata/domain/country.hpp"
 #include "ores.logging/make_logger.hpp"

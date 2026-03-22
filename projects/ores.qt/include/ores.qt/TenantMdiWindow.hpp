@@ -27,7 +27,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientTenantModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/tenant.hpp"
+#include "ores.iam.api/domain/tenant.hpp"
 
 namespace ores::qt {
 

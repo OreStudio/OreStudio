@@ -40,8 +40,8 @@
 #include "ores.nats/service/subscription.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/session.hpp"
-#include "ores.iam/messaging/session_samples_protocol.hpp"
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/session_samples_protocol.hpp"
 
 namespace ores::qt {
 

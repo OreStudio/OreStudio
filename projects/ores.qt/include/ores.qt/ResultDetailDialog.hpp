@@ -23,7 +23,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.compute/domain/result.hpp"
+#include "ores.compute.api/domain/result.hpp"
 
 namespace Ui {
 class ResultDetailDialog;

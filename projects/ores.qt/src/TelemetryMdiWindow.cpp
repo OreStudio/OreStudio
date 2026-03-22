@@ -32,7 +32,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/TelemetryLogDelegate.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
 
 namespace ores::qt {
 

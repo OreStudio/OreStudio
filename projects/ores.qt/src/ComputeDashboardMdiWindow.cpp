@@ -24,7 +24,7 @@
 #include <QPointer>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.compute/messaging/telemetry_protocol.hpp"
+#include "ores.compute.api/messaging/telemetry_protocol.hpp"
 
 namespace ores::qt {
 

@@ -28,7 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.iam/messaging/tenant_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 

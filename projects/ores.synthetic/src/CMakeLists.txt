@@ -42,7 +42,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.nats.lib
         ores.dq.lib
-        ores.iam.lib
+        ores.iam.api.lib
         ores.refdata.lib
     PRIVATE
         ores.service.lib

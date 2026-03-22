@@ -22,8 +22,8 @@
 #include <iostream>
 #include <rfl/json.hpp>
 #include "ores.utility/version/version.hpp"
-#include "ores.iam/messaging/bootstrap_protocol.hpp"
-#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.shell/service/nats_session.hpp"
 #include "ores.shell/app/repl.hpp"
 

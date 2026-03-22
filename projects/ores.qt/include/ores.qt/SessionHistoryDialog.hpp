@@ -34,8 +34,8 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/session.hpp"
-#include "ores.iam/messaging/session_samples_protocol.hpp"
+#include "ores.iam.api/domain/session.hpp"
+#include "ores.iam.api/messaging/session_samples_protocol.hpp"
 
 namespace ores::qt {
 

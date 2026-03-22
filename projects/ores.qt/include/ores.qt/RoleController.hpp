@@ -23,7 +23,7 @@
 #include <QPointer>
 #include "ores.qt/EntityController.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/role.hpp"
+#include "ores.iam.api/domain/role.hpp"
 
 namespace ores::qt {
 

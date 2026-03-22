@@ -43,7 +43,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.iam/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 
 namespace ores::qt {
 

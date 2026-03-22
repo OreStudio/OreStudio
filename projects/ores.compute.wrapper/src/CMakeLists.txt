@@ -40,7 +40,7 @@ find_package(LibArchive REQUIRED)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.compute.lib
+        ores.compute.api.lib
         ores.nats.lib
         ores.utility.lib
         ores.telemetry.lib

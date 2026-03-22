@@ -27,7 +27,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/account.hpp"
+#include "ores.iam.api/domain/account.hpp"
 
 namespace ores::qt { class ChangeReasonCache; }
 

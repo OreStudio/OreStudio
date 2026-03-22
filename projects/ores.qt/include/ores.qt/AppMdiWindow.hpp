@@ -28,7 +28,7 @@
 #include "ores.qt/ClientAppModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.compute/domain/app.hpp"
+#include "ores.compute.api/domain/app.hpp"
 
 namespace ores::qt {
 

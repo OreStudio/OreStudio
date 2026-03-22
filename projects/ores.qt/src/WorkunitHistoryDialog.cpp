@@ -26,7 +26,7 @@
 #include "ui_WorkunitHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.compute/messaging/workunit_protocol.hpp"
+#include "ores.compute.api/messaging/workunit_protocol.hpp"
 
 namespace ores::qt {
 

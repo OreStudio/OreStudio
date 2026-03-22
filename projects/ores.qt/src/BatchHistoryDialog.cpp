@@ -26,7 +26,7 @@
 #include "ui_BatchHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.compute/messaging/batch_protocol.hpp"
+#include "ores.compute.api/messaging/batch_protocol.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {

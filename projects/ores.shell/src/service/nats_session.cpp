@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <rfl/json.hpp>
 #include "ores.nats/service/client.hpp"
-#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.shell/service/session_expired_error.hpp"
 
 namespace ores::shell::service {

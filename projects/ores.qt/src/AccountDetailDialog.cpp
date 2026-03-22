@@ -39,9 +39,9 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam/messaging/account_protocol.hpp"
-#include "ores.iam/messaging/account_party_protocol.hpp"
-#include "ores.iam/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/account_party_protocol.hpp"
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
 
 namespace ores::qt {
 

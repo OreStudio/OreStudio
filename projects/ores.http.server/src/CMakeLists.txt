@@ -39,7 +39,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.lib
-        ores.iam.lib
+        ores.iam.core.lib
         ores.refdata.lib
         ores.assets.lib
         ores.variability.lib

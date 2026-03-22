@@ -27,12 +27,12 @@
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
-#include "ores.iam/messaging/login_protocol.hpp"
-#include "ores.iam/messaging/signup_protocol.hpp"
-#include "ores.iam/messaging/bootstrap_protocol.hpp"
-#include "ores.iam/messaging/session_protocol.hpp"
-#include "ores.iam/messaging/session_samples_protocol.hpp"
-#include "ores.iam/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/signup_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/session_samples_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.http/messaging/http_info_protocol.hpp"
 
 namespace ores::qt {

@@ -17,21 +17,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/config/options.hpp"
+#ifndef ORES_HTTP_SERVER_MESSAGING_REGISTRAR_HPP
+#define ORES_HTTP_SERVER_MESSAGING_REGISTRAR_HPP
 
-#include <ostream>
+#include <string>
+#include <vector>
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
 
-namespace ores::http_server::config {
+namespace ores::http_server::messaging {
 
-std::ostream& operator<<(std::ostream& s, const options& v) {
-    s << "options {"
-      << " logging: " << (v.logging.has_value() ? "configured" : "none")
-      << " server: " << v.server
-      << " nats.url: " << v.nats.url
-      << " http_base_url: " << (v.http_base_url.empty() ? "(derived)" : v.http_base_url)
-      << " compute_storage_dir: " << v.compute_storage_dir
-      << " }";
-    return s;
-}
+class registrar {
+public:
+    /**
+     * @brief Registers all NATS message handlers for the HTTP server.
+     *
+     * @param nats Connected NATS client.
+     * @param base_url The HTTP server's externally accessible base URL.
+     * @return Subscription handles that must be kept alive for the lifetime
+     *         of the server.
+     */
+    static std::vector<ores::nats::service::subscription>
+    register_handlers(ores::nats::service::client& nats,
+                      const std::string& base_url);
+};
 
-}
+} // namespace ores::http_server::messaging
+
+#endif

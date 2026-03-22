@@ -147,6 +147,13 @@ signals:
     void loginSucceeded(const QString& username);
 
     /**
+     * @brief Emitted when the HTTP base URL is discovered via NATS service
+     *        discovery during login. May not be emitted if the HTTP server
+     *        does not have NATS enabled.
+     */
+    void httpBaseUrlDiscovered(const QString& baseUrl);
+
+    /**
      * @brief Emitted when login fails.
      */
     void loginFailed(const QString& errorMessage);

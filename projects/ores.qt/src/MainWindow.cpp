@@ -2921,9 +2921,6 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& connecti
     // Store the connection name for the window title
     activeConnectionName_ = connectionName;
 
-    // Set HTTP base URL from the resolved environment's http_port
-    setHttpBaseUrl("http://" + resolved.host + ":" + std::to_string(resolved.http_port));
-
     // Show login dialog pre-filled with connection details
     LoginDialogOptions options;
     options.host = QString::fromStdString(resolved.host);
@@ -2977,9 +2974,6 @@ void MainWindow::onEnvironmentConnectRequested(const boost::uuids::uuid& environ
     }
 
     activeConnectionName_ = environmentName;
-
-    // Set HTTP base URL from the environment's configured http_port
-    setHttpBaseUrl("http://" + env->host + ":" + std::to_string(env->http_port));
 
     // Show login dialog pre-filled with environment host/port; user enters credentials
     LoginDialogOptions options;
@@ -3246,14 +3240,15 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
     // Connect close signal
     connect(loginWidget, &LoginDialog::closeRequested, subWindow, &QWidget::close);
 
+    // Connect HTTP base URL discovery signal (from NATS service discovery)
+    connect(loginWidget, &LoginDialog::httpBaseUrlDiscovered,
+            this, [this](const QString& url) {
+        setHttpBaseUrl(url.toStdString());
+    });
+
     // Connect login success signal
     connect(loginWidget, &LoginDialog::loginSucceeded,
             this, [this, connectionName](const QString& username) {
-        // Fallback: if no environment/connection was selected (manual entry),
-        // derive HTTP base URL from connected host with default port 8080.
-        if (httpBaseUrl_.empty()) {
-            setHttpBaseUrl("http://" + clientManager_->connectedHost() + ":8080");
-        }
         onLoginSuccess(username);
         if (!connectionName.isEmpty()) {
             ui_->statusbar->showMessage(tr("Connected to %1").arg(connectionName));
@@ -3324,8 +3319,6 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
                         loginWidget->setPort(env.port);
                         loginWidget->setSubjectPrefix(
                             QString::fromStdString(env.subject_prefix));
-                        setHttpBaseUrl("http://" + env.host + ":"
-                            + std::to_string(env.http_port));
                         break;
                     }
                 }
@@ -3347,8 +3340,6 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
                                 loginWidget->setPassword(
                                     QString::fromStdString(resolved.password));
                             }
-                            setHttpBaseUrl("http://" + resolved.host + ":"
-                                + std::to_string(resolved.http_port));
                         } catch (const std::exception& e) {
                             using namespace ores::logging;
                             BOOST_LOG_SEV(lg(), error)

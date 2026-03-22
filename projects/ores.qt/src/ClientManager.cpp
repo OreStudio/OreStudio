@@ -33,6 +33,7 @@
 #include "ores.iam/messaging/session_protocol.hpp"
 #include "ores.iam/messaging/session_samples_protocol.hpp"
 #include "ores.iam/messaging/account_protocol.hpp"
+#include "ores.http/messaging/http_info_protocol.hpp"
 
 namespace ores::qt {
 
@@ -206,13 +207,32 @@ LoginResult ClientManager::login(const std::string& username,
 
         arm_refresh_timer(response.access_lifetime_s);
         emit loggedIn();
+
+        // Discover HTTP base URL via NATS service discovery
+        std::string discovered_base_url;
+        try {
+            auto http_info = process_request(http::messaging::get_http_info_request{});
+            if (http_info) {
+                discovered_base_url = http_info->base_url;
+                BOOST_LOG_SEV(lg(), info) << "Discovered HTTP base URL: "
+                                          << discovered_base_url;
+            } else {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "HTTP service discovery failed: " << http_info.error();
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "HTTP service discovery unavailable: " << e.what();
+        }
+
         return {
             .success = true,
             .error_message = {},
             .password_reset_required = response.password_reset_required,
             .tenant_bootstrap_mode = response.tenant_bootstrap_mode,
             .selected_party_id = selected_party_id,
-            .available_parties = std::move(available_parties)
+            .available_parties = std::move(available_parties),
+            .http_base_url = std::move(discovered_base_url)
         };
 
     } catch (const std::exception& e) {

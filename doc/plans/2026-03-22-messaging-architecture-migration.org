@@ -34,29 +34,29 @@ the HTTP server to every service domain.
 Each service domain becomes three distinct components:
 
 #+begin_example
-ores.iam.types     ← shared contract: domain types (POCOs + IO) and
+ores.iam.api     ← shared contract: domain types (POCOs + IO) and
                       messaging protocol (request/response structs,
                       nats_subject constants); no DB, no handlers
 ores.iam.core      ← implementation: handlers, service logic, repository,
-                      DB access; depends on ores.iam.types
+                      DB access; depends on ores.iam.api
 ores.iam.service   ← executable; links both, wires NATS and DB
 #+end_example
 
-The separation is driven by a key invariant: ~ores.iam.types~ contains
+The separation is driven by a key invariant: ~ores.iam.api~ contains
 everything that appears /on the wire/ — domain types that are serialised
 as request/response fields belong here, not just protocol envelopes.
 Repository and handler code depends on domain types but is private
 implementation detail; it lives in ~ores.iam.core~.
 
-Clients link only ~ores.iam.types~. The dependency graph is strict and
+Clients link only ~ores.iam.api~. The dependency graph is strict and
 expresses intent:
 
 #+begin_example
-ores.qt   ──→ ores.iam.types
-ores.qt   ──→ ores.compute.types
+ores.qt   ──→ ores.iam.api
+ores.qt   ──→ ores.compute.api
 ...
 
-ores.iam.core    ──→ ores.iam.types   (implements the protocol)
+ores.iam.core    ──→ ores.iam.api   (implements the protocol)
 ores.iam.service ──→ ores.iam.core   (runs the service)
 #+end_example
 
@@ -87,17 +87,17 @@ Ten service libraries require splitting:
 
 ~ores.http~ already has ~messaging/http_info_protocol.hpp~ (created in
 the service discovery feature) and is a working example of the target
-~*.types~ pattern.
+~*.api~ pattern.
 
 * What moves where
 
-** Types components (~ores.{service}.types~)
+** Types components (~ores.{service}.api~)
 
 Move from ~ores.{service}/include/ores.{service}/~:
 
-- All ~domain/*.hpp~ POCOs → new component's ~include/ores.{service}.types/domain/~
+- All ~domain/*.hpp~ POCOs → new component's ~include/ores.{service}.api/domain/~
 - ~domain/*_io.hpp~ (JSON + table serialisation helpers) → new component
-- ~messaging/*_protocol.hpp~ files → new component's ~include/ores.{service}.types/messaging/~
+- ~messaging/*_protocol.hpp~ files → new component's ~include/ores.{service}.api/messaging/~
 - ~nats_subject~ constants → new component
 
 Stay in ~ores.{service}.core~:
@@ -109,7 +109,7 @@ Stay in ~ores.{service}.core~:
 
 The new types component has:
 
-- ~include/ores.{service}.types/~ — domain types + protocol headers
+- ~include/ores.{service}.api/~ — domain types + protocol headers
 - ~tests/~ — unit tests for serialisation round-trips
 - ~CMakeLists.txt~ — INTERFACE target if header-only (no ~.cpp~ files
   for IO helpers that are pure templates); static lib otherwise
@@ -142,39 +142,39 @@ These are the largest and most-used components.
 
 Steps:
 
-1. Create ~projects/ores.iam.types/~ scaffold via codegen
+1. Create ~projects/ores.iam.api/~ scaffold via codegen
    (component profile then hand-adjust: no domain stub needed).
 2. Move all domain POCOs and IO helpers from ~ores.iam~ into
-   ~projects/ores.iam.types/include/ores.iam.types/domain/~.
+   ~projects/ores.iam.api/include/ores.iam.api/domain/~.
 3. Move all ~ores.iam/include/ores.iam/messaging/*_protocol.hpp~ into
-   ~projects/ores.iam.types/include/ores.iam.types/messaging/~.
+   ~projects/ores.iam.api/include/ores.iam.api/messaging/~.
 4. Rename ~ores.iam~ project to ~ores.iam.core~; update
    ~#include "ores.iam/..."~ → ~#include "ores.iam.core/..."~ throughout,
    and update all dependent CMakeLists.
-5. Update ~ores.iam.core~ to ~#include "ores.iam.types/..."~ and add
-   ~ores.iam.types~ as a PUBLIC dependency.
+5. Update ~ores.iam.core~ to ~#include "ores.iam.api/..."~ and add
+   ~ores.iam.api~ as a PUBLIC dependency.
 6. Update clients (~ores.qt~, ~ores.shell~, ~ores.cli~) to link
-   ~ores.iam.types~ instead of ~ores.iam~ (now ~ores.iam.core~).
+   ~ores.iam.api~ instead of ~ores.iam~ (now ~ores.iam.core~).
 7. Write serialisation round-trip tests in
-   ~ores.iam.types/tests/~: for each protocol type, serialize and
+   ~ores.iam.api/tests/~: for each protocol type, serialize and
    deserialise via ~rfl::json::write~ / ~rfl::json::read~ and assert
    field equality.
-8. Repeat for ~ores.compute.types~.
+8. Repeat for ~ores.compute.api~.
 
-PR title: ~[arch] Extract ores.iam.types and ores.compute.types~
+PR title: ~[arch] Extract ores.iam.api and ores.compute.api~
 
 ** Phase 2 — Remaining service splits
 
 Repeat Phase 1 steps for:
 
-- ~ores.refdata.types~ / ~ores.refdata.core~ (47 headers — largest)
-- ~ores.dq.types~ / ~ores.dq.core~
-- ~ores.reporting.types~ / ~ores.reporting.core~
-- ~ores.scheduler.types~ / ~ores.scheduler.core~
-- ~ores.assets.types~ / ~ores.assets.core~
-- ~ores.variability.types~ / ~ores.variability.core~
-- ~ores.trading.types~ / ~ores.trading.core~
-- ~ores.synthetic.types~ / ~ores.synthetic.core~
+- ~ores.refdata.api~ / ~ores.refdata.core~ (47 headers — largest)
+- ~ores.dq.api~ / ~ores.dq.core~
+- ~ores.reporting.api~ / ~ores.reporting.core~
+- ~ores.scheduler.api~ / ~ores.scheduler.core~
+- ~ores.assets.api~ / ~ores.assets.core~
+- ~ores.variability.api~ / ~ores.variability.core~
+- ~ores.trading.api~ / ~ores.trading.core~
+- ~ores.synthetic.api~ / ~ores.synthetic.core~
 
 Do in batches of 2-3 to keep PRs reviewable.
 
@@ -220,7 +220,7 @@ PR title: ~[arch] Clean up ores.http.server dependencies~
 
 | Pattern                      | Contains                                                   |
 |------------------------------+------------------------------------------------------------|
-| ~ores.{service}.types~       | domain POCOs, IO helpers, *_protocol.hpp, nats_subject constants |
+| ~ores.{service}.api~       | domain POCOs, IO helpers, *_protocol.hpp, nats_subject constants |
 | ~ores.{service}.core~        | handlers, service logic, repository, DB access             |
 | ~ores.{service}.service~     | executable: main, app, config                              |
 | ~ores.http.routes~           | HTTP route handlers for all services                       |
@@ -230,18 +230,18 @@ PR title: ~[arch] Clean up ores.http.server dependencies~
 
 #+begin_quote
 Clients (~ores.qt~, ~ores.shell~, ~ores.cli~) MUST NOT link any
-~*.core~ or service implementation library. They link only ~*.types~
+~*.core~ or service implementation library. They link only ~*.api~
 components and infrastructure libs (~ores.nats~, ~ores.eventing~, etc.).
 #+end_quote
 
-This is enforced structurally: the ~*.types~ component has no database,
+This is enforced structurally: the ~*.api~ component has no database,
 no repository, no service dependencies — so linking it is safe for any
 client. The ~*.core~ component is implementation detail shared only
 between the service executable and ~ores.http.routes~.
 
 * Testing approach
 
-Each ~ores.{service}.types~ component includes its own Catch2 test
+Each ~ores.{service}.api~ component includes its own Catch2 test
 binary. Tests cover:
 
 1. *Round-trip serialisation*: ~rfl::json::write~ then ~rfl::json::read~
@@ -255,7 +255,7 @@ No database, no NATS connection required — tests run entirely in-process.
 
 * Open questions
 
-- Should ~ores.{service}.types~ be a shared library (~.lib~) or a
+- Should ~ores.{service}.api~ be a shared library (~.lib~) or a
   CMake INTERFACE target? Answer: use INTERFACE if no ~.cpp~ files are
   needed (pure header templates); add a ~.lib~ target if IO helpers have
   non-trivial implementation.

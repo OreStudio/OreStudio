@@ -28,6 +28,7 @@
 #include "ui_DatasetBundleDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.dq/messaging/dataset_bundle_protocol.hpp"
 
 namespace ores::qt {
@@ -185,6 +186,15 @@ void DatasetBundleDetailDialog::onSaveClicked() {
 
     updateBundleFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    bundle_.change_reason_code = crSel->reason_code;
+    bundle_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving dataset bundle: " << bundle_.code;
 
     QPointer<DatasetBundleDetailDialog> self = this;
@@ -251,6 +261,10 @@ void DatasetBundleDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting dataset bundle: " << bundle_.code;
 

@@ -151,6 +151,7 @@ void DatasetBundleMdiWindow::setupConnections() {
             this, &DatasetBundleMdiWindow::onDataLoaded);
     connect(model_, &ClientDatasetBundleModel::loadError,
             this, &DatasetBundleMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &DatasetBundleMdiWindow::onSelectionChanged);
@@ -185,7 +186,6 @@ void DatasetBundleMdiWindow::doReload() {
 }
 
 void DatasetBundleMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 dataset bundles").arg(loaded).arg(total));
@@ -197,7 +197,6 @@ void DatasetBundleMdiWindow::onDataLoaded() {
 
 void DatasetBundleMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

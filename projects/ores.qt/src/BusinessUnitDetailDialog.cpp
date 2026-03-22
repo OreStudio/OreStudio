@@ -30,6 +30,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
 #include "ores.refdata/messaging/business_unit_type_protocol.hpp"
@@ -306,6 +307,15 @@ void BusinessUnitDetailDialog::onSaveClicked() {
 
     updateUnitFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    business_unit_.change_reason_code = crSel->reason_code;
+    business_unit_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving business unit: " << business_unit_.unit_code;
 
     QPointer<BusinessUnitDetailDialog> self = this;
@@ -371,6 +381,10 @@ void BusinessUnitDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting business unit: " << business_unit_.unit_code;
 

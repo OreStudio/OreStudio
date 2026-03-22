@@ -33,6 +33,7 @@
 \ir ./compute_batches_drop.sql
 \ir ./compute_hosts_notify_trigger_drop.sql
 \ir ./compute_hosts_drop.sql
+\ir ./compute_platforms_drop.sql
 \ir ./compute_app_versions_notify_trigger_drop.sql
 \ir ./compute_app_versions_drop.sql
 \ir ./compute_apps_notify_trigger_drop.sql

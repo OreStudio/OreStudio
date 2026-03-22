@@ -26,6 +26,7 @@
 #include "ui_PartyIdSchemeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
 
 namespace ores::qt {
@@ -180,6 +181,15 @@ void PartyIdSchemeDetailDialog::onSaveClicked() {
 
     updateSchemeFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    scheme_.change_reason_code = crSel->reason_code;
+    scheme_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving party ID scheme: " << scheme_.code;
 
     QPointer<PartyIdSchemeDetailDialog> self = this;
@@ -246,6 +256,10 @@ void PartyIdSchemeDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting party ID scheme: " << scheme_.code;
 

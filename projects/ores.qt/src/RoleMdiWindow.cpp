@@ -107,6 +107,7 @@ RoleMdiWindow(ClientManager* clientManager,
             this, &RoleMdiWindow::onDataLoaded);
     connect(roleModel_.get(), &ClientRoleModel::loadError,
             this, &RoleMdiWindow::onLoadError);
+    connectModel(roleModel_.get());
     connect(roleTableView_, &QTableView::doubleClicked,
             this, &RoleMdiWindow::onRowDoubleClicked);
     connect(roleTableView_->selectionModel(),
@@ -167,7 +168,6 @@ void RoleMdiWindow::doReload() {
 }
 
 void RoleMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = roleModel_->rowCount();
 
     const QString message = QString("Loaded %1 roles").arg(loaded);
@@ -184,7 +184,6 @@ void RoleMdiWindow::onDataLoaded() {
 
 void RoleMdiWindow::onLoadError(const QString& error_message,
                                  const QString& details) {
-    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading roles: "
                               << error_message.toStdString();

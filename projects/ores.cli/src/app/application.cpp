@@ -1293,7 +1293,7 @@ add_compute_app_version(const config::add_compute_app_version_options& cfg) cons
     record.app_id = app_id;
     record.wrapper_version = cfg.wrapper_version;
     record.engine_version = cfg.engine_version;
-    record.platform = cfg.platform;
+    record.platforms = cfg.platforms;
     record.package_uri = cfg.package_uri.value_or("");
     record.min_ram_mb = cfg.min_ram_mb.value_or(0);
     record.modified_by = cfg.modified_by;

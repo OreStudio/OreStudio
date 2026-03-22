@@ -20,6 +20,7 @@
 #include "ores.compute/domain/app_version_table.hpp"
 
 #include <sstream>
+#include <numeric>
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
 
@@ -31,14 +32,19 @@ std::string convert_to_table(const std::vector<app_version>& v) {
 
     table << fort::header
           << "ID" << "App ID" << "Wrapper Version" << "Engine Version"
-          << "Package URI" << "Platform" << "Min RAM (MB)"
+          << "Package URI" << "Platforms" << "Min RAM (MB)"
           << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& av : v) {
+        const std::string platforms = std::accumulate(
+            av.platforms.begin(), av.platforms.end(), std::string{},
+            [](const std::string& a, const std::string& b) {
+                return a.empty() ? b : a + ", " + b;
+            });
         table << boost::uuids::to_string(av.id)
               << boost::uuids::to_string(av.app_id)
               << av.wrapper_version << av.engine_version
-              << av.package_uri << av.platform << av.min_ram_mb
+              << av.package_uri << platforms << av.min_ram_mb
               << av.modified_by << av.recorded_at << fort::endr;
     }
 

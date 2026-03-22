@@ -31,7 +31,7 @@ using namespace ores::logging;
 
 ClientTelemetryLogModel::
 ClientTelemetryLogModel(ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent), clientManager_(clientManager),
+    : AbstractClientModel(parent), clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,

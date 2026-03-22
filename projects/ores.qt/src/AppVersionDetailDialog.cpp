@@ -28,11 +28,14 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include "ui_AppVersionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.compute/messaging/app_protocol.hpp"
 #include "ores.compute/messaging/app_version_protocol.hpp"
 
 namespace ores::qt {
@@ -66,6 +69,9 @@ ProvenanceWidget* AppVersionDetailDialog::provenanceWidget() const {
 }
 
 void AppVersionDetailDialog::setupUi() {
+    // Populate platform checkboxes with known platforms (all unchecked initially)
+    populatePlatformsList();
+
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
@@ -98,14 +104,102 @@ void AppVersionDetailDialog::setupConnections() {
             &AppVersionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
-    connect(ui_->platformEdit, &QLineEdit::textChanged, this,
+    connect(ui_->platformsList, &QListWidget::itemChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
+            &AppVersionDetailDialog::onFieldChanged);
+    connect(ui_->appCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &AppVersionDetailDialog::onFieldChanged);
 }
 
 void AppVersionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    loadApps();
+}
+
+void AppVersionDetailDialog::loadApps() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<AppVersionDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<AppEntry> entries;
+        std::string error;
+    };
+
+    auto task = [self]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}, "Dialog closed"};
+
+        compute::messaging::list_apps_request request;
+        request.limit = 1000;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result)
+            return {false, {}, "Failed to fetch apps"};
+
+        std::vector<AppEntry> entries;
+        entries.reserve(result->apps.size());
+        for (const auto& app : result->apps) {
+            entries.push_back({boost::uuids::to_string(app.id), app.name});
+        }
+        return {true, std::move(entries), {}};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (self && result.success) {
+            self->appEntries_ = std::move(result.entries);
+            self->populateAppCombo();
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void AppVersionDetailDialog::populateAppCombo() {
+    ui_->appCombo->blockSignals(true);
+    ui_->appCombo->clear();
+    ui_->appCombo->addItem(tr("(select app)"), QString());  // sentinel
+    for (const auto& entry : appEntries_) {
+        ui_->appCombo->addItem(
+            QString::fromStdString(entry.name),
+            QString::fromStdString(entry.id));
+    }
+    // Re-apply current app_id selection if already set
+    if (!app_version_.app_id.is_nil()) {
+        const QString idStr = QString::fromStdString(
+            boost::uuids::to_string(app_version_.app_id));
+        for (int i = 0; i < ui_->appCombo->count(); ++i) {
+            if (ui_->appCombo->itemData(i).toString() == idStr) {
+                ui_->appCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+    ui_->appCombo->blockSignals(false);
+}
+
+void AppVersionDetailDialog::populatePlatformsList() {
+    ui_->platformsList->blockSignals(true);
+    ui_->platformsList->clear();
+    for (const auto& [code, label] : known_platforms_) {
+        auto* item = new QListWidgetItem(
+            QString::fromLatin1(label), ui_->platformsList);
+        item->setData(Qt::UserRole, QString::fromLatin1(code));
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        const bool checked = std::find(
+            app_version_.platforms.begin(),
+            app_version_.platforms.end(),
+            std::string{code}) != app_version_.platforms.end();
+        item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+    }
+    ui_->platformsList->blockSignals(false);
 }
 
 void AppVersionDetailDialog::setUsername(const std::string& username) {
@@ -136,9 +230,10 @@ void AppVersionDetailDialog::setCreateMode(bool createMode) {
 
 void AppVersionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
+    ui_->appCombo->setEnabled(!readOnly);
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->platformEdit->setReadOnly(readOnly);
+    ui_->platformsList->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->minRamSpinBox->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -147,9 +242,21 @@ void AppVersionDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void AppVersionDetailDialog::updateUiFromVersion() {
+    // Select the app in the combo (if apps are already loaded)
+    if (!app_version_.app_id.is_nil()) {
+        const QString idStr = QString::fromStdString(
+            boost::uuids::to_string(app_version_.app_id));
+        for (int i = 0; i < ui_->appCombo->count(); ++i) {
+            if (ui_->appCombo->itemData(i).toString() == idStr) {
+                ui_->appCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
     ui_->codeEdit->setText(QString::fromStdString(app_version_.wrapper_version));
     ui_->nameEdit->setText(QString::fromStdString(app_version_.engine_version));
-    ui_->platformEdit->setText(QString::fromStdString(app_version_.platform));
+    populatePlatformsList();
     ui_->minRamSpinBox->setValue(app_version_.min_ram_mb);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(app_version_.package_uri));
 
@@ -165,11 +272,26 @@ void AppVersionDetailDialog::updateUiFromVersion() {
 }
 
 void AppVersionDetailDialog::updateVersionFromUi() {
+    // Resolve selected app UUID
+    const QString appIdStr = ui_->appCombo->currentData().toString();
+    if (!appIdStr.isEmpty()) {
+        try {
+            app_version_.app_id = boost::lexical_cast<boost::uuids::uuid>(
+                appIdStr.toStdString());
+        } catch (...) {}
+    }
+
     if (createMode_) {
         app_version_.wrapper_version = ui_->codeEdit->text().trimmed().toStdString();
     }
     app_version_.engine_version = ui_->nameEdit->text().trimmed().toStdString();
-    app_version_.platform = ui_->platformEdit->text().trimmed().toStdString();
+    app_version_.platforms.clear();
+    for (int i = 0; i < ui_->platformsList->count(); ++i) {
+        const auto* item = ui_->platformsList->item(i);
+        if (item && item->checkState() == Qt::Checked)
+            app_version_.platforms.push_back(
+                item->data(Qt::UserRole).toString().toStdString());
+    }
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
     app_version_.package_uri = "packages/" +
         boost::uuids::to_string(app_version_.id) + "/package";
@@ -195,7 +317,16 @@ void AppVersionDetailDialog::updateSaveButtonState() {
 bool AppVersionDetailDialog::validateInput() {
     const QString wrapper_version = ui_->codeEdit->text().trimmed();
     const QString engine_version = ui_->nameEdit->text().trimmed();
-    return !wrapper_version.isEmpty() && !engine_version.isEmpty();
+    const QString app_id = ui_->appCombo->currentData().toString();
+    if (wrapper_version.isEmpty() || engine_version.isEmpty() || app_id.isEmpty())
+        return false;
+
+    // Require at least one platform to be checked
+    for (int i = 0; i < ui_->platformsList->count(); ++i) {
+        if (ui_->platformsList->item(i)->checkState() == Qt::Checked)
+            return true;
+    }
+    return false;
 }
 
 void AppVersionDetailDialog::onBrowsePackageClicked() {
@@ -290,6 +421,15 @@ void AppVersionDetailDialog::onSaveClicked() {
 
     updateVersionFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    app_version_.change_reason_code = crSel->reason_code;
+    app_version_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving app version: " << app_version_.wrapper_version;
 
     using FutureResult = std::pair<bool, std::string>;
@@ -353,6 +493,10 @@ void AppVersionDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     // Delete not yet implemented for compute entities
     MessageBoxHelper::warning(this, "Not Implemented",

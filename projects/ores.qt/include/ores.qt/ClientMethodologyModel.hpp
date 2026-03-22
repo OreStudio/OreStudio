@@ -24,6 +24,7 @@
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
@@ -35,7 +36,7 @@
 
 namespace ores::qt {
 
-class ClientMethodologyModel final : public QAbstractTableModel {
+class ClientMethodologyModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -156,8 +157,6 @@ public:
     const dq::domain::methodology* getMethodology(int row) const;
 
 signals:
-    void dataLoaded();
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onMethodologiesLoaded();

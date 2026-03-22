@@ -41,7 +41,7 @@ namespace {
 
 ClientSubjectAreaModel::ClientSubjectAreaModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(subject_area_key_extractor),

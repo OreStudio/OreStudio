@@ -26,6 +26,7 @@
 #include "ores.qt/FlagIconHelper.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/business_centre_protocol.hpp"
 #include "ores.refdata/messaging/country_protocol.hpp"
@@ -248,6 +249,15 @@ void BusinessCentreDetailDialog::onSaveClicked() {
 
     updateBusinessCentreFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    business_centre_.change_reason_code = crSel->reason_code;
+    business_centre_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving business centre: " << business_centre_.code;
 
     QPointer<BusinessCentreDetailDialog> self = this;
@@ -313,6 +323,10 @@ void BusinessCentreDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting business centre: " << business_centre_.code;
 

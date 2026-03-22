@@ -184,6 +184,7 @@ void BookMdiWindow::setupConnections() {
             this, &BookMdiWindow::onDataLoaded);
     connect(model_, &ClientBookModel::loadError,
             this, &BookMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &BookMdiWindow::onSelectionChanged);
@@ -218,7 +219,6 @@ void BookMdiWindow::doReload() {
 }
 
 void BookMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 books").arg(loaded).arg(total));
@@ -230,7 +230,6 @@ void BookMdiWindow::onDataLoaded() {
 
 void BookMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

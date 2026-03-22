@@ -29,6 +29,7 @@
 #include "ui_TradeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.refdata/messaging/book_protocol.hpp"
@@ -377,6 +378,15 @@ void TradeDetailDialog::onSaveClicked() {
 
     updateTradeFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    trade_.change_reason_code = crSel->reason_code;
+    trade_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving trade: " << trade_.external_id;
 
     QPointer<TradeDetailDialog> self = this;
@@ -443,6 +453,10 @@ void TradeDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting trade: " << trade_.external_id;
 

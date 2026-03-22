@@ -127,6 +127,7 @@ void SubjectAreaMdiWindow::setupConnections() {
             this, &SubjectAreaMdiWindow::onDataLoaded);
     connect(model_, &ClientSubjectAreaModel::loadError,
             this, &SubjectAreaMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_, &QTableView::doubleClicked,
             this, &SubjectAreaMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -140,14 +141,12 @@ void SubjectAreaMdiWindow::setupConnections() {
 }
 
 void SubjectAreaMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 subject areas").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void SubjectAreaMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

@@ -32,6 +32,8 @@
 #include "ores.qt/ReportDefinitionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
+#include "ores.reporting/eventing/report_definition_changed_event.hpp"
+#include "ores.eventing/domain/event_traits.hpp"
 
 namespace ores::qt {
 
@@ -40,7 +42,8 @@ using namespace ores::logging;
 namespace {
 
 constexpr std::string_view report_definition_event_name =
-    "ores.reporting.report_definition_changed";
+    eventing::domain::event_traits<
+        reporting::eventing::report_definition_changed_event>::name;
 
 } // namespace
 

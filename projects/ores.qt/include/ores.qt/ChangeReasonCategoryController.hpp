@@ -28,6 +28,7 @@
 namespace ores::qt {
 
 class ChangeReasonCategoryMdiWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for change reason category management windows.
@@ -52,6 +53,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -76,6 +78,7 @@ private:
     void showHistoryWindow(const QString& code);
 
 private:
+    ChangeReasonCache* changeReasonCache_{nullptr};
     ChangeReasonCategoryMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

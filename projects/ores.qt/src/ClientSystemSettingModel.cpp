@@ -38,7 +38,7 @@ namespace {
 
 ClientSystemSettingModel::ClientSystemSettingModel(ClientManager* clientManager,
                                                QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(system_setting_key_extractor),

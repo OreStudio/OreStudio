@@ -22,6 +22,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <vector>
 #include <optional>
 
 namespace ores::cli::config {
@@ -33,7 +34,7 @@ struct add_compute_app_version_options final {
     std::string app_id;
     std::string wrapper_version;
     std::string engine_version;
-    std::string platform;
+    std::vector<std::string> platforms;
     std::string modified_by;
     std::optional<std::string> package_uri;
     std::optional<int> min_ram_mb;

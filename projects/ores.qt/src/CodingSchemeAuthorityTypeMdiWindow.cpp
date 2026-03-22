@@ -128,6 +128,7 @@ void CodingSchemeAuthorityTypeMdiWindow::setupConnections() {
             this, &CodingSchemeAuthorityTypeMdiWindow::onDataLoaded);
     connect(model_, &ClientCodingSchemeAuthorityTypeModel::loadError,
             this, &CodingSchemeAuthorityTypeMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_, &QTableView::doubleClicked,
             this, &CodingSchemeAuthorityTypeMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -141,14 +142,12 @@ void CodingSchemeAuthorityTypeMdiWindow::setupConnections() {
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 authority types").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void CodingSchemeAuthorityTypeMdiWindow::onLoadError(const QString& error_message,
                                                       const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

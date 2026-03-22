@@ -32,10 +32,6 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata/domain/party_id_scheme.hpp"
 
-namespace ores::qt {
-class ChangeReasonCache;
-}
-
 namespace Ui {
 class EntityDetailDialog;
 }
@@ -71,7 +67,6 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setImageCache(ImageCache* imageCache);
-    void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
     void setUsername(const std::string& username);
     void setEntityData(const entity_data& data);
     void setCreateMode(bool createMode);
@@ -124,7 +119,6 @@ private:
     Ui::EntityDetailDialog* ui_;
     ClientManager* clientManager_;
     ImageCache* imageCache_;
-    ChangeReasonCache* changeReasonCache_;
     std::string username_;
     entity_data entity_;
     bool createMode_{true};

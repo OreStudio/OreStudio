@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class DatasetMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 class DatasetController final : public EntityController {
     Q_OBJECT
@@ -51,6 +52,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -77,6 +79,7 @@ private:
     void showDetailWindow(const dq::domain::dataset& dataset);
     void showHistoryWindow(const boost::uuids::uuid& id);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     DatasetMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

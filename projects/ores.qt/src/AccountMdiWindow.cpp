@@ -169,6 +169,7 @@ AccountMdiWindow(ClientManager* clientManager,
             this, &AccountMdiWindow::onDataLoaded);
     connect(accountModel_.get(), &ClientAccountModel::loadError,
             this, &AccountMdiWindow::onLoadError);
+    connectModel(accountModel_.get());
     connect(accountTableView_, &QTableView::doubleClicked,
             this, &AccountMdiWindow::onRowDoubleClicked);
     connect(accountTableView_->selectionModel(),
@@ -263,7 +264,6 @@ void AccountMdiWindow::addNew() {
 }
 
 void AccountMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = accountModel_->rowCount();
     const auto total = accountModel_->total_available_count();
 
@@ -291,7 +291,6 @@ void AccountMdiWindow::onDataLoaded() {
 
 void AccountMdiWindow::onLoadError(const QString& error_message,
                                     const QString& details) {
-    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading accounts: "
                               << error_message.toStdString();

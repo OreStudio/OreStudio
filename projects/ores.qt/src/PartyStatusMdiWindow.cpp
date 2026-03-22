@@ -150,6 +150,7 @@ void PartyStatusMdiWindow::setupConnections() {
             this, &PartyStatusMdiWindow::onDataLoaded);
     connect(model_, &ClientPartyStatusModel::loadError,
             this, &PartyStatusMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &PartyStatusMdiWindow::onSelectionChanged);
@@ -184,7 +185,6 @@ void PartyStatusMdiWindow::doReload() {
 }
 
 void PartyStatusMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 party statuses").arg(loaded).arg(total));
@@ -196,7 +196,6 @@ void PartyStatusMdiWindow::onDataLoaded() {
 
 void PartyStatusMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

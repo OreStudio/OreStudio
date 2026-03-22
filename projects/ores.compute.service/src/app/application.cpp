@@ -35,6 +35,8 @@
 #include "ores.compute/eventing/app_changed_event.hpp"
 #include "ores.compute/eventing/app_version_changed_event.hpp"
 #include "ores.compute/eventing/batch_changed_event.hpp"
+#include "ores.compute/eventing/workunit_changed_event.hpp"
+#include "ores.compute/eventing/result_changed_event.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include "ores.compute/messaging/registrar.hpp"
@@ -115,6 +117,10 @@ application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.compute.app_version", "ores_compute_app_versions");
     ev::service::registrar::register_mapping<cev::batch_changed_event>(
         event_source, "ores.compute.batch", "ores_compute_batches");
+    ev::service::registrar::register_mapping<cev::workunit_changed_event>(
+        event_source, "ores.compute.workunit", "ores_compute_workunits");
+    ev::service::registrar::register_mapping<cev::result_changed_event>(
+        event_source, "ores.compute.result", "ores_compute_results");
 
     auto app_sub = event_bus.subscribe<cev::app_changed_event>(
         [&nats](const cev::app_changed_event& e) {
@@ -143,6 +149,28 @@ application::run(boost::asio::io_context& io_ctx,
             publish_entity_event(nats, "ores.compute.batch_changed",
                 ev::domain::entity_change_event{
                     .entity     = "ores.compute.batch",
+                    .timestamp  = e.timestamp,
+                    .entity_ids = e.ids,
+                    .tenant_id  = e.tenant_id
+                });
+        });
+
+    auto workunit_sub = event_bus.subscribe<cev::workunit_changed_event>(
+        [&nats](const cev::workunit_changed_event& e) {
+            publish_entity_event(nats, "ores.compute.workunit_changed",
+                ev::domain::entity_change_event{
+                    .entity     = "ores.compute.workunit",
+                    .timestamp  = e.timestamp,
+                    .entity_ids = e.ids,
+                    .tenant_id  = e.tenant_id
+                });
+        });
+
+    auto result_sub = event_bus.subscribe<cev::result_changed_event>(
+        [&nats](const cev::result_changed_event& e) {
+            publish_entity_event(nats, "ores.compute.result_changed",
+                ev::domain::entity_change_event{
+                    .entity     = "ores.compute.result",
                     .timestamp  = e.timestamp,
                     .entity_ids = e.ids,
                     .tenant_id  = e.tenant_id

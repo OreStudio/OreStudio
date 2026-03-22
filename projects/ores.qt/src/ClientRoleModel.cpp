@@ -32,7 +32,7 @@ using namespace ores::logging;
 
 ClientRoleModel::
 ClientRoleModel(ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent), clientManager_(clientManager),
+    : AbstractClientModel(parent), clientManager_(clientManager),
       watcher_(new QFutureWatcher<FutureWatcherResult>(this)) {
 
     connect(watcher_,

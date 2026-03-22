@@ -25,6 +25,7 @@
 #include "ui_TreatmentDimensionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dimension_protocol.hpp"
 
@@ -122,6 +123,16 @@ void TreatmentDimensionDetailDialog::onSaveClicked() {
     dim.modified_by = username_;
     dim.version = isCreateMode_ ? 0 : dimension_.version;
 
+    {
+        const auto crOpType = isCreateMode_
+            ? ChangeReasonDialog::OperationType::Create
+            : ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true,
+            isCreateMode_ ? "system" : "common");
+        if (!crSel) return;
+        dim.change_commentary = crSel->commentary;
+    }
+
     QPointer<TreatmentDimensionDetailDialog> self = this;
 
     struct SaveResult { bool success; std::string message; };
@@ -162,6 +173,12 @@ void TreatmentDimensionDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     QPointer<TreatmentDimensionDetailDialog> self = this;
     QString code = ui_->codeEdit->text();

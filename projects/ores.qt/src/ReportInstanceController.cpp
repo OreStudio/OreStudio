@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ReportInstanceController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -36,10 +37,12 @@ ReportInstanceController::ReportInstanceController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -140,6 +143,8 @@ void ReportInstanceController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new report instance";
 
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +187,8 @@ void ReportInstanceController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << instance.name;
 
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -304,6 +311,8 @@ void ReportInstanceController::onOpenVersion(
     }
 
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setInstance(instance);
@@ -350,6 +359,8 @@ void ReportInstanceController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ReportInstanceDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setInstance(instance);

@@ -31,6 +31,7 @@
 #include <QMetaObject>
 #include "ui_SystemSettingDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.variability/messaging/system_settings_protocol.hpp"
@@ -332,8 +333,17 @@ void SystemSettingDetailDialog::onSaveClicked() {
     BOOST_LOG_SEV(lg(), debug) << "Save clicked for system setting: "
                                << currentFlag_.name;
 
+    const auto crOpType = isAddMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, isDirty_,
+        isAddMode_ ? "system" : "common");
+    if (!crSel) return;
+
     QPointer<SystemSettingDetailDialog> self = this;
-    const variability::domain::system_setting flagToSave = getSystemSetting();
+    variability::domain::system_setting flagToSave = getSystemSetting();
+    flagToSave.change_reason_code = crSel->reason_code;
+    flagToSave.change_commentary = crSel->commentary;
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, flagToSave]() -> FutureResult {
@@ -409,6 +419,12 @@ void SystemSettingDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
         return;
+    }
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
     }
 
     QPointer<SystemSettingDetailDialog> self = this;

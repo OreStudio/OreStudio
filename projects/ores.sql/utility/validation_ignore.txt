@@ -167,3 +167,13 @@ TENANT_002 ores_reporting_risk_report_config_portfolios_tbl
 TENANT_003 ores_reporting_risk_report_config_portfolios_tbl
 TENANT_002 ores_reporting_risk_report_config_books_tbl
 TENANT_003 ores_reporting_risk_report_config_books_tbl
+
+# =============================================================================
+# Compute platform reference and junction tables - global reference data.
+# ores_compute_platforms_tbl is a tenant-independent code table (platform
+# identifiers are universal, not per-tenant). ores_compute_app_version_platforms_tbl
+# is a lightweight junction table that inherits tenant context from the parent
+# app_version; tenant_id would be redundant here.
+# =============================================================================
+TENANT_001 ores_compute_platforms_tbl
+TENANT_001 ores_compute_app_version_platforms_tbl

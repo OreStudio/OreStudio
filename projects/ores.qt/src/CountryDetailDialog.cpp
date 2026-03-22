@@ -34,23 +34,20 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/MdiUtils.hpp"
 #include "ores.qt/FlagSelectorDialog.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.refdata/messaging/protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
 using FutureResult = std::pair<bool, std::string>;
-namespace reason = dq::domain::change_reason_constants;
 
 CountryDetailDialog::CountryDetailDialog(QWidget* parent)
     : DetailDialogBase(parent), ui_(new Ui::CountryDetailDialog), isDirty_(false),
       isAddMode_(false), isReadOnly_(false), isStale_(false), flagChanged_(false),
       historicalVersion_(0), flagButton_(nullptr),
-      clientManager_(nullptr), imageCache_(nullptr), changeReasonCache_(nullptr),
+      clientManager_(nullptr), imageCache_(nullptr),
       currentHistoryIndex_(0),
       firstVersionAction_(nullptr), prevVersionAction_(nullptr),
       nextVersionAction_(nullptr), lastVersionAction_(nullptr) {
@@ -193,10 +190,6 @@ void CountryDetailDialog::setImageCache(ImageCache* imageCache) {
     }
 }
 
-void CountryDetailDialog::setChangeReasonCache(ChangeReasonCache* changeReasonCache) {
-    changeReasonCache_ = changeReasonCache;
-}
-
 CountryDetailDialog::~CountryDetailDialog() {
     const auto watchers = findChildren<QFutureWatcherBase*>();
     for (auto* watcher : watchers) {
@@ -292,38 +285,14 @@ void CountryDetailDialog::onSaveClicked() {
 
     refdata::domain::country country = getCountry();
 
-    // For updates (not creates), require change reason
-    if (!isAddMode_) {
-        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
-            BOOST_LOG_SEV(lg(), warn) << "Change reasons not loaded, cannot save.";
-            emit errorMessage("Change reasons not loaded. Please try again.");
-            return;
-        }
-
-        // Get reasons for the "common" category that apply to amendments
-        auto reasons = changeReasonCache_->getReasonsForAmend(
-            std::string{reason::categories::common});
-        if (reasons.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "No change reasons available for common category.";
-            emit errorMessage("No change reasons available. Please contact administrator.");
-            return;
-        }
-
-        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
-            isDirty_, this);
-        if (dialog.exec() != QDialog::Accepted) {
-            BOOST_LOG_SEV(lg(), debug) << "Save cancelled - change reason dialog rejected.";
-            return;
-        }
-
-        // Set the change reason on the country
-        country.change_reason_code = dialog.selectedReasonCode();
-        country.change_commentary = dialog.commentary();
-
-        BOOST_LOG_SEV(lg(), debug) << "Change reason selected: "
-                                   << country.change_reason_code
-                                   << ", commentary: " << country.change_commentary;
-    }
+    const auto crOpType = isAddMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, isDirty_,
+        isAddMode_ ? "system" : "common");
+    if (!crSel) return;
+    country.change_reason_code = crSel->reason_code;
+    country.change_commentary = crSel->commentary;
 
     QPointer<CountryDetailDialog> self = this;
     QFuture<FutureResult> future =

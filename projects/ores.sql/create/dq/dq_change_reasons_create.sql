@@ -23,6 +23,7 @@ create table if not exists ores_dq_change_reasons_tbl (
     "version" integer not null,
     "description" text not null,
     "category_code" text not null,
+    "applies_to_new" boolean not null default false,
     "applies_to_amend" boolean not null default true,
     "applies_to_delete" boolean not null default true,
     "requires_commentary" boolean not null default false,

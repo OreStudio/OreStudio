@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class MonetaryNatureMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing monetary nature windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const refdata::domain::monetary_nature& type);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     MonetaryNatureMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

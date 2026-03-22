@@ -354,7 +354,7 @@ void ClientManager::subscribeToEvent(const std::string& subject) {
                     ids.reserve(static_cast<int>(ev.entity_ids.size()));
                     for (const auto& id : ev.entity_ids)
                         ids.append(QString::fromStdString(id));
-                    QString eventType = QString::fromStdString(ev.entity);
+                    QString eventType = QString::fromStdString(subject);
                     QString tenantId  = QString::fromStdString(ev.tenant_id);
                     QMetaObject::invokeMethod(this,
                         [this, eventType, ts, ids, tenantId]() {

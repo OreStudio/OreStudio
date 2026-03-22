@@ -38,6 +38,7 @@ struct change_reason_entity {
     int version = 0;
     std::string description;
     std::string category_code;
+    bool applies_to_new = false;
     bool applies_to_amend = true;
     bool applies_to_delete = true;
     bool requires_commentary = false;

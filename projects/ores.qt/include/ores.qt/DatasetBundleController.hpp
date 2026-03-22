@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class DatasetBundleMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing dataset bundle windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const dq::domain::dataset_bundle& bundle);
     void showHistoryWindow(const dq::domain::dataset_bundle& bundle);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     DatasetBundleMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

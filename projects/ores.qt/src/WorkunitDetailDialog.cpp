@@ -27,12 +27,15 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include "ui_WorkunitDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
+#include "ores.compute/messaging/batch_protocol.hpp"
+#include "ores.compute/messaging/app_version_protocol.hpp"
 #include "ores.compute/messaging/workunit_protocol.hpp"
 
 namespace ores::qt {
@@ -89,10 +92,10 @@ void WorkunitDetailDialog::setupConnections() {
     connect(ui_->browseConfigButton, &QPushButton::clicked, this,
             &WorkunitDetailDialog::onBrowseConfigClicked);
 
-    connect(ui_->batchIdEdit, &QLineEdit::textChanged, this,
-            &WorkunitDetailDialog::onFieldChanged);
-    connect(ui_->appVersionIdEdit, &QLineEdit::textChanged, this,
-            &WorkunitDetailDialog::onFieldChanged);
+    connect(ui_->batchCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &WorkunitDetailDialog::onFieldChanged);
+    connect(ui_->appVersionCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &WorkunitDetailDialog::onFieldChanged);
     connect(ui_->prioritySpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &WorkunitDetailDialog::onFieldChanged);
     connect(ui_->redundancySpinBox, QOverload<int>::of(&QSpinBox::valueChanged),
@@ -101,6 +104,148 @@ void WorkunitDetailDialog::setupConnections() {
 
 void WorkunitDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
+    loadBatches();
+    loadAppVersions();
+}
+
+void WorkunitDetailDialog::loadBatches() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<WorkunitDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<IdEntry> entries;
+        std::string error;
+    };
+
+    auto task = [self]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}, "Dialog closed"};
+
+        compute::messaging::list_batches_request request;
+        request.limit = 1000;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result)
+            return {false, {}, "Failed to fetch batches"};
+
+        std::vector<IdEntry> entries;
+        entries.reserve(result->batches.size());
+        for (const auto& batch : result->batches) {
+            entries.push_back({
+                boost::uuids::to_string(batch.id),
+                batch.external_ref
+            });
+        }
+        return {true, std::move(entries), {}};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (self && result.success) {
+            self->batchEntries_ = std::move(result.entries);
+            self->populateBatchCombo();
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void WorkunitDetailDialog::loadAppVersions() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<WorkunitDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<IdEntry> entries;
+        std::string error;
+    };
+
+    auto task = [self]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}, "Dialog closed"};
+
+        compute::messaging::list_app_versions_request request;
+        request.limit = 1000;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result)
+            return {false, {}, "Failed to fetch app versions"};
+
+        std::vector<IdEntry> entries;
+        entries.reserve(result->app_versions.size());
+        for (const auto& av : result->app_versions) {
+            entries.push_back({
+                boost::uuids::to_string(av.id),
+                av.wrapper_version + " / " + av.engine_version
+            });
+        }
+        return {true, std::move(entries), {}};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (self && result.success) {
+            self->appVersionEntries_ = std::move(result.entries);
+            self->populateAppVersionCombo();
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
+void WorkunitDetailDialog::populateBatchCombo() {
+    ui_->batchCombo->blockSignals(true);
+    ui_->batchCombo->clear();
+    ui_->batchCombo->addItem(tr("(select batch)"), QString());
+    for (const auto& entry : batchEntries_) {
+        ui_->batchCombo->addItem(
+            QString::fromStdString(entry.label),
+            QString::fromStdString(entry.id));
+    }
+    if (!workunit_.batch_id.is_nil()) {
+        const QString idStr = QString::fromStdString(
+            boost::uuids::to_string(workunit_.batch_id));
+        for (int i = 0; i < ui_->batchCombo->count(); ++i) {
+            if (ui_->batchCombo->itemData(i).toString() == idStr) {
+                ui_->batchCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+    ui_->batchCombo->blockSignals(false);
+}
+
+void WorkunitDetailDialog::populateAppVersionCombo() {
+    ui_->appVersionCombo->blockSignals(true);
+    ui_->appVersionCombo->clear();
+    ui_->appVersionCombo->addItem(tr("(select app version)"), QString());
+    for (const auto& entry : appVersionEntries_) {
+        ui_->appVersionCombo->addItem(
+            QString::fromStdString(entry.label),
+            QString::fromStdString(entry.id));
+    }
+    if (!workunit_.app_version_id.is_nil()) {
+        const QString idStr = QString::fromStdString(
+            boost::uuids::to_string(workunit_.app_version_id));
+        for (int i = 0; i < ui_->appVersionCombo->count(); ++i) {
+            if (ui_->appVersionCombo->itemData(i).toString() == idStr) {
+                ui_->appVersionCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+    ui_->appVersionCombo->blockSignals(false);
 }
 
 void WorkunitDetailDialog::setUsername(const std::string& username) {
@@ -130,8 +275,8 @@ void WorkunitDetailDialog::setCreateMode(bool createMode) {
 
 void WorkunitDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->batchIdEdit->setReadOnly(readOnly);
-    ui_->appVersionIdEdit->setReadOnly(readOnly);
+    ui_->batchCombo->setEnabled(!readOnly);
+    ui_->appVersionCombo->setEnabled(!readOnly);
     ui_->prioritySpinBox->setEnabled(!readOnly);
     ui_->redundancySpinBox->setEnabled(!readOnly);
     ui_->browseInputButton->setEnabled(!readOnly);
@@ -141,10 +286,30 @@ void WorkunitDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void WorkunitDetailDialog::updateUiFromWorkunit() {
-    ui_->batchIdEdit->setText(
-        QString::fromStdString(boost::uuids::to_string(workunit_.batch_id)));
-    ui_->appVersionIdEdit->setText(
-        QString::fromStdString(boost::uuids::to_string(workunit_.app_version_id)));
+    // Select batch in combo (if already loaded)
+    if (!workunit_.batch_id.is_nil()) {
+        const QString idStr = QString::fromStdString(
+            boost::uuids::to_string(workunit_.batch_id));
+        for (int i = 0; i < ui_->batchCombo->count(); ++i) {
+            if (ui_->batchCombo->itemData(i).toString() == idStr) {
+                ui_->batchCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
+    // Select app version in combo (if already loaded)
+    if (!workunit_.app_version_id.is_nil()) {
+        const QString idStr = QString::fromStdString(
+            boost::uuids::to_string(workunit_.app_version_id));
+        for (int i = 0; i < ui_->appVersionCombo->count(); ++i) {
+            if (ui_->appVersionCombo->itemData(i).toString() == idStr) {
+                ui_->appVersionCombo->setCurrentIndex(i);
+                break;
+            }
+        }
+    }
+
     ui_->inputFilePathEdit->setText(
         QString::fromStdString(workunit_.input_uri));
     ui_->configFilePathEdit->setText(
@@ -164,19 +329,20 @@ void WorkunitDetailDialog::updateUiFromWorkunit() {
 }
 
 void WorkunitDetailDialog::updateWorkunitFromUi() {
-    try {
-        boost::uuids::string_generator gen;
-        const std::string batch_id_str =
-            ui_->batchIdEdit->text().trimmed().toStdString();
-        if (!batch_id_str.empty())
-            workunit_.batch_id = gen(batch_id_str);
+    const QString batchIdStr = ui_->batchCombo->currentData().toString();
+    if (!batchIdStr.isEmpty()) {
+        try {
+            workunit_.batch_id = boost::lexical_cast<boost::uuids::uuid>(
+                batchIdStr.toStdString());
+        } catch (...) {}
+    }
 
-        const std::string app_version_id_str =
-            ui_->appVersionIdEdit->text().trimmed().toStdString();
-        if (!app_version_id_str.empty())
-            workunit_.app_version_id = gen(app_version_id_str);
-    } catch (const std::exception&) {
-        // UUID parse errors are caught during validateInput()
+    const QString appVersionIdStr = ui_->appVersionCombo->currentData().toString();
+    if (!appVersionIdStr.isEmpty()) {
+        try {
+            workunit_.app_version_id = boost::lexical_cast<boost::uuids::uuid>(
+                appVersionIdStr.toStdString());
+        } catch (...) {}
     }
 
     const std::string id_str = boost::uuids::to_string(workunit_.id);
@@ -227,20 +393,11 @@ void WorkunitDetailDialog::updateSaveButtonState() {
 }
 
 bool WorkunitDetailDialog::validateInput() {
-    const QString batch_id_str = ui_->batchIdEdit->text().trimmed();
-    const QString app_version_id_str = ui_->appVersionIdEdit->text().trimmed();
+    const QString batch_id = ui_->batchCombo->currentData().toString();
+    const QString app_version_id = ui_->appVersionCombo->currentData().toString();
 
-    if (batch_id_str.isEmpty() || app_version_id_str.isEmpty())
+    if (batch_id.isEmpty() || app_version_id.isEmpty())
         return false;
-
-    // Validate UUID format
-    try {
-        boost::uuids::string_generator gen;
-        gen(batch_id_str.toStdString());
-        gen(app_version_id_str.toStdString());
-    } catch (const std::exception&) {
-        return false;
-    }
 
     // Files required for create mode
     if (createMode_) {
@@ -272,6 +429,15 @@ void WorkunitDetailDialog::onSaveClicked() {
     }
 
     updateWorkunitFromUi();
+
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    workunit_.change_reason_code = crSel->reason_code;
+    workunit_.change_commentary = crSel->commentary;
 
     BOOST_LOG_SEV(lg(), info) << "Submitting workunit: "
                               << boost::uuids::to_string(workunit_.id);
@@ -450,6 +616,12 @@ void WorkunitDetailDialog::onDeleteClicked() {
 
     if (reply != QMessageBox::Yes)
         return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     // Delete not yet implemented for compute entities
     MessageBoxHelper::warning(this, "Not Implemented",

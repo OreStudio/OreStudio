@@ -25,6 +25,7 @@
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
@@ -42,7 +43,7 @@ class ImageCache;
  * This model extends QAbstractTableModel and fetches currency data
  * asynchronously using the ores.comms client instead of direct database access.
  */
-class ClientCurrencyModel final : public QAbstractTableModel {
+class ClientCurrencyModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -324,12 +325,10 @@ signals:
     /**
      * @brief Emitted when data has been successfully loaded.
      */
-    void dataLoaded();
 
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onCurrenciesLoaded();

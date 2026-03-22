@@ -37,7 +37,7 @@ namespace {
 
 ClientPurposeTypeModel::ClientPurposeTypeModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(purpose_type_key_extractor),

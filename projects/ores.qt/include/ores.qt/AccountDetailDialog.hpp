@@ -29,7 +29,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/AccountRolesWidget.hpp"
 #include "ores.qt/AccountPartiesWidget.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -72,7 +71,6 @@ public:
     ~AccountDetailDialog() override;
 
     void setClientManager(ClientManager* clientManager);
-    void setChangeReasonCache(ChangeReasonCache* cache);
     void setUsername(const std::string& username);
 
     /**
@@ -184,7 +182,6 @@ private:
     QAction* revertAction_;
 
     ClientManager*     clientManager_;
-    ChangeReasonCache* changeReasonCache_ = nullptr;
     iam::domain::account currentAccount_;
     std::optional<iam::domain::login_info> currentLoginInfo_;
     AccountRolesWidget*   rolesWidget_;

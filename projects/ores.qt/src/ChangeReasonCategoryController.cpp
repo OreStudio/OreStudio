@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ChangeReasonCategoryController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -45,9 +46,11 @@ ChangeReasonCategoryController::ChangeReasonCategoryController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -186,6 +189,8 @@ void ChangeReasonCategoryController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new category";
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -230,6 +235,8 @@ void ChangeReasonCategoryController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << category.code;
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -372,6 +379,8 @@ void ChangeReasonCategoryController::onOpenVersion(
     }
 
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCategory(category);
@@ -419,6 +428,8 @@ void ChangeReasonCategoryController::onRevertVersion(
     // The history dialog already shows the confirmation and prepares the data.
     // We just need to save it as a new version.
     auto* detailDialog = new ChangeReasonCategoryDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCategory(category);

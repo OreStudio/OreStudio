@@ -150,6 +150,7 @@ void BatchMdiWindow::setupConnections() {
             this, &BatchMdiWindow::onDataLoaded);
     connect(model_, &ClientBatchModel::loadError,
             this, &BatchMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &BatchMdiWindow::onSelectionChanged);

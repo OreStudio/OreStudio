@@ -21,13 +21,17 @@
 #define ORES_QT_DETAIL_DIALOG_BASE_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <QWidget>
+#include "ores.qt/ChangeReasonDialog.hpp"
 
 class QTabWidget;
 
 namespace ores::qt {
 
+class ChangeReasonCache;
 class ProvenanceWidget;
 
 /**
@@ -85,6 +89,15 @@ public:
      * confirmation when the close was initiated via the dialog's Close button.
      */
     bool isCloseConfirmed() const { return closeConfirmed_; }
+
+    /**
+     * @brief Inject the shared change reason cache.
+     *
+     * Controllers call this immediately after constructing any detail dialog.
+     * Once set, derived classes can call promptChangeReason() without passing
+     * the cache explicitly.
+     */
+    void setChangeReasonCache(ChangeReasonCache* cache) { changeReasonCache_ = cache; }
 
 signals:
     /**
@@ -172,8 +185,51 @@ protected:
     /** @brief Clear all fields in the embedded ProvenanceWidget. */
     void clearProvenance();
 
+    // -------------------------------------------------------------------------
+    // Change reason prompt — centralised for all operation types
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Result of a successful change reason prompt.
+     */
+    struct change_reason_selection {
+        std::string reason_code;
+        std::string commentary;
+    };
+
+    /**
+     * @brief Show the change reason dialog and return the user's selection.
+     *
+     * Handles all three operation types (Create, Amend, Delete) uniformly.
+     * Uses the cache injected via setChangeReasonCache(). Returns std::nullopt
+     * if the cache is not ready, no reasons are available, or the user cancels.
+     *
+     * Usage in onSaveClicked():
+     * @code
+     * const auto opType = createMode_
+     *     ? ChangeReasonDialog::OperationType::Create
+     *     : ChangeReasonDialog::OperationType::Amend;
+     * const auto sel = promptChangeReason(opType, hasChanges_,
+     *     createMode_ ? "system" : "common");
+     * if (!sel) return;
+     * entity_.change_reason_code = sel->reason_code;
+     * entity_.change_commentary  = sel->commentary;
+     * @endcode
+     *
+     * @param opType    Create, Amend, or Delete.
+     * @param isDirty   Whether any fields have been modified (used by Amend
+     *                  to enable/disable the non-material-update reason).
+     * @param category  Category code to filter reasons (default: "system" for
+     *                  Create; use "common" for Amend/Delete).
+     */
+    std::optional<change_reason_selection>
+    promptChangeReason(ChangeReasonDialog::OperationType opType,
+                       bool isDirty,
+                       std::string_view category = "system");
+
 private:
     bool closeConfirmed_ = false;
+    ChangeReasonCache* changeReasonCache_ = nullptr;
 };
 
 }

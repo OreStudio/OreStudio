@@ -21,8 +21,10 @@
 
 #include <QMessageBox>
 #include <QTabWidget>
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
+#include "ores.dq/domain/change_reason.hpp"
 
 namespace ores::qt {
 
@@ -59,6 +61,42 @@ void DetailDialogBase::clearProvenance() {
     auto* pw = provenanceWidget();
     if (!pw) return;
     pw->clear();
+}
+
+std::optional<DetailDialogBase::change_reason_selection>
+DetailDialogBase::promptChangeReason(ChangeReasonDialog::OperationType opType,
+                                     bool isDirty,
+                                     std::string_view category) {
+    if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
+        emit errorMessage(tr("Change reasons not loaded. Please try again."));
+        return std::nullopt;
+    }
+
+    const auto cat = std::string{category};
+    std::vector<dq::domain::change_reason> reasons;
+    switch (opType) {
+        case ChangeReasonDialog::OperationType::Create:
+            reasons = changeReasonCache_->getReasonsForNew(cat);
+            break;
+        case ChangeReasonDialog::OperationType::Amend:
+            reasons = changeReasonCache_->getReasonsForAmend(cat);
+            break;
+        case ChangeReasonDialog::OperationType::Delete:
+            reasons = changeReasonCache_->getReasonsForDelete(cat);
+            break;
+    }
+
+    if (reasons.empty()) {
+        emit errorMessage(
+            tr("No change reasons available. Please contact administrator."));
+        return std::nullopt;
+    }
+
+    ChangeReasonDialog dlg(reasons, opType, isDirty, this);
+    if (dlg.exec() != QDialog::Accepted)
+        return std::nullopt;
+
+    return change_reason_selection{dlg.selectedReasonCode(), dlg.commentary()};
 }
 
 void DetailDialogBase::onCloseClicked() {

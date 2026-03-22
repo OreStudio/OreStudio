@@ -30,6 +30,7 @@
 #include <QSplitter>
 #include <QTableView>
 #include "ores.logging/make_logger.hpp"
+#include "ores.qt/AbstractClientModel.hpp"
 
 namespace ores::qt {
 
@@ -179,6 +180,15 @@ protected:
      * Call from onDataLoaded() and onLoadError().
      */
     void endLoading();
+
+    /**
+     * @brief Wire endLoading() to the model's standard lifecycle signals.
+     *
+     * Connects AbstractClientModel::dataLoaded and
+     * AbstractClientModel::loadError to endLoading() so that subclasses
+     * do not need to call endLoading() manually in every handler.
+     */
+    void connectModel(AbstractClientModel* model);
 
     /**
      * @brief Get the normal (non-stale) tooltip text for the refresh action.

@@ -224,4 +224,11 @@ void EntityListMdiWindow::showHeaderContextMenu(const QPoint& pos) {
     menu.exec(header->mapToGlobal(pos));
 }
 
+void EntityListMdiWindow::connectModel(AbstractClientModel* model) {
+    connect(model, &AbstractClientModel::dataLoaded,
+            this, &EntityListMdiWindow::endLoading);
+    connect(model, &AbstractClientModel::loadError,
+            this, [this](const QString&, const QString&) { endLoading(); });
+}
+
 }

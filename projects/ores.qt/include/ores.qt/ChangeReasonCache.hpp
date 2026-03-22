@@ -87,6 +87,15 @@ public:
     }
 
     /**
+     * @brief Get change reasons filtered for new record creation.
+     *
+     * @param category_code Filter by category (e.g., "system")
+     * @return Reasons where applies_to_new is true, sorted by display_order
+     */
+    std::vector<dq::domain::change_reason> getReasonsForNew(
+        const std::string& category_code) const;
+
+    /**
      * @brief Get change reasons filtered for amend operations.
      *
      * @param category_code Filter by category (e.g., "common")

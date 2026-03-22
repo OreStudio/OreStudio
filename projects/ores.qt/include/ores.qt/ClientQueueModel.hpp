@@ -28,6 +28,7 @@
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -57,7 +58,7 @@ struct queue_row {
  * Calls jetstream_admin::list_streams() on a background thread and presents
  * the results as a read-only table.
  */
-class ClientQueueModel final : public QAbstractTableModel {
+class ClientQueueModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -128,8 +129,6 @@ public:
     const queue_row* getRow(int row) const;
 
 signals:
-    void dataLoaded();
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onDataLoaded();

@@ -39,7 +39,7 @@ namespace {
 
 ClientCounterpartyModel::ClientCounterpartyModel(
     ClientManager* clientManager, ImageCache* imageCache, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       imageCache_(imageCache),
       watcher_(new QFutureWatcher<FetchResult>(this)),

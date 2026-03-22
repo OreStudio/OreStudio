@@ -37,7 +37,6 @@ create table if not exists "ores_compute_app_versions_tbl" (
     "wrapper_version" text not null,
     "engine_version" text not null,
     "package_uri" text not null,
-    "platform" text not null,
     "min_ram_mb" integer not null default 0,
     "modified_by" text not null,
     "performed_by" text not null,

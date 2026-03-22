@@ -21,6 +21,7 @@
 #define ORES_COMPUTE_DOMAIN_APP_VERSION_HPP
 
 #include <string>
+#include <vector>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
@@ -70,9 +71,9 @@ struct app_version final {
     std::string package_uri;
 
     /**
-     * @brief Target platform identifier, e.g. 'linux_x86_64', 'win_x64'.
+     * @brief Supported platform identifiers, e.g. 'linux-x86_64', 'linux-arm64'.
      */
-    std::string platform;
+    std::vector<std::string> platforms;
 
     /**
      * @brief Minimum RAM in MB required by the node to run this app version.

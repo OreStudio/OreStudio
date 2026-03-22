@@ -34,8 +34,6 @@ class ReportDefinitionDetailDialog;
 
 namespace ores::qt {
 
-class ChangeReasonCache;
-
 /**
  * @brief Detail dialog for viewing and editing report definition records.
  *
@@ -62,7 +60,6 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
     void setDefinition(const reporting::domain::report_definition& definition);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
@@ -97,7 +94,6 @@ private:
 
     Ui::ReportDefinitionDetailDialog* ui_;
     ClientManager* clientManager_;
-    ChangeReasonCache* changeReasonCache_{nullptr};
     std::string username_;
     reporting::domain::report_definition definition_;
     bool createMode_{true};

@@ -173,6 +173,7 @@ void ReportDefinitionMdiWindow::setupConnections() {
             this, &ReportDefinitionMdiWindow::onDataLoaded);
     connect(model_, &ClientReportDefinitionModel::loadError,
             this, &ReportDefinitionMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ReportDefinitionMdiWindow::onSelectionChanged);
@@ -207,7 +208,6 @@ void ReportDefinitionMdiWindow::doReload() {
 }
 
 void ReportDefinitionMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 report definitions").arg(loaded).arg(total));
@@ -219,7 +219,6 @@ void ReportDefinitionMdiWindow::onDataLoaded() {
 
 void ReportDefinitionMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

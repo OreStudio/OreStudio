@@ -151,6 +151,7 @@ void ReportInstanceMdiWindow::setupConnections() {
             this, &ReportInstanceMdiWindow::onDataLoaded);
     connect(model_, &ClientReportInstanceModel::loadError,
             this, &ReportInstanceMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ReportInstanceMdiWindow::onSelectionChanged);
@@ -185,7 +186,6 @@ void ReportInstanceMdiWindow::doReload() {
 }
 
 void ReportInstanceMdiWindow::onDataLoaded() {
-    endLoading();
     const auto loaded = model_->rowCount();
     const auto total = model_->total_available_count();
     emit statusChanged(tr("Loaded %1 of %2 report instances").arg(loaded).arg(total));
@@ -197,7 +197,6 @@ void ReportInstanceMdiWindow::onDataLoaded() {
 
 void ReportInstanceMdiWindow::onLoadError(const QString& error_message,
                                           const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

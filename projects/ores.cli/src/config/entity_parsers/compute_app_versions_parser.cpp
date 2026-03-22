@@ -72,8 +72,8 @@ options_description make_add_compute_app_version_options_description() {
             value<std::string>(),
             "Engine version, e.g. 'ORE-Studio-7.1' (required)")
         ("platform",
-            value<std::string>(),
-            "Target platform, e.g. 'linux_x86_64' (required)")
+            value<std::vector<std::string>>()->multitoken(),
+            "Supported platforms, e.g. 'linux-x86_64' (required; repeatable)")
         ("package-uri",
             value<std::string>()->default_value(""),
             "URI to the zipped bundle in object storage")
@@ -119,7 +119,7 @@ read_add_compute_app_version_options(const variables_map& vm) {
         BOOST_THROW_EXCEPTION(
             parser_exception("Must supply --platform for add app-version command."));
     }
-    r.platform = vm["platform"].as<std::string>();
+    r.platforms = vm["platform"].as<std::vector<std::string>>();
 
     if (vm.count("package-uri") != 0)
         r.package_uri = vm["package-uri"].as<std::string>();

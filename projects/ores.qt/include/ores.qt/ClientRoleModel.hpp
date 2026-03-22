@@ -24,6 +24,7 @@
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -37,7 +38,7 @@ namespace ores::qt {
  * This model extends QAbstractTableModel and fetches role data
  * asynchronously using the ores.comms client.
  */
-class ClientRoleModel final : public QAbstractTableModel {
+class ClientRoleModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -183,12 +184,10 @@ signals:
     /**
      * @brief Emitted when data has been successfully loaded.
      */
-    void dataLoaded();
 
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onRolesLoaded();

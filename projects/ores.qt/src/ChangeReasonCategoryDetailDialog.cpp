@@ -26,9 +26,9 @@
 #include <QIcon>
 #include <QMdiSubWindow>
 #include <QMetaObject>
-#include <QInputDialog>
 #include "ui_ChangeReasonCategoryDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -334,34 +334,19 @@ void ChangeReasonCategoryDetailDialog::onSaveClicked() {
         return;
     }
 
-    // Show commentary dialog - commentary is mandatory
-    bool ok = false;
-    QString commentary = QInputDialog::getMultiLineText(
-        this,
-        tr("Commentary Required"),
-        tr("Please explain why you are making this change:"),
-        QString(),
-        &ok);
-
-    if (!ok) {
-        BOOST_LOG_SEV(lg(), debug) << "Save cancelled - commentary dialog rejected.";
-        return;
-    }
-
-    commentary = commentary.trimmed();
-    if (commentary.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Validation failed: commentary is empty";
-        MessageBoxHelper::warning(this, "Validation Error",
-            "Commentary is required when saving changes.");
-        return;
-    }
-
     BOOST_LOG_SEV(lg(), debug) << "Save clicked for category: "
                                << currentCategory_.code;
 
+    const auto crOpType = isAddMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, isDirty_,
+        isAddMode_ ? "system" : "common");
+    if (!crSel) return;
+
     QPointer<ChangeReasonCategoryDetailDialog> self = this;
     dq::domain::change_reason_category categoryToSave = getCategory();
-    categoryToSave.change_commentary = commentary.toStdString();
+    categoryToSave.change_commentary = crSel->commentary;
 
     QFuture<FutureResult> future =
         QtConcurrent::run([self, categoryToSave]() -> FutureResult {
@@ -437,6 +422,12 @@ void ChangeReasonCategoryDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         BOOST_LOG_SEV(lg(), debug) << "Delete cancelled by user";
         return;
+    }
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
     }
 
     QPointer<ChangeReasonCategoryDetailDialog> self = this;

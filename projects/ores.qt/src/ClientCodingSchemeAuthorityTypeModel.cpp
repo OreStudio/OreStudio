@@ -37,7 +37,7 @@ namespace {
 
 ClientCodingSchemeAuthorityTypeModel::ClientCodingSchemeAuthorityTypeModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(coding_scheme_authority_type_key_extractor),

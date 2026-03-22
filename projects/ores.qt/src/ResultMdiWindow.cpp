@@ -170,6 +170,7 @@ void ResultMdiWindow::setupConnections() {
             this, &ResultMdiWindow::onDataLoaded);
     connect(model_, &ClientResultModel::loadError,
             this, &ResultMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &ResultMdiWindow::onSelectionChanged);

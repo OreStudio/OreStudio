@@ -128,6 +128,7 @@ void CodingSchemeMdiWindow::setupConnections() {
             this, &CodingSchemeMdiWindow::onDataLoaded);
     connect(model_, &ClientCodingSchemeModel::loadError,
             this, &CodingSchemeMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_, &QTableView::doubleClicked,
             this, &CodingSchemeMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -141,14 +142,12 @@ void CodingSchemeMdiWindow::setupConnections() {
 }
 
 void CodingSchemeMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 coding schemes").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void CodingSchemeMdiWindow::onLoadError(const QString& error_message,
                                          const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

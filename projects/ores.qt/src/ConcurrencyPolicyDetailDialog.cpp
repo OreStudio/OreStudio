@@ -26,6 +26,7 @@
 #include "ui_ConcurrencyPolicyDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
 
 namespace ores::qt {
@@ -181,6 +182,15 @@ void ConcurrencyPolicyDetailDialog::onSaveClicked() {
 
     updatePolicyFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    policy_.change_reason_code = crSel->reason_code;
+    policy_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving concurrency policy: " << policy_.code;
 
     QPointer<ConcurrencyPolicyDetailDialog> self = this;
@@ -247,6 +257,10 @@ void ConcurrencyPolicyDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting concurrency policy: " << policy_.code;
 

@@ -39,8 +39,6 @@ class CountryDetailDialog;
 
 namespace ores::qt {
 
-class ChangeReasonCache;
-
 class CountryDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
@@ -61,7 +59,6 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
     void setImageCache(ImageCache* imageCache);
-    void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
 
     void setCountry(const refdata::domain::country& country);
     [[nodiscard]] refdata::domain::country getCountry() const;
@@ -166,7 +163,6 @@ private:
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
-    ChangeReasonCache* changeReasonCache_;
     QAction* alpha2FlagAction_{nullptr};
     refdata::domain::country currentCountry_;
     QString pendingImageId_;

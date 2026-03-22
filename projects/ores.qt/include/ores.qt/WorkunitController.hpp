@@ -33,6 +33,7 @@ namespace ores::qt {
 
 class WorkunitMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing workunit windows and operations.
@@ -58,6 +59,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -86,6 +88,7 @@ private:
     void showDetailWindow(const compute::domain::workunit& workunit);
     void showHistoryWindow(const compute::domain::workunit& workunit);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     WorkunitMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
     std::string httpBaseUrl_;

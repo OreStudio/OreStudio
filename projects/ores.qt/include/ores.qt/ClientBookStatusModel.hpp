@@ -24,6 +24,7 @@
 #include <QSize>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
+#include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
@@ -39,7 +40,7 @@ namespace ores::qt {
  * This model extends QAbstractTableModel and fetches book status
  * data asynchronously using the ores.comms client.
  */
-class ClientBookStatusModel final : public QAbstractTableModel {
+class ClientBookStatusModel final : public AbstractClientModel {
     Q_OBJECT
 
 private:
@@ -186,12 +187,10 @@ signals:
     /**
      * @brief Emitted when data has been successfully loaded.
      */
-    void dataLoaded();
 
     /**
      * @brief Emitted when an error occurs during data loading.
      */
-    void loadError(const QString& error_message, const QString& details = {});
 
 private slots:
     void onStatusesLoaded();

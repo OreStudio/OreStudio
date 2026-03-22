@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/PurposeTypeController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -36,10 +37,12 @@ PurposeTypeController::PurposeTypeController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -140,6 +143,8 @@ void PurposeTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new purpose type";
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +187,8 @@ void PurposeTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << pt.code;
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +308,8 @@ void PurposeTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(pt);
@@ -347,6 +356,8 @@ void PurposeTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new PurposeTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(pt);

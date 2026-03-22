@@ -40,8 +40,6 @@ class CurrencyDetailDialog;
 
 namespace ores::qt {
 
-class ChangeReasonCache;
-
 class CurrencyDetailDialog final : public DetailDialogBase {
     Q_OBJECT
 
@@ -62,7 +60,6 @@ public:
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
     void setImageCache(ImageCache* imageCache);
-    void setChangeReasonCache(ChangeReasonCache* changeReasonCache);
 
     void setCurrency(const refdata::domain::currency& currency);
     [[nodiscard]] refdata::domain::currency getCurrency() const;
@@ -181,7 +178,6 @@ private:
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
-    ChangeReasonCache* changeReasonCache_;
     QAction* isoCodeFlagAction_{nullptr};
     refdata::domain::currency currentCurrency_;
     QString pendingImageId_;

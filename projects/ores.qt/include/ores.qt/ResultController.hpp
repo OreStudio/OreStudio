@@ -32,6 +32,7 @@ namespace ores::qt {
 
 class ResultMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing compute result windows and operations.
@@ -57,6 +58,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -84,6 +86,7 @@ private:
     void showDetailWindow(const compute::domain::result& result);
     void showHistoryWindow(const compute::domain::result& result);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     ResultMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

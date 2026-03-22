@@ -128,6 +128,7 @@ void MethodologyMdiWindow::setupConnections() {
             this, &MethodologyMdiWindow::onDataLoaded);
     connect(model_, &ClientMethodologyModel::loadError,
             this, &MethodologyMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_, &QTableView::doubleClicked,
             this, &MethodologyMdiWindow::onRowDoubleClicked);
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
@@ -141,14 +142,12 @@ void MethodologyMdiWindow::setupConnections() {
 }
 
 void MethodologyMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 methodologies").arg(model_->rowCount()));
     updateActionStates();
 }
 
 void MethodologyMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

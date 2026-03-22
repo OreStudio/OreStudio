@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/ContactTypeController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -36,10 +37,12 @@ ContactTypeController::ContactTypeController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -140,6 +143,8 @@ void ContactTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new contact type";
 
     auto* detailDialog = new ContactTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -182,6 +187,8 @@ void ContactTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << type.code;
 
     auto* detailDialog = new ContactTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -301,6 +308,8 @@ void ContactTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new ContactTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);
@@ -347,6 +356,8 @@ void ContactTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new ContactTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setType(type);

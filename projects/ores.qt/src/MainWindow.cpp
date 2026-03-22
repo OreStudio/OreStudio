@@ -1341,7 +1341,8 @@ void MainWindow::createControllers() {
 
     // Create tenant controller (admin only functionality)
     tenantController_ = std::make_unique<TenantController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect tenant controller signals to status bar and window lifecycle
     connect(tenantController_.get(), &TenantController::statusMessage,
@@ -1361,7 +1362,8 @@ void MainWindow::createControllers() {
 
     // Create system setting controller (admin only functionality)
     systemSettingController_ = std::make_unique<SystemSettingController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect system setting controller signals to status bar and window lifecycle
     connect(systemSettingController_.get(), &SystemSettingController::statusMessage,
@@ -1379,7 +1381,8 @@ void MainWindow::createControllers() {
 
     // Create change reason category controller (admin only functionality)
     changeReasonCategoryController_ = std::make_unique<ChangeReasonCategoryController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect change reason category controller signals to status bar and window lifecycle
     connect(changeReasonCategoryController_.get(), &ChangeReasonCategoryController::statusMessage,
@@ -1416,7 +1419,8 @@ void MainWindow::createControllers() {
 
     // Create origin dimension controller
     originDimensionController_ = std::make_unique<OriginDimensionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect origin dimension controller signals to status bar and window lifecycle
     connect(originDimensionController_.get(), &OriginDimensionController::statusMessage,
@@ -1434,7 +1438,8 @@ void MainWindow::createControllers() {
 
     // Create nature dimension controller
     natureDimensionController_ = std::make_unique<NatureDimensionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect nature dimension controller signals to status bar and window lifecycle
     connect(natureDimensionController_.get(), &NatureDimensionController::statusMessage,
@@ -1452,7 +1457,8 @@ void MainWindow::createControllers() {
 
     // Create treatment dimension controller
     treatmentDimensionController_ = std::make_unique<TreatmentDimensionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect treatment dimension controller signals to status bar and window lifecycle
     connect(treatmentDimensionController_.get(), &TreatmentDimensionController::statusMessage,
@@ -1470,7 +1476,8 @@ void MainWindow::createControllers() {
 
     // Create coding scheme authority type controller
     codingSchemeAuthorityTypeController_ = std::make_unique<CodingSchemeAuthorityTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect coding scheme authority type controller signals to status bar and window lifecycle
     connect(codingSchemeAuthorityTypeController_.get(), &CodingSchemeAuthorityTypeController::statusMessage,
@@ -1488,7 +1495,8 @@ void MainWindow::createControllers() {
 
     // Create data domain controller
     dataDomainController_ = std::make_unique<DataDomainController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect data domain controller signals to status bar and window lifecycle
     connect(dataDomainController_.get(), &DataDomainController::statusMessage,
@@ -1506,7 +1514,8 @@ void MainWindow::createControllers() {
 
     // Create subject area controller
     subjectAreaController_ = std::make_unique<SubjectAreaController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect subject area controller signals to status bar and window lifecycle
     connect(subjectAreaController_.get(), &SubjectAreaController::statusMessage,
@@ -1524,7 +1533,8 @@ void MainWindow::createControllers() {
 
     // Create catalog controller
     catalogController_ = std::make_unique<CatalogController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect catalog controller signals to status bar and window lifecycle
     connect(catalogController_.get(), &CatalogController::statusMessage,
@@ -1542,7 +1552,8 @@ void MainWindow::createControllers() {
 
     // Create coding scheme controller
     codingSchemeController_ = std::make_unique<CodingSchemeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect coding scheme controller signals to status bar and window lifecycle
     connect(codingSchemeController_.get(), &CodingSchemeController::statusMessage,
@@ -1560,7 +1571,8 @@ void MainWindow::createControllers() {
 
     // Create methodology controller
     methodologyController_ = std::make_unique<MethodologyController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect methodology controller signals to status bar and window lifecycle
     connect(methodologyController_.get(), &MethodologyController::statusMessage,
@@ -1578,7 +1590,8 @@ void MainWindow::createControllers() {
 
     // Create dataset controller
     datasetController_ = std::make_unique<DatasetController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect dataset controller signals to status bar and window lifecycle
     connect(datasetController_.get(), &DatasetController::statusMessage,
@@ -1596,7 +1609,8 @@ void MainWindow::createControllers() {
 
     // Create dataset bundle controller
     datasetBundleController_ = std::make_unique<DatasetBundleController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     // Connect dataset bundle controller signals to status bar and window lifecycle
     connect(datasetBundleController_.get(), &DatasetBundleController::statusMessage,
@@ -1614,7 +1628,8 @@ void MainWindow::createControllers() {
 
     // Create party type controller
     partyTypeController_ = std::make_unique<PartyTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(partyTypeController_.get(), &PartyTypeController::statusMessage,
             this, [this](const QString& message) {
@@ -1631,7 +1646,8 @@ void MainWindow::createControllers() {
 
     // Create party status controller
     partyStatusController_ = std::make_unique<PartyStatusController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(partyStatusController_.get(), &PartyStatusController::statusMessage,
             this, [this](const QString& message) {
@@ -1648,7 +1664,8 @@ void MainWindow::createControllers() {
 
     // Create party ID scheme controller
     partyIdSchemeController_ = std::make_unique<PartyIdSchemeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(partyIdSchemeController_.get(), &PartyIdSchemeController::statusMessage,
             this, [this](const QString& message) {
@@ -1665,7 +1682,8 @@ void MainWindow::createControllers() {
 
     // Create contact type controller
     contactTypeController_ = std::make_unique<ContactTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(contactTypeController_.get(), &ContactTypeController::statusMessage,
             this, [this](const QString& message) {
@@ -1718,7 +1736,8 @@ void MainWindow::createControllers() {
 
     // Create business centre controller
     businessCentreController_ = std::make_unique<BusinessCentreController>(
-        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(businessCentreController_.get(), &BusinessCentreController::statusMessage,
             this, [this](const QString& message) {
@@ -1735,7 +1754,8 @@ void MainWindow::createControllers() {
 
     // Create business unit controller
     businessUnitController_ = std::make_unique<BusinessUnitController>(
-        this, mdiArea_, clientManager_, imageCache_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(businessUnitController_.get(), &BusinessUnitController::statusMessage,
             this, [this](const QString& message) {
@@ -1752,7 +1772,8 @@ void MainWindow::createControllers() {
 
     // Create business unit type controller
     businessUnitTypeController_ = std::make_unique<BusinessUnitTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(businessUnitTypeController_.get(), &BusinessUnitTypeController::statusMessage,
             this, [this](const QString& message) {
@@ -1805,7 +1826,8 @@ void MainWindow::createControllers() {
 
     // Create book status controller
     bookStatusController_ = std::make_unique<BookStatusController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(bookStatusController_.get(), &BookStatusController::statusMessage,
             this, [this](const QString& message) {
@@ -1839,7 +1861,8 @@ void MainWindow::createControllers() {
 
     // Create purpose type controller
     purposeTypeController_ = std::make_unique<PurposeTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(purposeTypeController_.get(), &PurposeTypeController::statusMessage,
             this, [this](const QString& message) {
@@ -1856,7 +1879,8 @@ void MainWindow::createControllers() {
 
     // Create rounding type controller
     roundingTypeController_ = std::make_unique<RoundingTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(roundingTypeController_.get(), &RoundingTypeController::statusMessage,
             this, [this](const QString& message) {
@@ -1880,7 +1904,8 @@ void MainWindow::createControllers() {
 
     // Create monetary nature controller
     monetaryNatureController_ = std::make_unique<MonetaryNatureController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(monetaryNatureController_.get(), &MonetaryNatureController::statusMessage,
             this, [this](const QString& message) {
@@ -1904,7 +1929,8 @@ void MainWindow::createControllers() {
 
     // Create currency market tier controller
     currencyMarketTierController_ = std::make_unique<CurrencyMarketTierController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(currencyMarketTierController_.get(), &CurrencyMarketTierController::statusMessage,
             this, [this](const QString& message) {
@@ -1928,7 +1954,8 @@ void MainWindow::createControllers() {
 
     // Create trade controller
     tradeController_ = std::make_unique<TradeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
 
     connect(tradeController_.get(), &TradeController::statusMessage,
             this, [this](const QString& message) {
@@ -1962,7 +1989,8 @@ void MainWindow::createControllers() {
 
     // Create compute grid controllers
     hostController_ = std::make_unique<HostController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(hostController_.get(), &HostController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -1977,7 +2005,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     appController_ = std::make_unique<AppController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(appController_.get(), &AppController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -1992,7 +2021,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     appVersionController_ = std::make_unique<AppVersionController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     if (!httpBaseUrl_.empty())
         appVersionController_->setHttpBaseUrl(httpBaseUrl_);
     connect(appVersionController_.get(), &AppVersionController::statusMessage,
@@ -2009,7 +2039,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     batchController_ = std::make_unique<BatchController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(batchController_.get(), &BatchController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -2024,7 +2055,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     workunitController_ = std::make_unique<WorkunitController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     if (!httpBaseUrl_.empty())
         workunitController_->setHttpBaseUrl(httpBaseUrl_);
     connect(workunitController_.get(), &WorkunitController::statusMessage,
@@ -2041,7 +2073,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     resultController_ = std::make_unique<ResultController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(resultController_.get(), &ResultController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -2076,7 +2109,8 @@ void MainWindow::createControllers() {
 
     // Create reporting controllers
     reportTypeController_ = std::make_unique<ReportTypeController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(reportTypeController_.get(), &ReportTypeController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -2091,7 +2125,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     concurrencyPolicyController_ = std::make_unique<ConcurrencyPolicyController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(concurrencyPolicyController_.get(), &ConcurrencyPolicyController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);
@@ -2122,7 +2157,8 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     reportInstanceController_ = std::make_unique<ReportInstanceController>(
-        this, mdiArea_, clientManager_, QString::fromStdString(username_), this);
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
     connect(reportInstanceController_.get(), &ReportInstanceController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message);

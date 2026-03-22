@@ -24,6 +24,7 @@
 #include <QFutureWatcher>
 #include "ui_DataDomainDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.qt/WidgetUtils.hpp"
@@ -112,6 +113,16 @@ void DataDomainDetailDialog::onSaveClicked() {
     domain.modified_by = username_;
     domain.version = isCreateMode_ ? 0 : domain_.version;
 
+    {
+        const auto crOpType = isCreateMode_
+            ? ChangeReasonDialog::OperationType::Create
+            : ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true,
+            isCreateMode_ ? "system" : "common");
+        if (!crSel) return;
+        domain.change_commentary = crSel->commentary;
+    }
+
     QPointer<DataDomainDetailDialog> self = this;
 
     struct SaveResult { bool success; std::string message; };
@@ -152,6 +163,12 @@ void DataDomainDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     QPointer<DataDomainDetailDialog> self = this;
     QString name = ui_->nameEdit->text();

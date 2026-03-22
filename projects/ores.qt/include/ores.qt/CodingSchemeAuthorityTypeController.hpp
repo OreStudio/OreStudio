@@ -31,6 +31,7 @@ namespace ores::qt {
 
 class CodingSchemeAuthorityTypeMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 class CodingSchemeAuthorityTypeController final : public EntityController {
     Q_OBJECT
@@ -50,6 +51,7 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -77,6 +79,7 @@ private:
     void showDetailWindow(const dq::domain::coding_scheme_authority_type& authorityType);
     void showHistoryWindow(const QString& code);
 
+    ChangeReasonCache* changeReasonCache_{nullptr};
     CodingSchemeAuthorityTypeMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

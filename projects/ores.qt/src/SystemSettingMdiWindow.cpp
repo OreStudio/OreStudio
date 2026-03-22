@@ -119,6 +119,7 @@ SystemSettingMdiWindow(ClientManager* clientManager,
             this, &SystemSettingMdiWindow::onDataLoaded);
     connect(systemSettingModel_.get(), &ClientSystemSettingModel::loadError,
             this, &SystemSettingMdiWindow::onLoadError);
+    connectModel(systemSettingModel_.get());
     connect(systemSettingTableView_, &QTableView::doubleClicked,
             this, &SystemSettingMdiWindow::onRowDoubleClicked);
     connect(systemSettingTableView_->selectionModel(),
@@ -202,7 +203,6 @@ void SystemSettingMdiWindow::onDataLoaded() {
 
 void SystemSettingMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
-    endLoading();
     emit errorOccurred(error_message);
     BOOST_LOG_SEV(lg(), error) << "Error loading system settings: "
                                << error_message.toStdString();

@@ -40,8 +40,11 @@
 
 /**
  * Returns distinct countries present in the LEI entities artefact for the
- * current tenant, considering root entities only. Used to populate the
- * country filter dropdown in the UI.
+ * current tenant or the system tenant, considering root entities only.
+ * Used to populate the country filter dropdown in the UI.
+ *
+ * LEI data is global reference data loaded under the system tenant, so
+ * both the current tenant and the system tenant are included.
  */
 create or replace function ores_dq_lei_entities_distinct_countries_fn()
 returns table (
@@ -54,12 +57,18 @@ begin
         select distinct on (e.lei)
             e.entity_legal_address_country
         from ores_dq_lei_entities_artefact_tbl e
-        where e.tenant_id = ores_iam_current_tenant_id_fn()
+        where e.tenant_id in (
+                  ores_iam_current_tenant_id_fn(),
+                  ores_iam_system_tenant_id_fn()
+              )
           and e.entity_entity_status = 'ACTIVE'
           and not exists (
               select 1
               from ores_dq_lei_relationships_artefact_tbl r
-              where r.tenant_id = ores_iam_current_tenant_id_fn()
+              where r.tenant_id in (
+                        ores_iam_current_tenant_id_fn(),
+                        ores_iam_system_tenant_id_fn()
+                    )
                 and r.relationship_start_node_node_id = e.lei
                 and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
                 and r.relationship_relationship_status = 'ACTIVE'
@@ -107,13 +116,19 @@ begin
             e.entity_entity_category,
             e.entity_legal_address_country
         from ores_dq_lei_entities_artefact_tbl e
-        where e.tenant_id = ores_iam_current_tenant_id_fn()
+        where e.tenant_id in (
+                  ores_iam_current_tenant_id_fn(),
+                  ores_iam_system_tenant_id_fn()
+              )
           and e.entity_legal_address_country = p_country
           and e.entity_entity_status = 'ACTIVE'
           and not exists (
               select 1
               from ores_dq_lei_relationships_artefact_tbl r
-              where r.tenant_id = ores_iam_current_tenant_id_fn()
+              where r.tenant_id in (
+                        ores_iam_current_tenant_id_fn(),
+                        ores_iam_system_tenant_id_fn()
+                    )
                 and r.relationship_start_node_node_id = e.lei
                 and r.relationship_relationship_type = 'IS_DIRECTLY_CONSOLIDATED_BY'
                 and r.relationship_relationship_status = 'ACTIVE'

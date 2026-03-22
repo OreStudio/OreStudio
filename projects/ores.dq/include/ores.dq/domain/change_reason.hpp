@@ -77,6 +77,11 @@ struct change_reason final {
     std::string category_code;
 
     /**
+     * @brief Whether this reason can be used for new record creation.
+     */
+    bool applies_to_new = false;
+
+    /**
      * @brief Whether this reason can be used for amend operations.
      */
     bool applies_to_amend = true;

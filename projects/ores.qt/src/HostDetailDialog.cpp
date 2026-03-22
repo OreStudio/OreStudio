@@ -27,6 +27,7 @@
 #include "ui_HostDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.compute/messaging/host_protocol.hpp"
 
 namespace ores::qt {
@@ -185,6 +186,15 @@ void HostDetailDialog::onSaveClicked() {
 
     updateHostFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    host_.change_reason_code = crSel->reason_code;
+    host_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving compute host: " << host_.external_id;
 
     // Save not yet implemented for compute entities
@@ -207,6 +217,10 @@ void HostDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute host: " << host_.external_id;
 

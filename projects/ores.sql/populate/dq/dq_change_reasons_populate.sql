@@ -9,8 +9,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 51
@@ -39,6 +38,12 @@
  * - trade: Trade lifecycle reasons (FINRA / MiFID II aligned)
  *
  * Reason code format: "category.reason_name"
+ *
+ * The upsert function signature is:
+ *   ores_dq_change_reasons_upsert_fn(
+ *       tenant_id, code, description, category_code,
+ *       applies_to_new, applies_to_amend, applies_to_delete,
+ *       requires_commentary, display_order)
  */
 
 -- =============================================================================
@@ -74,6 +79,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.initial_load',
     'Initial system bootstrap or migration',
     'system',
+    true,   -- applies to new
     false,  -- not for amend
     false,  -- not for delete
     false,  -- no commentary required
@@ -84,6 +90,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.new_record',
     'New record created during normal operations',
     'system',
+    true,   -- applies to new
     false,  -- not for amend
     false,  -- not for delete
     false,  -- no commentary required
@@ -94,6 +101,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.external_data_import',
     'External data import (requires data lineage)',
     'system',
+    false,  -- not for new
     true,   -- applies to amend (imports can update existing records)
     false,  -- not for delete
     true,   -- commentary REQUIRED (data lineage)
@@ -104,6 +112,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.test',
     'Test data for automated testing',
     'system',
+    true,   -- applies to new
     true,   -- applies to amend
     true,   -- applies to delete
     false,  -- no commentary required
@@ -114,6 +123,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.import',
     'Data imported via CLI import command',
     'system',
+    true,   -- applies to new
     true,   -- applies to amend
     false,  -- not for delete
     false,  -- no commentary required
@@ -124,6 +134,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'system.tenant_terminated',
     'Tenant marked as terminated',
     'system',
+    false,  -- not for new
     true,   -- applies to amend (termination is updating status)
     false,  -- not for delete
     false,  -- no commentary required
@@ -141,6 +152,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.non_material_update',
     'Non-material update (Touch)',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     false,  -- not for delete
     false,  -- commentary optional
@@ -151,6 +163,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.rectification',
     'User/Booking Error',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     false,  -- commentary optional
@@ -161,6 +174,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.duplicate',
     'Duplicate Record',
     'common',
+    false,  -- not for new
     false,  -- not for amend
     true,   -- applies to delete
     false,  -- commentary optional
@@ -171,6 +185,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.stale_data',
     'Data not updated within required liquidity horizon',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     false,  -- commentary optional
@@ -181,6 +196,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.outlier_correction',
     'Manual override after plausibility check failure',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -191,6 +207,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.feed_failure',
     'Upstream vendor/API data issue',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -201,6 +218,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.mapping_error',
     'Incorrect ID translation (e.g., ISIN to FIGI)',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -211,6 +229,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.judgmental_override',
     'Expert judgment when market prices unavailable',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -221,6 +240,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.regulatory',
     'Mandatory compliance adjustment',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -231,6 +251,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'common.other',
     'Exceptional (requires audit note)',
     'common',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -248,6 +269,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.fat_finger',
     'Erroneous execution (wrong quantity/price)',
     'trade',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     false,  -- commentary optional
@@ -258,6 +280,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.system_malfunction',
     'Technical glitch or algorithm issue',
     'trade',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -268,6 +291,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.corporate_action',
     'Stock split, dividend, or merger adjustment',
     'trade',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     false,  -- commentary optional
@@ -278,6 +302,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.allocation_swap',
     'House to client sub-account reallocation',
     'trade',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     false,  -- commentary optional
@@ -288,6 +313,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.re_booking',
     'Wrong legal entity correction',
     'trade',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED
@@ -298,6 +324,7 @@ select ores_dq_change_reasons_upsert_fn(ores_iam_system_tenant_id_fn(),
     'trade.other',
     'Exceptional (requires audit note)',
     'trade',
+    false,  -- not for new
     true,   -- applies to amend
     true,   -- applies to delete
     true,   -- commentary REQUIRED

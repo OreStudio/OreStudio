@@ -27,6 +27,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include "ui_DatasetDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.dq/messaging/dataset_protocol.hpp"
@@ -461,6 +462,16 @@ void DatasetDetailDialog::onSaveClicked() {
         QDateTime(asOfDate, QTime(0, 0)).toSecsSinceEpoch());
     dataset.ingestion_timestamp = std::chrono::system_clock::now();
 
+    {
+        const auto crOpType = isCreateMode_
+            ? ChangeReasonDialog::OperationType::Create
+            : ChangeReasonDialog::OperationType::Amend;
+        const auto crSel = promptChangeReason(crOpType, true,
+            isCreateMode_ ? "system" : "common");
+        if (!crSel) return;
+        dataset.change_commentary = crSel->commentary;
+    }
+
     QPointer<DatasetDetailDialog> self = this;
     boost::uuids::uuid datasetId = dataset.id;
 
@@ -502,6 +513,12 @@ void DatasetDetailDialog::onDeleteClicked() {
         QMessageBox::Yes | QMessageBox::No);
 
     if (reply != QMessageBox::Yes) return;
+
+    {
+        const auto crSel = promptChangeReason(
+            ChangeReasonDialog::OperationType::Delete, true, "common");
+        if (!crSel) return;
+    }
 
     QPointer<DatasetDetailDialog> self = this;
     boost::uuids::uuid datasetId = dataset_.id;

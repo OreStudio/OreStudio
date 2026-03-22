@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/CodingSchemeAuthorityTypeController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -43,9 +44,11 @@ CodingSchemeAuthorityTypeController::CodingSchemeAuthorityTypeController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, authority_type_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -143,6 +146,8 @@ void CodingSchemeAuthorityTypeController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new authority type";
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -185,6 +190,8 @@ void CodingSchemeAuthorityTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << authorityType.code;
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -299,6 +306,8 @@ void CodingSchemeAuthorityTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setAuthorityType(authorityType);
@@ -344,6 +353,8 @@ void CodingSchemeAuthorityTypeController::onRevertVersion(
                               << authorityType.version;
 
     auto* detailDialog = new CodingSchemeAuthorityTypeDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setAuthorityType(authorityType);

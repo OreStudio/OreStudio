@@ -151,6 +151,7 @@ void PurposeTypeMdiWindow::setupConnections() {
             this, &PurposeTypeMdiWindow::onDataLoaded);
     connect(model_, &ClientPurposeTypeModel::loadError,
             this, &PurposeTypeMdiWindow::onLoadError);
+    connectModel(model_);
 
     connect(tableView_->selectionModel(), &QItemSelectionModel::selectionChanged,
             this, &PurposeTypeMdiWindow::onSelectionChanged);
@@ -165,13 +166,11 @@ void PurposeTypeMdiWindow::doReload() {
 }
 
 void PurposeTypeMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 purpose types").arg(model_->rowCount()));
 }
 
 void PurposeTypeMdiWindow::onLoadError(const QString& error_message,
                                        const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

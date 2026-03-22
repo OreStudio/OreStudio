@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/NatureDimensionController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -43,10 +44,12 @@ NatureDimensionController::NatureDimensionController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
                        nature_dimension_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -151,6 +154,8 @@ void NatureDimensionController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new nature dimension";
 
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -193,6 +198,8 @@ void NatureDimensionController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << dimension.code;
 
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -312,6 +319,8 @@ void NatureDimensionController::onOpenVersion(
     }
 
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);
@@ -358,6 +367,8 @@ void NatureDimensionController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new NatureDimensionDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setDimension(dimension);

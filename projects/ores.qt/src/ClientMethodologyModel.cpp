@@ -38,7 +38,7 @@ namespace {
 
 ClientMethodologyModel::ClientMethodologyModel(
     ClientManager* clientManager, QObject* parent)
-    : QAbstractTableModel(parent),
+    : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
       recencyTracker_(methodology_key_extractor),

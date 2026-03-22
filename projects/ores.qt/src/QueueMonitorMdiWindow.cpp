@@ -149,6 +149,7 @@ void QueueMonitorMdiWindow::setupConnections() {
             this, &QueueMonitorMdiWindow::onDataLoaded);
     connect(model_, &ClientQueueModel::loadError,
             this, &QueueMonitorMdiWindow::onLoadError);
+    connectModel(model_);
     connect(tableView_, &QTableView::doubleClicked,
             this, &QueueMonitorMdiWindow::onRowDoubleClicked);
 }
@@ -160,7 +161,6 @@ void QueueMonitorMdiWindow::doReload() {
 }
 
 void QueueMonitorMdiWindow::onDataLoaded() {
-    endLoading();
     emit statusChanged(tr("Loaded %1 queues").arg(model_->rowCount()));
 
     // Wire selection model after model data is loaded (proxy model may
@@ -199,7 +199,6 @@ void QueueMonitorMdiWindow::onViewChart() {
 
 void QueueMonitorMdiWindow::onLoadError(const QString& error_message,
                                         const QString& details) {
-    endLoading();
     BOOST_LOG_SEV(lg(), error) << "Load error: " << error_message.toStdString();
     emit errorOccurred(error_message);
     MessageBoxHelper::critical(this, tr("Load Error"), error_message, details);

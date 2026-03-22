@@ -26,6 +26,7 @@
 #include "ui_PurposeTypeDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
+#include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.refdata/messaging/purpose_type_protocol.hpp"
 
@@ -173,6 +174,15 @@ void PurposeTypeDetailDialog::onSaveClicked() {
 
     updateTypeFromUi();
 
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    type_.change_reason_code = crSel->reason_code;
+    type_.change_commentary = crSel->commentary;
+
     BOOST_LOG_SEV(lg(), info) << "Saving purpose type: " << type_.code;
 
     QPointer<PurposeTypeDetailDialog> self = this;
@@ -239,6 +249,10 @@ void PurposeTypeDetailDialog::onDeleteClicked() {
     if (reply != QMessageBox::Yes) {
         return;
     }
+
+    const auto crSel = promptChangeReason(
+        ChangeReasonDialog::OperationType::Delete, true, "common");
+    if (!crSel) return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting purpose type: " << type_.code;
 

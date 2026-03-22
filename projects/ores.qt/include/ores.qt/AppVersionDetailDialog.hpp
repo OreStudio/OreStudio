@@ -20,10 +20,15 @@
 #ifndef ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 #define ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 
+#include <array>
+#include <utility>
 #include <QString>
+#include <QListWidget>
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.compute/domain/app.hpp"
 #include "ores.compute/domain/app_version.hpp"
 
 namespace Ui {
@@ -82,18 +87,34 @@ protected:
     bool hasUnsavedChanges() const override { return hasChanges_; }
 
 private:
+    static constexpr std::array<std::pair<const char*, const char*>, 4> known_platforms_ = {{
+        {"linux-x86_64",   "Linux x86-64"},
+        {"linux-arm64",    "Linux ARM64"},
+        {"windows-x86_64", "Windows x86-64"},
+        {"macos-arm64",    "macOS Apple Silicon"}
+    }};
+
     void setupUi();
     void setupConnections();
+    void loadApps();
+    void populateAppCombo();
+    void populatePlatformsList();
     void updateUiFromVersion();
     void updateVersionFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
+    struct AppEntry {
+        std::string id;   // UUID string
+        std::string name;
+    };
 
     Ui::AppVersionDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
     std::string httpBaseUrl_;
     compute::domain::app_version app_version_;
+    std::vector<AppEntry> appEntries_;
     QString selectedPackageFilePath_;
     bool createMode_{true};
     bool readOnly_{false};

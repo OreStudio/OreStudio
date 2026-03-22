@@ -29,9 +29,7 @@
 #include "ui_ReportDefinitionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.dq/domain/change_reason_constants.hpp"
 #include "ores.reporting/messaging/report_definition_protocol.hpp"
 #include "ores.reporting/messaging/report_type_protocol.hpp"
 #include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
@@ -39,7 +37,6 @@
 namespace ores::qt {
 
 using namespace ores::logging;
-namespace reason = dq::domain::change_reason_constants;
 
 ReportDefinitionDetailDialog::ReportDefinitionDetailDialog(QWidget* parent)
     : DetailDialogBase(parent),
@@ -107,11 +104,6 @@ void ReportDefinitionDetailDialog::setClientManager(ClientManager* clientManager
 
 void ReportDefinitionDetailDialog::setUsername(const std::string& username) {
     username_ = username;
-}
-
-void ReportDefinitionDetailDialog::setChangeReasonCache(
-    ChangeReasonCache* changeReasonCache) {
-    changeReasonCache_ = changeReasonCache;
 }
 
 void ReportDefinitionDetailDialog::setDefinition(
@@ -361,34 +353,14 @@ void ReportDefinitionDetailDialog::onSaveClicked() {
 
     updateDefinitionFromUi();
 
-    // For updates (not creates), require change reason
-    if (!createMode_) {
-        if (!changeReasonCache_ || !changeReasonCache_->isLoaded()) {
-            BOOST_LOG_SEV(lg(), warn) << "Change reasons not loaded, cannot save.";
-            emit errorMessage("Change reasons not loaded. Please try again.");
-            return;
-        }
-
-        auto reasons = changeReasonCache_->getReasonsForAmend(
-            std::string{reason::categories::common});
-        if (reasons.empty()) {
-            BOOST_LOG_SEV(lg(), warn) << "No change reasons available.";
-            emit errorMessage("No change reasons available. Please contact administrator.");
-            return;
-        }
-
-        ChangeReasonDialog dialog(reasons, ChangeReasonDialog::OperationType::Amend,
-            hasChanges_, this);
-        if (dialog.exec() != QDialog::Accepted) {
-            BOOST_LOG_SEV(lg(), debug) << "Save cancelled - change reason dialog rejected.";
-            return;
-        }
-
-        definition_.change_reason_code = dialog.selectedReasonCode();
-        definition_.change_commentary = dialog.commentary();
-
-        BOOST_LOG_SEV(lg(), debug) << "Change reason: " << definition_.change_reason_code;
-    }
+    const auto crOpType = createMode_
+        ? ChangeReasonDialog::OperationType::Create
+        : ChangeReasonDialog::OperationType::Amend;
+    const auto crSel = promptChangeReason(crOpType, hasChanges_,
+        createMode_ ? "system" : "common");
+    if (!crSel) return;
+    definition_.change_reason_code = crSel->reason_code;
+    definition_.change_commentary = crSel->commentary;
 
     BOOST_LOG_SEV(lg(), info) << "Saving report definition: " << definition_.name;
 

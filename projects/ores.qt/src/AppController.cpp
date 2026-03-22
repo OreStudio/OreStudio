@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/AppController.hpp"
+#include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>
@@ -44,10 +45,12 @@ AppController::AppController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           app_event_name, parent),
+      changeReasonCache_(changeReasonCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -148,6 +151,8 @@ void AppController::showAddWindow() {
     BOOST_LOG_SEV(lg(), debug) << "Creating add window for new compute app";
 
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(true);
@@ -190,6 +195,8 @@ void AppController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << app.name;
 
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
@@ -312,6 +319,8 @@ void AppController::onOpenVersion(
     }
 
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setApp(app);
@@ -358,6 +367,8 @@ void AppController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new AppDetailDialog(mainWindow_);
+    if (changeReasonCache_)
+        detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setApp(app);

@@ -20,7 +20,7 @@
 #include "ores.qt/ClientTenantModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.iam/messaging/tenant_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

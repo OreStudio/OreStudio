@@ -41,7 +41,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientTelemetryLogModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.iam/domain/session.hpp"
+#include "ores.iam.api/domain/session.hpp"
 
 namespace ores::qt {
 

@@ -26,7 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.compute/domain/app_version.hpp"
+#include "ores.compute.api/domain/app_version.hpp"
 
 namespace Ui {
 class AppVersionHistoryDialog;

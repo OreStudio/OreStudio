@@ -31,15 +31,15 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <cli/cli.h>
 #include "ores.platform/time/datetime.hpp"
-#include "ores.iam/messaging/login_protocol.hpp"
-#include "ores.iam/messaging/bootstrap_protocol.hpp"
-#include "ores.iam/messaging/account_protocol.hpp"
-#include "ores.iam/messaging/session_protocol.hpp"
-#include "ores.iam/messaging/account_history_protocol.hpp"
-#include "ores.iam/messaging/authorization_protocol.hpp"
-#include "ores.iam/domain/account_table_io.hpp"  // IWYU pragma: keep.
-#include "ores.iam/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
-#include "ores.iam/domain/account_version_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/bootstrap_protocol.hpp"
+#include "ores.iam.api/messaging/account_protocol.hpp"
+#include "ores.iam.api/messaging/session_protocol.hpp"
+#include "ores.iam.api/messaging/account_history_protocol.hpp"
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/domain/account_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam.api/domain/login_info_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.iam.api/domain/account_version_table_io.hpp"  // IWYU pragma: keep.
 #include "ores.shell/app/commands/rbac_commands.hpp"
 
 namespace ores::shell::app::commands {

@@ -25,9 +25,9 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.compute/domain/batch.hpp"
-#include "ores.compute/domain/app_version.hpp"
-#include "ores.compute/domain/workunit.hpp"
+#include "ores.compute.api/domain/batch.hpp"
+#include "ores.compute.api/domain/app_version.hpp"
+#include "ores.compute.api/domain/workunit.hpp"
 
 namespace Ui {
 class WorkunitDetailDialog;

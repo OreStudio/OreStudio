@@ -29,7 +29,7 @@
 #include "ores.qt/TenantHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.iam/eventing/tenant_changed_event.hpp"
+#include "ores.iam.api/eventing/tenant_changed_event.hpp"
 
 namespace ores::qt {
 

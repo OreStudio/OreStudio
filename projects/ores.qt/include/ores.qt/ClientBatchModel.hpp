@@ -28,7 +28,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.compute/domain/batch.hpp"
+#include "ores.compute.api/domain/batch.hpp"
 
 namespace ores::qt {
 

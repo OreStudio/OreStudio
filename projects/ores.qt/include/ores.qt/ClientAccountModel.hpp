@@ -29,9 +29,9 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.iam/domain/account.hpp"
-#include "ores.iam/domain/account_party.hpp"
-#include "ores.iam/domain/login_info.hpp"
+#include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/account_party.hpp"
+#include "ores.iam.api/domain/login_info.hpp"
 
 namespace ores::qt {
 

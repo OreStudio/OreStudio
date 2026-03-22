@@ -44,12 +44,12 @@ target_link_libraries(${lib_target_name}
         ores.telemetry.lib
         ores.utility.lib
     PRIVATE
-        ores.iam.lib
+        ores.iam.core.lib
         ores.dq.lib
         ores.ore.lib
         ores.refdata.lib
         ores.security.lib
-        ores.compute.lib
+        ores.compute.core.lib
         magic_enum::magic_enum
         cli::cli)
 

@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_GENERATORS_ACCOUNT_GENERATOR_HPP
 
 #include <vector>
-#include "ores.iam/domain/account.hpp"
+#include "ores.iam.api/domain/account.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::synthetic::generators {

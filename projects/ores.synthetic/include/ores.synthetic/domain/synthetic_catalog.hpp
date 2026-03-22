@@ -29,7 +29,7 @@
 #include "ores.dq/domain/origin_dimension.hpp"
 #include "ores.dq/domain/nature_dimension.hpp"
 #include "ores.dq/domain/treatment_dimension.hpp"
-#include "ores.iam/domain/account.hpp"
+#include "ores.iam.api/domain/account.hpp"
 
 namespace ores::synthetic::domain {
 

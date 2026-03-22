@@ -40,7 +40,7 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.security.lib
-        ores.iam.lib
+        ores.iam.core.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib

@@ -20,7 +20,7 @@
 #include "ores.qt/WorkunitController.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.compute/eventing/workunit_changed_event.hpp"
+#include "ores.compute.api/eventing/workunit_changed_event.hpp"
 
 #include <QMdiSubWindow>
 #include <QMessageBox>

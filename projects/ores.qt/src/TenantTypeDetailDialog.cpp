@@ -28,7 +28,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.iam/messaging/tenant_type_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 
 namespace ores::qt {
 

@@ -21,7 +21,7 @@
 #define ORES_QT_ROLE_DETAIL_DIALOG_HPP
 
 #include <memory>
-#include "ores.iam/domain/role.hpp"
+#include "ores.iam.api/domain/role.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"

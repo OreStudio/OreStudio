@@ -27,7 +27,7 @@
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.nats/config/nats_options.hpp"
-#include "ores.iam/messaging/login_protocol.hpp"
+#include "ores.iam.api/messaging/login_protocol.hpp"
 
 namespace ores::qt {
 

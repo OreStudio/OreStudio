@@ -24,7 +24,7 @@
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.iam/service/auth_session_service.hpp"
+#include "ores.iam.core/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::http_server::routes {

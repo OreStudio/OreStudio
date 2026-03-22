@@ -26,8 +26,8 @@
 #include "ores.refdata/messaging/currency_protocol.hpp"
 #include "ores.refdata/messaging/portfolio_protocol.hpp"
 #include "ores.refdata/messaging/business_unit_protocol.hpp"
-#include "ores.iam/messaging/tenant_type_protocol.hpp"
-#include "ores.iam/messaging/tenant_status_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_type_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 
 namespace ores::qt {
 

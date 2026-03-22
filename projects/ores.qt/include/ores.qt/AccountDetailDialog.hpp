@@ -24,8 +24,8 @@
 #include <QAction>
 #include <memory>
 #include <optional>
-#include "ores.iam/domain/account.hpp"
-#include "ores.iam/domain/login_info.hpp"
+#include "ores.iam.api/domain/account.hpp"
+#include "ores.iam.api/domain/login_info.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/AccountRolesWidget.hpp"
 #include "ores.qt/AccountPartiesWidget.hpp"

@@ -44,10 +44,10 @@
 // Event types to subscribe to
 #include "ores.refdata/eventing/currency_changed_event.hpp"
 #include "ores.variability/eventing/system_setting_changed_event.hpp"
-#include "ores.iam/eventing/account_changed_event.hpp"
-#include "ores.iam/eventing/role_assigned_event.hpp"
-#include "ores.iam/eventing/role_revoked_event.hpp"
-#include "ores.iam/eventing/account_permissions_changed_event.hpp"
+#include "ores.iam.api/eventing/account_changed_event.hpp"
+#include "ores.iam.api/eventing/role_assigned_event.hpp"
+#include "ores.iam.api/eventing/role_revoked_event.hpp"
+#include "ores.iam.api/eventing/account_permissions_changed_event.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {

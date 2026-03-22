@@ -28,7 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.compute/messaging/host_protocol.hpp"
+#include "ores.compute.api/messaging/host_protocol.hpp"
 
 namespace ores::qt {
 

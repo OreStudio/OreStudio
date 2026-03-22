@@ -36,7 +36,7 @@ target_link_libraries(${tests_target_name}
         ores.utility.lib
         ores.testing.lib
         ores.refdata.lib
-        ores.iam.lib
+        ores.iam.api.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         ores.openssl_cleanup

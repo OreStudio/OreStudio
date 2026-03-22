@@ -23,7 +23,7 @@
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.iam/messaging/authorization_protocol.hpp"
+#include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {

@@ -163,6 +163,8 @@ private:
     QLineEdit* hostEdit_;
     QLabel* portLabel_;
     QSpinBox* portSpinBox_;
+    QLabel* httpPortLabel_;
+    QSpinBox* httpPortSpinBox_;
     QLabel* namespaceLabel_;
     QLineEdit* namespaceEdit_;
 

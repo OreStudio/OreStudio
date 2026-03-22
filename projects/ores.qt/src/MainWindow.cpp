@@ -458,15 +458,6 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // Connect ClientManager signals
-    connect(clientManager_, &ClientManager::connected, this, [this]() {
-        // Derive HTTP base URL from the connected host unless explicitly overridden
-        // via --http-base-url. The HTTP server always runs on port 8080 on the same host.
-        if (httpBaseUrl_.empty()) {
-            const std::string url =
-                "http://" + clientManager_->connectedHost() + ":8080";
-            setHttpBaseUrl(url);
-        }
-    });
     connect(clientManager_, &ClientManager::connected, this, &MainWindow::updateMenuState);
     connect(clientManager_, &ClientManager::disconnected, this, &MainWindow::updateMenuState);
     connect(clientManager_, &ClientManager::disconnected, this, [this]() {
@@ -2930,6 +2921,11 @@ void MainWindow::onConnectionConnectRequested(const boost::uuids::uuid& connecti
     // Store the connection name for the window title
     activeConnectionName_ = connectionName;
 
+    // Set HTTP base URL from the resolved environment's http_port
+    if (httpBaseUrl_.empty()) {
+        setHttpBaseUrl("http://" + resolved.host + ":" + std::to_string(resolved.http_port));
+    }
+
     // Show login dialog pre-filled with connection details
     LoginDialogOptions options;
     options.host = QString::fromStdString(resolved.host);
@@ -2983,6 +2979,11 @@ void MainWindow::onEnvironmentConnectRequested(const boost::uuids::uuid& environ
     }
 
     activeConnectionName_ = environmentName;
+
+    // Set HTTP base URL from the environment's configured http_port
+    if (httpBaseUrl_.empty()) {
+        setHttpBaseUrl("http://" + env->host + ":" + std::to_string(env->http_port));
+    }
 
     // Show login dialog pre-filled with environment host/port; user enters credentials
     LoginDialogOptions options;

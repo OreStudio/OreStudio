@@ -60,9 +60,17 @@ struct environment final {
     std::string host;
 
     /**
-     * @brief Port number the server is listening on.
+     * @brief Port number the NATS server is listening on.
      */
     int port{0};
+
+    /**
+     * @brief Port number the HTTP server is listening on.
+     *
+     * Used by the Qt client to construct the HTTP base URL for package
+     * upload and download. Defaults to 8080.
+     */
+    int http_port{8080};
 
     /**
      * @brief Optional description or notes about this environment.

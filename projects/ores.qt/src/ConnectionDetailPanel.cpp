@@ -169,6 +169,12 @@ void ConnectionDetailPanel::setupEnvironmentPage() {
     envPortLabel_->setStyleSheet(valueStyle);
     formLayout->addRow(portLabel, envPortLabel_);
 
+    auto* httpPortLabel = new QLabel(tr("HTTP Port"), environmentPage_);
+    httpPortLabel->setStyleSheet(labelStyle);
+    envHttpPortLabel_ = new QLabel(environmentPage_);
+    envHttpPortLabel_->setStyleSheet(valueStyle);
+    formLayout->addRow(httpPortLabel, envHttpPortLabel_);
+
     auto* nsLabel = new QLabel(tr("Namespace"), environmentPage_);
     nsLabel->setStyleSheet(labelStyle);
     envNamespaceLabel_ = new QLabel(environmentPage_);
@@ -287,6 +293,7 @@ void ConnectionDetailPanel::showEnvironment(const connections::domain::environme
     envNameLabel_->setText(QString::fromStdString(env.name));
     envHostLabel_->setText(QString::fromStdString(env.host));
     envPortLabel_->setText(QString::number(env.port));
+    envHttpPortLabel_->setText(QString::number(env.http_port));
     envNamespaceLabel_->setText(env.subject_prefix.empty()
         ? tr("(none)")
         : QString::fromStdString(env.subject_prefix));

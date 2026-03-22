@@ -46,7 +46,6 @@ inline auto& batch_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class batch_handler {
@@ -93,7 +92,6 @@ public:
         if (auto req = decode<save_batch_request>(msg)) {
             try {
                 service::batch_service svc(ctx);
-                stamp(req->batch, ctx);
                 svc.save(req->batch);
                 reply(nats_, msg, save_batch_response{.success = true});
             } catch (const std::exception& e) {

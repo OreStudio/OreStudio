@@ -46,7 +46,6 @@ inline auto& app_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using namespace ores::logging;
 
 class app_handler {
@@ -93,7 +92,6 @@ public:
         if (auto req = decode<save_app_request>(msg)) {
             try {
                 service::app_service svc(ctx);
-                stamp(req->app, ctx);
                 svc.save(req->app);
                 reply(nats_, msg, save_app_response{.success = true});
             } catch (const std::exception& e) {

@@ -23,6 +23,8 @@
 
 namespace ores::telemetry::service::messaging {
 
+using namespace ores::telemetry::messaging;
+
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,

@@ -80,7 +80,7 @@ public:
      * interval_seconds.  Exits cleanly when the io_context shuts down.
      */
     boost::asio::awaitable<void> run() {
-        BOOST_LOG_SEV(lg(), info)
+        BOOST_LOG_SEV(lg(), ores::logging::info)
             << "Heartbeat publisher started for '" << service_name_
             << "' instance=" << instance_id_
             << " interval=" << interval_seconds_ << "s";
@@ -97,12 +97,12 @@ public:
             }
         } catch (const boost::system::system_error& e) {
             if (e.code() != boost::asio::error::operation_aborted) {
-                BOOST_LOG_SEV(lg(), warn)
+                BOOST_LOG_SEV(lg(), ores::logging::warn)
                     << "Heartbeat timer error: " << e.what();
             }
         }
 
-        BOOST_LOG_SEV(lg(), info)
+        BOOST_LOG_SEV(lg(), ores::logging::info)
             << "Heartbeat publisher stopped for '" << service_name_ << "'";
     }
 
@@ -121,10 +121,10 @@ private:
             nats_.publish(
                 telemetry::messaging::service_heartbeat_message::nats_subject,
                 std::move(data));
-            BOOST_LOG_SEV(lg(), trace)
+            BOOST_LOG_SEV(lg(), ores::logging::trace)
                 << "Heartbeat published: " << service_name_;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn)
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
                 << "Failed to publish heartbeat: " << e.what();
         }
     }

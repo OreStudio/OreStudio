@@ -42,9 +42,10 @@ create table if not exists "ores_compute_platforms_tbl" (
     "change_commentary"   text not null,
     "valid_from"          timestamp with time zone not null,
     "valid_to"            timestamp with time zone not null,
-    primary key (id, valid_from, valid_to),
+    primary key (id, tenant_id, valid_from, valid_to),
     exclude using gist (
         id WITH =,
+        tenant_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),

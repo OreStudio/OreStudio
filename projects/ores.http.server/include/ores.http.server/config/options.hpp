@@ -26,6 +26,7 @@
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
 #include "ores.http/net/http_server_options.hpp"
+#include "ores.nats/config/nats_options.hpp"
 
 namespace ores::http_server::config {
 
@@ -49,9 +50,21 @@ struct options final {
     ores::database::database_options database;
 
     /**
+     * @brief Configuration related to NATS messaging.
+     */
+    ores::nats::config::nats_options nats;
+
+    /**
      * @brief Root directory for compute grid file storage (packages, inputs, outputs).
      */
     std::string compute_storage_dir{"/var/ores/http-server/compute"};
+
+    /**
+     * @brief Override for the HTTP base URL advertised via NATS service discovery.
+     *
+     * If empty, defaults to "http://localhost:{server.port}".
+     */
+    std::string http_base_url;
 };
 
 std::ostream& operator<<(std::ostream& s, const options& v);

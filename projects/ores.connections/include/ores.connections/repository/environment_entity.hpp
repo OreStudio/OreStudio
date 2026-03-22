@@ -37,6 +37,7 @@ struct environment_entity {
     std::string name;
     std::string host;
     int port{0};
+    int http_port{8080};
     std::string description;
     std::string subject_prefix;
 };

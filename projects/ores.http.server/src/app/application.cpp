@@ -37,11 +37,13 @@
 #include "ores.http.server/routes/variability_routes.hpp"
 #include "ores.http.server/routes/assets_routes.hpp"
 #include "ores.http.server/routes/compute_routes.hpp"
+#include "ores.http.server/messaging/registrar.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.variability/eventing/system_setting_changed_event.hpp"
+#include "ores.nats/service/client.hpp"
 #include "ores.utility/version/version.hpp"
 
 namespace ores::http_server::app {
@@ -55,6 +57,19 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     BOOST_LOG_SEV(lg(), info) << utility::version::format_startup_message(
         "ORE Studio HTTP Server");
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
+
+    // Determine the HTTP base URL to advertise via service discovery
+    const std::string http_base_url = cfg.http_base_url.empty()
+        ? "http://localhost:" + std::to_string(cfg.server.port)
+        : cfg.http_base_url;
+
+    // Connect to NATS for service discovery
+    BOOST_LOG_SEV(lg(), info) << "Connecting to NATS: " << cfg.nats.url;
+    nats::service::client nats(cfg.nats);
+    nats.connect();
+    BOOST_LOG_SEV(lg(), info) << "Connected to NATS, registering handlers...";
+    auto nats_subs = http_server::messaging::registrar::register_handlers(
+        nats, http_base_url);
 
     // Initialize database context
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
@@ -179,6 +194,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         BOOST_LOG_SEV(lg(), info) << "Shutdown signal received";
         server.stop();
     });
+
+    BOOST_LOG_SEV(lg(), info) << "HTTP base URL advertised via NATS: " << http_base_url;
 
     // Run the server
     co_await server.run();

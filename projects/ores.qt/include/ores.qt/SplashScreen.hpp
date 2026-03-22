@@ -9,12 +9,11 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+ * Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
 #ifndef ORES_QT_SPLASHSCREEN_HPP
@@ -23,8 +22,6 @@
 #include <QThread>
 #include <QSplashScreen>
 #include <QApplication>
-#include <QTimer>
-#include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
@@ -32,35 +29,14 @@ class SplashScreen : public QSplashScreen
 {
     Q_OBJECT
 
-private:
-    inline static std::string_view logger_name = "ores.qt.splash_screen";
-
-    static auto& lg() {
-        using namespace ores::logging;
-        static auto instance = make_logger(logger_name);
-        return instance;
-    }
-
 public:
-    explicit SplashScreen(const QPixmap& pixmap  = QPixmap());
+    explicit SplashScreen(const QPixmap& pixmap = QPixmap());
     void paintEvent(QPaintEvent* e) override;
     void ensureFirstPaint() const;
-    void setProgressDuration(int milliseconds);
     void setMessage(const QString& message);
-
-signals:
-    void progressFinished(); // New signal to notify when progress is done
-
-private slots:
-    void updateProgress();
 
 private:
     bool painted_ = false;
-    int progress_ = 0;
-    QTimer* progressTimer_ = nullptr;
-    int totalDuration_ = 0;
-    int elapsedTime_ = 0;
-    int updateInterval_ = 50;
     QString messageText_;
 };
 

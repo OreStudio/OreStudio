@@ -242,6 +242,19 @@ exception
 end;
 $$ language plpgsql stable;
 
+-- Get current service account from session variable.
+-- Set by the application layer to identify the service performing the write.
+-- Used by insert triggers to stamp performed_by with the service identity.
+create or replace function ores_iam_current_service_fn()
+returns text as $$
+begin
+    return nullif(current_setting('app.current_service', true), '');
+exception
+    when others then
+        return null;
+end;
+$$ language plpgsql stable;
+
 -- Get visible party IDs from session variable as uuid array
 create or replace function ores_iam_visible_party_ids_fn()
 returns uuid[] as $$

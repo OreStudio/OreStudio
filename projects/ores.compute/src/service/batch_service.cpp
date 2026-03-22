@@ -20,6 +20,9 @@
 #include "ores.compute/service/batch_service.hpp"
 
 #include <stdexcept>
+#include "ores.service/messaging/handler_helpers.hpp"
+
+using ores::service::messaging::stamp;
 
 namespace ores::compute::service {
 
@@ -44,7 +47,9 @@ void batch_service::save(const domain::batch& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Batch id cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving batch: " << v.id;
-    repo_.write(ctx_, v);
+    auto stamped = v;
+    stamp(stamped, ctx_);
+    repo_.write(ctx_, stamped);
     BOOST_LOG_SEV(lg(), info) << "Saved batch: " << v.id;
 }
 

@@ -78,13 +78,9 @@ int main(int argc, char *argv[]) {
     ores::qt::SplashScreen splash(QPixmap(":/images/splash-screen.png"));
     splash.show();
 
-    // Start progress bar animation
-    const int splashDuration = 2000; // in milliseconds
-    QString buildInfo = QString("v%1 %2")
-                            .arg(ORES_VERSION)
-                            .arg(ORES_BUILD_INFO);
+    const int splashDuration = 3000; // ms
+    const QString buildInfo = QString("v%1 %2").arg(ORES_VERSION).arg(ORES_BUILD_INFO);
     splash.setMessage(buildInfo);
-    splash.setProgressDuration(splashDuration);
 
     ores::qt::MainWindow mainWindow;
 
@@ -104,8 +100,8 @@ int main(int argc, char *argv[]) {
         mainWindow.setHttpBaseUrl(httpBaseUrl);
     }
 
-QTimer::singleShot(splashDuration, &splash, SLOT(close()));
-    QTimer::singleShot(splashDuration, &mainWindow, SLOT(show()));
+    QTimer::singleShot(splashDuration, &splash, &QSplashScreen::close);
+    QTimer::singleShot(splashDuration, &mainWindow, &ores::qt::MainWindow::show);
 
     return QApplication::exec();
 }

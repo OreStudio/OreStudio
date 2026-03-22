@@ -25,6 +25,7 @@
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPlainTextEdit>
+#include <QListWidgetItem>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
@@ -37,6 +38,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.compute/messaging/app_protocol.hpp"
 #include "ores.compute/messaging/app_version_protocol.hpp"
+#include "ores.compute/messaging/platform_protocol.hpp"
 
 namespace ores::qt {
 
@@ -69,9 +71,6 @@ ProvenanceWidget* AppVersionDetailDialog::provenanceWidget() const {
 }
 
 void AppVersionDetailDialog::setupUi() {
-    // Populate platform checkboxes with known platforms (all unchecked initially)
-    populatePlatformsList();
-
     ui_->saveButton->setIcon(
         IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
     ui_->saveButton->setEnabled(false);
@@ -100,11 +99,16 @@ void AppVersionDetailDialog::setupConnections() {
     connect(ui_->uploadPackageButton, &QPushButton::clicked, this,
             &AppVersionDetailDialog::onUploadPackageClicked);
 
+    connect(ui_->addPlatformButton, &QPushButton::clicked, this,
+            &AppVersionDetailDialog::onAddPlatformClicked);
+    connect(ui_->removePlatformButton, &QPushButton::clicked, this,
+            &AppVersionDetailDialog::onRemovePlatformClicked);
+
     connect(ui_->codeEdit, &QLineEdit::textChanged, this,
             &AppVersionDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
-    connect(ui_->platformsList, &QListWidget::itemChanged, this,
+    connect(ui_->assignedPlatformsList, &QListWidget::itemSelectionChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &AppVersionDetailDialog::onFieldChanged);
@@ -115,6 +119,7 @@ void AppVersionDetailDialog::setupConnections() {
 void AppVersionDetailDialog::setClientManager(ClientManager* clientManager) {
     clientManager_ = clientManager;
     loadApps();
+    loadPlatforms();
 }
 
 void AppVersionDetailDialog::loadApps() {
@@ -162,6 +167,52 @@ void AppVersionDetailDialog::loadApps() {
     watcher->setFuture(QtConcurrent::run(task));
 }
 
+void AppVersionDetailDialog::loadPlatforms() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<AppVersionDetailDialog> self = this;
+
+    struct FetchResult {
+        bool success;
+        std::vector<PlatformEntry> entries;
+    };
+
+    auto task = [self]() -> FetchResult {
+        if (!self || !self->clientManager_)
+            return {false, {}};
+
+        compute::messaging::list_platforms_request request;
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(request));
+
+        if (!result) return {false, {}};
+
+        std::vector<PlatformEntry> entries;
+        entries.reserve(result->platforms.size());
+        for (const auto& p : result->platforms) {
+            entries.push_back({
+                boost::uuids::to_string(p.id),
+                p.code,
+                p.display_name
+            });
+        }
+        return {true, std::move(entries)};
+    };
+
+    auto* watcher = new QFutureWatcher<FetchResult>(self);
+    connect(watcher, &QFutureWatcher<FetchResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (self && result.success) {
+            self->availablePlatforms_ = std::move(result.entries);
+            self->populatePlatformsTab();
+        }
+    });
+    watcher->setFuture(QtConcurrent::run(task));
+}
+
 void AppVersionDetailDialog::populateAppCombo() {
     ui_->appCombo->blockSignals(true);
     ui_->appCombo->clear();
@@ -185,21 +236,24 @@ void AppVersionDetailDialog::populateAppCombo() {
     ui_->appCombo->blockSignals(false);
 }
 
-void AppVersionDetailDialog::populatePlatformsList() {
-    ui_->platformsList->blockSignals(true);
-    ui_->platformsList->clear();
-    for (const auto& [code, label] : known_platforms_) {
-        auto* item = new QListWidgetItem(
-            QString::fromLatin1(label), ui_->platformsList);
-        item->setData(Qt::UserRole, QString::fromLatin1(code));
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        const bool checked = std::find(
+void AppVersionDetailDialog::populatePlatformsTab() {
+    ui_->availablePlatformsList->clear();
+    ui_->assignedPlatformsList->clear();
+
+    for (const auto& p : availablePlatforms_) {
+        const bool assigned = std::find(
             app_version_.platforms.begin(),
             app_version_.platforms.end(),
-            std::string{code}) != app_version_.platforms.end();
-        item->setCheckState(checked ? Qt::Checked : Qt::Unchecked);
+            p.id) != app_version_.platforms.end();
+
+        auto* item = new QListWidgetItem(QString::fromStdString(p.display_name));
+        item->setData(Qt::UserRole, QString::fromStdString(p.id));
+
+        if (assigned)
+            ui_->assignedPlatformsList->addItem(item);
+        else
+            ui_->availablePlatformsList->addItem(item);
     }
-    ui_->platformsList->blockSignals(false);
 }
 
 void AppVersionDetailDialog::setUsername(const std::string& username) {
@@ -233,7 +287,9 @@ void AppVersionDetailDialog::setReadOnly(bool readOnly) {
     ui_->appCombo->setEnabled(!readOnly);
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->platformsList->setEnabled(!readOnly);
+    ui_->addPlatformButton->setEnabled(!readOnly);
+    ui_->removePlatformButton->setEnabled(!readOnly);
+    ui_->assignedPlatformsList->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->minRamSpinBox->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -256,7 +312,7 @@ void AppVersionDetailDialog::updateUiFromVersion() {
 
     ui_->codeEdit->setText(QString::fromStdString(app_version_.wrapper_version));
     ui_->nameEdit->setText(QString::fromStdString(app_version_.engine_version));
-    populatePlatformsList();
+    populatePlatformsTab();
     ui_->minRamSpinBox->setValue(app_version_.min_ram_mb);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(app_version_.package_uri));
 
@@ -286,9 +342,9 @@ void AppVersionDetailDialog::updateVersionFromUi() {
     }
     app_version_.engine_version = ui_->nameEdit->text().trimmed().toStdString();
     app_version_.platforms.clear();
-    for (int i = 0; i < ui_->platformsList->count(); ++i) {
-        const auto* item = ui_->platformsList->item(i);
-        if (item && item->checkState() == Qt::Checked)
+    for (int i = 0; i < ui_->assignedPlatformsList->count(); ++i) {
+        const auto* item = ui_->assignedPlatformsList->item(i);
+        if (item)
             app_version_.platforms.push_back(
                 item->data(Qt::UserRole).toString().toStdString());
     }
@@ -297,6 +353,34 @@ void AppVersionDetailDialog::updateVersionFromUi() {
         boost::uuids::to_string(app_version_.id) + "/package";
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
+}
+
+void AppVersionDetailDialog::onAddPlatformClicked() {
+    const auto selected = ui_->availablePlatformsList->selectedItems();
+    if (selected.isEmpty())
+        return;
+
+    for (auto* item : selected) {
+        ui_->availablePlatformsList->takeItem(
+            ui_->availablePlatformsList->row(item));
+        ui_->assignedPlatformsList->addItem(item);
+    }
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
+void AppVersionDetailDialog::onRemovePlatformClicked() {
+    const auto selected = ui_->assignedPlatformsList->selectedItems();
+    if (selected.isEmpty())
+        return;
+
+    for (auto* item : selected) {
+        ui_->assignedPlatformsList->takeItem(
+            ui_->assignedPlatformsList->row(item));
+        ui_->availablePlatformsList->addItem(item);
+    }
+    hasChanges_ = true;
+    updateSaveButtonState();
 }
 
 void AppVersionDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -321,12 +405,8 @@ bool AppVersionDetailDialog::validateInput() {
     if (wrapper_version.isEmpty() || engine_version.isEmpty() || app_id.isEmpty())
         return false;
 
-    // Require at least one platform to be checked
-    for (int i = 0; i < ui_->platformsList->count(); ++i) {
-        if (ui_->platformsList->item(i)->checkState() == Qt::Checked)
-            return true;
-    }
-    return false;
+    // Require at least one platform to be assigned
+    return ui_->assignedPlatformsList->count() > 0;
 }
 
 void AppVersionDetailDialog::onBrowsePackageClicked() {
@@ -356,8 +436,11 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     }
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
-    const QString url = QString::fromStdString(
-        httpBaseUrl_ + "/packages/" + id_str + "/package");
+    const std::string url_str = httpBaseUrl_ + "/packages/" + id_str + "/package";
+    const QString url = QString::fromStdString(url_str);
+
+    BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << url_str
+                              << " file: " << selectedPackageFilePath_.toStdString();
 
     auto* file = new QFile(selectedPackageFilePath_, this);
     if (!file->open(QIODevice::ReadOnly)) {

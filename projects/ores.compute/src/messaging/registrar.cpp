@@ -37,6 +37,8 @@
 #include "ores.compute/messaging/work_handler.hpp"
 #include "ores.compute/messaging/telemetry_protocol.hpp"
 #include "ores.compute/messaging/telemetry_handler.hpp"
+#include "ores.compute/messaging/platform_protocol.hpp"
+#include "ores.compute/messaging/platform_handler.hpp"
 
 namespace ores::compute::messaging {
 
@@ -150,6 +152,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.subscribe(
         node_sample_message::nats_subject,
         [th](ores::nats::message msg) { th->ingest_node_sample(std::move(msg)); }));
+
+    // ----------------------------------------------------------------
+    // Platforms (system data - list only)
+    // ----------------------------------------------------------------
+    auto ph = std::make_shared<platform_handler>(nats, ctx, verifier);
+    subs.push_back(nats.queue_subscribe(
+        list_platforms_request::nats_subject, "ores.compute.service",
+        [ph](ores::nats::message msg) { ph->list(std::move(msg)); }));
 
     return subs;
 }

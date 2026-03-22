@@ -55,8 +55,8 @@ select
     'ORE',
     'Open Source Risk Engine — QuantLib-based risk analytics engine for '
     'market risk, counterparty credit risk, XVA, and sensitivity analysis.',
-    'system',
-    'system',
+    current_user,
+    current_user,
     'system.new_record',
     '',
     current_timestamp,
@@ -69,13 +69,16 @@ where not exists (
 );
 
 -- -------------------------------------------------------------------------
--- ORE App Version 9.0.0 (linux-x86_64)
+-- ORE App Version 1.8.15.0 (linux-x86_64)
 -- -------------------------------------------------------------------------
 with ore_app as (
     select id from ores_compute_apps_tbl
     where name = 'ORE'
       and tenant_id = ores_iam_system_tenant_id_fn()
       and valid_to = ores_utility_infinity_timestamp_fn()
+),
+new_version_id as (
+    select gen_random_uuid() as uuid
 ),
 inserted_version as (
     insert into ores_compute_app_versions_tbl (
@@ -95,25 +98,26 @@ inserted_version as (
         valid_to
     )
     select
-        gen_random_uuid(),
+        new_version_id.uuid,
         ores_iam_system_tenant_id_fn(),
         1,
         ore_app.id,
         '1.0.0',
-        '9.0.0',
-        'https://ore.example.com/packages/ore-9.0.0-linux-x86_64.tar.gz',
+        '1.8.15.0',
+        '/api/v1/compute/packages/' || new_version_id.uuid::text,
         512,
-        'system',
-        'system',
+        current_user,
+        current_user,
         'system.new_record',
         '',
         current_timestamp,
         ores_utility_infinity_timestamp_fn()
     from ore_app
+    cross join new_version_id
     where not exists (
         select 1 from ores_compute_app_versions_tbl av
         join ore_app on av.app_id = ore_app.id
-        where av.engine_version = '9.0.0'
+        where av.engine_version = '1.8.15.0'
           and av.wrapper_version = '1.0.0'
           and av.tenant_id = ores_iam_system_tenant_id_fn()
           and av.valid_to = ores_utility_infinity_timestamp_fn()
@@ -126,15 +130,47 @@ app_version_id as (
     select av.id
     from ores_compute_app_versions_tbl av
     join ore_app on av.app_id = ore_app.id
-    where av.engine_version = '9.0.0'
+    where av.engine_version = '1.8.15.0'
       and av.wrapper_version = '1.0.0'
       and av.tenant_id = ores_iam_system_tenant_id_fn()
       and av.valid_to = ores_utility_infinity_timestamp_fn()
     limit 1
 )
 -- -------------------------------------------------------------------------
--- ORE App Version Platform (linux-x86_64)
+-- ORE App Version Platform (x86_64-unknown-linux-gnu)
 -- -------------------------------------------------------------------------
-insert into ores_compute_app_version_platforms_tbl (app_version_id, platform_code)
-select id, 'linux-x86_64' from app_version_id
-on conflict (app_version_id, platform_code) do nothing;
+insert into ores_compute_app_version_platforms_tbl (
+    tenant_id,
+    app_version_id,
+    platform_id,
+    modified_by,
+    performed_by,
+    change_reason_code,
+    change_commentary,
+    valid_from,
+    valid_to
+)
+select
+    ores_iam_system_tenant_id_fn(),
+    app_version_id.id,
+    p.id,
+    current_user,
+    current_user,
+    'system.new_record',
+    '',
+    current_timestamp,
+    ores_utility_infinity_timestamp_fn()
+from app_version_id
+join ores_compute_platforms_tbl p
+    on p.code = 'x86_64-unknown-linux-gnu'
+   and p.valid_to = ores_utility_infinity_timestamp_fn()
+where not exists (
+    select 1 from ores_compute_app_version_platforms_tbl avp
+    join ores_compute_platforms_tbl pl
+        on pl.id = avp.platform_id
+       and pl.code = 'x86_64-unknown-linux-gnu'
+       and pl.valid_to = ores_utility_infinity_timestamp_fn()
+    where avp.app_version_id = app_version_id.id
+      and avp.tenant_id = ores_iam_system_tenant_id_fn()
+      and avp.valid_to = ores_utility_infinity_timestamp_fn()
+);

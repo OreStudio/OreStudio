@@ -3240,6 +3240,12 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
     // Connect close signal
     connect(loginWidget, &LoginDialog::closeRequested, subWindow, &QWidget::close);
 
+    // Connect HTTP base URL discovery signal (from NATS service discovery)
+    connect(loginWidget, &LoginDialog::httpBaseUrlDiscovered,
+            this, [this](const QString& url) {
+        setHttpBaseUrl(url.toStdString());
+    });
+
     // Connect login success signal
     connect(loginWidget, &LoginDialog::loginSucceeded,
             this, [this, connectionName](const QString& username) {

@@ -61,9 +61,11 @@ public:
      */
     tenant_aware_pool(sqlgen::ConnectionPool<Connection> pool,
                       utility::uuid::tenant_id tenant_id,
-                      std::string actor = "")
+                      std::string actor = "",
+                      std::string service_account = "")
         : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)),
-          actor_(std::move(actor)) {}
+          actor_(std::move(actor)),
+          service_account_(std::move(service_account)) {}
 
     /**
      * @brief Constructs a tenant-and-party-aware pool wrapper.
@@ -72,11 +74,13 @@ public:
                       utility::uuid::tenant_id tenant_id,
                       boost::uuids::uuid party_id,
                       std::vector<boost::uuids::uuid> visible_party_ids,
-                      std::string actor = "")
+                      std::string actor = "",
+                      std::string service_account = "")
         : pool_(std::move(pool)), tenant_id_(std::move(tenant_id)),
           party_id_(party_id),
           visible_party_ids_(std::move(visible_party_ids)),
-          actor_(std::move(actor)) {}
+          actor_(std::move(actor)),
+          service_account_(std::move(service_account)) {}
 
     /**
      * @brief Acquires a session and sets the tenant (and party) context.
@@ -163,6 +167,22 @@ public:
             BOOST_LOG_SEV(lg(), debug) << "Set actor context to: " << actor_;
         }
 
+        // Set current service (service account) if available.
+        // This is used by DB triggers to stamp performed_by.
+        if (!service_account_.empty()) {
+            const std::string svc_sql =
+                "SELECT set_config('app.current_service', '" +
+                service_account_ + "', false)";
+            auto svc_result = (*session_result)->execute(svc_sql);
+            if (!svc_result) {
+                return sqlgen::error("Failed to set service context: " +
+                    std::string(svc_result.error().what()));
+            }
+
+            BOOST_LOG_SEV(lg(), debug) << "Set service context to: "
+                                       << service_account_;
+        }
+
         return session_result;
     }
 
@@ -189,6 +209,11 @@ public:
     const std::string& actor() const { return actor_; }
 
     /**
+     * @brief Gets the current service account, if set.
+     */
+    const std::string& service_account() const { return service_account_; }
+
+    /**
      * @brief Gets the underlying connection pool.
      */
     const sqlgen::ConnectionPool<Connection>& underlying_pool() const {
@@ -211,6 +236,7 @@ private:
     std::optional<boost::uuids::uuid> party_id_;
     std::vector<boost::uuids::uuid> visible_party_ids_;
     std::string actor_;
+    std::string service_account_;
 };
 
 }

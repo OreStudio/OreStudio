@@ -436,8 +436,11 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     }
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
-    const QString url = QString::fromStdString(
-        httpBaseUrl_ + "/packages/" + id_str + "/package");
+    const std::string url_str = httpBaseUrl_ + "/packages/" + id_str + "/package";
+    const QString url = QString::fromStdString(url_str);
+
+    BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << url_str
+                              << " file: " << selectedPackageFilePath_.toStdString();
 
     auto* file = new QFile(selectedPackageFilePath_, this);
     if (!file->open(QIODevice::ReadOnly)) {

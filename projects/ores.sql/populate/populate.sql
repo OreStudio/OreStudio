@@ -106,6 +106,7 @@
 \echo ''
 \echo '--- Compute Layer ---'
 \ir compute/compute_populate.sql
+\ir compute/compute_platforms_seed.sql
 \ir compute/compute_ore_app_seed.sql
 
 \echo ''
@@ -192,4 +193,7 @@ from ores_compute_apps_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 union all
 select 'Compute: App Versions', count(*)
 from ores_compute_app_versions_tbl where valid_to = ores_utility_infinity_timestamp_fn()
+union all
+select 'Compute: Platforms', count(*)
+from ores_compute_platforms_tbl where valid_to = ores_utility_infinity_timestamp_fn()
 order by entity;

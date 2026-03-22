@@ -133,8 +133,40 @@ app_version_id as (
     limit 1
 )
 -- -------------------------------------------------------------------------
--- ORE App Version Platform (linux-x86_64)
+-- ORE App Version Platform (x86_64-unknown-linux-gnu)
 -- -------------------------------------------------------------------------
-insert into ores_compute_app_version_platforms_tbl (app_version_id, platform_code)
-select id, 'linux-x86_64' from app_version_id
-on conflict (app_version_id, platform_code) do nothing;
+insert into ores_compute_app_version_platforms_tbl (
+    tenant_id,
+    app_version_id,
+    platform_id,
+    modified_by,
+    performed_by,
+    change_reason_code,
+    change_commentary,
+    valid_from,
+    valid_to
+)
+select
+    ores_iam_system_tenant_id_fn(),
+    app_version_id.id,
+    p.id,
+    'system',
+    'system',
+    'system.new_record',
+    '',
+    current_timestamp,
+    ores_utility_infinity_timestamp_fn()
+from app_version_id
+join ores_compute_platforms_tbl p
+    on p.code = 'x86_64-unknown-linux-gnu'
+   and p.valid_to = ores_utility_infinity_timestamp_fn()
+where not exists (
+    select 1 from ores_compute_app_version_platforms_tbl avp
+    join ores_compute_platforms_tbl pl
+        on pl.id = avp.platform_id
+       and pl.code = 'x86_64-unknown-linux-gnu'
+       and pl.valid_to = ores_utility_infinity_timestamp_fn()
+    where avp.app_version_id = app_version_id.id
+      and avp.tenant_id = ores_iam_system_tenant_id_fn()
+      and avp.valid_to = ores_utility_infinity_timestamp_fn()
+);

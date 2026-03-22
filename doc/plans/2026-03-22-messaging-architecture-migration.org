@@ -1,0 +1,254 @@
+:PROPERTIES:
+:ID: 7f3a8b21-4c9e-4e5b-b2d0-3f8a9c6d1e4f
+:END:
+#+title: Messaging Architecture Migration
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+This document describes the plan to migrate ORE Studio's service
+architecture to a clean three-layer model with clear separation of
+concerns and testability at every layer.
+
+** Current state
+
+Services are structured as two components:
+
+#+begin_example
+ores.iam            ← domain + repository + service + messaging (mixed)
+ores.iam.service    ← executable: wires everything together
+#+end_example
+
+Clients (~ores.qt~, ~ores.shell~, ~ores.cli~) link against ~ores.iam~
+to access protocol types, dragging in database, repository, and service
+logic they never use. Messaging types have no dedicated tests.
+
+The ~ores.http.server~ binary mixes server infrastructure with
+route handlers for IAM, refdata, assets, variability — tightly coupling
+the HTTP server to every service domain.
+
+** Target architecture
+
+Each service domain becomes three distinct components:
+
+#+begin_example
+ores.iam.messaging   ← protocol types only (request/response structs,
+                        nats_subject constants); no DB, no domain logic
+ores.iam             ← domain + repository + service + handlers;
+                        depends on ores.iam.messaging
+ores.iam.service     ← executable; links both, wires NATS and DB
+#+end_example
+
+Clients link only ~ores.iam.messaging~. The dependency graph is strict
+and expresses intent:
+
+#+begin_example
+ores.qt ──→ ores.iam.messaging
+ores.qt ──→ ores.compute.messaging
+...
+
+ores.iam ──→ ores.iam.messaging   (implements the protocol)
+ores.iam.service ──→ ores.iam    (runs the service)
+#+end_example
+
+The ~ores.http.server~ binary becomes a thin orchestrator:
+
+#+begin_example
+ores.http.routes     ← all HTTP route registrations (new component)
+ores.http.server     ← server infrastructure only: main, application,
+                        config, parser, NATS setup; links ores.http.routes
+#+end_example
+
+* Scope
+
+Ten service libraries require messaging splits:
+
+| Library             | Messaging headers | Route file in http.server? |
+|---------------------+-------------------+----------------------------|
+| ores.iam            |                23 | yes (iam_routes)           |
+| ores.refdata        |                47 | yes (risk_routes)          |
+| ores.compute        |                19 | no                         |
+| ores.dq             |                22 | no                         |
+| ores.assets         |                 3 | yes (assets_routes)        |
+| ores.variability    |                 3 | yes (variability_routes)   |
+| ores.scheduler      |                 3 | no                         |
+| ores.reporting      |                 9 | no                         |
+| ores.trading        |                 3 | no                         |
+| ores.synthetic      |                 3 | no                         |
+
+~ores.http~ already has ~messaging/http_info_protocol.hpp~ (created in
+the service discovery feature) and is a working example of the target
+pattern.
+
+* What moves where
+
+** Messaging components (~ores.{service}.messaging~)
+
+Move from ~ores.{service}/include/ores.{service}/messaging/~:
+
+- ~*_protocol.hpp~ files → new component
+- Registrar headers (~registrar.hpp~) → new component (registers
+  handlers in one call; the service executable calls this)
+
+Stay in ~ores.{service}~:
+
+- ~*_handler.hpp~ files (they implement the protocol using domain/repo)
+
+The new messaging component has:
+
+- ~include/ores.{service}.messaging/~ — protocol headers
+- ~tests/~ — unit tests for serialisation round-trips
+- ~CMakeLists.txt~ — INTERFACE target if header-only (no .cpp files);
+  static/shared library if it has registration logic
+
+** HTTP routes (~ores.http.routes~)
+
+Move from ~ores.http.server/src/routes/~ and
+~ores.http.server/include/ores.http.server/routes/~:
+
+All ~*_routes.{hpp,cpp}~ files → new ~ores.http.routes~ component.
+
+~ores.http.routes~ depends on: ~ores.http.lib~, ~ores.iam~,
+~ores.refdata~, ~ores.assets~, ~ores.variability~ (the full service
+libs — handlers are implemented there).
+
+~ores.http.server~ drops the route dependencies and links
+~ores.http.routes~ instead. The server itself retains only:
+
+- ~src/app/application.{hpp,cpp}~ — server setup, NATS init
+- ~src/app/host.{hpp,cpp}~
+- ~src/config/~ — options, parser
+- ~src/messaging/~ — HTTP info handler and registrar
+- ~src/main.cpp~
+
+* Migration phases
+
+** Phase 1 — Messaging split for ores.iam and ores.compute  (highest value)
+
+These are the largest and most-used components.
+
+Steps:
+
+1. Create ~projects/ores.iam.messaging/~ scaffold via codegen
+   (component profile then hand-adjust: no domain stub needed).
+2. Move all ~ores.iam/include/ores.iam/messaging/*_protocol.hpp~ into
+   ~projects/ores.iam.messaging/include/ores.iam.messaging/~.
+3. Move ~registrar.hpp/.cpp~ (NATS handler registration) into the new
+   component.  If the registrar is header-only (as for compute), use
+   INTERFACE; otherwise add a .lib target.
+4. Update ~ores.iam~ to ~#include "ores.iam.messaging/..."~ and add
+   ~ores.iam.messaging~ as a PUBLIC dependency.
+5. Update clients (~ores.qt~, ~ores.shell~, ~ores.cli~) to link
+   ~ores.iam.messaging~ instead of ~ores.iam~.
+6. Write serialisation round-trip tests in
+   ~ores.iam.messaging/tests/~: for each protocol type, serialize and
+   deserialise via ~rfl::json::write~ / ~rfl::json::read~ and assert
+   field equality.
+7. Repeat for ~ores.compute.messaging~.
+
+PR title: ~[arch] Extract ores.iam.messaging and ores.compute.messaging~
+
+** Phase 2 — Remaining service messaging splits
+
+Repeat Phase 1 steps for:
+
+- ~ores.refdata.messaging~ (47 headers — largest)
+- ~ores.dq.messaging~
+- ~ores.reporting.messaging~
+- ~ores.scheduler.messaging~
+- ~ores.assets.messaging~
+- ~ores.variability.messaging~
+- ~ores.trading.messaging~
+- ~ores.synthetic.messaging~
+
+Do in batches of 2-3 to keep PRs reviewable.
+
+PR title per batch: ~[arch] Extract {service} messaging components~
+
+** Phase 3 — ores.http.routes extraction
+
+Steps:
+
+1. Create ~projects/ores.http.routes/~ component scaffold.
+2. Move all ~*_routes.{hpp,cpp}~ from ~ores.http.server~ into the new
+   component under the same internal structure.
+3. ~ores.http.routes/CMakeLists.txt~ links PUBLIC to ~ores.http.lib~
+   and PRIVATE to the service libs it delegates to (~ores.iam~,
+   ~ores.refdata~, etc.).
+4. ~ores.http.server/CMakeLists.txt~ drops those service lib deps and
+   links ~ores.http.routes~ instead.
+5. Build and verify end-to-end.
+
+PR title: ~[arch] Extract HTTP routes into ores.http.routes~
+
+** Phase 4 — ores.http.server cleanup
+
+After Phase 3, ~ores.http.server~ links only:
+
+#+begin_example
+ores.http.lib
+ores.http.routes
+ores.nats.lib
+ores.service.lib
+ores.telemetry.lib
+ores.utility.lib
+ores.database.lib   (for DB setup in application.cpp)
+#+end_example
+
+At this point ~ores.http.server~ is a pure infrastructure component:
+server lifecycle, config parsing, NATS service discovery, signal
+handling. No domain knowledge.
+
+PR title: ~[arch] Clean up ores.http.server dependencies~
+
+* Naming conventions
+
+| Pattern                            | Contains                                         |
+|------------------------------------+--------------------------------------------------|
+| ~ores.{service}.messaging~         | *_protocol.hpp, nats_subject constants, registrar |
+| ~ores.{service}~                   | domain, repository, service, *_handler.hpp        |
+| ~ores.{service}.service~           | executable: main, app, config                    |
+| ~ores.http.routes~                 | HTTP route handlers for all services             |
+| ~ores.http.server~                 | HTTP server infrastructure only                  |
+
+* Key invariant
+
+#+begin_quote
+Clients (~ores.qt~, ~ores.shell~, ~ores.cli~) MUST NOT link any
+service implementation library. They link only ~*.messaging~ components
+and infrastructure libs (~ores.nats~, ~ores.eventing~, etc.).
+#+end_quote
+
+This will be enforced structurally: the messaging component has no
+database, no repository, no service dependencies — so linking it is
+safe for any client.
+
+* Testing approach
+
+Each ~ores.{service}.messaging~ component includes its own Catch2 test
+binary. Tests cover:
+
+1. *Round-trip serialisation*: ~rfl::json::write~ then ~rfl::json::read~
+   produces equal struct.
+2. *Subject names*: assert ~nats_subject~ constants match expected strings
+   (guards against accidental renames breaking the wire protocol).
+3. *Required fields*: confirm that missing required fields produce a
+   deserialisation error rather than silent defaults.
+
+No database, no NATS connection required — tests run entirely in-process.
+
+* Open questions
+
+- Should ~ores.{service}.messaging~ be a shared library (~.lib~) or a
+  CMake INTERFACE target? Answer: use INTERFACE if no ~.cpp~ files are
+  needed (pure header protocols); add a ~.lib~ target if the registrar
+  has implementation (e.g. the handler registration loop).
+- Should handlers (~*_handler.hpp~) also move to the messaging
+  component? Decision: no — handlers depend on domain/repository, so
+  they stay in ~ores.{service}~. The messaging component stays pure.
+- HTTP routes for ~ores.compute~ (file upload/download) are
+  infrastructure-only and do not use service domain types. They can
+  stay in ~ores.http.routes~ or move to ~ores.compute.messaging~
+  depending on team preference.

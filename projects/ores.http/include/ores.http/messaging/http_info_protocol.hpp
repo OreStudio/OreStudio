@@ -48,6 +48,8 @@ struct get_http_info_response {
      * @brief The HTTP server's base URL, e.g. "http://localhost:51000".
      */
     std::string base_url;
+    bool success = false;
+    std::string message;
 };
 
 }

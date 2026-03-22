@@ -59,6 +59,7 @@ public:
 
         http::messaging::get_http_info_response resp;
         resp.base_url = base_url_;
+        resp.success = true;
         reply(nats_, msg, resp);
 
         BOOST_LOG_SEV(http_info_handler_lg(), debug)

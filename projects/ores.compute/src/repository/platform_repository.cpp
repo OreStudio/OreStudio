@@ -50,7 +50,12 @@ platform_repository::read_active(context ctx) {
                 domain::compute_platform p;
                 try {
                     p.id = boost::lexical_cast<boost::uuids::uuid>(e.id.value());
-                } catch (...) {}
+                } catch (const boost::bad_lexical_cast& ex) {
+                    BOOST_LOG_SEV(lg(), error)
+                        << "Failed to parse platform UUID '"
+                        << e.id.value() << "': " << ex.what();
+                    continue;
+                }
                 p.code = e.code;
                 p.display_name = e.display_name;
                 p.description = e.description;

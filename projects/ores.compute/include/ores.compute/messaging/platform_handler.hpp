@@ -69,8 +69,14 @@ public:
             if (auto req = decode<list_platforms_request>(msg)) {
                 repository::platform_repository repo;
                 resp.platforms = repo.read_active(ctx);
+                resp.success = true;
             }
-        } catch (...) {}
+        } catch (const std::exception& e) {
+            resp.message = e.what();
+            BOOST_LOG_SEV(platform_handler_lg(), error)
+                << "Failed to list platforms for " << msg.subject
+                << ": " << e.what();
+        }
         reply(nats_, msg, resp);
         BOOST_LOG_SEV(platform_handler_lg(), debug)
             << "Completed " << msg.subject;

@@ -34,6 +34,8 @@ struct list_platforms_request {
 
 struct list_platforms_response {
     std::vector<ores::compute::domain::compute_platform> platforms;
+    bool success = false;
+    std::string message;
 };
 
 }

@@ -46,7 +46,8 @@ void SplashScreen::paintEvent(QPaintEvent* e) {
         QFontMetrics fm(font);
         const int margin = 20;
         const int textY = height() - fm.descent() - 15;
-        painter.drawText(margin, textY, messageText_);
+        const int textX = width() - fm.horizontalAdvance(messageText_) - margin;
+        painter.drawText(textX, textY, messageText_);
     }
 
     painted_ = true;

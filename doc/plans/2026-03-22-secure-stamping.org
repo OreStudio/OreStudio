@@ -1,0 +1,264 @@
+:PROPERTIES:
+:ID: 7f3a1b2c-8d4e-4f5a-9b6c-1d2e3f4a5b6c
+:END:
+#+title: Secure Provenance Stamping
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+The audit provenance fields =modified_by= and =performed_by= are not being
+stamped correctly:
+
+- =performed_by= is supposed to record the *service* that physically wrote
+  the row (e.g. =ores_compute_service=). Instead it is recording the *JWT
+  username* of the human who made the request, because the DB trigger reads
+  =app.current_actor= which is set to the JWT username.
+
+- =modified_by= is correct in principle (comes from the JWT) but there is
+  no enforcement that new code paths cannot bypass it.
+
+- The C++ =stamp()= function and the DB trigger layer are in conflict:
+  =stamp()= sets =performed_by= from the service account, but the trigger
+  unconditionally overwrites it with =ores_iam_current_actor_fn()= (which
+  reads =app.current_actor= = JWT username).
+
+** Goals
+
+- =performed_by= must always be the service account, never influenced by
+  request content.
+- =modified_by= must always be the authenticated JWT username, never
+  client-supplied data.
+- New services and new code paths cannot silently break this — failures
+  must be loud and immediate.
+- Single stamping code path across all services (currently inconsistent
+  between Compute and RefData).
+
+** Non-goals
+
+- Storing the JWT username as a separate session-level variable. The
+  =modified_by= field already captures it.
+- Changing the per-request vs per-connection model for session variables.
+  Per-request is acceptable for now.
+
+* Design
+
+Two separate PostgreSQL session variables, one for each audit actor:
+
+| Session variable      | Value                        | Set by                    | Used for      |
+|-----------------------+------------------------------+---------------------------+---------------|
+| =app.current_service= | Service account name         | Pool =acquire()= at startup | =performed_by= |
+| =app.current_actor=   | JWT username (keep as-is)    | Pool =acquire()= per request | Debugging only |
+
+=app.current_service= is derived from =service_account_= on the context,
+which is configured at *process startup* from =service_accounts.hpp=. It
+is never derived from anything in a request payload. No request can
+influence =performed_by=.
+
+The DB trigger becomes the sole authority for =performed_by=:
+
+#+begin_src sql
+NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+#+end_src
+
+The fallback to =current_user= (the PostgreSQL login) is intentional: if
+a service forgets to configure its service account, the value is still
+meaningful (it will be the DB role name), and it will never be the human
+user.
+
+=modified_by= continues to flow through the domain object — set by C++
+=stamp()= from the validated JWT, validated by the trigger against the IAM
+accounts table. The trigger rejects invalid usernames.
+
+* Implementation Plan
+
+** Phase 1 — Database: new function and trigger updates
+
+*** Step 1.1 — Add =ores_iam_current_service_fn()=
+
+Add to =projects/ores.sql/create/iam/iam_tenant_functions_create.sql=:
+
+#+begin_src sql
+create or replace function ores_iam_current_service_fn()
+returns text as $$
+begin
+    return nullif(current_setting('app.current_service', true), '');
+exception
+    when others then
+        return null;
+end;
+$$ language plpgsql stable;
+#+end_src
+
+*** Step 1.2 — Update all insert triggers
+
+Change the =performed_by= line in every table's insert trigger function.
+This affects all schemas: =refdata=, =iam=, =compute=, =trading=,
+=scheduler=, =assets=, =reporting=.
+
+#+begin_src sql
+-- Before:
+NEW.performed_by = coalesce(ores_iam_current_actor_fn(), current_user);
+
+-- After:
+NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
+#+end_src
+
+The full list of files to update can be found with:
+
+#+begin_src sh
+grep -rl "ores_iam_current_actor_fn" projects/ores.sql/create/ --include="*.sql"
+#+end_src
+
+*** Step 1.3 — Recreate the database
+
+After updating the SQL files, recreate the database to apply all trigger
+changes:
+
+#+begin_src sh
+./projects/ores.sql/recreate_database.sh
+#+end_src
+
+Verify =performed_by= is set to the service account name after a write
+through the service.
+
+** Phase 2 — C++ database layer: propagate service account to session
+
+*** Step 2.1 — Add =service_account_= to =tenant_aware_pool=
+
+File: =projects/ores.database/include/ores.database/domain/tenant_aware_pool.hpp=
+
+Add a =service_account_= member and pass it through the constructors.
+In =acquire()=, after setting =app.current_actor=, add:
+
+#+begin_src cpp
+if (!service_account_.empty()) {
+    const std::string svc_sql =
+        "SELECT set_config('app.current_service', '" +
+        service_account_ + "', false)";
+    auto svc_result = (*session_result)->execute(svc_sql);
+    if (!svc_result) {
+        return sqlgen::error("Failed to set service context: " +
+            std::string(svc_result.error().what()));
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Set service context to: " << service_account_;
+}
+#+end_src
+
+*** Step 2.2 — Forward =service_account_= from =context= into the pool
+
+File: =projects/ores.database/include/ores.database/domain/context.hpp=
+
+The =context= class already holds =service_account_=. Update the pool
+construction (and =with_tenant()= / =with_party()=) to pass it through
+to =tenant_aware_pool=.
+
+*** Step 2.3 — Update =bitemporal_operations.cpp=
+
+File: =projects/ores.database/src/repository/bitemporal_operations.cpp=
+
+After the existing =app.current_actor= set, add:
+
+#+begin_src cpp
+const auto& svc = ctx.service_account();
+if (!svc.empty()) {
+    set_pg_config(conn, "app.current_service", svc, lg);
+}
+#+end_src
+
+*** Step 2.4 — Runtime assertion on empty service account
+
+File: =projects/ores.database/src/service/context_factory.cpp= (or
+wherever =make_context= is implemented).
+
+If =service_account= is empty, log at ERROR level and throw:
+
+#+begin_src cpp
+if (cfg.service_account.empty()) {
+    BOOST_LOG_SEV(lg(), error)
+        << "FATAL: service_account is not configured. "
+        << "All services must set service_account in "
+        << "context_factory::configuration. "
+        << "The performed_by audit field cannot be stamped correctly "
+        << "without a service account. Service cannot start.";
+    throw std::runtime_error(
+        "context_factory: service_account must not be empty");
+}
+#+end_src
+
+This ensures any new service that omits the service account fails loudly
+at startup before handling any requests.
+
+** Phase 3 — C++ service layer: consistent =stamp()= placement
+
+Currently Compute calls =stamp()= in the handler (before calling the
+service method), while RefData and IAM call it inside the service method.
+The service layer is the correct place — handlers should only deal with
+protocol concerns (decode/reply).
+
+*** Step 3.1 — Add =stamp()= to Compute service methods
+
+Files: =projects/ores.compute/src/service/=
+
+Add =stamp(v, ctx_)= at the top of each =save()= method, before
+=repo_.write()=:
+
+- =app_service::save()=
+- =app_version_service::save()=
+- =batch_service::save()=
+
+The =workunit_service= and =result_service= do not have write paths from
+the UI, so they can be reviewed separately.
+
+*** Step 3.2 — Remove =stamp()= from Compute handlers
+
+Files: =projects/ores.compute/include/ores.compute/messaging/=
+
+Remove the explicit =stamp(req->app, ctx)= calls from:
+- =app_handler.hpp=
+- =app_version_handler.hpp=
+- =batch_handler.hpp=
+
+The handler should only decode the request, call the service, and reply.
+
+** Phase 4 — Seed data fix
+
+File: =projects/ores.sql/populate/compute/compute_ore_app_seed.sql=
+
+Replace the hardcoded ='system'= with =current_user=. The trigger
+overwrites =performed_by= anyway; only =modified_by= matters, and
+=current_user= is the correct value under the bootstrap bypass (it will
+be =ores_ddl_user=).
+
+#+begin_src sql
+-- Before:
+modified_by,   -- 'system'
+performed_by,  -- 'system'
+
+-- After:
+modified_by,   -- current_user
+performed_by,  -- current_user (trigger overwrites regardless)
+#+end_src
+
+Review all other seed files for similar hardcoded values.
+
+* PR Strategy
+
+| PR | Scope | Branch prefix |
+|----+-------+---------------|
+| 1  | Phase 1: SQL function + all trigger updates | =[sql]= |
+| 2  | Phase 2: C++ database layer changes | =[database]= |
+| 3  | Phase 3: stamp() in service layer + Phase 4: seed data | =[service]= |
+
+Start a fresh branch from =main= after the current PR is merged.
+
+* Enforcement Summary
+
+| Risk | Prevention mechanism |
+|------+----------------------|
+| New service forgets =service_account= | Runtime assertion at startup — ERROR log, process exits |
+| =performed_by= spoofed by client | DB trigger unconditionally overwrites from =app.current_service= |
+| =modified_by= spoofed by client | =stamp()= overwrites from validated JWT; trigger validates against IAM |
+| Handler bypasses =stamp()= | =stamp()= lives in service method, not handler — only write path |
+| New table missing trigger | All tables generated from same codegen template with trigger included |

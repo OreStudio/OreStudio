@@ -458,6 +458,15 @@ MainWindow::MainWindow(QWidget* parent) :
     });
 
     // Connect ClientManager signals
+    connect(clientManager_, &ClientManager::connected, this, [this]() {
+        // Derive HTTP base URL from the connected host unless explicitly overridden
+        // via --http-base-url. The HTTP server always runs on port 8080 on the same host.
+        if (httpBaseUrl_.empty()) {
+            const std::string url =
+                "http://" + clientManager_->connectedHost() + ":8080";
+            setHttpBaseUrl(url);
+        }
+    });
     connect(clientManager_, &ClientManager::connected, this, &MainWindow::updateMenuState);
     connect(clientManager_, &ClientManager::disconnected, this, &MainWindow::updateMenuState);
     connect(clientManager_, &ClientManager::disconnected, this, [this]() {

@@ -58,7 +58,7 @@ public:
                      std::string actor = "",
                      std::string service_account = "")
     : connection_pool_(std::move(connection_pool), std::move(tenant_id),
-                       std::move(actor)),
+                       std::move(actor), service_account),
       credentials_(std::move(credentials)),
       service_account_(std::move(service_account)) {}
 
@@ -74,7 +74,7 @@ public:
                      std::string service_account = "")
     : connection_pool_(std::move(connection_pool), std::move(tenant_id),
                        party_id, std::move(visible_party_ids),
-                       std::move(actor)),
+                       std::move(actor), service_account),
       credentials_(std::move(credentials)),
       service_account_(std::move(service_account)) {}
 

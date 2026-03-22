@@ -168,6 +168,11 @@ void set_full_context(PGconn* conn, const context& ctx, logging::logger_t& lg) {
     if (!actor.empty()) {
         set_pg_config(conn, "app.current_actor", actor, lg);
     }
+
+    const auto& svc = ctx.service_account();
+    if (!svc.empty()) {
+        set_pg_config(conn, "app.current_service", svc, lg);
+    }
 }
 
 } // anonymous namespace

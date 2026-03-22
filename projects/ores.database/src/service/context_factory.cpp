@@ -37,6 +37,17 @@ operator<<(std::ostream& s, const context_factory::configuration& v) {
 context context_factory::make_context(const configuration& cfg) {
     BOOST_LOG_SEV(lg(), debug) << "Creating context. Configuration: " << cfg;
 
+    if (cfg.service_account.empty()) {
+        BOOST_LOG_SEV(lg(), error)
+            << "FATAL: service_account is not configured. "
+            << "All services must set service_account in "
+            << "context_factory::configuration. "
+            << "The performed_by audit field cannot be stamped correctly "
+            << "without a service account. Service cannot start.";
+        throw std::runtime_error(
+            "context_factory: service_account must not be empty");
+    }
+
     const auto credentials = to_credentials(cfg.database_options);
 
     sqlgen::ConnectionPoolConfig pool_config {

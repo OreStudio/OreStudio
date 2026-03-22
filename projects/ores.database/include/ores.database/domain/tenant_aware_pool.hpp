@@ -170,9 +170,10 @@ public:
         // Set current service (service account) if available.
         // This is used by DB triggers to stamp performed_by.
         if (!service_account_.empty()) {
-            auto svc_result = (*session_result)->execute(
-                "SELECT set_config('app.current_service', $1, false)",
-                service_account_);
+            const std::string svc_sql =
+                "SELECT set_config('app.current_service', '" +
+                service_account_ + "', false)";
+            auto svc_result = (*session_result)->execute(svc_sql);
             if (!svc_result) {
                 return sqlgen::error("Failed to set service context: " +
                     std::string(svc_result.error().what()));

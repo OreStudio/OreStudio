@@ -30,7 +30,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/EntityDetailOperations.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party_id_scheme.hpp"
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 
 namespace Ui {
 class EntityDetailDialog;

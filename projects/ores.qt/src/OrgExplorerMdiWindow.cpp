@@ -31,10 +31,10 @@
 #include "ores.qt/BusinessUnitController.hpp"
 #include "ores.qt/BookController.hpp"
 #include "ores.qt/TradeController.hpp"
-#include "ores.refdata/messaging/business_unit_protocol.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
-#include "ores.refdata/domain/counterparty.hpp"
+#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 
 namespace ores::qt {

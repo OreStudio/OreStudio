@@ -34,7 +34,7 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/ImportTradeDialog.hpp"
 #include "ores.ore/xml/importer.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 
 namespace ores::qt {
 

@@ -29,8 +29,8 @@
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.refdata/domain/currency_version.hpp"
-#include "ores.refdata/messaging/currency_history_protocol.hpp"
+#include "ores.refdata.api/domain/currency_version.hpp"
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_CurrencyHistoryDialog.h"
 

@@ -29,7 +29,7 @@
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
-#include "ores.refdata/domain/country.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_CountryHistoryDialog.h"
 

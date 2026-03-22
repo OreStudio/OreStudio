@@ -28,7 +28,7 @@
 #include "ores.qt/ClientPartyStatusModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party_status.hpp"
+#include "ores.refdata.api/domain/party_status.hpp"
 
 namespace ores::qt {
 

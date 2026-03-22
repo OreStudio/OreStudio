@@ -20,7 +20,7 @@
 #include "ores.qt/ClientRoundingTypeModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.refdata/messaging/rounding_type_protocol.hpp"
+#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

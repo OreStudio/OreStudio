@@ -27,7 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.refdata/messaging/contact_type_protocol.hpp"
+#include "ores.refdata.api/messaging/contact_type_protocol.hpp"
 
 namespace ores::qt {
 

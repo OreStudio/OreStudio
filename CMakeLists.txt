@@ -111,8 +111,25 @@ option(ORES_TEST_LOG_DATABASE "Enable database output for test logs" OFF)
 #
 # Test environment variables: applied to all test targets.
 # ORES_TEST_PASSWORD_FAST: Use fast scrypt parameters (16x faster) for tests.
+# ORES_TEST_DB_*: Database credentials loaded from .env for local development.
+#                 In CI these are already in the process environment via $GITHUB_ENV.
 #
 set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
+
+# Load ORES_TEST_DB_* credentials from .env for local development.
+# Skipped in CI environments where the variables are already exported.
+if(NOT DEFINED ENV{CI})
+    set(ORES_ENV_FILE "${CMAKE_SOURCE_DIR}/.env")
+    if(EXISTS "${ORES_ENV_FILE}")
+        file(STRINGS "${ORES_ENV_FILE}" _ores_env_lines)
+        foreach(_line ${_ores_env_lines})
+            if(_line MATCHES "^ORES_TEST_DB_")
+                string(APPEND ORES_TEST_ENV ";${_line}")
+            endif()
+        endforeach()
+        message(STATUS "Loaded ORES_TEST_DB_* credentials from .env")
+    endif()
+endif()
 
 # Add logging environment variables if logging is enabled
 if(NOT ORES_TEST_LOG_LEVEL STREQUAL "OFF")

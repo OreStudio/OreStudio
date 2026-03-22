@@ -26,7 +26,7 @@
 #include "ui_PartyStatusHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/party_status_protocol.hpp"
+#include "ores.refdata.api/messaging/party_status_protocol.hpp"
 
 namespace ores::qt {
 

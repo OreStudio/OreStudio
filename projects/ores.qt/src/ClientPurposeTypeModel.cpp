@@ -20,7 +20,7 @@
 #include "ores.qt/ClientPurposeTypeModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.refdata/messaging/purpose_type_protocol.hpp"
+#include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

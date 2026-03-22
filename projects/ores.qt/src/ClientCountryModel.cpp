@@ -26,7 +26,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 
 namespace ores::qt {
 

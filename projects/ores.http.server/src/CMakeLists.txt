@@ -40,7 +40,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.http.lib
         ores.iam.core.lib
-        ores.refdata.lib
+        ores.refdata.core.lib
         ores.assets.lib
         ores.variability.lib
         ores.geo.lib

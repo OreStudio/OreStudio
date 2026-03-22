@@ -46,7 +46,7 @@ target_link_libraries(${lib_target_name}
         ores.iam.api.lib
         ores.dq.lib
         ores.variability.lib
-        ores.refdata.lib
+        ores.refdata.api.lib
         ores.nats.lib
         cli::cli)
 

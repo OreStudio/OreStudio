@@ -26,7 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/portfolio.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
 
 namespace Ui {
 class PortfolioHistoryDialog;

@@ -42,7 +42,7 @@
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
-#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"

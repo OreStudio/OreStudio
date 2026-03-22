@@ -27,7 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.refdata/messaging/purpose_type_protocol.hpp"
+#include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
 
 namespace ores::qt {
 

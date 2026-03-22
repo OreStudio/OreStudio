@@ -20,7 +20,7 @@
 #include "ores.qt/ClientBookStatusModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.refdata/messaging/book_status_protocol.hpp"
+#include "ores.refdata.api/messaging/book_status_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

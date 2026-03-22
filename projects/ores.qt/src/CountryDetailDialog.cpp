@@ -36,7 +36,7 @@
 #include "ores.qt/FlagSelectorDialog.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 
 namespace ores::qt {
 

@@ -27,7 +27,7 @@
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
 
 namespace Ui {
 class BusinessUnitDetailDialog;

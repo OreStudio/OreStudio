@@ -32,7 +32,7 @@
 #include <boost/lexical_cast.hpp>
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.ore/xml/importer.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 
 namespace ores::qt {

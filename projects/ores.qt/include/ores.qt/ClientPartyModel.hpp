@@ -30,7 +30,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 
 namespace ores::qt {
 

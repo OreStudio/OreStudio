@@ -29,7 +29,7 @@
 #include "ores.qt/ClientPartyModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 
 namespace ores::qt {
 

@@ -25,8 +25,8 @@
 #include <QPushButton>
 #include <memory>
 #include <vector>
-#include "ores.refdata/domain/currency.hpp"
-#include "ores.refdata/messaging/currency_history_protocol.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"

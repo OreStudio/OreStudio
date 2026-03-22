@@ -25,7 +25,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party_id_scheme.hpp"
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {

@@ -20,7 +20,7 @@
 #include "ores.qt/ClientMonetaryNatureModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

@@ -28,7 +28,7 @@
 #include "ores.qt/ClientContactTypeModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/contact_type.hpp"
+#include "ores.refdata.api/domain/contact_type.hpp"
 
 namespace ores::qt {
 

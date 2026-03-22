@@ -25,7 +25,7 @@
 #include <QTableWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/purpose_type.hpp"
+#include "ores.refdata.api/domain/purpose_type.hpp"
 
 namespace Ui {
 class PurposeTypeHistoryDialog;

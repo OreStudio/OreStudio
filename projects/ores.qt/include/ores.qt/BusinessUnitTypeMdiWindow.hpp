@@ -28,7 +28,7 @@
 #include "ores.qt/ClientBusinessUnitTypeModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/business_unit_type.hpp"
+#include "ores.refdata.api/domain/business_unit_type.hpp"
 
 namespace ores::qt {
 

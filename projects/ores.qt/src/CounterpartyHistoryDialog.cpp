@@ -28,7 +28,7 @@
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 
 namespace ores::qt {
 

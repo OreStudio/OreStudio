@@ -25,7 +25,7 @@
 #include <QTableWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/currency_market_tier.hpp"
+#include "ores.refdata.api/domain/currency_market_tier.hpp"
 
 namespace Ui {
 class CurrencyMarketTierHistoryDialog;

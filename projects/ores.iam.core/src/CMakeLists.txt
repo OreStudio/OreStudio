@@ -46,7 +46,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.service.lib
         ores.utility.lib
-        ores.refdata.lib
+        ores.refdata.core.lib
         faker-cxx::faker-cxx
         libfort::fort)
 

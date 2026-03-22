@@ -32,7 +32,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.refdata/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 
 namespace ores::qt {
 

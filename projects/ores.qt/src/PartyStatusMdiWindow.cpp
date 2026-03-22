@@ -27,7 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.refdata/messaging/party_status_protocol.hpp"
+#include "ores.refdata.api/messaging/party_status_protocol.hpp"
 
 namespace ores::qt {
 

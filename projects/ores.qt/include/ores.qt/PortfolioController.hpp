@@ -26,7 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/portfolio.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {

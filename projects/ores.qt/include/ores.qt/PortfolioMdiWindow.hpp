@@ -28,7 +28,7 @@
 #include "ores.qt/ClientPortfolioModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/portfolio.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
 
 namespace ores::qt {
 

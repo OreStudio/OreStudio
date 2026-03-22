@@ -40,8 +40,8 @@
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.qt/OrgExplorerTreeModel.hpp"
 #include "ores.qt/OrgExplorerTradeModel.hpp"
-#include "ores.refdata/domain/business_unit.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 
 namespace ores::qt {
 

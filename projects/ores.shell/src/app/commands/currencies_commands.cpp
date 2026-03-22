@@ -24,10 +24,10 @@
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.refdata/messaging/currency_protocol.hpp"
-#include "ores.refdata/messaging/currency_history_protocol.hpp"
-#include "ores.refdata/domain/currency_table_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#include "ores.refdata.api/domain/currency_table_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency_version_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 

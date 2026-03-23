@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/treatment_dimension_generator.hpp"
+#include "ores.dq.api/generators/subject_area_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
@@ -26,15 +26,15 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::treatment_dimension generate_synthetic_treatment_dimension(
+domain::subject_area generate_synthetic_subject_area(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::treatment_dimension r;
+    domain::subject_area r;
     r.version = 1;
-    r.code = std::string(faker::word::noun());
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
+    r.name = std::string(faker::word::noun());
+    r.domain_name = std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
@@ -42,13 +42,21 @@ domain::treatment_dimension generate_synthetic_treatment_dimension(
     return r;
 }
 
-std::vector<domain::treatment_dimension>
-generate_synthetic_treatment_dimensions(std::size_t n,
+domain::subject_area generate_synthetic_subject_area(
+    const std::string& domain_name,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::treatment_dimension> r;
+    auto r = generate_synthetic_subject_area(ctx);
+    r.domain_name = domain_name;
+    return r;
+}
+
+std::vector<domain::subject_area>
+generate_synthetic_subject_areas(std::size_t n,
+    utility::generation::generation_context& ctx) {
+    std::vector<domain::subject_area> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_treatment_dimension(ctx));
+        r.push_back(generate_synthetic_subject_area(ctx));
     return r;
 }
 

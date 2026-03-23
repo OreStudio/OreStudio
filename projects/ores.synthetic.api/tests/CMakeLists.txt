@@ -30,7 +30,7 @@ set_target_properties(${tests_target_name}
 
 target_link_libraries(${tests_target_name}
     PRIVATE
-        ores.synthetic.core.lib
+        ores.synthetic.api.lib
         ores.utility.lib
         ores.testing.lib
         faker-cxx::faker-cxx

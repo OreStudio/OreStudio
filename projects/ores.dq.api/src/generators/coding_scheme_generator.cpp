@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/dataset_generator.hpp"
+#include "ores.dq.api/generators/coding_scheme_generator.hpp"
 
 #include <array>
 #include <atomic>
@@ -28,51 +28,42 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::dataset generate_synthetic_dataset(
+domain::coding_scheme generate_synthetic_coding_scheme(
     utility::generation::generation_context& ctx) {
-    static constexpr std::array<const char*, 2> origins = {"Primary", "Derived"};
-    static constexpr std::array<const char*, 3> natures = {"Actual", "Synthetic", "Mock"};
-    static constexpr std::array<const char*, 3> treatments = {"Raw", "Masked", "Anonymized"};
+    static constexpr std::array<const char*, 3> authority_types = {
+        "official", "industry", "internal"
+    };
     static std::atomic<int> counter{0};
     const auto idx = counter++;
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::dataset r;
+    domain::coding_scheme r;
     r.version = 1;
-    r.id = ctx.generate_uuid();
-    r.code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
+    r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun())
         + "_" + std::to_string(idx + 1);
-    r.catalog_name = std::nullopt;
-    r.subject_area_name = std::string("General");
-    r.domain_name = std::string("Reference Data");
-    r.coding_scheme_code = std::nullopt;
-    r.origin_code = std::string(origins[idx % origins.size()]);
-    r.nature_code = std::string(natures[idx % natures.size()]);
-    r.treatment_code = std::string(treatments[idx % treatments.size()]);
-    r.methodology_id = std::nullopt;
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
         + " " + std::to_string(idx + 1);
+    r.authority_type = std::string(authority_types[idx % authority_types.size()]);
+    r.subject_area_name = std::string("General");
+    r.domain_name = std::string("Reference Data");
+    if (faker::datatype::boolean()) {
+        r.uri = "https://example.org/schemes/" + r.code;
+    }
     r.description = std::string(faker::lorem::sentence());
-    r.source_system_id = std::string(faker::word::noun()) + "_system";
-    r.business_context = std::string(faker::lorem::sentence());
-    r.lineage_depth = 0;
-    r.ingestion_timestamp = ctx.past_timepoint();
-    r.as_of_date = std::chrono::floor<std::chrono::days>(r.ingestion_timestamp);
-    r.artefact_type = std::string("none");
     r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
-std::vector<domain::dataset>
-generate_synthetic_datasets(std::size_t n,
+std::vector<domain::coding_scheme>
+generate_synthetic_coding_schemes(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::dataset> r;
+    std::vector<domain::coding_scheme> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_dataset(ctx));
+        r.push_back(generate_synthetic_coding_scheme(ctx));
     return r;
 }
 

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/data_domain_generator.hpp"
+#include "ores.dq.api/generators/change_reason_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
@@ -26,28 +26,35 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::data_domain generate_synthetic_data_domain(
+domain::change_reason generate_synthetic_change_reason(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::data_domain r;
+    domain::change_reason r;
     r.version = 1;
-    r.name = std::string(faker::word::noun());
+    auto category = std::string{faker::word::noun()};
+    auto reason = std::string{faker::word::verb()};
+    r.code = category + "." + reason;
     r.description = std::string(faker::lorem::sentence());
+    r.category_code = category;
+    r.applies_to_amend = ctx.random_bool();
+    r.applies_to_delete = ctx.random_bool();
+    r.requires_commentary = ctx.random_bool();
+    r.display_order = ctx.random_int(1, 100);
     r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
-std::vector<domain::data_domain>
-generate_synthetic_data_domains(std::size_t n,
+std::vector<domain::change_reason>
+generate_synthetic_change_reasons(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::data_domain> r;
+    std::vector<domain::change_reason> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_data_domain(ctx));
+        r.push_back(generate_synthetic_change_reason(ctx));
     return r;
 }
 

@@ -17,10 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/coding_scheme_generator.hpp"
+#include "ores.dq.api/generators/data_domain_generator.hpp"
 
-#include <array>
-#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
@@ -28,28 +26,14 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::coding_scheme generate_synthetic_coding_scheme(
+domain::data_domain generate_synthetic_data_domain(
     utility::generation::generation_context& ctx) {
-    static constexpr std::array<const char*, 3> authority_types = {
-        "official", "industry", "internal"
-    };
-    static std::atomic<int> counter{0};
-    const auto idx = counter++;
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::coding_scheme r;
+    domain::data_domain r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun())
-        + "_" + std::to_string(idx + 1);
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun())
-        + " " + std::to_string(idx + 1);
-    r.authority_type = std::string(authority_types[idx % authority_types.size()]);
-    r.subject_area_name = std::string("General");
-    r.domain_name = std::string("Reference Data");
-    if (faker::datatype::boolean()) {
-        r.uri = "https://example.org/schemes/" + r.code;
-    }
+    r.name = std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
     r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
@@ -57,13 +41,13 @@ domain::coding_scheme generate_synthetic_coding_scheme(
     return r;
 }
 
-std::vector<domain::coding_scheme>
-generate_synthetic_coding_schemes(std::size_t n,
+std::vector<domain::data_domain>
+generate_synthetic_data_domains(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::coding_scheme> r;
+    std::vector<domain::data_domain> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_coding_scheme(ctx));
+        r.push_back(generate_synthetic_data_domain(ctx));
     return r;
 }
 

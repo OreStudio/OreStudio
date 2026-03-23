@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/change_reason_generator.hpp"
+#include "ores.dq.api/generators/dataset_bundle_member_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
@@ -26,35 +27,33 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::change_reason generate_synthetic_change_reason(
+domain::dataset_bundle_member generate_synthetic_dataset_bundle_member(
     utility::generation::generation_context& ctx) {
+    static std::atomic<int> counter{0};
+    const auto idx = ++counter;
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::change_reason r;
+    domain::dataset_bundle_member r;
     r.version = 1;
-    auto category = std::string{faker::word::noun()};
-    auto reason = std::string{faker::word::verb()};
-    r.code = category + "." + reason;
-    r.description = std::string(faker::lorem::sentence());
-    r.category_code = category;
-    r.applies_to_amend = ctx.random_bool();
-    r.applies_to_delete = ctx.random_bool();
-    r.requires_commentary = ctx.random_bool();
+    r.bundle_code = std::string(faker::word::noun()) + "_bundle_" + std::to_string(idx);
+    r.dataset_code = std::string(faker::word::noun()) + "." + std::string(faker::word::noun())
+        + "_" + std::to_string(idx);
     r.display_order = ctx.random_int(1, 100);
     r.modified_by = modified_by;
+    r.change_reason_code = "system.new_record";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
-std::vector<domain::change_reason>
-generate_synthetic_change_reasons(std::size_t n,
+std::vector<domain::dataset_bundle_member>
+generate_synthetic_dataset_bundle_members(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::change_reason> r;
+    std::vector<domain::dataset_bundle_member> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_change_reason(ctx));
+        r.push_back(generate_synthetic_dataset_bundle_member(ctx));
     return r;
 }
 

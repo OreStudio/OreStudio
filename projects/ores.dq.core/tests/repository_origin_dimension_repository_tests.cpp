@@ -27,7 +27,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/origin_dimension_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.core/generators/origin_dimension_generator.hpp"
+#include "ores.dq.api/generators/origin_dimension_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 

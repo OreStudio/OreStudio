@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_CODING_SCHEME_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_CODING_SCHEME_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_DATASET_BUNDLE_MEMBER_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_DATASET_BUNDLE_MEMBER_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/coding_scheme.hpp"
+#include "ores.dq.api/domain/dataset_bundle_member.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic coding_scheme.
+ * @brief Generates a synthetic dataset_bundle_member.
  */
-domain::coding_scheme generate_synthetic_coding_scheme(
+domain::dataset_bundle_member generate_synthetic_dataset_bundle_member(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic coding_schemes.
+ * @brief Generates N synthetic dataset_bundle_members.
  */
-std::vector<domain::coding_scheme>
-generate_synthetic_coding_schemes(std::size_t n,
+std::vector<domain::dataset_bundle_member>
+generate_synthetic_dataset_bundle_members(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

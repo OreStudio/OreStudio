@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/origin_dimension_generator.hpp"
+#include "ores.dq.api/generators/treatment_dimension_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
@@ -26,12 +26,12 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::origin_dimension generate_synthetic_origin_dimension(
+domain::treatment_dimension generate_synthetic_treatment_dimension(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::origin_dimension r;
+    domain::treatment_dimension r;
     r.version = 1;
     r.code = std::string(faker::word::noun());
     r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
@@ -42,13 +42,13 @@ domain::origin_dimension generate_synthetic_origin_dimension(
     return r;
 }
 
-std::vector<domain::origin_dimension>
-generate_synthetic_origin_dimensions(std::size_t n,
+std::vector<domain::treatment_dimension>
+generate_synthetic_treatment_dimensions(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::origin_dimension> r;
+    std::vector<domain::treatment_dimension> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_origin_dimension(ctx));
+        r.push_back(generate_synthetic_treatment_dimension(ctx));
     return r;
 }
 

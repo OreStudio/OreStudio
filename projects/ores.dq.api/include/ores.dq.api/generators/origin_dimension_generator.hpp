@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_CODING_SCHEME_AUTHORITY_TYPE_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_CODING_SCHEME_AUTHORITY_TYPE_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_ORIGIN_DIMENSION_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_ORIGIN_DIMENSION_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.dq.api/domain/origin_dimension.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic coding_scheme_authority_type.
+ * @brief Generates a synthetic origin_dimension.
  */
-domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_type(
+domain::origin_dimension generate_synthetic_origin_dimension(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic coding_scheme_authority_types.
+ * @brief Generates N synthetic origin_dimensions.
  */
-std::vector<domain::coding_scheme_authority_type>
-generate_synthetic_coding_scheme_authority_types(std::size_t n,
+std::vector<domain::origin_dimension>
+generate_synthetic_origin_dimensions(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/change_reason_category_generator.hpp"
+#include "ores.dq.api/generators/methodology_generator.hpp"
 
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
@@ -26,28 +26,35 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::change_reason_category generate_synthetic_change_reason_category(
+domain::methodology generate_synthetic_methodology(
     utility::generation::generation_context& ctx) {
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::change_reason_category r;
+    domain::methodology r;
     r.version = 1;
-    r.code = std::string(faker::word::noun()) + "_" + std::string(faker::word::noun());
+    r.id = ctx.generate_uuid();
+    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
     r.description = std::string(faker::lorem::sentence());
+    if (faker::datatype::boolean()) {
+        r.logic_reference = "https://example.org/logic/" + std::string(faker::word::noun());
+    }
+    if (faker::datatype::boolean()) {
+        r.implementation_details = std::string(faker::lorem::paragraph());
+    }
     r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
-std::vector<domain::change_reason_category>
-generate_synthetic_change_reason_categories(std::size_t n,
+std::vector<domain::methodology>
+generate_synthetic_methodologies(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::change_reason_category> r;
+    std::vector<domain::methodology> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_change_reason_category(ctx));
+        r.push_back(generate_synthetic_methodology(ctx));
     return r;
 }
 

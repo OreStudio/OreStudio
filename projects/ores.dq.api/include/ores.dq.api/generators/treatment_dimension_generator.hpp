@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_DATASET_BUNDLE_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_DATASET_BUNDLE_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_TREATMENT_DIMENSION_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_TREATMENT_DIMENSION_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/dataset_bundle.hpp"
+#include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic dataset_bundle.
+ * @brief Generates a synthetic treatment_dimension.
  */
-domain::dataset_bundle generate_synthetic_dataset_bundle(
+domain::treatment_dimension generate_synthetic_treatment_dimension(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic dataset_bundles.
+ * @brief Generates N synthetic treatment_dimensions.
  */
-std::vector<domain::dataset_bundle>
-generate_synthetic_dataset_bundles(std::size_t n,
+std::vector<domain::treatment_dimension>
+generate_synthetic_treatment_dimensions(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

@@ -17,39 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/coding_scheme_authority_type_generator.hpp"
+#ifndef ORES_DQ_API_GENERATORS_CODING_SCHEME_AUTHORITY_TYPE_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_CODING_SCHEME_AUTHORITY_TYPE_GENERATOR_HPP
 
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
+#include <vector>
+#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
-using ores::utility::generation::generation_keys;
-
+/**
+ * @brief Generates a synthetic coding_scheme_authority_type.
+ */
 domain::coding_scheme_authority_type generate_synthetic_coding_scheme_authority_type(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    utility::generation::generation_context& ctx);
 
-    domain::coding_scheme_authority_type r;
-    r.version = 1;
-    r.code = std::string(faker::word::noun());
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
-    r.description = std::string(faker::lorem::sentence());
-    r.modified_by = modified_by;
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
-    return r;
-}
-
+/**
+ * @brief Generates N synthetic coding_scheme_authority_types.
+ */
 std::vector<domain::coding_scheme_authority_type>
 generate_synthetic_coding_scheme_authority_types(std::size_t n,
-    utility::generation::generation_context& ctx) {
-    std::vector<domain::coding_scheme_authority_type> r;
-    r.reserve(n);
-    while (r.size() < n)
-        r.push_back(generate_synthetic_coding_scheme_authority_type(ctx));
-    return r;
-}
+    utility::generation::generation_context& ctx);
 
 }
+
+#endif

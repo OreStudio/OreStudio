@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_CATALOG_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_CATALOG_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_NATURE_DIMENSION_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_NATURE_DIMENSION_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/catalog.hpp"
+#include "ores.dq.api/domain/nature_dimension.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic catalog.
+ * @brief Generates a synthetic nature_dimension.
  */
-domain::catalog generate_synthetic_catalog(
+domain::nature_dimension generate_synthetic_nature_dimension(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic catalogs.
+ * @brief Generates N synthetic nature_dimensions.
  */
-std::vector<domain::catalog>
-generate_synthetic_catalogs(std::size_t n,
+std::vector<domain::nature_dimension>
+generate_synthetic_nature_dimensions(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

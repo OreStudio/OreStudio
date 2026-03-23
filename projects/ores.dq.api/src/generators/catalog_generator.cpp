@@ -17,8 +17,9 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/nature_dimension_generator.hpp"
+#include "ores.dq.api/generators/catalog_generator.hpp"
 
+#include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.utility/generation/generation_keys.hpp"
 
@@ -26,29 +27,32 @@ namespace ores::dq::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::nature_dimension generate_synthetic_nature_dimension(
+domain::catalog generate_synthetic_catalog(
     utility::generation::generation_context& ctx) {
+    static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(
         generation_keys::modified_by, "system");
 
-    domain::nature_dimension r;
+    domain::catalog r;
     r.version = 1;
-    r.code = std::string(faker::word::noun());
-    r.name = std::string(faker::word::adjective()) + " " + std::string(faker::word::noun());
+    r.name = std::string(faker::word::noun()) + "_" + std::to_string(++counter);
     r.description = std::string(faker::lorem::sentence());
+    if (faker::datatype::boolean()) {
+        r.owner = faker::company::companyName();
+    }
     r.modified_by = modified_by;
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
 
-std::vector<domain::nature_dimension>
-generate_synthetic_nature_dimensions(std::size_t n,
+std::vector<domain::catalog>
+generate_synthetic_catalogs(std::size_t n,
     utility::generation::generation_context& ctx) {
-    std::vector<domain::nature_dimension> r;
+    std::vector<domain::catalog> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_nature_dimension(ctx));
+        r.push_back(generate_synthetic_catalog(ctx));
     return r;
 }
 

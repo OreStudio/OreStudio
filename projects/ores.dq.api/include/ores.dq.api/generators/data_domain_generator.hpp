@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_METHODOLOGY_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_METHODOLOGY_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_DATA_DOMAIN_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_DATA_DOMAIN_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/methodology.hpp"
+#include "ores.dq.api/domain/data_domain.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic methodology.
+ * @brief Generates a synthetic data_domain.
  */
-domain::methodology generate_synthetic_methodology(
+domain::data_domain generate_synthetic_data_domain(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic methodologies.
+ * @brief Generates N synthetic data_domains.
  */
-std::vector<domain::methodology>
-generate_synthetic_methodologies(std::size_t n,
+std::vector<domain::data_domain>
+generate_synthetic_data_domains(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

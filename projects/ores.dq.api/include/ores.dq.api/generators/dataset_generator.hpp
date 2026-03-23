@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_ORIGIN_DIMENSION_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_ORIGIN_DIMENSION_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_DATASET_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_DATASET_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/origin_dimension.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic origin_dimension.
+ * @brief Generates a synthetic dataset.
  */
-domain::origin_dimension generate_synthetic_origin_dimension(
+domain::dataset generate_synthetic_dataset(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic origin_dimensions.
+ * @brief Generates N synthetic datasets.
  */
-std::vector<domain::origin_dimension>
-generate_synthetic_origin_dimensions(std::size_t n,
+std::vector<domain::dataset>
+generate_synthetic_datasets(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

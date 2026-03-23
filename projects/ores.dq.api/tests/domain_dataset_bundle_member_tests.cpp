@@ -25,7 +25,7 @@
 #include "ores.dq.api/domain/dataset_bundle_member_json_io.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/dataset_bundle_member_table.hpp"
 #include "ores.dq.api/domain/dataset_bundle_member_table_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.core/generators/dataset_bundle_member_generator.hpp"
+#include "ores.dq.api/generators/dataset_bundle_member_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace {

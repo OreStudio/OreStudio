@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_DATASET_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_DATASET_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_CATALOG_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_CATALOG_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic dataset.
+ * @brief Generates a synthetic catalog.
  */
-domain::dataset generate_synthetic_dataset(
+domain::catalog generate_synthetic_catalog(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic datasets.
+ * @brief Generates N synthetic catalogs.
  */
-std::vector<domain::dataset>
-generate_synthetic_datasets(std::size_t n,
+std::vector<domain::catalog>
+generate_synthetic_catalogs(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

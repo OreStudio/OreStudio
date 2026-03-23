@@ -17,28 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_DQ_CORE_GENERATORS_CHANGE_REASON_GENERATOR_HPP
-#define ORES_DQ_CORE_GENERATORS_CHANGE_REASON_GENERATOR_HPP
+#ifndef ORES_DQ_API_GENERATORS_DATASET_BUNDLE_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_DATASET_BUNDLE_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq.api/domain/change_reason.hpp"
+#include "ores.dq.api/domain/dataset_bundle.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
 /**
- * @brief Generates a synthetic change_reason.
+ * @brief Generates a synthetic dataset_bundle.
  */
-domain::change_reason generate_synthetic_change_reason(
+domain::dataset_bundle generate_synthetic_dataset_bundle(
     utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic change_reasons.
- *
- * @note c++ 23 generators are not supported on all compilers.
+ * @brief Generates N synthetic dataset_bundles.
  */
-std::vector<domain::change_reason>
-generate_synthetic_change_reasons(std::size_t n,
+std::vector<domain::dataset_bundle>
+generate_synthetic_dataset_bundles(std::size_t n,
     utility::generation::generation_context& ctx);
 
 }

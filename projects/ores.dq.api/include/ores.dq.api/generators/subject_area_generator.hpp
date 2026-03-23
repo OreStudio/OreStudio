@@ -17,47 +17,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/subject_area_generator.hpp"
+#ifndef ORES_DQ_API_GENERATORS_SUBJECT_AREA_GENERATOR_HPP
+#define ORES_DQ_API_GENERATORS_SUBJECT_AREA_GENERATOR_HPP
 
-#include <faker-cxx/faker.h> // IWYU pragma: keep.
-#include "ores.utility/generation/generation_keys.hpp"
+#include <vector>
+#include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::dq::generators {
 
-using ores::utility::generation::generation_keys;
-
+/**
+ * @brief Generates a synthetic subject_area.
+ */
 domain::subject_area generate_synthetic_subject_area(
-    utility::generation::generation_context& ctx) {
-    const auto modified_by = ctx.env().get_or(
-        generation_keys::modified_by, "system");
+    utility::generation::generation_context& ctx);
 
-    domain::subject_area r;
-    r.version = 1;
-    r.name = std::string(faker::word::noun());
-    r.domain_name = std::string(faker::word::noun());
-    r.description = std::string(faker::lorem::sentence());
-    r.modified_by = modified_by;
-    r.change_commentary = "Synthetic test data";
-    r.recorded_at = ctx.past_timepoint();
-    return r;
-}
-
+/**
+ * @brief Generates a synthetic subject_area with the given domain name.
+ */
 domain::subject_area generate_synthetic_subject_area(
     const std::string& domain_name,
-    utility::generation::generation_context& ctx) {
-    auto r = generate_synthetic_subject_area(ctx);
-    r.domain_name = domain_name;
-    return r;
-}
+    utility::generation::generation_context& ctx);
 
+/**
+ * @brief Generates N synthetic subject_areas.
+ */
 std::vector<domain::subject_area>
 generate_synthetic_subject_areas(std::size_t n,
-    utility::generation::generation_context& ctx) {
-    std::vector<domain::subject_area> r;
-    r.reserve(n);
-    while (r.size() < n)
-        r.push_back(generate_synthetic_subject_area(ctx));
-    return r;
-}
+    utility::generation::generation_context& ctx);
 
 }
+
+#endif

@@ -30,7 +30,7 @@ set_target_properties(${tests_target_name}
 
 target_link_libraries(${tests_target_name}
     PRIVATE
-        ores.assets.core.lib
+        ores.assets.api.lib
         ores.telemetry.lib
         ores.utility.lib
         ores.testing.lib

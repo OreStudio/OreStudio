@@ -28,7 +28,7 @@
 #include <QToolBar>
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.dq/domain/change_reason.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_ChangeReasonHistoryDialog.h"
 

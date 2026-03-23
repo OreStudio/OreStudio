@@ -24,7 +24,7 @@
 #include <QMdiArea>
 #include <QPointer>
 #include "ores.qt/EntityController.hpp"
-#include "ores.dq/domain/catalog.hpp"
+#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {

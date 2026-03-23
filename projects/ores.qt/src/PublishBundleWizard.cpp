@@ -31,8 +31,8 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/publish_bundle_protocol.hpp"
-#include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
+#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 
 namespace ores::qt {
 

@@ -28,7 +28,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/dataset.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
 
 namespace ores::qt {
 

@@ -30,7 +30,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/coding_scheme.hpp"
+#include "ores.dq.api/domain/coding_scheme.hpp"
 
 namespace ores::qt {
 

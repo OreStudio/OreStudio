@@ -28,7 +28,7 @@
 #include "ores.qt/DataDomainHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq/eventing/data_domain_changed_event.hpp"
+#include "ores.dq.api/eventing/data_domain_changed_event.hpp"
 
 namespace ores::qt {
 

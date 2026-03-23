@@ -23,7 +23,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 
 namespace ores::qt {
 

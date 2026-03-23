@@ -24,7 +24,7 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
-#include "ores.dq/domain/change_reason.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 
 namespace ores::qt {
 

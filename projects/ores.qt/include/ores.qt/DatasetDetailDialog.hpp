@@ -24,7 +24,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/dataset.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
 
 namespace Ui {
 class DatasetDetailDialog;

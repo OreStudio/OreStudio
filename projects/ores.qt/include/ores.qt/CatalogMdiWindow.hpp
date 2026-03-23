@@ -25,7 +25,7 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/ClientCatalogModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.dq/domain/catalog.hpp"
+#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {

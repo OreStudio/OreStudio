@@ -40,7 +40,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.reporting.lib
     ores.nats.lib
     ores.shell.lib
-    ores.dq.lib
+    ores.dq.api.lib
     ores.synthetic.lib
     ores.assets.lib
     ores.iam.api.lib

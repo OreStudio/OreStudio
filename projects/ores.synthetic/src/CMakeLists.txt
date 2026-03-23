@@ -41,7 +41,7 @@ target_include_directories(${lib_target_name}
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.nats.lib
-        ores.dq.lib
+        ores.dq.api.lib
         ores.iam.api.lib
         ores.refdata.core.lib
     PRIVATE

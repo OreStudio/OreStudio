@@ -22,7 +22,7 @@
 
 #include <string>
 #include <QTabWidget>
-#include "ores.dq/domain/catalog.hpp"
+#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"

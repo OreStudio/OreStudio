@@ -22,13 +22,13 @@
 
 #include <string>
 #include <vector>
-#include "ores.dq/domain/catalog.hpp"
-#include "ores.dq/domain/dataset.hpp"
-#include "ores.dq/domain/subject_area.hpp"
-#include "ores.dq/domain/data_domain.hpp"
-#include "ores.dq/domain/origin_dimension.hpp"
-#include "ores.dq/domain/nature_dimension.hpp"
-#include "ores.dq/domain/treatment_dimension.hpp"
+#include "ores.dq.api/domain/catalog.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/subject_area.hpp"
+#include "ores.dq.api/domain/data_domain.hpp"
+#include "ores.dq.api/domain/origin_dimension.hpp"
+#include "ores.dq.api/domain/nature_dimension.hpp"
+#include "ores.dq.api/domain/treatment_dimension.hpp"
 #include "ores.iam.api/domain/account.hpp"
 
 namespace ores::synthetic::domain {

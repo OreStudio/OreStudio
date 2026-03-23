@@ -43,8 +43,8 @@
 #include "ores.qt/ClientNatureDimensionModel.hpp"
 #include "ores.qt/ClientTreatmentDimensionModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/dataset.hpp"
-#include "ores.dq/domain/methodology.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/methodology.hpp"
 
 namespace ores::qt {
 

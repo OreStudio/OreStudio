@@ -27,8 +27,8 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading/domain/trade.hpp"
-#include "ores.refdata/domain/book.hpp"
-#include "ores.refdata/domain/counterparty.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
 
 namespace Ui {
 class TradeDetailDialog;

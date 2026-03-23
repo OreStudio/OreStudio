@@ -30,7 +30,7 @@
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/country.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 
 namespace ores::qt {
 

@@ -28,7 +28,7 @@
 #include "ores.qt/ClientPartyIdSchemeModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party_id_scheme.hpp"
+#include "ores.refdata.api/domain/party_id_scheme.hpp"
 
 namespace ores::qt {
 

@@ -37,10 +37,10 @@
 #include "ores.ore/hierarchy/ore_hierarchy_builder.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.refdata/messaging/currency_protocol.hpp"
-#include "ores.refdata/messaging/portfolio_protocol.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.qt/FontUtils.hpp"

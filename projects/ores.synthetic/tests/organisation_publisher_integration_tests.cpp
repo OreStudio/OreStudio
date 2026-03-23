@@ -24,7 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
-#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 
 namespace {
 

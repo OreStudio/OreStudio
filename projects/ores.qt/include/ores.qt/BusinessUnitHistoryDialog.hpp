@@ -26,7 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
 
 namespace Ui {
 class BusinessUnitHistoryDialog;

@@ -25,7 +25,7 @@
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 
 namespace Ui {
 class BookDetailDialog;

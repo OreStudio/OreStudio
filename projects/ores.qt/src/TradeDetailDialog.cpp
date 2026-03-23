@@ -32,8 +32,8 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.trading/messaging/trade_protocol.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
-#include "ores.refdata/messaging/counterparty_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 
 namespace ores::qt {
 

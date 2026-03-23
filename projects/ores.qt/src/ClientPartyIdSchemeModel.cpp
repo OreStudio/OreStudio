@@ -20,7 +20,7 @@
 #include "ores.qt/ClientPartyIdSchemeModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.refdata/messaging/party_id_scheme_protocol.hpp"
+#include "ores.refdata.api/messaging/party_id_scheme_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

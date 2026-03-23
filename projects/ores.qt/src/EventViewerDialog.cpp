@@ -42,7 +42,7 @@
 #include <QDialogButtonBox>
 
 // Event types to subscribe to
-#include "ores.refdata/eventing/currency_changed_event.hpp"
+#include "ores.refdata.api/eventing/currency_changed_event.hpp"
 #include "ores.variability/eventing/system_setting_changed_event.hpp"
 #include "ores.iam.api/eventing/account_changed_event.hpp"
 #include "ores.iam.api/eventing/role_assigned_event.hpp"

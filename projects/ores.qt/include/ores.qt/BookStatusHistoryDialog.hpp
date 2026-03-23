@@ -25,7 +25,7 @@
 #include <QTableWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/book_status.hpp"
+#include "ores.refdata.api/domain/book_status.hpp"
 
 namespace Ui {
 class BookStatusHistoryDialog;

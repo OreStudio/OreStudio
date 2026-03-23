@@ -21,10 +21,10 @@
 
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.refdata/domain/currency_json.hpp"
-#include "ores.refdata/messaging/currency_protocol.hpp"
-#include "ores.refdata/messaging/currency_history_protocol.hpp"
-#include "ores.refdata/service/currency_service.hpp"
+#include "ores.refdata.api/domain/currency_json.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_history_protocol.hpp"
+#include "ores.refdata.core/service/currency_service.hpp"
 
 namespace ores::http_server::routes {
 

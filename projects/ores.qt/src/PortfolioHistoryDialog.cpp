@@ -27,7 +27,7 @@
 #include "ui_PortfolioHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 
 namespace ores::qt {
 

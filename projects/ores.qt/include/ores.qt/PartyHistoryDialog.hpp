@@ -26,7 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/party.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 
 namespace Ui {
 class PartyHistoryDialog;

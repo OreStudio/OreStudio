@@ -18,8 +18,8 @@
  *
  */
 #include "ores.qt/EntityDetailOperations.hpp"
-#include "ores.refdata/domain/counterparty.hpp"
-#include "ores.refdata/domain/party.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.api/domain/party.hpp"
 
 namespace ores::qt {
 

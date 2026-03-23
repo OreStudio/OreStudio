@@ -24,17 +24,17 @@
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 
-#include "ores.refdata/repository/party_mapper.hpp"
-#include "ores.refdata/repository/party_contact_information_mapper.hpp"
-#include "ores.refdata/repository/party_identifier_mapper.hpp"
-#include "ores.refdata/repository/counterparty_mapper.hpp"
-#include "ores.refdata/repository/counterparty_contact_information_mapper.hpp"
-#include "ores.refdata/repository/counterparty_identifier_mapper.hpp"
-#include "ores.refdata/repository/party_counterparty_mapper.hpp"
-#include "ores.refdata/repository/business_unit_type_mapper.hpp"
-#include "ores.refdata/repository/business_unit_mapper.hpp"
-#include "ores.refdata/repository/portfolio_mapper.hpp"
-#include "ores.refdata/repository/book_mapper.hpp"
+#include "ores.refdata.core/repository/party_mapper.hpp"
+#include "ores.refdata.core/repository/party_contact_information_mapper.hpp"
+#include "ores.refdata.core/repository/party_identifier_mapper.hpp"
+#include "ores.refdata.core/repository/counterparty_mapper.hpp"
+#include "ores.refdata.core/repository/counterparty_contact_information_mapper.hpp"
+#include "ores.refdata.core/repository/counterparty_identifier_mapper.hpp"
+#include "ores.refdata.core/repository/party_counterparty_mapper.hpp"
+#include "ores.refdata.core/repository/business_unit_type_mapper.hpp"
+#include "ores.refdata.core/repository/business_unit_mapper.hpp"
+#include "ores.refdata.core/repository/portfolio_mapper.hpp"
+#include "ores.refdata.core/repository/book_mapper.hpp"
 
 namespace ores::synthetic::service {
 

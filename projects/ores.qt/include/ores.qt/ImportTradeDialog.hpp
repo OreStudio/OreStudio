@@ -36,8 +36,8 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid.hpp>
 #include "ores.ore/xml/importer.hpp"
-#include "ores.refdata/domain/book.hpp"
-#include "ores.refdata/domain/counterparty.hpp"
+#include "ores.refdata.api/domain/book.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 

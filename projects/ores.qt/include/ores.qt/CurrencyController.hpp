@@ -23,7 +23,7 @@
 #include <QPointer>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
-#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {

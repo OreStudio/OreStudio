@@ -21,12 +21,12 @@
 
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.refdata/domain/party.hpp"
-#include "ores.refdata/domain/party_identifier.hpp"
-#include "ores.refdata/domain/party_contact_information.hpp"
-#include "ores.refdata/messaging/party_protocol.hpp"
-#include "ores.refdata/messaging/party_identifier_protocol.hpp"
-#include "ores.refdata/messaging/party_contact_information_protocol.hpp"
+#include "ores.refdata.api/domain/party.hpp"
+#include "ores.refdata.api/domain/party_identifier.hpp"
+#include "ores.refdata.api/domain/party_contact_information.hpp"
+#include "ores.refdata.api/messaging/party_protocol.hpp"
+#include "ores.refdata.api/messaging/party_identifier_protocol.hpp"
+#include "ores.refdata.api/messaging/party_contact_information_protocol.hpp"
 #include "ores.qt/LookupFetcher.hpp"
 
 namespace ores::qt {

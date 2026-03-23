@@ -28,9 +28,9 @@
 #include "ores.qt/PartyDetailOperations.hpp"
 #include "ores.qt/PartyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.refdata/eventing/party_changed_event.hpp"
-#include "ores.refdata/eventing/party_identifier_changed_event.hpp"
-#include "ores.refdata/eventing/party_contact_information_changed_event.hpp"
+#include "ores.refdata.api/eventing/party_changed_event.hpp"
+#include "ores.refdata.api/eventing/party_identifier_changed_event.hpp"
+#include "ores.refdata.api/eventing/party_contact_information_changed_event.hpp"
 
 namespace ores::qt {
 

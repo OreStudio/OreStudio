@@ -31,7 +31,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 
 namespace ores::qt {
 

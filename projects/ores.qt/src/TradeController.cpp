@@ -41,7 +41,7 @@
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.trading/eventing/trade_changed_event.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 
 namespace ores::qt {
 

@@ -28,7 +28,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/portfolio.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
 
 namespace ores::qt {
 

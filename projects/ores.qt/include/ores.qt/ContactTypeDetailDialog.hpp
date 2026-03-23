@@ -23,7 +23,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/contact_type.hpp"
+#include "ores.refdata.api/domain/contact_type.hpp"
 
 namespace Ui {
 class ContactTypeDetailDialog;

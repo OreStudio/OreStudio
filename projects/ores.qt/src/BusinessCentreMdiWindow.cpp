@@ -29,7 +29,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.refdata/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
 
 namespace ores::qt {
 

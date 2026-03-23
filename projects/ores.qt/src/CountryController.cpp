@@ -29,8 +29,8 @@
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.refdata/eventing/country_changed_event.hpp"
-#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata.api/eventing/country_changed_event.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 
 namespace ores::qt {
 

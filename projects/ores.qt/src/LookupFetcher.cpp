@@ -20,12 +20,12 @@
 #include "ores.qt/LookupFetcher.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.refdata/messaging/party_type_protocol.hpp"
-#include "ores.refdata/messaging/party_status_protocol.hpp"
-#include "ores.refdata/messaging/business_centre_protocol.hpp"
-#include "ores.refdata/messaging/currency_protocol.hpp"
-#include "ores.refdata/messaging/portfolio_protocol.hpp"
-#include "ores.refdata/messaging/business_unit_protocol.hpp"
+#include "ores.refdata.api/messaging/party_type_protocol.hpp"
+#include "ores.refdata.api/messaging/party_status_protocol.hpp"
+#include "ores.refdata.api/messaging/business_centre_protocol.hpp"
+#include "ores.refdata.api/messaging/currency_protocol.hpp"
+#include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.refdata.api/messaging/business_unit_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 

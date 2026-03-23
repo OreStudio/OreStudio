@@ -22,17 +22,17 @@
 
 #include <cstdint>
 #include <vector>
-#include "ores.refdata/domain/party.hpp"
-#include "ores.refdata/domain/party_contact_information.hpp"
-#include "ores.refdata/domain/party_identifier.hpp"
-#include "ores.refdata/domain/counterparty.hpp"
-#include "ores.refdata/domain/counterparty_contact_information.hpp"
-#include "ores.refdata/domain/counterparty_identifier.hpp"
-#include "ores.refdata/domain/party_counterparty.hpp"
-#include "ores.refdata/domain/business_unit_type.hpp"
-#include "ores.refdata/domain/business_unit.hpp"
-#include "ores.refdata/domain/portfolio.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/party.hpp"
+#include "ores.refdata.api/domain/party_contact_information.hpp"
+#include "ores.refdata.api/domain/party_identifier.hpp"
+#include "ores.refdata.api/domain/counterparty.hpp"
+#include "ores.refdata.api/domain/counterparty_contact_information.hpp"
+#include "ores.refdata.api/domain/counterparty_identifier.hpp"
+#include "ores.refdata.api/domain/party_counterparty.hpp"
+#include "ores.refdata.api/domain/business_unit_type.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/portfolio.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 
 namespace ores::synthetic::domain {
 

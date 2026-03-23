@@ -29,8 +29,8 @@
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
 #include "ores.variability/service/system_settings_service.hpp"
 #include "ores.variability/eventing/system_setting_changed_event.hpp"
-#include "ores.refdata/service/currency_service.hpp"
-#include "ores.refdata/service/country_service.hpp"
+#include "ores.refdata.core/service/currency_service.hpp"
+#include "ores.refdata.core/service/country_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 

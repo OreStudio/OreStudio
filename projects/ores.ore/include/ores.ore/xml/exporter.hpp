@@ -23,7 +23,7 @@
 
 #include <vector>
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 
 namespace ores::ore::xml {
 

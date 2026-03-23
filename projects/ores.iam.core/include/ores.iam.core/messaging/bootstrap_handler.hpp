@@ -38,8 +38,8 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.security/crypto/password_hasher.hpp"
-#include "ores.refdata/domain/party.hpp"
-#include "ores.refdata/repository/party_repository.hpp"
+#include "ores.refdata.api/domain/party.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 

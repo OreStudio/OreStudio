@@ -8,6 +8,10 @@
 # Generates a .env file at the checkout root with all required credentials
 # for running ORE Studio services locally and in CI.
 #
+# Existing passwords are preserved when the file already exists — only missing
+# variables are generated. Use --enable-logging / --disable-logging to toggle
+# test logging without touching any other variable.
+#
 # Dependencies: bash 3.2+, openssl
 #
 # Usage:
@@ -16,7 +20,9 @@
 #   ORES_DATABASE_NAME=ores_ci ./build/scripts/init-environment.sh -y  # CI mode
 #
 # Flags:
-#   -y, --yes    Skip the overwrite confirmation prompt
+#   -y, --yes                     Skip the overwrite confirmation prompt
+#   --enable-logging [level]      Enable test logging (level: trace/debug/info/warn/error, default: debug)
+#   --disable-logging             Disable test logging
 #
 set -euo pipefail
 
@@ -28,13 +34,55 @@ ENV_FILE="${CHECKOUT_ROOT}/.env"
 # Argument parsing
 # ---------------------------------------------------------------------------
 ASSUME_YES=0
+LOGGING_OP=""   # "enable" | "disable" | ""
+LOGGING_LEVEL="debug"
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -y|--yes) ASSUME_YES=1 ;;
+        --enable-logging)
+            LOGGING_OP="enable"
+            if [[ -n "${2:-}" && "${2}" != -* ]]; then
+                LOGGING_LEVEL="$2"
+                shift
+            fi
+            ;;
+        --disable-logging) LOGGING_OP="disable" ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
     shift
 done
+
+# ---------------------------------------------------------------------------
+# Logging-only mode — update only the logging vars, leave everything else alone
+# ---------------------------------------------------------------------------
+if [[ -n "${LOGGING_OP}" ]]; then
+    if [[ ! -f "${ENV_FILE}" ]]; then
+        echo "Error: ${ENV_FILE} does not exist. Run init-environment.sh first." >&2
+        exit 1
+    fi
+
+    # Remove any existing logging vars
+    tmp="$(mktemp)"
+    grep -v '^ORES_TEST_LOG_' "${ENV_FILE}" | \
+        grep -v '^# Test logging' \
+        > "${tmp}" || true
+    # Strip trailing blank lines from tmp
+    sed -i 's/[[:space:]]*$//' "${tmp}"
+
+    if [[ "${LOGGING_OP}" == "enable" ]]; then
+        printf '\n# Test logging\nORES_TEST_LOG_LEVEL=%s\nORES_TEST_LOG_CONSOLE=true\n' \
+            "${LOGGING_LEVEL}" >> "${tmp}"
+        echo "Test logging enabled (level=${LOGGING_LEVEL})."
+    else
+        echo "Test logging disabled."
+    fi
+
+    mv "${tmp}" "${ENV_FILE}"
+    chmod 600 "${ENV_FILE}"
+    echo "Re-run 'cmake --preset <preset>' to pick up the change."
+    exit 0
+fi
 
 # ---------------------------------------------------------------------------
 # Derive checkout identity from directory name
@@ -66,10 +114,24 @@ if [[ ! -f "${IAM_KEY}" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Overwrite guard
+# Read existing .env values so passwords are preserved on re-runs
+# ---------------------------------------------------------------------------
+declare -A existing_vals
+if [[ -f "${ENV_FILE}" ]]; then
+    while IFS='=' read -r key rest; do
+        # Skip comments and blank lines
+        [[ "${key}" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "${key}" ]] && continue
+        # Strip inline comments from value and reassemble (value may contain =)
+        existing_vals["${key}"]="${rest}"
+    done < "${ENV_FILE}"
+fi
+
+# ---------------------------------------------------------------------------
+# Overwrite guard (skipped if no existing file)
 # ---------------------------------------------------------------------------
 if [[ -f "${ENV_FILE}" && "${ASSUME_YES}" -eq 0 ]]; then
-    printf ".env already exists at %s.\nOverwrite? [y/N] " "${ENV_FILE}"
+    printf ".env already exists at %s.\nExisting passwords will be reused.\nContinue? [y/N] " "${ENV_FILE}"
     read -r answer
     [[ "${answer}" != "y" && "${answer}" != "Y" ]] && { echo "Aborted."; exit 1; }
 fi
@@ -77,9 +139,13 @@ fi
 # ---------------------------------------------------------------------------
 # Postgres superuser password
 # Read from PGPASSWORD env var if set (CI / scripted use); otherwise prompt.
+# Reuse existing value if already present in .env.
 # ---------------------------------------------------------------------------
 if [[ -n "${PGPASSWORD:-}" ]]; then
     PGPASSWORD_VAL="${PGPASSWORD}"
+elif [[ -n "${existing_vals[PGPASSWORD]:-}" ]]; then
+    PGPASSWORD_VAL="${existing_vals[PGPASSWORD]}"
+    echo "Reusing existing PGPASSWORD."
 else
     printf "Enter the postgres superuser password: "
     read -r -s PGPASSWORD_VAL
@@ -111,18 +177,39 @@ gen_uuid() {
 }
 
 # ---------------------------------------------------------------------------
+# Helper: return existing value for KEY, or generate a new password
+# ---------------------------------------------------------------------------
+get_or_gen() {
+    local key="$1"
+    if [[ -n "${existing_vals[$key]:-}" ]]; then
+        printf '%s' "${existing_vals[$key]}"
+    else
+        gen_password
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# Helper: return existing UUID for KEY, or generate a new one
+# ---------------------------------------------------------------------------
+get_or_gen_uuid() {
+    local key="$1"
+    if [[ -n "${existing_vals[$key]:-}" ]]; then
+        printf '%s' "${existing_vals[$key]}"
+    else
+        gen_uuid
+    fi
+}
+
+# ---------------------------------------------------------------------------
 # Discover NATS domain services from projects/ores.*.service directories
 # ---------------------------------------------------------------------------
 SERVICE_COMPONENTS=()
-# Frontend services (wt) have their own DB user sections below and must not
-# be included here, as their env-var prefix would clash with the NATS service
-# credentials generated in this loop.
 NATS_ONLY_EXCLUDES=("wt")
 for svc_dir in "${CHECKOUT_ROOT}"/projects/ores.*.service; do
     [[ -d "${svc_dir}" ]] || continue
-    dir_name="$(basename "${svc_dir}")"        # e.g. ores.iam.service
-    component="${dir_name#ores.}"              # e.g. iam.service
-    component="${component%.service}"          # e.g. iam
+    dir_name="$(basename "${svc_dir}")"
+    component="${dir_name#ores.}"
+    component="${component%.service}"
     skip=false
     for ex in "${NATS_ONLY_EXCLUDES[@]}"; do
         [[ "$component" == "$ex" ]] && skip=true && break
@@ -134,18 +221,17 @@ done
 echo "Detected services: ${SERVICE_COMPONENTS[*]}"
 
 # ---------------------------------------------------------------------------
-# Generate passwords
+# Resolve all passwords (reuse existing where available)
 # ---------------------------------------------------------------------------
-echo "Generating passwords..."
-ORES_DB_DDL_PASSWORD="$(gen_password)"
-ORES_DB_CLI_PASSWORD="$(gen_password)"
-ORES_DB_WT_PASSWORD="$(gen_password)"
-ORES_DB_HTTP_PASSWORD="$(gen_password)"
-ORES_DB_COMMS_PASSWORD="$(gen_password)"
-ORES_DB_READONLY_PASSWORD="$(gen_password)"
-ORES_TEST_DB_DDL_PASSWORD="$(gen_password)"
-ORES_TEST_DB_PASSWORD="$(gen_password)"
-
+echo "Resolving passwords..."
+ORES_DB_DDL_PASSWORD="$(get_or_gen ORES_DB_DDL_PASSWORD)"
+ORES_DB_CLI_PASSWORD="$(get_or_gen ORES_DB_CLI_PASSWORD)"
+ORES_DB_WT_PASSWORD="$(get_or_gen ORES_DB_WT_PASSWORD)"
+ORES_DB_HTTP_PASSWORD="$(get_or_gen ORES_DB_HTTP_PASSWORD)"
+ORES_DB_COMMS_PASSWORD="$(get_or_gen ORES_DB_COMMS_PASSWORD)"
+ORES_DB_READONLY_PASSWORD="$(get_or_gen ORES_DB_READONLY_PASSWORD)"
+ORES_TEST_DB_DDL_PASSWORD="$(get_or_gen ORES_TEST_DB_DDL_PASSWORD)"
+ORES_TEST_DB_PASSWORD="$(get_or_gen ORES_TEST_DB_PASSWORD)"
 
 # Encode PEM as a single line with literal \n separators
 JWT_KEY_ONELINE="$(awk '{printf "%s\\n", $0}' "${IAM_KEY}")"
@@ -195,7 +281,7 @@ ORES_TEST_DB_DDL_PASSWORD=${ORES_TEST_DB_DDL_PASSWORD}
 EOF
 
 # ---------------------------------------------------------------------------
-# NATS service DB credentials (read by C++ make_mapper) — auto-detected
+# NATS service DB credentials — auto-detected
 # ---------------------------------------------------------------------------
 {
     echo ""
@@ -205,9 +291,10 @@ EOF
     for component in "${SERVICE_COMPONENTS[@]}"; do
         upper="$(echo "${component}" | tr '[:lower:]-' '[:upper:]_')"
         db_user="ores_${component}_service"
+        pw_key="ORES_${upper}_SERVICE_DB_PASSWORD"
         echo ""
         echo "ORES_${upper}_SERVICE_DB_USER=${db_user}"
-        echo "ORES_${upper}_SERVICE_DB_PASSWORD=$(gen_password)"
+        echo "${pw_key}=$(get_or_gen "${pw_key}")"
         echo "ORES_${upper}_SERVICE_DB_DATABASE=${DB_NAME}"
     done
     echo ""
@@ -231,7 +318,7 @@ EOF
     echo "ORES_HTTP_SERVER_DB_USER=ores_http_user"
     echo "ORES_HTTP_SERVER_DB_PASSWORD=${ORES_DB_HTTP_PASSWORD}"
     echo "ORES_HTTP_SERVER_DB_DATABASE=${DB_NAME}"
-    echo "ORES_HTTP_SERVER_JWT_SECRET=$(gen_password)"
+    echo "ORES_HTTP_SERVER_JWT_SECRET=$(get_or_gen ORES_HTTP_SERVER_JWT_SECRET)"
     echo ""
     echo "# ---------------------------------------------------------------------------"
     echo "# WT service DB credentials (read by C++ make_mapper(\"WT\"))"
@@ -252,9 +339,20 @@ EOF
     echo "# Re-run recreate_database.sh after regenerating to keep IDs in sync."
     echo "# ---------------------------------------------------------------------------"
     for n in 1 2 3 4 5; do
-        echo "ORES_GRID_NODE_${n}_HOST_ID=$(gen_uuid)"
+        key="ORES_GRID_NODE_${n}_HOST_ID"
+        echo "${key}=$(get_or_gen_uuid "${key}")"
     done
 } >> "${ENV_FILE}"
+
+# Preserve any logging vars that were already set
+if [[ -n "${existing_vals[ORES_TEST_LOG_LEVEL]:-}" ]]; then
+    {
+        echo ""
+        echo "# Test logging"
+        echo "ORES_TEST_LOG_LEVEL=${existing_vals[ORES_TEST_LOG_LEVEL]}"
+        echo "ORES_TEST_LOG_CONSOLE=${existing_vals[ORES_TEST_LOG_CONSOLE]:-true}"
+    } >> "${ENV_FILE}"
+fi
 
 chmod 600 "${ENV_FILE}"
 
@@ -269,4 +367,9 @@ echo "  2. In Emacs, set up SQL connections:"
 echo "       M-x ores-db/setup-connections"
 echo ""
 echo "  3. Start services via prodigy — they will read .env automatically."
+echo ""
+echo "Logging:"
+echo "  Enable:  ./build/scripts/init-environment.sh --enable-logging [level]"
+echo "  Disable: ./build/scripts/init-environment.sh --disable-logging"
+echo "  (Re-run 'cmake --preset <preset>' after toggling logging)"
 echo ""

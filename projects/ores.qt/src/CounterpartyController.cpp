@@ -28,9 +28,9 @@
 #include "ores.qt/CounterpartyDetailOperations.hpp"
 #include "ores.qt/CounterpartyHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
-#include "ores.refdata/eventing/counterparty_changed_event.hpp"
-#include "ores.refdata/eventing/counterparty_identifier_changed_event.hpp"
-#include "ores.refdata/eventing/counterparty_contact_information_changed_event.hpp"
+#include "ores.refdata.api/eventing/counterparty_changed_event.hpp"
+#include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
+#include "ores.refdata.api/eventing/counterparty_contact_information_changed_event.hpp"
 
 namespace ores::qt {
 

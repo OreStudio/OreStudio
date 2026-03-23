@@ -25,7 +25,7 @@
 #include <QPushButton>
 #include <memory>
 #include <vector>
-#include "ores.refdata/domain/country.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ImageCache.hpp"

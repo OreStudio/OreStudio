@@ -30,7 +30,7 @@
 #include <QTableWidget>
 #include <QProgressBar>
 #include <QFutureWatcher>
-#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 

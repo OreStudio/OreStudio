@@ -24,7 +24,7 @@
 #include <vector>
 #include <filesystem>
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 #include "ores.trading/domain/trade.hpp"
 
 namespace ores::ore::xml {

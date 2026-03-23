@@ -29,8 +29,8 @@
 #include <QAbstractItemModel>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/business_unit.hpp"
-#include "ores.refdata/domain/book.hpp"
+#include "ores.refdata.api/domain/business_unit.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 
 namespace ores::qt {
 

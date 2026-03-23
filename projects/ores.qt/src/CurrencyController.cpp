@@ -31,8 +31,8 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.refdata/eventing/currency_changed_event.hpp"
-#include "ores.refdata/messaging/protocol.hpp"
+#include "ores.refdata.api/eventing/currency_changed_event.hpp"
+#include "ores.refdata.api/messaging/protocol.hpp"
 
 namespace ores::qt {
 

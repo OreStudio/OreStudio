@@ -28,7 +28,7 @@
 #include "ores.qt/ClientRoundingTypeModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/rounding_type.hpp"
+#include "ores.refdata.api/domain/rounding_type.hpp"
 
 namespace ores::qt {
 

@@ -24,8 +24,8 @@
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.refdata/messaging/country_protocol.hpp"
-#include "ores.refdata/domain/country_table_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/messaging/country_protocol.hpp"
+#include "ores.refdata.api/domain/country_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 

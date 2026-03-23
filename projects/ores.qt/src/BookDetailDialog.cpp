@@ -32,7 +32,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.refdata/messaging/book_protocol.hpp"
+#include "ores.refdata.api/messaging/book_protocol.hpp"
 
 namespace ores::qt {
 

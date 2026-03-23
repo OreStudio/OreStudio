@@ -23,7 +23,7 @@
 #include <QPointer>
 #include <QDateTime>
 #include "ores.qt/EntityController.hpp"
-#include "ores.refdata/domain/country.hpp"
+#include "ores.refdata.api/domain/country.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {

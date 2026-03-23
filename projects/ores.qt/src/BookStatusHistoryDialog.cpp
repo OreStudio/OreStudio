@@ -27,7 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.refdata/messaging/book_status_protocol.hpp"
+#include "ores.refdata.api/messaging/book_status_protocol.hpp"
 
 namespace ores::qt {
 

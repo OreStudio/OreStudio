@@ -25,7 +25,7 @@
 #include <QTableWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/business_centre.hpp"
+#include "ores.refdata.api/domain/business_centre.hpp"
 
 namespace Ui {
 class BusinessCentreHistoryDialog;

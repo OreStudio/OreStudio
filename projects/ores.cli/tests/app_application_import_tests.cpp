@@ -28,7 +28,7 @@
 #include "ores.testing/project_root.hpp"
 #include "ores.cli/config/options.hpp"
 #include "ores.cli/config/import_options.hpp"
-#include "ores.refdata/repository/currency_repository.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
 
 namespace {
 

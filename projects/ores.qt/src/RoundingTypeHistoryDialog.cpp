@@ -26,7 +26,7 @@
 #include "ui_RoundingTypeHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.refdata/messaging/rounding_type_protocol.hpp"
+#include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 
 namespace ores::qt {
 

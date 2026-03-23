@@ -21,7 +21,7 @@
 #define ORES_ORE_DOMAIN_CURRENCY_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 #include "ores.ore/domain/domain.hpp"
 
 namespace ores::ore::domain {

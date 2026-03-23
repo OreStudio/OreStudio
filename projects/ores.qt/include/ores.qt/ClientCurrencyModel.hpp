@@ -31,7 +31,7 @@
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/currency.hpp"
+#include "ores.refdata.api/domain/currency.hpp"
 
 namespace ores::qt {
 

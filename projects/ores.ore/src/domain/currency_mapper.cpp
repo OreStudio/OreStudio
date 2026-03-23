@@ -20,7 +20,7 @@
 #include "ores.ore/domain/currency_mapper.hpp"
 
 #include <map>
-#include "ores.refdata/domain/currency_json_io.hpp" // IWYU pragma: keep.
+#include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::ore::domain {
 

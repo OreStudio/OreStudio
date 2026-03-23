@@ -28,7 +28,7 @@
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.refdata/domain/monetary_nature.hpp"
+#include "ores.refdata.api/domain/monetary_nature.hpp"
 
 namespace ores::qt {
 

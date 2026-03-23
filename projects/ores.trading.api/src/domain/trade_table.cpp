@@ -28,10 +28,19 @@ std::string convert_to_table(const std::vector<trade>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header
+          << "ID" << "Party ID" << "Trade Type" << "Activity"
+          << "Trade Date" << "Effective Date" << "Termination Date"
+          << "Modified By" << "Version"
+          << fort::endr;
 
     for (const auto& tr : v) {
-        table << fort::endr;
+        table << boost::uuids::to_string(tr.id)
+              << boost::uuids::to_string(tr.party_id)
+              << tr.trade_type << tr.activity_type_code
+              << tr.trade_date << tr.effective_date << tr.termination_date
+              << tr.modified_by << tr.version
+              << fort::endr;
     }
     return table.to_string();
 }

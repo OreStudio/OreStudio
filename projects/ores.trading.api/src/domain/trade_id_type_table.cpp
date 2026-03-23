@@ -28,10 +28,13 @@ std::string convert_to_table(const std::vector<trade_id_type>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header
+          << "Code" << "Description" << "Modified By" << "Version"
+          << fort::endr;
 
     for (const auto& tit : v) {
-        table << fort::endr;
+        table << tit.code << tit.description << tit.modified_by << tit.version
+              << fort::endr;
     }
     return table.to_string();
 }

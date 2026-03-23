@@ -24,8 +24,8 @@
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.dq/messaging/change_management_protocol.hpp"
-#include "ores.dq/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
+#include "ores.dq.api/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/domain/change_reason_table_io.hpp" // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 

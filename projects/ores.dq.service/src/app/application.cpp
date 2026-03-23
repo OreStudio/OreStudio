@@ -24,7 +24,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.dq.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
-#include "ores.dq/messaging/registrar.hpp"
+#include "ores.dq.core/messaging/registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include "ores.service/service/domain_service_runner.hpp"

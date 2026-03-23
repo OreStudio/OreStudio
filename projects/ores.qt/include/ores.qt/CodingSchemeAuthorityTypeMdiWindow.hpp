@@ -27,7 +27,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientCodingSchemeAuthorityTypeModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/coding_scheme_authority_type.hpp"
+#include "ores.dq.api/domain/coding_scheme_authority_type.hpp"
 
 namespace ores::qt {
 

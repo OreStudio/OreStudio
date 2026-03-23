@@ -29,7 +29,7 @@
 #include "ores.qt/CatalogHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq/eventing/catalog_changed_event.hpp"
+#include "ores.dq.api/eventing/catalog_changed_event.hpp"
 
 namespace ores::qt {
 

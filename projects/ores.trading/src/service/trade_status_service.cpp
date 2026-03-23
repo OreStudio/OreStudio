@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/nil_generator.hpp>
-#include "ores.dq/repository/fsm_transition_repository.hpp"
+#include "ores.dq.core/repository/fsm_transition_repository.hpp"
 #include "ores.trading/repository/activity_type_repository.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 

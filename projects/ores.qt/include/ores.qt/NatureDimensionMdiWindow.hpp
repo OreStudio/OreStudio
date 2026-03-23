@@ -27,7 +27,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientNatureDimensionModel.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/nature_dimension.hpp"
+#include "ores.dq.api/domain/nature_dimension.hpp"
 
 namespace ores::qt {
 

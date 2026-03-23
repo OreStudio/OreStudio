@@ -28,7 +28,7 @@
 #include "ores.qt/NatureDimensionHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq/eventing/nature_dimension_changed_event.hpp"
+#include "ores.dq.api/eventing/nature_dimension_changed_event.hpp"
 
 namespace ores::qt {
 

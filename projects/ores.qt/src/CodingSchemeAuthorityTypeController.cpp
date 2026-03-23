@@ -28,7 +28,7 @@
 #include "ores.qt/CodingSchemeAuthorityTypeHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq/eventing/coding_scheme_authority_type_changed_event.hpp"
+#include "ores.dq.api/eventing/coding_scheme_authority_type_changed_event.hpp"
 
 namespace ores::qt {
 

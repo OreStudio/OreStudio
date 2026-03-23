@@ -1,0 +1,7 @@
+@startuml ores.dq.api
+title ores.dq.api
+
+namespace ores.dq.api {
+}
+
+@enduml

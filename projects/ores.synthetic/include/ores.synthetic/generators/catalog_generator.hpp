@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_GENERATORS_CATALOG_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq/domain/catalog.hpp"
+#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::synthetic::generators {

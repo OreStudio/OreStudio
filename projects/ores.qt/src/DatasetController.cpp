@@ -29,7 +29,7 @@
 #include "ores.qt/DatasetHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq/eventing/dataset_changed_event.hpp"
+#include "ores.dq.api/eventing/dataset_changed_event.hpp"
 
 namespace ores::qt {
 

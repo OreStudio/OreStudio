@@ -32,9 +32,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/dataset_protocol.hpp"
-#include "ores.dq/messaging/dataset_dependency_protocol.hpp"
-#include "ores.dq/messaging/publication_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_dependency_protocol.hpp"
+#include "ores.dq.api/messaging/publication_protocol.hpp"
 
 namespace ores::qt {
 

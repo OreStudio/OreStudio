@@ -29,7 +29,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_management_protocol.hpp"
 
 namespace ores::qt {
 

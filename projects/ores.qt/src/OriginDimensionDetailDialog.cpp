@@ -29,7 +29,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/dimension_protocol.hpp"
+#include "ores.dq.api/messaging/dimension_protocol.hpp"
 
 namespace ores::qt {
 

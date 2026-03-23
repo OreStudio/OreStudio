@@ -26,7 +26,7 @@
 #include <QPointer>
 #include <QtConcurrent>
 #include <QFutureWatcher>
-#include "ores.dq/messaging/lei_entity_summary_protocol.hpp"
+#include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
 
 namespace ores::qt {
 

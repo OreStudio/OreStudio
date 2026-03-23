@@ -37,7 +37,7 @@
 #include "ores.qt/PublishBundleWizard.hpp"
 #include "ores.qt/PublicationHistoryDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/dataset_bundle_member_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_bundle_member_protocol.hpp"
 
 namespace ores::qt {
 

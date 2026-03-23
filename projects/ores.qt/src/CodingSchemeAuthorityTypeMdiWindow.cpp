@@ -28,7 +28,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/coding_scheme_protocol.hpp"
+#include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 
 namespace ores::qt {
 

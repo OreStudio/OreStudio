@@ -22,7 +22,7 @@
 
 #include <QAbstractTableModel>
 #include <vector>
-#include "ores.dq/domain/dataset_dependency.hpp"
+#include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 

@@ -28,9 +28,9 @@
 #include <QTextBrowser>
 #include <QGraphicsView>
 #include <QGraphicsScene>
-#include "ores.dq/domain/dataset.hpp"
-#include "ores.dq/domain/methodology.hpp"
-#include "ores.dq/domain/dataset_dependency.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/methodology.hpp"
+#include "ores.dq.api/domain/dataset_dependency.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {

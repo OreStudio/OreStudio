@@ -21,10 +21,10 @@
 
 #include <algorithm>
 #include <QtConcurrent>
-#include "ores.dq/messaging/change_management_protocol.hpp"
+#include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq/eventing/change_reason_changed_event.hpp"
-#include "ores.dq/eventing/change_reason_category_changed_event.hpp"
+#include "ores.dq.api/eventing/change_reason_changed_event.hpp"
+#include "ores.dq.api/eventing/change_reason_category_changed_event.hpp"
 
 namespace ores::qt {
 

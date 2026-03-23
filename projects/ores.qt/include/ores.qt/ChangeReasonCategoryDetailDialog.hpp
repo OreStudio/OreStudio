@@ -28,7 +28,7 @@
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/change_reason_category.hpp"
+#include "ores.dq.api/domain/change_reason_category.hpp"
 
 namespace Ui {
 class ChangeReasonCategoryDetailDialog;

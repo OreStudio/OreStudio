@@ -23,7 +23,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/treatment_dimension.hpp"
+#include "ores.dq.api/domain/treatment_dimension.hpp"
 
 namespace Ui {
 class TreatmentDimensionDetailDialog;

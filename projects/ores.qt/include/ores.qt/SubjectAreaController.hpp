@@ -25,7 +25,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/subject_area.hpp"
+#include "ores.dq.api/domain/subject_area.hpp"
 
 namespace ores::qt {
 

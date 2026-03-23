@@ -27,7 +27,7 @@
 #include <QPushButton>
 #include <QDialogButtonBox>
 #include <vector>
-#include "ores.dq/domain/change_reason.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 
 namespace ores::qt {
 

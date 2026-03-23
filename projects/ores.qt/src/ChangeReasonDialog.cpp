@@ -25,7 +25,7 @@
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QStandardItemModel>
-#include "ores.dq/domain/change_reason_constants.hpp"
+#include "ores.dq.api/domain/change_reason_constants.hpp"
 
 namespace ores::qt {
 

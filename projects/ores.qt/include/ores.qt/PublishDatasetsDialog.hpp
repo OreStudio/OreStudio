@@ -32,9 +32,9 @@
 #include <QProgressBar>
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
-#include "ores.dq/domain/dataset.hpp"
-#include "ores.dq/domain/publication_mode.hpp"
-#include "ores.dq/domain/publication_result.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
+#include "ores.dq.api/domain/publication_mode.hpp"
+#include "ores.dq.api/domain/publication_result.hpp"
 
 namespace ores::qt {
 

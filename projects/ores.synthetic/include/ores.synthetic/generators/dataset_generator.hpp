@@ -21,7 +21,7 @@
 #define ORES_SYNTHETIC_GENERATORS_DATASET_GENERATOR_HPP
 
 #include <vector>
-#include "ores.dq/domain/dataset.hpp"
+#include "ores.dq.api/domain/dataset.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 
 namespace ores::synthetic::generators {

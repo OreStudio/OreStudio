@@ -23,7 +23,7 @@
 #include <QSize>
 #include <QAbstractTableModel>
 #include <vector>
-#include "ores.dq/domain/catalog.hpp"
+#include "ores.dq.api/domain/catalog.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"

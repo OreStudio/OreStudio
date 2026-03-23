@@ -33,9 +33,9 @@
 #include <QVBoxLayout>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.dq/domain/dataset_bundle_member.hpp"
-#include "ores.dq/domain/publication_mode.hpp"
-#include "ores.dq/messaging/publish_bundle_protocol.hpp"
+#include "ores.dq.api/domain/dataset_bundle_member.hpp"
+#include "ores.dq.api/domain/publication_mode.hpp"
+#include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 
 namespace ores::qt {
 

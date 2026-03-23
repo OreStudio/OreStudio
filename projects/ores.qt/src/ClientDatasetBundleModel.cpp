@@ -20,7 +20,7 @@
 #include "ores.qt/ClientDatasetBundleModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.dq/messaging/dataset_bundle_protocol.hpp"
+#include "ores.dq.api/messaging/dataset_bundle_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

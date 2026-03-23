@@ -27,7 +27,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.dq/messaging/data_organization_protocol.hpp"
+#include "ores.dq.api/messaging/data_organization_protocol.hpp"
 
 namespace ores::qt {
 

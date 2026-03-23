@@ -27,8 +27,8 @@
 #include <QPushButton>
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.dq/domain/publication_mode.hpp"
-#include "ores.dq/messaging/publication_protocol.hpp"
+#include "ores.dq.api/domain/publication_mode.hpp"
+#include "ores.dq.api/messaging/publication_protocol.hpp"
 
 namespace ores::qt {
 

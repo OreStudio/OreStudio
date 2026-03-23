@@ -28,7 +28,7 @@
 #include "ores.qt/SubjectAreaHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.dq/eventing/subject_area_changed_event.hpp"
+#include "ores.dq.api/eventing/subject_area_changed_event.hpp"
 
 namespace ores::qt {
 

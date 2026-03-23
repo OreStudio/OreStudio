@@ -27,20 +27,35 @@
 #include "ores.reporting.api/domain/report_instance_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_instance_table.hpp"
 #include "ores.reporting.api/domain/report_instance_table_io.hpp" // IWYU pragma: keep.
-#include "ores.reporting.core/generators/report_instance_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::reporting::domain::report_instance;
 
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[domain]");
 
+report_instance make_report_instance(const std::string& name) {
+    report_instance ri;
+    ri.version = 1;
+    ri.id = boost::uuids::random_generator()();
+    ri.name = name;
+    ri.description = name + " instance";
+    ri.party_id = boost::uuids::random_generator()();
+    ri.definition_id = boost::uuids::random_generator()();
+    ri.trigger_run_id = 1;
+    ri.output_message = "";
+    ri.modified_by = "system";
+    ri.performed_by = "system";
+    ri.change_reason_code = "system.new";
+    ri.change_commentary = "Test data";
+    ri.recorded_at = std::chrono::system_clock::now();
+    return ri;
+}
+
 }
 
 using ores::reporting::domain::report_instance;
-using ores::reporting::generators::generate_synthetic_report_instance;
-using ores::reporting::generators::generate_synthetic_report_instances;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_report_instance_with_valid_fields", tags) {
@@ -133,11 +148,23 @@ TEST_CASE("report_instance_insertion_operator", tags) {
 TEST_CASE("create_report_instance_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_report_instance(ctx);
+    report_instance sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.id = boost::uuids::random_generator()();
+    sut.name = std::string(faker::word::adjective()) + " Report";
+    sut.description = std::string(faker::lorem::sentence());
+    sut.party_id = boost::uuids::random_generator()();
+    sut.definition_id = boost::uuids::random_generator()();
+    sut.trigger_run_id = faker::number::integer(1, 1000);
+    sut.output_message = "";
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Report instance: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -146,25 +173,20 @@ TEST_CASE("create_report_instance_with_faker", tags) {
 TEST_CASE("create_multiple_random_report_instances", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_report_instances(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Report instance: " << item;
-        CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+    const std::vector<std::string> names = {"Daily Risk", "Weekly Grid",
+        "Monthly Summary"};
+    for (const auto& name : names) {
+        auto sut = make_report_instance(name);
+        BOOST_LOG_SEV(lg, info) << "Report instance: " << sut;
+        CHECK(!sut.id.is_nil());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("report_instance_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto ri = generate_synthetic_report_instance(ctx);
-
-    std::vector<report_instance> items = {ri};
+    std::vector<report_instance> items = {make_report_instance("Daily Risk")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -175,8 +197,10 @@ TEST_CASE("report_instance_convert_single_to_table", tags) {
 TEST_CASE("report_instance_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_report_instances(3, ctx);
+    std::vector<report_instance> items;
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_report_instance("Report " + std::to_string(i)));
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -198,8 +222,25 @@ TEST_CASE("report_instance_convert_empty_vector_to_table", tags) {
 TEST_CASE("report_instance_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_report_instances(5, ctx);
+    std::vector<report_instance> items;
+    for (int i = 0; i < 5; ++i) {
+        report_instance ri;
+        ri.version = 1;
+        ri.id = boost::uuids::random_generator()();
+        ri.name = std::string(faker::word::adjective()) + " Report " + std::to_string(i);
+        ri.description = std::string(faker::lorem::sentence());
+        ri.party_id = boost::uuids::random_generator()();
+        ri.definition_id = boost::uuids::random_generator()();
+        ri.trigger_run_id = i + 1;
+        ri.output_message = "";
+        ri.modified_by = "system";
+        ri.performed_by = "system";
+        ri.change_reason_code = "system.new";
+        ri.change_commentary = "Test";
+        ri.recorded_at = std::chrono::system_clock::now();
+        items.push_back(ri);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;

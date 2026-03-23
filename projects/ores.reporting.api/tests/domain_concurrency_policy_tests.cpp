@@ -26,20 +26,33 @@
 #include "ores.reporting.api/domain/concurrency_policy_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/concurrency_policy_table.hpp"
 #include "ores.reporting.api/domain/concurrency_policy_table_io.hpp" // IWYU pragma: keep.
-#include "ores.reporting.core/generators/concurrency_policy_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::reporting::domain::concurrency_policy;
 
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[domain]");
 
+concurrency_policy make_concurrency_policy(const std::string& code,
+    const std::string& name, int display_order) {
+    concurrency_policy cp;
+    cp.version = 1;
+    cp.code = code;
+    cp.name = name;
+    cp.description = name + " concurrency policy";
+    cp.display_order = display_order;
+    cp.modified_by = "system";
+    cp.performed_by = "system";
+    cp.change_reason_code = "system.new";
+    cp.change_commentary = "Test data";
+    cp.recorded_at = std::chrono::system_clock::now();
+    return cp;
+}
+
 }
 
 using ores::reporting::domain::concurrency_policy;
-using ores::reporting::generators::generate_synthetic_concurrency_policy;
-using ores::reporting::generators::generate_synthetic_concurrency_policies;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_concurrency_policy_with_valid_fields", tags) {
@@ -93,11 +106,20 @@ TEST_CASE("concurrency_policy_insertion_operator", tags) {
 TEST_CASE("create_concurrency_policy_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_concurrency_policy(ctx);
+    concurrency_policy sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.code = std::string(faker::word::noun()) + "_policy";
+    sut.name = std::string(faker::word::adjective());
+    sut.description = std::string(faker::lorem::sentence());
+    sut.display_order = faker::number::integer(1, 100);
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Concurrency policy: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -106,34 +128,21 @@ TEST_CASE("create_concurrency_policy_with_faker", tags) {
 TEST_CASE("create_multiple_random_concurrency_policies", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_concurrency_policies(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Concurrency policy: " << item;
-        CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+    const std::vector<std::tuple<std::string, std::string, int>> policies = {
+        {"skip", "Skip", 1}, {"queue", "Queue", 2}, {"fail", "Fail", 3}};
+    for (const auto& [code, name, order] : policies) {
+        auto sut = make_concurrency_policy(code, name, order);
+        BOOST_LOG_SEV(lg, info) << "Concurrency policy: " << sut;
+        CHECK(!sut.code.empty());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("concurrency_policy_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    concurrency_policy cp;
-    cp.version = 1;
-    cp.code = "fail";
-    cp.name = "Fail";
-    cp.description = "Fail if instance is already running";
-    cp.display_order = 3;
-    cp.modified_by = "system";
-    cp.performed_by = "system";
-    cp.change_reason_code = "system.new";
-    cp.change_commentary = "Test";
-    cp.recorded_at = std::chrono::system_clock::now();
-
-    std::vector<concurrency_policy> items = {cp};
+    std::vector<concurrency_policy> items = {
+        make_concurrency_policy("fail", "Fail", 3)};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -147,20 +156,8 @@ TEST_CASE("concurrency_policy_convert_multiple_to_table", tags) {
 
     std::vector<concurrency_policy> items;
     const std::vector<std::string> codes = {"skip", "queue", "fail"};
-    for (int i = 0; i < 3; ++i) {
-        concurrency_policy cp;
-        cp.version = 1;
-        cp.code = codes[i];
-        cp.name = codes[i];
-        cp.description = "Description " + std::to_string(i);
-        cp.display_order = i + 1;
-        cp.modified_by = "system";
-        cp.performed_by = "system";
-        cp.change_reason_code = "system.new";
-        cp.change_commentary = "Test";
-        cp.recorded_at = std::chrono::system_clock::now();
-        items.push_back(cp);
-    }
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_concurrency_policy(codes[i], codes[i], i + 1));
 
     auto table = convert_to_table(items);
 
@@ -186,14 +183,27 @@ TEST_CASE("concurrency_policy_convert_empty_vector_to_table", tags) {
 TEST_CASE("concurrency_policy_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_concurrency_policies(5, ctx);
+    std::vector<concurrency_policy> items;
+    for (int i = 0; i < 5; ++i) {
+        concurrency_policy cp;
+        cp.version = 1;
+        cp.code = std::string(faker::word::noun()) + "_" + std::to_string(i);
+        cp.name = std::string(faker::word::adjective());
+        cp.description = std::string(faker::lorem::sentence());
+        cp.display_order = i + 1;
+        cp.modified_by = "system";
+        cp.performed_by = "system";
+        cp.change_reason_code = "system.new";
+        cp.change_commentary = "Test";
+        cp.recorded_at = std::chrono::system_clock::now();
+        items.push_back(cp);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
-    for (const auto& item : items) {
+    for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
-    }
 }

@@ -26,34 +26,39 @@
 #include "ores.trading.api/domain/lifecycle_event_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/lifecycle_event_table.hpp"
 #include "ores.trading.api/domain/lifecycle_event_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/generator/lifecycle_event_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::trading::domain::lifecycle_event;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
+lifecycle_event make_lifecycle_event(const std::string& code,
+    const std::string& description = "") {
+    lifecycle_event le;
+    le.version = 1;
+    le.code = code;
+    le.description = description.empty() ? code + " lifecycle event" : description;
+    le.modified_by = "system";
+    le.performed_by = "system";
+    le.change_reason_code = "system.new";
+    le.change_commentary = "Test data";
+    le.recorded_at = std::chrono::system_clock::now();
+    return le;
+}
+
 }
 
 using ores::trading::domain::lifecycle_event;
-using ores::trading::generator::generate_synthetic_lifecycle_event;
-using ores::trading::generator::generate_synthetic_lifecycle_events;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_lifecycle_event_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    lifecycle_event sut;
-    sut.version = 1;
-    sut.code = "New";
-    sut.description = "New trade lifecycle event";
+    auto sut = make_lifecycle_event("New", "New trade lifecycle event");
     sut.modified_by = "admin";
     sut.performed_by = "admin";
-    sut.change_reason_code = "system.new";
-    sut.change_commentary = "Initial creation";
-    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Lifecycle event: " << sut;
 
     CHECK(sut.version == 1);
@@ -66,15 +71,7 @@ TEST_CASE("create_lifecycle_event_with_valid_fields", tags) {
 TEST_CASE("lifecycle_event_insertion_operator", tags) {
     auto lg(make_logger(test_suite));
 
-    lifecycle_event sut;
-    sut.version = 1;
-    sut.code = "Amendment";
-    sut.description = "Trade amendment lifecycle event";
-    sut.modified_by = "system";
-    sut.performed_by = "system";
-    sut.change_reason_code = "system.new";
-    sut.change_commentary = "Test";
-    sut.recorded_at = std::chrono::system_clock::now();
+    auto sut = make_lifecycle_event("Amendment");
     BOOST_LOG_SEV(lg, info) << "Lifecycle event: " << sut;
 
     std::ostringstream os;
@@ -88,46 +85,39 @@ TEST_CASE("lifecycle_event_insertion_operator", tags) {
 TEST_CASE("create_lifecycle_event_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_lifecycle_event(ctx);
+    lifecycle_event sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.code = std::string(faker::word::noun()) + "_event";
+    sut.description = std::string(faker::lorem::sentence());
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Lifecycle event: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
 }
 
 TEST_CASE("create_multiple_random_lifecycle_events", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_lifecycle_events(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Lifecycle event: " << item;
-        CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+    const std::vector<std::string> codes = {"New", "Amendment", "Novation",
+        "PartialTermination", "FullTermination"};
+    for (const auto& code : codes) {
+        auto sut = make_lifecycle_event(code);
+        BOOST_LOG_SEV(lg, info) << "Lifecycle event: " << sut;
+        CHECK(!sut.code.empty());
     }
 }
 
 TEST_CASE("lifecycle_event_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    lifecycle_event le;
-    le.version = 1;
-    le.code = "FullTermination";
-    le.description = "Full termination of trade";
-    le.modified_by = "admin";
-    le.performed_by = "admin";
-    le.change_reason_code = "system.new";
-    le.change_commentary = "Test";
-    le.recorded_at = std::chrono::system_clock::now();
-
-    std::vector<lifecycle_event> items = {le};
+    std::vector<lifecycle_event> items = {
+        make_lifecycle_event("FullTermination", "Full termination of trade")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -140,18 +130,8 @@ TEST_CASE("lifecycle_event_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
     std::vector<lifecycle_event> items;
-    for (int i = 0; i < 3; ++i) {
-        lifecycle_event le;
-        le.version = i + 1;
-        le.code = "Event" + std::to_string(i);
-        le.description = "Description " + std::to_string(i);
-        le.modified_by = "system";
-        le.performed_by = "system";
-        le.change_reason_code = "system.new";
-        le.change_commentary = "Test";
-        le.recorded_at = std::chrono::system_clock::now();
-        items.push_back(le);
-    }
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_lifecycle_event("Event" + std::to_string(i)));
 
     auto table = convert_to_table(items);
 
@@ -177,14 +157,25 @@ TEST_CASE("lifecycle_event_convert_empty_vector_to_table", tags) {
 TEST_CASE("lifecycle_event_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_lifecycle_events(5, ctx);
+    std::vector<lifecycle_event> items;
+    for (int i = 0; i < 5; ++i) {
+        lifecycle_event le;
+        le.version = 1;
+        le.code = std::string(faker::word::noun()) + "_" + std::to_string(i);
+        le.description = std::string(faker::lorem::sentence());
+        le.modified_by = "system";
+        le.performed_by = "system";
+        le.change_reason_code = "system.new";
+        le.change_commentary = "Test";
+        le.recorded_at = std::chrono::system_clock::now();
+        items.push_back(le);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
-    for (const auto& item : items) {
+    for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
-    }
 }

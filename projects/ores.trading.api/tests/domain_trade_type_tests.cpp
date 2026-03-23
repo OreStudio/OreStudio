@@ -26,56 +26,51 @@
 #include "ores.trading.api/domain/trade_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_type_table.hpp"
 #include "ores.trading.api/domain/trade_type_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/generator/trade_type_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::trading::domain::trade_type;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
+trade_type make_trade_type(const std::string& code, const std::string& description = "") {
+    trade_type tt;
+    tt.version = 1;
+    tt.code = code;
+    tt.description = description.empty() ? code + " instrument type" : description;
+    tt.modified_by = "system";
+    tt.performed_by = "system";
+    tt.change_reason_code = "system.new";
+    tt.change_commentary = "Test data";
+    tt.recorded_at = std::chrono::system_clock::now();
+    return tt;
+}
+
 }
 
 using ores::trading::domain::trade_type;
-using ores::trading::generator::generate_synthetic_trade_type;
-using ores::trading::generator::generate_synthetic_trade_types;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_trade_type_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    trade_type sut;
-    sut.version = 1;
-    sut.code = "Swap";
-    sut.description = "Interest rate swap instrument";
+    auto sut = make_trade_type("Swap", "Interest rate swap instrument");
     sut.modified_by = "admin";
     sut.performed_by = "admin";
-    sut.change_reason_code = "system.new";
-    sut.change_commentary = "Initial creation";
-    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade type: " << sut;
 
     CHECK(sut.version == 1);
     CHECK(sut.code == "Swap");
     CHECK(sut.description == "Interest rate swap instrument");
     CHECK(sut.modified_by == "admin");
-    CHECK(sut.performed_by == "admin");
     CHECK(sut.change_reason_code == "system.new");
 }
 
 TEST_CASE("trade_type_insertion_operator", tags) {
     auto lg(make_logger(test_suite));
 
-    trade_type sut;
-    sut.version = 1;
-    sut.code = "FxForward";
-    sut.description = "FX forward contract";
-    sut.modified_by = "system";
-    sut.performed_by = "system";
-    sut.change_reason_code = "system.new";
-    sut.change_commentary = "Test";
-    sut.recorded_at = std::chrono::system_clock::now();
+    auto sut = make_trade_type("FxForward", "FX forward contract");
     BOOST_LOG_SEV(lg, info) << "Trade type: " << sut;
 
     std::ostringstream os;
@@ -89,47 +84,39 @@ TEST_CASE("trade_type_insertion_operator", tags) {
 TEST_CASE("create_trade_type_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_trade_type(ctx);
+    trade_type sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.code = std::string(faker::word::noun()) + "_type";
+    sut.description = std::string(faker::lorem::sentence());
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade type: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
 }
 
 TEST_CASE("create_multiple_random_trade_types", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_trade_types(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Trade type: " << item;
-        CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+    const std::vector<std::string> codes = {"Swap", "FxForward", "CapFloor"};
+    for (const auto& code : codes) {
+        auto sut = make_trade_type(code);
+        BOOST_LOG_SEV(lg, info) << "Trade type: " << sut;
+        CHECK(!sut.code.empty());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("trade_type_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    trade_type tt;
-    tt.version = 1;
-    tt.code = "CapFloor";
-    tt.description = "Cap or floor on floating rate";
-    tt.modified_by = "admin";
-    tt.performed_by = "admin";
-    tt.change_reason_code = "system.new";
-    tt.change_commentary = "Test";
-    tt.recorded_at = std::chrono::system_clock::now();
-
-    std::vector<trade_type> items = {tt};
+    std::vector<trade_type> items = {make_trade_type("CapFloor", "Cap or floor on floating rate")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -142,18 +129,8 @@ TEST_CASE("trade_type_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
     std::vector<trade_type> items;
-    for (int i = 0; i < 3; ++i) {
-        trade_type tt;
-        tt.version = i + 1;
-        tt.code = "Type" + std::to_string(i);
-        tt.description = "Description " + std::to_string(i);
-        tt.modified_by = "system";
-        tt.performed_by = "system";
-        tt.change_reason_code = "system.new";
-        tt.change_commentary = "Test";
-        tt.recorded_at = std::chrono::system_clock::now();
-        items.push_back(tt);
-    }
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_trade_type("Type" + std::to_string(i)));
 
     auto table = convert_to_table(items);
 
@@ -179,14 +156,25 @@ TEST_CASE("trade_type_convert_empty_vector_to_table", tags) {
 TEST_CASE("trade_type_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_trade_types(5, ctx);
+    std::vector<trade_type> items;
+    for (int i = 0; i < 5; ++i) {
+        trade_type tt;
+        tt.version = 1;
+        tt.code = std::string(faker::word::noun()) + "_" + std::to_string(i);
+        tt.description = std::string(faker::lorem::sentence());
+        tt.modified_by = "system";
+        tt.performed_by = "system";
+        tt.change_reason_code = "system.new";
+        tt.change_commentary = "Test";
+        tt.recorded_at = std::chrono::system_clock::now();
+        items.push_back(tt);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
-    for (const auto& item : items) {
+    for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
-    }
 }

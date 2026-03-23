@@ -27,20 +27,38 @@
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_table.hpp"
 #include "ores.trading.api/domain/trade_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/generator/trade_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::trading::domain::trade;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
+trade make_trade(const std::string& trade_type = "Swap") {
+    trade t;
+    t.version = 1;
+    t.id = boost::uuids::random_generator()();
+    t.party_id = boost::uuids::random_generator()();
+    t.book_id = boost::uuids::random_generator()();
+    t.portfolio_id = boost::uuids::random_generator()();
+    t.trade_type = trade_type;
+    t.activity_type_code = "new_booking";
+    t.status_id = boost::uuids::random_generator()();
+    t.trade_date = "2026-01-15";
+    t.effective_date = "2026-01-20";
+    t.termination_date = "2031-01-20";
+    t.modified_by = "system";
+    t.performed_by = "system";
+    t.change_reason_code = "system.new";
+    t.change_commentary = "Test data";
+    t.recorded_at = std::chrono::system_clock::now();
+    return t;
+}
+
 }
 
 using ores::trading::domain::trade;
-using ores::trading::generator::generate_synthetic_trade;
-using ores::trading::generator::generate_synthetic_trades;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_trade_with_valid_fields", tags) {
@@ -141,11 +159,26 @@ TEST_CASE("trade_insertion_operator", tags) {
 TEST_CASE("create_trade_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_trade(ctx);
+    trade sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.id = boost::uuids::random_generator()();
+    sut.party_id = boost::uuids::random_generator()();
+    sut.book_id = boost::uuids::random_generator()();
+    sut.portfolio_id = boost::uuids::random_generator()();
+    sut.trade_type = std::string(faker::word::noun()) + "_trade";
+    sut.activity_type_code = "new_booking";
+    sut.status_id = boost::uuids::random_generator()();
+    sut.trade_date = "2026-01-01";
+    sut.effective_date = "2026-01-05";
+    sut.termination_date = "2031-01-05";
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -154,25 +187,19 @@ TEST_CASE("create_trade_with_faker", tags) {
 TEST_CASE("create_multiple_random_trades", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_trades(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Trade: " << item;
-        CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+    const std::vector<std::string> trade_types = {"Swap", "FxForward", "CapFloor"};
+    for (const auto& tt : trade_types) {
+        auto sut = make_trade(tt);
+        BOOST_LOG_SEV(lg, info) << "Trade: " << sut;
+        CHECK(!sut.id.is_nil());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("trade_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto t = generate_synthetic_trade(ctx);
-
-    std::vector<trade> items = {t};
+    std::vector<trade> items = {make_trade("Swap")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -183,8 +210,10 @@ TEST_CASE("trade_convert_single_to_table", tags) {
 TEST_CASE("trade_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_trades(3, ctx);
+    std::vector<trade> items;
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_trade("Type" + std::to_string(i)));
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -206,8 +235,28 @@ TEST_CASE("trade_convert_empty_vector_to_table", tags) {
 TEST_CASE("trade_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_trades(5, ctx);
+    std::vector<trade> items;
+    for (int i = 0; i < 5; ++i) {
+        trade t;
+        t.version = 1;
+        t.id = boost::uuids::random_generator()();
+        t.party_id = boost::uuids::random_generator()();
+        t.book_id = boost::uuids::random_generator()();
+        t.portfolio_id = boost::uuids::random_generator()();
+        t.trade_type = std::string(faker::word::noun()) + "_" + std::to_string(i);
+        t.activity_type_code = "new_booking";
+        t.status_id = boost::uuids::random_generator()();
+        t.trade_date = "2026-01-01";
+        t.effective_date = "2026-01-05";
+        t.termination_date = "2031-01-05";
+        t.modified_by = "system";
+        t.performed_by = "system";
+        t.change_reason_code = "system.new";
+        t.change_commentary = "Test";
+        t.recorded_at = std::chrono::system_clock::now();
+        items.push_back(t);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;

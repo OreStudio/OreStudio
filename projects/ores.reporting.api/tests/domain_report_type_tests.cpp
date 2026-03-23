@@ -26,20 +26,33 @@
 #include "ores.reporting.api/domain/report_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_type_table.hpp"
 #include "ores.reporting.api/domain/report_type_table_io.hpp" // IWYU pragma: keep.
-#include "ores.reporting.core/generators/report_type_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::reporting::domain::report_type;
 
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[domain]");
 
+report_type make_report_type(const std::string& code, const std::string& name,
+    int display_order) {
+    report_type rt;
+    rt.version = 1;
+    rt.code = code;
+    rt.name = name;
+    rt.description = name + " report type";
+    rt.display_order = display_order;
+    rt.modified_by = "system";
+    rt.performed_by = "system";
+    rt.change_reason_code = "system.new";
+    rt.change_commentary = "Test data";
+    rt.recorded_at = std::chrono::system_clock::now();
+    return rt;
+}
+
 }
 
 using ores::reporting::domain::report_type;
-using ores::reporting::generators::generate_synthetic_report_type;
-using ores::reporting::generators::generate_synthetic_report_types;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_report_type_with_valid_fields", tags) {
@@ -93,11 +106,20 @@ TEST_CASE("report_type_insertion_operator", tags) {
 TEST_CASE("create_report_type_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_report_type(ctx);
+    report_type sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.code = std::string(faker::word::noun()) + "_report";
+    sut.name = std::string(faker::word::adjective()) + " Report";
+    sut.description = std::string(faker::lorem::sentence());
+    sut.display_order = faker::number::integer(1, 100);
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Report type: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -106,34 +128,21 @@ TEST_CASE("create_report_type_with_faker", tags) {
 TEST_CASE("create_multiple_random_report_types", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_report_types(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Report type: " << item;
-        CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+    const std::vector<std::tuple<std::string, std::string, int>> types = {
+        {"risk", "Risk Report", 1}, {"grid", "Grid Report", 2},
+        {"cashflow", "Cashflow Report", 3}};
+    for (const auto& [code, name, order] : types) {
+        auto sut = make_report_type(code, name, order);
+        BOOST_LOG_SEV(lg, info) << "Report type: " << sut;
+        CHECK(!sut.code.empty());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("report_type_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    report_type rt;
-    rt.version = 1;
-    rt.code = "risk";
-    rt.name = "Risk";
-    rt.description = "Risk report";
-    rt.display_order = 1;
-    rt.modified_by = "system";
-    rt.performed_by = "system";
-    rt.change_reason_code = "system.new";
-    rt.change_commentary = "Test";
-    rt.recorded_at = std::chrono::system_clock::now();
-
-    std::vector<report_type> items = {rt};
+    std::vector<report_type> items = {make_report_type("risk", "Risk", 1)};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -146,20 +155,9 @@ TEST_CASE("report_type_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
     std::vector<report_type> items;
-    for (int i = 0; i < 3; ++i) {
-        report_type rt;
-        rt.version = 1;
-        rt.code = "type" + std::to_string(i);
-        rt.name = "Type " + std::to_string(i);
-        rt.description = "Description " + std::to_string(i);
-        rt.display_order = i + 1;
-        rt.modified_by = "system";
-        rt.performed_by = "system";
-        rt.change_reason_code = "system.new";
-        rt.change_commentary = "Test";
-        rt.recorded_at = std::chrono::system_clock::now();
-        items.push_back(rt);
-    }
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_report_type("type" + std::to_string(i),
+            "Type " + std::to_string(i), i + 1));
 
     auto table = convert_to_table(items);
 
@@ -185,14 +183,27 @@ TEST_CASE("report_type_convert_empty_vector_to_table", tags) {
 TEST_CASE("report_type_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_report_types(5, ctx);
+    std::vector<report_type> items;
+    for (int i = 0; i < 5; ++i) {
+        report_type rt;
+        rt.version = 1;
+        rt.code = std::string(faker::word::noun()) + "_" + std::to_string(i);
+        rt.name = std::string(faker::word::adjective()) + " Report";
+        rt.description = std::string(faker::lorem::sentence());
+        rt.display_order = i + 1;
+        rt.modified_by = "system";
+        rt.performed_by = "system";
+        rt.change_reason_code = "system.new";
+        rt.change_commentary = "Test";
+        rt.recorded_at = std::chrono::system_clock::now();
+        items.push_back(rt);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
-    for (const auto& item : items) {
+    for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
-    }
 }

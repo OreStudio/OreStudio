@@ -27,20 +27,36 @@
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/domain/report_definition_table.hpp"
 #include "ores.reporting.api/domain/report_definition_table_io.hpp" // IWYU pragma: keep.
-#include "ores.reporting.core/generators/report_definition_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::reporting::domain::report_definition;
 
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[domain]");
 
+report_definition make_report_definition(const std::string& name,
+    const std::string& report_type = "risk") {
+    report_definition rd;
+    rd.version = 1;
+    rd.id = boost::uuids::random_generator()();
+    rd.name = name;
+    rd.party_id = boost::uuids::random_generator()();
+    rd.description = name + " report definition";
+    rd.report_type = report_type;
+    rd.schedule_expression = "0 6 * * 1-5";
+    rd.concurrency_policy = "skip";
+    rd.modified_by = "system";
+    rd.performed_by = "system";
+    rd.change_reason_code = "system.new";
+    rd.change_commentary = "Test data";
+    rd.recorded_at = std::chrono::system_clock::now();
+    return rd;
+}
+
 }
 
 using ores::reporting::domain::report_definition;
-using ores::reporting::generators::generate_synthetic_report_definition;
-using ores::reporting::generators::generate_synthetic_report_definitions;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_report_definition_with_valid_fields", tags) {
@@ -129,11 +145,23 @@ TEST_CASE("report_definition_insertion_operator", tags) {
 TEST_CASE("create_report_definition_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_report_definition(ctx);
+    report_definition sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.id = boost::uuids::random_generator()();
+    sut.name = std::string(faker::word::adjective()) + " Report";
+    sut.party_id = boost::uuids::random_generator()();
+    sut.description = std::string(faker::lorem::sentence());
+    sut.report_type = std::string(faker::word::noun());
+    sut.schedule_expression = "0 6 * * 1-5";
+    sut.concurrency_policy = "skip";
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Report definition: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -142,25 +170,22 @@ TEST_CASE("create_report_definition_with_faker", tags) {
 TEST_CASE("create_multiple_random_report_definitions", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_report_definitions(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Report definition: " << item;
-        CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+    const std::vector<std::pair<std::string, std::string>> defs = {
+        {"Daily Risk", "risk"}, {"Weekly Grid", "grid"},
+        {"Monthly Summary", "risk"}};
+    for (const auto& [name, type] : defs) {
+        auto sut = make_report_definition(name, type);
+        BOOST_LOG_SEV(lg, info) << "Report definition: " << sut;
+        CHECK(!sut.id.is_nil());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("report_definition_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto rd = generate_synthetic_report_definition(ctx);
-
-    std::vector<report_definition> items = {rd};
+    std::vector<report_definition> items = {
+        make_report_definition("Daily Risk Report")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -171,8 +196,10 @@ TEST_CASE("report_definition_convert_single_to_table", tags) {
 TEST_CASE("report_definition_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_report_definitions(3, ctx);
+    std::vector<report_definition> items;
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_report_definition("Report " + std::to_string(i)));
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -194,8 +221,25 @@ TEST_CASE("report_definition_convert_empty_vector_to_table", tags) {
 TEST_CASE("report_definition_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_report_definitions(5, ctx);
+    std::vector<report_definition> items;
+    for (int i = 0; i < 5; ++i) {
+        report_definition rd;
+        rd.version = 1;
+        rd.id = boost::uuids::random_generator()();
+        rd.name = std::string(faker::word::adjective()) + " Report " + std::to_string(i);
+        rd.party_id = boost::uuids::random_generator()();
+        rd.description = std::string(faker::lorem::sentence());
+        rd.report_type = std::string(faker::word::noun());
+        rd.schedule_expression = "0 6 * * 1-5";
+        rd.concurrency_policy = "skip";
+        rd.modified_by = "system";
+        rd.performed_by = "system";
+        rd.change_reason_code = "system.new";
+        rd.change_commentary = "Test";
+        rd.recorded_at = std::chrono::system_clock::now();
+        items.push_back(rd);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;

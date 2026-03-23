@@ -27,20 +27,33 @@
 #include "ores.trading.api/domain/trade_identifier_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_identifier_table.hpp"
 #include "ores.trading.api/domain/trade_identifier_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/generator/trade_identifier_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::trading::domain::trade_identifier;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
+trade_identifier make_trade_identifier(const std::string& id_type,
+    const std::string& id_value) {
+    trade_identifier ti;
+    ti.version = 1;
+    ti.id = boost::uuids::random_generator()();
+    ti.trade_id = boost::uuids::random_generator()();
+    ti.id_value = id_value;
+    ti.id_type = id_type;
+    ti.modified_by = "system";
+    ti.performed_by = "system";
+    ti.change_reason_code = "system.new";
+    ti.change_commentary = "Test data";
+    ti.recorded_at = std::chrono::system_clock::now();
+    return ti;
+}
+
 }
 
 using ores::trading::domain::trade_identifier;
-using ores::trading::generator::generate_synthetic_trade_identifier;
-using ores::trading::generator::generate_synthetic_trade_identifiers;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_trade_identifier_with_valid_fields", tags) {
@@ -119,11 +132,21 @@ TEST_CASE("trade_identifier_insertion_operator", tags) {
 TEST_CASE("create_trade_identifier_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_trade_identifier(ctx);
+    trade_identifier sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.id = boost::uuids::random_generator()();
+    sut.trade_id = boost::uuids::random_generator()();
+    sut.id_value = std::string(faker::word::noun()) + "-" +
+        std::to_string(faker::number::integer(1000, 9999));
+    sut.id_type = std::string(faker::word::noun());
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.id_value.empty());
     CHECK(!sut.modified_by.empty());
@@ -133,25 +156,22 @@ TEST_CASE("create_trade_identifier_with_faker", tags) {
 TEST_CASE("create_multiple_random_trade_identifiers", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_trade_identifiers(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Trade identifier: " << item;
-        CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+    const std::vector<std::pair<std::string, std::string>> ids = {
+        {"UTI", "UTI-001"}, {"USI", "USI-002"},
+        {"Internal", "INT-003"}, {"CICI", "CICI-004"}};
+    for (const auto& [id_type, id_value] : ids) {
+        auto sut = make_trade_identifier(id_type, id_value);
+        BOOST_LOG_SEV(lg, info) << "Trade identifier: " << sut;
+        CHECK(!sut.id.is_nil());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("trade_identifier_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto ti = generate_synthetic_trade_identifier(ctx);
-
-    std::vector<trade_identifier> items = {ti};
+    std::vector<trade_identifier> items = {
+        make_trade_identifier("UTI", "UTI-2026-001")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -162,8 +182,11 @@ TEST_CASE("trade_identifier_convert_single_to_table", tags) {
 TEST_CASE("trade_identifier_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_trade_identifiers(3, ctx);
+    std::vector<trade_identifier> items;
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_trade_identifier("Type" + std::to_string(i),
+            "VAL-" + std::to_string(i)));
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -185,8 +208,22 @@ TEST_CASE("trade_identifier_convert_empty_vector_to_table", tags) {
 TEST_CASE("trade_identifier_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_trade_identifiers(5, ctx);
+    std::vector<trade_identifier> items;
+    for (int i = 0; i < 5; ++i) {
+        trade_identifier ti;
+        ti.version = 1;
+        ti.id = boost::uuids::random_generator()();
+        ti.trade_id = boost::uuids::random_generator()();
+        ti.id_value = std::string(faker::word::noun()) + "-" + std::to_string(i);
+        ti.id_type = std::string(faker::word::noun());
+        ti.modified_by = "system";
+        ti.performed_by = "system";
+        ti.change_reason_code = "system.new";
+        ti.change_commentary = "Test";
+        ti.recorded_at = std::chrono::system_clock::now();
+        items.push_back(ti);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;

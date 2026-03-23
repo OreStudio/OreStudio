@@ -27,20 +27,34 @@
 #include "ores.trading.api/domain/activity_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/activity_type_table.hpp"
 #include "ores.trading.api/domain/activity_type_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/generator/activity_type_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::trading::domain::activity_type;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
+activity_type make_activity_type(const std::string& code,
+    const std::string& category = "lifecycle_event") {
+    activity_type at;
+    at.version = 1;
+    at.code = code;
+    at.category = category;
+    at.requires_confirmation = false;
+    at.description = code + " activity type";
+    at.fpml_event_type_code = "New";
+    at.modified_by = "system";
+    at.performed_by = "system";
+    at.change_reason_code = "system.new";
+    at.change_commentary = "Test data";
+    at.recorded_at = std::chrono::system_clock::now();
+    return at;
+}
+
 }
 
 using ores::trading::domain::activity_type;
-using ores::trading::generator::generate_synthetic_activity_type;
-using ores::trading::generator::generate_synthetic_activity_types;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_activity_type_with_valid_fields", tags) {
@@ -122,11 +136,21 @@ TEST_CASE("activity_type_insertion_operator", tags) {
 TEST_CASE("create_activity_type_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_activity_type(ctx);
+    activity_type sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.code = std::string(faker::word::noun()) + "_activity";
+    sut.category = std::string(faker::word::noun());
+    sut.requires_confirmation = faker::datatype::boolean();
+    sut.description = std::string(faker::lorem::sentence());
+    sut.fpml_event_type_code = "New";
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Activity type: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -135,34 +159,21 @@ TEST_CASE("create_activity_type_with_faker", tags) {
 TEST_CASE("create_multiple_random_activity_types", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_activity_types(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Activity type: " << item;
-        CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+    const std::vector<std::string> codes = {"new_booking", "amendment",
+        "novation", "cancellation"};
+    for (const auto& code : codes) {
+        auto sut = make_activity_type(code);
+        BOOST_LOG_SEV(lg, info) << "Activity type: " << sut;
+        CHECK(!sut.code.empty());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("activity_type_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    activity_type at;
-    at.version = 1;
-    at.code = "cancellation";
-    at.category = "cancellation";
-    at.requires_confirmation = false;
-    at.description = "Trade cancellation";
-    at.modified_by = "admin";
-    at.performed_by = "admin";
-    at.change_reason_code = "system.new";
-    at.change_commentary = "Test";
-    at.recorded_at = std::chrono::system_clock::now();
-
-    std::vector<activity_type> items = {at};
+    std::vector<activity_type> items = {
+        make_activity_type("cancellation", "cancellation")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -175,20 +186,8 @@ TEST_CASE("activity_type_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
     std::vector<activity_type> items;
-    for (int i = 0; i < 3; ++i) {
-        activity_type at;
-        at.version = i + 1;
-        at.code = "activity" + std::to_string(i);
-        at.category = "new_activity";
-        at.requires_confirmation = false;
-        at.description = "Description " + std::to_string(i);
-        at.modified_by = "system";
-        at.performed_by = "system";
-        at.change_reason_code = "system.new";
-        at.change_commentary = "Test";
-        at.recorded_at = std::chrono::system_clock::now();
-        items.push_back(at);
-    }
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_activity_type("activity" + std::to_string(i)));
 
     auto table = convert_to_table(items);
 
@@ -214,14 +213,28 @@ TEST_CASE("activity_type_convert_empty_vector_to_table", tags) {
 TEST_CASE("activity_type_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_activity_types(5, ctx);
+    std::vector<activity_type> items;
+    for (int i = 0; i < 5; ++i) {
+        activity_type at;
+        at.version = 1;
+        at.code = std::string(faker::word::noun()) + "_act_" + std::to_string(i);
+        at.category = std::string(faker::word::noun());
+        at.requires_confirmation = false;
+        at.description = std::string(faker::lorem::sentence());
+        at.fpml_event_type_code = "New";
+        at.modified_by = "system";
+        at.performed_by = "system";
+        at.change_reason_code = "system.new";
+        at.change_commentary = "Test";
+        at.recorded_at = std::chrono::system_clock::now();
+        items.push_back(at);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
-    for (const auto& item : items) {
+    for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
-    }
 }

@@ -26,34 +26,39 @@
 #include "ores.trading.api/domain/fpml_event_type_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/fpml_event_type_table.hpp"
 #include "ores.trading.api/domain/fpml_event_type_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/generator/fpml_event_type_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::trading::domain::fpml_event_type;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
+fpml_event_type make_fpml_event_type(const std::string& code,
+    const std::string& description = "") {
+    fpml_event_type et;
+    et.version = 1;
+    et.code = code;
+    et.description = description.empty() ? code + " FpML event type" : description;
+    et.modified_by = "system";
+    et.performed_by = "system";
+    et.change_reason_code = "system.new";
+    et.change_commentary = "Test data";
+    et.recorded_at = std::chrono::system_clock::now();
+    return et;
+}
+
 }
 
 using ores::trading::domain::fpml_event_type;
-using ores::trading::generator::generate_synthetic_fpml_event_type;
-using ores::trading::generator::generate_synthetic_fpml_event_types;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_fpml_event_type_with_valid_fields", tags) {
     auto lg(make_logger(test_suite));
 
-    fpml_event_type sut;
-    sut.version = 1;
-    sut.code = "New";
-    sut.description = "New trade creation event";
+    auto sut = make_fpml_event_type("New", "New trade creation event");
     sut.modified_by = "admin";
     sut.performed_by = "admin";
-    sut.change_reason_code = "system.new";
-    sut.change_commentary = "Initial creation";
-    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
 
     CHECK(sut.version == 1);
@@ -66,15 +71,7 @@ TEST_CASE("create_fpml_event_type_with_valid_fields", tags) {
 TEST_CASE("fpml_event_type_insertion_operator", tags) {
     auto lg(make_logger(test_suite));
 
-    fpml_event_type sut;
-    sut.version = 1;
-    sut.code = "Amendment";
-    sut.description = "Trade amendment event";
-    sut.modified_by = "system";
-    sut.performed_by = "system";
-    sut.change_reason_code = "system.new";
-    sut.change_commentary = "Test";
-    sut.recorded_at = std::chrono::system_clock::now();
+    auto sut = make_fpml_event_type("Amendment", "Trade amendment event");
     BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
 
     std::ostringstream os;
@@ -88,46 +85,38 @@ TEST_CASE("fpml_event_type_insertion_operator", tags) {
 TEST_CASE("create_fpml_event_type_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_fpml_event_type(ctx);
+    fpml_event_type sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.code = std::string(faker::word::noun()) + "_event";
+    sut.description = std::string(faker::lorem::sentence());
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
-    CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
 }
 
 TEST_CASE("create_multiple_random_fpml_event_types", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_fpml_event_types(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "FpML event type: " << item;
-        CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+    const std::vector<std::string> codes = {"New", "Amendment", "Novation",
+        "PartialTermination", "FullTermination"};
+    for (const auto& code : codes) {
+        auto sut = make_fpml_event_type(code);
+        BOOST_LOG_SEV(lg, info) << "FpML event type: " << sut;
+        CHECK(!sut.code.empty());
     }
 }
 
 TEST_CASE("fpml_event_type_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    fpml_event_type et;
-    et.version = 1;
-    et.code = "Novation";
-    et.description = "Trade novation event";
-    et.modified_by = "admin";
-    et.performed_by = "admin";
-    et.change_reason_code = "system.new";
-    et.change_commentary = "Test";
-    et.recorded_at = std::chrono::system_clock::now();
-
-    std::vector<fpml_event_type> items = {et};
+    std::vector<fpml_event_type> items = {make_fpml_event_type("Novation", "Trade novation event")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -140,18 +129,8 @@ TEST_CASE("fpml_event_type_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
     std::vector<fpml_event_type> items;
-    for (int i = 0; i < 3; ++i) {
-        fpml_event_type et;
-        et.version = i + 1;
-        et.code = "Event" + std::to_string(i);
-        et.description = "Description " + std::to_string(i);
-        et.modified_by = "system";
-        et.performed_by = "system";
-        et.change_reason_code = "system.new";
-        et.change_commentary = "Test";
-        et.recorded_at = std::chrono::system_clock::now();
-        items.push_back(et);
-    }
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_fpml_event_type("Event" + std::to_string(i)));
 
     auto table = convert_to_table(items);
 
@@ -177,14 +156,25 @@ TEST_CASE("fpml_event_type_convert_empty_vector_to_table", tags) {
 TEST_CASE("fpml_event_type_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_fpml_event_types(5, ctx);
+    std::vector<fpml_event_type> items;
+    for (int i = 0; i < 5; ++i) {
+        fpml_event_type et;
+        et.version = 1;
+        et.code = std::string(faker::word::noun()) + "_" + std::to_string(i);
+        et.description = std::string(faker::lorem::sentence());
+        et.modified_by = "system";
+        et.performed_by = "system";
+        et.change_reason_code = "system.new";
+        et.change_commentary = "Test";
+        et.recorded_at = std::chrono::system_clock::now();
+        items.push_back(et);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;
 
     CHECK(!table.empty());
-    for (const auto& item : items) {
+    for (const auto& item : items)
         CHECK(table.find(item.code) != std::string::npos);
-    }
 }

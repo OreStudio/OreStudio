@@ -27,20 +27,32 @@
 #include "ores.trading.api/domain/trade_party_role_json_io.hpp" // IWYU pragma: keep.
 #include "ores.trading.api/domain/trade_party_role_table.hpp"
 #include "ores.trading.api/domain/trade_party_role_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.core/generator/trade_party_role_generator.hpp"
-#include "ores.utility/generation/generation_context.hpp"
 
 namespace {
+
+using ores::trading::domain::trade_party_role;
 
 const std::string_view test_suite("ores.trading.tests");
 const std::string tags("[domain]");
 
+trade_party_role make_trade_party_role(const std::string& role) {
+    trade_party_role tpr;
+    tpr.version = 1;
+    tpr.id = boost::uuids::random_generator()();
+    tpr.trade_id = boost::uuids::random_generator()();
+    tpr.counterparty_id = boost::uuids::random_generator()();
+    tpr.role = role;
+    tpr.modified_by = "system";
+    tpr.performed_by = "system";
+    tpr.change_reason_code = "system.new";
+    tpr.change_commentary = "Test data";
+    tpr.recorded_at = std::chrono::system_clock::now();
+    return tpr;
+}
+
 }
 
 using ores::trading::domain::trade_party_role;
-using ores::trading::generator::generate_synthetic_trade_party_role;
-using ores::trading::generator::generate_synthetic_trade_party_roles;
-using ores::utility::generation::generation_context;
 using namespace ores::logging;
 
 TEST_CASE("create_trade_party_role_with_valid_fields", tags) {
@@ -94,11 +106,20 @@ TEST_CASE("trade_party_role_insertion_operator", tags) {
 TEST_CASE("create_trade_party_role_with_faker", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto sut = generate_synthetic_trade_party_role(ctx);
+    trade_party_role sut;
+    sut.version = faker::number::integer(1, 10);
+    sut.id = boost::uuids::random_generator()();
+    sut.trade_id = boost::uuids::random_generator()();
+    sut.counterparty_id = boost::uuids::random_generator()();
+    sut.role = std::string(faker::word::noun()) + "_role";
+    sut.modified_by = std::string(faker::internet::username());
+    sut.performed_by = std::string(faker::internet::username());
+    sut.change_reason_code = "system.new";
+    sut.change_commentary = "Synthetic test data";
+    sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version >= 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.new");
@@ -107,25 +128,20 @@ TEST_CASE("create_trade_party_role_with_faker", tags) {
 TEST_CASE("create_multiple_random_trade_party_roles", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    const std::size_t count = 3;
-    auto items = generate_synthetic_trade_party_roles(count, ctx);
-
-    CHECK(items.size() == count);
-    for (const auto& item : items) {
-        BOOST_LOG_SEV(lg, info) << "Trade party role: " << item;
-        CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+    const std::vector<std::string> roles = {"Counterparty", "CalculationAgent",
+        "ExecutingBroker", "NovationTransferee"};
+    for (const auto& role : roles) {
+        auto sut = make_trade_party_role(role);
+        BOOST_LOG_SEV(lg, info) << "Trade party role: " << sut;
+        CHECK(!sut.id.is_nil());
+        CHECK(sut.version == 1);
     }
 }
 
 TEST_CASE("trade_party_role_convert_single_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto tpr = generate_synthetic_trade_party_role(ctx);
-
-    std::vector<trade_party_role> items = {tpr};
+    std::vector<trade_party_role> items = {make_trade_party_role("Counterparty")};
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -136,8 +152,10 @@ TEST_CASE("trade_party_role_convert_single_to_table", tags) {
 TEST_CASE("trade_party_role_convert_multiple_to_table", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_trade_party_roles(3, ctx);
+    std::vector<trade_party_role> items;
+    for (int i = 0; i < 3; ++i)
+        items.push_back(make_trade_party_role("Role" + std::to_string(i)));
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Table output:\n" << table;
@@ -159,8 +177,22 @@ TEST_CASE("trade_party_role_convert_empty_vector_to_table", tags) {
 TEST_CASE("trade_party_role_table_with_faker_data", tags) {
     auto lg(make_logger(test_suite));
 
-    generation_context ctx;
-    auto items = generate_synthetic_trade_party_roles(5, ctx);
+    std::vector<trade_party_role> items;
+    for (int i = 0; i < 5; ++i) {
+        trade_party_role tpr;
+        tpr.version = 1;
+        tpr.id = boost::uuids::random_generator()();
+        tpr.trade_id = boost::uuids::random_generator()();
+        tpr.counterparty_id = boost::uuids::random_generator()();
+        tpr.role = std::string(faker::word::noun()) + "_role_" + std::to_string(i);
+        tpr.modified_by = "system";
+        tpr.performed_by = "system";
+        tpr.change_reason_code = "system.new";
+        tpr.change_commentary = "Test";
+        tpr.recorded_at = std::chrono::system_clock::now();
+        items.push_back(tpr);
+    }
+
     auto table = convert_to_table(items);
 
     BOOST_LOG_SEV(lg, info) << "Faker table output:\n" << table;

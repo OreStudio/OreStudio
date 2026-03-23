@@ -27,8 +27,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/subject_area_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.core/generators/subject_area_generator.hpp"
-#include "ores.dq.core/generators/data_domain_generator.hpp"
+#include "ores.dq.api/generators/subject_area_generator.hpp"
+#include "ores.dq.api/generators/data_domain_generator.hpp"
 #include "ores.dq.core/repository/data_domain_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"

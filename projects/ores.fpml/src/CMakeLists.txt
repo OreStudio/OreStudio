@@ -36,7 +36,7 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.variability.lib
+        ores.variability.api.lib
     PRIVATE
         ores.utility.lib
         sqlgen::sqlgen

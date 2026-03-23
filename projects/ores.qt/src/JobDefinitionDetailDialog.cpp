@@ -27,13 +27,13 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ui_JobDefinitionDetailDialog.h"
-#include "ores.scheduler/domain/cron_expression.hpp"
+#include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.qt/CronExpressionWidget.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.scheduler/rfl/reflectors.hpp"
-#include "ores.scheduler/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 
 namespace ores::qt {
 

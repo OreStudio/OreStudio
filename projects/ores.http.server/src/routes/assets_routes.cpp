@@ -22,8 +22,8 @@
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.assets/messaging/assets_protocol.hpp"
-#include "ores.assets/service/assets_service.hpp"
+#include "ores.assets.api/messaging/assets_protocol.hpp"
+#include "ores.assets.core/service/assets_service.hpp"
 
 namespace ores::http_server::routes {
 

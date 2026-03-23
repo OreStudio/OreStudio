@@ -20,7 +20,7 @@
 #ifndef ORES_IAM_CORE_DOMAIN_TOKEN_SETTINGS_HPP
 #define ORES_IAM_CORE_DOMAIN_TOKEN_SETTINGS_HPP
 
-#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 
 namespace ores::iam::domain {
 

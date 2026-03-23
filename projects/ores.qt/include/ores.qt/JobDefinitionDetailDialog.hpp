@@ -23,7 +23,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.scheduler/domain/job_definition.hpp"
+#include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace Ui {
 class JobDefinitionDetailDialog;

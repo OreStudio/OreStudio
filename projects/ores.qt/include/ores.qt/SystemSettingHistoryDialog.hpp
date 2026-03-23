@@ -28,7 +28,7 @@
 #include <QToolBar>
 #include <QAction>
 #include "ores.qt/ClientManager.hpp"
-#include "ores.variability/domain/system_setting.hpp"
+#include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ui_SystemSettingHistoryDialog.h"
 

@@ -24,7 +24,7 @@
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.iam.core/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 

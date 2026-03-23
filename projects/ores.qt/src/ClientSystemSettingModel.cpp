@@ -24,7 +24,7 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.variability/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 

@@ -17,18 +17,18 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq.core/generators/catalog_generator.hpp"
-#include "ores.dq.core/generators/change_reason_category_generator.hpp"
-#include "ores.dq.core/generators/change_reason_generator.hpp"
-#include "ores.dq.core/generators/coding_scheme_authority_type_generator.hpp"
-#include "ores.dq.core/generators/coding_scheme_generator.hpp"
-#include "ores.dq.core/generators/data_domain_generator.hpp"
-#include "ores.dq.core/generators/dataset_generator.hpp"
-#include "ores.dq.core/generators/methodology_generator.hpp"
-#include "ores.dq.core/generators/nature_dimension_generator.hpp"
-#include "ores.dq.core/generators/origin_dimension_generator.hpp"
-#include "ores.dq.core/generators/subject_area_generator.hpp"
-#include "ores.dq.core/generators/treatment_dimension_generator.hpp"
+#include "ores.dq.api/generators/catalog_generator.hpp"
+#include "ores.dq.api/generators/change_reason_category_generator.hpp"
+#include "ores.dq.api/generators/change_reason_generator.hpp"
+#include "ores.dq.api/generators/coding_scheme_authority_type_generator.hpp"
+#include "ores.dq.api/generators/coding_scheme_generator.hpp"
+#include "ores.dq.api/generators/data_domain_generator.hpp"
+#include "ores.dq.api/generators/dataset_generator.hpp"
+#include "ores.dq.api/generators/methodology_generator.hpp"
+#include "ores.dq.api/generators/nature_dimension_generator.hpp"
+#include "ores.dq.api/generators/origin_dimension_generator.hpp"
+#include "ores.dq.api/generators/subject_area_generator.hpp"
+#include "ores.dq.api/generators/treatment_dimension_generator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"

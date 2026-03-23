@@ -49,7 +49,6 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.security.lib
         sqlgen::sqlgen
-        faker-cxx::faker-cxx
         libfort::fort
         Boost::graph
         Boost::boost)

@@ -31,7 +31,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
-#include "ores.assets/messaging/assets_protocol.hpp"
+#include "ores.assets.api/messaging/assets_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/business_centre_protocol.hpp"

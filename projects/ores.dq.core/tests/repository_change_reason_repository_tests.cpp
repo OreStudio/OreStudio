@@ -27,8 +27,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.dq.api/domain/change_reason_json_io.hpp" // IWYU pragma: keep.
-#include "ores.dq.core/generators/change_reason_generator.hpp"
-#include "ores.dq.core/generators/change_reason_category_generator.hpp"
+#include "ores.dq.api/generators/change_reason_generator.hpp"
+#include "ores.dq.api/generators/change_reason_category_generator.hpp"
 #include "ores.dq.core/repository/change_reason_category_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.utility/generation/generation_context.hpp"

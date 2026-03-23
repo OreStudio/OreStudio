@@ -42,7 +42,7 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.iam.core.lib
         ores.refdata.core.lib
-        ores.variability.lib
+        ores.variability.core.lib
         ores.telemetry.lib
         ores.utility.lib
         Wt::Wt

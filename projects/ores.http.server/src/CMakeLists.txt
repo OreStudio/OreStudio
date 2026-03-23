@@ -41,8 +41,8 @@ target_link_libraries(${lib_target_name}
         ores.http.lib
         ores.iam.core.lib
         ores.refdata.core.lib
-        ores.assets.lib
-        ores.variability.lib
+        ores.assets.core.lib
+        ores.variability.core.lib
         ores.geo.lib
         ores.nats.lib
         ores.service.lib

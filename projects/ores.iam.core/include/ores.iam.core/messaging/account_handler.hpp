@@ -44,7 +44,7 @@
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
-#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
 
 namespace ores::iam::messaging {

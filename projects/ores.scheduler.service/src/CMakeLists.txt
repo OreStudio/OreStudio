@@ -41,7 +41,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.service.lib
         ores.security.lib
-        ores.scheduler.lib
+        ores.scheduler.core.lib
         ores.nats.lib
         ores.database.lib
         ores.utility.lib

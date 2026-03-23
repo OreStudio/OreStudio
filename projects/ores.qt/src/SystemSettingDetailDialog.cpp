@@ -34,7 +34,7 @@
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.variability/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 

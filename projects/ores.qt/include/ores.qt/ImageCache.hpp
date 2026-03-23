@@ -28,8 +28,8 @@
 #include <QFutureWatcher>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.assets/domain/image.hpp"
-#include "ores.assets/messaging/assets_protocol.hpp"
+#include "ores.assets.api/domain/image.hpp"
+#include "ores.assets.api/messaging/assets_protocol.hpp"
 
 namespace ores::qt {
 

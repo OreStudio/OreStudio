@@ -28,8 +28,8 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
-#include "ores.scheduler/rfl/reflectors.hpp"
-#include "ores.scheduler/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 
 namespace ores::qt {
 

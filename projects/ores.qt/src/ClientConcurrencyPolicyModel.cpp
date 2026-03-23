@@ -20,7 +20,7 @@
 #include "ores.qt/ClientConcurrencyPolicyModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
+#include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

@@ -28,7 +28,7 @@
 #include "ores.qt/ClientTradeModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading/domain/trade.hpp"
+#include "ores.trading.api/domain/trade.hpp"
 
 namespace ores::qt {
 

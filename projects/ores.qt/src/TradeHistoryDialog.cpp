@@ -27,7 +27,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.trading/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::qt {
 

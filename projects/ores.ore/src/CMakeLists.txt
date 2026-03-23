@@ -42,7 +42,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.database.lib
         ores.refdata.core.lib
-        ores.trading.lib
+        ores.trading.api.lib
     PRIVATE
         ores.logging.lib
         ores.platform.lib

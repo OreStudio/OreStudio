@@ -27,7 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.reporting/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 
 namespace ores::qt {
 

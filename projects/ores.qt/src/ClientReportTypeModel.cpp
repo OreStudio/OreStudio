@@ -20,7 +20,7 @@
 #include "ores.qt/ClientReportTypeModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.reporting/messaging/report_type_protocol.hpp"
+#include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

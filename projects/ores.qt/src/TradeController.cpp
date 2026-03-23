@@ -40,7 +40,7 @@
 #include "ores.qt/ImportTradeDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.trading/eventing/trade_changed_event.hpp"
+#include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 
 namespace ores::qt {

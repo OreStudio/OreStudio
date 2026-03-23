@@ -26,7 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.reporting/domain/report_instance.hpp"
+#include "ores.reporting.api/domain/report_instance.hpp"
 
 namespace Ui {
 class ReportInstanceHistoryDialog;

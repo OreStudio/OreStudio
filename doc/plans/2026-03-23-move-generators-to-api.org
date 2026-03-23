@@ -1,0 +1,192 @@
+:PROPERTIES:
+:ID: b3f7d2a1-9c5e-4d82-8b1f-3e6a7c4f1d90
+:END:
+#+title: Move Synthetic Generators to API Layer
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+Synthetic data generators for domain types currently live in the =core= layer
+of every component. This means any client of the API layer (other services,
+CLI tools, HTTP handlers, or their tests) cannot generate synthetic domain
+objects without taking a dependency on core — which drags in repositories,
+services, and all their transitive dependencies.
+
+Generators only depend on:
+
+- The domain types they produce (from the =api= layer)
+- =ores.utility/generation/generation_context.hpp= and =generation_keys.hpp=
+- Standard library headers and =faker-cxx=
+
+They have no dependency on repositories, services, or any other core
+infrastructure. There is no architectural reason for them to live in core.
+
+** Problem
+
+Six components are affected:
+
+| Component        | Core Generator Files | Affected API Clients      |
+|------------------+----------------------+---------------------------|
+| =ores.compute=   |                    6 | compute service, tests    |
+| =ores.dq=        |                   14 | dq service, tests         |
+| =ores.iam=       |                   10 | iam service, tests        |
+| =ores.refdata=   |                   23 | refdata service, tests    |
+| =ores.reporting= |                    4 | reporting service, tests  |
+| =ores.trading=   |                    9 | trading service, tests    |
+
+File counts cover =_generator.hpp= and =_generator.cpp= pairs only. The
+=generators_tests.cpp= and CMakeLists changes are additional.
+
+** Goals
+
+- Move all generator headers and sources from =*.core= to =*.api=.
+- Update all consumers (tests and other components that include generator
+  headers) to use the new include paths.
+- Ensure the =*.core/tests/generators_tests.cpp= files still compile and pass
+  by linking =*.api.lib= (already a transitive dependency).
+- No functional change to any generator implementation.
+
+** Non-Goals
+
+- Changing generator implementations or adding new generators.
+- Changing domain type definitions.
+- Moving repository tests or service tests.
+
+* Phase 1: ores.trading (pilot)
+
+Migrate =ores.trading= first as it is the smallest component and was recently
+split from a monolith. Use this as the template for subsequent phases.
+
+** Files to move
+
+#+begin_example
+FROM: projects/ores.trading.core/include/ores.trading.core/generator/<type>_generator.hpp
+TO:   projects/ores.trading.api/include/ores.trading.api/generator/<type>_generator.hpp
+
+FROM: projects/ores.trading.core/src/generator/<type>_generator.cpp
+TO:   projects/ores.trading.api/src/generator/<type>_generator.cpp
+#+end_example
+
+Types (9): =activity_type=, =fpml_event_type=, =lifecycle_event=,
+=party_role_type=, =trade=, =trade_identifier=, =trade_id_type=,
+=trade_party_role=, =trade_type=.
+
+** CMakeLists changes
+
+- =projects/ores.trading.api/src/CMakeLists.txt=: add the 9 new =.cpp= source
+  files under =generator/=.
+- =projects/ores.trading.core/src/CMakeLists.txt=: remove the 9 =.cpp= source
+  files from =generator/=.
+- =projects/ores.trading.core/tests/CMakeLists.txt=: no change needed —
+  already links =ores.trading.api.lib=.
+
+** Include path updates
+
+Update the =cpp= source files to use the new self-referencing include path:
+
+#+begin_src diff
+-#include "ores.trading.core/generator/trade_type_generator.hpp"
++#include "ores.trading.api/generator/trade_type_generator.hpp"
+#+end_src
+
+Update any consumer that includes a trading generator header:
+
+| File                                                  | Old Include Prefix             | New Include Prefix            |
+|-------------------------------------------------------+--------------------------------+-------------------------------|
+| =ores.trading.core/tests/generators_tests.cpp=        | =ores.trading.core/generator/= | =ores.trading.api/generator/= |
+| =ores.trading.core/src/repository/*.cpp= (if any)     | =ores.trading.core/generator/= | =ores.trading.api/generator/= |
+
+** Verification
+
+Build and run trading tests:
+
+#+begin_src sh
+make -C build/output/linux-clang-debug-make -j$(nproc) ores.trading.api.tests ores.trading.core.tests
+build/output/linux-clang-debug-make/publish/bin/ores.trading.api.tests
+build/output/linux-clang-debug-make/publish/bin/ores.trading.core.tests
+#+end_src
+
+* Phase 2: ores.reporting
+
+Same migration pattern as Phase 1.
+
+Types (4): =concurrency_policy=, =report_definition=, =report_instance=,
+=report_type=.
+
+Namespace change: generator sources use =ores::reporting::generators= — no
+change needed, just the file paths move.
+
+* Phase 3: ores.iam
+
+Types (10): =account=, =account_party=, =account_role=, =login_info=,
+=permission=, =role=, =session=, =tenant=, =tenant_status=, =tenant_type=.
+
+Note: IAM generators use =ores.iam.core= namespace internally; the directory
+rename does not change the namespace. Verify no core-internal cross-generator
+includes exist before moving.
+
+* Phase 4: ores.dq
+
+Types (14): =catalog=, =change_reason=, =change_reason_category=,
+=coding_scheme=, =coding_scheme_authority_type=, =data_domain=,
+=dataset=, =dataset_bundle=, =dataset_bundle_member=, =methodology=,
+=nature_dimension=, =origin_dimension=, =subject_area=,
+=treatment_dimension=.
+
+* Phase 5: ores.refdata
+
+Types (23): =book=, =business_centre=, =business_unit=,
+=business_unit_type=, =contact_type=, =counterparty=,
+=counterparty_contact_information=, =counterparty_identifier=, =country=,
+=currency=, =currency_market_tier=, =monetary_nature=,
+=party_contact_information=, =party_counterparty=, =party_country=,
+=party_currency=, =party=, =party_identifier=, =party_id_scheme=,
+=party_status=, =party_type=, =portfolio=, =rounding_type=.
+
+* Phase 6: ores.compute
+
+Types (6): =app=, =app_version=, =batch=, =host=, =result=, =workunit=.
+
+* Phase 7: Cleanup
+
+After all components are migrated:
+
+1. Delete the now-empty =generator/= directories from all =*.core= components.
+2. Verify there are no remaining includes of =ores.*.core/generator/= anywhere
+   in the codebase:
+   #+begin_src sh
+   grep -r "ores\.\(trading\|reporting\|iam\|dq\|refdata\|compute\)\.core/generator" projects/
+   #+end_src
+3. Run the full test suite: =cmake --build --preset linux-clang-debug-ninja --target rat=
+
+* Scope Summary
+
+| Phase | Component        | Generator Files Moved | Files Updated |
+|-------+------------------+-----------------------+---------------|
+|     1 | ores.trading     |                    18 |             2 |
+|     2 | ores.reporting   |                     8 |             2 |
+|     3 | ores.iam         |                    20 |             2 |
+|     4 | ores.dq          |                    28 |             2 |
+|     5 | ores.refdata     |                    46 |             2 |
+|     6 | ores.compute     |                    12 |             2 |
+|     7 | Cleanup          |                     0 |             1 |
+| Total |                  |                   132 |            13 |
+
+File counts include header + source pairs. CMakeLists and test files are
+counted under "Files Updated".
+
+* Dependencies
+
+- This plan assumes the api/core split is complete for all 6 components (done
+  in PR #554).
+- No changes to =ores.utility= or =ores.testing= are required.
+- Phases can be executed independently in separate commits or PRs if preferred.
+
+* Open Questions
+
+- Should the generator directory be named =generator/= (singular, as in
+  =ores.trading.core=) or =generators/= (plural, as in =ores.reporting.core=
+  and =ores.iam.core=)? Recommend standardising on =generators/= (plural) as
+  part of this migration since we are moving the files anyway.

@@ -21,7 +21,7 @@
 
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.trading/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 

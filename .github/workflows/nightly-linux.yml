@@ -157,7 +157,7 @@ jobs:
           ./projects/ores.sql/recreate_database.sh -y -D ores_ci
 
       - name: Get latest CMake
-        uses: lukka/get-cmake@v4.2.3
+        uses: lukka/get-cmake@v4.3.0
 
       - name: Cache vcpkg binary packages
         uses: actions/cache@v5

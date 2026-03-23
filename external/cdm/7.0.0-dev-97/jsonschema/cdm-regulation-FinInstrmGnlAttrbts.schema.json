@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "FinInstrmGnlAttrbts",
+  "properties": {
+    "fullNm": {
+      "type": "string"
+    },
+    "clssfctnTp": {
+      "type": "string"
+    },
+    "ntnlCcy": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "fullNm",
+    "clssfctnTp",
+    "ntnlCcy"
+  ]
+}

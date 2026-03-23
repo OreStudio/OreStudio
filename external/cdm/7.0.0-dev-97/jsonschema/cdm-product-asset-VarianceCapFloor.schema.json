@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "VarianceCapFloor",
+  "properties": {
+    "varianceCap": {
+      "description": "If present and true, then variance cap is applicable.",
+      "type": "boolean"
+    },
+    "unadjustedVarianceCap": {
+      "description": "For use when varianceCap is applicable. Contains the scaling factor of the Variance Cap that can differ on a trade-by-trade basis in the European market. For example, a Variance Cap of 2.5^2 x Variance Strike Price has an unadjustedVarianceCap of 2.5.",
+      "type": "number"
+    },
+    "boundedVariance": {
+      "description": "Conditions which bound variance. The contract specifies one or more boundary levels. These levels are expressed as prices for confirmation purposes Underlyer price must be equal to or higher than Lower Barrier is known as Up Conditional Swap Underlyer price must be equal to or lower than Upper Barrier is known as Down Conditional Swap Underlyer price must be equal to or higher than Lower Barrier and must be equal to or lower than Upper Barrier is known as Barrier Conditional Swap.",
+      "$ref": "cdm-product-asset-BoundedVariance.schema.json"
+    }
+  },
+  "required": [
+    "varianceCap"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "RoundingFrequencyEnum",
+  "description": "How often is rounding performed",
+  "enum": [
+    "Daily",
+    "PeriodEnd"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Daily"
+      ],
+      "title": "Daily",
+      "description": "Rounding is done on each day"
+    },
+    
+    {
+      "enum": [
+        "PeriodEnd"
+      ],
+      "title": "PeriodEnd",
+      "description": "Rounding is done only at the end of the period"
+    }
+  ]
+}

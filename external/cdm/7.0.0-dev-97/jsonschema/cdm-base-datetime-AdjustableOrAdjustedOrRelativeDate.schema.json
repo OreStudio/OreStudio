@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "AdjustableOrAdjustedOrRelativeDate",
+  "description": "This Rosetta class specifies the date as either an unadjusted, adjusted or relative date. It supplements the features of the AdjustableOrAdjustedDate to support the credit default swap option premium, which uses the relative date construct.",
+  "properties": {
+    "unadjustedDate": {
+      "description": "A date subject to adjustment.",
+      "type": "string"
+    },
+    "dateAdjustments": {
+      "description": "The business day convention and financial business centers used for adjusting the date if it would otherwise fall on a day that is not a business date in the specified business centers.",
+      "$ref": "cdm-base-datetime-BusinessDayAdjustments.schema.json"
+    },
+    "adjustedDate": {
+      "description": "The date once the adjustment has been performed. (Note that this date may change if the business center holidays change).",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "relativeDate": {
+      "description": "A date specified as some offset to another date (the anchor date).",
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    }
+  }
+}

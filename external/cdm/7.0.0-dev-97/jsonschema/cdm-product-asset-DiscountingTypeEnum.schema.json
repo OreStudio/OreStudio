@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "DiscountingTypeEnum",
+  "description": "The enumerated values to specify the method of calculating discounted payment amounts. This enumerations combines the FpML DiscountingTypeEnum and FraDiscountingEnum enumerations.",
+  "enum": [
+    "AFMA",
+    "FRA",
+    "FRAYield",
+    "Standard"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AFMA"
+      ],
+      "title": "AFMA",
+      "description": "As specified by the Australian Financial Markets Association (AFMA) OTC Financial Product Conventions. This discounting method should not be used for a trade documented under a legal framework where the 2006 ISDA Definitions have been incorporated."
+    },
+    
+    {
+      "enum": [
+        "FRA"
+      ],
+      "title": "FRA",
+      "description": "As specified by the 2006 ISDA Definitions, Section 8.4. Discounting, paragraph (b)."
+    },
+    
+    {
+      "enum": [
+        "FRAYield"
+      ],
+      "title": "FRAYield",
+      "description": "As specified by the 2006 ISDA Definitions, Section 8.4. Discounting, paragraph (e)."
+    },
+    
+    {
+      "enum": [
+        "Standard"
+      ],
+      "title": "Standard",
+      "description": "As specified by the 2006 ISDA Definitions, Section 8.4. Discounting, paragraph (a)."
+    }
+  ]
+}

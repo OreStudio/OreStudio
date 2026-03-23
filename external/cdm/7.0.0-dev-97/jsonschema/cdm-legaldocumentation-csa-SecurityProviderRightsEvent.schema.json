@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SecurityProviderRightsEvent",
+  "description": "A class to specify the Pledgor/Obligor/Chargor Rights Event election.",
+  "properties": {
+    "partyElection": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-SecurityProviderRightsEventElection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "includeCoolingOffLanguage": {
+      "description": "The Pledgor/Obligor/Chargor Rights Event election includes cooling off language when the attribute is set of True.",
+      "type": "boolean"
+    },
+    "fullDischarge": {
+      "description": "If specified as applicable here, a Pledgor/Obligor/Chargor Rights Event will not occur unless the Pledgor/Obligor/Chargor (A) has provided a statement to the Secured Party in respect of such Early Termination Date.",
+      "type": "boolean"
+    },
+    "automaticSetOff": {
+      "description": "The Automatic Set-Off provision applies when the value is set to True.",
+      "type": "boolean"
+    },
+    "customElection": {
+      "description": "A custom Pledgor/Obligor/Chargor Rights Event election might be specified by the parties.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "includeCoolingOffLanguage"
+  ]
+}

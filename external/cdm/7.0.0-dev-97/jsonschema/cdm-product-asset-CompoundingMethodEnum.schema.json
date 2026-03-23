@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "CompoundingMethodEnum",
+  "description": "The enumerated values to specify the type of compounding, e.g. flat, straight.",
+  "enum": [
+    "Flat",
+    "None",
+    "SpreadExclusive",
+    "Straight"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Flat"
+      ],
+      "title": "Flat",
+      "description": "Flat compounding. Compounding excludes the spread. Note that the first compounding period has it's interest calculated including any spread then subsequent periods compound this at a rate excluding the spread."
+    },
+    
+    {
+      "enum": [
+        "None"
+      ],
+      "title": "None",
+      "description": "No compounding is to be applied."
+    },
+    
+    {
+      "enum": [
+        "SpreadExclusive"
+      ],
+      "title": "SpreadExclusive",
+      "description": "Spread Exclusive compounding."
+    },
+    
+    {
+      "enum": [
+        "Straight"
+      ],
+      "title": "Straight",
+      "description": "Straight compounding. Compounding includes the spread."
+    }
+  ]
+}

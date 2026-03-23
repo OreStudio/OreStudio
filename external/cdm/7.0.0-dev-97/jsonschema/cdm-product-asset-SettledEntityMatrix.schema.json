@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "SettledEntityMatrix",
+  "description": "A class to specify the Relevant Settled Entity Matrix.",
+  "properties": {
+    "matrixSource": {
+      "description": "Relevant settled entity matrix source.",
+      "$ref": "cdm-product-asset-metafields-FieldWithMetaSettledEntityMatrixSourceEnum.schema.json"
+    },
+    "publicationDate": {
+      "description": "Specifies the publication date of the applicable version of the matrix. When this element is omitted, the Standard Terms Supplement defines rules for which version of the matrix is applicable.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "matrixSource"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "DayOfWeekEnum",
+  "description": "The enumerated values to specify a day of the seven-day week.",
+  "enum": [
+    "FRI",
+    "MON",
+    "SAT",
+    "SUN",
+    "THU",
+    "TUE",
+    "WED"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FRI"
+      ],
+      "title": "FRI",
+      "description": "Friday"
+    },
+    
+    {
+      "enum": [
+        "MON"
+      ],
+      "title": "MON",
+      "description": "Monday"
+    },
+    
+    {
+      "enum": [
+        "SAT"
+      ],
+      "title": "SAT",
+      "description": "Saturday"
+    },
+    
+    {
+      "enum": [
+        "SUN"
+      ],
+      "title": "SUN",
+      "description": "Sunday"
+    },
+    
+    {
+      "enum": [
+        "THU"
+      ],
+      "title": "THU",
+      "description": "Thursday"
+    },
+    
+    {
+      "enum": [
+        "TUE"
+      ],
+      "title": "TUE",
+      "description": "Tuesday"
+    },
+    
+    {
+      "enum": [
+        "WED"
+      ],
+      "title": "WED",
+      "description": "Wednesday"
+    }
+  ]
+}

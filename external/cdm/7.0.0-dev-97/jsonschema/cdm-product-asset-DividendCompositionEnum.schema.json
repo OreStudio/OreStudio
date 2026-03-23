@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "DividendCompositionEnum",
+  "description": "The enumerated values to specify how the composition of Dividends is to be determined.",
+  "enum": [
+    "CalculationAgentElection",
+    "EquityAmountReceiverElection"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CalculationAgentElection"
+      ],
+      "title": "CalculationAgentElection",
+      "description": "The Calculation Agent determines the composition of dividends (subject to conditions)."
+    },
+    
+    {
+      "enum": [
+        "EquityAmountReceiverElection"
+      ],
+      "title": "EquityAmountReceiverElection",
+      "description": "The Equity Amount Receiver determines the composition of dividends (subject to conditions)."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "BespokeTransferTiming",
+  "description": "A class to specify any bespoke Transfer Timing language by each party to the agreement.",
+  "properties": {
+    "isApplicable": {
+      "description": "A boolean flag to specify whether bespoke transfer terms are applicable or not.",
+      "type": "boolean"
+    },
+    "bespokeTransferTimingTerms": {
+      "description": "The bespoke transfer timing terms applicable to the agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "ConcentrationLimit",
+  "description": "Represents a class to describe concentration limits that may be applicable to eligible collateral criteria.",
+  "properties": {
+    "concentrationLimitCriteria": {
+      "description": "Specifies a set of criteria to describe the assets that the concentration limits apply to.",
+      "$ref": "cdm-product-collateral-ConcentrationLimitCriteria.schema.json"
+    },
+    "valueLimit": {
+      "description": "Specifies the value of collateral limit represented as a range.",
+      "$ref": "cdm-base-math-MoneyRange.schema.json"
+    },
+    "percentageLimit": {
+      "description": "Specifies the perecentage of collateral limit represented as a decimal number - example 25% is 0.25.",
+      "$ref": "cdm-base-math-NumberRange.schema.json"
+    }
+  }
+}

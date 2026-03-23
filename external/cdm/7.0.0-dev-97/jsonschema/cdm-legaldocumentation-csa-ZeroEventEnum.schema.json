@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ZeroEventEnum",
+  "description": "The enumerated values for defining the relevant trigger(s) for the Minimum Transfer Amount (MTA) to fall to zero.",
+  "enum": [
+    "AdditionalTerminationEvent",
+    "EventOfDefault",
+    "Other",
+    "PotentialEventOfDefault",
+    "TerminationEvent",
+    "A Termination Event in respect of which all Transactions are Affected Transactions"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AdditionalTerminationEvent"
+      ],
+      "title": "AdditionalTerminationEvent",
+      "description": "An Additional Termination Event (ATE)."
+    },
+    
+    {
+      "enum": [
+        "EventOfDefault"
+      ],
+      "title": "EventOfDefault",
+      "description": "An Event of Default."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause."
+    },
+    
+    {
+      "enum": [
+        "PotentialEventOfDefault"
+      ],
+      "title": "PotentialEventOfDefault",
+      "description": "A Potential Event of Default."
+    },
+    
+    {
+      "enum": [
+        "TerminationEvent"
+      ],
+      "title": "TerminationEvent",
+      "description": "A Termination Event."
+    },
+    
+    {
+      "enum": [
+        "A Termination Event in respect of which all Transactions are Affected Transactions"
+      ],
+      "title": "TerminationEventAllAffectedTransactions",
+      "description": "A Termination Event in respect of which all Transactions are Affected Transactions."
+    }
+  ]
+}

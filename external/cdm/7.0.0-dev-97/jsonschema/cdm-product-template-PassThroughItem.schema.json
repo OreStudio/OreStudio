@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "PassThroughItem",
+  "description": "Class to represent a single pass through payment.",
+  "properties": {
+    "payerReceiver": {
+      "description": "This attribute doesn't exists in the FpML construct, which makes use of the PayerReceiver.model group.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "passThroughPercentage": {
+      "description": "Percentage of payments from the underlier which are passed through.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "payerReceiver",
+    "passThroughPercentage"
+  ]
+}

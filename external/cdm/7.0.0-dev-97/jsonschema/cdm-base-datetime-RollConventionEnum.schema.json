@@ -1,0 +1,424 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "RollConventionEnum",
+  "description": "The enumerated values to specify the period term as part of a periodic schedule, i.e. the calculation period end date within the regular part of the calculation period. The value could be a rule, e.g. IMM Settlement Dates, which is the 3rd Wednesday of the month, or it could be a specific day of the month, such as the first day of the applicable month.",
+  "enum": [
+    "EOM",
+    "FRI",
+    "FRN",
+    "IMM",
+    "IMMAUD",
+    "IMMCAD",
+    "IMMNZD",
+    "MON",
+    "NONE",
+    "SAT",
+    "SFE",
+    "SUN",
+    "TBILL",
+    "THU",
+    "TUE",
+    "WED",
+    "1",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "2",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "28",
+    "29",
+    "3",
+    "30",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "EOM"
+      ],
+      "title": "EOM",
+      "description": "Rolls on month end dates irrespective of the length of the month and the previous roll day."
+    },
+    
+    {
+      "enum": [
+        "FRI"
+      ],
+      "title": "FRI",
+      "description": "Rolling weekly on a Friday"
+    },
+    
+    {
+      "enum": [
+        "FRN"
+      ],
+      "title": "FRN",
+      "description": "Roll days are determined according to the FRN Convention or Euro-dollar Convention as described in ISDA 2000 definitions."
+    },
+    
+    {
+      "enum": [
+        "IMM"
+      ],
+      "title": "IMM",
+      "description": "IMM Settlement Dates. The third Wednesday of the (delivery) month."
+    },
+    
+    {
+      "enum": [
+        "IMMAUD"
+      ],
+      "title": "IMMAUD",
+      "description": "The last trading day of the Sydney Futures Exchange 90 Day Bank Accepted Bills Futures contract (see http://www.sfe.com.au/content/sfe/trading/con_specs.pdf). One Sydney business day preceding the second Friday of the relevant settlement."
+    },
+    
+    {
+      "enum": [
+        "IMMCAD"
+      ],
+      "title": "IMMCAD",
+      "description": "The last trading day/expiration day of the Canadian Derivatives Exchange (Bourse de Montreal Inc) Three-month Canadian Bankers' Acceptance Futures (Ticker Symbol BAX). The second London banking day prior to the third Wednesday of the contract month. If the determined day is a Bourse or bank holiday in Montreal or Toronto, the last trading day shall be the previous bank business day. Per Canadian Derivatives Exchange BAX contract specification."
+    },
+    
+    {
+      "enum": [
+        "IMMNZD"
+      ],
+      "title": "IMMNZD",
+      "description": "The last trading day of the Sydney Futures Exchange NZ 90 Day Bank Bill Futures contract (see http://www.sfe.com.au/content/sfe/trading/con_specs.pdf). The first Wednesday after the ninth day of the relevant settlement month."
+    },
+    
+    {
+      "enum": [
+        "MON"
+      ],
+      "title": "MON",
+      "description": "Rolling weekly on a Monday."
+    },
+    
+    {
+      "enum": [
+        "NONE"
+      ],
+      "title": "NONE",
+      "description": "The roll convention is not required. For example, in the case of a daily calculation frequency."
+    },
+    
+    {
+      "enum": [
+        "SAT"
+      ],
+      "title": "SAT",
+      "description": "Rolling weekly on a Saturday"
+    },
+    
+    {
+      "enum": [
+        "SFE"
+      ],
+      "title": "SFE",
+      "description": "Sydney Futures Exchange 90-Day Bank Accepted Bill Futures Settlement Dates. The second Friday of the (delivery) month"
+    },
+    
+    {
+      "enum": [
+        "SUN"
+      ],
+      "title": "SUN",
+      "description": "Rolling weekly on a Sunday"
+    },
+    
+    {
+      "enum": [
+        "TBILL"
+      ],
+      "title": "TBILL",
+      "description": "13-week and 26-week U.S. Treasury Bill Auction Dates. Each Monday except for U.S. (New York) holidays when it will occur on a Tuesday."
+    },
+    
+    {
+      "enum": [
+        "THU"
+      ],
+      "title": "THU",
+      "description": "Rolling weekly on a Thursday"
+    },
+    
+    {
+      "enum": [
+        "TUE"
+      ],
+      "title": "TUE",
+      "description": "Rolling weekly on a Tuesday"
+    },
+    
+    {
+      "enum": [
+        "WED"
+      ],
+      "title": "WED",
+      "description": "Rolling weekly on a Wednesday"
+    },
+    
+    {
+      "enum": [
+        "1"
+      ],
+      "title": "_1",
+      "description": "Rolls on the 1st day of the month."
+    },
+    
+    {
+      "enum": [
+        "10"
+      ],
+      "title": "_10",
+      "description": "Rolls on the 10th day of the month."
+    },
+    
+    {
+      "enum": [
+        "11"
+      ],
+      "title": "_11",
+      "description": "Rolls on the 11th day of the month."
+    },
+    
+    {
+      "enum": [
+        "12"
+      ],
+      "title": "_12",
+      "description": "Rolls on the 12th day of the month."
+    },
+    
+    {
+      "enum": [
+        "13"
+      ],
+      "title": "_13",
+      "description": "Rolls on the 13th day of the month."
+    },
+    
+    {
+      "enum": [
+        "14"
+      ],
+      "title": "_14",
+      "description": "Rolls on the 14th day of the month."
+    },
+    
+    {
+      "enum": [
+        "15"
+      ],
+      "title": "_15",
+      "description": "Rolls on the 15th day of the month."
+    },
+    
+    {
+      "enum": [
+        "16"
+      ],
+      "title": "_16",
+      "description": "Rolls on the 16th day of the month."
+    },
+    
+    {
+      "enum": [
+        "17"
+      ],
+      "title": "_17",
+      "description": "Rolls on the 17th day of the month."
+    },
+    
+    {
+      "enum": [
+        "18"
+      ],
+      "title": "_18",
+      "description": "Rolls on the 18th day of the month."
+    },
+    
+    {
+      "enum": [
+        "19"
+      ],
+      "title": "_19",
+      "description": "Rolls on the 19th day of the month."
+    },
+    
+    {
+      "enum": [
+        "2"
+      ],
+      "title": "_2",
+      "description": "Rolls on the 2nd day of the month."
+    },
+    
+    {
+      "enum": [
+        "20"
+      ],
+      "title": "_20",
+      "description": "Rolls on the 20th day of the month."
+    },
+    
+    {
+      "enum": [
+        "21"
+      ],
+      "title": "_21",
+      "description": "Rolls on the 21st day of the month."
+    },
+    
+    {
+      "enum": [
+        "22"
+      ],
+      "title": "_22",
+      "description": "Rolls on the 22nd day of the month."
+    },
+    
+    {
+      "enum": [
+        "23"
+      ],
+      "title": "_23",
+      "description": "Rolls on the 23rd day of the month."
+    },
+    
+    {
+      "enum": [
+        "24"
+      ],
+      "title": "_24",
+      "description": "Rolls on the 24th day of the month."
+    },
+    
+    {
+      "enum": [
+        "25"
+      ],
+      "title": "_25",
+      "description": "Rolls on the 25th day of the month."
+    },
+    
+    {
+      "enum": [
+        "26"
+      ],
+      "title": "_26",
+      "description": "Rolls on the 26th day of the month."
+    },
+    
+    {
+      "enum": [
+        "27"
+      ],
+      "title": "_27",
+      "description": "Rolls on the 27th day of the month."
+    },
+    
+    {
+      "enum": [
+        "28"
+      ],
+      "title": "_28",
+      "description": "Rolls on the 28th day of the month."
+    },
+    
+    {
+      "enum": [
+        "29"
+      ],
+      "title": "_29",
+      "description": "Rolls on the 29th day of the month."
+    },
+    
+    {
+      "enum": [
+        "3"
+      ],
+      "title": "_3",
+      "description": "Rolls on the 3rd day of the month."
+    },
+    
+    {
+      "enum": [
+        "30"
+      ],
+      "title": "_30",
+      "description": "Rolls on the 30th day of the month."
+    },
+    
+    {
+      "enum": [
+        "4"
+      ],
+      "title": "_4",
+      "description": "Rolls on the 4th day of the month."
+    },
+    
+    {
+      "enum": [
+        "5"
+      ],
+      "title": "_5",
+      "description": "Rolls on the 5th day of the month."
+    },
+    
+    {
+      "enum": [
+        "6"
+      ],
+      "title": "_6",
+      "description": "Rolls on the 6th day of the month."
+    },
+    
+    {
+      "enum": [
+        "7"
+      ],
+      "title": "_7",
+      "description": "Rolls on the 7th day of the month."
+    },
+    
+    {
+      "enum": [
+        "8"
+      ],
+      "title": "_8",
+      "description": "Rolls on the 8th day of the month."
+    },
+    
+    {
+      "enum": [
+        "9"
+      ],
+      "title": "_9",
+      "description": "Rolls on the 9th day of the month."
+    }
+  ]
+}

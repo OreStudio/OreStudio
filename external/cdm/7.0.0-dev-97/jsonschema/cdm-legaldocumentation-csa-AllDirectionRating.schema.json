@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AllDirectionRating",
+  "description": "Used to combine two or more Ratings and associated direction using AND logic.",
+  "properties": {
+    "allDirectionRating": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-DirectionRatingSet.schema.json"
+      },
+      "minItems": 2
+    }
+  }
+}

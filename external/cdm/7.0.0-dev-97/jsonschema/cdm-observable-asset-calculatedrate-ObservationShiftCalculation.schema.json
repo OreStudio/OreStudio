@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "object",
+  "title": "ObservationShiftCalculation",
+  "description": "Parameters to describe the observation shift for a daily compounded or averaged floating rate. This type is used to represent modular computed rates in interestRatePayouts.",
+  "properties": {
+    "offsetDays": {
+      "description": "The number of days of observation shift.",
+      "type": "integer"
+    },
+    "calculationBase": {
+      "description": "Whether the rate is calculated in advance, in arrears, or relative to a reset date.",
+      "$ref": "cdm-observable-asset-calculatedrate-ObservationPeriodDatesEnum.schema.json"
+    },
+    "additionalBusinessDays": {
+      "description": "Any additional business days that be applicable.",
+      "$ref": "cdm-base-datetime-BusinessCenters.schema.json"
+    }
+  }
+}

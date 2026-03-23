@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "CollateralTaxonomy",
+  "description": "Specifies the collateral taxonomy, which is composed of a taxonomy value and a taxonomy source.",
+  "properties": {
+    "taxonomyValue": {
+      "description": "Specifies the taxonomy value.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralTaxonomyValue.schema.json"
+    },
+    "taxonomySource": {
+      "description": "Specifies the taxonomy source.",
+      "$ref": "cdm-base-staticdata-asset-common-TaxonomySourceEnum.schema.json"
+    }
+  },
+  "required": [
+    "taxonomyValue",
+    "taxonomySource"
+  ]
+}

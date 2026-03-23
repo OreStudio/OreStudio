@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "BaseAndEligibleCurrency",
+  "description": "The base and eligible currency(ies) for the document as specified by the parties to the agreement.",
+  "properties": {
+    "baseCurrency": {
+      "description": "The common agreed currency into which relevant amounts of all collateral arrangements between the parties are converted, or if not an actual currency, the process through which this is determined. Where hardcoded (e.g. under the 1994 ISDA Credit Support Annex (Security Interest  NY Law)), the currency that effectively performs this function.",
+      "$ref": "cdm-base-staticdata-asset-common-ISOCurrencyCodeEnum.schema.json"
+    },
+    "baseCurrencyTerminationCurrency": {
+      "description": "A flag detailing whether the Base Currency is set to  the Termination Currency as defined in the related  Master Agreement.",
+      "type": "boolean"
+    },
+    "baseCurrencyOther": {
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "eligibleCurrency": {
+      "description": "A definition of a currency agreed by the parties, typically to indicate the currencies of eligible cash collateral.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-ISOCurrencyCodeEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "eligibleCurrencyInclBaseCurrency": {
+      "description": "A flag detailing whether the Base Currency is included as an Eligible Currency.",
+      "type": "boolean"
+    },
+    "eligibleCurrencyOther": {
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  },
+  "required": [
+    "baseCurrency",
+    "baseCurrencyTerminationCurrency",
+    "eligibleCurrencyInclBaseCurrency"
+  ]
+}

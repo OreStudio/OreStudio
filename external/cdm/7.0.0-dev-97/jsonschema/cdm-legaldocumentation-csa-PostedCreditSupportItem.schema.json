@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "PostedCreditSupportItem",
+  "description": "Posted Credit Support item with corresponding Valuation Percentage, FX Haircut Percentage and any related disputed Posted Credit Support valuation.",
+  "properties": {
+    "cashOrSecurityValue": {
+      "description": "The Base Currency Equivalent of Cash or Security.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "haircutPercentage": {
+      "description": "Valuation Percentage means, for any item of Eligible Collateral (IM), the percentage specified in accordance with Paragraph 13.",
+      "type": "number"
+    },
+    "fxHaircutPercentage": {
+      "description": "FX Haircut Percentage means, for any item of Eligible Collateral (IM), the percentage specified in accordance with Paragraph 13.",
+      "type": "number"
+    },
+    "additionalHaircutPercentage": {
+      "description": "Percentage value of any additional haircut to be applied to a collateral asset,the percentage value is expressed as the discount haircut to the value of the collateral- as an example a 5% haircut would be expressed as 0.05.",
+      "type": "number"
+    },
+    "disputedCashOrSecurityValue": {
+      "description": "Paragraph 5. If a party (a 'Disputing Party') disputes the Value of any Posted Credit Support (IM).",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  },
+  "required": [
+    "cashOrSecurityValue",
+    "haircutPercentage",
+    "disputedCashOrSecurityValue"
+  ]
+}

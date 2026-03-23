@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "ValuationMethodEnum",
+  "description": "The enumerated values to specify the ISDA defined methodology for determining the final price of the reference obligation for purposes of cash settlement.",
+  "enum": [
+    "AverageBlendedHighest",
+    "AverageBlendedMarket",
+    "AverageHighest",
+    "AverageMarket",
+    "BlendedHighest",
+    "BlendedMarket",
+    "Highest",
+    "Market"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AverageBlendedHighest"
+      ],
+      "title": "AverageBlendedHighest"
+    },
+    
+    {
+      "enum": [
+        "AverageBlendedMarket"
+      ],
+      "title": "AverageBlendedMarket"
+    },
+    
+    {
+      "enum": [
+        "AverageHighest"
+      ],
+      "title": "AverageHighest"
+    },
+    
+    {
+      "enum": [
+        "AverageMarket"
+      ],
+      "title": "AverageMarket"
+    },
+    
+    {
+      "enum": [
+        "BlendedHighest"
+      ],
+      "title": "BlendedHighest"
+    },
+    
+    {
+      "enum": [
+        "BlendedMarket"
+      ],
+      "title": "BlendedMarket"
+    },
+    
+    {
+      "enum": [
+        "Highest"
+      ],
+      "title": "Highest"
+    },
+    
+    {
+      "enum": [
+        "Market"
+      ],
+      "title": "Market"
+    }
+  ]
+}

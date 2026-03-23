@@ -1,0 +1,658 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.rates",
+  "type": "string",
+  "title": "InflationRateIndexEnum",
+  "description": "The enumerated values to specify the list of inflation rate indices.",
+  "enum": [
+    "AUD-CPI",
+    "AUS-CPI",
+    "AUS-HICP",
+    "BLG-CPI-GI",
+    "BLG-CPI-HI",
+    "BLG-HICP",
+    "BRL-IGPM",
+    "BRL-IPCA",
+    "CAD-CPI",
+    "CLP-CPI",
+    "CNY-CPI",
+    "CZK-CPI",
+    "DEK-CPI",
+    "DEK-HICP",
+    "DEM-CPI",
+    "DEM-CPI-NRW",
+    "DEM-HICP",
+    "ESP-CPI",
+    "ESP-HICP",
+    "ESP-R-CPI",
+    "ESP-R-HICP",
+    "EUR-AI-CPI",
+    "EUR-AI-R-CPI",
+    "EUR-EXT-CPI",
+    "EUR-EXT-R-CPI",
+    "FIN-CPI",
+    "FIN-HICP",
+    "FRC-EXT-CPI",
+    "FRC-HICP",
+    "GRD-CPI",
+    "GRD-HICP",
+    "HKD-CPI",
+    "HUF-CPI",
+    "IDR-CPI",
+    "ILS-CPI",
+    "IRL-CPI",
+    "IRL-HICP",
+    "ISK-CPI",
+    "ISK-HICP",
+    "ITL-BC-EXT-CPI",
+    "ITL-BC-INT-CPI",
+    "ITL-HICP",
+    "ITL-WC-EXT-CPI",
+    "ITL-WC-INT-CPI",
+    "JPY-CPI-EXF",
+    "KRW-CPI",
+    "LUX-CPI",
+    "LUX-HICP",
+    "MXN-CPI",
+    "MXN-UDI",
+    "MYR-CPI",
+    "NLG-CPI",
+    "NLG-HICP",
+    "NOK-CPI",
+    "NZD-CPI",
+    "PER-CPI",
+    "PLN-CPI",
+    "POR-CPI",
+    "POR-HICP",
+    "RUB-CPI",
+    "SEK-CPI",
+    "SGD-CPI",
+    "SWF-CPI",
+    "TRY-CPI",
+    "TWD-CPI",
+    "UK-CPIH",
+    "UK-HICP",
+    "UK-RPI",
+    "UK-RPIX",
+    "USA-CPI-U",
+    "ZAR-CPI",
+    "ZAR-CPIX"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AUD-CPI"
+      ],
+      "title": "AUD_CPI",
+      "description": "Australia: AUD - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "AUS-CPI"
+      ],
+      "title": "AUS_CPI",
+      "description": "Austria: AUS - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "AUS-HICP"
+      ],
+      "title": "AUS_HICP",
+      "description": "Austria: AUS - Non-revised Harmonised Indices of Consumer Prices (HICP)"
+    },
+    
+    {
+      "enum": [
+        "BLG-CPI-GI"
+      ],
+      "title": "BLG_CPI_GI",
+      "description": "Belgium: BLG - Non-revised Consumer Price Index - General Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "BLG-CPI-HI"
+      ],
+      "title": "BLG_CPI_HI",
+      "description": "Belgium: BLG - Non-revised Consumer Price Index - Health Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "BLG-HICP"
+      ],
+      "title": "BLG_HICP",
+      "description": "Belgium: BLG - Non-revised Harmonised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "BRL-IGPM"
+      ],
+      "title": "BRL_IGPM",
+      "description": "Brazil: BRL - Non-revised Price Index (IGP-M)"
+    },
+    
+    {
+      "enum": [
+        "BRL-IPCA"
+      ],
+      "title": "BRL_IPCA",
+      "description": "Brazil: BRL - Non-revised Consumer Price Index (IPCA)"
+    },
+    
+    {
+      "enum": [
+        "CAD-CPI"
+      ],
+      "title": "CAD_CPI",
+      "description": "Canada: CAD - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "CLP-CPI"
+      ],
+      "title": "CLP_CPI",
+      "description": "Chile: CLP - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "CNY-CPI"
+      ],
+      "title": "CNY_CPI",
+      "description": "China: CNY - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "CZK-CPI"
+      ],
+      "title": "CZK_CPI",
+      "description": "Czech Republic: CZK - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "DEK-CPI"
+      ],
+      "title": "DEK_CPI",
+      "description": "Denmark: DEK - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "DEK-HICP"
+      ],
+      "title": "DEK_HICP",
+      "description": "Denmark: DEK - Non-revised Harmonised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "DEM-CPI"
+      ],
+      "title": "DEM_CPI",
+      "description": "Germany: DEM - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "DEM-CPI-NRW"
+      ],
+      "title": "DEM_CPI_NRW",
+      "description": "Germany: DEM - Non-revised Consumer Price Index for North Rhine-Westphalia"
+    },
+    
+    {
+      "enum": [
+        "DEM-HICP"
+      ],
+      "title": "DEM_HICP",
+      "description": "Germany: DEM - Non-revised Harmonised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "ESP-CPI"
+      ],
+      "title": "ESP_CPI",
+      "description": "Spain: ESP - National-Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "ESP-HICP"
+      ],
+      "title": "ESP_HICP",
+      "description": "Spain: ESP - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "ESP-R-CPI"
+      ],
+      "title": "ESP_R_CPI",
+      "description": "Spain: ESP - National-Revised Consumer Price Index (CPI)."
+    },
+    
+    {
+      "enum": [
+        "ESP-R-HICP"
+      ],
+      "title": "ESP_R_HICP",
+      "description": "Spain: ESP - Harmonised-Revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "EUR-AI-CPI"
+      ],
+      "title": "EUR_AI_CPI",
+      "description": "European Union: EUR - All Items-Non-revised Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "EUR-AI-R-CPI"
+      ],
+      "title": "EUR_AI_R_CPI",
+      "description": "European Union: EUR - All Items-Revised Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "EUR-EXT-CPI"
+      ],
+      "title": "EUR_EXT_CPI",
+      "description": "European Union: EUR - Excluding Tobacco-Non-revised Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "EUR-EXT-R-CPI"
+      ],
+      "title": "EUR_EXT_R_CPI",
+      "description": "European Union: EUR - Excluding Tobacco-Revised Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "FIN-CPI"
+      ],
+      "title": "FIN_CPI",
+      "description": "Finland: FIN - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "FIN-HICP"
+      ],
+      "title": "FIN_HICP",
+      "description": "Finland: FIN - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "FRC-EXT-CPI"
+      ],
+      "title": "FRC_EXT_CPI",
+      "description": "France: FRC - Excluding Tobacco-Non-Revised Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "FRC-HICP"
+      ],
+      "title": "FRC_HICP",
+      "description": "France: FRC - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "GRD-CPI"
+      ],
+      "title": "GRD_CPI",
+      "description": "Greece: GRD - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "GRD-HICP"
+      ],
+      "title": "GRD_HICP",
+      "description": "Greece: GRD - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "HKD-CPI"
+      ],
+      "title": "HKD_CPI",
+      "description": "Hong Kong: HKD - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "HUF-CPI"
+      ],
+      "title": "HUF_CPI",
+      "description": "Hungary: HUF - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "IDR-CPI"
+      ],
+      "title": "IDR_CPI",
+      "description": "Indonesia: IDR - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "ILS-CPI"
+      ],
+      "title": "ILS_CPI",
+      "description": "Israel: ILS - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "IRL-CPI"
+      ],
+      "title": "IRL_CPI",
+      "description": "Ireland: IRL - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "IRL-HICP"
+      ],
+      "title": "IRL_HICP",
+      "description": "Ireland: IRL - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "ISK-CPI"
+      ],
+      "title": "ISK_CPI",
+      "description": "Iceland: ISK - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "ISK-HICP"
+      ],
+      "title": "ISK_HICP",
+      "description": "Iceland: ISK - Harmonised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "ITL-BC-EXT-CPI"
+      ],
+      "title": "ITL_BC_EXT_CPI",
+      "description": "Italy: ITL - Inflation for Blue Collar Workers and Employees-Excluding Tobacco Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "ITL-BC-INT-CPI"
+      ],
+      "title": "ITL_BC_INT_CPI",
+      "description": "Italy: ITL - Inflation for Blue Collar Workers and Employees-Including Tobacco Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "ITL-HICP"
+      ],
+      "title": "ITL_HICP",
+      "description": "Italy: ITL - Non-revised Harmonised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "ITL-WC-EXT-CPI"
+      ],
+      "title": "ITL_WC_EXT_CPI",
+      "description": "Italy: ITL - Whole Community - Excluding Tobacco Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "ITL-WC-INT-CPI"
+      ],
+      "title": "ITL_WC_INT_CPI",
+      "description": "Italy: ITL - Whole Community - Including Tobacco Consumer Price Index"
+    },
+    
+    {
+      "enum": [
+        "JPY-CPI-EXF"
+      ],
+      "title": "JPY_CPI_EXF",
+      "description": "Japan: JPY - Non-revised Consumer Price Index Nationwide General Excluding Fresh Food (CPI)"
+    },
+    
+    {
+      "enum": [
+        "KRW-CPI"
+      ],
+      "title": "KRW_CPI",
+      "description": "South Korea: KRW - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "LUX-CPI"
+      ],
+      "title": "LUX_CPI",
+      "description": "Luxembourg: LUX - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "LUX-HICP"
+      ],
+      "title": "LUX_HICP",
+      "description": "Luxembourg: LUX - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "MXN-CPI"
+      ],
+      "title": "MXN_CPI",
+      "description": "Mexico: MXN - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "MXN-UDI"
+      ],
+      "title": "MXN_UDI",
+      "description": "Mexico: MXN - Unidad de Inversion Index (UDI)"
+    },
+    
+    {
+      "enum": [
+        "MYR-CPI"
+      ],
+      "title": "MYR_CPI",
+      "description": "Malaysia: MYR - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "NLG-CPI"
+      ],
+      "title": "NLG_CPI",
+      "description": "Netherlands: NLG - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "NLG-HICP"
+      ],
+      "title": "NLG_HICP",
+      "description": "Netherlands: NLG - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "NOK-CPI"
+      ],
+      "title": "NOK_CPI",
+      "description": "Norway: NOK - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "NZD-CPI"
+      ],
+      "title": "NZD_CPI",
+      "description": "New Zealand: NZD - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "PER-CPI"
+      ],
+      "title": "PER_CPI",
+      "description": "Peru: PER - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "PLN-CPI"
+      ],
+      "title": "PLN_CPI",
+      "description": "Poland: PLN - Non-Revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "POR-CPI"
+      ],
+      "title": "POR_CPI",
+      "description": "Portugal: POR - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "POR-HICP"
+      ],
+      "title": "POR_HICP",
+      "description": "Portugal: POR - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "RUB-CPI"
+      ],
+      "title": "RUB_CPI",
+      "description": "Russia: RUB - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "SEK-CPI"
+      ],
+      "title": "SEK_CPI",
+      "description": "Sweden: SEK - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "SGD-CPI"
+      ],
+      "title": "SGD_CPI",
+      "description": "Singapore: SGD - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "SWF-CPI"
+      ],
+      "title": "SWF_CPI",
+      "description": "Switzerland: SWF - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "TRY-CPI"
+      ],
+      "title": "TRY_CPI",
+      "description": "Turkey: TRY - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "TWD-CPI"
+      ],
+      "title": "TWD_CPI",
+      "description": "Taiwan: TWD - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "UK-CPIH"
+      ],
+      "title": "UK_CPIH",
+      "description": "United Kingdom: GBP - Non-revised Consumer Prices Index including Housing (UKCPIH)"
+    },
+    
+    {
+      "enum": [
+        "UK-HICP"
+      ],
+      "title": "UK_HICP",
+      "description": "United Kingdom: GBP - Harmonised-Non-revised Consumer Price Index (HICP)"
+    },
+    
+    {
+      "enum": [
+        "UK-RPI"
+      ],
+      "title": "UK_RPI",
+      "description": "United Kingdom: GBP - Non-revised Retail Price Index (UKRPI)"
+    },
+    
+    {
+      "enum": [
+        "UK-RPIX"
+      ],
+      "title": "UK_RPIX",
+      "description": "United Kingdom: GBP - Non-revised Retail Price Index Excluding Mortgage Interest Payments (UKRPIX)"
+    },
+    
+    {
+      "enum": [
+        "USA-CPI-U"
+      ],
+      "title": "USA_CPI_U",
+      "description": "United States: USA - Non-revised Consumer Price Index - Urban (CPI-U)"
+    },
+    
+    {
+      "enum": [
+        "ZAR-CPI"
+      ],
+      "title": "ZAR_CPI",
+      "description": "South Africa: ZAR - Non-revised Consumer Price Index (CPI)"
+    },
+    
+    {
+      "enum": [
+        "ZAR-CPIX"
+      ],
+      "title": "ZAR_CPIX",
+      "description": "South Africa: ZAR - Non-revised Consumer Price Index Excluding Mortgages (CPIX)"
+    }
+  ]
+}

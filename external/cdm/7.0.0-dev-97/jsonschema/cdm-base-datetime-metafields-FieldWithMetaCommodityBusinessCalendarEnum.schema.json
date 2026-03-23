@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "FieldWithMetaCommodityBusinessCalendarEnum",
+  "properties": {
+    "value": {
+      "$ref": "cdm-base-datetime-CommodityBusinessCalendarEnum.schema.json"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

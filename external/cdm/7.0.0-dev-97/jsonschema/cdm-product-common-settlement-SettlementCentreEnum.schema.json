@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "string",
+  "title": "SettlementCentreEnum",
+  "description": "Defines the settlement centre for a securities transaction.",
+  "enum": [
+    "ClearstreamBankingLuxembourg",
+    "EuroclearBank"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ClearstreamBankingLuxembourg"
+      ],
+      "title": "ClearstreamBankingLuxembourg",
+      "description": "ClearStream Banking Luxembourg"
+    },
+    
+    {
+      "enum": [
+        "EuroclearBank"
+      ],
+      "title": "EuroclearBank",
+      "description": "Euroclear Bank"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.identifier",
+  "type": "string",
+  "title": "CommodityLocationIdentifierTypeEnum",
+  "description": "Defines the enumerated values to specify the nature of a location identifier.",
+  "enum": [
+    "BuyerHub",
+    "DeliveryPoint",
+    "DeliveryZone",
+    "EntryPoint",
+    "InterconnectionPoint",
+    "SellerHub",
+    "WithdrawalPoint"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "BuyerHub"
+      ],
+      "title": "BuyerHub",
+      "description": "The hub code of the buyer."
+    },
+    
+    {
+      "enum": [
+        "DeliveryPoint"
+      ],
+      "title": "DeliveryPoint",
+      "description": "The physical or virtual point at which the commodity will be delivered."
+    },
+    
+    {
+      "enum": [
+        "DeliveryZone"
+      ],
+      "title": "DeliveryZone",
+      "description": "The zone covering potential delivery points for the commodity"
+    },
+    
+    {
+      "enum": [
+        "EntryPoint"
+      ],
+      "title": "EntryPoint",
+      "description": "The physical or virtual point at which the commodity enters a transportation system."
+    },
+    
+    {
+      "enum": [
+        "InterconnectionPoint"
+      ],
+      "title": "InterconnectionPoint",
+      "description": "Identification of the border(s) or border point(s) of a transportation contract."
+    },
+    
+    {
+      "enum": [
+        "SellerHub"
+      ],
+      "title": "SellerHub",
+      "description": "The hub code of the seller."
+    },
+    
+    {
+      "enum": [
+        "WithdrawalPoint"
+      ],
+      "title": "WithdrawalPoint",
+      "description": "The physical or virtual point at which the commodity is withdrawn from a transportation system."
+    }
+  ]
+}

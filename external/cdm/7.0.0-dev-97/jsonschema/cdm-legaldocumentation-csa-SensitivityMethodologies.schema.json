@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SensitivityMethodologies",
+  "description": "A class to specificy methodologies to compute sensitivities specific to the agreement.",
+  "properties": {
+    "partyElection": {
+      "description": "Party specific elections for Sensitivity Methodology for Equity and Commodities.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-SensitivityMethodologiesPartyElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

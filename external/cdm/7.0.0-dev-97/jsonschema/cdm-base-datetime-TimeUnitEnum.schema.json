@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "TimeUnitEnum",
+  "description": "The enumeration values to qualify the allowed units of time.",
+  "enum": [
+    "Day",
+    "Hour",
+    "Minute",
+    "Month",
+    "Second",
+    "Week",
+    "Year"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Day"
+      ],
+      "title": "Day",
+      "description": "Day"
+    },
+    
+    {
+      "enum": [
+        "Hour"
+      ],
+      "title": "Hour",
+      "description": "Hour"
+    },
+    
+    {
+      "enum": [
+        "Minute"
+      ],
+      "title": "Minute",
+      "description": "Minute"
+    },
+    
+    {
+      "enum": [
+        "Month"
+      ],
+      "title": "Month",
+      "description": "Month"
+    },
+    
+    {
+      "enum": [
+        "Second"
+      ],
+      "title": "Second",
+      "description": "Second"
+    },
+    
+    {
+      "enum": [
+        "Week"
+      ],
+      "title": "Week",
+      "description": "Week"
+    },
+    
+    {
+      "enum": [
+        "Year"
+      ],
+      "title": "Year",
+      "description": "Year"
+    }
+  ]
+}

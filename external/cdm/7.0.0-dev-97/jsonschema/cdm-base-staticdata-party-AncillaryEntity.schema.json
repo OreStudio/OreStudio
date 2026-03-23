@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "AncillaryEntity",
+  "description": "Holds an identifier for an ancillary entity, either identified directly via its ancillary role or directly as a legal entity.",
+  "properties": {
+    "ancillaryParty": {
+      "description": "Identifies a party via its ancillary role on a transaction (e.g. CCP or DCO through which the trade should be cleared.)",
+      "$ref": "cdm-base-staticdata-party-AncillaryRoleEnum.schema.json"
+    },
+    "legalEntity": {
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    }
+  }
+}

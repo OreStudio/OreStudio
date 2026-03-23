@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "AveragingObservationList",
+  "description": "An unordered list of weighted averaging observations.",
+  "properties": {
+    "averagingObservation": {
+      "description": "A single weighted averaging observation.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-common-schedule-WeightedAveragingObservation.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

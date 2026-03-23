@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "GovernmentalAuthorityDefault",
+  "properties": {
+    "governmentalAuthorityDefaultIsApplicable": {
+      "type": "boolean"
+    },
+    "escrowArrangement": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EscrowArrangement.schema.json"
+    },
+    "localSubstituteProvisionType": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxSubstitutionProvisionTypeEnum.schema.json"
+    },
+    "specifiedValue": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-SpecifiedValueEnum.schema.json"
+    },
+    "maximumDaysOfDisruption": {
+      "$ref": "cdm-observable-asset-ValuationPostponement.schema.json"
+    }
+  },
+  "required": [
+    "governmentalAuthorityDefaultIsApplicable"
+  ]
+}

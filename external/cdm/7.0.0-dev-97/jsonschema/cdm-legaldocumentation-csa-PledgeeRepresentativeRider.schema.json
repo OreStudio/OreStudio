@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "PledgeeRepresentativeRider",
+  "description": "The terms of the Rider for the ISDA Euroclear 2019 Collateral Transfer Agreement with respect to the use of a Pledgee Representative attached to this Agreement.",
+  "properties": {
+    "isApplicable": {
+      "description": "Identification of whether the representative CTA provisions are applicable (True) or not applicable (False).",
+      "type": "boolean"
+    },
+    "party": {
+      "description": "Identification of the represented party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "representativeTerms": {
+      "description": "The specific representative terms applicable when specified.",
+      "type": "string"
+    },
+    "representativeEvent": {
+      "description": "The specification of whether the representative event terms are applicable.",
+      "$ref": "cdm-legaldocumentation-csa-ExceptionEnum.schema.json"
+    },
+    "representativeEventTerms": {
+      "description": "The specific representative event terms applicable when specified.",
+      "type": "string"
+    },
+    "representativeEndDate": {
+      "description": "The definition of representative end date in relation to a representative event.",
+      "$ref": "cdm-base-datetime-CustomisableOffset.schema.json"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

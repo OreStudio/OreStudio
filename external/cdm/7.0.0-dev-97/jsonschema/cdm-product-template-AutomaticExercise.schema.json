@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "AutomaticExercise",
+  "description": "A type to define automatic exercise of a swaption. With automatic exercise the option is deemed to have exercised if it is in the money by more than the threshold amount on the exercise date.",
+  "properties": {
+    "thresholdRate": {
+      "description": "A threshold rate. The threshold of 0.10% would be represented as 0.001",
+      "type": "number"
+    },
+    "isApplicable": {
+      "description": "Boolean that indicates if it has an automaticExercise",
+      "type": "boolean"
+    }
+  }
+}

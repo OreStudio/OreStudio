@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CounterpartyOwnIssuePermitted",
+  "properties": {
+    "counterpartyOwnIssuePermitted": {
+      "description": "Represents a filter based on whether it is permitted for the underlying asset to be issued by the posting entity or part of their corporate family.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "counterpartyOwnIssuePermitted"
+  ]
+}

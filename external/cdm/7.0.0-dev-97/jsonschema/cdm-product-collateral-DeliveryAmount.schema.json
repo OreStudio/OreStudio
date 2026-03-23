@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "DeliveryAmount",
+  "description": "A class to specify the application of Interest Amount with respect the Delivery Amount.",
+  "properties": {
+    "standardElection": {
+      "description": "The standard election as specified by an enumeration.",
+      "$ref": "cdm-product-collateral-DeliveryAmountElectionEnum.schema.json"
+    },
+    "customElection": {
+      "description": "The custom election that might be specified by the parties to the agreement.",
+      "type": "string"
+    }
+  }
+}

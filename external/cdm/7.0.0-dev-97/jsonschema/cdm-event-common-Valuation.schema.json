@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "Valuation",
+  "description": "Defines the value of an investment, asset, or security",
+  "properties": {
+    "amount": {
+      "description": "Current value of the outstanding contract",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "timestamp": {
+      "description": "Date and time of the last valuation marked to market, provided by the central counterparty (CCP) or calculated using the current or last available market price of the inputs.",
+      "type": "string"
+    },
+    "method": {
+      "description": "Method used for the valuation of the transaction by the valuation party.",
+      "$ref": "cdm-event-common-ValuationTypeEnum.schema.json"
+    },
+    "source": {
+      "description": "Source of the valuation of the transaction by the valuation party.",
+      "$ref": "cdm-event-common-ValuationSourceEnum.schema.json"
+    },
+    "scope": {
+      "description": " Defines the scope of the valuation, what it applies to e.g. the collateral or the trade",
+      "$ref": "cdm-event-common-ValuationScopeEnum.schema.json"
+    },
+    "delta": {
+      "description": "The ratio of the change in the price of a derivative transaction to the change in the price of the underlying. This field is applicable only to options and swaptions.",
+      "type": "number"
+    },
+    "valuationTiming": {
+      "description": "Denotes when the valuation was sourced during a business day.",
+      "$ref": "cdm-event-common-PriceTimingEnum.schema.json"
+    },
+    "priceComponent": {
+      "description": "Denotes the price used to compute the valuation.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    }
+  },
+  "required": [
+    "amount",
+    "timestamp",
+    "scope"
+  ]
+}

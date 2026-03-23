@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "QuotationSideEnum",
+  "description": "The enumerated values to specify the side from which perspective a value is quoted.",
+  "enum": [
+    "Afternoon",
+    "Ask",
+    "Bid",
+    "Closing",
+    "High",
+    "Index",
+    "LocationalMarginal",
+    "Low",
+    "MarginalHourly",
+    "MarketClearing",
+    "MeanOfBidAndAsk",
+    "MeanOfHighAndLow",
+    "Mid",
+    "Morning",
+    "NationalSingle",
+    "OSP",
+    "Official",
+    "Opening",
+    "Settlement",
+    "Spot",
+    "UnWeightedAverage",
+    "WeightedAverage"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Afternoon"
+      ],
+      "title": "Afternoon",
+      "description": "Denotes a value as the Afternoon fixing reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Ask"
+      ],
+      "title": "Ask",
+      "description": "Denotes a value 'asked' by a seller for an asset, i.e. the value at which a seller is willing to sell."
+    },
+    
+    {
+      "enum": [
+        "Bid"
+      ],
+      "title": "Bid",
+      "description": "Denotes a value 'bid' by a buyer for an asset, i.e. the value a buyer is willing to pay."
+    },
+    
+    {
+      "enum": [
+        "Closing"
+      ],
+      "title": "Closing",
+      "description": "Denotes a value as the Closing price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "High"
+      ],
+      "title": "High",
+      "description": "Denotes a value as the High price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Index"
+      ],
+      "title": "Index",
+      "description": "Denotes a value as the Index price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "LocationalMarginal"
+      ],
+      "title": "LocationalMarginal",
+      "description": "Denotes a value as the Locational Marginal price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Low"
+      ],
+      "title": "Low",
+      "description": "Denotes a value as the Low price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "MarginalHourly"
+      ],
+      "title": "MarginalHourly",
+      "description": "Denotes a value as the Marginal Hourly price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "MarketClearing"
+      ],
+      "title": "MarketClearing",
+      "description": "Denotes a value as the Market Clearing price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "MeanOfBidAndAsk"
+      ],
+      "title": "MeanOfBidAndAsk",
+      "description": "Denotes a value as the Average of the Bid and Ask prices reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "MeanOfHighAndLow"
+      ],
+      "title": "MeanOfHighAndLow",
+      "description": "Denotes a value as the Average of the High and Low prices reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Mid"
+      ],
+      "title": "Mid",
+      "description": "Denotes a value as the Average of the Midpoint of prices reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Morning"
+      ],
+      "title": "Morning",
+      "description": "Denotes a value as the Morning fixing reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "NationalSingle"
+      ],
+      "title": "NationalSingle",
+      "description": "Denotes a value as the National Single price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "OSP"
+      ],
+      "title": "OSP",
+      "description": "Denotes a value as the Official Settlement Price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Official"
+      ],
+      "title": "Official",
+      "description": "Denotes a value as the Official price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Opening"
+      ],
+      "title": "Opening",
+      "description": "Denotes a value as the Opening price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Settlement"
+      ],
+      "title": "Settlement",
+      "description": "Denotes a value as the Settlement price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Spot"
+      ],
+      "title": "Spot",
+      "description": "Denotes a value as the Spot price reported in or by the relevant Price Source as specified in the relevant Confirmation."
+    },
+    
+    {
+      "enum": [
+        "UnWeightedAverage"
+      ],
+      "title": "UnWeightedAverage",
+      "description": "Denotes a value as the Non-volume Weighted Average of prices effective on the Pricing Date."
+    },
+    
+    {
+      "enum": [
+        "WeightedAverage"
+      ],
+      "title": "WeightedAverage",
+      "description": "Denotes a value as the Volume Weighted Average of prices effective on the Pricing Date."
+    }
+  ]
+}

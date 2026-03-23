@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "ValuationPostponement",
+  "description": "Specifies how long to wait to get a quote from a settlement rate option upon a price source disruption.",
+  "properties": {
+    "maximumDaysOfPostponement": {
+      "description": "The maximum number of days to wait for a quote from the disrupted settlement rate option before proceeding to the next method.",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "maximumDaysOfPostponement"
+  ]
+}

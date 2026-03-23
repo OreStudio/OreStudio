@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "PartyIdentifierTypeEnum",
+  "description": "The enumeration values associated with party identifier sources.",
+  "enum": [
+    "BIC",
+    "LEI",
+    "MIC"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "BIC"
+      ],
+      "title": "BIC",
+      "description": "The Bank Identifier Code."
+    },
+    
+    {
+      "enum": [
+        "LEI"
+      ],
+      "title": "LEI",
+      "description": "The ISO 17442:2012 Legal Entity Identifier."
+    },
+    
+    {
+      "enum": [
+        "MIC"
+      ],
+      "title": "MIC",
+      "description": "The ISO 10383 Market Identifier Code (MIC)."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "CalculationSchedule",
+  "description": "A class that allows the full representation of a payout by defining a set of schedule periods. It supports standard schedule customization by expressing all the dates, quantities, and pricing data in a non-parametric way.",
+  "properties": {
+    "schedulePeriod": {
+      "description": "Defines a period of a calculation schedule structure.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-SchedulePeriod.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

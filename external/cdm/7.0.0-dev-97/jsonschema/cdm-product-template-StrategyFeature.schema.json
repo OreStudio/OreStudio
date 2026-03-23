@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "StrategyFeature",
+  "description": "A class for defining option strategy features.",
+  "properties": {
+    "strikeSpread": {
+      "description": "Definition of the upper strike in a strike spread.",
+      "$ref": "cdm-product-template-StrikeSpread.schema.json"
+    },
+    "calendarSpread": {
+      "description": "Definition of the later expiration date in a calendar spread.",
+      "$ref": "cdm-product-template-CalendarSpread.schema.json"
+    }
+  }
+}

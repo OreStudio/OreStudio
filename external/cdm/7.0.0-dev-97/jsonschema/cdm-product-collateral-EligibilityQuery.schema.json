@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "EligibilityQuery",
+  "description": "Query to check against an EligibleCollateralSpecification",
+  "properties": {
+    "maturity": {
+      "description": "Maturity in years",
+      "type": "number"
+    },
+    "collateralAssetType": {
+      "description": "The asset product type.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetType.schema.json"
+    },
+    "assetCountryOfOrigin": {
+      "description": "The asset country of origin.",
+      "$ref": "cdm-base-staticdata-asset-common-ISOCountryCodeEnum.schema.json"
+    },
+    "denominatedCurrency": {
+      "description": "The underlying asset denominated currency.",
+      "$ref": "cdm-base-staticdata-asset-common-CurrencyCodeEnum.schema.json"
+    },
+    "agencyRating": {
+      "description": "The agency rating based on default risk and creditors claim in event of default associated with specific instrument.",
+      "$ref": "cdm-product-collateral-AgencyRatingCriteria.schema.json"
+    },
+    "issuerType": {
+      "description": "Represents a filter based on the type of entity issuing the asset.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralIssuerType.schema.json"
+    },
+    "issuerName": {
+      "description": "Specifies the issuing entity name or LEI.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    }
+  },
+  "required": [
+    "maturity",
+    "collateralAssetType",
+    "assetCountryOfOrigin",
+    "denominatedCurrency",
+    "agencyRating",
+    "issuerType",
+    "issuerName"
+  ]
+}

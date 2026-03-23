@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "FieldWithMetaQuotedCurrencyPair",
+  "properties": {
+    "value": {
+      "$ref": "cdm-observable-asset-QuotedCurrencyPair.schema.json"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

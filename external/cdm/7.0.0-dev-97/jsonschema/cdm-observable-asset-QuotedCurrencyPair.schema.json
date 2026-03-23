@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "QuotedCurrencyPair",
+  "description": "A class that describes the composition of a rate that has been quoted or is to be quoted. This includes the two currencies and the quotation relationship between the two currencies and is used as a building block throughout the FX specification.",
+  "properties": {
+    "currency1": {
+      "description": "The first currency specified when a pair of currencies is to be evaluated.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "currency2": {
+      "description": "The second currency specified when a pair of currencies is to be evaluated.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "quoteBasis": {
+      "description": "The method by which the exchange rate is quoted.",
+      "$ref": "cdm-observable-asset-QuoteBasisEnum.schema.json"
+    }
+  },
+  "required": [
+    "currency1",
+    "currency2",
+    "quoteBasis"
+  ]
+}

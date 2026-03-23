@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "AssetDeliveryProfile",
+  "description": "Defines the delivery profile of the asset, including the load type and the delivery intervals.",
+  "properties": {
+    "loadType": {
+      "description": "Identification of the delivery profile.",
+      "$ref": "cdm-product-asset-LoadTypeEnum.schema.json"
+    },
+    "block": {
+      "description": "Defines a delivery profile block, including start and end time, days of the week, duration, delivery capacity and price time interval quantity.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-AssetDeliveryProfileBlock.schema.json"
+      },
+      "minItems": 0
+    },
+    "bankHolidaysTreatment": {
+      "description": "Specifies whether the dates defined include holidays or not.",
+      "$ref": "cdm-product-asset-BankHolidayTreatmentEnum.schema.json"
+    }
+  }
+}

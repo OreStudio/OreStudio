@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "RegimeTerms",
+  "description": "A class that is used by the ApplicableRegime and the AdditionalRegime classes to specify the regulatory regime terms.",
+  "properties": {
+    "party": {
+      "description": "The party for which the regime terms are being specified when acting as collateral taker.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "isApplicable": {
+      "description": "The specification of whether the regime is elected as applicable to the party when acting as collateral taker.",
+      "$ref": "cdm-legaldocumentation-csa-ExceptionEnum.schema.json"
+    },
+    "asSpecified": {
+      "description": "The bespoke party specific Regime term elections applicable when specified.",
+      "type": "string"
+    },
+    "simmException": {
+      "description": "The election for SIMM exception to the regulatory regime clause.",
+      "$ref": "cdm-legaldocumentation-csa-SimmException.schema.json"
+    },
+    "retrospectiveEffect": {
+      "description": "Specifies the retrospective effect exception to the regulatory regime clause of Initial Margin documents as either a normalized value specified as part of an enumeration or a customized value specified of type string.",
+      "$ref": "cdm-legaldocumentation-csa-RetrospectiveEffect.schema.json"
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

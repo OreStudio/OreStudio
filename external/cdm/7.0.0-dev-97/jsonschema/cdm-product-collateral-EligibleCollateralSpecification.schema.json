@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "EligibleCollateralSpecification",
+  "description": "Represents a set of criteria used to specify eligible collateral.",
+  "properties": {
+    "identifier": {
+      "description": "Specifies the identifier(s) to uniquely identify eligible collateral or a set of eligible collateral, such as a schedule or equivalant for an identity issuer.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+      },
+      "minItems": 0
+    },
+    "party": {
+      "description": "The parties associated with the specification.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Party.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "counterparty": {
+      "description": "Specification of the roles of the counterparties to the specification.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Counterparty.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "criteria": {
+      "description": "Represents a set of criteria used to specify eligible collateral.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-collateral-EligibleCollateralCriteria.schema.json"
+      },
+      "minItems": 1
+    },
+    "partyRole": {
+      "description": "Specifies the role(s) that each of the party(s) is playing in the context of the specification, eg Payor or Receiver.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

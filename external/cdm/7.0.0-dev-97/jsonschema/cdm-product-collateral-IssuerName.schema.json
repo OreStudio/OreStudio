@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "IssuerName",
+  "properties": {
+    "issuerName": {
+      "description": "Specifies the issuing entity name or LEI.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    }
+  },
+  "required": [
+    "issuerName"
+  ]
+}

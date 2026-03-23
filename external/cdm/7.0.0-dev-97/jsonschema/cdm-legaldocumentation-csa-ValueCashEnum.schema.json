@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValueCashEnum",
+  "description": "Details of how cash collateral is valued when resolving disputes.",
+  "enum": [
+    "Cash - Amount Thereof",
+    "Cash - Amount Thereof multiplied by Valuation Percentage",
+    "Cash - Amount Thereof multiplied by (Valuation Percentage - FX Haircut)",
+    "Other"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Cash - Amount Thereof"
+      ],
+      "title": "CashAmount",
+      "description": "Cash - Amount thereof."
+    },
+    
+    {
+      "enum": [
+        "Cash - Amount Thereof multiplied by Valuation Percentage"
+      ],
+      "title": "CashPercentage",
+      "description": "Cash - amount thereof multiplied by Valuation Percentage."
+    },
+    
+    {
+      "enum": [
+        "Cash - Amount Thereof multiplied by (Valuation Percentage - FX Haircut)"
+      ],
+      "title": "CashPercentageLessHaircut",
+      "description": "Cash - Amount Thereof multiplied by (Valuation Percentage - FX Haircut)."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Exception value."
+    }
+  ]
+}

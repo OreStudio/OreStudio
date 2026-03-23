@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "CallTypeEnum",
+  "description": "Represents the enumeration values that indicate the intended status of message type, such as expected call, notification of a call or a margin call.",
+  "enum": [
+    "ExpectedCall",
+    "MarginCall",
+    "Notification"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ExpectedCall"
+      ],
+      "title": "ExpectedCall",
+      "description": "Identifies an expected Margin Call instruction for either party to notify the other or their service provider of an expected margin call movement."
+    },
+    
+    {
+      "enum": [
+        "MarginCall"
+      ],
+      "title": "MarginCall",
+      "description": "Identifies an actionable Margin Call."
+    },
+    
+    {
+      "enum": [
+        "Notification"
+      ],
+      "title": "Notification",
+      "description": "Identifies a notification of a Margin Call for legal obligation to notify other party to initiate a margin call when notifying party is calculation or valuation agent."
+    }
+  ]
+}

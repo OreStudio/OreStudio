@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SpecifiedOrAccessConditionPartyElection",
+  "description": "The party specific elections in respect to the Specified Condition and Access Condition clause.",
+  "properties": {
+    "party": {
+      "description": "Identifies the party making the election.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "specifiedOrAccessCondition": {
+      "description": "Specifies events that may temporarily or permanently suspend a partys rights to rehypothecate, transfer, or substitute collateral.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-CSASpecifiedOrAccessConditionEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "additionalTerminationEvent": {
+      "description": "Specifies events that may lead to the early termination of the Master Agreement, including suspension of the affected party's rights to rehypothecate, transfer, or substitute collateral.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-AdditionalTerminationEventEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "specifiedAdditionalTerminationEvent": {
+      "description": "Specifies any bespoke Additional Termination Event(s) that are set out in the related Specified Condition clause.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

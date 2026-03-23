@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "JurisdictionRelatedTerms",
+  "description": "A class to specify terms jurisdiction related terms.",
+  "properties": {
+    "japaneseSecuritiesProvisions": {
+      "description": "The Japanese Securities Provisions election.",
+      "$ref": "cdm-legaldocumentation-csa-JapaneseSecuritiesProvisions.schema.json"
+    },
+    "exclusiveJurisdiction": {
+      "description": "Classification of optional exclusive jurisdiction terms.",
+      "type": "boolean"
+    },
+    "juryWaiver": {
+      "description": "The Jury Waiver conditions specific to the agreement.",
+      "type": "boolean"
+    },
+    "frenchLawAddendum": {
+      "description": "The French Law Addendum Provisions specific to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-FrenchLawAddendum.schema.json"
+    },
+    "belgianLawSecurityAgreement": {
+      "description": "The qualification of whether the Belgian Law Security Agreement Addendum is deemed applicable by the parties (True) or not (False).",
+      "type": "boolean"
+    }
+  }
+}

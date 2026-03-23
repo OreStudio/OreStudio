@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "AddtlAttrbts",
+  "properties": {
+    "rskRdcgTx": {
+      "type": "string"
+    },
+    "sctiesFincgTxInd": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "rskRdcgTx",
+    "sctiesFincgTxInd"
+  ]
+}

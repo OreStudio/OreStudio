@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "SecuredDebt",
+  "properties": {
+    "securedType": {
+      "description": "Specifies the type of secured debt product.",
+      "$ref": "cdm-base-staticdata-asset-common-SecuredTypeEnum.schema.json"
+    },
+    "assetBacked": {
+      "description": "Specifies the type of Asset Backed Security.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetBackedEnum.schema.json"
+    },
+    "collateralizedObligation": {
+      "description": "Specifies the type of Collateralized Obligation.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralizedObligationEnum.schema.json"
+    },
+    "coveredBond": {
+      "description": "Specifies the type of Covered Bond.",
+      "$ref": "cdm-base-staticdata-asset-common-CoveredBondEnum.schema.json"
+    },
+    "propertyType": {
+      "description": "Specifies the type of property when the security is linked to a property asset.",
+      "$ref": "cdm-base-staticdata-asset-common-PropertyTypeEnum.schema.json"
+    }
+  }
+}

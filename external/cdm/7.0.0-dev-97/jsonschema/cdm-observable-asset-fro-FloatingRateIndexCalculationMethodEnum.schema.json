@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "string",
+  "title": "FloatingRateIndexCalculationMethodEnum",
+  "description": "3rd level ISDA FRO category.",
+  "enum": [
+    "All-In Compounded Index",
+    "Overnight Averaging",
+    "Compounded Index",
+    "OIS Compounding"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "All-In Compounded Index"
+      ],
+      "title": "AllInCompounded"
+    },
+    
+    {
+      "enum": [
+        "Overnight Averaging"
+      ],
+      "title": "Average",
+      "description": "A calculation methodology using the arithmetic mean."
+    },
+    
+    {
+      "enum": [
+        "Compounded Index"
+      ],
+      "title": "Compounded"
+    },
+    
+    {
+      "enum": [
+        "OIS Compounding"
+      ],
+      "title": "OISCompound",
+      "description": "A calculation methodology using the ISDA-defined OIS compounding formula."
+    }
+  ]
+}

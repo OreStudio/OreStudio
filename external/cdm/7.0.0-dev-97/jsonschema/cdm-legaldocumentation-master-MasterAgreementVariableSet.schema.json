@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "object",
+  "title": "MasterAgreementVariableSet",
+  "description": "Defines a type where additional variables associated to clauses and their variants can be described.",
+  "properties": {
+    "variableSet": {
+      "description": "For some variants a table of variables is required. To support this use case we need to be able to specify variables within variables. Including a variable set here gives us infinite nesting opportunities - realistically we are only ever expecting that a table would need to be defined for any particular clause, so we would expect two levels of nesting as a maximum i.e. variableSet->variableSet->name/value.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-master-MasterAgreementVariableSet.schema.json"
+      },
+      "minItems": 0
+    },
+    "name": {
+      "description": "The name of the variable.",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value for this variable.",
+      "type": "string"
+    }
+  }
+}

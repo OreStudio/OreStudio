@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "PriceTypeEnum",
+  "description": "Provides enumerated values for types of prices in the Price data type in order to explain how to interpret the amount and use it in calculations.",
+  "enum": [
+    "AssetPrice",
+    "CashPrice",
+    "Correlation",
+    "Dividend",
+    "ExchangeRate",
+    "InterestRate",
+    "Variance",
+    "Volatility"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AssetPrice"
+      ],
+      "title": "AssetPrice",
+      "description": "Denotes a price expressed as a cash amount in a given currency to purchase a unit of an asset (e.g. a security or a commodity)."
+    },
+    
+    {
+      "enum": [
+        "CashPrice"
+      ],
+      "title": "CashPrice",
+      "description": "Denotes a price expressed as a cash amount for an upfront fee or other purposes. For example, {amount, unitOfAmount, PerUnitOfAmount} = [12,500, USD, null] = USD 12,500."
+    },
+    
+    {
+      "enum": [
+        "Correlation"
+      ],
+      "title": "Correlation",
+      "description": "Denotes a price expressed as the weighted average of all pairwise correlation coefficients."
+    },
+    
+    {
+      "enum": [
+        "Dividend"
+      ],
+      "title": "Dividend",
+      "description": "Denotes a price expressed as the dividend payment from a index or share."
+    },
+    
+    {
+      "enum": [
+        "ExchangeRate"
+      ],
+      "title": "ExchangeRate",
+      "description": "Denotes a rate to convert one currency or other measure of value to another. Foreign Exchange rates are represented in decimals, e.g. {amount, unitOfAmount, PerUnitOfAmount} = [1.23, USD, GBP] = USD 1.23 for every 1 GBP."
+    },
+    
+    {
+      "enum": [
+        "InterestRate"
+      ],
+      "title": "InterestRate",
+      "description": "Denotes a price expressed as a rate to be applied to quantity/notional amount and represented as decimal, e.g. {amount, unitOfAmount, PerUnitOfAmount} = [0.08, EUR, EUR] = 8%  of the EUR notional quantity/amount or 8 cents for every EUR of notional amount."
+    },
+    
+    {
+      "enum": [
+        "Variance"
+      ],
+      "title": "Variance",
+      "description": "Denotes a price expressed as the the arithmetic average of the squared differences from the mean value of an observable price."
+    },
+    
+    {
+      "enum": [
+        "Volatility"
+      ],
+      "title": "Volatility",
+      "description": "Denotes a price expressed as the the square root of the arithmetic average of the squared differences from the mean value of an observable price."
+    }
+  ]
+}

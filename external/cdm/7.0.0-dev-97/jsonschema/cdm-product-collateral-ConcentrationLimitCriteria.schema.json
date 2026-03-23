@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "ConcentrationLimitCriteria",
+  "description": "Respresents a class to describe a set of criteria to describe specific assets that the concentration limits apply to.",
+  "properties": {
+    "collateralCriteria": {
+      "description": "The specific criteria that applies. It can be created using AND, OR and NOT logic, and both asset and issuer characteristics.",
+      "$ref": "cdm-product-collateral-CollateralCriteria.schema.json"
+    },
+    "appliesTo": {
+      "description": "Specifies which of the two counterparties the criteria applies to (either one or both counterparties). This attribute is optional, in case the applicable party is already specified elsewhere within a party election.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "restrictTo": {
+      "description": "Restrict the criteria to only apply to a specific type of margin, ie IM or VM.",
+      "$ref": "cdm-product-collateral-CollateralMarginTypeEnum.schema.json"
+    },
+    "ratingPriorityResolution": {
+      "description": "Denotes which Criteria has priority if more than one agency rating applies.",
+      "$ref": "cdm-product-collateral-RatingPriorityResolutionEnum.schema.json"
+    },
+    "concentrationLimitType": {
+      "description": "Specifies the type of concentration limit to be applied.",
+      "$ref": "cdm-product-collateral-ConcentrationLimitTypeEnum.schema.json"
+    },
+    "averageTradingVolume": {
+      "description": "Specifies an average trading volume on an exchange in relation to Equity products.",
+      "$ref": "cdm-product-collateral-AverageTradingVolume.schema.json"
+    }
+  }
+}

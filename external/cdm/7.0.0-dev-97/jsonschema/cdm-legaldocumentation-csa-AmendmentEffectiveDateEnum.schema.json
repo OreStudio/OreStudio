@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "AmendmentEffectiveDateEnum",
+  "description": "The enumerated values to specify the effective date of the Amendment to Termination Currency when specified as a specific date (e.g. the annex date).",
+  "enum": [
+    "AgreementDate",
+    "AmendmentEffectiveDate",
+    "AnnexDate",
+    "DeedDate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AgreementDate"
+      ],
+      "title": "AgreementDate",
+      "description": "The effective date corresponds to the Agreement date."
+    },
+    
+    {
+      "enum": [
+        "AmendmentEffectiveDate"
+      ],
+      "title": "AmendmentEffectiveDate",
+      "description": "The effective date corresponds to the Amendment Effective Date (IM)."
+    },
+    
+    {
+      "enum": [
+        "AnnexDate"
+      ],
+      "title": "AnnexDate",
+      "description": "The effective date corresponds to the Annex date."
+    },
+    
+    {
+      "enum": [
+        "DeedDate"
+      ],
+      "title": "DeedDate",
+      "description": "The effective date corresponds to the Deed date."
+    }
+  ]
+}

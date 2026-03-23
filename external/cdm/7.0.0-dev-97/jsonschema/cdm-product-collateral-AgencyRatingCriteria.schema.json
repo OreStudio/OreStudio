@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "AgencyRatingCriteria",
+  "description": "Represents a class to specify a credit notation.",
+  "properties": {
+    "creditNotation": {
+      "description": "Indicates the agency rating criteria specified for the asset or issuer.",
+      "$ref": "cdm-observable-asset-CreditNotation.schema.json"
+    },
+    "mismatchResolution": {
+      "description": "Indicator for options to be used if several agency ratings (>1) are specified and its necessary to identify specific charateristics. i.e (lowest or highest).",
+      "$ref": "cdm-observable-asset-CreditNotationMismatchResolutionEnum.schema.json"
+    },
+    "referenceAgency": {
+      "description": "identifies the dominant reference agency if there is a missmatch and several reference agencies exsist.",
+      "$ref": "cdm-observable-asset-CreditRatingAgencyEnum.schema.json"
+    },
+    "boundary": {
+      "description": "Indicates the boundary of a credit agency rating i.e minimum or maximum.",
+      "$ref": "cdm-observable-asset-CreditNotationBoundaryEnum.schema.json"
+    }
+  },
+  "required": [
+    "creditNotation"
+  ]
+}

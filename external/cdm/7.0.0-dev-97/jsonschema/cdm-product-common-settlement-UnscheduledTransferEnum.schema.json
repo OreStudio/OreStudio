@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "string",
+  "title": "UnscheduledTransferEnum",
+  "description": "The qualification of the type of ad-hoc transfers and cash flows that can be associated with contracts and their lifecycle events.",
+  "enum": [
+    "Recall",
+    "Return"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Recall"
+      ],
+      "title": "Recall",
+      "description": "A recall of securities by the lender who has lent them out."
+    },
+    
+    {
+      "enum": [
+        "Return"
+      ],
+      "title": "Return",
+      "description": "A return by the borrower to the lender of the full or partial quantity of securities on the contract."
+    }
+  ]
+}

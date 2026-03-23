@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "FrenchLawAddendum",
+  "description": "A class to specify party specific elections when a Collateral Transfer Agreement is governed by French Law.",
+  "properties": {
+    "isApplicable": {
+      "description": "The qualification of whether the French Law Addendum is deemed applicable by the parties (True) or not (False).",
+      "type": "boolean"
+    },
+    "partyElection": {
+      "description": "The parties French Law Addendum Elections.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-FrenchLawAddendumElection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

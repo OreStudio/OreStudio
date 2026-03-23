@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "Observable",
+  "description": "Specifies the object to be observed for a price, it could be an asset or a reference.",
+  "properties": {
+    "Asset": {
+      "description": "The object to be observed is an Asset, ie something that can be owned and transferred in the financial markets.",
+      "$ref": "cdm-base-staticdata-asset-common-Asset.schema.json"
+    },
+    "Basket": {
+      "description": "The object to be observed is a Basket, ie a collection of Observables with an identifier and optional weightings.",
+      "$ref": "cdm-observable-asset-Basket.schema.json"
+    },
+    "Index": {
+      "description": "The object to be observed is an Index, ie an observable computed on the prices, rates or valuations of a number of assets.",
+      "$ref": "cdm-observable-asset-Index.schema.json"
+    }
+  }
+}

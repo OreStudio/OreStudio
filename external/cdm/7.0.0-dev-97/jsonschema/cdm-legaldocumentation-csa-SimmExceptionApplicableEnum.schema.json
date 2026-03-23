@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "SimmExceptionApplicableEnum",
+  "description": "Values to specify the SIMM normalized exception approaches.",
+  "enum": [
+    "FallBackToMandatoryMethod",
+    "MandatoryMethod",
+    "OtherMethod"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FallBackToMandatoryMethod"
+      ],
+      "title": "FallBackToMandatoryMethod",
+      "description": "The ISDA Standard Initial Margin Model exception is applicable as a Fallback to Mandatory Method."
+    },
+    
+    {
+      "enum": [
+        "MandatoryMethod"
+      ],
+      "title": "MandatoryMethod",
+      "description": "The ISDA Standard Initial Margin Model exception is applicable as a Mandatory Method."
+    },
+    
+    {
+      "enum": [
+        "OtherMethod"
+      ],
+      "title": "OtherMethod",
+      "description": "An alternative approach is described in the document."
+    }
+  ]
+}

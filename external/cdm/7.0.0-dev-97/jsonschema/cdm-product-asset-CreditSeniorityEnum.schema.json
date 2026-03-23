@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "CreditSeniorityEnum",
+  "description": "Seniority of debt instruments comprising the index.",
+  "enum": [
+    "Other",
+    "SeniorLossAbsorbingCapacity",
+    "SeniorSec",
+    "SeniorUnSec",
+    "SubLowerTier2",
+    "SubTier1",
+    "SubTier3",
+    "SubUpperTier2"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Other as defined under EMIR."
+    },
+    
+    {
+      "enum": [
+        "SeniorLossAbsorbingCapacity"
+      ],
+      "title": "SeniorLossAbsorbingCapacity",
+      "description": "Senior Loss Absorbing Capacity (RED Tier Code: SNRLAC)."
+    },
+    
+    {
+      "enum": [
+        "SeniorSec"
+      ],
+      "title": "SeniorSec",
+      "description": "Senior domestic (RED Tier Code: SECDOM)."
+    },
+    
+    {
+      "enum": [
+        "SeniorUnSec"
+      ],
+      "title": "SeniorUnSec",
+      "description": "Senior foreign (RED Tier Code: SNRFOR)."
+    },
+    
+    {
+      "enum": [
+        "SubLowerTier2"
+      ],
+      "title": "SubLowerTier2",
+      "description": "Subordinate, Lower Tier 2 (RED Tier Code: SUBLT2)."
+    },
+    
+    {
+      "enum": [
+        "SubTier1"
+      ],
+      "title": "SubTier1",
+      "description": "Subordinate Tier 1 (RED Tier Code: PREFT1)."
+    },
+    
+    {
+      "enum": [
+        "SubTier3"
+      ],
+      "title": "SubTier3",
+      "description": "Subordinate, Tier 3."
+    },
+    
+    {
+      "enum": [
+        "SubUpperTier2"
+      ],
+      "title": "SubUpperTier2",
+      "description": "Subordinate, Upper Tier 2 (RED Tier Code: JRSUBUT2)."
+    }
+  ]
+}

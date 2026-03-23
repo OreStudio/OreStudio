@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "Instrument",
+  "description": "A type of Asset that is issued by one party to one or more others.",
+  "properties": {
+    "ListedDerivative": {
+      "description": "A securitized derivative on another asset that is created by an exchange.",
+      "$ref": "cdm-base-staticdata-asset-common-ListedDerivative.schema.json"
+    },
+    "Loan": {
+      "description": "An Asset that represents a loan or borrow obligation.",
+      "$ref": "cdm-base-staticdata-asset-common-Loan.schema.json"
+    },
+    "Security": {
+      "description": "An Asset that is issued by a party to be held by or transferred to others.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    }
+  }
+}

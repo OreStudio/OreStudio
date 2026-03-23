@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "ReferencePoolItem",
+  "description": "This type contains all the constituent weight and reference information.",
+  "properties": {
+    "constituentWeight": {
+      "description": "Describes the weight of each of the constituents within the basket. If not provided, it is assumed to be equal weighted.",
+      "$ref": "cdm-product-template-ConstituentWeight.schema.json"
+    },
+    "referencePair": {
+      "$ref": "cdm-product-asset-ReferencePair.schema.json"
+    },
+    "protectionTermsReference": {
+      "description": "Reference to the documentation terms applicable to this item.",
+      "$ref": "cdm-product-asset-metafields-ReferenceWithMetaProtectionTerms.schema.json"
+    },
+    "cashSettlementTermsReference": {
+      "description": "Reference to the cash settlement terms applicable to this item.",
+      "$ref": "cdm-product-common-settlement-metafields-ReferenceWithMetaCashSettlementTerms.schema.json"
+    },
+    "physicalSettlementTermsReference": {
+      "description": "Reference to the physical settlement terms applicable to this item.",
+      "$ref": "cdm-product-common-settlement-metafields-ReferenceWithMetaPhysicalSettlementTerms.schema.json"
+    }
+  },
+  "required": [
+    "referencePair"
+  ]
+}

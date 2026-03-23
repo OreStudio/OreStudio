@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexFixingDetails",
+  "description": "This type holds parameters defining the fixingt time and offset for a floating rate index.",
+  "properties": {
+    "fixingTime": {
+      "description": "Parameters defining the normal fixing time (can vary by index tenor / designated maturity).",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexFixingTime.schema.json"
+    },
+    "fixingOffset": {
+      "description": "Parameters defining the normal fixing offset (can vary by index tenor / designated maturity).",
+      "$ref": "cdm-observable-asset-fro-BusinessDayOffset.schema.json"
+    }
+  }
+}

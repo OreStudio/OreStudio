@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportAgreementInitialMarginElections",
+  "description": "The set of elections which specify an Initial Margin Credit Support Annex or Deed.",
+  "properties": {
+    "baseAndEligibleCurrency": {
+      "description": "The base and eligible currency(ies) for the document as specified by the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-BaseAndEligibleCurrency.schema.json"
+    },
+    "conditionsPrecedent": {
+      "description": "The set of elections that may overwrite the default Condition Precedent provision, and the set of provisions that are deemed Access Condition.",
+      "$ref": "cdm-legaldocumentation-csa-ConditionsPrecedent.schema.json"
+    },
+    "substitution": {
+      "description": "The conditions under which the Security Provider can substitute posted collateral.",
+      "$ref": "cdm-legaldocumentation-csa-Substitution.schema.json"
+    },
+    "disputeResolution": {
+      "description": "The election terms under which a party disputes (i) the Calculation Agents calculation of a Delivery Amount or a Return Amount, or (ii) the Value of any Transfer of Eligible Credit Support or Posted Credit Support.",
+      "$ref": "cdm-legaldocumentation-csa-DisputeResolution.schema.json"
+    },
+    "holdingAndUsingPostedCollateral": {
+      "description": "The elections for the holding and using of posted collateral by the respective parties to the Credit Support Annex for Variation Margin.",
+      "$ref": "cdm-legaldocumentation-csa-HoldingAndUsingPostedCollateral.schema.json"
+    },
+    "distributionAndInterestPayment": {
+      "description": "The Distributions and Interest Payment terms specified as part of the agreement.",
+      "$ref": "cdm-product-collateral-DistributionAndInterestPayment.schema.json"
+    },
+    "otherEligibleAndPostedSupport": {
+      "description": "The Other Eligible Support elections associated with margin agreements.",
+      "$ref": "cdm-legaldocumentation-csa-OtherEligibleAndPostedSupport.schema.json"
+    },
+    "demandsAndNotices": {
+      "description": "The optional specification of address where the demands, specifications and notices will be communicated to for each of the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-DemandsAndNotices.schema.json"
+    },
+    "additionalRepresentations": {
+      "description": "The specification Additional Representations that may be applicable to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-AdditionalRepresentations.schema.json"
+    },
+    "masterAgreementDatedAsOfDate": {
+      "description": "Defines the dates agreed by the parties as the date of the Credit Support Annex or Credit Support Deed.",
+      "$ref": "cdm-legaldocumentation-csa-MasterAgreementDatedAsOfDate.schema.json"
+    },
+    "finalReturns": {
+      "description": "A clause providing that final return collateral is to be provided without consideration of any Minimum Transfer Amount and collateral haircut.",
+      "$ref": "cdm-legaldocumentation-csa-FinalReturns.schema.json"
+    },
+    "regime": {
+      "description": "The Regime Table provision , which determines the regulatory regime(s) applicable to each of the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-Regime.schema.json"
+    },
+    "oneWayProvisions": {
+      "description": "The determination of whether the One Way Provisions are applicable (true) or not applicable (false).",
+      "$ref": "cdm-legaldocumentation-csa-OneWayProvisions.schema.json"
+    },
+    "generalSimmElections": {
+      "description": "The specification of the ISDA SIMM Method for all Covered Transactions with respect to all Regimes.",
+      "$ref": "cdm-legaldocumentation-csa-GeneralSimmElections.schema.json"
+    },
+    "identifiedCrossCurrencySwap": {
+      "description": "The qualification of whether cross-currency swaps need to be identified in the Confirmation so that the obligations to exchange principal be disregarded for the purpose of determining the Delivery Amount or Return Amount.",
+      "type": "boolean"
+    },
+    "sensitivityMethodologies": {
+      "description": "The specification of methodologies to compute sensitivities specific to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-SensitivityMethodologies.schema.json"
+    },
+    "fxHaircutCurrency": {
+      "description": "The reference currency for the purpose of specifying the FX Haircut relating to a posting obligation, as being either the Termination Currency or an FX Designated Currency.",
+      "$ref": "cdm-legaldocumentation-csa-FxHaircutCurrency.schema.json"
+    },
+    "postingObligations": {
+      "description": "The security providers posting obligations.",
+      "$ref": "cdm-legaldocumentation-csa-PostingObligations.schema.json"
+    },
+    "substitutedRegime": {
+      "description": "The specification of Additional regimes for purposes of determining whether a Regulatory Event has occurred.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-SubstitutedRegime.schema.json"
+      },
+      "minItems": 0
+    },
+    "coveredTransactions": {
+      "description": "The specification of transactions covered by the terms of the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CoveredTransactions.schema.json"
+    },
+    "rightsEvents": {
+      "description": "The bespoke provisions that might be specified by the parties to the agreement to specify the rights of Security Taker and/or Security Provider when an Early Termination or Access Condition event has occurred.",
+      "$ref": "cdm-legaldocumentation-csa-RightsEvents.schema.json"
+    },
+    "custodyArrangements": {
+      "description": "The Custodian and Segregated Account details in respect of each party to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CustodyArrangements.schema.json"
+    },
+    "otherAgreements": {
+      "description": "The bespoke definition of other agreement terms as specified by the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-OtherAgreements.schema.json"
+    },
+    "terminationCurrencyAmendment": {
+      "description": "The bespoke provision that might be specified by the parties to the agreement applicable to Termination Currency.  Unless specified the definition of Termination Currency has the meaning specified in the Schedule to the ISDA Master Agreement.",
+      "$ref": "cdm-legaldocumentation-csa-TerminationCurrencyAmendment.schema.json"
+    },
+    "minimumTransferAmountAmendment": {
+      "description": "The bespoke provision that might be specified by the parties to the agreement applicable to Minimum Transfer Amount.  Unless specified the definition of Minimum Transfer Amount in any Other Regulatory CSA has the meaning specified in such Other Regulatory CSA.",
+      "$ref": "cdm-legaldocumentation-csa-MinimumTransferAmountAmendment.schema.json"
+    },
+    "interpretationTerms": {
+      "description": "The bespoke provision that might be specified by the parties to the agreement applicable to Interpretations.",
+      "type": "string"
+    },
+    "processAgent": {
+      "description": "The Process Agent that might be appointed by the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-ProcessAgent.schema.json"
+    },
+    "appropriatedCollateralValuation": {
+      "description": "The election for the Valuation of Appropriate Collateral.",
+      "$ref": "cdm-legaldocumentation-csa-AppropriatedCollateralValuation.schema.json"
+    },
+    "jurisdictionRelatedTerms": {
+      "description": "The jurisdiction specific terms relevant to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-JurisdictionRelatedTerms.schema.json"
+    },
+    "additionalAmendments": {
+      "description": "Any additional amendments that might be specified by the parties to the agreement.",
+      "type": "string"
+    },
+    "additionalBespokeTerms": {
+      "description": "Any additional terms that might be specified applicable.",
+      "type": "string"
+    },
+    "trustSchemeAddendum": {
+      "description": "The qualification of whether Trust Scheme Addendum is applicable (True) or not applicable (False).",
+      "type": "boolean"
+    },
+    "clientAssetSourcebookAdditionalLanguage": {
+      "description": "Details of language relating to Client Asset and Money Rules (CASS).",
+      "type": "string"
+    },
+    "creditSupportObligations": {
+      "description": "The Credit Support Obligations applicable to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportObligationsInitialMargin.schema.json"
+    },
+    "calculationAndTiming": {
+      "description": "The set of elections for determining Valuation and Timing terms specific to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CalculationAndTimingInitialMargin.schema.json"
+    }
+  },
+  "required": [
+    "regime",
+    "oneWayProvisions",
+    "sensitivityMethodologies",
+    "postingObligations",
+    "rightsEvents",
+    "terminationCurrencyAmendment",
+    "minimumTransferAmountAmendment",
+    "processAgent",
+    "trustSchemeAddendum",
+    "creditSupportObligations",
+    "calculationAndTiming"
+  ]
+}

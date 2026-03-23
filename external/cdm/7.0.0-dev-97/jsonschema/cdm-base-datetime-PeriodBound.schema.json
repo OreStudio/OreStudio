@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "PeriodBound",
+  "description": "Indicator to specify if the period bound is defined as a period and whether the bound is inclusive.",
+  "properties": {
+    "period": {
+      "description": "Specifies the period is to be used as the bound, e.g. 5Y.",
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    },
+    "inclusive": {
+      "description": "Specifies whether the period bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "period",
+    "inclusive"
+  ]
+}

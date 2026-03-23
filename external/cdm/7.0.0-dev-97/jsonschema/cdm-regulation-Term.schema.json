@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Term",
+  "properties": {
+    "unit": {
+      "type": "string"
+    },
+    "val": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "unit",
+    "val"
+  ]
+}

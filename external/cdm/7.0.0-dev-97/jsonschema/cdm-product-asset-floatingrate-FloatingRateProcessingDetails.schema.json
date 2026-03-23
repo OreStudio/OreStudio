@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset.floatingrate",
+  "type": "object",
+  "title": "FloatingRateProcessingDetails",
+  "description": "Type for reporting the details of the rate treatment.  This could potentially be replaced by the existing FloatingRateDefinition type , but this is slightly more detailed.",
+  "properties": {
+    "rawRate": {
+      "description": "The raw or untreated rate, prior to any of the rate treatments.",
+      "type": "number"
+    },
+    "processingParameters": {
+      "$ref": "cdm-product-asset-floatingrate-FloatingRateProcessingParameters.schema.json"
+    },
+    "processedRate": {
+      "description": "The value of the rate after processing.",
+      "type": "number"
+    },
+    "spreadExclusiveRate": {
+      "description": "The value of the processed rate without the spread applied, for subsequent compounding, etc.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "rawRate",
+    "processedRate",
+    "spreadExclusiveRate"
+  ]
+}

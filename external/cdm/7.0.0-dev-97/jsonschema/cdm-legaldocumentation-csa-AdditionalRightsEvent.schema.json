@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AdditionalRightsEvent",
+  "description": "A class to specify the Pledgor/Obligor/Chargor Additional Rights Event election.",
+  "properties": {
+    "isApplicable": {
+      "description": "The Pledgor Additional Rights Event election is applicable when True, and not applicable when False.",
+      "type": "boolean"
+    },
+    "qualification": {
+      "description": "The qualification of the Pledgor Additional Rights Event election, when specified.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

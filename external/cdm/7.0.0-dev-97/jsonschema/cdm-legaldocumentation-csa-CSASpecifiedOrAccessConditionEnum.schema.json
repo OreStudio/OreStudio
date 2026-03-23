@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "CSASpecifiedOrAccessConditionEnum",
+  "description": "Specifies the types of events in the related Master Agreement that, when triggered, could temporarily or permanently suspend rights to rehypothecate, transfer or substitute collateral.",
+  "enum": [
+    "AdditionalTerminationEvents",
+    "CreditEventUponMerger",
+    "ForceMajeureEvent",
+    "Illegality",
+    "PotentialTerminationEvents",
+    "TaxEvent",
+    "TaxEventUponMerger"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AdditionalTerminationEvents"
+      ],
+      "title": "AdditionalTerminationEvents",
+      "description": "Specifies events which could trigger rights to early termination."
+    },
+    
+    {
+      "enum": [
+        "CreditEventUponMerger"
+      ],
+      "title": "CreditEventUponMerger",
+      "description": "Specifies an event where a party merges and the new entity becomes materially less creditworthy than the original."
+    },
+    
+    {
+      "enum": [
+        "ForceMajeureEvent"
+      ],
+      "title": "ForceMajeureEvent",
+      "description": "Specifies an event beyond the control of one or both of the parties which prevents or renders it impossible to fulfill their obligations to the other party."
+    },
+    
+    {
+      "enum": [
+        "Illegality"
+      ],
+      "title": "Illegality",
+      "description": "Specifies an event where a party is unable to comply with its obligations under the Master Agreement because to do so would be unlawful."
+    },
+    
+    {
+      "enum": [
+        "PotentialTerminationEvents"
+      ],
+      "title": "PotentialTerminationEvents",
+      "description": "Specifies a potential event that could trigger rights to early termination."
+    },
+    
+    {
+      "enum": [
+        "TaxEvent"
+      ],
+      "title": "TaxEvent",
+      "description": "Specifies an event where a party experiences changes in tax laws incurring further tax liability."
+    },
+    
+    {
+      "enum": [
+        "TaxEventUponMerger"
+      ],
+      "title": "TaxEventUponMerger",
+      "description": "Specifies an event where a party incurs tax liability due to a merger."
+    }
+  ]
+}

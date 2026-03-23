@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "ListingSector",
+  "description": "Specifies a filter based on an industry sector.",
+  "properties": {
+    "sector": {
+      "description": "Represents a filter based on an industry sector defined under a system for classifying industry types such as Global Industry Classification Standard (GICS) and North American Industry Classification System (NAICS)",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

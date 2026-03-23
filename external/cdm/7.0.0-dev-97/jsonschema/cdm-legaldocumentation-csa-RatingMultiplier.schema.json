@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "RatingMultiplier",
+  "description": "A logical container to hold a defined set of related data. In this case the collation of Ratings Information and associated exposure multiplier.",
+  "properties": {
+    "ratingVariableSet": {
+      "description": "Allows a grouping of Rating agencies and Rating values.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-CreditNotation.schema.json"
+      },
+      "minItems": 1
+    },
+    "exposureMultiplier": {
+      "description": "Specifies the multiplier applied to exposure based on the credit rating of the rated party.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "exposureMultiplier"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "InterpolationMethodEnum",
+  "description": "The enumerated values to specify the interpolation method, e.g. linear.",
+  "enum": [
+    "Linear",
+    "LinearZeroYield",
+    "None"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Linear"
+      ],
+      "title": "Linear",
+      "description": "Linear Interpolation applicable."
+    },
+    
+    {
+      "enum": [
+        "LinearZeroYield"
+      ],
+      "title": "LinearZeroYield",
+      "description": "Linear Interpolation applicable."
+    },
+    
+    {
+      "enum": [
+        "None"
+      ],
+      "title": "None",
+      "description": "No Interpolation applicable."
+    }
+  ]
+}

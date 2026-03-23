@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "object",
+  "title": "AdditionalDisruptionEvents",
+  "description": "A type for defining the Additional Disruption Events.",
+  "properties": {
+    "changeInLaw": {
+      "type": "boolean"
+    },
+    "failureToDeliver": {
+      "type": "boolean"
+    },
+    "insolvencyFiling": {
+      "type": "boolean"
+    },
+    "hedgingDisruption": {
+      "type": "boolean"
+    },
+    "increasedCostOfHedging": {
+      "type": "boolean"
+    },
+    "foreignOwnershipEvent": {
+      "type": "boolean"
+    },
+    "lossOfStockBorrow": {
+      "type": "boolean"
+    },
+    "maximumStockLoanRate": {
+      "description": "Specifies the maximum stock loan rate for Loss of Stock Borrow. A percentage of 5% is represented as 0.05.",
+      "type": "number"
+    },
+    "increasedCostOfStockBorrow": {
+      "type": "boolean"
+    },
+    "initialStockLoanRate": {
+      "description": "Specifies the initial stock loan per ISDA Def. A percentage of 5% is represented as 0.05.",
+      "type": "number"
+    },
+    "determiningParty": {
+      "description": "Specifies the party which determines additional disruption events.",
+      "$ref": "cdm-base-staticdata-party-AncillaryRoleEnum.schema.json"
+    },
+    "additionalBespokeTerms": {
+      "description": "Where parties may optionnaly describe any extra bespoke agreements, in regards of the standardized Extraordinary Events.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-transaction-Clause.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

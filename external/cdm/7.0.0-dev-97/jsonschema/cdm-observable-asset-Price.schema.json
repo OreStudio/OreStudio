@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "Price",
+  "description": "Specifies a price as a single value to be associated to a financial product. This data type extends PriceSchedule and requires that only the amount value exists.",
+  "properties": {
+    "value": {
+      "description": "Specifies the value of the measure as a number. Optional because in a measure vector or schedule, this single value may be omitted.",
+      "type": "number"
+    },
+    "unit": {
+      "description": "Qualifies the unit by which the amount is measured. Optional because a measure may be unit-less (e.g. when representing a ratio between amounts in the same unit).",
+      "$ref": "cdm-base-math-UnitType.schema.json"
+    },
+    "datedValue": {
+      "description": "A schedule of step date and value pairs. On each step date the associated step value becomes effective. The step dates are used to order the steps by ascending order. This attribute is optional so the data type may be used to define a schedule with a single value.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-math-DatedValue.schema.json"
+      },
+      "minItems": 0
+    },
+    "perUnitOf": {
+      "description": "Provides an attribute to define the unit of the thing being priced. For example, {amount, unitOfAmount, PerUnitOfAmount} = [10, EUR, Shares] = (10.00 EUR/SHARE) * (300,000 SHARES) = EUR 3,000,000.00 (Shares cancel out in the calculation).",
+      "$ref": "cdm-base-math-UnitType.schema.json"
+    },
+    "priceType": {
+      "description": "Specifies the price type as an enumeration: interest rate, exchange rate, asset price etc. This attribute is mandatory so that prices can always be clasiffied according to their type. The price type implies some constraints on the price's units.",
+      "$ref": "cdm-observable-asset-PriceTypeEnum.schema.json"
+    },
+    "priceSubType": {
+      "description": "Allows further classification of the chosen price type.",
+      "$ref": "cdm-observable-asset-PriceSubTypeEnum.schema.json"
+    },
+    "priceExpression": {
+      "description": "(Optionally) Specifies whether the price is expressed in absolute or percentage terms.",
+      "$ref": "cdm-observable-asset-PriceExpressionEnum.schema.json"
+    },
+    "composite": {
+      "description": "(Optionally) Specifies the underlying price components if the price can be expressed as a composite: e.g. dirty price = clean price + accrued.",
+      "$ref": "cdm-observable-asset-PriceComposite.schema.json"
+    },
+    "arithmeticOperator": {
+      "description": "(Optionally) When the price is to be understood as an operator to apply to an observable, i.e. a spread, multiplier or min/max.",
+      "$ref": "cdm-base-math-ArithmeticOperationEnum.schema.json"
+    },
+    "premiumType": {
+      "description": "(Optionally) Additional attribute that can further define any premium to the price.",
+      "$ref": "cdm-observable-asset-PremiumTypeEnum.schema.json"
+    }
+  }
+}

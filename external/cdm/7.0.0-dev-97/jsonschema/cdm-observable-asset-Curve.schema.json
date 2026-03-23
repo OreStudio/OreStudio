@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "Curve",
+  "properties": {
+    "interestRateCurve": {
+      "$ref": "cdm-observable-asset-InterestRateCurve.schema.json"
+    },
+    "commodityCurve": {
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaCommodityReferencePriceEnum.schema.json"
+    }
+  }
+}

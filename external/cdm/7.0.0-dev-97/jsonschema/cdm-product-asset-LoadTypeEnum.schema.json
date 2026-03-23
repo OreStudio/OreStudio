@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "LoadTypeEnum",
+  "description": "Specifies the load type of the delivery.",
+  "enum": [
+    "BaseLoad",
+    "BlockHours",
+    "GasDay",
+    "OffPeak",
+    "Other",
+    "PeakLoad",
+    "Shaped"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "BaseLoad"
+      ],
+      "title": "BaseLoad",
+      "description": "Base load"
+    },
+    
+    {
+      "enum": [
+        "BlockHours"
+      ],
+      "title": "BlockHours",
+      "description": "Block Hours"
+    },
+    
+    {
+      "enum": [
+        "GasDay"
+      ],
+      "title": "GasDay",
+      "description": "Gas Day"
+    },
+    
+    {
+      "enum": [
+        "OffPeak"
+      ],
+      "title": "OffPeak",
+      "description": "Off-peak load"
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Other"
+    },
+    
+    {
+      "enum": [
+        "PeakLoad"
+      ],
+      "title": "PeakLoad",
+      "description": "Peak load"
+    },
+    
+    {
+      "enum": [
+        "Shaped"
+      ],
+      "title": "Shaped",
+      "description": "Shaped"
+    }
+  ]
+}

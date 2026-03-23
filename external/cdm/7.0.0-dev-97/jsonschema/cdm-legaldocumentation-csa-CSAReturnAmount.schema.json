@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CSAReturnAmount",
+  "description": "In respect of a Valuation Date, the amount of collateral which a party is entitled to demand to be recalled to it as a Return Amount.",
+  "properties": {
+    "returnAmount": {
+      "description": "Specifies whether the meaning of Return Amount follows the pre-print definition or deviates from this (either based on a rating or some other methodology).",
+      "$ref": "cdm-legaldocumentation-csa-DeliveryReturnAmountEnum.schema.json"
+    }
+  },
+  "required": [
+    "returnAmount"
+  ]
+}

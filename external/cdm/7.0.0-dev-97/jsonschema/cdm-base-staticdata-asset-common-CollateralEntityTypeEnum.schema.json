@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "CollateralEntityTypeEnum",
+  "description": "Represents an enumeration list to identify the type of entity issuing or guaranteeing the collateral asset.",
+  "enum": [
+    "Corporate",
+    "Fund",
+    "QuasiGovernment",
+    "RegionalGovernment",
+    "SovereignCentralBank",
+    "SpecialPurposeVehicle",
+    "SupraNational"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Corporate"
+      ],
+      "title": "Corporate",
+      "description": "Specifies corporate bodies including Banks."
+    },
+    
+    {
+      "enum": [
+        "Fund"
+      ],
+      "title": "Fund",
+      "description": "Specifies a vehicle (with or without separate legal personality) designed for the purposes of collective investment towards a defined investment goal."
+    },
+    
+    {
+      "enum": [
+        "QuasiGovernment"
+      ],
+      "title": "QuasiGovernment",
+      "description": "Specifies institutions or bodies, typically constituted by statute, with a function mandated by the government and subject to government supervision inclusive of profit- and non-profit making bodies. Includes the US Agencies and GSEs and the EU concept of public sector entities. Excluding any entities which are also Regional Government."
+    },
+    
+    {
+      "enum": [
+        "RegionalGovernment"
+      ],
+      "title": "RegionalGovernment",
+      "description": "Specifies Regional Governments including states within countries, local authorities and municipalities."
+    },
+    
+    {
+      "enum": [
+        "SovereignCentralBank"
+      ],
+      "title": "SovereignCentralBank",
+      "description": "Specifies Sovereign, Government Debt Securities including Central Banks."
+    },
+    
+    {
+      "enum": [
+        "SpecialPurposeVehicle"
+      ],
+      "title": "SpecialPurposeVehicle",
+      "description": "Specifies a vehicle setup for the purpose of acquisition and financing of specific assets on a limited recourse basis. E.g. asset backed securities, including securitisations."
+    },
+    
+    {
+      "enum": [
+        "SupraNational"
+      ],
+      "title": "SupraNational",
+      "description": "Specifies international organisations and multilateral banks, entities constituted by treaties or with multiple sovereign members includes Multilateral development Banks."
+    }
+  ]
+}

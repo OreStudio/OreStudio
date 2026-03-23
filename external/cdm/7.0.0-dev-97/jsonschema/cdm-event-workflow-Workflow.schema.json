@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "Workflow",
+  "description": "A collection of workflow steps which together make up an entire workflow sequence.",
+  "properties": {
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-workflow-WorkflowStep.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "CreditNotations",
+  "description": "Represents the credit rating notation higher level construct, which provides the ability to specify multiple rating notations.",
+  "properties": {
+    "creditNotation": {
+      "description": "Specifies only one credit notation is determined.",
+      "$ref": "cdm-observable-asset-CreditNotation.schema.json"
+    },
+    "creditNotations": {
+      "description": "Specifies if several credit notations exist, alongside an 'any' or 'all' or all condition.",
+      "$ref": "cdm-observable-asset-MultipleCreditNotations.schema.json"
+    }
+  }
+}

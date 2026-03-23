@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "BillingSummary",
+  "description": "Specifies individual summaries within a billing invoice.",
+  "properties": {
+    "summaryTransfer": {
+      "description": "The settlement terms for the billing summary",
+      "$ref": "cdm-event-common-Transfer.schema.json"
+    },
+    "summaryAmountType": {
+      "description": "The account level for the billing summary.",
+      "$ref": "cdm-event-common-RecordAmountTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "summaryAmountType"
+  ]
+}

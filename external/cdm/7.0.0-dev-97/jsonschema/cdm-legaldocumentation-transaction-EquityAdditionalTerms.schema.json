@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "object",
+  "title": "EquityAdditionalTerms",
+  "description": "Transaction AdditionalTerms that apply to Equity asset class.",
+  "properties": {
+    "extraordinaryEvents": {
+      "$ref": "cdm-legaldocumentation-transaction-ExtraordinaryEvents.schema.json"
+    },
+    "determinationTerms": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-transaction-additionalterms-DeterminationRolesAndTerms.schema.json"
+      },
+      "minItems": 1
+    },
+    "substitutionProvision": {
+      "$ref": "cdm-legaldocumentation-transaction-UnderlierSubstitutionProvision.schema.json"
+    }
+  }
+}

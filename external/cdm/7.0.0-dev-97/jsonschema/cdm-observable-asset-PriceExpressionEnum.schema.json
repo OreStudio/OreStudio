@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "PriceExpressionEnum",
+  "description": "Enumerated values to specify whether the price is expressed in absolute or relative terms.",
+  "enum": [
+    "AbsoluteTerms",
+    "ParValueFraction",
+    "PerOption",
+    "PercentageOfNotional"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AbsoluteTerms"
+      ],
+      "title": "AbsoluteTerms",
+      "description": "The price is expressed as an absolute amount."
+    },
+    
+    {
+      "enum": [
+        "ParValueFraction"
+      ],
+      "title": "ParValueFraction",
+      "description": "Denotes a price expressed in percentage of face value with fractions which is used for quoting bonds, e.g. 101 3/8 indicates that the buyer will pay 101.375 of the face value."
+    },
+    
+    {
+      "enum": [
+        "PerOption"
+      ],
+      "title": "PerOption",
+      "description": "Denotes a price expressed per number of options."
+    },
+    
+    {
+      "enum": [
+        "PercentageOfNotional"
+      ],
+      "title": "PercentageOfNotional",
+      "description": "The price is expressed in percentage of the notional amount."
+    }
+  ]
+}

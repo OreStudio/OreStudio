@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "Index",
+  "description": "An Index is an Observable which is computed based on the prices, rates or valuations of a number of assets that are tracked in a standardized way.  Examples include equity market indices as well as indices on interest rates, inflation and credit instruments.",
+  "properties": {
+    "CreditIndex": {
+      "description": "An index based on credit risk, typically composed using corporate debt instruments in a region or industry sector, e.g. the iTraxx indices.",
+      "$ref": "cdm-observable-asset-CreditIndex.schema.json"
+    },
+    "EquityIndex": {
+      "description": "An index based on equity securities, e.g. the S&P 500.",
+      "$ref": "cdm-observable-asset-EquityIndex.schema.json"
+    },
+    "InterestRateIndex": {
+      "description": "An index based in interest rates or inflation rates in a certain market.",
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaInterestRateIndex.schema.json"
+    },
+    "ForeignExchangeRateIndex": {
+      "description": "A rate based on the exchange of a pair of cash assets in specific currencies, e.g. USD versus GBP.",
+      "$ref": "cdm-observable-asset-ForeignExchangeRateIndex.schema.json"
+    },
+    "OtherIndex": {
+      "description": "An index created by a market participant which doesn't align with the other index types.",
+      "$ref": "cdm-observable-asset-OtherIndex.schema.json"
+    }
+  }
+}

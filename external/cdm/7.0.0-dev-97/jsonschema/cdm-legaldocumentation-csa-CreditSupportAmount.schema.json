@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportAmount",
+  "description": "The total amount one counterparty must deliver to the other at any time: the combination of the Exposure to that party and the net Independent Amounts it must post, minus any agreed Threshold.",
+  "properties": {
+    "creditSupportAmount": {
+      "description": "Specifies whether the meaning of credit support amount follows the pre-print definition or deviates from the standard (either based on a rating or some other methodology).",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportAmountEnum.schema.json"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "creditSupportAmount"
+  ]
+}

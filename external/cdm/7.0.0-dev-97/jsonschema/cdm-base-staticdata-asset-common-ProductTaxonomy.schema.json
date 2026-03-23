@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "ProductTaxonomy",
+  "description": "Specifies the product taxonomy, which is composed of a taxonomy value and a taxonomy source.",
+  "properties": {
+    "source": {
+      "description": "The source of the taxonomy that defines the rules for classifying the object. The taxonomy source is taken from a enumerated list of taxonomy names. Optional as the taxonomy source may not be provided.",
+      "$ref": "cdm-base-staticdata-asset-common-TaxonomySourceEnum.schema.json"
+    },
+    "value": {
+      "description": "The value according to that taxonomy. Optional as it may not be possible to classify the object in that taxonomy.",
+      "$ref": "cdm-base-staticdata-asset-common-TaxonomyValue.schema.json"
+    },
+    "primaryAssetClass": {
+      "description": "Classifies the most important risk class of the trade.",
+      "$ref": "cdm-base-staticdata-asset-common-metafields-FieldWithMetaAssetClassEnum.schema.json"
+    },
+    "secondaryAssetClass": {
+      "description": " Classifies additional risk classes of the trade, if any.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-metafields-FieldWithMetaAssetClassEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "productQualifier": {
+      "description": "Derived from the product payout features using a CDM product qualification function that determines the product type based on the product payout features.",
+      "type": "string"
+    }
+  }
+}

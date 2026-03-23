@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "PartyOptionTerminationCurrency",
+  "description": "Specifies mechanism for Termination currency to be selected by the Non-defaulting Party/party which is not the Affected Party.",
+  "properties": {
+    "bothAffectedTermCurrencyOption": {
+      "description": "Specifies termination currency where there are two Affected Parties and they cannot agree on the termination currency.",
+      "type": "string"
+    },
+    "terminationCurrencySpecifiedCondition": {
+      "description": "Specifies alternative conditions for selection of the termination currency.",
+      "type": "string"
+    },
+    "terminationCurrencyCondition": {
+      "description": "Specifies the enumerated conditions for selection of the termination currency.",
+      "$ref": "cdm-legaldocumentation-common-TerminationCurrencyConditionEnum.schema.json"
+    }
+  },
+  "required": [
+    "terminationCurrencyCondition"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "UmbrellaAgreementParty",
+  "description": "Specifies the entities that are part of the umbrella agreement.",
+  "properties": {
+    "party": {
+      "description": "Specifies the party to the umbrella agreement",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "actingAs": {
+      "description": "Specifies the CounterpartyRoleEnum, e.g. either Party1 or Party2, that is associated to the party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "partyRole": {
+      "description": "Represents the legal role that each defined entity to the agreement performs within the structure of that agreement.",
+      "$ref": "cdm-legaldocumentation-common-UmbrellaPartyRoleEnum.schema.json"
+    },
+    "nonLegalEntity": {
+      "description": "Specifies a non-legal entity that exists in the agreement with a defined relationship to a Legal entity to the agreement.",
+      "$ref": "cdm-legaldocumentation-common-NonLegalEntity.schema.json"
+    },
+    "parentParty": {
+      "description": "Represents the identification of a parent child relationship between two entities in the Umbrella agreement, allowing non-legal entities to be linked to the appropriate legal entity and allowing funds, portfolio or managed accounts to be linked to their applicable Investment Manager or Agent within the agreement.",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    }
+  }
+}

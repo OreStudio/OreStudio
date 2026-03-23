@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SensitivityMethodology",
+  "description": "A class to specify the methodology according to which sensitivities are computed.",
+  "properties": {
+    "specifiedMethodology": {
+      "description": "The methodology according to which sensitivities will be computed, when specified through a normalized election.",
+      "$ref": "cdm-legaldocumentation-csa-SensitivitiesEnum.schema.json"
+    },
+    "customMethodology": {
+      "description": "The methodology according to which sensitivities will be computed, when specified through a custom election.",
+      "type": "string"
+    }
+  }
+}

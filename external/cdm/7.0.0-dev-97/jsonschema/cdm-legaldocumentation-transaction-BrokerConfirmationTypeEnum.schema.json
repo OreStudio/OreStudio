@@ -1,0 +1,793 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "string",
+  "title": "BrokerConfirmationTypeEnum",
+  "description": "The enumerated values to specify the type of Broker Confirm that the FpML trade represents.",
+  "enum": [
+    "ABX",
+    "AsiaCorporate",
+    "AsiaSovereign",
+    "AustraliaCorporate",
+    "AustraliaSovereign",
+    "CDSonLeveragedLoans",
+    "CDSonMBS",
+    "CDXEmergingMarkets",
+    "CDXEmergingMarketsDiversified",
+    "CDXSwaption",
+    "CDXTranche",
+    "CMBX",
+    "DJ.CDX.EM ",
+    "DJ.CDX.NA",
+    "EmergingEuropeanAndMiddleEasternSovereign",
+    "EmergingEuropeanCorporate",
+    "EmergingEuropeanCorporateLPN",
+    "EuropeanCMBS",
+    "EuropeanCorporate",
+    "EuropeanRMBS",
+    "JapanCorporate",
+    "JapanSovereign",
+    "LatinAmericaCorporate",
+    "LatinAmericaCorporateBond",
+    "LatinAmericaCorporateBondOrLoan",
+    "LatinAmericaSovereign",
+    "MBX",
+    "MCDX",
+    "NewZealandCorporate",
+    "NewZealandSovereign",
+    "NorthAmericanCorporate",
+    "PO",
+    "SingaporeCorporate",
+    "SingaporeSovereign",
+    "StandardAsiaCorporate",
+    "StandardAsiaSovereign",
+    "StandardAustraliaCorporate",
+    "StandardAustraliaSovereign",
+    "StandardCDXTranche",
+    "StandardEmergingEuropeanAndMiddleEasternSovereign",
+    "StandardEmergingEuropeanCorporate",
+    "StandardEmergingEuropeanCorporateLPN",
+    "StandardEuropeanCorporate",
+    "StandardJapanCorporate",
+    "StandardJapanSovereign",
+    "StandardLCDS",
+    "StandardLCDSBullet",
+    "StandardLCDXBullet",
+    "StandardLCDXBulletTranche",
+    "StandardLatinAmericaCorporateBond",
+    "StandardLatinAmericaCorporateBondOrLoan",
+    "StandardLatinAmericaSovereign",
+    "StandardNewZealandCorporate",
+    "StandardNewZealandSovereign",
+    "StandardNorthAmericanCorporate",
+    "StandardSingaporeCorporate",
+    "StandardSingaporeSovereign",
+    "StandardSubordinatedEuropeanInsuranceCorporate",
+    "StandardWesternEuropeanSovereign",
+    "StandardiTraxxEuropeTranche",
+    "SubordinatedEuropeanInsuranceCorporate",
+    "SukukCorporate",
+    "SukukSovereign",
+    "SyndicatedSecuredLoanCDS",
+    "TRX",
+    "TRX.II",
+    "USMunicipalFullFaithAndCredit",
+    "USMunicipalGeneralFund",
+    "USMunicipalRevenue",
+    "WesternEuropeanSovereign",
+    "iTraxxAsiaExJapan",
+    "iTraxxAsiaExJapanSwaption",
+    "iTraxxAsiaExJapanTranche",
+    "iTraxxAustralia",
+    "iTraxxAustraliaSwaption",
+    "iTraxxAustraliaTranche",
+    "iTraxxCJ",
+    "iTraxxCJTranche",
+    "iTraxxEurope",
+    "iTraxxEuropeSwaption",
+    "iTraxxEuropeTranche",
+    "iTraxxJapan",
+    "iTraxxJapanSwaption",
+    "iTraxxJapanTranche",
+    "iTraxxLevX",
+    "iTraxxSDI75",
+    "iTraxxSovX"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ABX"
+      ],
+      "title": "ABX",
+      "description": "Broker Confirmation Type representing ABX index trades."
+    },
+    
+    {
+      "enum": [
+        "AsiaCorporate"
+      ],
+      "title": "AsiaCorporate",
+      "description": "Broker Confirmation Type of Asia Corporate."
+    },
+    
+    {
+      "enum": [
+        "AsiaSovereign"
+      ],
+      "title": "AsiaSovereign",
+      "description": "Broker Confirmation Type of Asia Sovereign."
+    },
+    
+    {
+      "enum": [
+        "AustraliaCorporate"
+      ],
+      "title": "AustraliaCorporate",
+      "description": "Broker Confirmation Type of Australia Corporate."
+    },
+    
+    {
+      "enum": [
+        "AustraliaSovereign"
+      ],
+      "title": "AustraliaSovereign",
+      "description": "Broker Confirmation Type of Australia Sovereign."
+    },
+    
+    {
+      "enum": [
+        "CDSonLeveragedLoans"
+      ],
+      "title": "CDSonLeveragedLoans",
+      "description": "Broker Confirmation Type for use with Credit Derivative Transactions on Leveraged Loans."
+    },
+    
+    {
+      "enum": [
+        "CDSonMBS"
+      ],
+      "title": "CDSonMBS",
+      "description": "Broker Confirmation Type for use with Credit Derivative Transactions on Mortgage-backed Security with Pay-As-You-Go or Physical Settlement."
+    },
+    
+    {
+      "enum": [
+        "CDXEmergingMarkets"
+      ],
+      "title": "CDXEmergingMarkets",
+      "description": "Broker Confirmation Type for CDX Emerging Markets Untranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "CDXEmergingMarketsDiversified"
+      ],
+      "title": "CDXEmergingMarketsDiversified",
+      "description": "Broker Confirmation Type for CDX Emerging Markets Diversified Untranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "CDXSwaption"
+      ],
+      "title": "CDXSwaption",
+      "description": "Broker Confirmation Type for CDX Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "CDXTranche"
+      ],
+      "title": "CDXTranche",
+      "description": "Broker Confirmation Type for Dow Jones CDX Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "CMBX"
+      ],
+      "title": "CMBX",
+      "description": "Broker Confirmation Type representing CMBX index trades."
+    },
+    
+    {
+      "enum": [
+        "DJ.CDX.EM "
+      ],
+      "title": "DJ_CDX_EM_",
+      "description": "Broker Confirmation Type for CDS Index trades relating to Dow Jones CDX.EM index series."
+    },
+    
+    {
+      "enum": [
+        "DJ.CDX.NA"
+      ],
+      "title": "DJ_CDX_NA",
+      "description": "Broker Confirmation Type for CDS Index trades relating to Dow Jones CDX.NA.IG and Dow Jones CDX.NA.HY index series."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanAndMiddleEasternSovereign"
+      ],
+      "title": "EmergingEuropeanAndMiddleEasternSovereign",
+      "description": "Broker Confirmation Type of Emerging European and Middle Eastern Sovereign."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanCorporate"
+      ],
+      "title": "EmergingEuropeanCorporate",
+      "description": "Broker Confirmation Type for EMERGING EUROPEAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanCorporateLPN"
+      ],
+      "title": "EmergingEuropeanCorporateLPN",
+      "description": "Broker Confirmation Type for EMERGING EUROPEAN CORPORATE LPN."
+    },
+    
+    {
+      "enum": [
+        "EuropeanCMBS"
+      ],
+      "title": "EuropeanCMBS",
+      "description": "Broker Confirmation Type for Single Name European CMBS Transactions."
+    },
+    
+    {
+      "enum": [
+        "EuropeanCorporate"
+      ],
+      "title": "EuropeanCorporate",
+      "description": "Broker Confirmation Type of European Corporate."
+    },
+    
+    {
+      "enum": [
+        "EuropeanRMBS"
+      ],
+      "title": "EuropeanRMBS",
+      "description": "Broker Confirmation Type for Single Name European RMBS Transactions."
+    },
+    
+    {
+      "enum": [
+        "JapanCorporate"
+      ],
+      "title": "JapanCorporate",
+      "description": "Broker Confirmation Type of Japan Corporate."
+    },
+    
+    {
+      "enum": [
+        "JapanSovereign"
+      ],
+      "title": "JapanSovereign",
+      "description": "Broker Confirmation Type of Japan Sovereign."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaCorporate"
+      ],
+      "title": "LatinAmericaCorporate",
+      "description": "Broker Confirmation Type of Latin America Corporate."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaCorporateBond"
+      ],
+      "title": "LatinAmericaCorporateBond",
+      "description": "Broker Confirmation Type for LATIN AMERICA CORPORATE B."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaCorporateBondOrLoan"
+      ],
+      "title": "LatinAmericaCorporateBondOrLoan",
+      "description": "Broker Confirmation Type for LATIN AMERICA CORPORATE BL."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaSovereign"
+      ],
+      "title": "LatinAmericaSovereign",
+      "description": "Broker Confirmation Type of Latin America Sovereign."
+    },
+    
+    {
+      "enum": [
+        "MBX"
+      ],
+      "title": "MBX",
+      "description": "Broker Confirmation Type for MBX Transactions."
+    },
+    
+    {
+      "enum": [
+        "MCDX"
+      ],
+      "title": "MCDX",
+      "description": "Broker Confirmation Type for Municipal CDX Untranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "NewZealandCorporate"
+      ],
+      "title": "NewZealandCorporate",
+      "description": "Broker Confirmation Type of New Zealand Corporate."
+    },
+    
+    {
+      "enum": [
+        "NewZealandSovereign"
+      ],
+      "title": "NewZealandSovereign",
+      "description": "Broker Confirmation Type of New Zealand Sovereign."
+    },
+    
+    {
+      "enum": [
+        "NorthAmericanCorporate"
+      ],
+      "title": "NorthAmericanCorporate",
+      "description": "Broker ConfirmationType of North American Corporate."
+    },
+    
+    {
+      "enum": [
+        "PO"
+      ],
+      "title": "PO",
+      "description": "Broker Confirmation Type for PO Index Transactions."
+    },
+    
+    {
+      "enum": [
+        "SingaporeCorporate"
+      ],
+      "title": "SingaporeCorporate",
+      "description": "Broker Confirmation Type of Singapore Corporate."
+    },
+    
+    {
+      "enum": [
+        "SingaporeSovereign"
+      ],
+      "title": "SingaporeSovereign",
+      "description": "Broker Confirmation Type of Singapore Sovereign."
+    },
+    
+    {
+      "enum": [
+        "StandardAsiaCorporate"
+      ],
+      "title": "StandardAsiaCorporate",
+      "description": "Broker Confirmation Type of STANDARD ASIA CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardAsiaSovereign"
+      ],
+      "title": "StandardAsiaSovereign",
+      "description": "Broker Confirmation Type of STANDARD ASIA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardAustraliaCorporate"
+      ],
+      "title": "StandardAustraliaCorporate",
+      "description": "Broker Confirmation Type of STANDARD AUSTRALIA CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardAustraliaSovereign"
+      ],
+      "title": "StandardAustraliaSovereign",
+      "description": "Broker Confirmation Type of STANDARD AUSTRALIA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardCDXTranche"
+      ],
+      "title": "StandardCDXTranche",
+      "description": "Broker Confirmation Type for Standard CDX Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanAndMiddleEasternSovereign"
+      ],
+      "title": "StandardEmergingEuropeanAndMiddleEasternSovereign",
+      "description": "Broker Confirmation Type of STANDARD EMERGING EUROPEAN AND MIDDLE EASTERN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanCorporate"
+      ],
+      "title": "StandardEmergingEuropeanCorporate",
+      "description": "Broker Confirmation Type of STANDARD EMERGING EUROPEAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanCorporateLPN"
+      ],
+      "title": "StandardEmergingEuropeanCorporateLPN",
+      "description": "Broker Confirmation Type of STANDARD EMERGING EUROPEAN CORPORATE LPN."
+    },
+    
+    {
+      "enum": [
+        "StandardEuropeanCorporate"
+      ],
+      "title": "StandardEuropeanCorporate",
+      "description": "Broker Confirmation Type for STANDARD EUROPEAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardJapanCorporate"
+      ],
+      "title": "StandardJapanCorporate",
+      "description": "Broker Confirmation Type of STANDARD JAPAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardJapanSovereign"
+      ],
+      "title": "StandardJapanSovereign",
+      "description": "Broker Confirmation Type of STANDARD JAPAN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDS"
+      ],
+      "title": "StandardLCDS",
+      "description": "Standard Syndicated Secured Loan Credit Default Swap Broker Confirmation Type."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDSBullet"
+      ],
+      "title": "StandardLCDSBullet",
+      "description": "Broker Confirmation Type for Standard Syndicated Secured Loan Credit Default Swap Bullet Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDXBullet"
+      ],
+      "title": "StandardLCDXBullet",
+      "description": "Broker Confirmation Type for Standard Syndicated Secured Loan Credit Default Swap Index Bullet Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDXBulletTranche"
+      ],
+      "title": "StandardLCDXBulletTranche",
+      "description": "Broker Confirmation Type for Standard Syndicated Secured Loan Credit Default Swap Index Bullet Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaCorporateBond"
+      ],
+      "title": "StandardLatinAmericaCorporateBond",
+      "description": "Broker Confirmation Type of STANDARD LATIN AMERICA CORPORATE B."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaCorporateBondOrLoan"
+      ],
+      "title": "StandardLatinAmericaCorporateBondOrLoan",
+      "description": "Broker Confirmation Type of STANDARD LATIN AMERICA CORPORATE BL."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaSovereign"
+      ],
+      "title": "StandardLatinAmericaSovereign",
+      "description": "Broker Confirmation Type of STANDARD LATIN AMERICA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardNewZealandCorporate"
+      ],
+      "title": "StandardNewZealandCorporate",
+      "description": "Broker Confirmation Type of STANDARD NEW ZEALAND CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardNewZealandSovereign"
+      ],
+      "title": "StandardNewZealandSovereign",
+      "description": "Broker Confirmation Type of STANDARD NEW ZEALAND SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardNorthAmericanCorporate"
+      ],
+      "title": "StandardNorthAmericanCorporate",
+      "description": "Broker Confirmation Type for STANDARD NORTH AMERICAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardSingaporeCorporate"
+      ],
+      "title": "StandardSingaporeCorporate",
+      "description": "Broker Confirmation Type of STANDARD SINGAPORE CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardSingaporeSovereign"
+      ],
+      "title": "StandardSingaporeSovereign",
+      "description": "Broker Confirmation Type of STANDARD SINGAPORE SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardSubordinatedEuropeanInsuranceCorporate"
+      ],
+      "title": "StandardSubordinatedEuropeanInsuranceCorporate",
+      "description": "Broker Confirmation Type for STANDARD SUBORDINATED EUROPEAN INSURANCE CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardWesternEuropeanSovereign"
+      ],
+      "title": "StandardWesternEuropeanSovereign",
+      "description": "Broker Confirmation Type for STANDARD WESTERN EUROPEAN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardiTraxxEuropeTranche"
+      ],
+      "title": "StandardiTraxxEuropeTranche",
+      "description": "Broker Confirmation Type for Standard iTraxx Europe Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "SubordinatedEuropeanInsuranceCorporate"
+      ],
+      "title": "SubordinatedEuropeanInsuranceCorporate",
+      "description": "Broker Confirmation Type of Subordinated European Insurance Corporate."
+    },
+    
+    {
+      "enum": [
+        "SukukCorporate"
+      ],
+      "title": "SukukCorporate",
+      "description": "Broker Confirmation Type of SUKUK CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "SukukSovereign"
+      ],
+      "title": "SukukSovereign",
+      "description": "Broker Confirmation Type of SUKUK SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "SyndicatedSecuredLoanCDS"
+      ],
+      "title": "SyndicatedSecuredLoanCDS",
+      "description": "Syndicated Secured Loan Credit Default Swap Broker Confirmation Type."
+    },
+    
+    {
+      "enum": [
+        "TRX"
+      ],
+      "title": "TRX",
+      "description": "Broker Confirmation Type for TRX Transactions."
+    },
+    
+    {
+      "enum": [
+        "TRX.II"
+      ],
+      "title": "TRX_II",
+      "description": "Broker Confirmation Type for TRX.II Transactions."
+    },
+    
+    {
+      "enum": [
+        "USMunicipalFullFaithAndCredit"
+      ],
+      "title": "USMunicipalFullFaithAndCredit",
+      "description": "Broker Confirmation Type for U.S. MUNICIPAL FULL FAITH AND CREDIT."
+    },
+    
+    {
+      "enum": [
+        "USMunicipalGeneralFund"
+      ],
+      "title": "USMunicipalGeneralFund",
+      "description": "Broker Confirmation Type for U.S. MUNICIPAL GENERAL FUND."
+    },
+    
+    {
+      "enum": [
+        "USMunicipalRevenue"
+      ],
+      "title": "USMunicipalRevenue",
+      "description": "Broker Confirmation Type for U.S. MUNICIPAL REVENUE."
+    },
+    
+    {
+      "enum": [
+        "WesternEuropeanSovereign"
+      ],
+      "title": "WesternEuropeanSovereign",
+      "description": "Broker Confirmation Type of Western European Sovereign."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAsiaExJapan"
+      ],
+      "title": "iTraxxAsiaExJapan",
+      "description": "Broker Confirmation Type for iTraxx Asia Excluding Japan."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAsiaExJapanSwaption"
+      ],
+      "title": "iTraxxAsiaExJapanSwaption",
+      "description": "Broker Confirmation Type for iTraxx Asia Ex-Japan Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAsiaExJapanTranche"
+      ],
+      "title": "iTraxxAsiaExJapanTranche",
+      "description": "Broker Confirmation Type for iTraxx Asia Excluding Japan Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAustralia"
+      ],
+      "title": "iTraxxAustralia",
+      "description": "Broker Confirmation Type for iTraxx Australia."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAustraliaSwaption"
+      ],
+      "title": "iTraxxAustraliaSwaption",
+      "description": "Broker Confirmation Type for iTraxx Australia Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAustraliaTranche"
+      ],
+      "title": "iTraxxAustraliaTranche",
+      "description": "Broker Confirmation Type for iTraxx Australia Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxCJ"
+      ],
+      "title": "iTraxxCJ",
+      "description": "Broker Confirmation Type for iTraxx CJ."
+    },
+    
+    {
+      "enum": [
+        "iTraxxCJTranche"
+      ],
+      "title": "iTraxxCJTranche",
+      "description": "Broker Confirmation Type for iTraxx CJ Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxEurope"
+      ],
+      "title": "iTraxxEurope",
+      "description": "Broker Confirmation Type for iTraxx Europe Transactions"
+    },
+    
+    {
+      "enum": [
+        "iTraxxEuropeSwaption"
+      ],
+      "title": "iTraxxEuropeSwaption",
+      "description": "Broker Confirmation Type for iTraxx Europe Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxEuropeTranche"
+      ],
+      "title": "iTraxxEuropeTranche",
+      "description": "Broker Confirmation Type for iTraxx Europe Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxJapan"
+      ],
+      "title": "iTraxxJapan",
+      "description": "Broker Confirmation Type for iTraxx Japan."
+    },
+    
+    {
+      "enum": [
+        "iTraxxJapanSwaption"
+      ],
+      "title": "iTraxxJapanSwaption",
+      "description": "Broker Confirmation Type for iTraxx Japan Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxJapanTranche"
+      ],
+      "title": "iTraxxJapanTranche",
+      "description": "Broker Confirmation Type for iTraxx Japan Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxLevX"
+      ],
+      "title": "iTraxxLevX",
+      "description": "Broker Confirmation Type for iTraxx LevX."
+    },
+    
+    {
+      "enum": [
+        "iTraxxSDI75"
+      ],
+      "title": "iTraxxSDI75",
+      "description": "Broker Confirmation Type for iTraxx SDI 75 Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxSovX"
+      ],
+      "title": "iTraxxSovX",
+      "description": "Broker Confirmation Type for iTraxx SovX."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "State",
+  "description": "Defines the state of a trade at a point in the Trade's life cycle. Trades have many state dimensions, all of which are represented here. For example, states useful for position keeping are represented alongside those needed for regulatory reporting.",
+  "properties": {
+    "closedState": {
+      "description": "Represents the qualification of what led to the trade's closure alongside the dates on which this closure took effect.",
+      "$ref": "cdm-event-common-ClosedState.schema.json"
+    },
+    "positionState": {
+      "description": "Identifies the state of the position, to distinguish if just executed, formed, already settled, closed, etc.",
+      "$ref": "cdm-event-position-PositionStatusEnum.schema.json"
+    }
+  }
+}

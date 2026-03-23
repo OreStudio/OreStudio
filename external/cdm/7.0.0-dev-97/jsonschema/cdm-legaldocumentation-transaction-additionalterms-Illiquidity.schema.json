@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "Illiquidity",
+  "properties": {
+    "illiquidityIsApplicable": {
+      "type": "boolean"
+    },
+    "escrowArrangement": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EscrowArrangement.schema.json"
+    },
+    "minimumAmount": {
+      "$ref": "cdm-base-math-Quantity.schema.json"
+    },
+    "fallbackReferencePrice": {
+      "description": "The method, prioritised by the order it is listed in this element, to get a replacement rate for the disrupted settlement rate option.",
+      "$ref": "cdm-observable-asset-SettlementRateOption.schema.json"
+    },
+    "illiquidityValuationDate": {
+      "$ref": "cdm-base-datetime-AdjustedRelativeDateOffset.schema.json"
+    }
+  },
+  "required": [
+    "illiquidityIsApplicable"
+  ]
+}

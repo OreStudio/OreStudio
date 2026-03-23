@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "AssetPayout",
+  "description": "Security finance payout specification in case the product payout involves some form of security collateral, as in a securities financing transaction. Plus additional description for ICMA.",
+  "properties": {
+    "payerReceiver": {
+      "description": "Canonical representation of the payer and receiver parties applicable to each payout leg.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "priceQuantity": {
+      "description": "Each payout leg must implement the quantity concept as a 'resolvable' type, which allows for different payout legs to be linked to each other (e.g. in the case of cross-curreny products).",
+      "$ref": "cdm-product-common-settlement-ResolvablePriceQuantity.schema.json"
+    },
+    "principalPayment": {
+      "description": "The specification of the principal exchange. Optional as only applicable in the case of cross-currency or zero-coupon swaps with a final payment.",
+      "$ref": "cdm-product-common-settlement-PrincipalPayments.schema.json"
+    },
+    "settlementTerms": {
+      "description": "Each payout leg must specifies its settlement terms, including the delivery type (i.e. cash vs physical, and their respective terms), the transfer type (DvP etc.) and settlement date, if any.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "assetLeg": {
+      "description": "Defines each asset movement as a buy/sell at different dates, typically 1 near leg and 1 far leg in a securities financing transaction.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-AssetLeg.schema.json"
+      },
+      "minItems": 1
+    },
+    "underlier": {
+      "description": "Specifies the Purchased Asset, usually a Security.",
+      "$ref": "cdm-base-staticdata-asset-common-Asset.schema.json"
+    },
+    "minimumFee": {
+      "description": "A contractual minimum amount which the borrower will pay, regardless of the duration of the loan. A mechanism for making sure that a trade generates enough income.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "dividendTerms": {
+      "description": "Specifies the terms under which dividends received by the borrower are passed through to the lender.",
+      "$ref": "cdm-product-template-DividendTerms.schema.json"
+    },
+    "tradeType": {
+      "description": "The trade type, eg repurchase transaction or buy/sell-back.",
+      "$ref": "cdm-product-template-AssetPayoutTradeTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "underlier"
+  ]
+}

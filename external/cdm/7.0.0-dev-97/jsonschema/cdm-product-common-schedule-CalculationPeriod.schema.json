@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "CalculationPeriod",
+  "description": "A data defining:  the parameters used in the calculation of a fixed or floating rate calculation period amount. This data forms:  part of cashflows representation of a swap stream.",
+  "properties": {
+    "adjustedStartDate": {
+      "description": "The calculation period start date, adjusted according to any relevant business day convention.",
+      "type": "string"
+    },
+    "adjustedEndDate": {
+      "description": "The calculation period end date, adjusted according to any relevant business day convention.",
+      "type": "string"
+    },
+    "unadjustedStartDate": {
+      "description": "The calculation start date, unadjusted.",
+      "type": "string"
+    },
+    "unadjustedEndDate": {
+      "description": "The calculation end date, unadjusted.",
+      "type": "string"
+    },
+    "calculationPeriodNumberOfDays": {
+      "description": "The number of days from the adjusted effective / start date to the adjusted termination / end date calculated in accordance with the applicable day count fraction.",
+      "type": "integer"
+    },
+    "notionalAmount": {
+      "description": "The amount that a cashflow will accrue interest on.",
+      "type": "number"
+    },
+    "fxLinkedNotionalAmount": {
+      "description": "The amount that a cashflow will accrue interest on. This is the calculated amount of the FX linked - i.e. the other currency notional amount multiplied by the appropriate FX spot rate.",
+      "$ref": "cdm-product-common-schedule-FxLinkedNotionalAmount.schema.json"
+    },
+    "floatingRateDefinition": {
+      "description": "The floating rate reset information for the calculation period.",
+      "$ref": "cdm-product-asset-FloatingRateDefinition.schema.json"
+    },
+    "fixedRate": {
+      "description": "The calculation period fixed rate. A per annum rate, expressed as a decimal. A fixed rate of 5% would be represented as 0.05.",
+      "type": "number"
+    },
+    "dayCountYearFraction": {
+      "description": "The year fraction value of the calculation period, result of applying the ISDA rules for day count fraction defined in the ISDA Annex.",
+      "type": "number"
+    },
+    "forecastAmount": {
+      "description": "The amount representing the forecast of the accrued value of the calculation period. An intermediate value used to generate the forecastPaymentAmount in the PaymentCalculationPeriod.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "forecastRate": {
+      "description": "A value representing the forecast rate used to calculate the forecast future value of the accrual period. This is a calculated rate determined based on averaging the rates in the rateObservation elements, and incorporates all of the rate treatment and averaging rules. A value of 1% should be represented as 0.01.",
+      "type": "number"
+    }
+  }
+}

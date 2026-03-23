@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ExecutionLocation",
+  "description": "A class to specify execution location terms of a Security Agreement.",
+  "properties": {
+    "executionLocation": {
+      "description": "The execution location of the agreement.",
+      "$ref": "cdm-legaldocumentation-common-ExecutionLocationEnum.schema.json"
+    },
+    "otherLanguage": {
+      "description": "Bespoke execution location language to be included when specified.",
+      "type": "string"
+    },
+    "dutyPayer": {
+      "description": "The payer of documentary duty.",
+      "type": "string"
+    },
+    "dutyPayerLanguage": {
+      "description": "Bespoke terms specific to the payment of documentary duty.",
+      "type": "string"
+    },
+    "dutyPaymentDate": {
+      "description": "The date that documentary duty will be paid.",
+      "type": "string"
+    },
+    "dutyPaymentLanguage": {
+      "description": "Bespoke terms specific to the date that documentary duty will be paid.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "executionLocation"
+  ]
+}

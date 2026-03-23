@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "AccountTypeEnum",
+  "description": "The enumeration values to qualify the type of account.",
+  "enum": [
+    "AggregateClient",
+    "Client",
+    "House"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AggregateClient"
+      ],
+      "title": "AggregateClient",
+      "description": "Aggregate client account, as defined under ESMA MiFIR."
+    },
+    
+    {
+      "enum": [
+        "Client"
+      ],
+      "title": "Client",
+      "description": "The account contains trading activity or positions that belong to a client of the firm that opened the account."
+    },
+    
+    {
+      "enum": [
+        "House"
+      ],
+      "title": "House",
+      "description": "The account contains proprietary trading activity or positions, belonging to the firm that is the owner of the account."
+    }
+  ]
+}

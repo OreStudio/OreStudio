@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "object",
+  "title": "MasterAgreementSchedule",
+  "description": "The set of elections which specify a Master Agreement.",
+  "properties": {
+    "clause": {
+      "description": "Clauses that have had elections made against them in this Master Agreement. There must be at least one clause defined in the agreement.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-master-MasterAgreementClause.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "LengthUnitEnum",
+  "description": "The enumerated values to specify the length unit in the Resource type.",
+  "enum": [
+    "Pages",
+    "TimeUnit"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Pages"
+      ],
+      "title": "Pages"
+    },
+    
+    {
+      "enum": [
+        "TimeUnit"
+      ],
+      "title": "TimeUnit"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "string",
+  "title": "TransferSettlementEnum",
+  "description": "The enumeration values to specify how the transfer will settle, e.g. DvP.",
+  "enum": [
+    "DeliveryVersusDelivery",
+    "DeliveryVersusPayment",
+    "NotCentralSettlement",
+    "PaymentVersusPayment"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "DeliveryVersusDelivery"
+      ],
+      "title": "DeliveryVersusDelivery",
+      "description": "Simultaneous transfer of two assets, typically securities, as a way to avoid settlement risk."
+    },
+    
+    {
+      "enum": [
+        "DeliveryVersusPayment"
+      ],
+      "title": "DeliveryVersusPayment",
+      "description": "Settlement in which the transfer of the asset and the cash settlement are simultaneous."
+    },
+    
+    {
+      "enum": [
+        "NotCentralSettlement"
+      ],
+      "title": "NotCentralSettlement",
+      "description": "No central settlement."
+    },
+    
+    {
+      "enum": [
+        "PaymentVersusPayment"
+      ],
+      "title": "PaymentVersusPayment",
+      "description": "Simultaneous transfer of cashflows."
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "SettlementRateOption",
+  "description": "Defines the settlement rate option to use for fixing in case of cash settlement. Currently only applicable to foreign exchange fixing in case of cross-currency settlement.",
+  "properties": {
+    "settlementRateOption": {
+      "description": "The rate source for the conversion to the settlement currency. This source is specified through a scheme that reflects the terms of the Annex A to the 1998 FX and Currency Option Definitions.",
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaSettlementRateOptionEnum.schema.json"
+    },
+    "priceSourceDisruption": {
+      "description": "An attribute defining the parameters to get a new quote when a settlement rate option is disrupted.",
+      "$ref": "cdm-observable-asset-PriceSourceDisruption.schema.json"
+    }
+  },
+  "required": [
+    "settlementRateOption"
+  ]
+}

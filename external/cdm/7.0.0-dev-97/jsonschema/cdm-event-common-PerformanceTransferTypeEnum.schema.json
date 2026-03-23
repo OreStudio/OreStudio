@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "PerformanceTransferTypeEnum",
+  "description": "The enumerated values to specify the origin of a performance transfer",
+  "enum": [
+    "Commodity",
+    "Correlation",
+    "Dividend",
+    "Equity",
+    "Interest",
+    "Variance",
+    "Volatility"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Commodity"
+      ],
+      "title": "Commodity"
+    },
+    
+    {
+      "enum": [
+        "Correlation"
+      ],
+      "title": "Correlation"
+    },
+    
+    {
+      "enum": [
+        "Dividend"
+      ],
+      "title": "Dividend"
+    },
+    
+    {
+      "enum": [
+        "Equity"
+      ],
+      "title": "Equity"
+    },
+    
+    {
+      "enum": [
+        "Interest"
+      ],
+      "title": "Interest"
+    },
+    
+    {
+      "enum": [
+        "Variance"
+      ],
+      "title": "Variance"
+    },
+    
+    {
+      "enum": [
+        "Volatility"
+      ],
+      "title": "Volatility"
+    }
+  ]
+}

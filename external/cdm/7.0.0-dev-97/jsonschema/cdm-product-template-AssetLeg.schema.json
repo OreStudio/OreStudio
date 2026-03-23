@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "AssetLeg",
+  "description": "Defines each asset movement of an asset payout.",
+  "properties": {
+    "settlementDate": {
+      "description": "Specifies the settlement date of securities.  In a repo transaction the purchase date would always be the effective date as specified under Economic Terms, the repurchase date would always be the termination date as specified under Economic Terms.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "deliveryMethod": {
+      "description": "Specifies a delivery method for the security transaction.",
+      "$ref": "cdm-product-common-settlement-DeliveryMethodEnum.schema.json"
+    }
+  },
+  "required": [
+    "settlementDate",
+    "deliveryMethod"
+  ]
+}

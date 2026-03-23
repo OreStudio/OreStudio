@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "object",
+  "title": "EquitySwapMasterConfirmation2018",
+  "description": "Specification for the General Terms and Relationship Supplement Elections as provided in the 2018 ISDA CDM Equity Confirmation for Security Equity Swap.",
+  "properties": {
+    "typeOfSwapElection": {
+      "description": "Per Part 1 Section 4, 'Dividend Obligations', of the 2018 ISDA CDM Equity Confirmation, Para 4.2 'Dividend Returns'.",
+      "$ref": "cdm-product-asset-ReturnTypeEnum.schema.json"
+    },
+    "pricingMethodElection": {
+      "description": "Per Part 1 Section 5, 'Pricing', of the 2018 ISDA CDM Equity Confirmation, Para 5.1.",
+      "$ref": "cdm-product-asset-PriceReturnTerms.schema.json"
+    },
+    "linearInterpolationElection": {
+      "description": "Per Part 1 Section 3, 'Floating Obligations', of the 2018 ISDA CDM Equity Confirmation. Para 3.3.",
+      "$ref": "cdm-observable-asset-InterpolationMethodEnum.schema.json"
+    },
+    "settlementTerms": {
+      "description": "Per Part 1 Section 8, 'Settlement', of the 2018 ISDA CDM Equity Confirmation for Security Equity Swap.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "valuationDates": {
+      "description": "The parameters used to generate the 'Equity Valuation Dates' schedule, including the Effective Date and Termination Date for the Swap.",
+      "$ref": "cdm-observable-asset-ValuationDates.schema.json"
+    },
+    "equityCashSettlementDates": {
+      "description": "The parameters used to generate the payment date schedule, relative to the equityCalculationPeriod. Per Part 1 Section 12, 'Definitions', of the 2018 ISDA CDM Equity Confirmation. Para 73.",
+      "$ref": "cdm-product-common-schedule-PaymentDates.schema.json"
+    }
+  },
+  "required": [
+    "typeOfSwapElection",
+    "pricingMethodElection",
+    "linearInterpolationElection",
+    "settlementTerms",
+    "valuationDates",
+    "equityCashSettlementDates"
+  ]
+}

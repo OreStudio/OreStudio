@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "TransferInstruction",
+  "description": "Defines the payout on which to create a Transfer along with all necessary resets.",
+  "properties": {
+    "transferState": {
+      "description": "Specifies the terms and state of a transfers.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-TransferState.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

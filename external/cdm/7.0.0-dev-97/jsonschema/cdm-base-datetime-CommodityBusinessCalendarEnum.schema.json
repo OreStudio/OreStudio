@@ -1,0 +1,1044 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "CommodityBusinessCalendarEnum",
+  "enum": [
+    "ADSM",
+    "AGRUS-FMB",
+    "APPI",
+    "ARGUS-CRUDE",
+    "ARGUS-EUROPEAN-GAS",
+    "ARGUS-EUROPEAN-PRODUCTS",
+    "ARGUS-INTERNATIONAL-LPG",
+    "ARGUS-MCCLOSKEYS-COAL-REPORT",
+    "ARGUS-US-PRODUCTS",
+    "ASX",
+    "AWB",
+    "AWEX",
+    "BALTIC-EXCHANGE",
+    "BANK-NEGARA-MALAYSIA-POLICY-COMMITTEE",
+    "BELPEX",
+    "BLUENEXT",
+    "BM&F",
+    "BURSA-MALAYSIA-SETTLEMENT",
+    "BURSA-MALAYSIA-TRADING",
+    "CANADIAN-GAS-PRICE-REPORTER",
+    "CBOT-SOFT",
+    "CMAI-AROMATICS-MARKET-REPORT",
+    "CMAI-GLOBAL-PLASTICS-AND-POLYMERS-MARKET-REPORT",
+    "CMAI-METHANOL-MARKET-REPORT",
+    "CMAI-MONOMERS-MARKET-REPORT",
+    "CME-DAIRY",
+    "CME-NON-DAIRY-SOFT",
+    "COMEX",
+    "CRU",
+    "CRU-LONG",
+    "DEPARTMENT-OF-ENERGY",
+    "DEWITT-BENZENE-DERIVATIVES",
+    "DME",
+    "DOW-JONES",
+    "DOW-JONES-ENERGY-SERVICE",
+    "DowJonesPower",
+    "EEX-COAL",
+    "EEX-EMISSIONS",
+    "EEX-GAS",
+    "EEX-POWER",
+    "EURONEX-MATIF",
+    "FERTECON",
+    "FERTILIZER-WEEK",
+    "GAS-DAILY",
+    "GAS-DAILY-PRICE-GUIDE",
+    "GLOBALCOAL",
+    "HEREN-REPORT",
+    "ICE/10X-DAILY",
+    "ICE/10X-MONTHLY",
+    "ICE-CANADA",
+    "ICE-ECX",
+    "ICE-GAS",
+    "ICE-OIL",
+    "ICE-US-AGRICULTURAL",
+    "ICIS-PRICING-BENZENE-(EUROPE)",
+    "ICIS-PRICING-ETHYLENE-(EUROPE)",
+    "ICIS-PRICING-POLYPROPYLENE-(EUROPE)",
+    "INSIDE-FERC",
+    "JAPAN-MOF-TSRR",
+    "KCBOT",
+    "KUALA-LUMPUR-BANK",
+    "LABUAN-BANK",
+    "LIFFE-LONDON-SOFT",
+    "LME",
+    "LONDON-BULLION-MARKET",
+    "LONDON-BULLION-MARKET-GOLD-A.M-ONLY",
+    "LONDON-PLATINUM-PALLADIUM-MARKET",
+    "MGEX",
+    "N2EX",
+    "NASDAQ-OMX",
+    "NATURAL-GAS-WEEK",
+    "NERC",
+    "NGI",
+    "NGX",
+    "NUCLEAR-MARKET-REVIEW",
+    "NYMEX-ELECTRICITY",
+    "NYMEX-GAS",
+    "NYMEX-NATURAL-GAS",
+    "NYMEX-OIL",
+    "OFFICIAL-BOARD-MARKETS",
+    "OPIS-LP-GAS",
+    "OPIS-PROPANE",
+    "PAPER-PACKAGING-MONITOR",
+    "PAPER-TRADER",
+    "PERTAMINA",
+    "PETROCHEMWIRE",
+    "PIX-PULP-BENCHMARK-INDICES",
+    "PLATTS-APAG-MARKETSCAN",
+    "PLATTS-BUNKERWIRE",
+    "PLATTS-CLEAN-TANKERWIRE",
+    "PLATTS-CRUDE-OIL-MARKETWIRE",
+    "PLATTS-DIRTY-TANKERWIRE",
+    "PLATTS-EUROPEAN-GAS",
+    "PLATTS-EUROPEAN-MARKETSCAN",
+    "PLATTS-METALS-ALERT",
+    "PLATTS-OILGRAM",
+    "PLATTS-TSI-IRON-ORE",
+    "PLATTS-TSI-SCRAP",
+    "PLATTS-TSI-STEEL",
+    "PLATTS-US-MARKETSCAN",
+    "PULP-AND-PAPER-INTERNATIONAL",
+    "PULP-AND-PAPER-WEEK",
+    "RIM-PRODUCTS-INTELLIGENCE-DAILY",
+    "SAFEX-SOFT",
+    "SFE-SOFT",
+    "SGX",
+    "SICOM",
+    "SP-GSCI",
+    "STATISTICHES-BUNDESAMT",
+    "TGE",
+    "TOCOM-OIL",
+    "TOCOM-PRECIOUS",
+    "TOCOM-SOFT",
+    "UX-WEEKLY",
+    "WORLD-PULP-MONTHLY"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ADSM"
+      ],
+      "title": "ADSM",
+      "description": "Abu Dhabi Securities Exchange https://www.adx.ae/"
+    },
+    
+    {
+      "enum": [
+        "AGRUS-FMB"
+      ],
+      "title": "AGRUS_FMB",
+      "description": "Argus Media Fertilizer Reports. http://www.argusmedia.com/Fertilizer"
+    },
+    
+    {
+      "enum": [
+        "APPI"
+      ],
+      "title": "APPI",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ARGUS-CRUDE"
+      ],
+      "title": "ARGUS_CRUDE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ARGUS-EUROPEAN-GAS"
+      ],
+      "title": "ARGUS_EUROPEAN_GAS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ARGUS-EUROPEAN-PRODUCTS"
+      ],
+      "title": "ARGUS_EUROPEAN_PRODUCTS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ARGUS-INTERNATIONAL-LPG"
+      ],
+      "title": "ARGUS_INTERNATIONAL_LPG",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ARGUS-MCCLOSKEYS-COAL-REPORT"
+      ],
+      "title": "ARGUS_MCCLOSKEYS_COAL_REPORT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ARGUS-US-PRODUCTS"
+      ],
+      "title": "ARGUS_US_PRODUCTS",
+      "description": "The Argus US Products report. http://www.argusmedia.com/Petroleum/Petroleum-Products/Argus-US-Products"
+    },
+    
+    {
+      "enum": [
+        "ASX"
+      ],
+      "title": "ASX",
+      "description": "Australian Securities Exchange http://www.asx.com.au/"
+    },
+    
+    {
+      "enum": [
+        "AWB"
+      ],
+      "title": "AWB",
+      "description": "Australian Wheat Board. www.awb.com.au"
+    },
+    
+    {
+      "enum": [
+        "AWEX"
+      ],
+      "title": "AWEX",
+      "description": "Australian Wool Exchange. http://www.awex.com.au/home.html"
+    },
+    
+    {
+      "enum": [
+        "BALTIC-EXCHANGE"
+      ],
+      "title": "BALTIC_EXCHANGE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "BANK-NEGARA-MALAYSIA-POLICY-COMMITTEE"
+      ],
+      "title": "BANK_NEGARA_MALAYSIA_POLICY_COMMITTEE",
+      "description": "The business calendar of the Bank Negara Malaysia Policy Committee."
+    },
+    
+    {
+      "enum": [
+        "BELPEX"
+      ],
+      "title": "BELPEX",
+      "description": "The business calendar for the Belpex power exchange (www.belpex.be)."
+    },
+    
+    {
+      "enum": [
+        "BLUENEXT"
+      ],
+      "title": "BLUENEXT",
+      "description": "BlueNext Power Market."
+    },
+    
+    {
+      "enum": [
+        "BM&F"
+      ],
+      "title": "BM_F",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "BURSA-MALAYSIA-SETTLEMENT"
+      ],
+      "title": "BURSA_MALAYSIA_SETTLEMENT",
+      "description": "The settlement business calendar for Bursa Malaysia."
+    },
+    
+    {
+      "enum": [
+        "BURSA-MALAYSIA-TRADING"
+      ],
+      "title": "BURSA_MALAYSIA_TRADING",
+      "description": "The trading business calendar for Bursa Malaysia."
+    },
+    
+    {
+      "enum": [
+        "CANADIAN-GAS-PRICE-REPORTER"
+      ],
+      "title": "CANADIAN_GAS_PRICE_REPORTER",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "CBOT-SOFT"
+      ],
+      "title": "CBOT_SOFT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "CMAI-AROMATICS-MARKET-REPORT"
+      ],
+      "title": "CMAI_AROMATICS_MARKET_REPORT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "CMAI-GLOBAL-PLASTICS-AND-POLYMERS-MARKET-REPORT"
+      ],
+      "title": "CMAI_GLOBAL_PLASTICS_AND_POLYMERS_MARKET_REPORT",
+      "description": "CMAI Global Plastics and Polymers Market Report. http://www.ihs.com/products/chemical/index.aspx?pu=1&rd=cmai"
+    },
+    
+    {
+      "enum": [
+        "CMAI-METHANOL-MARKET-REPORT"
+      ],
+      "title": "CMAI_METHANOL_MARKET_REPORT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "CMAI-MONOMERS-MARKET-REPORT"
+      ],
+      "title": "CMAI_MONOMERS_MARKET_REPORT",
+      "description": "CMAI Monomers Market Report. http://www.ihs.com/products/chemical/index.aspx?pu=1&rd=cmai"
+    },
+    
+    {
+      "enum": [
+        "CME-DAIRY"
+      ],
+      "title": "CME_DAIRY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "CME-NON-DAIRY-SOFT"
+      ],
+      "title": "CME_NON_DAIRY_SOFT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "COMEX"
+      ],
+      "title": "COMEX",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "CRU"
+      ],
+      "title": "CRU",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "CRU-LONG"
+      ],
+      "title": "CRU_LONG",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "DEPARTMENT-OF-ENERGY"
+      ],
+      "title": "DEPARTMENT_OF_ENERGY",
+      "description": "The business calendar for statistical publications by the by the United States Department of Energy (DOE)."
+    },
+    
+    {
+      "enum": [
+        "DEWITT-BENZENE-DERIVATIVES"
+      ],
+      "title": "DEWITT_BENZENE_DERIVATIVES",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "DME"
+      ],
+      "title": "DME",
+      "description": "Dubai Mercantile Exchange. http://www.dubaimerc.com/"
+    },
+    
+    {
+      "enum": [
+        "DOW-JONES"
+      ],
+      "title": "DOW_JONES",
+      "description": "Dow Jones US Calendar. http://www.dowjones.com/"
+    },
+    
+    {
+      "enum": [
+        "DOW-JONES-ENERGY-SERVICE"
+      ],
+      "title": "DOW_JONES_ENERGY_SERVICE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "DowJonesPower"
+      ],
+      "title": "DowJonesPower",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "EEX-COAL"
+      ],
+      "title": "EEX_COAL",
+      "description": "European Energy Exchange-Coal"
+    },
+    
+    {
+      "enum": [
+        "EEX-EMISSIONS"
+      ],
+      "title": "EEX_EMISSIONS",
+      "description": "European Energy Exchange-Emissions Rights"
+    },
+    
+    {
+      "enum": [
+        "EEX-GAS"
+      ],
+      "title": "EEX_GAS",
+      "description": "European Energy Exchange-Gas"
+    },
+    
+    {
+      "enum": [
+        "EEX-POWER"
+      ],
+      "title": "EEX_POWER",
+      "description": "European Energy Exchange-Power"
+    },
+    
+    {
+      "enum": [
+        "EURONEX-MATIF"
+      ],
+      "title": "EURONEX_MATIF",
+      "description": "TBD."
+    },
+    
+    {
+      "enum": [
+        "FERTECON"
+      ],
+      "title": "FERTECON",
+      "description": "FERTECON Limited Information Services. http://fertecon.com/current_information_services.asp"
+    },
+    
+    {
+      "enum": [
+        "FERTILIZER-WEEK"
+      ],
+      "title": "FERTILIZER_WEEK",
+      "description": "Fertilizer Week. http://www.crugroup.com/market-analysis/products/fertilizerweek"
+    },
+    
+    {
+      "enum": [
+        "GAS-DAILY"
+      ],
+      "title": "GAS_DAILY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "GAS-DAILY-PRICE-GUIDE"
+      ],
+      "title": "GAS_DAILY_PRICE_GUIDE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "GLOBALCOAL"
+      ],
+      "title": "GLOBALCOAL",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "HEREN-REPORT"
+      ],
+      "title": "HEREN_REPORT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ICE/10X-DAILY"
+      ],
+      "title": "ICE_10X_DAILY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ICE/10X-MONTHLY"
+      ],
+      "title": "ICE_10X_MONTHLY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ICE-CANADA"
+      ],
+      "title": "ICE_CANADA",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ICE-ECX"
+      ],
+      "title": "ICE_ECX",
+      "description": "European Climate Exchange."
+    },
+    
+    {
+      "enum": [
+        "ICE-GAS"
+      ],
+      "title": "ICE_GAS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ICE-OIL"
+      ],
+      "title": "ICE_OIL",
+      "description": "The business calendar oil and refined product contracts on ICE Futures Europe."
+    },
+    
+    {
+      "enum": [
+        "ICE-US-AGRICULTURAL"
+      ],
+      "title": "ICE_US_AGRICULTURAL",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "ICIS-PRICING-BENZENE-(EUROPE)"
+      ],
+      "title": "ICIS_PRICING_BENZENE__EUROPE_",
+      "description": "The business calendar for publication of ICIS Benzene (Europe) data."
+    },
+    
+    {
+      "enum": [
+        "ICIS-PRICING-ETHYLENE-(EUROPE)"
+      ],
+      "title": "ICIS_PRICING_ETHYLENE__EUROPE_",
+      "description": "The business calendar for publication of ICIS Ethylene (Europe) data."
+    },
+    
+    {
+      "enum": [
+        "ICIS-PRICING-POLYPROPYLENE-(EUROPE)"
+      ],
+      "title": "ICIS_PRICING_POLYPROPYLENE__EUROPE_",
+      "description": "The business calendar for publication of ICIS Polyproylene (Europe) data."
+    },
+    
+    {
+      "enum": [
+        "INSIDE-FERC"
+      ],
+      "title": "INSIDE_FERC",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "JAPAN-MOF-TSRR"
+      ],
+      "title": "JAPAN_MOF_TSRR",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "KCBOT"
+      ],
+      "title": "KCBOT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "KUALA-LUMPUR-BANK"
+      ],
+      "title": "KUALA_LUMPUR_BANK",
+      "description": "The banking business calendar in Kuala Lumpur."
+    },
+    
+    {
+      "enum": [
+        "LABUAN-BANK"
+      ],
+      "title": "LABUAN_BANK",
+      "description": "The business calendar for the Labuan Bank (Malaysia)."
+    },
+    
+    {
+      "enum": [
+        "LIFFE-LONDON-SOFT"
+      ],
+      "title": "LIFFE_LONDON_SOFT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "LME"
+      ],
+      "title": "LME",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "LONDON-BULLION-MARKET"
+      ],
+      "title": "LONDON_BULLION_MARKET",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "LONDON-BULLION-MARKET-GOLD-A.M-ONLY"
+      ],
+      "title": "LONDON_BULLION_MARKET_GOLD_A_M_ONLY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "LONDON-PLATINUM-PALLADIUM-MARKET"
+      ],
+      "title": "LONDON_PLATINUM_PALLADIUM_MARKET",
+      "description": "The London Platinum and Palladium Market in London on which members quote prices for the buying and selling of Platinum and Palladium."
+    },
+    
+    {
+      "enum": [
+        "MGEX"
+      ],
+      "title": "MGEX",
+      "description": "Minneapolis Grain Exchange http://www.mgex.com/"
+    },
+    
+    {
+      "enum": [
+        "N2EX"
+      ],
+      "title": "N2EX",
+      "description": "The business calendar for the N2EX UK power exchange (https://www.n2ex.com/aboutn2ex)."
+    },
+    
+    {
+      "enum": [
+        "NASDAQ-OMX"
+      ],
+      "title": "NASDAQ_OMX",
+      "description": "NASDAQ-OMX (Formerly known as Nordpool). http://www.nasdaqomx.com/commodities"
+    },
+    
+    {
+      "enum": [
+        "NATURAL-GAS-WEEK"
+      ],
+      "title": "NATURAL_GAS_WEEK",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "NERC"
+      ],
+      "title": "NERC",
+      "description": "Per 2005 ISDA Commodity Definitions, Article XIV."
+    },
+    
+    {
+      "enum": [
+        "NGI"
+      ],
+      "title": "NGI",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "NGX"
+      ],
+      "title": "NGX",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "NUCLEAR-MARKET-REVIEW"
+      ],
+      "title": "NUCLEAR_MARKET_REVIEW",
+      "description": "The Nuclear Market Review report as published by Trade tech. http://www.uranium.info/nuclear_market_review.php"
+    },
+    
+    {
+      "enum": [
+        "NYMEX-ELECTRICITY"
+      ],
+      "title": "NYMEX_ELECTRICITY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "NYMEX-GAS"
+      ],
+      "title": "NYMEX_GAS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "NYMEX-NATURAL-GAS"
+      ],
+      "title": "NYMEX_NATURAL_GAS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "NYMEX-OIL"
+      ],
+      "title": "NYMEX_OIL",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "OFFICIAL-BOARD-MARKETS"
+      ],
+      "title": "OFFICIAL_BOARD_MARKETS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "OPIS-LP-GAS"
+      ],
+      "title": "OPIS_LP_GAS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "OPIS-PROPANE"
+      ],
+      "title": "OPIS_PROPANE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PAPER-PACKAGING-MONITOR"
+      ],
+      "title": "PAPER_PACKAGING_MONITOR",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PAPER-TRADER"
+      ],
+      "title": "PAPER_TRADER",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PERTAMINA"
+      ],
+      "title": "PERTAMINA",
+      "description": "Pertamina-Indonesia. http://www.pertamina.com/"
+    },
+    
+    {
+      "enum": [
+        "PETROCHEMWIRE"
+      ],
+      "title": "PETROCHEMWIRE",
+      "description": "PetroChemWire Publication Calendar. http://www.petrochemwire.com/"
+    },
+    
+    {
+      "enum": [
+        "PIX-PULP-BENCHMARK-INDICES"
+      ],
+      "title": "PIX_PULP_BENCHMARK_INDICES",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-APAG-MARKETSCAN"
+      ],
+      "title": "PLATTS_APAG_MARKETSCAN",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-BUNKERWIRE"
+      ],
+      "title": "PLATTS_BUNKERWIRE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-CLEAN-TANKERWIRE"
+      ],
+      "title": "PLATTS_CLEAN_TANKERWIRE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-CRUDE-OIL-MARKETWIRE"
+      ],
+      "title": "PLATTS_CRUDE_OIL_MARKETWIRE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-DIRTY-TANKERWIRE"
+      ],
+      "title": "PLATTS_DIRTY_TANKERWIRE",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-EUROPEAN-GAS"
+      ],
+      "title": "PLATTS_EUROPEAN_GAS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-EUROPEAN-MARKETSCAN"
+      ],
+      "title": "PLATTS_EUROPEAN_MARKETSCAN",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-METALS-ALERT"
+      ],
+      "title": "PLATTS_METALS_ALERT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-OILGRAM"
+      ],
+      "title": "PLATTS_OILGRAM",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PLATTS-TSI-IRON-ORE"
+      ],
+      "title": "PLATTS_TSI_IRON_ORE",
+      "description": "The Steel Index Iron Ore Service. http://www.thesteelindex.com/en/iron-ore"
+    },
+    
+    {
+      "enum": [
+        "PLATTS-TSI-SCRAP"
+      ],
+      "title": "PLATTS_TSI_SCRAP",
+      "description": "The Steel Index Scrap Reference Prices. http://www.thesteelindex.com/en/scrapprices"
+    },
+    
+    {
+      "enum": [
+        "PLATTS-TSI-STEEL"
+      ],
+      "title": "PLATTS_TSI_STEEL",
+      "description": "The Steel Index. http://www.thesteelindex.com/en/price-specifications"
+    },
+    
+    {
+      "enum": [
+        "PLATTS-US-MARKETSCAN"
+      ],
+      "title": "PLATTS_US_MARKETSCAN",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PULP-AND-PAPER-INTERNATIONAL"
+      ],
+      "title": "PULP_AND_PAPER_INTERNATIONAL",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "PULP-AND-PAPER-WEEK"
+      ],
+      "title": "PULP_AND_PAPER_WEEK",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "RIM-PRODUCTS-INTELLIGENCE-DAILY"
+      ],
+      "title": "RIM_PRODUCTS_INTELLIGENCE_DAILY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "SAFEX-SOFT"
+      ],
+      "title": "SAFEX_SOFT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "SFE-SOFT"
+      ],
+      "title": "SFE_SOFT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "SGX"
+      ],
+      "title": "SGX",
+      "description": "Singapore Exchange. www.sgx.com"
+    },
+    
+    {
+      "enum": [
+        "SICOM"
+      ],
+      "title": "SICOM",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "SP-GSCI"
+      ],
+      "title": "SP_GSCI",
+      "description": "Standard and Poor's GSCI. http://us.spindices.com/index-family/commodities/sp-gsci"
+    },
+    
+    {
+      "enum": [
+        "STATISTICHES-BUNDESAMT"
+      ],
+      "title": "STATISTICHES_BUNDESAMT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "TGE"
+      ],
+      "title": "TGE",
+      "description": "Tokyo Grain Exchange. www.tge.or.jp"
+    },
+    
+    {
+      "enum": [
+        "TOCOM-OIL"
+      ],
+      "title": "TOCOM_OIL",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "TOCOM-PRECIOUS"
+      ],
+      "title": "TOCOM_PRECIOUS",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "TOCOM-SOFT"
+      ],
+      "title": "TOCOM_SOFT",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    },
+    
+    {
+      "enum": [
+        "UX-WEEKLY"
+      ],
+      "title": "UX_WEEKLY",
+      "description": "The Ux Consulting Company. http://www.uxc.com/products/uxw_overview.aspx"
+    },
+    
+    {
+      "enum": [
+        "WORLD-PULP-MONTHLY"
+      ],
+      "title": "WORLD_PULP_MONTHLY",
+      "description": "Per 2005 ISDA Commodity Definitions, Section 7.2 Certain Definitions Relating To Commodity Reference Prices."
+    }
+  ]
+}

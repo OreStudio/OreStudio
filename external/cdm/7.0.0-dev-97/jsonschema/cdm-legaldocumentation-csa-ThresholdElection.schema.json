@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ThresholdElection",
+  "description": "Specifies whether the threshold is rating based, a fixed amount, or infinity.",
+  "properties": {
+    "party": {
+      "description": "The party to which the threshold applies.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "fixedAmount": {
+      "description": "Defines that the Threshold is a Fixed Amount.",
+      "$ref": "cdm-legaldocumentation-csa-ThresholdMinimumTransferAmountFixedAmount.schema.json"
+    },
+    "ratingsBased": {
+      "description": "Defines that the Threshold is based on a Ratings condition(s).",
+      "$ref": "cdm-legaldocumentation-csa-ThresholdRatingsBased.schema.json"
+    },
+    "infinity": {
+      "description": "Specifies that the Threshold is Infinity. If 'True' then the threshold for the elective party is Infinity.",
+      "type": "boolean"
+    },
+    "other": {
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "FxRateSourceFixing",
+  "description": "Describes a rate source to be fixed and the date the fixing occurs",
+  "properties": {
+    "settlementRateSource": {
+      "$ref": "cdm-observable-asset-FxSettlementRateSource.schema.json"
+    },
+    "fixingDate": {
+      "description": "The date on which the fixing is scheduled to occur.",
+      "$ref": "cdm-base-datetime-AdjustableDate.schema.json"
+    }
+  },
+  "required": [
+    "settlementRateSource",
+    "fixingDate"
+  ]
+}

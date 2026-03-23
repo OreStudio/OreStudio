@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "MandatoryEarlyTerminationAdjustedDates",
+  "description": "A data defining:  the adjusted dates associated with a mandatory early termination provision.",
+  "properties": {
+    "adjustedEarlyTerminationDate": {
+      "description": "The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedCashSettlementValuationDate": {
+      "description": "The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedCashSettlementPaymentDate": {
+      "description": "The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business date convention.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "adjustedEarlyTerminationDate",
+    "adjustedCashSettlementValuationDate",
+    "adjustedCashSettlementPaymentDate"
+  ]
+}

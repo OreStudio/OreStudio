@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "CreditNotationBoundaryEnum",
+  "description": "Identifies an agency rating as a simple scale boundary of minimum or maximum.",
+  "enum": [
+    "Maximum",
+    "Minimum"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Maximum"
+      ],
+      "title": "Maximum",
+      "description": "Denotes a maxiumum boundary"
+    },
+    
+    {
+      "enum": [
+        "Minimum"
+      ],
+      "title": "Minimum",
+      "description": "Denotes a minumum boundary"
+    }
+  ]
+}

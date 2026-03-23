@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SecuredPartyRightsEventElection",
+  "description": "A class to specify party specific Secured Party Rights Event language.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "rightsEvent": {
+      "description": "A boolean attribute to specify whether a Secured Party Rights Event will only occur upon the occurrence of one or more of the event specified in a Control Agreement.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "party",
+    "rightsEvent"
+  ]
+}

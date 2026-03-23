@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "FutureValueAmount",
+  "description": "A class defining a currency and a future value date.",
+  "properties": {
+    "quantity": {
+      "$ref": "cdm-base-math-metafields-ReferenceWithMetaNonNegativeQuantitySchedule.schema.json"
+    },
+    "currency": {
+      "description": "The currency in which the an amount is denominated. The list of valid currencies is not presently positioned as an enumeration as part of the CDM because that scope is limited to the values specified by ISDA and FpML. As a result, implementers have to make reference to the relevant standard, such as the ISO 4217 standard for currency codes.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "calculationPeriodNumberOfDays": {
+      "description": "The number of days from the adjusted calculation period start date to the adjusted value date, calculated in accordance with the applicable day count fraction.",
+      "type": "integer"
+    },
+    "valueDate": {
+      "description": "Adjusted value date of the future value amount.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "currency",
+    "calculationPeriodNumberOfDays",
+    "valueDate"
+  ]
+}

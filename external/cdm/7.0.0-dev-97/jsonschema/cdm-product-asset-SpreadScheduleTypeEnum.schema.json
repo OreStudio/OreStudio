@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "SpreadScheduleTypeEnum",
+  "description": "The enumerated values to specify a long or short spread value.",
+  "enum": [
+    "Long",
+    "Short"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Long"
+      ],
+      "title": "Long",
+      "description": "Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions."
+    },
+    
+    {
+      "enum": [
+        "Short"
+      ],
+      "title": "Short",
+      "description": "Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions."
+    }
+  ]
+}

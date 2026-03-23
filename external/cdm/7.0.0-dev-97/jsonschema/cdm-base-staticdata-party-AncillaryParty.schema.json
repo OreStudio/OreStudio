@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "AncillaryParty",
+  "description": "Defines an ancillary role enumerated value with an associated party reference. The product is agnostic to the actual parties involved in the transaction, with the party references abstracted away from the product definition and replaced by the AncillaryRoleEnum. The AncillaryRoleEnum can then be positioned in the product and this AncillaryParty type, which is positioned outside of the product definition, allows the AncillaryRoleEnum to be associated with an actual party reference.",
+  "properties": {
+    "role": {
+      "description": "Specifies the AncillaryRoleEnum that is associated to the party reference. An ancillary party is any involved party that is not one of the two principal parties to the transaction.",
+      "$ref": "cdm-base-staticdata-party-AncillaryRoleEnum.schema.json"
+    },
+    "partyReference": {
+      "description": "Specifies the party, or parties, associated to the ancillary role.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+      },
+      "minItems": 1
+    },
+    "onBehalfOf": {
+      "description": "Optionally specifies the counterparty that the ancillary party is acting on behalf of.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    }
+  },
+  "required": [
+    "role"
+  ]
+}

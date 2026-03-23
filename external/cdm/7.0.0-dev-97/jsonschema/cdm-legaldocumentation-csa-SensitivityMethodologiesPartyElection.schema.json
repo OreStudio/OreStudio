@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SensitivityMethodologiesPartyElection",
+  "description": "A class to specificy methodologies to compute sensitivities specific to the agreement.",
+  "properties": {
+    "party": {
+      "description": "The party to which the election applies.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "sensitivityToEquity": {
+      "description": "The methodology to compute sensitivities to equity indices, funds and ETFs for the purpose of Initial Margin agreements.",
+      "$ref": "cdm-legaldocumentation-csa-SensitivityToEquity.schema.json"
+    },
+    "sensitivityToCommodity": {
+      "description": "The methodology to compute sensitivities to commodity indices for the purpose of Initial Margin agreements.",
+      "$ref": "cdm-legaldocumentation-csa-SensitivityMethodology.schema.json"
+    }
+  },
+  "required": [
+    "party",
+    "sensitivityToEquity",
+    "sensitivityToCommodity"
+  ]
+}

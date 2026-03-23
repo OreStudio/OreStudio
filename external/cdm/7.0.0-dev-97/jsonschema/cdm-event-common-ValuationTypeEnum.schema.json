@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "ValuationTypeEnum",
+  "description": "Method used for the valuation of the transaction by the valuation party.",
+  "enum": [
+    "MarkToMarket",
+    "MarkToModel"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "MarkToMarket"
+      ],
+      "title": "MarkToMarket",
+      "description": "Mark-to-Market"
+    },
+    
+    {
+      "enum": [
+        "MarkToModel"
+      ],
+      "title": "MarkToModel",
+      "description": "Mark-to-Model"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "CancelableProvision",
+  "description": "A data defining:  the right of a party to cancel a swap transaction on the specified exercise dates. The provision is for 'walk-away' cancellation (i.e. the fair value of the swap is not paid). A fee payable on exercise can be specified. As a difference from the FpML construct, the canonical model extends the BuyerSeller class.",
+  "properties": {
+    "buyer": {
+      "description": "Buyer party that can be resolved as one of the two principal parties to the transaction. The party that buys this instrument, i.e. pays for this instrument and receives the rights defined by it. ISDA 2002 Equity Definitions section 1.18: `Buyer` means the party specified as such in the related Confirmation. | ISDA 2006 Definitions article 12.1 (b)(i) relating to a Swaption: 'Buyer' means the party that will, on each Premium Payment Date, pay to Seller the Premium | ISDA 2006 Definitions article 12.1 (b)(ii) relating to Swap Transactions with applicable Early Termination: the party specified as such in the related Confirmation, or the Exercising Party if neither party is specified | ISDA 2006 Definitions article 12.1 (b)(iii) relating to any other Option Transaction: the party specified as such in the related Confirmation. | ISDA 2014 Credit Definition article 1.4: `Buyer` means the Fixed Rate Payer.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "seller": {
+      "description": "Seller party that can be resolved as one of the two principal parties to the transaction. The party that sells ('writes') this instrument, i.e. that grants the rights defined by this instrument and in return receives a payment for it. ISDA 2002 Equity Definitions section 1.19: `Seller` means the party specified as such in the related Confirmation. | ISDA 2006 Definitions article 12.1 (a)(i) relating to a Swaption: 'Seller' means the party the party specified as such or as writer in the related Confirmation | ISDA 2006 Definitions article 12.1 (a)(ii) relating to Swap Transactions with applicable Early Termination: the party specified as such or as writer in the related Confirmation or, if neither party is specified as such, the Non-exercising Party | ISDA 2006 Definitions article 12.1 (a)(iii) relating to any other Option Transaction: the party specified as such in the related Confirmation. | ISDA 2014 Credit Definition article 1.4: `Seller` means the Floating Rate Payer.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "exerciseNotice": {
+      "description": "Definition of the party to whom notice of exercise should be given.",
+      "$ref": "cdm-product-template-ExerciseNotice.schema.json"
+    },
+    "followUpConfirmation": {
+      "description": "A flag to indicate whether follow-up confirmation of exercise (written or electronic) is required following telephonic notice by the buyer to the seller or seller's agent.",
+      "type": "boolean"
+    },
+    "cancelableProvisionAdjustedDates": {
+      "description": "The adjusted dates associated with a cancelable provision. These dates have been adjusted for any applicable business day convention.",
+      "$ref": "cdm-product-template-CancelableProvisionAdjustedDates.schema.json"
+    },
+    "finalCalculationPeriodDateAdjustment": {
+      "description": "Business date convention adjustment to final payment period per leg (swapStream) upon exercise event. The adjustments can be made in-line with leg level BDC's or they can be specified separately.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-common-schedule-FinalCalculationPeriodDateAdjustment.schema.json"
+      },
+      "minItems": 0
+    },
+    "initialFee": {
+      "description": "An initial fee for the cancelable option.",
+      "$ref": "cdm-event-common-Transfer.schema.json"
+    },
+    "callingParty": {
+      "description": "The party with right to exercise a cancellation. Allows for buyer, seller or either.",
+      "$ref": "cdm-product-template-CallingPartyEnum.schema.json"
+    },
+    "earliestDate": {
+      "description": "The first day when cancelation is permitted to take effect. A party may give notice prior to this date and taken together with the effective period would be necessary to cancel on this date.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "expirationDate": {
+      "description": "The last day within the term of the contract that cancelation is allowed.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "effectiveDate": {
+      "description": "The effective date if cancelation is invoked otherwise the cancellation period defines the cancellation date.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDates.schema.json"
+    },
+    "effectivePeriod": {
+      "description": "Effective period for cancelation when notice is given. This is the period after notice is given that cancellation becomes effecticve.",
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    },
+    "earliestCancellationTime": {
+      "description": "The earliest time in a business day that notice of cancelation can be given.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "latestCancelationTime": {
+      "description": "The latest time at which notice of cancelation can be given.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "exerciseTerms": {
+      "description": "The exercise terms associated with the cancelable provision, including details such as exercise style, exercise fees, and any other relevant conditions or terms governing the cancellation of the swap transaction.",
+      "$ref": "cdm-product-template-ExerciseTerms.schema.json"
+    }
+  },
+  "required": [
+    "followUpConfirmation",
+    "exerciseTerms"
+  ]
+}

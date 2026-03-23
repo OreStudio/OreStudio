@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "object",
+  "title": "CalculatedRateObservationDatesAndWeights",
+  "description": "Type for reporting the observations dates and the corresponding weights going into a daily calculated rate",
+  "properties": {
+    "observationDates": {
+      "description": "The observation date upon which the rate is observed.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "weights": {
+      "description": "The corresponding weight for each date.",
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 0
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "string",
+  "title": "CashSettlementMethodEnum",
+  "description": "Defines the different cash settlement methods for a product where cash settlement is applicable.",
+  "enum": [
+    "CashPriceAlternateMethod",
+    "CashPriceMethod",
+    "CollateralizedCashPriceMethod",
+    "CrossCurrencyMethod",
+    "MidMarketCalculationAgentDetermination",
+    "MidMarketIndicativeQuotations",
+    "MidMarketIndicativeQuotationsAlternate",
+    "ParYieldCurveAdjustedMethod",
+    "ParYieldCurveUnadjustedMethod",
+    "ReplacementValueCalculationAgentDetermination",
+    "ReplacementValueFirmQuotations",
+    "ZeroCouponYieldAdjustedMethod"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CashPriceAlternateMethod"
+      ],
+      "title": "CashPriceAlternateMethod",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2006 ISDA Definitions, Section 18.3. Cash Settlement Methods, paragraph (b)."
+    },
+    
+    {
+      "enum": [
+        "CashPriceMethod"
+      ],
+      "title": "CashPriceMethod",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2006 ISDA Definitions, Section 18.3. Cash Settlement Methods, paragraph (a)."
+    },
+    
+    {
+      "enum": [
+        "CollateralizedCashPriceMethod"
+      ],
+      "title": "CollateralizedCashPriceMethod",
+      "description": "An ISDA defined cash settlement method (yield curve) used for the determination of the applicable cash settlement amount. The method is defined in the 2006 ISDA Definitions, Section 18.3. Cash Settlement Methods, paragraph (g) (published in Supplement number 28). The method is defined in the 2021 ISDA Definitions, section 18.2.6."
+    },
+    
+    {
+      "enum": [
+        "CrossCurrencyMethod"
+      ],
+      "title": "CrossCurrencyMethod",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2006 ISDA Definitions, Section 18.3. Cash Settlement Methods, paragraph (f) (published in Supplement number 23)."
+    },
+    
+    {
+      "enum": [
+        "MidMarketCalculationAgentDetermination"
+      ],
+      "title": "MidMarketCalculationAgentDetermination",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2021 ISDA Definitions, Section 18.2.3."
+    },
+    
+    {
+      "enum": [
+        "MidMarketIndicativeQuotations"
+      ],
+      "title": "MidMarketIndicativeQuotations",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2021 ISDA Definitions, Section 18.2.1."
+    },
+    
+    {
+      "enum": [
+        "MidMarketIndicativeQuotationsAlternate"
+      ],
+      "title": "MidMarketIndicativeQuotationsAlternate",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2021 ISDA Definitions, Section 18.2.2."
+    },
+    
+    {
+      "enum": [
+        "ParYieldCurveAdjustedMethod"
+      ],
+      "title": "ParYieldCurveAdjustedMethod",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2006 ISDA Definitions, Section 18.3. Cash Settlement Methods, paragraph (c)."
+    },
+    
+    {
+      "enum": [
+        "ParYieldCurveUnadjustedMethod"
+      ],
+      "title": "ParYieldCurveUnadjustedMethod",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2006 ISDA Definitions, Section 18.3. Cash Settlement Methods, paragraph (e)."
+    },
+    
+    {
+      "enum": [
+        "ReplacementValueCalculationAgentDetermination"
+      ],
+      "title": "ReplacementValueCalculationAgentDetermination",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2021 ISDA Definitions, Section 18.2.5"
+    },
+    
+    {
+      "enum": [
+        "ReplacementValueFirmQuotations"
+      ],
+      "title": "ReplacementValueFirmQuotations",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2021 ISDA Definitions, Section 18.2.4."
+    },
+    
+    {
+      "enum": [
+        "ZeroCouponYieldAdjustedMethod"
+      ],
+      "title": "ZeroCouponYieldAdjustedMethod",
+      "description": "An ISDA defined cash settlement method used for the determination of the applicable cash settlement amount. The method is defined in the 2006 ISDA Definitions, Section 18.3. Cash Settlement Methods, paragraph (d)."
+    }
+  ]
+}

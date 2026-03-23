@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "ConcentrationLimitTypeEnum",
+  "description": "Represents the enumerated values to identify where a concentration limit is applied in the eligible collateral schedule.",
+  "enum": [
+    "Asset",
+    "BaseCurrencyEquivalent",
+    "IndustrySector",
+    "IssueOutstandingAmount",
+    "Issuer",
+    "MarketCapitalisation",
+    "OutstandingBalance",
+    "PrimaryExchange",
+    "UltimateParentInstitution"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Asset"
+      ],
+      "title": "Asset",
+      "description": "Specifies a limit on a single asset in the eligible collateral schedule"
+    },
+    
+    {
+      "enum": [
+        "BaseCurrencyEquivalent"
+      ],
+      "title": "BaseCurrencyEquivalent",
+      "description": "Specifies a limit on all cash valued in the base currency of the eligible collateral schedule."
+    },
+    
+    {
+      "enum": [
+        "IndustrySector"
+      ],
+      "title": "IndustrySector",
+      "description": "Specifies a limit on a single industry sector in the eligible collateral schedule."
+    },
+    
+    {
+      "enum": [
+        "IssueOutstandingAmount"
+      ],
+      "title": "IssueOutstandingAmount",
+      "description": "Specifies a limit of the issue compared to the outstanding amount of the asset on the market."
+    },
+    
+    {
+      "enum": [
+        "Issuer"
+      ],
+      "title": "Issuer",
+      "description": "Specifies a limit on a single issuer in the eligible collateral schedule."
+    },
+    
+    {
+      "enum": [
+        "MarketCapitalisation"
+      ],
+      "title": "MarketCapitalisation",
+      "description": "Specifies a limit of the issue calculated as a percentage of the market capitalisation of the asset on the market."
+    },
+    
+    {
+      "enum": [
+        "OutstandingBalance"
+      ],
+      "title": "OutstandingBalance",
+      "description": "Specifies a limit on the total outstanding balance for an asset in the portfolio."
+    },
+    
+    {
+      "enum": [
+        "PrimaryExchange"
+      ],
+      "title": "PrimaryExchange",
+      "description": "Specifies a limit on a single exchange in the eligible collateral schedule."
+    },
+    
+    {
+      "enum": [
+        "UltimateParentInstitution"
+      ],
+      "title": "UltimateParentInstitution",
+      "description": "Specifies a limit on a single issuer in the eligible collateral schedule at the ultimate parent institution level."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "FxInformationSource",
+  "description": "Information source specific to Foreign Exchange products.",
+  "properties": {
+    "sourceProvider": {
+      "description": "An information source for obtaining a market data point. For example Bloomberg, Reuters, Telerate, etc.",
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaInformationProviderEnum.schema.json"
+    },
+    "sourcePage": {
+      "description": "A specific page for the source for obtaining a market data point. In FpML, this is specified as a scheme, rateSourcePageScheme, for which no coding Scheme or URI is specified.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "sourcePageHeading": {
+      "description": "The heading for the source on a given source page.",
+      "type": "string"
+    },
+    "fixingTime": {
+      "description": "The time that the fixing will be taken along with a business center to define the time zone.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    }
+  }
+}

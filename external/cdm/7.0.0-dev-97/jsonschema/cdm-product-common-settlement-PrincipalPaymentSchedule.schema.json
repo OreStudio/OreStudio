@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PrincipalPaymentSchedule",
+  "description": "Describe dates schedules for Principal Exchanges and related role of the parties when known.",
+  "properties": {
+    "initialPrincipalPayment": {
+      "description": "Principal Payment made at Trade inception.",
+      "$ref": "cdm-product-common-settlement-PrincipalPayment.schema.json"
+    },
+    "intermediatePrincipalPayment": {
+      "description": "Principal Payment as part of the Trade lifecycle e.g. as part of notional reset adjustements in a Cross Currency Swap with a varying notional leg.",
+      "$ref": "cdm-base-datetime-AdjustableRelativeOrPeriodicDates.schema.json"
+    },
+    "finalPrincipalPayment": {
+      "description": "Principal Payment at Trade maturity",
+      "$ref": "cdm-product-common-settlement-PrincipalPayment.schema.json"
+    }
+  }
+}

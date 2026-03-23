@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CollateralManagementAgreement",
+  "description": "A class to specify the Collateral Management Agreement election.",
+  "properties": {
+    "partyElection": {
+      "description": "The parties' Collateral Management Agreement election.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-CollateralManagementAgreementElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

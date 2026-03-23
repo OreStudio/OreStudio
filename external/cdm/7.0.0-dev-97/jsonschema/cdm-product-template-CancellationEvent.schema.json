@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "CancellationEvent",
+  "description": "The adjusted dates for a specific cancellation date, including the adjusted exercise date and adjusted termination date.",
+  "properties": {
+    "adjustedExerciseDate": {
+      "description": "The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedEarlyTerminationDate": {
+      "description": "The early termination date that is applicable if an early termination provision is exercised. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "adjustedExerciseDate",
+    "adjustedEarlyTerminationDate"
+  ]
+}

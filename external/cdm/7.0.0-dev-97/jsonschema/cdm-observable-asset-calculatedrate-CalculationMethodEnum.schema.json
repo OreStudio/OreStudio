@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "string",
+  "title": "CalculationMethodEnum",
+  "description": "What calculation type is required, averaging or compounding. This enumeration is used to represent the definitions of modular calculated rates as described in the 2021 ISDA Definitions, section 7.",
+  "enum": [
+    "Averaging",
+    "CompoundedIndex",
+    "Compounding"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Averaging"
+      ],
+      "title": "Averaging",
+      "description": "Averaging, i.e. arithmetic averaging."
+    },
+    
+    {
+      "enum": [
+        "CompoundedIndex"
+      ],
+      "title": "CompoundedIndex",
+      "description": "A rate based on an index that is computed by a rate administrator.  The user is responsible for backing out the rate by applying a simple formula."
+    },
+    
+    {
+      "enum": [
+        "Compounding"
+      ],
+      "title": "Compounding",
+      "description": "Compounding, i.e. geometric averaging following an ISDA defined formula."
+    }
+  ]
+}

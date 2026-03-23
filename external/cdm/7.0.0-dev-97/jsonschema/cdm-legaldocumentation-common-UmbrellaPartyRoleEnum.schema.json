@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "UmbrellaPartyRoleEnum",
+  "enum": [
+    "Agent",
+    "InvestmentManager",
+    "Principal",
+    "Sleeve",
+    "SubAccount"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Agent"
+      ],
+      "title": "Agent",
+      "description": "Represents a Contractual Party who has authority to negotiate, execute and deliver confirmations on behalf of each unique party to the agreement that is linked to the Agent."
+    },
+    
+    {
+      "enum": [
+        "InvestmentManager"
+      ],
+      "title": "InvestmentManager",
+      "description": "Represents a Contractual Party who has been authorised to act as a centralised authority empowered to negotiate, execute and manage transactions on behalf of multiple affiliated funds or accounts."
+    },
+    
+    {
+      "enum": [
+        "Principal"
+      ],
+      "title": "Principal",
+      "description": "Represents a Contractual Party that enters into and assumes direct responsibility for transactions."
+    },
+    
+    {
+      "enum": [
+        "Sleeve"
+      ],
+      "title": "Sleeve",
+      "description": "Represents a distinct trading strategy, portfolio, or sub account managed within a broader legal entity or fund. It is not a legal party to the agreement."
+    },
+    
+    {
+      "enum": [
+        "SubAccount"
+      ],
+      "title": "SubAccount",
+      "description": "Represents an individual trading party, fund, portfolio or managed account associated to a principal, Investment Manager or Agent Contractual Party."
+    }
+  ]
+}

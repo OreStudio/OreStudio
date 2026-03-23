@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "WorkflowStep",
+  "description": "A workflow step represents the state of a business event. The workflow step contains a reference to a previous WorkflowStep in order to preserve lineage. A workflow step is accepted if it contains a business event, proposed if proposedEvent is present and is rejected if the rejected flag is set.",
+  "properties": {
+    "businessEvent": {
+      "description": "Life cycle event for the step.",
+      "$ref": "cdm-event-common-BusinessEvent.schema.json"
+    },
+    "counterpartyPositionBusinessEvent": {
+      "description": "Documents the life cycle event for a position.",
+      "$ref": "cdm-event-common-CounterpartyPositionBusinessEvent.schema.json"
+    },
+    "proposedEvent": {
+      "description": "The proposed event for a workflow step.",
+      "$ref": "cdm-event-workflow-EventInstruction.schema.json"
+    },
+    "rejected": {
+      "description": "Flags this step as rejected.",
+      "type": "boolean"
+    },
+    "approval": {
+      "description": "Optional party approvals for the current workflow step. A workflow step can have any number of parties associated to it, thus this object is represented as a list. All parties that are expected to provide approval should have an item in this list that references them.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-workflow-WorkflowStepApproval.schema.json"
+      },
+      "minItems": 0
+    },
+    "previousWorkflowStep": {
+      "description": "Optional previous workflow step that provides lineage to workflow steps that precedes it.",
+      "$ref": "cdm-event-workflow-metafields-ReferenceWithMetaWorkflowStep.schema.json"
+    },
+    "nextEvent": {
+      "description": "The intended next event can be specified, even if the instructions are not known yet.",
+      "$ref": "cdm-event-workflow-EventInstruction.schema.json"
+    },
+    "messageInformation": {
+      "description": "Contains all information pertaining the FpML messaging header ",
+      "$ref": "cdm-event-workflow-MessageInformation.schema.json"
+    },
+    "timestamp": {
+      "description": "The set of timestamp(s) associated with the event as a collection of [dateTime, qualifier].",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-workflow-EventTimestamp.schema.json"
+      },
+      "minItems": 1
+    },
+    "eventIdentifier": {
+      "description": "The identifier(s) that uniquely identify a lifecycle event. The unbounded cardinality is meant to provide the ability to associate identifiers that are issued by distinct parties. As an example, each of the parties to the event may choose to associate their own identifiers to the event.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "action": {
+      "description": "Specifies whether the event is a new, a correction or a cancellation.",
+      "$ref": "cdm-event-common-ActionEnum.schema.json"
+    },
+    "party": {
+      "description": "The specification of the event parties. This attribute is optional, as not applicable to certain events (e.g. most of the observations).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Party.schema.json"
+      },
+      "minItems": 0
+    },
+    "account": {
+      "description": "Optional account information that could be associated to the event.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Account.schema.json"
+      },
+      "minItems": 0
+    },
+    "lineage": {
+      "description": "The lineage attribute provides a linkage among lifecycle events through the globalKey hash value. One example is when a given lifecycle event is being corrected or cancelled. In such case, each subsequent event will have lineage into the prior version of that event. The second broad use case is when an event has a dependency upon either another event (e.g. the regular payment associated with a fix/float swap will have a lineage into the reset event, which will in turn have a lineage into the observation event for the floating rate and the contract) or a contract (e.g. the exercise of an option has a lineage into that option).",
+      "$ref": "cdm-event-common-Lineage.schema.json"
+    },
+    "creditLimitInformation": {
+      "$ref": "cdm-event-workflow-CreditLimitInformation.schema.json"
+    },
+    "workflowState": {
+      "description": "The event workflow information, i.e. the workflow status, the associated comment and the partyCustomisedWorkflow which purpose is to provide the ability to associate custom workflow information to the CDM.",
+      "$ref": "cdm-event-workflow-WorkflowState.schema.json"
+    }
+  }
+}

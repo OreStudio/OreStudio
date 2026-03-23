@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "Account",
+  "description": "A class to specify an account as an account number alongside, optionally. an account name, an account type, an account beneficiary and a servicing party.",
+  "properties": {
+    "partyReference": {
+      "description": "A reference to the party to which the account refers to.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "accountNumber": {
+      "description": "The account number.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "accountName": {
+      "description": "The name by which the account is known.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "accountType": {
+      "description": "The type of account, e.g. client, house.",
+      "$ref": "cdm-base-staticdata-party-metafields-FieldWithMetaAccountTypeEnum.schema.json"
+    },
+    "accountBeneficiary": {
+      "description": "A reference to the party beneficiary of the account.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "servicingParty": {
+      "description": "The reference to the legal entity that services the account, i.e. in the books of which the account is held.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    }
+  },
+  "required": [
+    "accountNumber"
+  ]
+}

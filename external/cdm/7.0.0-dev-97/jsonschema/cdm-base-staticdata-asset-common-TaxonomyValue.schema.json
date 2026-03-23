@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "TaxonomyValue",
+  "description": "Defines a taxonomy value as either a simple string or a more granular expression with class names and values for each class.",
+  "properties": {
+    "name": {
+      "description": "Specifies the taxonomy value as a simple string, which may be associated to an external scheme.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "classification": {
+      "description": "Specifies the taxonomy value as a set of class names and values for each class.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-TaxonomyClassification.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

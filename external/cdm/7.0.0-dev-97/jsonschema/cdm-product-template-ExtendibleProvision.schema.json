@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "ExtendibleProvision",
+  "description": "A data defining:  an option to extend an existing swap transaction on the specified exercise dates for a term ending on the specified new termination date. As a difference from FpML, it extends the BuyerSeller class, which represents the BuyerSeller.model.",
+  "properties": {
+    "buyer": {
+      "description": "Buyer party that can be resolved as one of the two principal parties to the transaction. The party that buys this instrument, i.e. pays for this instrument and receives the rights defined by it. ISDA 2002 Equity Definitions section 1.18: `Buyer` means the party specified as such in the related Confirmation. | ISDA 2006 Definitions article 12.1 (b)(i) relating to a Swaption: 'Buyer' means the party that will, on each Premium Payment Date, pay to Seller the Premium | ISDA 2006 Definitions article 12.1 (b)(ii) relating to Swap Transactions with applicable Early Termination: the party specified as such in the related Confirmation, or the Exercising Party if neither party is specified | ISDA 2006 Definitions article 12.1 (b)(iii) relating to any other Option Transaction: the party specified as such in the related Confirmation. | ISDA 2014 Credit Definition article 1.4: `Buyer` means the Fixed Rate Payer.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "seller": {
+      "description": "Seller party that can be resolved as one of the two principal parties to the transaction. The party that sells ('writes') this instrument, i.e. that grants the rights defined by this instrument and in return receives a payment for it. ISDA 2002 Equity Definitions section 1.19: `Seller` means the party specified as such in the related Confirmation. | ISDA 2006 Definitions article 12.1 (a)(i) relating to a Swaption: 'Seller' means the party the party specified as such or as writer in the related Confirmation | ISDA 2006 Definitions article 12.1 (a)(ii) relating to Swap Transactions with applicable Early Termination: the party specified as such or as writer in the related Confirmation or, if neither party is specified as such, the Non-exercising Party | ISDA 2006 Definitions article 12.1 (a)(iii) relating to any other Option Transaction: the party specified as such in the related Confirmation. | ISDA 2014 Credit Definition article 1.4: `Seller` means the Floating Rate Payer.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "exerciseNotice": {
+      "description": "Definition of the party to whom notice of exercise should be given.",
+      "$ref": "cdm-product-template-ExerciseNotice.schema.json"
+    },
+    "followUpConfirmation": {
+      "description": "A flag to indicate whether follow-up confirmation of exercise (written or electronic) is required following telephonic notice by the buyer to the seller or seller's agent.",
+      "type": "boolean"
+    },
+    "extendibleProvisionAdjustedDates": {
+      "description": "The adjusted dates associated with an extendible provision. These dates have been adjusted for any applicable business day convention.",
+      "$ref": "cdm-product-template-ExtendibleProvisionAdjustedDates.schema.json"
+    },
+    "callingParty": {
+      "$ref": "cdm-product-template-CallingPartyEnum.schema.json"
+    },
+    "singlePartyOption": {
+      "description": "If the ability to extend the contract is not available to both parties then this component specifies the buyer and seller of the option.",
+      "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+    },
+    "noticeDeadlinePeriod": {
+      "description": "Defines the minimum period before a contract is scheduled to terminate that notice can be given that it will terminate beyond the scheduled termination date.",
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    },
+    "noticeDeadlineDateTime": {
+      "description": "A specific date and time for the notice deadline",
+      "type": "string"
+    },
+    "extensionTerm": {
+      "description": "The length of each extension period relative to the effective date of the preceding contract.",
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    },
+    "extensionPeriod": {
+      "description": "The period within which notice can be given that the contract will be extended.",
+      "$ref": "cdm-base-datetime-AdjustableRelativeOrPeriodicDates.schema.json"
+    },
+    "exerciseTerms": {
+      "description": "The exercise terms associated with the extendible provision, including details such as exercise style, exercise fees, and any other relevant conditions or terms governing the extension of the swap transaction.",
+      "$ref": "cdm-product-template-ExerciseTerms.schema.json"
+    }
+  },
+  "required": [
+    "exerciseTerms"
+  ]
+}

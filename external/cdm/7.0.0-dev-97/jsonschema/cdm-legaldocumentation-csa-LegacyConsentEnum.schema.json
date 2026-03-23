@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "LegacyConsentEnum",
+  "description": "Details of the consent requirements (if any) for Substitution.",
+  "enum": [
+    "ConsentRequired",
+    "ConsentRequiredNoDelay",
+    "CostsApportioned",
+    "NoConsent",
+    "NoticeConditions",
+    "TimesAdjusted"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ConsentRequired"
+      ],
+      "title": "ConsentRequired",
+      "description": "Consent is required for Substitution."
+    },
+    
+    {
+      "enum": [
+        "ConsentRequiredNoDelay"
+      ],
+      "title": "ConsentRequiredNoDelay",
+      "description": "Consent is required, with no unreasonable delay, for Substitution."
+    },
+    
+    {
+      "enum": [
+        "CostsApportioned"
+      ],
+      "title": "CostsApportioned",
+      "description": "Costs apportioned for Substitution."
+    },
+    
+    {
+      "enum": [
+        "NoConsent"
+      ],
+      "title": "NoConsent",
+      "description": "No consent is required for Substitution."
+    },
+    
+    {
+      "enum": [
+        "NoticeConditions"
+      ],
+      "title": "NoticeConditions",
+      "description": "Notice conditions apply for Substitution."
+    },
+    
+    {
+      "enum": [
+        "TimesAdjusted"
+      ],
+      "title": "TimesAdjusted",
+      "description": "Times adjusted."
+    }
+  ]
+}

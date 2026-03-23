@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "New",
+  "properties": {
+    "txId": {
+      "type": "string"
+    },
+    "exctgPty": {
+      "type": "string"
+    },
+    "invstmtPtyInd": {
+      "type": "string"
+    },
+    "submitgPty": {
+      "type": "string"
+    },
+    "buyr": {
+      "$ref": "cdm-regulation-Buyr.schema.json"
+    },
+    "sellr": {
+      "$ref": "cdm-regulation-Sellr.schema.json"
+    },
+    "ordrTrnsmssn": {
+      "$ref": "cdm-regulation-OrdrTrnsmssn.schema.json"
+    },
+    "tx": {
+      "$ref": "cdm-regulation-Tx.schema.json"
+    },
+    "finInstrm": {
+      "$ref": "cdm-regulation-FinInstrm.schema.json"
+    },
+    "invstmtDcsnPrsn": {
+      "$ref": "cdm-regulation-InvstmtDcsnPrsn.schema.json"
+    },
+    "exctgPrsn": {
+      "$ref": "cdm-regulation-ExctgPrsn.schema.json"
+    },
+    "addtlAttrbts": {
+      "$ref": "cdm-regulation-AddtlAttrbts.schema.json"
+    }
+  },
+  "required": [
+    "txId",
+    "exctgPty",
+    "invstmtPtyInd",
+    "submitgPty",
+    "buyr",
+    "sellr",
+    "ordrTrnsmssn",
+    "tx",
+    "finInstrm",
+    "invstmtDcsnPrsn",
+    "exctgPrsn",
+    "addtlAttrbts"
+  ]
+}

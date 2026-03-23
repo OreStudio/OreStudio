@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "Loan",
+  "description": "Identifies a loan by referencing an asset identifier and through an optional set of attributes.",
+  "properties": {
+    "identifier": {
+      "description": "Asset Identifiers are used to uniquely identify an Asset, using a specified Asset Identifier Type.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-AssetIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "taxonomy": {
+      "description": "Defines the taxonomy of an object by combining a taxonomy source (i.e. the rules to classify the object) and a value (i.e. the output of those rules on the object.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-Taxonomy.schema.json"
+      },
+      "minItems": 0
+    },
+    "isExchangeListed": {
+      "description": "Defines whether the Asset is listed on a public exchange.",
+      "type": "boolean"
+    },
+    "exchange": {
+      "description": "If the Asset is listed, defines the public exchange of the listing.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "relatedExchange": {
+      "description": "Provides the related Exchanges, if applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "assetType": {
+      "description": "Specifies the type of asset.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetTypeEnum.schema.json"
+    },
+    "borrower": {
+      "description": "Specifies the borrower. There can be more than one borrower. It is meant to be used in the event that there is no Bloomberg Id or the Secured List isn't applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "lien": {
+      "description": "Specifies the seniority level of the lien.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "facilityType": {
+      "description": "Specifies the type of loan facility (letter of credit, revolving, ...).",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "creditAgreementDate": {
+      "description": "Specifies the credit agreement date is the closing date (the date where the agreement has been signed) for the loans in the credit agreement. Funding of the facilities occurs on (or sometimes a little after) the Credit Agreement date. This underlier attribute is used to help identify which of the company's outstanding loans are being referenced by knowing to which credit agreement it belongs. ISDA Standards Terms Supplement term: Date of Original Credit Agreement.",
+      "type": "string"
+    },
+    "tranche": {
+      "description": "Denotes the loan tranche that is subject to the derivative transaction. It will typically be referenced as the Bloomberg tranche number. ISDA Standards Terms Supplement term: Bloomberg Tranche Number.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  }
+}

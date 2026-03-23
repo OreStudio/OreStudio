@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "object",
+  "title": "ExtraordinaryEvents",
+  "description": "Where the underlying is shares, defines market events affecting the issuer of those shares that may require the terms of the transaction to be adjusted.",
+  "properties": {
+    "additionalBespokeTerms": {
+      "description": "Where parties may optionnaly describe any extra bespoke agreements, in regards of the standardized Extraordinary Events.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-transaction-Clause.schema.json"
+      },
+      "minItems": 0
+    },
+    "mergerEvents": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EquityCorporateEvents.schema.json"
+    },
+    "tenderOfferEvents": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EquityCorporateEvents.schema.json"
+    },
+    "compositionOfCombinedConsideration": {
+      "type": "boolean"
+    },
+    "indexAdjustmentEvents": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-IndexAdjustmentEvents.schema.json"
+    },
+    "additionalDisruptionEvents": {
+      "$ref": "cdm-legaldocumentation-transaction-AdditionalDisruptionEvents.schema.json"
+    },
+    "failureToDeliver": {
+      "description": "If true, failure to deliver is applicable.",
+      "type": "boolean"
+    },
+    "representations": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-Representations.schema.json"
+    },
+    "nationalizationOrInsolvency": {
+      "$ref": "cdm-legaldocumentation-master-NationalizationOrInsolvencyOrDelistingEventEnum.schema.json"
+    },
+    "delisting": {
+      "$ref": "cdm-legaldocumentation-master-NationalizationOrInsolvencyOrDelistingEventEnum.schema.json"
+    }
+  }
+}

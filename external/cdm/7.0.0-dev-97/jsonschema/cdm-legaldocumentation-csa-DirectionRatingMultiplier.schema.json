@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "DirectionRatingMultiplier",
+  "description": "A logical container to hold a defined set of related data. In this case the collation of Ratings Information and associated exposure multiplier.",
+  "properties": {
+    "variableSet": {
+      "description": "A logical container to hold a defined set of related data. In this case the collation of Ratings Agency, Rating value and an associated direction.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-DirectionRatingSet.schema.json"
+      },
+      "minItems": 1
+    },
+    "exposureMultiplier": {
+      "description": "Specifies the multiplier applied to exposure based on the credit rating of the rated party.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "exposureMultiplier"
+  ]
+}

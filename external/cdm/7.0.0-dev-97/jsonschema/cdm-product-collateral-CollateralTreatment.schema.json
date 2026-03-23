@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CollateralTreatment",
+  "description": "Specifies the treatment terms for the eligible collateral criteria specified.",
+  "properties": {
+    "valuationTreatment": {
+      "description": "Specification of the valuation treatment for the specified collateral.",
+      "$ref": "cdm-product-collateral-CollateralValuationTreatment.schema.json"
+    },
+    "concentrationLimit": {
+      "description": "Specification of concentration limits applicable to the collateral criteria.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-collateral-ConcentrationLimit.schema.json"
+      },
+      "minItems": 0
+    },
+    "isIncluded": {
+      "description": "A boolean attribute to specify whether collateral critieria are inclusion (True) or exclusion (False) criteria.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "isIncluded"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "object",
+  "title": "FallbackRateParameters",
+  "description": "Defines the structure needed to represent fallback rate parameters. This type is used to represent modular computed rates in interestRatePayouts.",
+  "properties": {
+    "floatingRateIndex": {
+      "description": "The floating rate index that is used as the basis of the fallback rate.",
+      "$ref": "cdm-base-staticdata-asset-rates-FloatingRateIndexEnum.schema.json"
+    },
+    "effectiveDate": {
+      "description": "The date the fallback rate takes effect.",
+      "type": "string"
+    },
+    "calculationParameters": {
+      "description": "Support for modular calculated rates, such such as lockout compound calculations.",
+      "$ref": "cdm-observable-asset-calculatedrate-FloatingRateCalculationParameters.schema.json"
+    },
+    "spreadAdjustment": {
+      "description": "The economic spread applied to the underlying fallback rate to replicate the original risky rate.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "floatingRateIndex"
+  ]
+}

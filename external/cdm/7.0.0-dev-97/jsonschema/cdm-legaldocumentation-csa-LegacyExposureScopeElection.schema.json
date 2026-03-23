@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "LegacyExposureScopeElection",
+  "description": "Specification of amendments to the calculation of Exposure in terms of the Transactions and Products covered.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "excludedTransactions": {
+      "description": "A boolean flag to represent whether any transactions are excluded (ie True) or not (ie False).",
+      "type": "boolean"
+    },
+    "excludedProducts": {
+      "description": "Description of the relevant derivative transactions excluded from the calculation of exposure.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ExcludedProducts.schema.json"
+      },
+      "minItems": 0
+    },
+    "additionalLanguage": {
+      "description": "The bespoke/additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "excludedTransactions"
+  ]
+}

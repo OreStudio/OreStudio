@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PayoutBase",
+  "description": "A data type that contains the common attributes (e.g. payer and receiver parties) and validation conditions that apply across all payout types",
+  "properties": {
+    "payerReceiver": {
+      "description": "Canonical representation of the payer and receiver parties applicable to each payout leg.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "priceQuantity": {
+      "description": "Each payout leg must implement the quantity concept as a 'resolvable' type, which allows for different payout legs to be linked to each other (e.g. in the case of cross-curreny products).",
+      "$ref": "cdm-product-common-settlement-ResolvablePriceQuantity.schema.json"
+    },
+    "principalPayment": {
+      "description": "The specification of the principal exchange. Optional as only applicable in the case of cross-currency or zero-coupon swaps with a final payment.",
+      "$ref": "cdm-product-common-settlement-PrincipalPayments.schema.json"
+    },
+    "settlementTerms": {
+      "description": "Each payout leg must specifies its settlement terms, including the delivery type (i.e. cash vs physical, and their respective terms), the transfer type (DvP etc.) and settlement date, if any.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    }
+  },
+  "required": [
+    "payerReceiver"
+  ]
+}

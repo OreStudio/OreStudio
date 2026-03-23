@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AmendmentEffectiveDate",
+  "description": "A class to specify the effective date of the Amendment to Termination Currency. This date can be specified as either an actual date, a specific date (e.g. the annex date) or as a custom provision.",
+  "properties": {
+    "date": {
+      "description": "The effective date of the Amendment to Termination Currency when specified as an actual date.",
+      "type": "string"
+    },
+    "specificDate": {
+      "description": "The effective date of the Amendment to Termination Currency when specified as relative to another date (e.g. the annex date).",
+      "$ref": "cdm-legaldocumentation-csa-AmendmentEffectiveDateEnum.schema.json"
+    },
+    "customProvision": {
+      "description": "The effective date of the Amendment to Termination Currency when specified as a non normalized custom provision.",
+      "type": "string"
+    }
+  }
+}

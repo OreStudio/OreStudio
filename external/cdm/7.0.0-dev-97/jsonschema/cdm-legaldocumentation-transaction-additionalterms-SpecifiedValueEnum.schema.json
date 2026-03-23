@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "string",
+  "title": "SpecifiedValueEnum",
+  "enum": [
+    "FaceValue",
+    "MarketValue",
+    "OutstandingPrincipalBalance",
+    "StatedPrincipalBalance"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FaceValue"
+      ],
+      "title": "FaceValue"
+    },
+    
+    {
+      "enum": [
+        "MarketValue"
+      ],
+      "title": "MarketValue"
+    },
+    
+    {
+      "enum": [
+        "OutstandingPrincipalBalance"
+      ],
+      "title": "OutstandingPrincipalBalance"
+    },
+    
+    {
+      "enum": [
+        "StatedPrincipalBalance"
+      ],
+      "title": "StatedPrincipalBalance"
+    }
+  ]
+}

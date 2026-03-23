@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "com.rosetta.model.metafields",
+  "type": "object",
+  "title": "MetaFields",
+  "properties": {
+    "scheme": {
+      "type": "string"
+    },
+    "globalKey": {
+      "type": "string"
+    },
+    "externalKey": {
+      "type": "string"
+    },
+    "key": {
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-lib-meta-Key.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SimmException",
+  "description": "A class to specify the SIMM exception to the regulatory regime clause.",
+  "properties": {
+    "standardisedException": {
+      "description": "The Standard Initial Margin Model exception when specified by the party according to one of the enumerated values.",
+      "$ref": "cdm-legaldocumentation-csa-ExceptionEnum.schema.json"
+    },
+    "simmExceptionApplicable": {
+      "description": "The Standard Initial Margin model exception approach applicable when specified by the party according to one of the enumerated values.",
+      "$ref": "cdm-legaldocumentation-csa-SimmExceptionApplicableEnum.schema.json"
+    },
+    "asSpecified": {
+      "description": "The Standard Initial Margin Model exception when specified as a customized approach by the party.",
+      "type": "string"
+    }
+  }
+}

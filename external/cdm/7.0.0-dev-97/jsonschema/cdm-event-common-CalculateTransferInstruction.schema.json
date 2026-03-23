@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "CalculateTransferInstruction",
+  "description": "Defines the tradeState or payout on which to create a Transfer along with all necessary resets.",
+  "properties": {
+    "tradeState": {
+      "$ref": "cdm-event-common-TradeState.schema.json"
+    },
+    "payout": {
+      "$ref": "cdm-product-template-metafields-ReferenceWithMetaPayout.schema.json"
+    },
+    "resets": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-Reset.schema.json"
+      },
+      "minItems": 0
+    },
+    "payerReceiver": {
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "quantity": {
+      "description": "Specifies quantity amount returned if not the full amount from the TradeState, e.g. partial return",
+      "$ref": "cdm-base-math-Quantity.schema.json"
+    },
+    "date": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "tradeState",
+    "payout"
+  ]
+}

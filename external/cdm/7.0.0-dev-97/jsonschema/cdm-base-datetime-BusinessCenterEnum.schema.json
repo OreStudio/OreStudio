@@ -1,0 +1,1918 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "BusinessCenterEnum",
+  "description": "The enumerated values to specify the business centers.",
+  "enum": [
+    "AEAB",
+    "AEAD",
+    "AEDU",
+    "AMYE",
+    "AOLU",
+    "ARBA",
+    "ATVI",
+    "AUAD",
+    "AUBR",
+    "AUCA",
+    "AUDA",
+    "AUME",
+    "AUPE",
+    "AUSY",
+    "AZBA",
+    "BBBR",
+    "BDDH",
+    "BEBR",
+    "BGSO",
+    "BHMA",
+    "BMHA",
+    "BNBS",
+    "BOLP",
+    "BRBD",
+    "BRBR",
+    "BRRJ",
+    "BRSP",
+    "BSNA",
+    "BWGA",
+    "BYMI",
+    "CACL",
+    "CAFR",
+    "CAMO",
+    "CAOT",
+    "CATO",
+    "CAVA",
+    "CAWI",
+    "CHBA",
+    "CHGE",
+    "CHZU",
+    "CIAB",
+    "CLSA",
+    "CMYA",
+    "CNBE",
+    "CNSH",
+    "COBO",
+    "CRSJ",
+    "CWWI",
+    "CYNI",
+    "CZPR",
+    "DECO",
+    "DEDU",
+    "DEFR",
+    "DEHA",
+    "DEHH",
+    "DELE",
+    "DEMA",
+    "DEMU",
+    "DEST",
+    "DKCO",
+    "DOSD",
+    "DZAL",
+    "ECGU",
+    "EETA",
+    "EGCA",
+    "ESAS",
+    "ESBA",
+    "ESMA",
+    "ESSS",
+    "ETAA",
+    "EUR-ICESWAP",
+    "EUTA",
+    "FIHE",
+    "FRPA",
+    "GBED",
+    "GBLO",
+    "GBP-ICESWAP",
+    "GETB",
+    "GGSP",
+    "GHAC",
+    "GIGI",
+    "GMBA",
+    "GNCO",
+    "GRAT",
+    "GTGC",
+    "GUGC",
+    "HKHK",
+    "HNTE",
+    "HRZA",
+    "HUBU",
+    "IDJA",
+    "IEDU",
+    "ILJE",
+    "ILS-SHIR",
+    "ILS-TELBOR",
+    "ILTA",
+    "INAH",
+    "INBA",
+    "INCH",
+    "INHY",
+    "INKO",
+    "INMU",
+    "INND",
+    "IQBA",
+    "IRTE",
+    "ISRE",
+    "ITMI",
+    "ITRO",
+    "ITTU",
+    "JESH",
+    "JMKI",
+    "JOAM",
+    "JPTO",
+    "KENA",
+    "KHPP",
+    "KRSE",
+    "KWKC",
+    "KYGE",
+    "KZAL",
+    "LAVI",
+    "LBBE",
+    "LKCO",
+    "LULU",
+    "LVRI",
+    "MACA",
+    "MARA",
+    "MCMO",
+    "MNUB",
+    "MOMA",
+    "MTVA",
+    "MUPL",
+    "MVMA",
+    "MWLI",
+    "MXMC",
+    "MYKL",
+    "MYLA",
+    "MZMA",
+    "NAWI",
+    "NGAB",
+    "NGLA",
+    "NLAM",
+    "NLRO",
+    "NOOS",
+    "NPKA",
+    "NYFD",
+    "NYSE",
+    "NZAU",
+    "NZBD",
+    "NZWE",
+    "OMMU",
+    "PAPC",
+    "PELI",
+    "PHMA",
+    "PHMK",
+    "PKKA",
+    "PLWA",
+    "PRSJ",
+    "PTLI",
+    "QADO",
+    "ROBU",
+    "RSBE",
+    "RUMO",
+    "SAAB",
+    "SAJE",
+    "SARI",
+    "SEST",
+    "SGSI",
+    "SILJ",
+    "SKBR",
+    "SLFR",
+    "SNDA",
+    "SVSS",
+    "THBA",
+    "TNTU",
+    "TRAN",
+    "TRIS",
+    "TTPS",
+    "TWTA",
+    "TZDA",
+    "TZDO",
+    "UAKI",
+    "UGKA",
+    "USBO",
+    "USCH",
+    "USCR",
+    "USDC",
+    "USDN",
+    "USDT",
+    "USD-ICESWAP",
+    "USD-MUNI",
+    "USGS",
+    "USHL",
+    "USHO",
+    "USLA",
+    "USMB",
+    "USMN",
+    "USNY",
+    "USPO",
+    "USSA",
+    "USSE",
+    "USSF",
+    "USWT",
+    "UYMO",
+    "UZTA",
+    "VECA",
+    "VGRT",
+    "VNHA",
+    "VNHC",
+    "YEAD",
+    "ZAJO",
+    "ZMLU",
+    "ZWHA"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AEAB"
+      ],
+      "title": "AEAB",
+      "description": "Abu Dhabi, Business Day (as defined in 2021 ISDA Definitions Section 2.1.10 (ii))"
+    },
+    
+    {
+      "enum": [
+        "AEAD"
+      ],
+      "title": "AEAD",
+      "description": "Abu Dhabi, Settlement Day (as defined in 2021 ISDA Definitions Section 2.1.10 (i))"
+    },
+    
+    {
+      "enum": [
+        "AEDU"
+      ],
+      "title": "AEDU",
+      "description": "Dubai, United Arab Emirates"
+    },
+    
+    {
+      "enum": [
+        "AMYE"
+      ],
+      "title": "AMYE",
+      "description": "Yerevan, Armenia"
+    },
+    
+    {
+      "enum": [
+        "AOLU"
+      ],
+      "title": "AOLU",
+      "description": "Luanda, Angola"
+    },
+    
+    {
+      "enum": [
+        "ARBA"
+      ],
+      "title": "ARBA",
+      "description": "Buenos Aires, Argentina"
+    },
+    
+    {
+      "enum": [
+        "ATVI"
+      ],
+      "title": "ATVI",
+      "description": "Vienna, Austria"
+    },
+    
+    {
+      "enum": [
+        "AUAD"
+      ],
+      "title": "AUAD",
+      "description": "Adelaide, Australia"
+    },
+    
+    {
+      "enum": [
+        "AUBR"
+      ],
+      "title": "AUBR",
+      "description": "Brisbane, Australia"
+    },
+    
+    {
+      "enum": [
+        "AUCA"
+      ],
+      "title": "AUCA",
+      "description": "Canberra, Australia"
+    },
+    
+    {
+      "enum": [
+        "AUDA"
+      ],
+      "title": "AUDA",
+      "description": "Darwin, Australia"
+    },
+    
+    {
+      "enum": [
+        "AUME"
+      ],
+      "title": "AUME",
+      "description": "Melbourne, Australia"
+    },
+    
+    {
+      "enum": [
+        "AUPE"
+      ],
+      "title": "AUPE",
+      "description": "Perth, Australia"
+    },
+    
+    {
+      "enum": [
+        "AUSY"
+      ],
+      "title": "AUSY",
+      "description": "Sydney, Australia"
+    },
+    
+    {
+      "enum": [
+        "AZBA"
+      ],
+      "title": "AZBA",
+      "description": "Baku, Azerbaijan"
+    },
+    
+    {
+      "enum": [
+        "BBBR"
+      ],
+      "title": "BBBR",
+      "description": "Bridgetown, Barbados"
+    },
+    
+    {
+      "enum": [
+        "BDDH"
+      ],
+      "title": "BDDH",
+      "description": "Dhaka, Bangladesh"
+    },
+    
+    {
+      "enum": [
+        "BEBR"
+      ],
+      "title": "BEBR",
+      "description": "Brussels, Belgium"
+    },
+    
+    {
+      "enum": [
+        "BGSO"
+      ],
+      "title": "BGSO",
+      "description": "Sofia, Bulgaria"
+    },
+    
+    {
+      "enum": [
+        "BHMA"
+      ],
+      "title": "BHMA",
+      "description": "Manama, Bahrain"
+    },
+    
+    {
+      "enum": [
+        "BMHA"
+      ],
+      "title": "BMHA",
+      "description": "Hamilton, Bermuda"
+    },
+    
+    {
+      "enum": [
+        "BNBS"
+      ],
+      "title": "BNBS",
+      "description": "Bandar Seri Begawan, Brunei"
+    },
+    
+    {
+      "enum": [
+        "BOLP"
+      ],
+      "title": "BOLP",
+      "description": "La Paz, Bolivia"
+    },
+    
+    {
+      "enum": [
+        "BRBD"
+      ],
+      "title": "BRBD",
+      "description": "Brazil Business Day."
+    },
+    
+    {
+      "enum": [
+        "BRBR"
+      ],
+      "title": "BRBR",
+      "description": "Brasilia, Brazil."
+    },
+    
+    {
+      "enum": [
+        "BRRJ"
+      ],
+      "title": "BRRJ",
+      "description": "Rio de Janeiro, Brazil."
+    },
+    
+    {
+      "enum": [
+        "BRSP"
+      ],
+      "title": "BRSP",
+      "description": "Sao Paulo, Brazil."
+    },
+    
+    {
+      "enum": [
+        "BSNA"
+      ],
+      "title": "BSNA",
+      "description": "Nassau, Bahamas"
+    },
+    
+    {
+      "enum": [
+        "BWGA"
+      ],
+      "title": "BWGA",
+      "description": "Gaborone, Botswana"
+    },
+    
+    {
+      "enum": [
+        "BYMI"
+      ],
+      "title": "BYMI",
+      "description": "Minsk, Belarus"
+    },
+    
+    {
+      "enum": [
+        "CACL"
+      ],
+      "title": "CACL",
+      "description": "Calgary, Canada"
+    },
+    
+    {
+      "enum": [
+        "CAFR"
+      ],
+      "title": "CAFR",
+      "description": "Fredericton, Canada."
+    },
+    
+    {
+      "enum": [
+        "CAMO"
+      ],
+      "title": "CAMO",
+      "description": "Montreal, Canada"
+    },
+    
+    {
+      "enum": [
+        "CAOT"
+      ],
+      "title": "CAOT",
+      "description": "Ottawa, Canada"
+    },
+    
+    {
+      "enum": [
+        "CATO"
+      ],
+      "title": "CATO",
+      "description": "Toronto, Canada"
+    },
+    
+    {
+      "enum": [
+        "CAVA"
+      ],
+      "title": "CAVA",
+      "description": "Vancouver, Canada"
+    },
+    
+    {
+      "enum": [
+        "CAWI"
+      ],
+      "title": "CAWI",
+      "description": "Winnipeg, Canada"
+    },
+    
+    {
+      "enum": [
+        "CHBA"
+      ],
+      "title": "CHBA",
+      "description": "Basel, Switzerland"
+    },
+    
+    {
+      "enum": [
+        "CHGE"
+      ],
+      "title": "CHGE",
+      "description": "Geneva, Switzerland"
+    },
+    
+    {
+      "enum": [
+        "CHZU"
+      ],
+      "title": "CHZU",
+      "description": "Zurich, Switzerland"
+    },
+    
+    {
+      "enum": [
+        "CIAB"
+      ],
+      "title": "CIAB",
+      "description": "Abidjan, Cote d'Ivoire"
+    },
+    
+    {
+      "enum": [
+        "CLSA"
+      ],
+      "title": "CLSA",
+      "description": "Santiago, Chile"
+    },
+    
+    {
+      "enum": [
+        "CMYA"
+      ],
+      "title": "CMYA",
+      "description": "Yaounde, Cameroon"
+    },
+    
+    {
+      "enum": [
+        "CNBE"
+      ],
+      "title": "CNBE",
+      "description": "Beijing, China"
+    },
+    
+    {
+      "enum": [
+        "CNSH"
+      ],
+      "title": "CNSH",
+      "description": "Shanghai, China"
+    },
+    
+    {
+      "enum": [
+        "COBO"
+      ],
+      "title": "COBO",
+      "description": "Bogota, Colombia"
+    },
+    
+    {
+      "enum": [
+        "CRSJ"
+      ],
+      "title": "CRSJ",
+      "description": "San Jose, Costa Rica"
+    },
+    
+    {
+      "enum": [
+        "CWWI"
+      ],
+      "title": "CWWI",
+      "description": "Willemstad, Curacao"
+    },
+    
+    {
+      "enum": [
+        "CYNI"
+      ],
+      "title": "CYNI",
+      "description": "Nicosia, Cyprus"
+    },
+    
+    {
+      "enum": [
+        "CZPR"
+      ],
+      "title": "CZPR",
+      "description": "Prague, Czech Republic"
+    },
+    
+    {
+      "enum": [
+        "DECO"
+      ],
+      "title": "DECO",
+      "description": "Cologne, Germany"
+    },
+    
+    {
+      "enum": [
+        "DEDU"
+      ],
+      "title": "DEDU",
+      "description": "Dusseldorf, Germany"
+    },
+    
+    {
+      "enum": [
+        "DEFR"
+      ],
+      "title": "DEFR",
+      "description": "Frankfurt, Germany"
+    },
+    
+    {
+      "enum": [
+        "DEHA"
+      ],
+      "title": "DEHA",
+      "description": "Hannover, Germany"
+    },
+    
+    {
+      "enum": [
+        "DEHH"
+      ],
+      "title": "DEHH",
+      "description": "Hamburg, Germany"
+    },
+    
+    {
+      "enum": [
+        "DELE"
+      ],
+      "title": "DELE",
+      "description": "Leipzig, Germany"
+    },
+    
+    {
+      "enum": [
+        "DEMA"
+      ],
+      "title": "DEMA",
+      "description": "Mainz, Germany"
+    },
+    
+    {
+      "enum": [
+        "DEMU"
+      ],
+      "title": "DEMU",
+      "description": "Munich, Germany"
+    },
+    
+    {
+      "enum": [
+        "DEST"
+      ],
+      "title": "DEST",
+      "description": "Stuttgart, Germany"
+    },
+    
+    {
+      "enum": [
+        "DKCO"
+      ],
+      "title": "DKCO",
+      "description": "Copenhagen, Denmark"
+    },
+    
+    {
+      "enum": [
+        "DOSD"
+      ],
+      "title": "DOSD",
+      "description": "Santo Domingo, Dominican Republic"
+    },
+    
+    {
+      "enum": [
+        "DZAL"
+      ],
+      "title": "DZAL",
+      "description": "Algiers, Algeria"
+    },
+    
+    {
+      "enum": [
+        "ECGU"
+      ],
+      "title": "ECGU",
+      "description": "Guayaquil, Ecuador"
+    },
+    
+    {
+      "enum": [
+        "EETA"
+      ],
+      "title": "EETA",
+      "description": "Tallinn, Estonia"
+    },
+    
+    {
+      "enum": [
+        "EGCA"
+      ],
+      "title": "EGCA",
+      "description": "Cairo, Egypt"
+    },
+    
+    {
+      "enum": [
+        "ESAS"
+      ],
+      "title": "ESAS",
+      "description": "ESAS Settlement Day (as defined in 2006 ISDA Definitions Section 7.1 and Supplement Number 15 to the 2000 ISDA Definitions)"
+    },
+    
+    {
+      "enum": [
+        "ESBA"
+      ],
+      "title": "ESBA",
+      "description": "Barcelona, Spain"
+    },
+    
+    {
+      "enum": [
+        "ESMA"
+      ],
+      "title": "ESMA",
+      "description": "Madrid, Spain"
+    },
+    
+    {
+      "enum": [
+        "ESSS"
+      ],
+      "title": "ESSS",
+      "description": "San Sebastian, Spain"
+    },
+    
+    {
+      "enum": [
+        "ETAA"
+      ],
+      "title": "ETAA",
+      "description": "Addis Ababa, Ethiopia"
+    },
+    
+    {
+      "enum": [
+        "EUR-ICESWAP"
+      ],
+      "title": "EUR_ICESWAP",
+      "description": "Publication dates for ICE Swap rates based on EUR-EURIBOR rates"
+    },
+    
+    {
+      "enum": [
+        "EUTA"
+      ],
+      "title": "EUTA",
+      "description": "TARGET Settlement Day"
+    },
+    
+    {
+      "enum": [
+        "FIHE"
+      ],
+      "title": "FIHE",
+      "description": "Helsinki, Finland"
+    },
+    
+    {
+      "enum": [
+        "FRPA"
+      ],
+      "title": "FRPA",
+      "description": "Paris, France"
+    },
+    
+    {
+      "enum": [
+        "GBED"
+      ],
+      "title": "GBED",
+      "description": "Edinburgh, Scotland"
+    },
+    
+    {
+      "enum": [
+        "GBLO"
+      ],
+      "title": "GBLO",
+      "description": "London, United Kingdom"
+    },
+    
+    {
+      "enum": [
+        "GBP-ICESWAP"
+      ],
+      "title": "GBP_ICESWAP",
+      "description": "Publication dates for GBP ICE Swap rates"
+    },
+    
+    {
+      "enum": [
+        "GETB"
+      ],
+      "title": "GETB",
+      "description": "Tbilisi, Georgia"
+    },
+    
+    {
+      "enum": [
+        "GGSP"
+      ],
+      "title": "GGSP",
+      "description": "Saint Peter Port, Guernsey"
+    },
+    
+    {
+      "enum": [
+        "GHAC"
+      ],
+      "title": "GHAC",
+      "description": "Accra, Ghana"
+    },
+    
+    {
+      "enum": [
+        "GIGI"
+      ],
+      "title": "GIGI",
+      "description": "Gibraltar, Gibraltar"
+    },
+    
+    {
+      "enum": [
+        "GMBA"
+      ],
+      "title": "GMBA",
+      "description": "Banjul, Gambia"
+    },
+    
+    {
+      "enum": [
+        "GNCO"
+      ],
+      "title": "GNCO",
+      "description": "Conakry, Guinea"
+    },
+    
+    {
+      "enum": [
+        "GRAT"
+      ],
+      "title": "GRAT",
+      "description": "Athens, Greece"
+    },
+    
+    {
+      "enum": [
+        "GTGC"
+      ],
+      "title": "GTGC",
+      "description": "Guatemala City, Guatemala"
+    },
+    
+    {
+      "enum": [
+        "GUGC"
+      ],
+      "title": "GUGC",
+      "description": "Guatemala City, Guatemala [DEPRECATED, to be removed in 2024. Replaced by GTGC.]"
+    },
+    
+    {
+      "enum": [
+        "HKHK"
+      ],
+      "title": "HKHK",
+      "description": "Hong Kong, Hong Kong"
+    },
+    
+    {
+      "enum": [
+        "HNTE"
+      ],
+      "title": "HNTE",
+      "description": "Tegucigalpa, Honduras"
+    },
+    
+    {
+      "enum": [
+        "HRZA"
+      ],
+      "title": "HRZA",
+      "description": "Zagreb, Republic of Croatia"
+    },
+    
+    {
+      "enum": [
+        "HUBU"
+      ],
+      "title": "HUBU",
+      "description": "Budapest, Hungary"
+    },
+    
+    {
+      "enum": [
+        "IDJA"
+      ],
+      "title": "IDJA",
+      "description": "Jakarta, Indonesia"
+    },
+    
+    {
+      "enum": [
+        "IEDU"
+      ],
+      "title": "IEDU",
+      "description": "Dublin, Ireland"
+    },
+    
+    {
+      "enum": [
+        "ILJE"
+      ],
+      "title": "ILJE",
+      "description": "Jerusalem, Israel"
+    },
+    
+    {
+      "enum": [
+        "ILS-SHIR"
+      ],
+      "title": "ILS_SHIR",
+      "description": "Publication dates of the ILS-SHIR index."
+    },
+    
+    {
+      "enum": [
+        "ILS-TELBOR"
+      ],
+      "title": "ILS_TELBOR",
+      "description": "Publication dates of the ILS-TELBOR index."
+    },
+    
+    {
+      "enum": [
+        "ILTA"
+      ],
+      "title": "ILTA",
+      "description": "Tel Aviv, Israel"
+    },
+    
+    {
+      "enum": [
+        "INAH"
+      ],
+      "title": "INAH",
+      "description": "Ahmedabad, India"
+    },
+    
+    {
+      "enum": [
+        "INBA"
+      ],
+      "title": "INBA",
+      "description": "Bangalore, India"
+    },
+    
+    {
+      "enum": [
+        "INCH"
+      ],
+      "title": "INCH",
+      "description": "Chennai, India"
+    },
+    
+    {
+      "enum": [
+        "INHY"
+      ],
+      "title": "INHY",
+      "description": "Hyderabad, India"
+    },
+    
+    {
+      "enum": [
+        "INKO"
+      ],
+      "title": "INKO",
+      "description": "Kolkata, India"
+    },
+    
+    {
+      "enum": [
+        "INMU"
+      ],
+      "title": "INMU",
+      "description": "Mumbai, India"
+    },
+    
+    {
+      "enum": [
+        "INND"
+      ],
+      "title": "INND",
+      "description": "New Delhi, India"
+    },
+    
+    {
+      "enum": [
+        "IQBA"
+      ],
+      "title": "IQBA",
+      "description": "Baghdad, Iraq"
+    },
+    
+    {
+      "enum": [
+        "IRTE"
+      ],
+      "title": "IRTE",
+      "description": "Teheran, Iran"
+    },
+    
+    {
+      "enum": [
+        "ISRE"
+      ],
+      "title": "ISRE",
+      "description": "Reykjavik, Iceland"
+    },
+    
+    {
+      "enum": [
+        "ITMI"
+      ],
+      "title": "ITMI",
+      "description": "Milan, Italy"
+    },
+    
+    {
+      "enum": [
+        "ITRO"
+      ],
+      "title": "ITRO",
+      "description": "Rome, Italy"
+    },
+    
+    {
+      "enum": [
+        "ITTU"
+      ],
+      "title": "ITTU",
+      "description": "Turin, Italy"
+    },
+    
+    {
+      "enum": [
+        "JESH"
+      ],
+      "title": "JESH",
+      "description": "St. Helier, Channel Islands, Jersey"
+    },
+    
+    {
+      "enum": [
+        "JMKI"
+      ],
+      "title": "JMKI",
+      "description": "Kingston, Jamaica"
+    },
+    
+    {
+      "enum": [
+        "JOAM"
+      ],
+      "title": "JOAM",
+      "description": "Amman, Jordan"
+    },
+    
+    {
+      "enum": [
+        "JPTO"
+      ],
+      "title": "JPTO",
+      "description": "Tokyo, Japan"
+    },
+    
+    {
+      "enum": [
+        "KENA"
+      ],
+      "title": "KENA",
+      "description": "Nairobi, Kenya"
+    },
+    
+    {
+      "enum": [
+        "KHPP"
+      ],
+      "title": "KHPP",
+      "description": "Phnom Penh, Cambodia"
+    },
+    
+    {
+      "enum": [
+        "KRSE"
+      ],
+      "title": "KRSE",
+      "description": "Seoul, Republic of Korea"
+    },
+    
+    {
+      "enum": [
+        "KWKC"
+      ],
+      "title": "KWKC",
+      "description": "Kuwait City, Kuwait"
+    },
+    
+    {
+      "enum": [
+        "KYGE"
+      ],
+      "title": "KYGE",
+      "description": "George Town, Cayman Islands"
+    },
+    
+    {
+      "enum": [
+        "KZAL"
+      ],
+      "title": "KZAL",
+      "description": "Almaty, Kazakhstan"
+    },
+    
+    {
+      "enum": [
+        "LAVI"
+      ],
+      "title": "LAVI",
+      "description": "Vientiane, Laos"
+    },
+    
+    {
+      "enum": [
+        "LBBE"
+      ],
+      "title": "LBBE",
+      "description": "Beirut, Lebanon"
+    },
+    
+    {
+      "enum": [
+        "LKCO"
+      ],
+      "title": "LKCO",
+      "description": "Colombo, Sri Lanka"
+    },
+    
+    {
+      "enum": [
+        "LULU"
+      ],
+      "title": "LULU",
+      "description": "Luxembourg, Luxembourg"
+    },
+    
+    {
+      "enum": [
+        "LVRI"
+      ],
+      "title": "LVRI",
+      "description": "Riga, Latvia"
+    },
+    
+    {
+      "enum": [
+        "MACA"
+      ],
+      "title": "MACA",
+      "description": "Casablanca, Morocco"
+    },
+    
+    {
+      "enum": [
+        "MARA"
+      ],
+      "title": "MARA",
+      "description": "Rabat, Morocco"
+    },
+    
+    {
+      "enum": [
+        "MCMO"
+      ],
+      "title": "MCMO",
+      "description": "Monaco, Monaco"
+    },
+    
+    {
+      "enum": [
+        "MNUB"
+      ],
+      "title": "MNUB",
+      "description": "Ulan Bator, Mongolia"
+    },
+    
+    {
+      "enum": [
+        "MOMA"
+      ],
+      "title": "MOMA",
+      "description": "Macau, Macao"
+    },
+    
+    {
+      "enum": [
+        "MTVA"
+      ],
+      "title": "MTVA",
+      "description": "Valletta, Malta"
+    },
+    
+    {
+      "enum": [
+        "MUPL"
+      ],
+      "title": "MUPL",
+      "description": "Port Louis, Mauritius"
+    },
+    
+    {
+      "enum": [
+        "MVMA"
+      ],
+      "title": "MVMA",
+      "description": "Male, Maldives"
+    },
+    
+    {
+      "enum": [
+        "MWLI"
+      ],
+      "title": "MWLI",
+      "description": "Lilongwe, Malawi"
+    },
+    
+    {
+      "enum": [
+        "MXMC"
+      ],
+      "title": "MXMC",
+      "description": "Mexico City, Mexico"
+    },
+    
+    {
+      "enum": [
+        "MYKL"
+      ],
+      "title": "MYKL",
+      "description": "Kuala Lumpur, Malaysia"
+    },
+    
+    {
+      "enum": [
+        "MYLA"
+      ],
+      "title": "MYLA",
+      "description": "Labuan, Malaysia"
+    },
+    
+    {
+      "enum": [
+        "MZMA"
+      ],
+      "title": "MZMA",
+      "description": "Maputo, Mozambique"
+    },
+    
+    {
+      "enum": [
+        "NAWI"
+      ],
+      "title": "NAWI",
+      "description": "Windhoek, Namibia"
+    },
+    
+    {
+      "enum": [
+        "NGAB"
+      ],
+      "title": "NGAB",
+      "description": "Abuja, Nigeria"
+    },
+    
+    {
+      "enum": [
+        "NGLA"
+      ],
+      "title": "NGLA",
+      "description": "Lagos, Nigeria"
+    },
+    
+    {
+      "enum": [
+        "NLAM"
+      ],
+      "title": "NLAM",
+      "description": "Amsterdam, Netherlands"
+    },
+    
+    {
+      "enum": [
+        "NLRO"
+      ],
+      "title": "NLRO",
+      "description": "Rotterdam, Netherlands"
+    },
+    
+    {
+      "enum": [
+        "NOOS"
+      ],
+      "title": "NOOS",
+      "description": "Oslo, Norway"
+    },
+    
+    {
+      "enum": [
+        "NPKA"
+      ],
+      "title": "NPKA",
+      "description": "Kathmandu, Nepal"
+    },
+    
+    {
+      "enum": [
+        "NYFD"
+      ],
+      "title": "NYFD",
+      "description": "New York Fed Business Day (as defined in 2006 ISDA Definitions Section 1.9, 2000 ISDA Definitions Section 1.9, and 2021 ISDA Definitions Section 2.1.7)"
+    },
+    
+    {
+      "enum": [
+        "NYSE"
+      ],
+      "title": "NYSE",
+      "description": "New York Stock Exchange Business Day (as defined in 2006 ISDA Definitions Section 1.10, 2000 ISDA Definitions Section 1.10, and 2021 ISDA Definitions Section 2.1.8)"
+    },
+    
+    {
+      "enum": [
+        "NZAU"
+      ],
+      "title": "NZAU",
+      "description": "Auckland, New Zealand"
+    },
+    
+    {
+      "enum": [
+        "NZBD"
+      ],
+      "title": "NZBD",
+      "description": "New Zealand Business Day (proposed effective date: 2025-10-06)"
+    },
+    
+    {
+      "enum": [
+        "NZWE"
+      ],
+      "title": "NZWE",
+      "description": "Wellington, New Zealand"
+    },
+    
+    {
+      "enum": [
+        "OMMU"
+      ],
+      "title": "OMMU",
+      "description": "Muscat, Oman"
+    },
+    
+    {
+      "enum": [
+        "PAPC"
+      ],
+      "title": "PAPC",
+      "description": "Panama City, Panama"
+    },
+    
+    {
+      "enum": [
+        "PELI"
+      ],
+      "title": "PELI",
+      "description": "Lima, Peru"
+    },
+    
+    {
+      "enum": [
+        "PHMA"
+      ],
+      "title": "PHMA",
+      "description": "Manila, Philippines"
+    },
+    
+    {
+      "enum": [
+        "PHMK"
+      ],
+      "title": "PHMK",
+      "description": "Makati, Philippines"
+    },
+    
+    {
+      "enum": [
+        "PKKA"
+      ],
+      "title": "PKKA",
+      "description": "Karachi, Pakistan"
+    },
+    
+    {
+      "enum": [
+        "PLWA"
+      ],
+      "title": "PLWA",
+      "description": "Warsaw, Poland"
+    },
+    
+    {
+      "enum": [
+        "PRSJ"
+      ],
+      "title": "PRSJ",
+      "description": "San Juan, Puerto Rico"
+    },
+    
+    {
+      "enum": [
+        "PTLI"
+      ],
+      "title": "PTLI",
+      "description": "Lisbon, Portugal"
+    },
+    
+    {
+      "enum": [
+        "QADO"
+      ],
+      "title": "QADO",
+      "description": "Doha, Qatar"
+    },
+    
+    {
+      "enum": [
+        "ROBU"
+      ],
+      "title": "ROBU",
+      "description": "Bucharest, Romania"
+    },
+    
+    {
+      "enum": [
+        "RSBE"
+      ],
+      "title": "RSBE",
+      "description": "Belgrade, Serbia"
+    },
+    
+    {
+      "enum": [
+        "RUMO"
+      ],
+      "title": "RUMO",
+      "description": "Moscow, Russian Federation"
+    },
+    
+    {
+      "enum": [
+        "SAAB"
+      ],
+      "title": "SAAB",
+      "description": "Abha, Saudi Arabia"
+    },
+    
+    {
+      "enum": [
+        "SAJE"
+      ],
+      "title": "SAJE",
+      "description": "Jeddah, Saudi Arabia"
+    },
+    
+    {
+      "enum": [
+        "SARI"
+      ],
+      "title": "SARI",
+      "description": "Riyadh, Saudi Arabia"
+    },
+    
+    {
+      "enum": [
+        "SEST"
+      ],
+      "title": "SEST",
+      "description": "Stockholm, Sweden"
+    },
+    
+    {
+      "enum": [
+        "SGSI"
+      ],
+      "title": "SGSI",
+      "description": "Singapore, Singapore"
+    },
+    
+    {
+      "enum": [
+        "SILJ"
+      ],
+      "title": "SILJ",
+      "description": "Ljubljana, Slovenia"
+    },
+    
+    {
+      "enum": [
+        "SKBR"
+      ],
+      "title": "SKBR",
+      "description": "Bratislava, Slovakia"
+    },
+    
+    {
+      "enum": [
+        "SLFR"
+      ],
+      "title": "SLFR",
+      "description": "Freetown, Sierra Leone"
+    },
+    
+    {
+      "enum": [
+        "SNDA"
+      ],
+      "title": "SNDA",
+      "description": "Dakar, Senegal"
+    },
+    
+    {
+      "enum": [
+        "SVSS"
+      ],
+      "title": "SVSS",
+      "description": "San Salvador, El Salvador"
+    },
+    
+    {
+      "enum": [
+        "THBA"
+      ],
+      "title": "THBA",
+      "description": "Bangkok, Thailand"
+    },
+    
+    {
+      "enum": [
+        "TNTU"
+      ],
+      "title": "TNTU",
+      "description": "Tunis, Tunisia"
+    },
+    
+    {
+      "enum": [
+        "TRAN"
+      ],
+      "title": "TRAN",
+      "description": "Ankara, Turkey"
+    },
+    
+    {
+      "enum": [
+        "TRIS"
+      ],
+      "title": "TRIS",
+      "description": "Istanbul, Turkey"
+    },
+    
+    {
+      "enum": [
+        "TTPS"
+      ],
+      "title": "TTPS",
+      "description": "Port of Spain, Trinidad and Tobago"
+    },
+    
+    {
+      "enum": [
+        "TWTA"
+      ],
+      "title": "TWTA",
+      "description": "Taipei, Taiwan"
+    },
+    
+    {
+      "enum": [
+        "TZDA"
+      ],
+      "title": "TZDA",
+      "description": "Dar es Salaam, Tanzania"
+    },
+    
+    {
+      "enum": [
+        "TZDO"
+      ],
+      "title": "TZDO",
+      "description": "Dodoma, Tanzania"
+    },
+    
+    {
+      "enum": [
+        "UAKI"
+      ],
+      "title": "UAKI",
+      "description": "Kiev, Ukraine"
+    },
+    
+    {
+      "enum": [
+        "UGKA"
+      ],
+      "title": "UGKA",
+      "description": "Kampala, Uganda"
+    },
+    
+    {
+      "enum": [
+        "USBO"
+      ],
+      "title": "USBO",
+      "description": "Boston, Massachusetts, United States"
+    },
+    
+    {
+      "enum": [
+        "USCH"
+      ],
+      "title": "USCH",
+      "description": "Chicago, United States"
+    },
+    
+    {
+      "enum": [
+        "USCR"
+      ],
+      "title": "USCR",
+      "description": "Charlotte, North Carolina, United States"
+    },
+    
+    {
+      "enum": [
+        "USDC"
+      ],
+      "title": "USDC",
+      "description": "Washington, District of Columbia, United States"
+    },
+    
+    {
+      "enum": [
+        "USDN"
+      ],
+      "title": "USDN",
+      "description": "Denver, United States"
+    },
+    
+    {
+      "enum": [
+        "USDT"
+      ],
+      "title": "USDT",
+      "description": "Detroit, Michigan, United States"
+    },
+    
+    {
+      "enum": [
+        "USD-ICESWAP"
+      ],
+      "title": "USD_ICESWAP",
+      "description": "Publication dates for ICE Swap rates based on USD-LIBOR rates"
+    },
+    
+    {
+      "enum": [
+        "USD-MUNI"
+      ],
+      "title": "USD_MUNI",
+      "description": "Publication dates for the USD-Municipal Swap Index"
+    },
+    
+    {
+      "enum": [
+        "USGS"
+      ],
+      "title": "USGS",
+      "description": "U.S. Government Securities Business Day (as defined in 2006 ISDA Definitions Section 1.11 and 2000 ISDA Definitions Section 1.11)"
+    },
+    
+    {
+      "enum": [
+        "USHL"
+      ],
+      "title": "USHL",
+      "description": "Honolulu, Hawaii, United States"
+    },
+    
+    {
+      "enum": [
+        "USHO"
+      ],
+      "title": "USHO",
+      "description": "Houston, United States"
+    },
+    
+    {
+      "enum": [
+        "USLA"
+      ],
+      "title": "USLA",
+      "description": "Los Angeles, United States"
+    },
+    
+    {
+      "enum": [
+        "USMB"
+      ],
+      "title": "USMB",
+      "description": "Mobile, Alabama, United States"
+    },
+    
+    {
+      "enum": [
+        "USMN"
+      ],
+      "title": "USMN",
+      "description": "Minneapolis, United States"
+    },
+    
+    {
+      "enum": [
+        "USNY"
+      ],
+      "title": "USNY",
+      "description": "New York, United States"
+    },
+    
+    {
+      "enum": [
+        "USPO"
+      ],
+      "title": "USPO",
+      "description": "Portland, Oregon, United States"
+    },
+    
+    {
+      "enum": [
+        "USSA"
+      ],
+      "title": "USSA",
+      "description": "Sacramento, California, United States"
+    },
+    
+    {
+      "enum": [
+        "USSE"
+      ],
+      "title": "USSE",
+      "description": "Seattle, United States"
+    },
+    
+    {
+      "enum": [
+        "USSF"
+      ],
+      "title": "USSF",
+      "description": "San Francisco, United States"
+    },
+    
+    {
+      "enum": [
+        "USWT"
+      ],
+      "title": "USWT",
+      "description": "Wichita, United States"
+    },
+    
+    {
+      "enum": [
+        "UYMO"
+      ],
+      "title": "UYMO",
+      "description": "Montevideo, Uruguay"
+    },
+    
+    {
+      "enum": [
+        "UZTA"
+      ],
+      "title": "UZTA",
+      "description": "Tashkent, Uzbekistan"
+    },
+    
+    {
+      "enum": [
+        "VECA"
+      ],
+      "title": "VECA",
+      "description": "Caracas, Venezuela"
+    },
+    
+    {
+      "enum": [
+        "VGRT"
+      ],
+      "title": "VGRT",
+      "description": "Road Town, Virgin Islands (British)"
+    },
+    
+    {
+      "enum": [
+        "VNHA"
+      ],
+      "title": "VNHA",
+      "description": "Hanoi, Vietnam"
+    },
+    
+    {
+      "enum": [
+        "VNHC"
+      ],
+      "title": "VNHC",
+      "description": "Ho Chi Minh (formerly Saigon), Vietnam"
+    },
+    
+    {
+      "enum": [
+        "YEAD"
+      ],
+      "title": "YEAD",
+      "description": "Aden, Yemen"
+    },
+    
+    {
+      "enum": [
+        "ZAJO"
+      ],
+      "title": "ZAJO",
+      "description": "Johannesburg, South Africa"
+    },
+    
+    {
+      "enum": [
+        "ZMLU"
+      ],
+      "title": "ZMLU",
+      "description": "Lusaka, Zambia"
+    },
+    
+    {
+      "enum": [
+        "ZWHA"
+      ],
+      "title": "ZWHA",
+      "description": "Harare, Zimbabwe"
+    }
+  ]
+}

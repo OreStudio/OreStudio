@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "Address",
+  "description": "A class to specify a post or street address.",
+  "properties": {
+    "street": {
+      "description": "The set of street and building number information that identifies a postal address within a city.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "city": {
+      "description": "The city component of the postal address.",
+      "type": "string"
+    },
+    "state": {
+      "description": "A country subdivision used in postal addresses in some countries. For example, US states, Canadian provinces, Swiss cantons, ...",
+      "type": "string"
+    },
+    "country": {
+      "description": "The ISO 3166 standard code for the country within which the postal address is located.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "postalCode": {
+      "description": "The code, required for computerized mail sorting systems, that is allocated to a physical address by a national postal authority.",
+      "type": "string"
+    }
+  }
+}

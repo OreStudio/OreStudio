@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ObservationEvent",
+  "description": "Specifies the necessary information to create any observation event.",
+  "properties": {
+    "creditEvent": {
+      "description": "Specifies the necessary information to create a credit event.",
+      "$ref": "cdm-event-common-CreditEvent.schema.json"
+    },
+    "corporateAction": {
+      "description": "Specifies the necessary information to create a corporate action.",
+      "$ref": "cdm-event-common-CorporateAction.schema.json"
+    }
+  }
+}

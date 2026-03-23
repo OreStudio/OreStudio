@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "AccrualFactor",
+  "description": "The accrual rate and related terms, to adjust the price of an underlier impacted by a Corporate Action when economic impact consists in freezing the underlier price to the last fixing then applying accruals per each remaining underlier price fixing date required i.e. for each fixing date, adjustedPrice = lastFixingPrice x accrualFactor, where: accrualFactor = (1 + accrualRateValue x DCF).",
+  "properties": {
+    "value": {
+      "description": "The rate to be applied to the last fixing price, for price accrual calculation purposes. DatedValue may be used for the purpose of representing Price series if such calculation is required for multiple dates.",
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaPriceSchedule.schema.json"
+    },
+    "calculationTerms": {
+      "description": "Describes the input terms involved in the calculation of the accrual factor.",
+      "$ref": "cdm-event-common-AccrualFactorCalculationTerms.schema.json"
+    }
+  },
+  "required": [
+    "value"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ExcludedProducts",
+  "description": "Description of the relevant derivative transactions excluded from the calculation of exposure.",
+  "properties": {
+    "product": {
+      "description": "Description of the relevant derivative transactions excluded from the calculation of exposure.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ExposureScopeProductEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "branch": {
+      "description": "Description of the specific branch entered into by the relevant party.",
+      "type": "array",
+      "items": {
+        "type": "BusinessCenter"
+      },
+      "minItems": 0
+    },
+    "excluded": {
+      "description": "A flag to indicate whether transactions entered into by a specific branch with respect to the relevant party are excluded; set to True if excluded, false if included.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "excluded"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "PortfolioReturnTerms",
+  "description": "Specifies an individual type of return of a Performance Payout, when such individual return is part of an aggregation of multiple similar returns, at Performance Payout level.",
+  "properties": {
+    "priceReturnTerms": {
+      "description": "Return terms based upon the underlier's observed price.",
+      "$ref": "cdm-product-asset-PriceReturnTerms.schema.json"
+    },
+    "dividendReturnTerms": {
+      "description": "Return terms based upon dividend payments associated to the underlier.",
+      "$ref": "cdm-product-asset-DividendReturnTerms.schema.json"
+    },
+    "varianceReturnTerms": {
+      "description": "Return terms based upon the observed variance of the underlier's price.",
+      "$ref": "cdm-product-asset-VarianceReturnTerms.schema.json"
+    },
+    "volatilityReturnTerms": {
+      "description": "Return terms based upon the observed volatility of the underlier's price.",
+      "$ref": "cdm-product-asset-VolatilityReturnTerms.schema.json"
+    },
+    "correlationReturnTerms": {
+      "description": "Return terms based upon the observed correlation between the components of the underlying basket.",
+      "$ref": "cdm-product-asset-CorrelationReturnTerms.schema.json"
+    },
+    "payerReceiver": {
+      "description": "Canonical representation of the payer and receiver parties applicable to each individual return leg.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "underlier": {
+      "description": "Defines the product that is the subject of a tradable product definition, an underlying product definition, a physical exercise, a position, or other purposes.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaObservable.schema.json"
+    },
+    "quantity": {
+      "description": "Specifies a quantity schedule for the underlier, which applies to each individual return leg.",
+      "$ref": "cdm-base-math-metafields-ReferenceWithMetaNonNegativeQuantitySchedule.schema.json"
+    },
+    "initialValuationPrice": {
+      "description": "Specifies the initial valuation price(s) of the underlier. This price can be expressed either as an actual amount/currency, as a determination method, or by reference to another value specified in the swap document.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+      },
+      "minItems": 0
+    },
+    "interimValuationPrice": {
+      "description": "Specifies the initial valuation price(s) of the underlier. This price can be expressed either as an actual amount/currency, as a determination method, or by reference to another value specified in the swap document.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+      },
+      "minItems": 0
+    },
+    "finalValuationPrice": {
+      "description": "2018 ISDA CDM Equity Confirmation for Security Equity Swap: Final Price | Specifies the final valuation price of the underlier. This price can be expressed either as an actual amount/currency, as a determination method, or by reference to another value specified in the swap document.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "payerReceiver",
+    "underlier"
+  ]
+}

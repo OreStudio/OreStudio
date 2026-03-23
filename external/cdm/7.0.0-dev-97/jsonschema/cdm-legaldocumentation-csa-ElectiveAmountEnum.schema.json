@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ElectiveAmountEnum",
+  "description": "The enumerated values to specify an elective amount.",
+  "enum": [
+    "Unlimited",
+    "Zero"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Unlimited"
+      ],
+      "title": "Unlimited",
+      "description": "The elective amount has no upper limit."
+    },
+    
+    {
+      "enum": [
+        "Zero"
+      ],
+      "title": "Zero",
+      "description": "The elective amount is zero."
+    }
+  ]
+}

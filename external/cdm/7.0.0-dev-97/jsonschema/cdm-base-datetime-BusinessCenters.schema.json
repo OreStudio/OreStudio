@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "BusinessCenters",
+  "description": "A class for specifying the business day calendar location used in determining whether a day is a business day or not, either by specifying this business center by reference to an enumerated list that is maintained by the FpML standard, or by reference to such specification when it exists elsewhere as part of the instance document. This class corresponds to the FpML BusinessCentersOrReference.model.",
+  "properties": {
+    "businessCenter": {
+      "description": "A code identifying one or several business day calendar location(s). The set of business day calendar locations are specified by the business day calendar location enumeration which is maintained by the FpML standard.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-codelist-metafields-FieldWithMetaBusinessCenter.schema.json"
+      },
+      "minItems": 0
+    },
+    "commodityBusinessCalendar": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-datetime-metafields-FieldWithMetaCommodityBusinessCalendarEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "businessCentersReference": {
+      "description": "A reference to a financial business center location specified elsewhere in the instance document.",
+      "$ref": "cdm-base-datetime-metafields-ReferenceWithMetaBusinessCenters.schema.json"
+    }
+  }
+}

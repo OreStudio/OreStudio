@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Tx",
+  "properties": {
+    "newTx": {
+      "$ref": "cdm-regulation-New.schema.json"
+    },
+    "tradDt": {
+      "type": "string"
+    },
+    "tradgCpcty": {
+      "type": "string"
+    },
+    "qty": {
+      "$ref": "cdm-regulation-Qty.schema.json"
+    },
+    "pric": {
+      "$ref": "cdm-regulation-Pric.schema.json"
+    },
+    "tradVn": {
+      "type": "string"
+    },
+    "ctryOfBrnch": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "newTx",
+    "tradDt",
+    "tradgCpcty",
+    "qty",
+    "pric",
+    "tradVn",
+    "ctryOfBrnch"
+  ]
+}

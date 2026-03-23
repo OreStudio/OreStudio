@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.margin.schedule",
+  "type": "object",
+  "title": "StandardizedScheduleInitialMargin",
+  "properties": {
+    "tradeInfo": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-margin-schedule-StandardizedScheduleTradeInfo.schema.json"
+      },
+      "minItems": 0
+    },
+    "netInitialMargin": {
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  },
+  "required": [
+    "netInitialMargin"
+  ]
+}

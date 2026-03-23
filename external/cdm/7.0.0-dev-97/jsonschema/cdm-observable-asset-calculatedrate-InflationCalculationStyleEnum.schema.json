@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "string",
+  "title": "InflationCalculationStyleEnum",
+  "description": "Indicates the style of how the inflation index calculates the payment (e.g. YearOnYear, ZeroCoupon).",
+  "enum": [
+    "YearOnYear",
+    "ZeroCoupon"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "YearOnYear"
+      ],
+      "title": "YearOnYear",
+      "description": "YearOnYear means Inflation Index Base is the inflation index for Reference Month that is 12 months prior to Inflation Index Final (subject to interpolation). Inflation Index Base is cashflow dependent."
+    },
+    
+    {
+      "enum": [
+        "ZeroCoupon"
+      ],
+      "title": "ZeroCoupon",
+      "description": "ZeroCoupon means Inflation Index Base used in the CalculationMethod is the inflation index for the Reference Month that is the lag number of months prior to Effective Date in the case of a swap, or Bond Interest Accrual Date in the case of an Asset Swap (subject to interpolation). Inflation Index Base has the same value for each inflation cashflow and Principal Exchange calculation within the trade."
+    }
+  ]
+}

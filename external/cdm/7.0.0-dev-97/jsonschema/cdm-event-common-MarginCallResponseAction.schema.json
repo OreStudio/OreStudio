@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "MarginCallResponseAction",
+  "description": "Specifies the margin call action details, including collateral to be moved and its direction.",
+  "properties": {
+    "collateralPositionComponent": {
+      "description": "Specifies the collateral to be moved and its direction.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-CollateralPosition.schema.json"
+      },
+      "minItems": 1
+    },
+    "marginCallAction": {
+      "description": "Specifies the margin call action details, specified as either Delivery or Return.",
+      "$ref": "cdm-event-common-MarginCallActionEnum.schema.json"
+    }
+  },
+  "required": [
+    "marginCallAction"
+  ]
+}

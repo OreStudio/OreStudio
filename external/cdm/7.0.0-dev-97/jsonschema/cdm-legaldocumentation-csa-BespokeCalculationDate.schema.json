@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "BespokeCalculationDate",
+  "description": "A class to specify bespoke Calculation Date terms for the purposes of Initial Margin.",
+  "properties": {
+    "isApplicable": {
+      "description": "Additional Calculation Date terms are applicable when True and not applicable when False.",
+      "type": "boolean"
+    },
+    "calculationDateImTerms": {
+      "description": "The Additional Calculation Date terms for the purposes of Initial Margin.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

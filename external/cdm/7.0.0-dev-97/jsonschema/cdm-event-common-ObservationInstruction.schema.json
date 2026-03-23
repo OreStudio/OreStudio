@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ObservationInstruction",
+  "description": "Specifies inputs needed to process an observation.",
+  "properties": {
+    "observationEvent": {
+      "description": "Contains all information related to an observation.",
+      "$ref": "cdm-event-common-ObservationEvent.schema.json"
+    }
+  },
+  "required": [
+    "observationEvent"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ConditionsPrecedent",
+  "description": "A class to specify the two set of elections that may overwrite the default Condition Precedent provision.",
+  "properties": {
+    "conditionsPrecedentElection": {
+      "description": "The election to specify whether the standard Conditions Precedent apply.",
+      "$ref": "cdm-legaldocumentation-csa-ExceptionEnum.schema.json"
+    },
+    "customProvision": {
+      "description": "The custom provisions that might be specified by the parties to the agreement for the purpose of overwriting the default Condition Precedent provision specified in the CSA.",
+      "type": "string"
+    },
+    "specifiedConditionOrAccessCondition": {
+      "description": "Specifies the events elected by the parties that are deemed an Access Condition (for Initial Margin CSA) or a Specified Condition (for Variation Margin and Legacy CSA), which, if triggered, may temporarily or permanently suspend rights to rehypothecate, transfer, or substitute collateral.",
+      "$ref": "cdm-legaldocumentation-csa-SpecifiedConditionOrAccessCondition.schema.json"
+    }
+  }
+}

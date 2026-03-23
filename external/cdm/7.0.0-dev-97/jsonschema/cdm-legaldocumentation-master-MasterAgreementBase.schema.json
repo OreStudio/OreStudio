@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "object",
+  "title": "MasterAgreementBase",
+  "description": "A set of elections that can be shared across master agreement types - this should be built upon for specific contracts.",
+  "properties": {
+  }
+}

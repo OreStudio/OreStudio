@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "NegativeInterestRateTreatmentEnum",
+  "description": "The enumerated values to specify the method of calculating payment obligations when a floating rate is negative (either due to a quoted negative floating rate or by operation of a spread that is subtracted from the floating rate).",
+  "enum": [
+    "NegativeInterestRateMethod",
+    "ZeroInterestRateExcludingSpreadMethod",
+    "ZeroInterestRateMethod"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "NegativeInterestRateMethod"
+      ],
+      "title": "NegativeInterestRateMethod",
+      "description": "Negative Interest Rate Method. Per 2000 ISDA Definitions, Section 6.4 Negative Interest Rates, paragraphs (b) and (c)."
+    },
+    
+    {
+      "enum": [
+        "ZeroInterestRateExcludingSpreadMethod"
+      ],
+      "title": "ZeroInterestRateExcludingSpreadMethod",
+      "description": "Per 2021 ISDA Definitions section 6.8.6"
+    },
+    
+    {
+      "enum": [
+        "ZeroInterestRateMethod"
+      ],
+      "title": "ZeroInterestRateMethod",
+      "description": "Zero Interest Rate Method. Per 2000 ISDA Definitions, Section 6.4. Negative Interest Rates, paragraphs (d) and (e)."
+    }
+  ]
+}

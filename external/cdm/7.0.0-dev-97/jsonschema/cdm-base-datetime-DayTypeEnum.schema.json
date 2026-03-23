@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "DayTypeEnum",
+  "description": "Lists the enumerated values to specify the day type classification used in counting the number of days between two dates.",
+  "enum": [
+    "Business",
+    "Calendar",
+    "CurrencyBusiness",
+    "ExchangeBusiness",
+    "ScheduledTradingDay"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Business"
+      ],
+      "title": "Business",
+      "description": "Applies when calculating the number of days between two dates the count includes only business days."
+    },
+    
+    {
+      "enum": [
+        "Calendar"
+      ],
+      "title": "Calendar",
+      "description": "Applies when calculating the number of days between two dates the count includes all calendar days."
+    },
+    
+    {
+      "enum": [
+        "CurrencyBusiness"
+      ],
+      "title": "CurrencyBusiness",
+      "description": "Applies when calculating the number of days between two dates the count includes only currency business days."
+    },
+    
+    {
+      "enum": [
+        "ExchangeBusiness"
+      ],
+      "title": "ExchangeBusiness",
+      "description": "Applies when calculating the number of days between two dates the count includes only stock exchange business days."
+    },
+    
+    {
+      "enum": [
+        "ScheduledTradingDay"
+      ],
+      "title": "ScheduledTradingDay",
+      "description": "Applies when calculating the number of days between two dates the count includes only scheduled trading days."
+    }
+  ]
+}

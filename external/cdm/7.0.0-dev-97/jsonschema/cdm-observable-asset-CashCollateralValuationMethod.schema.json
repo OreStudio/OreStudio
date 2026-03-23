@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "CashCollateralValuationMethod",
+  "description": "This type is a generic structure that can represent the parameters of several mid-market valuation and replacement value methods described in the 2021 ISDA Definitions.",
+  "properties": {
+    "applicableCsa": {
+      "description": "This may be used to specify what type of CSA (credit support annex/agreement) is to be used for cash settlement purposes.",
+      "$ref": "cdm-observable-asset-CsaTypeEnum.schema.json"
+    },
+    "cashCollateralCurrency": {
+      "description": "This may be used to indicate the currency of cash collateral for cash settlement purposes.",
+      "type": "string"
+    },
+    "cashCollateralInterestRate": {
+      "description": "This may be used to indicate the interest rate to be used for cash collateral for cash settlement purposes.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "agreedDiscountRate": {
+      "description": "This may be used to indicate the discount rate to be used for cash collateral for cash settlement purposes.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "protectedParty": {
+      "description": "This may be used to specify which party is protected (e.g. under Replacement Value cash settlement methods).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-PartyDeterminationEnum.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "prescribedDocumentationAdjustment": {
+      "description": "This may be used to indicate that 'prescribed documentation adjustment' is applicable.",
+      "type": "boolean"
+    }
+  }
+}

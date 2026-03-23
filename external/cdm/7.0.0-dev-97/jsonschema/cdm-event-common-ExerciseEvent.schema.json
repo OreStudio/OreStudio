@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ExerciseEvent",
+  "description": "A data defining:  the adjusted dates associated with a particular exercise event.",
+  "properties": {
+    "adjustedExerciseDate": {
+      "description": "The date on which the option exercise takes place. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedRelevantSwapEffectiveDate": {
+      "description": "The effective date of the underlying swap associated with a given exercise date. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedCashSettlementValuationDate": {
+      "description": "The date by which the cash settlement amount must be agreed. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedCashSettlementPaymentDate": {
+      "description": "The date on which the cash settlement amount is paid. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedExerciseFeePaymentDate": {
+      "description": "The date on which the exercise fee amount is paid. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "adjustedExerciseDate",
+    "adjustedRelevantSwapEffectiveDate"
+  ]
+}

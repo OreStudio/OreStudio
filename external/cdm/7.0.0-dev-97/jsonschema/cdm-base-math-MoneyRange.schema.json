@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "MoneyRange",
+  "description": "The money range defined as either a lower and upper money bound, or both.",
+  "properties": {
+    "lowerBound": {
+      "description": "The lower bound of a money range, e.g. greater than or equal to 1,000 USD.",
+      "$ref": "cdm-base-math-MoneyBound.schema.json"
+    },
+    "upperBound": {
+      "description": "The upper bound of a money range, e.g. less than 10,000 USD.",
+      "$ref": "cdm-base-math-MoneyBound.schema.json"
+    }
+  }
+}

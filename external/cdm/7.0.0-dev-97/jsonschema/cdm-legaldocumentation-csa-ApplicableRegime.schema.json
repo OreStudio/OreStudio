@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ApplicableRegime",
+  "description": "A class to specify the applicable regulatory regime(s) that parties to a legal agreement, such as the ISDA 2016 and 2018 CSA for Initial Margin, might be subject to.",
+  "properties": {
+    "regime": {
+      "description": "The applicable regulatory regime, as specified through an enumeration.",
+      "$ref": "cdm-legaldocumentation-csa-RegulatoryRegimeEnum.schema.json"
+    },
+    "additionalRegime": {
+      "description": "The additional regulatory regime as specified by the parties.",
+      "type": "string"
+    },
+    "regimeTerms": {
+      "description": "A class that is used by the ApplicableRegime and the AdditionalRegime classes to specify the terms that are specific to each party and regime which are referred to in the Regime Table as part of certain legal agreements, such as the ISDA 2016 and 2018 CSA for Initial Margin.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-RegimeTerms.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "additionalType": {
+      "$ref": "cdm-legaldocumentation-csa-AdditionalTypeEnum.schema.json"
+    },
+    "additionalTerms": {
+      "description": "The bespoke Additional Type for the purposes of Covered Transactions (IM).",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "CollateralizedObligationEnum",
+  "description": "Specifies the type of Collateralized Obligation.",
+  "enum": [
+    "CBO",
+    "CDO",
+    "CLO",
+    "CMO"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CBO"
+      ],
+      "title": "CBO",
+      "description": "Collateralized Bond Obligation."
+    },
+    
+    {
+      "enum": [
+        "CDO"
+      ],
+      "title": "CDO",
+      "description": "Collateralized Debt Obligation."
+    },
+    
+    {
+      "enum": [
+        "CLO"
+      ],
+      "title": "CLO",
+      "description": "Collateralized Loan Obligation."
+    },
+    
+    {
+      "enum": [
+        "CMO"
+      ],
+      "title": "CMO",
+      "description": "Collateralized Mortgage Obligation."
+    }
+  ]
+}

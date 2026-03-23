@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "object",
+  "title": "PubliclyAvailableInformation",
+  "properties": {
+    "standardPublicSources": {
+      "description": "If this element is specified and set to 'true', indicates that ISDA defined Standard Public Sources are applicable.",
+      "type": "boolean"
+    },
+    "publicSource": {
+      "description": "A public information source, e.g. a particular newspaper or electronic news service, that may publish relevant information used in the determination of whether or not a credit event has occurred. ISDA 2003 Term: Public Source.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "specifiedNumber": {
+      "description": "The minimum number of the specified public information sources that must publish information that reasonably confirms that a credit event has occurred. The market convention is two. ISDA 2003 Term: Specified Number.",
+      "type": "integer"
+    }
+  }
+}

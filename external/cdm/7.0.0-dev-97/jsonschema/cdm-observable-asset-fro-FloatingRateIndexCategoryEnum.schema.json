@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "string",
+  "title": "FloatingRateIndexCategoryEnum",
+  "description": "Top level ISDA FRO category.",
+  "enum": [
+    "Calculated Rate",
+    "Reference Banks Rate",
+    "Screen Rate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Calculated Rate"
+      ],
+      "title": "Calculated",
+      "description": "The rate is calculated by the calculation agents from multiple observations."
+    },
+    
+    {
+      "enum": [
+        "Reference Banks Rate"
+      ],
+      "title": "ReferenceBanks",
+      "description": "The rate is obtained by polling several other banks."
+    },
+    
+    {
+      "enum": [
+        "Screen Rate"
+      ],
+      "title": "ScreenRate",
+      "description": "The rate is observed directly from a screen."
+    }
+  ]
+}

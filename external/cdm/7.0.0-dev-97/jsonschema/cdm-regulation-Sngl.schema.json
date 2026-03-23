@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Sngl",
+  "properties": {
+    "isin": {
+      "type": "string"
+    },
+    "indx": {
+      "$ref": "cdm-regulation-Indx.schema.json"
+    }
+  },
+  "required": [
+    "isin",
+    "indx"
+  ]
+}

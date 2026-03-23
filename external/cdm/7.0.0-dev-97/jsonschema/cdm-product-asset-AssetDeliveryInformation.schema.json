@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "AssetDeliveryInformation",
+  "description": "Contains the information relative to the delivery of the asset.",
+  "properties": {
+    "periods": {
+      "description": "Defines the periods of delivery, including the delivery profile.",
+      "$ref": "cdm-product-asset-AssetDeliveryPeriods.schema.json"
+    },
+    "location": {
+      "description": "Defines the location of the delivery of the commodity.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-identifier-LocationIdentifier.schema.json"
+      },
+      "minItems": 0
+    },
+    "deliveryCapacity": {
+      "description": "The number of units included in the transaction for each delivery interval",
+      "$ref": "cdm-base-math-Quantity.schema.json"
+    },
+    "commodityGrade": {
+      "description": "Grade of product being delivered (e.g., grade of oil).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-commodity-ProductGradeEnum.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

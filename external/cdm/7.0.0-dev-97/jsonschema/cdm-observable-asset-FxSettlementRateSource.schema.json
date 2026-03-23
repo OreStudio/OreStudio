@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "FxSettlementRateSource",
+  "description": "The source of the Foreign Exchange settlement rate.",
+  "properties": {
+    "settlementRateOption": {
+      "description": "Indicates that an officially defined rate settlement rate option will be the used for the fixing.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "nonstandardSettlementRate": {
+      "description": "Indicates that a non-standard rate source will be used for the fixing.",
+      "$ref": "cdm-observable-asset-FxInformationSource.schema.json"
+    }
+  }
+}

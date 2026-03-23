@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "FxPriceSourceDisruption",
+  "properties": {
+    "priceSourceDisruptionIsApplicable": {
+      "type": "boolean"
+    },
+    "fallbackReferencePrice": {
+      "description": "The method, prioritised by the order it is listed in this element, to get a replacement rate for the disrupted settlement rate option.",
+      "$ref": "cdm-observable-asset-SettlementRateOption.schema.json"
+    },
+    "escrowArrangement": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EscrowArrangement.schema.json"
+    }
+  },
+  "required": [
+    "priceSourceDisruptionIsApplicable"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "DateRange",
+  "description": "A class defining a contiguous series of calendar dates. The date range is defined as all the dates between and including the start and the end date. The start date must fall on or before the end date.",
+  "properties": {
+    "startDate": {
+      "description": "The first date of a date range.",
+      "type": "string"
+    },
+    "endDate": {
+      "description": "The last date of a date range.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "startDate",
+    "endDate"
+  ]
+}

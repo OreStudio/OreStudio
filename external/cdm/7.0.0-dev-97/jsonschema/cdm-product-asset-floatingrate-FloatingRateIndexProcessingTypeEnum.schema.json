@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset.floatingrate",
+  "type": "string",
+  "title": "FloatingRateIndexProcessingTypeEnum",
+  "description": "This enumeration provides guidance on how to process a given floating rate index.  It's based on the ISDA Floating Rate Index information, but transforms it into the specific categories needed for calculation ",
+  "enum": [
+    "CompoundIndex",
+    "Modular",
+    "OIS",
+    "OvernightAvg",
+    "RefBanks",
+    "Screen"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CompoundIndex"
+      ],
+      "title": "CompoundIndex",
+      "description": "A published index calculated using compounding; the implied rate must be backed out."
+    },
+    
+    {
+      "enum": [
+        "Modular"
+      ],
+      "title": "Modular",
+      "description": "These are calculated by the calculation agent based on deal-specific parameters (e.g. lookback compound based on an RFR)."
+    },
+    
+    {
+      "enum": [
+        "OIS"
+      ],
+      "title": "OIS",
+      "description": "These are calculated by the calculation agent based on a standard OIS FRO definition."
+    },
+    
+    {
+      "enum": [
+        "OvernightAvg"
+      ],
+      "title": "OvernightAvg",
+      "description": "These are calculated by the calculation agent based on a standard overnight averaging FRO definition."
+    },
+    
+    {
+      "enum": [
+        "RefBanks"
+      ],
+      "title": "RefBanks",
+      "description": "These must be looked up using a manual process"
+    },
+    
+    {
+      "enum": [
+        "Screen"
+      ],
+      "title": "Screen",
+      "description": "These values are just looked up from the screen and applied."
+    }
+  ]
+}

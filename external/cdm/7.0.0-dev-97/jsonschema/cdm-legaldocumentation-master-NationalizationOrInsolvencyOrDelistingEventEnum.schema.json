@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "string",
+  "title": "NationalizationOrInsolvencyOrDelistingEventEnum",
+  "description": "Defines the consequences of nationalization, insolvency and delisting events relating to the underlying.",
+  "enum": [
+    "CancellationAndPayment",
+    "NegotiatedCloseout"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CancellationAndPayment"
+      ],
+      "title": "CancellationAndPayment",
+      "description": "The trade is terminated."
+    },
+    
+    {
+      "enum": [
+        "NegotiatedCloseout"
+      ],
+      "title": "NegotiatedCloseout",
+      "description": "The parties may, but are not obliged, to terminate the transaction on mutually acceptable terms and if the terms are not agreed then the transaction continues."
+    }
+  ]
+}

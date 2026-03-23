@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "FxLinkedNotionalAmount",
+  "description": "A data to:  describe the cashflow representation for FX linked notionals.",
+  "properties": {
+    "resetDate": {
+      "description": "The reset date.",
+      "type": "string"
+    },
+    "adjustedFxSpotFixingDate": {
+      "description": "The date on which the FX spot rate is observed. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "observedFxSpotRate": {
+      "description": "The actual observed FX spot rate.",
+      "type": "number"
+    },
+    "notionalAmount": {
+      "description": "The calculation period notional amount.",
+      "type": "number"
+    }
+  }
+}

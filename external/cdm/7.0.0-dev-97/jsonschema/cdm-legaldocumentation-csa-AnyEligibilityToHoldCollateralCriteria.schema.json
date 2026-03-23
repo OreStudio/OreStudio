@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AnyEligibilityToHoldCollateralCriteria",
+  "description": "Used to combine two or more Criteria using OR logic.",
+  "properties": {
+    "anyCriteria": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-EligibilityToHoldCollateralCriteria.schema.json"
+      },
+      "minItems": 2
+    }
+  }
+}

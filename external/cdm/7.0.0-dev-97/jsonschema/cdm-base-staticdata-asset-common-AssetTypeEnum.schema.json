@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "AssetTypeEnum",
+  "description": "Represents an enumeration list to identify the asset type.",
+  "enum": [
+    "Cash",
+    "Commodity",
+    "LetterOfCredit",
+    "ListedDerivative",
+    "Loan",
+    "Other",
+    "Security"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Cash"
+      ],
+      "title": "Cash",
+      "description": "Identifies cash in a currency form."
+    },
+    
+    {
+      "enum": [
+        "Commodity"
+      ],
+      "title": "Commodity",
+      "description": "Identifies basic good used in commerce that is interchangeable with other goods of the same type."
+    },
+    
+    {
+      "enum": [
+        "LetterOfCredit"
+      ],
+      "title": "LetterOfCredit",
+      "description": "Identifies an asset as a letter of credit or documentary credit/ bankers commercial credit.  A payment mechanism used in international trade to provide economic guarantee of payment by a creditworthy issuer for payment of exported goods."
+    },
+    
+    {
+      "enum": [
+        "ListedDerivative"
+      ],
+      "title": "ListedDerivative",
+      "description": "Identifies an asset as a listed derivative on an exchange."
+    },
+    
+    {
+      "enum": [
+        "Loan"
+      ],
+      "title": "Loan",
+      "description": "An asset that represents a loan or borrow obligation."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Identifies other asset types."
+    },
+    
+    {
+      "enum": [
+        "Security"
+      ],
+      "title": "Security",
+      "description": "Identifies negotiable financial instrument of monetary value with an issue ownership position."
+    }
+  ]
+}

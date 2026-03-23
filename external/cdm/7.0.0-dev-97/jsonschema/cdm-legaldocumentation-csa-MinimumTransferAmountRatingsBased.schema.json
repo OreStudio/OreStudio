@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "MinimumTransferAmountRatingsBased",
+  "description": "Defines that the Minimum Transfer Amount (MTA) is based on a Ratings condition(s).",
+  "properties": {
+    "zeroEvent": {
+      "description": "Indicates whether a trigger applies for the Threshold or Minimum Transfer Amount to fall to zero. If 'True' then such a trigger exists.",
+      "type": "boolean"
+    },
+    "event": {
+      "description": "Specifies the relevant trigger for the Threshold or Minimum Transfer Amount to fall to zero.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ZeroEventEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "currency": {
+      "description": "The minimum transfer amount currency code.",
+      "$ref": "cdm-base-staticdata-asset-common-ISOCurrencyCodeEnum.schema.json"
+    },
+    "ratingType": {
+      "description": "The relevant rating type.",
+      "$ref": "cdm-legaldocumentation-csa-RatingTypeEnum.schema.json"
+    },
+    "variableSet": {
+      "description": "Defines a combination of Rating Agency, Rating Value, amount and Currency code.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-CSAMinimumTransferAmountVariableSet.schema.json"
+      },
+      "minItems": 0
+    },
+    "ratedParty": {
+      "description": "The party to which a rating applies.",
+      "$ref": "cdm-legaldocumentation-csa-RatedPartyEnum.schema.json"
+    },
+    "namedEntity": {
+      "description": "Details the Named Entity where the Rated Party is Named Entity.",
+      "type": "string"
+    },
+    "namedAffiliate": {
+      "description": "Details the Named Affiliate where the Rated Party is Named Affiliate.",
+      "type": "string"
+    },
+    "compare": {
+      "description": "Where two ratings are specified whether the higher or lower rating prevails.",
+      "$ref": "cdm-observable-asset-CreditNotationMismatchResolutionEnum.schema.json"
+    },
+    "noRating": {
+      "description": "What conditions apply where a party has no rating.",
+      "type": "boolean"
+    },
+    "notRatedBy": {
+      "description": "Defines where conditions apply if no Rating where ratings may not exist.",
+      "$ref": "cdm-legaldocumentation-csa-NotRatedByEnum.schema.json"
+    },
+    "numberOfRatingAgencies": {
+      "description": "Defines the number of Rating Agencies that the Party must be rated by.",
+      "$ref": "cdm-legaldocumentation-csa-NumberOfRatingAgenciesEnum.schema.json"
+    }
+  },
+  "required": [
+    "currency",
+    "ratingType",
+    "noRating"
+  ]
+}

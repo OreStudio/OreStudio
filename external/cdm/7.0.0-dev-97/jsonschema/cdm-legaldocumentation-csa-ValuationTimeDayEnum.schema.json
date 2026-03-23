@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValuationTimeDayEnum",
+  "description": "The day at which the value of the collateral and obligations to transfer or return collateral are to be calculated relative to the Valuation Date.",
+  "enum": [
+    "As Selected",
+    "Previous Local Business Day",
+    "Previous Local Business Day (City of Valuation Agent)",
+    "Previous Local Business Day (Relevant Market)",
+    "Valuation Date"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "As Selected"
+      ],
+      "title": "AsSelected",
+      "description": "Should be calculated relative to the previous local business day as selected."
+    },
+    
+    {
+      "enum": [
+        "Previous Local Business Day"
+      ],
+      "title": "PreviousLocalBusinessDay",
+      "description": "Should be calculated relative to the previous local business day."
+    },
+    
+    {
+      "enum": [
+        "Previous Local Business Day (City of Valuation Agent)"
+      ],
+      "title": "PreviousLocalBusinessDayCityOfAgent",
+      "description": "Should be calculated relative to the previous local business day in the city of the Valuation Agent."
+    },
+    
+    {
+      "enum": [
+        "Previous Local Business Day (Relevant Market)"
+      ],
+      "title": "PreviousLocalBusinessDayMarket",
+      "description": "Should be calculated relative to the previous local business day in the Relevant Market)."
+    },
+    
+    {
+      "enum": [
+        "Valuation Date"
+      ],
+      "title": "ValuationDate",
+      "description": "Should be calculated on the Valuation Date."
+    }
+  ]
+}

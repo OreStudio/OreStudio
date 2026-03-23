@@ -1,0 +1,667 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "ContractualSupplementTypeEnum",
+  "description": "The enumerated values to define the supplements to a base set of ISDA Definitions that are applicable to the transaction.",
+  "enum": [
+    "ABX",
+    "ABXTranche",
+    "CDSonLeveragedLoans",
+    "CDSonMBS",
+    "CDX",
+    "CDXEmergingMarkets",
+    "CDXEmergingMarketsDiversified",
+    "CDXSwaption",
+    "CDXTranche",
+    "CMBX",
+    "EuropeanCMBS",
+    "EuropeanRMBS",
+    "IOS",
+    "ISDA1999CreditConvertibleExchangeableAccretingObligations",
+    "ISDA1999CreditRestructuring",
+    "ISDA1999CreditSuccessorAndCreditEvents",
+    "ISDA2003AdditionalProvisionsLPN",
+    "ISDA2003ContingentCreditSpreadTransaction",
+    "ISDA2003Credit2005MatrixSupplement",
+    "ISDA2003CreditArgentineRepublic",
+    "ISDA2003CreditAuctionSupplement",
+    "ISDA2003CreditMay2003",
+    "ISDA2003CreditMonolineInsurers",
+    "ISDA2003CreditMonolineInsurers2005",
+    "ISDA2003CreditRepublicOfHungary",
+    "ISDA2003CreditRepublicOfHungary2005",
+    "ISDA2003CreditRussianFederation",
+    "ISDA2003CreditUSMunicipals",
+    "ISDA2003STMicroelectronicsNV",
+    "ISDA2007FullLookthroughDepositoryReceiptSupplement",
+    "ISDA2007PartialLookthroughDepositoryReceiptSupplement",
+    "ISDACreditMonolineInsurers",
+    "ISDADeliveryRestrictions",
+    "ISDAFixedRecovery",
+    "ISDALPNReferenceEntities",
+    "ISDAMarch2004EquityCanadianSupplement",
+    "ISDARecoveryLock",
+    "ISDASecuredDeliverableObligationCharacteristic",
+    "LCDX",
+    "LCDXTranche",
+    "MBX",
+    "MCDX",
+    "PO",
+    "PrimeX",
+    "StandardCDXTranche",
+    "StandardLCDS",
+    "StandardLCDSBullet",
+    "StandardLCDXBullet",
+    "StandardLCDXBulletTranche",
+    "StandardiTraxxEuropeTranche",
+    "SyndicatedSecuredLoanCDS",
+    "TRX",
+    "TRX.II",
+    "iTraxxAsiaExJapan",
+    "iTraxxAsiaExJapanSwaption",
+    "iTraxxAsiaExJapanTranche",
+    "iTraxxAustralia",
+    "iTraxxAustraliaSwaption",
+    "iTraxxAustraliaTranche",
+    "iTraxxCJ",
+    "iTraxxCJTranche",
+    "iTraxxEurope",
+    "iTraxxEuropeDealer",
+    "iTraxxEuropeNonDealer",
+    "iTraxxEuropeSwaption",
+    "iTraxxEuropeTranche",
+    "iTraxxJapan",
+    "iTraxxJapanSwaption",
+    "iTraxxJapanTranche",
+    "iTraxxLevX",
+    "iTraxxSDI75Dealer",
+    "iTraxxSDI75NonDealer",
+    "iTraxxSovX"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ABX"
+      ],
+      "title": "ABX",
+      "description": "Standard Terms Supplement for ABX Transactions."
+    },
+    
+    {
+      "enum": [
+        "ABXTranche"
+      ],
+      "title": "ABXTranche",
+      "description": "Standard Terms Supplement for Asset-Backed Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "CDSonLeveragedLoans"
+      ],
+      "title": "CDSonLeveragedLoans",
+      "description": "ISDA Standard Terms Supplement for use with Credit Derivative Transactions on Leveraged Loans."
+    },
+    
+    {
+      "enum": [
+        "CDSonMBS"
+      ],
+      "title": "CDSonMBS",
+      "description": "ISDA Standard Terms Supplement for use with Credit Derivative Transactions on Mortgage-backed Security with Pay-As-You-Go or Physical Settlement."
+    },
+    
+    {
+      "enum": [
+        "CDX"
+      ],
+      "title": "CDX",
+      "description": "Standard Terms Supplement for CDX Untranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "CDXEmergingMarkets"
+      ],
+      "title": "CDXEmergingMarkets",
+      "description": "Standard Terms Supplement for CDX Emerging Markets Untranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "CDXEmergingMarketsDiversified"
+      ],
+      "title": "CDXEmergingMarketsDiversified",
+      "description": "Standard Terms Supplement for CDX Emerging Markets Diversified Untranched Transactions.."
+    },
+    
+    {
+      "enum": [
+        "CDXSwaption"
+      ],
+      "title": "CDXSwaption",
+      "description": "Standard Terms Supplement for CDX Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "CDXTranche"
+      ],
+      "title": "CDXTranche",
+      "description": "Standard Terms Supplement for Dow Jones CDX Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "CMBX"
+      ],
+      "title": "CMBX",
+      "description": "Standard Terms Supplement for CMBX Transactions."
+    },
+    
+    {
+      "enum": [
+        "EuropeanCMBS"
+      ],
+      "title": "EuropeanCMBS",
+      "description": "Standard Terms Supplement for Single Name European CMBS Transactions."
+    },
+    
+    {
+      "enum": [
+        "EuropeanRMBS"
+      ],
+      "title": "EuropeanRMBS",
+      "description": "Standard Terms Supplement for Single Name European RMBS Transactions."
+    },
+    
+    {
+      "enum": [
+        "IOS"
+      ],
+      "title": "IOS",
+      "description": "Standard Terms Supplement for IOS Transactions."
+    },
+    
+    {
+      "enum": [
+        "ISDA1999CreditConvertibleExchangeableAccretingObligations"
+      ],
+      "title": "ISDA1999CreditConvertibleExchangeableAccretingObligations",
+      "description": "Supplement to the 1999 ISDA Credit Derivatives Definitions Relating to Convertible, Exchangeable or Accreting Obligations dated November 9, 2001."
+    },
+    
+    {
+      "enum": [
+        "ISDA1999CreditRestructuring"
+      ],
+      "title": "ISDA1999CreditRestructuring",
+      "description": "Restructuring Supplement to the 1999 ISDA Credit Derivatives Definitions dated May 11, 2001."
+    },
+    
+    {
+      "enum": [
+        "ISDA1999CreditSuccessorAndCreditEvents"
+      ],
+      "title": "ISDA1999CreditSuccessorAndCreditEvents",
+      "description": "Supplement Relating to Successor and Credit Events to the 1999 ISDA Credit Derivatives Definitions dated November 28, 2001."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003AdditionalProvisionsLPN"
+      ],
+      "title": "ISDA2003AdditionalProvisionsLPN",
+      "description": "Additional Provisions for LPN dated December 6, 2007."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003ContingentCreditSpreadTransaction"
+      ],
+      "title": "ISDA2003ContingentCreditSpreadTransaction",
+      "description": "Additional Provisions for Contingent Credit Spread Transactions dated August 15, 2008."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003Credit2005MatrixSupplement"
+      ],
+      "title": "ISDA2003Credit2005MatrixSupplement",
+      "description": "2005 Matrix Supplement to the 2003 ISDA Credit Derivatives."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditArgentineRepublic"
+      ],
+      "title": "ISDA2003CreditArgentineRepublic",
+      "description": "Additional Provisions for the Argentine Republic: Excluded Obligations and Excluded Deliverable Obligations dated December 21, 2005."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditAuctionSupplement"
+      ],
+      "title": "ISDA2003CreditAuctionSupplement",
+      "description": "ISDA Credit Derivatives Determinations Committees and Auction Settlement Supplement to the 2003 ISDA Credit Derivatives Definitions (published on [TBD])."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditMay2003"
+      ],
+      "title": "ISDA2003CreditMay2003",
+      "description": "May 2003 Supplement to the 2003 ISDA Credit Derivatives Definitions."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditMonolineInsurers"
+      ],
+      "title": "ISDA2003CreditMonolineInsurers",
+      "description": "Additional Provisions for Physically Settled Default Swaps Monoline Insurer as Reference Entity dated May 9, 2003."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditMonolineInsurers2005"
+      ],
+      "title": "ISDA2003CreditMonolineInsurers2005",
+      "description": "Additional Provisions for Physically Settled Default Swaps Monoline Insurer as Reference Entity dated January 21, 2005."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditRepublicOfHungary"
+      ],
+      "title": "ISDA2003CreditRepublicOfHungary",
+      "description": "Additional Provisions for the Republic of Hungary: Obligation Characteristics and Deliverable Obligation Characteristics dated August 13, 2004."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditRepublicOfHungary2005"
+      ],
+      "title": "ISDA2003CreditRepublicOfHungary2005",
+      "description": "Additional Provisions for the Republic of Hungary: Obligation Characteristics and Deliverable Obligation Characteristics dated February 14, 2005. "
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditRussianFederation"
+      ],
+      "title": "ISDA2003CreditRussianFederation",
+      "description": "Additional Provisions for the Russian Federation: Obligation Characteristics and Deliverable Obligation Characteristics dated August 13, 2004."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditUSMunicipals"
+      ],
+      "title": "ISDA2003CreditUSMunicipals",
+      "description": "Additional Provisions for Credit Derivative Transactions - U.S. Municipal Entity as Reference Entity dated September 17, 2004."
+    },
+    
+    {
+      "enum": [
+        "ISDA2003STMicroelectronicsNV"
+      ],
+      "title": "ISDA2003STMicroelectronicsNV",
+      "description": "Additional Provisions for STMicroelectronics NV dated December 6, 2007."
+    },
+    
+    {
+      "enum": [
+        "ISDA2007FullLookthroughDepositoryReceiptSupplement"
+      ],
+      "title": "ISDA2007FullLookthroughDepositoryReceiptSupplement",
+      "description": "2007 Full Lookthrough Depository Receipt Supplement to the 2002 Equity Derivatives Definitions."
+    },
+    
+    {
+      "enum": [
+        "ISDA2007PartialLookthroughDepositoryReceiptSupplement"
+      ],
+      "title": "ISDA2007PartialLookthroughDepositoryReceiptSupplement",
+      "description": "2007 Partial Lookthrough Depository Receipt Supplement to the 2002 ISDA Equity Derivatives Definitions."
+    },
+    
+    {
+      "enum": [
+        "ISDACreditMonolineInsurers"
+      ],
+      "title": "ISDACreditMonolineInsurers",
+      "description": "Additional Provisions for Physically Settled Default Swaps Monoline Insurer."
+    },
+    
+    {
+      "enum": [
+        "ISDADeliveryRestrictions"
+      ],
+      "title": "ISDADeliveryRestrictions",
+      "description": "Additional Provisions for Fixed Recovery Credit Default Swap Transactions"
+    },
+    
+    {
+      "enum": [
+        "ISDAFixedRecovery"
+      ],
+      "title": "ISDAFixedRecovery",
+      "description": "Additional Provisions for Fixed Recovery Credit Default Swap Transactions."
+    },
+    
+    {
+      "enum": [
+        "ISDALPNReferenceEntities"
+      ],
+      "title": "ISDALPNReferenceEntities",
+      "description": "Additional Provisions for LPN Reference Entities."
+    },
+    
+    {
+      "enum": [
+        "ISDAMarch2004EquityCanadianSupplement"
+      ],
+      "title": "ISDAMarch2004EquityCanadianSupplement",
+      "description": "Canadian Supplement to the 2004 Americas Interdealer Master Equity Derivatives Confirmation Agreement dated March 29, 2004."
+    },
+    
+    {
+      "enum": [
+        "ISDARecoveryLock"
+      ],
+      "title": "ISDARecoveryLock",
+      "description": "Additional Provisions for Recovery Lock Credit Default Swap Transactions."
+    },
+    
+    {
+      "enum": [
+        "ISDASecuredDeliverableObligationCharacteristic"
+      ],
+      "title": "ISDASecuredDeliverableObligationCharacteristic",
+      "description": "Additional Provisions for Secured Deliverable Obligation Characteristic."
+    },
+    
+    {
+      "enum": [
+        "LCDX"
+      ],
+      "title": "LCDX",
+      "description": "Standard Terms Supplement for Syndicated Secured Loan Credit Default Swap Index Transactions."
+    },
+    
+    {
+      "enum": [
+        "LCDXTranche"
+      ],
+      "title": "LCDXTranche",
+      "description": "Standard Terms Supplement for Syndicated Secured Loan Credit Default Swap Index Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "MBX"
+      ],
+      "title": "MBX",
+      "description": "Standard Terms Supplement for MBX Transactions."
+    },
+    
+    {
+      "enum": [
+        "MCDX"
+      ],
+      "title": "MCDX",
+      "description": "Standard Terms Supplement for Municipal CDX Untranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "PO"
+      ],
+      "title": "PO",
+      "description": "Standard Terms Supplement for PO Index Transactions."
+    },
+    
+    {
+      "enum": [
+        "PrimeX"
+      ],
+      "title": "PrimeX",
+      "description": "Standard Terms Supplement for PrimeX Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardCDXTranche"
+      ],
+      "title": "StandardCDXTranche",
+      "description": "Standard Terms Supplement for Standard CDX Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDS"
+      ],
+      "title": "StandardLCDS",
+      "description": "Standard Syndicated Secured Loan Credit Default Swap Standard Terms Supplement."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDSBullet"
+      ],
+      "title": "StandardLCDSBullet",
+      "description": "Standard Terms Supplement for Standard Syndicated Secured Loan Credit Default Swap Bullet Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDXBullet"
+      ],
+      "title": "StandardLCDXBullet",
+      "description": "Standard Terms Supplement for Standard Syndicated Secured Loan Credit Default Swap Index Bullet Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardLCDXBulletTranche"
+      ],
+      "title": "StandardLCDXBulletTranche",
+      "description": "Standard Terms Supplement for Standard Syndicated Secured Loan Credit Default Swap Index Bullet Tranche Transactions."
+    },
+    
+    {
+      "enum": [
+        "StandardiTraxxEuropeTranche"
+      ],
+      "title": "StandardiTraxxEuropeTranche",
+      "description": "Standard Terms Supplement for Standard iTraxx Europe Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "SyndicatedSecuredLoanCDS"
+      ],
+      "title": "SyndicatedSecuredLoanCDS",
+      "description": "Syndicated Secured Loan Credit Default Swap Standard Terms Supplement."
+    },
+    
+    {
+      "enum": [
+        "TRX"
+      ],
+      "title": "TRX",
+      "description": "Standard Terms Supplement for TRX Transactions."
+    },
+    
+    {
+      "enum": [
+        "TRX.II"
+      ],
+      "title": "TRX_II",
+      "description": "Standard Terms Supplement for TRX.II Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAsiaExJapan"
+      ],
+      "title": "iTraxxAsiaExJapan",
+      "description": "Standard Terms Supplement for iTraxx Asia Excluding Japan."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAsiaExJapanSwaption"
+      ],
+      "title": "iTraxxAsiaExJapanSwaption",
+      "description": "Standard Terms Supplement for iTraxx Asia Ex-Japan Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAsiaExJapanTranche"
+      ],
+      "title": "iTraxxAsiaExJapanTranche",
+      "description": "Standard Terms Supplement for iTraxx Asia Excluding Japan Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAustralia"
+      ],
+      "title": "iTraxxAustralia",
+      "description": "Standard Terms Supplement for iTraxx Australia."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAustraliaSwaption"
+      ],
+      "title": "iTraxxAustraliaSwaption",
+      "description": "Standard Terms Supplement for iTraxx Australia Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxAustraliaTranche"
+      ],
+      "title": "iTraxxAustraliaTranche",
+      "description": "Standard Terms Supplement for iTraxx Australia Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxCJ"
+      ],
+      "title": "iTraxxCJ",
+      "description": "Standard Terms Supplement for iTraxx CJ."
+    },
+    
+    {
+      "enum": [
+        "iTraxxCJTranche"
+      ],
+      "title": "iTraxxCJTranche",
+      "description": "Standard Terms Supplement for iTraxx CJ Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxEurope"
+      ],
+      "title": "iTraxxEurope",
+      "description": "Standard Terms Supplement for iTraxx Europe Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxEuropeDealer"
+      ],
+      "title": "iTraxxEuropeDealer",
+      "description": "Standard Terms Supplement for iTraxx Europe Dealer Form."
+    },
+    
+    {
+      "enum": [
+        "iTraxxEuropeNonDealer"
+      ],
+      "title": "iTraxxEuropeNonDealer",
+      "description": "Standard Terms Supplement for iTraxx Europe Non-Dealer Form."
+    },
+    
+    {
+      "enum": [
+        "iTraxxEuropeSwaption"
+      ],
+      "title": "iTraxxEuropeSwaption",
+      "description": "Standard Terms Supplement for iTraxx Europe Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxEuropeTranche"
+      ],
+      "title": "iTraxxEuropeTranche",
+      "description": "Standard Terms Supplement for iTraxx Europe Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxJapan"
+      ],
+      "title": "iTraxxJapan",
+      "description": "Standard Terms Supplement for iTraxx Japan."
+    },
+    
+    {
+      "enum": [
+        "iTraxxJapanSwaption"
+      ],
+      "title": "iTraxxJapanSwaption",
+      "description": "Standard Terms Supplement for iTraxx Japan Swaption Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxJapanTranche"
+      ],
+      "title": "iTraxxJapanTranche",
+      "description": "Standard Terms Supplement for iTraxx Japan Tranched Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxLevX"
+      ],
+      "title": "iTraxxLevX",
+      "description": "Standard Terms Supplement for iTraxx LevX."
+    },
+    
+    {
+      "enum": [
+        "iTraxxSDI75Dealer"
+      ],
+      "title": "iTraxxSDI75Dealer",
+      "description": "Standard Terms Supplement for iTraxx SDI 75 Dealer Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxSDI75NonDealer"
+      ],
+      "title": "iTraxxSDI75NonDealer",
+      "description": "Standard Terms Supplement for iTraxx SDI 75 Non-Dealer Transactions."
+    },
+    
+    {
+      "enum": [
+        "iTraxxSovX"
+      ],
+      "title": "iTraxxSovX",
+      "description": "Standard Terms Supplement for iTraxx SovX."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValueSecuritiesEnum",
+  "description": "Details of how securities collateral is valued when resolving disputes.",
+  "enum": [
+    "Securities - Bid Price multiplied by Valuation Percentage",
+    "Securities - Bid Price multiplied by (Valuation Percentage - FX Haircut)",
+    "Securities - Mid Price multiplied by Valuation Percentage",
+    "Securities - Mid Price multiplied by (Valuation Percentage - FX Haircut)",
+    "Other"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Securities - Bid Price multiplied by Valuation Percentage"
+      ],
+      "title": "BidPricePercentage",
+      "description": "Securities collateral is valued using the bid price multiplied by the valuation percentage."
+    },
+    
+    {
+      "enum": [
+        "Securities - Bid Price multiplied by (Valuation Percentage - FX Haircut)"
+      ],
+      "title": "BidPricePercentageLessHaircut",
+      "description": "Securities collateral is valued using the bid price multiplied by the valuation percentage less the FX haircut."
+    },
+    
+    {
+      "enum": [
+        "Securities - Mid Price multiplied by Valuation Percentage"
+      ],
+      "title": "MidPricePercentage",
+      "description": "Securities collateral is valued using the mid price multiplied by the valuation percentage."
+    },
+    
+    {
+      "enum": [
+        "Securities - Mid Price multiplied by (Valuation Percentage - FX Haircut)"
+      ],
+      "title": "MidPricePercentageLessHaircut",
+      "description": "Securities collateral is valued using the mid price multiplied by the valuation percentage less the FX haircut."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Exception value."
+    }
+  ]
+}

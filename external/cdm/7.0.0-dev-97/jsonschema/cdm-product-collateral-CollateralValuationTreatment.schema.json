@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CollateralValuationTreatment",
+  "description": "Specification of the valuation treatment for the specified collateral.",
+  "properties": {
+    "haircutPercentage": {
+      "description": "Specifies a haircut percentage to be applied to the value of asset and used as a discount factor to the value of the collateral asset,expressed as a percentage in decimal terms. As an example a 0.5% haircut would be represented as a decimal number 0.005.",
+      "type": "number"
+    },
+    "marginPercentage": {
+      "description": "Specifies a percentage value of transaction needing to be posted as collateral expressed as a valuation. As an example a 104% requirement would be represented as a decimal number 1.04.",
+      "type": "number"
+    },
+    "fxHaircutPercentage": {
+      "description": "Specifies an FX haircut applied to a specific asset which is agreed between the parties (for example, if pledgor eligible collateral is not denominated in the termination currency or under other specified cases in collateral support documents both for initial margin and variation margin).The percentage value is expressed as the discount haircut to the value of the collateral- as an example an 8% FX haircut would be expressed as 0.08.",
+      "type": "number"
+    },
+    "additionalHaircutPercentage": {
+      "description": "Specifies a percentage value of any additional haircut to be applied to a collateral asset,the percentage value is expressed as the discount haircut to the value of the collateral- as an example a 5% haircut would be expressed as 0.05. ",
+      "type": "number"
+    }
+  }
+}

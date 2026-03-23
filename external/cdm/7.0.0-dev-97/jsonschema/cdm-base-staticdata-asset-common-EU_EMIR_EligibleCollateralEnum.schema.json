@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "EU_EMIR_EligibleCollateralEnum",
+  "description": "Identifies European Union Eligible Collateral Assets classification categories based on EMIR Uncleared Margin Rules. Eligible Collateral asset classes for both initial margin (IM) and variation margin (VM) posted and collected between specified entities. Please note: EMIR regulation will detail which eligible collateral assets classes apply to each type of entity pairing (counterparty) and which apply to posting of IM and VM.",
+  "enum": [
+    "EU_EMIRTypeA",
+    "EU_EMIRTypeB",
+    "EU_EMIRTypeC",
+    "EU_EMIRTypeD",
+    "EU_EMIRTypeE",
+    "EU_EMIRTypeF",
+    "EU_EMIRTypeG",
+    "EU_EMIRTypeH",
+    "EU_EMIRTypeI",
+    "EU_EMIRTypeJ",
+    "EU_EMIRTypeK",
+    "EU_EMIRTypeL",
+    "EU_EMIRTypeM",
+    "EU_EMIRTypeN",
+    "EU_EMIRTypeO",
+    "EU_EMIRTypeP",
+    "EU_EMIRTypeQ",
+    "EU_EMIRTypeR"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "EU_EMIRTypeA"
+      ],
+      "title": "EU_EMIRTypeA",
+      "description": "Denotes Cash in the form of money credited to an account in any currency, or similar claims for the repayment of money, such as money market deposits."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeB"
+      ],
+      "title": "EU_EMIRTypeB",
+      "description": " Denotes gold in the form of allocated pure gold bullion of recognised good delivery."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeC"
+      ],
+      "title": "EU_EMIRTypeC",
+      "description": " Denotes debt securities issued by Member States' central governments or central banks."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeD"
+      ],
+      "title": "EU_EMIRTypeD",
+      "description": " Denotes debt securities issued by Member States' regional governments or local authorities whose exposures are treated as exposures to the central government of that Member State in accordance with Article 115(2) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeE"
+      ],
+      "title": "EU_EMIRTypeE",
+      "description": " Denotes debt securities issued by Member States' public sector entities whose exposures are treated as exposures to the central government, regional government or local authority of that Member State in accordance with Article 116(4) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeF"
+      ],
+      "title": "EU_EMIRTypeF",
+      "description": " Denotes debt securities issued by Member States' regional governments or local authorities other than those referred to in (TypeD.)"
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeG"
+      ],
+      "title": "EU_EMIRTypeG",
+      "description": " Denotes debt securities issued by Member States' public sector entities other than those referred to in (TypeE)."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeH"
+      ],
+      "title": "EU_EMIRTypeH",
+      "description": " Denotes debt securities issued by multilateral development banks listed in Article 117(2) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeI"
+      ],
+      "title": "EU_EMIRTypeI",
+      "description": " Denotes debt securities issued by the international organisations listed in Article 118 of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeJ"
+      ],
+      "title": "EU_EMIRTypeJ",
+      "description": " Denotes debt securities issued by third countries' governments or central banks."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeK"
+      ],
+      "title": "EU_EMIRTypeK",
+      "description": " Denotes debt securities issued by third countries' regional governments or local authorities that meet the requirements of (TypeD) and (TypeE)."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeL"
+      ],
+      "title": "EU_EMIRTypeL",
+      "description": " Denotes debt securities issued by third countries' regional governments or local authorities other than those referred to in (TypeD) and (TypeE)."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeM"
+      ],
+      "title": "EU_EMIRTypeM",
+      "description": " Denotes debt securities issued by credit institutions or investment firms including bonds referred to in Article 52(4) of Directive 2009/65/EC of the European Parliament and of the Council."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeN"
+      ],
+      "title": "EU_EMIRTypeN",
+      "description": " Denotes corporate bonds."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeO"
+      ],
+      "title": "EU_EMIRTypeO",
+      "description": " Denotes the most senior tranche of a securitisation, as defined in Article 4(61) of Regulation (EU) No 575/2013, that is not a re-securitisation as defined in Article 4(63) of that Regulation."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeP"
+      ],
+      "title": "EU_EMIRTypeP",
+      "description": " Denotes convertible bonds provided that they can be converted only into equities which are included in an index specified pursuant to point (a) of Article 197 (8) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeQ"
+      ],
+      "title": "EU_EMIRTypeQ",
+      "description": " Denotes equities included in an index specified pursuant to point (a) of Article 197(8) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "EU_EMIRTypeR"
+      ],
+      "title": "EU_EMIRTypeR",
+      "description": " Denotes shares or units in undertakings for collective investments in transferable securities (UCITS), provided that the conditions set out in Article 5 of EU Regulation 2016/2251 are met."
+    }
+  ]
+}

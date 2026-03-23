@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FroHistory",
+  "description": "FRO History",
+  "properties": {
+    "startDate": {
+      "description": "The date the Floating Rate Option was added to the 2006 Definitions or 2021 Floating Rate Matrix. (e.g. 2017/04/06)",
+      "type": "string"
+    },
+    "firstDefinedIn": {
+      "description": "The supplement or version the FRO was first added to the 2006 Definitions or 2021 Floating Rate Matrix. (e.g. S52)",
+      "$ref": "cdm-observable-asset-fro-ContractualDefinition.schema.json"
+    },
+    "updateDate": {
+      "description": "The date the Floating Rate Option was last updated in the 2006 Definitions or 2021 Floating Rate Matrix. (e.g. 2021/06/11)",
+      "type": "string"
+    },
+    "lastUpdatedIn": {
+      "description": "The supplement or version the FRO was last updated in the 2006 Definitions or 2021 Floating Rate Matrix. (e.g. FRO-M-V1)",
+      "$ref": "cdm-observable-asset-fro-ContractualDefinition.schema.json"
+    },
+    "endDate": {
+      "description": "The date the Floating Rate Option was removed from the 2006 Definitions or 2021 Floating Rate Matrix. (e.g. 2014/01/01)",
+      "type": "string"
+    }
+  }
+}

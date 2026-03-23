@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "PositionEventIntentEnum",
+  "enum": [
+    "CorporateActionAdjustment",
+    "Decrease",
+    "Increase",
+    "OptionExercise",
+    "PositionCreation",
+    "Transfer",
+    "Valuation"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CorporateActionAdjustment"
+      ],
+      "title": "CorporateActionAdjustment",
+      "description": "The intent is to take into effect the occurrence of a Corporate Action and the particular Corporate Action at stake shall be further specified in CorporateActionTypeEnum."
+    },
+    
+    {
+      "enum": [
+        "Decrease"
+      ],
+      "title": "Decrease",
+      "description": "The intent is to Decrease the quantity of the position."
+    },
+    
+    {
+      "enum": [
+        "Increase"
+      ],
+      "title": "Increase",
+      "description": "The intent is to Increase the quantity of the position."
+    },
+    
+    {
+      "enum": [
+        "OptionExercise"
+      ],
+      "title": "OptionExercise",
+      "description": "The intent is to Exercise a position or part of a position."
+    },
+    
+    {
+      "enum": [
+        "PositionCreation"
+      ],
+      "title": "PositionCreation",
+      "description": "The intent is to form a position from a fully formed contract."
+    },
+    
+    {
+      "enum": [
+        "Transfer"
+      ],
+      "title": "Transfer",
+      "description": "The intent is to transfer the position to another clearing member."
+    },
+    
+    {
+      "enum": [
+        "Valuation"
+      ],
+      "title": "Valuation",
+      "description": "The intent is to update the valuation of the position."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "FinalCalculationPeriodDateAdjustment",
+  "description": "A data to:  define business date convention adjustment to final payment period per leg.",
+  "properties": {
+    "relevantUnderlyingDateReference": {
+      "description": "Reference to the unadjusted cancellation effective dates.",
+      "$ref": "cdm-base-datetime-metafields-ReferenceWithMetaAdjustableOrRelativeDates.schema.json"
+    },
+    "swapStreamReference": {
+      "description": "Reference to the leg, where date adjustments may apply.",
+      "$ref": "cdm-product-asset-metafields-ReferenceWithMetaInterestRatePayout.schema.json"
+    },
+    "businessDayConvention": {
+      "description": "Override business date convention. This takes precedence over leg level information.",
+      "$ref": "cdm-base-datetime-BusinessDayConventionEnum.schema.json"
+    }
+  },
+  "required": [
+    "relevantUnderlyingDateReference",
+    "swapStreamReference",
+    "businessDayConvention"
+  ]
+}

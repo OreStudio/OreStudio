@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "object",
+  "title": "Clause",
+  "description": "A type for documenting additional clause that cannot yet be represented with the model and yet needed for a digital representation of the agreement.",
+  "properties": {
+    "identifier": {
+      "description": "The  name or identifier associated to this clause.",
+      "type": "string"
+    },
+    "terms": {
+      "description": "Content of this bespoke clause.",
+      "type": "string"
+    },
+    "subcomponents": {
+      "description": "Additional hierarchical components of the clause if relevant.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-transaction-Clause.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

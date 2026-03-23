@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "string",
+  "title": "FloatingRateIndexStyleEnum",
+  "description": "Second level ISDA FRO category.",
+  "enum": [
+    "Average FRO",
+    "Compounded FRO",
+    "Compounded Index",
+    "Index",
+    "Other",
+    "Overnight Rate",
+    "Published Average Rate",
+    "Specified Formula",
+    "Swap Rate",
+    "Term Rate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Average FRO"
+      ],
+      "title": "AverageFRO",
+      "description": "An ISDA-defined calculated rate done using arithmetic averaging."
+    },
+    
+    {
+      "enum": [
+        "Compounded FRO"
+      ],
+      "title": "CompoundedFRO",
+      "description": "An ISDA-defined calculated rate done using arithmetic averaging."
+    },
+    
+    {
+      "enum": [
+        "Compounded Index"
+      ],
+      "title": "CompoundedIndex",
+      "description": "A published index calculated using compounding."
+    },
+    
+    {
+      "enum": [
+        "Index"
+      ],
+      "title": "Index",
+      "description": "A published index using a methodology defined by the publisher, e.g. S&P 500."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other"
+    },
+    
+    {
+      "enum": [
+        "Overnight Rate"
+      ],
+      "title": "Overnight"
+    },
+    
+    {
+      "enum": [
+        "Published Average Rate"
+      ],
+      "title": "PublishedAverage",
+      "description": " A published rate computed using an averaging methodology."
+    },
+    
+    {
+      "enum": [
+        "Specified Formula"
+      ],
+      "title": "SpecifiedFormula"
+    },
+    
+    {
+      "enum": [
+        "Swap Rate"
+      ],
+      "title": "SwapRate",
+      "description": "A rate representing the market rate for swaps of a given maturity."
+    },
+    
+    {
+      "enum": [
+        "Term Rate"
+      ],
+      "title": "TermRate",
+      "description": "A rate specified over a given term, such as a libor-type rate."
+    }
+  ]
+}

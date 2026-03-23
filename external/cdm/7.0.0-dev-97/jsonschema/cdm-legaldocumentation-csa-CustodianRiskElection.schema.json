@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CustodianRiskElection",
+  "description": "A class to specify the Custodian Risk.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "isSpecified": {
+      "description": "The qualification as to whether the risk is deemed as Specified.",
+      "type": "boolean"
+    },
+    "qualification": {
+      "description": "The Custodian Risk or Collateral Manager Risk qualification.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isSpecified"
+  ]
+}

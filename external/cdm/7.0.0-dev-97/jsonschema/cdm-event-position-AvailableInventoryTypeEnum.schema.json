@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "string",
+  "title": "AvailableInventoryTypeEnum",
+  "description": "Enumeration to describe the type of AvailableInventory",
+  "enum": [
+    "AvailableToLend",
+    "RequestToBorrow"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AvailableToLend"
+      ],
+      "title": "AvailableToLend",
+      "description": "Where a lender is broadcasting the securities that they have available to lend"
+    },
+    
+    {
+      "enum": [
+        "RequestToBorrow"
+      ],
+      "title": "RequestToBorrow",
+      "description": "Where a party is asking a lender if they have specific securities available for them to borrow"
+    }
+  ]
+}

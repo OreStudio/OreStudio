@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "DividendPayoutRatio",
+  "description": "A class describing the dividend payout ratio associated with an equity underlier. In certain cases the actual ratio is not known on trade inception, and only general conditions are then specified.",
+  "properties": {
+    "totalRatio": {
+      "description": "Specifies the total actual dividend payout ratio associated with the equity underlier. A ratio of 90% should be expressed at 0.90.",
+      "type": "number"
+    },
+    "cashRatio": {
+      "description": "Specifies the cash actual dividend payout ratio associated with the equity underlier. A ratio of 90% should be expressed at 0.90.",
+      "type": "number"
+    },
+    "nonCashRatio": {
+      "description": "Specifies the non cash actual dividend payout ratio associated with the equity underlier. A ratio of 90% should be expressed at 0.90.",
+      "type": "number"
+    },
+    "basketConstituent": {
+      "description": "In the case of a basket underlier, specifies to which component of the basket this particular set of dividend payout ratios correspond.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaBasketConstituent.schema.json"
+    }
+  },
+  "required": [
+    "totalRatio"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "MoneyBound",
+  "description": "The money bound is defined as a money amount and whether the bound is inclusive.",
+  "properties": {
+    "money": {
+      "description": "The money amount to be used as the bound, e.g. 1,000 USD.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "inclusive": {
+      "description": "Whether the money amount bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "money",
+    "inclusive"
+  ]
+}

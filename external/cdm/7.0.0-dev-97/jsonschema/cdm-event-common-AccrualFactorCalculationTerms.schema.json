@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "AccrualFactorCalculationTerms",
+  "description": "Describes the input terms involved in the calculation of the accrual factor. Optionnally, long and short stub interpolation rates can be specified.",
+  "properties": {
+    "tenorTillMaturity": {
+      "description": "The duration between last fixing date and the payment date of accruals, calculated in accordance with the appropriate DayCountFraction.",
+      "type": "number"
+    },
+    "dayCountFraction": {
+      "description": "The enumerated values to specify the day count fraction.",
+      "$ref": "cdm-base-datetime-daycount-DayCountFractionEnum.schema.json"
+    },
+    "interpolationTerms": {
+      "description": "Describes the rate, tenor, period duration for the short and long stubs, when the accrualRate optionnaly results from an interpolation method.",
+      "$ref": "cdm-product-asset-StubValue.schema.json"
+    }
+  },
+  "required": [
+    "tenorTillMaturity",
+    "dayCountFraction"
+  ]
+}

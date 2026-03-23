@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "InterestAdjustmentPeriodicity",
+  "description": "A class to specify the Interest Adjustment periodicity.",
+  "properties": {
+    "standardElection": {
+      "description": "The Interest Adjustment periodicity when specified through a standardized election.",
+      "$ref": "cdm-legaldocumentation-csa-InterestAdjustmentPeriodicityEnum.schema.json"
+    },
+    "customElection": {
+      "description": "The Interest Adjustment periodicity when specified through a custom election.",
+      "type": "string"
+    }
+  }
+}

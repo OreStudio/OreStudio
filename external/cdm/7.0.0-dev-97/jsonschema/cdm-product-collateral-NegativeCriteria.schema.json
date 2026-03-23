@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "NegativeCriteria",
+  "description": "Used to apply a NOT logic condition to a single Collateral Criteria.",
+  "properties": {
+    "negativeCriteria": {
+      "$ref": "cdm-product-collateral-CollateralCriteria.schema.json"
+    }
+  },
+  "required": [
+    "negativeCriteria"
+  ]
+}

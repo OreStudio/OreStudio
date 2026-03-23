@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportAgreementVariationMarginElections",
+  "description": "The set of elections which specify a Variation Margin Credit Support Annex or Deed.",
+  "properties": {
+    "baseAndEligibleCurrency": {
+      "description": "The base and eligible currency(ies) for the document as specified by the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-BaseAndEligibleCurrency.schema.json"
+    },
+    "conditionsPrecedent": {
+      "description": "The set of elections that may overwrite the default Condition Precedent provision, and the set of provisions that are deemed Access Condition.",
+      "$ref": "cdm-legaldocumentation-csa-ConditionsPrecedent.schema.json"
+    },
+    "substitution": {
+      "description": "The conditions under which the Security Provider can substitute posted collateral.",
+      "$ref": "cdm-legaldocumentation-csa-Substitution.schema.json"
+    },
+    "disputeResolution": {
+      "description": "The election terms under which a party disputes (i) the Calculation Agents calculation of a Delivery Amount or a Return Amount, or (ii) the Value of any Transfer of Eligible Credit Support or Posted Credit Support.",
+      "$ref": "cdm-legaldocumentation-csa-DisputeResolution.schema.json"
+    },
+    "holdingAndUsingPostedCollateral": {
+      "description": "The elections for the holding and using of posted collateral by the respective parties to the Credit Support Annex for Variation Margin.",
+      "$ref": "cdm-legaldocumentation-csa-HoldingAndUsingPostedCollateral.schema.json"
+    },
+    "distributionAndInterestPayment": {
+      "description": "The Distributions and Interest Payment terms specified as part of the agreement.",
+      "$ref": "cdm-product-collateral-DistributionAndInterestPayment.schema.json"
+    },
+    "otherEligibleAndPostedSupport": {
+      "description": "The Other Eligible Support elections associated with margin agreements.",
+      "$ref": "cdm-legaldocumentation-csa-OtherEligibleAndPostedSupport.schema.json"
+    },
+    "demandsAndNotices": {
+      "description": "The optional specification of address where the demands, specifications and notices will be communicated to for each of the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-DemandsAndNotices.schema.json"
+    },
+    "additionalRepresentations": {
+      "description": "The specification Additional Representations that may be applicable to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-AdditionalRepresentations.schema.json"
+    },
+    "masterAgreementDatedAsOfDate": {
+      "description": "Defines the dates agreed by the parties as the date of the Credit Support Annex or Credit Support Deed.",
+      "$ref": "cdm-legaldocumentation-csa-MasterAgreementDatedAsOfDate.schema.json"
+    },
+    "finalReturns": {
+      "description": "A clause providing that final return collateral is to be provided without consideration of any Minimum Transfer Amount and collateral haircut.",
+      "$ref": "cdm-legaldocumentation-csa-FinalReturns.schema.json"
+    },
+    "fxHaircutCurrency": {
+      "description": "The reference currency for the purpose of specifying the FX Haircut relating to a posting obligation, as being either the Termination Currency or an FX Designated Currency.",
+      "$ref": "cdm-legaldocumentation-csa-FxHaircutCurrency.schema.json"
+    },
+    "exchangeDate": {
+      "description": "The bespoke exchange date terms that might be specified by the parties to the agreement.",
+      "type": "string"
+    },
+    "coveredTransactions": {
+      "description": "The specification of transactions covered by the terms of the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CoveredTransactions.schema.json"
+    },
+    "creditSupportOffsets": {
+      "description": "The specification of whether the standard Credit Support Offset provisions are applicable (true) or not applicable (false).",
+      "type": "boolean"
+    },
+    "custodyArrangements": {
+      "description": "The Custodian and Segregated Account details in respect of each party to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CustodyArrangements.schema.json"
+    },
+    "addressesForTransfer": {
+      "description": "The optional specification of address for transfer as specified by the respective parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-AddressesForTransfer.schema.json"
+    },
+    "otherAgreements": {
+      "description": "The bespoke definition of other agreement terms as specified by the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-OtherAgreements.schema.json"
+    },
+    "securityInterestForObligations": {
+      "description": "The party to whom obligations under the Master Agreement are owed and secured by the credit support arrangements. Applicable to 1994 NY CSA, 1995 English Law CSD and 2016 New York Law VM CSA.",
+      "$ref": "cdm-legaldocumentation-csa-SecurityInterestForObligations.schema.json"
+    },
+    "creditSupportObligations": {
+      "description": "The Credit Support Obligations applicable to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportObligationsVariationMargin.schema.json"
+    },
+    "calculationAndTiming": {
+      "description": "The set of elections for determining Valuation and Timing terms specific to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CalculationAndTimingVariationMargin.schema.json"
+    }
+  },
+  "required": [
+    "coveredTransactions",
+    "creditSupportOffsets",
+    "securityInterestForObligations",
+    "creditSupportObligations",
+    "calculationAndTiming"
+  ]
+}

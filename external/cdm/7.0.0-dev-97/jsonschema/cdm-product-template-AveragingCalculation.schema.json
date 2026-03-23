@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "AveragingCalculation",
+  "description": "Defines parameters for use in cases when a valuation or other term is based on an average of market observations.",
+  "properties": {
+    "averagingMethod": {
+      "description": "Specifies enumerations for the type of averaging calculation.",
+      "$ref": "cdm-base-math-AveragingCalculationMethod.schema.json"
+    },
+    "precision": {
+      "description": "Rounding applied to the average calculation. ",
+      "$ref": "cdm-base-math-Rounding.schema.json"
+    }
+  },
+  "required": [
+    "averagingMethod",
+    "precision"
+  ]
+}

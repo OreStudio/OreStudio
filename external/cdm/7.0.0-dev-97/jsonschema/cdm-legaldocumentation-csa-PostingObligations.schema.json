@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "PostingObligations",
+  "description": "A class to specify the collateral posting obligations of the security provider or security providers as specified in the corresponding agreement.",
+  "properties": {
+    "securityProvider": {
+      "description": "The security provider party(ies) to which the posting obligations apply to, which can be either one of the parties to the legal agreement, or both of those.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 2
+    },
+    "partyElection": {
+      "description": "The specification of the collateral posting obligations for the security provider party(ies).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-PostingObligationsElection.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 2
+    }
+  }
+}

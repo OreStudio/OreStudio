@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "ShapingProvision",
+  "description": "Defines the applicable settlement limits that may require a settlement to be 'shaped', i.e. broken-down into smaller amounts.",
+  "properties": {
+    "shapeSchedule": {
+      "description": "Defines applicable settlement limits in each currency.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-Money.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

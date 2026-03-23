@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "InventoryRecord",
+  "description": "An individual piece of inventory. This represents a single security.",
+  "properties": {
+    "identifer": {
+      "description": "Unique identifier for this record. This can be used to uniquely identify a specific piece of inventory.",
+      "$ref": "cdm-base-staticdata-identifier-AssignedIdentifier.schema.json"
+    },
+    "security": {
+      "description": "The security details.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    }
+  },
+  "required": [
+    "identifer",
+    "security"
+  ]
+}

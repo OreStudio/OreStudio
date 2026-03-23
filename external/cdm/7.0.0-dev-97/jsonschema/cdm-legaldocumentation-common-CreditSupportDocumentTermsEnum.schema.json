@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "CreditSupportDocumentTermsEnum",
+  "description": "The enumerated values to specify the Credit Support Document Terms",
+  "enum": [
+    "Any",
+    "None",
+    "Specified"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Any"
+      ],
+      "title": "Any",
+      "description": "Any guarantee, collateral arrangement and/or other agreement or arrangement which provides for credit support with respect to the party’s obligations under this Agreement."
+    },
+    
+    {
+      "enum": [
+        "None"
+      ],
+      "title": "None",
+      "description": "No Credit Support Document is specified."
+    },
+    
+    {
+      "enum": [
+        "Specified"
+      ],
+      "title": "Specified",
+      "description": "A specified Credit Support Document is provided"
+    }
+  ]
+}

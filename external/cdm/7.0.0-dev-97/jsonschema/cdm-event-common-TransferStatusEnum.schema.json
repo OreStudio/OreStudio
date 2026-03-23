@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "TransferStatusEnum",
+  "description": "The enumeration values to specify the transfer status.",
+  "enum": [
+    "Disputed",
+    "Instructed",
+    "Netted",
+    "Pending",
+    "Settled"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Disputed"
+      ],
+      "title": "Disputed",
+      "description": "The transfer is disputed."
+    },
+    
+    {
+      "enum": [
+        "Instructed"
+      ],
+      "title": "Instructed",
+      "description": "The transfer has been instructed."
+    },
+    
+    {
+      "enum": [
+        "Netted"
+      ],
+      "title": "Netted",
+      "description": "The transfer has been netted into a separate Transfer."
+    },
+    
+    {
+      "enum": [
+        "Pending"
+      ],
+      "title": "Pending",
+      "description": "The transfer is pending instruction."
+    },
+    
+    {
+      "enum": [
+        "Settled"
+      ],
+      "title": "Settled",
+      "description": "The transfer has been settled."
+    }
+  ]
+}

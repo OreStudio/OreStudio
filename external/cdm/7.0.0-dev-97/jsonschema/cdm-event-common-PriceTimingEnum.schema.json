@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "PriceTimingEnum",
+  "enum": [
+    "ClosingPrice",
+    "OpeningPrice"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ClosingPrice"
+      ],
+      "title": "ClosingPrice",
+      "description": "The last price anyone paid for a share of a product during the business hours of the exchange where the product is traded on a business day."
+    },
+    
+    {
+      "enum": [
+        "OpeningPrice"
+      ],
+      "title": "OpeningPrice",
+      "description": "The first price anyone paid for a share of a product during the business hours of the exchange where the product is traded on a business day."
+    }
+  ]
+}

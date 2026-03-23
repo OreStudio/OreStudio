@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "Product",
+  "description": "Enables either a TransferableProduct or a NonTransferableProduct to be used in an underlier.",
+  "properties": {
+    "TransferableProduct": {
+      "description": "A TransferableProduct is a type of financial product which can be held or transferred, represented as an Asset with the addition of specific EconomicTerms.",
+      "$ref": "cdm-product-template-TransferableProduct.schema.json"
+    },
+    "NonTransferableProduct": {
+      "description": "The non-transferable product data type represents a product that can be traded (as part of a TradableProduct) but cannot be transferred to others.",
+      "$ref": "cdm-product-template-NonTransferableProduct.schema.json"
+    }
+  }
+}

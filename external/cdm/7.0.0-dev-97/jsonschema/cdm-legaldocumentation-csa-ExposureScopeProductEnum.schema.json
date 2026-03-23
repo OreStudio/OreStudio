@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ExposureScopeProductEnum",
+  "description": "Description of the relevant derivative transactions excluded from the calculation of exposure.",
+  "enum": [
+    "Currency Option Transactions",
+    "FX Transaction with Settlement Date",
+    "FX Transactions"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Currency Option Transactions"
+      ],
+      "title": "CurrencyOptionTransactions",
+      "description": "Currency Option Transactions."
+    },
+    
+    {
+      "enum": [
+        "FX Transaction with Settlement Date"
+      ],
+      "title": "FXSettlementDate",
+      "description": "FX Transactions with Settlement date."
+    },
+    
+    {
+      "enum": [
+        "FX Transactions"
+      ],
+      "title": "FXTransactions",
+      "description": "FX Transactions."
+    }
+  ]
+}

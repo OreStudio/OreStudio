@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.codelist",
+  "type": "object",
+  "title": "CodeListIdentification",
+  "description": "A type to identify the version of a codelist",
+  "properties": {
+    "description": {
+      "description": "A description  of the code list, e.g. A list of codes identifying business centers",
+      "type": "string"
+    },
+    "publicationDate": {
+      "description": "The most recent date the code list was published, e.g. 2021-10-05",
+      "type": "string"
+    },
+    "shortName": {
+      "description": "A short name (without whitespace) for the code list, e.g. businessCenterScheme",
+      "type": "string"
+    },
+    "version": {
+      "description": "The the most recent version of the codelist, eg. 9-1",
+      "type": "string"
+    },
+    "codeShortId": {
+      "description": "The name of the code list, e.g. business-center",
+      "type": "string"
+    },
+    "canonicalUri": {
+      "description": "Canonical URI which uniquely identifies all versions (collectively) of the referenced code list. Must be an absolute URI. Must not be used as a de facto location URI.",
+      "type": "string"
+    },
+    "canonicalVersionUri": {
+      "description": "Canonical URI which uniquely identifies a specific version of the referenced code list. Must be an absolute URI. Must not be used as a de facto location URI.",
+      "type": "string"
+    },
+    "locationUri": {
+      "description": "Suggested retrieval location for this version, in genericode format. An application must signal an error to the user if a document retrieved using a LocationUri is not in genericode format.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "shortName",
+    "version",
+    "canonicalUri"
+  ]
+}

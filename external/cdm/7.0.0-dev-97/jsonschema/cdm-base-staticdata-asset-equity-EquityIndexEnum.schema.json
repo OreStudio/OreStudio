@@ -1,0 +1,3088 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.equity",
+  "type": "string",
+  "title": "EquityIndexEnum",
+  "description": "The enumerated values to specify an Equity index.",
+  "enum": [
+    "AEX ALL-SHARE",
+    "AEX",
+    "ALL ORDINARIES",
+    "FTSE ITALIA STAR",
+    "AMSTERDAM MIDKAP",
+    "S&P/BYMA ARGENTINA GENERAL",
+    "S&P MERVAL",
+    "AMSTERDAM SMALL CAP",
+    "S&P/ASX MIDCAP 50 INDUSTRIALS",
+    "RSF GENERAL RUSSIA",
+    "RSF EASTERN EUROPE MATERIALS (RUR)",
+    "S&P/ASX 100",
+    "S&P/ASX 200",
+    "S&P/ASX 300",
+    "S&P/ASX 50",
+    "S&P/ASX MIDCAP 50",
+    "ATHEX COMPOSITE",
+    "AUSTRIAN TRADED ATX",
+    "ATX PRIME",
+    "MSCI AUSTRIA IMI",
+    "WIENER BORSE",
+    "BEL 20",
+    "BEL ALL-SHARE",
+    "BEL MID",
+    "BELGIUM-DS MARKET",
+    "FTSE BURSA MALAYSIA EMAS SHARIAH",
+    "BEL SMALL",
+    "BGBX40",
+    "BG REIT",
+    "FTSE BURSA MALAYSIA HIJRAH SHARIAH",
+    "BNY MELLON ADR",
+    "BNY MELLON BRIC SELECT ADR",
+    "S&P EMERGING BMI",
+    "S&P FRANCE BMI",
+    "SET50",
+    "SET",
+    "S&P BSE 500",
+    "IBOVESPA",
+    "S&P BSE 100",
+    "S&P BSE 200",
+    "SOFIX",
+    "BUX",
+    "BG TR30",
+    "BUMIX",
+    "SHANGHAI 180 A SHARE",
+    "CAC MID & SMALL",
+    "CAC NEXT 20",
+    "CAC 40",
+    "CAC LARGE 60",
+    "CDAX PERFORMANCE",
+    "CECE COMPOSITE OTOB",
+    "SHANGHAI A SHARE",
+    "SHANGHAI B SHARE",
+    "SHANGHAI G SHARE",
+    "SHENZEN A SHARE",
+    "SHENZEN B SHARE",
+    "S&P/CLX INTER-10",
+    "CNX 100",
+    "CSI 500",
+    "CAC SMALL",
+    "S&P/CLX IGPA",
+    "S&P IPSA",
+    "S&P/TSX SMALLCAP",
+    "S&P/TSX COMPLETION",
+    "SHANGHAI COMPOSITE",
+    "SHENZEN COMPOSITE",
+    "CROBEX",
+    "CZECH TRADED",
+    "DAX",
+    "MDAX",
+    "KFMX",
+    "EURO STOXX 50",
+    "EURO STOXX LARGE",
+    "EURO STOXX",
+    "STOXX EUROPE 600",
+    "STOXX EUROPE 50",
+    "STOXX EUROPE LARGE 200",
+    "DOW JONES ITALY TITANS 30",
+    "DOW JONES BASIC RESOURCES TITANS 30",
+    "DOW JONES SECTOR TITANS COMPOSITE",
+    "DOW JONES COMPOSITE AVERAGE",
+    "DOW JONES INDUSTRIAL AVERAGE",
+    "DOW JONES TRANSPORTATION AVERAGE",
+    "DOW JONES UTILITY AVERAGE",
+    "HERMES FINANCIAL",
+    "FTSEUROFIRST 300",
+    "EURONEXT 100",
+    "FTSE EUROTOP 100",
+    "FTSE ALL WORLD",
+    "CAC MID 60",
+    "CAC ALL-SHARE",
+    "FTSE CHINA A50",
+    "FTSE ITALIA SMALL CAP",
+    "FTSE/ATHEX LARGE CAP",
+    "FTSE 100",
+    "FTSE 350",
+    "FTSE AIM ALL-SHARE",
+    "FTSE EURO 100",
+    "FTSE ITALIA ALL-SHARE",
+    "FTSE ITALIA MID CAP",
+    "FTSE/JSE SHARIAH TOP 40",
+    "FTSE/JSE SHARIAH ALL SHARE",
+    "FTSE/ATHEX MID CAP",
+    "FTSE TECHMARK FOCUS",
+    "FTSE 250",
+    "FTSE ALL-SHARE",
+    "FTSE FLEDGLING",
+    "FTSE SMALLCAP",
+    "OMX STOCKHOLM ALL-SHARE",
+    "FTSE GWA SHARIAH DEVELOPED",
+    "HDAX",
+    "OMX HELSINKI 25",
+    "OMX HELSINKI",
+    "OMX HELSINKI CAP",
+    "HANG SENG CHINA-AFFILIATED CORPORATIONS",
+    "HANG SENG CHINA ENTERPRISES",
+    "HANG SENG COMPOSITE",
+    "HANG SENG",
+    "HANG SENG CHINA (HONG KONG-LISTED) 100",
+    "HANG SENG REIT",
+    "HTX OTOB",
+    "IBEX 35",
+    "IBEX MEDIUM CAP",
+    "IBEX SMALL CAP",
+    "OMX ICELAND MID CAP",
+    "OMX ICELAND SMALL CAP",
+    "OMX ICELAND ALL-SHARE",
+    "IMC 30",
+    "S&P/BMV INMEX",
+    "NIFTY 50",
+    "S&P BSE SENSEX",
+    "S&P/BMV IPC",
+    "S&P/BMV IPC MIDCAP",
+    "ISEQ OVERALL",
+    "ISEQ 20",
+    "TA-125",
+    "MSCI ITALY SMALL CAP INDEX",
+    "MSCI JAPAN IMI",
+    "IDX COMPOSITE",
+    "FTSE/JSE INDUSTRIAL 25",
+    "FTSE/JSE TOP 40",
+    "FTSE/JSE ALL SHARE",
+    "TOPIX 500",
+    "OMX COPENHAGEN",
+    "OMX COPENHAGEN BENCHMARK",
+    "OMX COPENHAGEN 20",
+    "FTSE BURSA MALAYSIA KLCI",
+    "KOSPI 100",
+    "KOSPI 50",
+    "KOSPI 200",
+    "KOSPI LARGECAP",
+    "KOSPI MIDCAP",
+    "KOSPI SMALLCAP",
+    "KRX 100",
+    "KOSPI",
+    "LQ45",
+    "LUXX",
+    "MSCI AUSTRALIA IMI",
+    "MSCI AUSTRALIA LARGE CAP",
+    "MSCI AUSTRALIA MID CAP",
+    "MSCI CHINA A50",
+    "MSCI EUROPE SMID CAP",
+    "S&P/BMV IPC COMPMX",
+    "MSCI HONG KONG IMI",
+    "MOEX RUSSIA",
+    "COMIT GLOBALE MILAN",
+    "MSCI IRELAND IMI",
+    "MSCI NEW ZEALAND IMI",
+    "MSCI POLAND LARGE CAP",
+    "MSCI POLAND MID CAP",
+    "MSCI ACWI EX JAPAN",
+    "MSCI ACWI ESG SCREENED",
+    "MSCI ACWI IMI",
+    "MSCI ACWI",
+    "MSCI AC ASIA PACIFIC ESG LEADERS",
+    "MSCI AUSTRALIA",
+    "MSCI BELGIUM",
+    "MSCI BRAZIL",
+    "MSCI CHINA",
+    "MSCI EUROPE",
+    "MSCI EMERGING MARKETS",
+    "MSCI JAPAN",
+    "MSCI PAN EURO",
+    "MSCI UK",
+    "MSCI USA",
+    "MSCI WORLD",
+    "MSCI CANADA",
+    "MSCI CZECH REPUBLIC LARGE CAP",
+    "MSCI CZECH REPUBLIC MID CAP",
+    "MSCI SOUTH AFRICA",
+    "MSCI DENMARK IMI",
+    "MSCI WORLD ESG SCREENED",
+    "MSCI EAFE",
+    "MSCI EUROPE ESG LEADERS",
+    "MSCI EM ASIA ESG LEADERS",
+    "MSCI AC EUROPE AND MIDDLE EAST",
+    "MSCI EURO",
+    "MSCI EUROPE SMALL CAP",
+    "MSCI FINLAND LARGE CAP",
+    "MSCI FINLAND MID CAP",
+    "MSCI FRANCE IMI",
+    "MSCI FRANCE LARGE CAP",
+    "MSCI EAFE IMI",
+    "MSCI INDIA",
+    "MSCI ITALY",
+    "MSCI ITALY LARGE CAP",
+    "MSCI ITALY MID CAP",
+    "MSCI KOREA",
+    "MSCI WORLD LOW CARBON SRI LEADERS",
+    "MSCI MEXICO",
+    "MSCI NETHERLANDS MID CAP",
+    "MSCI NETHERLANDS",
+    "MSCI NORWAY",
+    "MSCI PORTUGAL IMI",
+    "MSCI SPAIN IMI",
+    "MSCI SINGAPORE",
+    "MSCI SWITZERLAND LARGE CAP",
+    "MSCI TAIWAN",
+    "MSCI THAILAND",
+    "MSCI EUROPE ESG SCREENED",
+    "MSCI USA ESG LEADERS",
+    "MSCI USA ESG SCREENED",
+    "MSCI WORLD EX JAPAN (AKA KOKUSAI)",
+    "MSCI SWEDEN LARGE CAP",
+    "MSCI WORLD ESG LEADERS",
+    "MSCI WORLD SMALL CAP ESG SCREENED",
+    "MWIG40",
+    "MSCI WORLD SMID CAP",
+    "NASDAQ COMPOSITE",
+    "NASDAQ-100",
+    "NEXT 150",
+    "NIKKEI 500",
+    "NIKKEI 225",
+    "NIKKEI 300",
+    "JPX-NIKKEI 400",
+    "OMX HELSINKI TECHNOLOGY",
+    "NYSE COMPOSITE",
+    "S&P/NZX 50",
+    "S&P/NZX ALL CAPITAL",
+    "S&P/NZX 10",
+    "S&P/NZX MIDCAP",
+    "S&P/NZX SMALLCAP",
+    "OSLO BORS ALL-SHARE",
+    "OBX",
+    "OSLO BORS BENCHMARK",
+    "OSLO BORS SMALL CAP",
+    "OMX HELSINKI MID CAP",
+    "OMX HELSINKI SMALL CAP",
+    "OMX STOCKHOLM 30",
+    "OMX AFFARSVARLDENS GENERAL",
+    "OMX COPENHAGEN MID CAP",
+    "OMX COPENHAGEN SMALL CAP",
+    "OSLO BORS MUTUAL FUND",
+    "STOXX ASIA/PACIFIC 600",
+    "BVL GENERAL LISBON",
+    "S&P/BVL PERU GENERAL",
+    "PX",
+    "PRIME ALL SHARE",
+    "PSEI",
+    "PSI-20",
+    "PSI ALL-SHARE",
+    "WIG20",
+    "WIG",
+    "RTS",
+    "RUSSELL 1000",
+    "RUSSELL 2000",
+    "RUSSELL 2500",
+    "RUSSELL 3000",
+    "OTOB RTX (USD)",
+    "CSI 300",
+    "SBF 120",
+    "CAC ALL-TRADABLE",
+    "SBI TOP",
+    "SDAX",
+    "SET100",
+    "KOSDAQ",
+    "SLI SWISS LEADER",
+    "SMI",
+    "SMI EXPANDED",
+    "SMI MID",
+    "FTSE ST ALL SHARE",
+    "STRAITS TIMES",
+    "S&P/TSX PREFERRED SHARE",
+    "OMX STOCKHOLM BENCHMARK",
+    "S&P 100",
+    "S&P COMPOSITE 1500",
+    "S&P 500",
+    "S&P/TSX 60",
+    "S&P SMALLCAP 600",
+    "S&P ADR",
+    "IGBM",
+    "S&P/ASX SMALL ORDINARIES",
+    "S&P 500 FINANCIAL",
+    "S&P GLOBAL 1200",
+    "S&P GLOBAL 1200 ENERGY",
+    "S&P/HKEX GEM",
+    "SWISS PERFORMANCE",
+    "S&P 500 INDUSTRIALS",
+    "S&P/HKEX LARGE CAP",
+    "S&P LATIN AMERICA 40",
+    "FTSE MIB",
+    "S&P MIDCAP 400",
+    "STOXX EUROPE 600 BANKS",
+    "MSCI SWEDEN IMI",
+    "SWIG80",
+    "MSCI SWITZERLAND IMI",
+    "STOXX GLOBAL 1800",
+    "FTSE TWSE TAIWAN 50",
+    "TAIWAN SE OTC",
+    "TOPIX CORE 30",
+    "TADAWUL ALL SHARE",
+    "TECDAX",
+    "TA-35",
+    "BIST 30",
+    "TOKYO STOCK EXCHANGE MARKET 250",
+    "TOPIX MID 400",
+    "TOPIX",
+    "TOPIX 100",
+    "TOPIX LARGE 70",
+    "TOPIX SMALL",
+    "BIST 100",
+    "TOPIX 1000",
+    "S&P/TSX COMPOSITE",
+    "EX-TSE FIRST SECTION",
+    "TSE GROWTH MARKET CORE",
+    "TSE GROWTH MARKET",
+    "TSE PRIME MARKET COMPOSITE",
+    "TSE PRIME MARKET",
+    "TSE REIT",
+    "TSE STANDARD MARKET TOP 20",
+    "TSE STANDARD MARKET",
+    "S&P/TSX VENTURE COMPOSITE",
+    "TAIEX",
+    "S&P/TOPIX 150",
+    "MSCI UK IMI",
+    "MSCI UK SMALL CAP",
+    "VENEZUELA GENERAL",
+    "WORLD FEDERATION OF EXCHANGES",
+    "WIG30",
+    "GERMANY X-DAX",
+    "S&P/ASX 20",
+    "SHANGHAI SHENZEN CSI 300"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AEX ALL-SHARE"
+      ],
+      "title": "AASHR",
+      "description": "AMSTERDAM SE ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "AEX"
+      ],
+      "title": "AEX",
+      "description": "AEX INDEX (AEX)"
+    },
+    
+    {
+      "enum": [
+        "ALL ORDINARIES"
+      ],
+      "title": "ALLORD",
+      "description": "ALL ORDINARIES INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE ITALIA STAR"
+      ],
+      "title": "ALLSTR",
+      "description": "FTSE ITALIA STAR INDEX"
+    },
+    
+    {
+      "enum": [
+        "AMSTERDAM MIDKAP"
+      ],
+      "title": "AMSMID",
+      "description": "AMSTERDAM MIDKAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/BYMA ARGENTINA GENERAL"
+      ],
+      "title": "ARBG",
+      "description": "ARGENTINA BOLSA-G (NEW) INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P MERVAL"
+      ],
+      "title": "ARGMI",
+      "description": "ARGENTINA MERVAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "AMSTERDAM SMALL CAP"
+      ],
+      "title": "ASCIX",
+      "description": "AMSTERDAM SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX MIDCAP 50 INDUSTRIALS"
+      ],
+      "title": "ASPA",
+      "description": "S&P/ASX MIDCAP 50 INDUSTRIALS INDEX"
+    },
+    
+    {
+      "enum": [
+        "RSF GENERAL RUSSIA"
+      ],
+      "title": "ASPGEN",
+      "description": "RSF GENERAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "RSF EASTERN EUROPE MATERIALS (RUR)"
+      ],
+      "title": "ASPMTI",
+      "description": "RSF EE MT (RUR) INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX 100"
+      ],
+      "title": "ASX100",
+      "description": "S&P/ASX 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX 200"
+      ],
+      "title": "ASX200",
+      "description": "S&P/ASX 200 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX 300"
+      ],
+      "title": "ASX300",
+      "description": "S&P/ASX 300 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX 50"
+      ],
+      "title": "ASX50",
+      "description": "S&P/ASX 50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX MIDCAP 50"
+      ],
+      "title": "ASXM50",
+      "description": "S&P/ASX MIDCAP 50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "ATHEX COMPOSITE"
+      ],
+      "title": "ATHEX",
+      "description": "ATHEX COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "AUSTRIAN TRADED ATX"
+      ],
+      "title": "ATX",
+      "description": "AUSTRIAN TRADED INDEX"
+    },
+    
+    {
+      "enum": [
+        "ATX PRIME"
+      ],
+      "title": "ATX50",
+      "description": "ATX PRIME INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI AUSTRIA IMI"
+      ],
+      "title": "AUSIMI",
+      "description": "MSCI AUSTRIA IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "WIENER BORSE"
+      ],
+      "title": "AVSE",
+      "description": "WIENER BORSE INDEX"
+    },
+    
+    {
+      "enum": [
+        "BEL 20"
+      ],
+      "title": "BEL20",
+      "description": "BEL 20 INDEX"
+    },
+    
+    {
+      "enum": [
+        "BEL ALL-SHARE"
+      ],
+      "title": "BELAS",
+      "description": "BEL ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "BEL MID"
+      ],
+      "title": "BELMD",
+      "description": "BEL MID INDEX"
+    },
+    
+    {
+      "enum": [
+        "BELGIUM-DS MARKET"
+      ],
+      "title": "BELSM",
+      "description": "BELGIUM-DS MARKET INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE BURSA MALAYSIA EMAS SHARIAH"
+      ],
+      "title": "BEMAS",
+      "description": "FTSE BURSA MALAYSIA EMAS SHARIAH INDEX"
+    },
+    
+    {
+      "enum": [
+        "BEL SMALL"
+      ],
+      "title": "BGBEL",
+      "description": "BEL SMALL INDEX"
+    },
+    
+    {
+      "enum": [
+        "BGBX40"
+      ],
+      "title": "BGBX40",
+      "description": "BGBX40 INDEX"
+    },
+    
+    {
+      "enum": [
+        "BG REIT"
+      ],
+      "title": "BGREIT",
+      "description": "BG REIT INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE BURSA MALAYSIA HIJRAH SHARIAH"
+      ],
+      "title": "BHSH",
+      "description": "FTSE BURSA MALAYSIA HIJRAH SHARIAH INDEX"
+    },
+    
+    {
+      "enum": [
+        "BNY MELLON ADR"
+      ],
+      "title": "BKADR",
+      "description": "BNY MELLON ADR INDEX"
+    },
+    
+    {
+      "enum": [
+        "BNY MELLON BRIC SELECT ADR"
+      ],
+      "title": "BKBRIC",
+      "description": "BNY MELLON BRIC SELECT ADR INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P EMERGING BMI"
+      ],
+      "title": "BMIEMG",
+      "description": "S&P EMERGING BMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P FRANCE BMI"
+      ],
+      "title": "BMIFR",
+      "description": "S&P BMI FRANCE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SET50"
+      ],
+      "title": "BNGK50",
+      "description": "SET50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "SET"
+      ],
+      "title": "BNGKSE",
+      "description": "THAI SET INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P BSE 500"
+      ],
+      "title": "BOM500",
+      "description": "S&P BSE 500 INDEX"
+    },
+    
+    {
+      "enum": [
+        "IBOVESPA"
+      ],
+      "title": "BOVESP",
+      "description": "IBOVESPA BRASIL SAO PAULO SE INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P BSE 100"
+      ],
+      "title": "BS100",
+      "description": "S&P BSE 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P BSE 200"
+      ],
+      "title": "BS200",
+      "description": "S&P BSE 200 INDEX"
+    },
+    
+    {
+      "enum": [
+        "SOFIX"
+      ],
+      "title": "BSOFIX",
+      "description": "SOFIX INDEX"
+    },
+    
+    {
+      "enum": [
+        "BUX"
+      ],
+      "title": "BUDPES",
+      "description": "BUX INDEX"
+    },
+    
+    {
+      "enum": [
+        "BG TR30"
+      ],
+      "title": "BULG30",
+      "description": "BG TR30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "BUMIX"
+      ],
+      "title": "BUMIX",
+      "description": "BUMIX INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHANGHAI 180 A SHARE"
+      ],
+      "title": "C180",
+      "description": "SHANGHAI SE 180 A SHR INDEX"
+    },
+    
+    {
+      "enum": [
+        "CAC MID & SMALL"
+      ],
+      "title": "CAC190",
+      "description": "CAC MID & SMALL INDEX"
+    },
+    
+    {
+      "enum": [
+        "CAC NEXT 20"
+      ],
+      "title": "CAC20",
+      "description": "CAC NEXT 20 INDEX"
+    },
+    
+    {
+      "enum": [
+        "CAC 40"
+      ],
+      "title": "CAC40",
+      "description": "CAC 40 INDEX"
+    },
+    
+    {
+      "enum": [
+        "CAC LARGE 60"
+      ],
+      "title": "CACL60",
+      "description": "CAC LARGE 60 INDEX"
+    },
+    
+    {
+      "enum": [
+        "CDAX PERFORMANCE"
+      ],
+      "title": "CDAX",
+      "description": "CDAX PERFORMANCE INDEX"
+    },
+    
+    {
+      "enum": [
+        "CECE COMPOSITE OTOB"
+      ],
+      "title": "CECE",
+      "description": "CENTRAL & EAST. EUROP.FIN.CECE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHANGHAI A SHARE"
+      ],
+      "title": "CHSA",
+      "description": "SHANGHAI SE A SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHANGHAI B SHARE"
+      ],
+      "title": "CHSB",
+      "description": "SHANGHAI SE B SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHANGHAI G SHARE"
+      ],
+      "title": "CHSHG",
+      "description": "SHANGHAI G SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHENZEN A SHARE"
+      ],
+      "title": "CHZA",
+      "description": "SHENZEN SE A SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHENZEN B SHARE"
+      ],
+      "title": "CHZB",
+      "description": "SHENZEN SE B SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/CLX INTER-10"
+      ],
+      "title": "CINT10",
+      "description": "CHILE INTER 10 INDEX"
+    },
+    
+    {
+      "enum": [
+        "CNX 100"
+      ],
+      "title": "CNX100",
+      "description": "CNX 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "CSI 500"
+      ],
+      "title": "CSI500",
+      "description": "CSI 500"
+    },
+    
+    {
+      "enum": [
+        "CAC SMALL"
+      ],
+      "title": "CSM90",
+      "description": "CAC SMALL INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/CLX IGPA"
+      ],
+      "title": "CSMGL",
+      "description": "CHILE SANTIAGO SE GENERAL (IGPA) INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P IPSA"
+      ],
+      "title": "CSMST",
+      "description": "CHILE SANTIAGO SE SELECTIVE (IPSA) INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/TSX SMALLCAP"
+      ],
+      "title": "CSPS",
+      "description": "S&P/TSX SMALLCAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/TSX COMPLETION"
+      ],
+      "title": "CSPT",
+      "description": "S&P/TSX COMPLETION INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHANGHAI COMPOSITE"
+      ],
+      "title": "CSSC",
+      "description": "SHANGHAI SE COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHENZEN COMPOSITE"
+      ],
+      "title": "CSZC",
+      "description": "SHENZEN SE COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "CROBEX"
+      ],
+      "title": "CZSEC",
+      "description": "CROATIA ZAGREB STOCK EXCHANGE CROBEX INDEX"
+    },
+    
+    {
+      "enum": [
+        "CZECH TRADED"
+      ],
+      "title": "CZT",
+      "description": "CZECH TRADED INDEX"
+    },
+    
+    {
+      "enum": [
+        "DAX"
+      ],
+      "title": "DAX",
+      "description": "DAX INDEX"
+    },
+    
+    {
+      "enum": [
+        "MDAX"
+      ],
+      "title": "DAXMID",
+      "description": "MDAX INDEX"
+    },
+    
+    {
+      "enum": [
+        "KFMX"
+      ],
+      "title": "DBMIDC",
+      "description": "KFMX INDEX"
+    },
+    
+    {
+      "enum": [
+        "EURO STOXX 50"
+      ],
+      "title": "DJES50",
+      "description": "EURO STOXX 50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "EURO STOXX LARGE"
+      ],
+      "title": "DJESTX",
+      "description": "EURO STOXX LARGE INDEX"
+    },
+    
+    {
+      "enum": [
+        "EURO STOXX"
+      ],
+      "title": "DJEUR",
+      "description": "EURO STOXX INDEX"
+    },
+    
+    {
+      "enum": [
+        "STOXX EUROPE 600"
+      ],
+      "title": "DJS600",
+      "description": "STOXX EUROPE 600 INDEX"
+    },
+    
+    {
+      "enum": [
+        "STOXX EUROPE 50"
+      ],
+      "title": "DJSE",
+      "description": "STOXX EUROPE 50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "STOXX EUROPE LARGE 200"
+      ],
+      "title": "DJSTXL",
+      "description": "STOXX EUROPE LARGE 200 INDEX"
+    },
+    
+    {
+      "enum": [
+        "DOW JONES ITALY TITANS 30"
+      ],
+      "title": "DJT30",
+      "description": "DOW JONES ITALY TITANS 30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "DOW JONES BASIC RESOURCES TITANS 30"
+      ],
+      "title": "DJTB30",
+      "description": "DOW JONES BASIC RESOURCES TITANS 30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "DOW JONES SECTOR TITANS COMPOSITE"
+      ],
+      "title": "DJTCOM",
+      "description": "DOW JONES SECTOR TITANS COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "DOW JONES COMPOSITE AVERAGE"
+      ],
+      "title": "DOWCOM",
+      "description": "DOW JONES COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "DOW JONES INDUSTRIAL AVERAGE"
+      ],
+      "title": "DOWI",
+      "description": "DOW JONES INDUSTRIAL AVERAGE INDEX"
+    },
+    
+    {
+      "enum": [
+        "DOW JONES TRANSPORTATION AVERAGE"
+      ],
+      "title": "DOWTRA",
+      "description": "DOW JONES TRANSPORTATION AVERAGE INDEX"
+    },
+    
+    {
+      "enum": [
+        "DOW JONES UTILITY AVERAGE"
+      ],
+      "title": "DOWUTI",
+      "description": "DOW JONES UTILITY AVERAGE INDEX"
+    },
+    
+    {
+      "enum": [
+        "HERMES FINANCIAL"
+      ],
+      "title": "EHRMS",
+      "description": "HERMES FINANCIAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSEUROFIRST 300"
+      ],
+      "title": "EUR300",
+      "description": "FTSEUROFIRST 300 INDEX"
+    },
+    
+    {
+      "enum": [
+        "EURONEXT 100"
+      ],
+      "title": "EURNXT",
+      "description": "EURONEXT 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE EUROTOP 100"
+      ],
+      "title": "EURTP1",
+      "description": "FTSE EUROTOP 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE ALL WORLD"
+      ],
+      "title": "FALLW",
+      "description": "FTSE ALL WORLD INDEX"
+    },
+    
+    {
+      "enum": [
+        "CAC MID 60"
+      ],
+      "title": "FCAM",
+      "description": "CAC MID 60 INDEX"
+    },
+    
+    {
+      "enum": [
+        "CAC ALL-SHARE"
+      ],
+      "title": "FCASH",
+      "description": "CAC ALL SHARES INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE CHINA A50"
+      ],
+      "title": "FCHA50",
+      "description": "FTSE CHINA A50"
+    },
+    
+    {
+      "enum": [
+        "FTSE ITALIA SMALL CAP"
+      ],
+      "title": "FITSMC",
+      "description": "FTSE ITALIA SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE/ATHEX LARGE CAP"
+      ],
+      "title": "FSA20",
+      "description": "FTSE/ATHEX LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE 100"
+      ],
+      "title": "FT100",
+      "description": "FTSE 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE 350"
+      ],
+      "title": "FT350",
+      "description": "FTSE 350 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE AIM ALL-SHARE"
+      ],
+      "title": "FTAIM",
+      "description": "FTSE AIM ALL-SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE EURO 100"
+      ],
+      "title": "FTE100",
+      "description": "FTSE EURO 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE ITALIA ALL-SHARE"
+      ],
+      "title": "FTIASI",
+      "description": "FTSE ITALIA ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE ITALIA MID CAP"
+      ],
+      "title": "FTIMCI",
+      "description": "FTSE ITALIA MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE/JSE SHARIAH TOP 40"
+      ],
+      "title": "FTJ40",
+      "description": "FTSE/JSE SHARIAH TOP 40 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE/JSE SHARIAH ALL SHARE"
+      ],
+      "title": "FTJAS",
+      "description": "FTSE/JSE SHARIAH ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE/ATHEX MID CAP"
+      ],
+      "title": "FTS40",
+      "description": "FTSE/ATHEX MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE TECHMARK FOCUS"
+      ],
+      "title": "FTSE",
+      "description": "FTSE TECHMARK FOCUS INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE 250"
+      ],
+      "title": "FTSE25",
+      "description": "FTSE 250 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE ALL-SHARE"
+      ],
+      "title": "FTSEAL",
+      "description": "FTSE ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE FLEDGLING"
+      ],
+      "title": "FTSFLG",
+      "description": "FTSE FLEDGLING INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE SMALLCAP"
+      ],
+      "title": "FTSMCA",
+      "description": "FTSE SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX STOCKHOLM ALL-SHARE"
+      ],
+      "title": "GENX",
+      "description": "OMX STOCKHOLM ALL SHARE OMXS INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE GWA SHARIAH DEVELOPED"
+      ],
+      "title": "GWADV",
+      "description": "FTSE GWA SHARIAH DEVELOPED INDEX"
+    },
+    
+    {
+      "enum": [
+        "HDAX"
+      ],
+      "title": "HDAX",
+      "description": "HDAX (XETRA) INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX HELSINKI 25"
+      ],
+      "title": "HEX25",
+      "description": "OMX HELSINKI 25 (OMXH25) INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX HELSINKI"
+      ],
+      "title": "HEXGEN",
+      "description": "OMX HELSINKI (OMXH) INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX HELSINKI CAP"
+      ],
+      "title": "HEXP",
+      "description": "OMX HELSINKI CAP (OMXHCAP) INDEX"
+    },
+    
+    {
+      "enum": [
+        "HANG SENG CHINA-AFFILIATED CORPORATIONS"
+      ],
+      "title": "HKHS",
+      "description": "HANG SENG CHINA AFFILIATED CORP INDEX"
+    },
+    
+    {
+      "enum": [
+        "HANG SENG CHINA ENTERPRISES"
+      ],
+      "title": "HSCEI",
+      "description": "HANG SENG CHINA ENTERPRISES INDEX"
+    },
+    
+    {
+      "enum": [
+        "HANG SENG COMPOSITE"
+      ],
+      "title": "HSCI",
+      "description": "HANG SENG COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "HANG SENG"
+      ],
+      "title": "HSENG",
+      "description": "HANG SENG INDEX"
+    },
+    
+    {
+      "enum": [
+        "HANG SENG CHINA (HONG KONG-LISTED) 100"
+      ],
+      "title": "HSM100",
+      "description": "HANG SENG MAINLAND 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "HANG SENG REIT"
+      ],
+      "title": "HSREIT",
+      "description": "HANG SENG REIT INDEX"
+    },
+    
+    {
+      "enum": [
+        "HTX OTOB"
+      ],
+      "title": "HUNTRI",
+      "description": "HUNGARIAN TRADED HTX (USD) INDEX"
+    },
+    
+    {
+      "enum": [
+        "IBEX 35"
+      ],
+      "title": "IBEX35",
+      "description": "IBEX 35 INDEX"
+    },
+    
+    {
+      "enum": [
+        "IBEX MEDIUM CAP"
+      ],
+      "title": "IBEXM",
+      "description": "IBEX MEDIUM CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "IBEX SMALL CAP"
+      ],
+      "title": "IBEXS",
+      "description": "IBEX SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX ICELAND MID CAP"
+      ],
+      "title": "ICEM",
+      "description": "OMX ICELAND MID CAP PI INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX ICELAND SMALL CAP"
+      ],
+      "title": "ICES",
+      "description": "OMX ICELAND SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX ICELAND ALL-SHARE"
+      ],
+      "title": "ICEX",
+      "description": "OMX ICELAND ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "IMC 30"
+      ],
+      "title": "IMC30",
+      "description": "IMC 30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/BMV INMEX"
+      ],
+      "title": "INMEX",
+      "description": "S&P/BMV INMEX INDEX"
+    },
+    
+    {
+      "enum": [
+        "NIFTY 50"
+      ],
+      "title": "INSENS",
+      "description": "S&P/CNX NIFTY (50) INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P BSE SENSEX"
+      ],
+      "title": "INSPCN",
+      "description": "S&P BSE (SENSEX) 30 SENSITIVE INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/BMV IPC"
+      ],
+      "title": "IPC",
+      "description": "S&P/BMV IPC INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/BMV IPC MIDCAP"
+      ],
+      "title": "IPCM",
+      "description": "S&P/BMV IPC MIDCAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "ISEQ OVERALL"
+      ],
+      "title": "ISEQ",
+      "description": "IRELAND SE OVERALL (ISEQ) INDEX"
+    },
+    
+    {
+      "enum": [
+        "ISEQ 20"
+      ],
+      "title": "ISEQ20",
+      "description": "ISEQ 20 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TA-125"
+      ],
+      "title": "ISTMI",
+      "description": "TA-125 INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI ITALY SMALL CAP INDEX"
+      ],
+      "title": "ITSMCI",
+      "description": "MSCI ITALY SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI JAPAN IMI"
+      ],
+      "title": "JAPIMI",
+      "description": "MSCI JAPAN IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "IDX COMPOSITE"
+      ],
+      "title": "JKCM",
+      "description": "IDX COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE/JSE INDUSTRIAL 25"
+      ],
+      "title": "JOHT25",
+      "description": "FTSE/JSE INDUSTRIAL 25 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE/JSE TOP 40"
+      ],
+      "title": "JOHT40",
+      "description": "FTSE/JSE TOP 40 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE/JSE ALL SHARE"
+      ],
+      "title": "JSEAS",
+      "description": "FTSE/JSE ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX 500"
+      ],
+      "title": "JT500",
+      "description": "TOPIX 500 INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX COPENHAGEN"
+      ],
+      "title": "KAX",
+      "description": "OMX COPENHAGEN (OMXC) INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX COPENHAGEN BENCHMARK"
+      ],
+      "title": "KBX",
+      "description": "OMX COPENHAGEN BENCHMARK (OMXCB) INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX COPENHAGEN 20"
+      ],
+      "title": "KFX",
+      "description": "OMX COPENHAGEN (OMXC20) INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE BURSA MALAYSIA KLCI"
+      ],
+      "title": "KLCOMP",
+      "description": "FTSE BURSA MALAYSIA KLCI INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSPI 100"
+      ],
+      "title": "KO100",
+      "description": "KOSPI 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSPI 50"
+      ],
+      "title": "KO50",
+      "description": "KOSPI 50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSPI 200"
+      ],
+      "title": "KORK20",
+      "description": "KOSPI 200 INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSPI LARGECAP"
+      ],
+      "title": "KORLRG",
+      "description": "KOSPI LARGECAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSPI MIDCAP"
+      ],
+      "title": "KOSPM",
+      "description": "KOSPI MIDCAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSPI SMALLCAP"
+      ],
+      "title": "KOSPS",
+      "description": "KOSPI SMALLCAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "KRX 100"
+      ],
+      "title": "KRX100",
+      "description": "KRX 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSPI"
+      ],
+      "title": "KSPI",
+      "description": "KOSPI INDEX"
+    },
+    
+    {
+      "enum": [
+        "LQ45"
+      ],
+      "title": "LQ45",
+      "description": "IDX LQ45 INDEX"
+    },
+    
+    {
+      "enum": [
+        "LUXX"
+      ],
+      "title": "LXBORG",
+      "description": "LUXEMBOURG SE LUXX INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI AUSTRALIA IMI"
+      ],
+      "title": "MAUIMI",
+      "description": "MSCI AUSTRALIA IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI AUSTRALIA LARGE CAP"
+      ],
+      "title": "MAUSLC",
+      "description": "MSCI AUSTRALIA LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI AUSTRALIA MID CAP"
+      ],
+      "title": "MAUSMC",
+      "description": "MSCI AUSTRALIA MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI CHINA A50"
+      ],
+      "title": "MCHA50",
+      "description": "MSCI CHINA A50"
+    },
+    
+    {
+      "enum": [
+        "MSCI EUROPE SMID CAP"
+      ],
+      "title": "MESMID",
+      "description": "MSCI EUROPE SMID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/BMV IPC COMPMX"
+      ],
+      "title": "MEXCM",
+      "description": "S&P/BMV IPC COMPMX INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI HONG KONG IMI"
+      ],
+      "title": "MHKIMI",
+      "description": "MSCI HONG KONG IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MOEX RUSSIA"
+      ],
+      "title": "MICEX",
+      "description": "MOEX RUSSIA INDEX (MICEX INDEX)"
+    },
+    
+    {
+      "enum": [
+        "COMIT GLOBALE MILAN"
+      ],
+      "title": "MILBCI",
+      "description": "COMIT GLOBAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI IRELAND IMI"
+      ],
+      "title": "MIRIMI",
+      "description": "MSCI IRELAND IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI NEW ZEALAND IMI"
+      ],
+      "title": "MNZIMI",
+      "description": "MSCI NEW ZEALAND IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI POLAND LARGE CAP"
+      ],
+      "title": "MPOLLC",
+      "description": "MSCI POLAND LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI POLAND MID CAP"
+      ],
+      "title": "MPOLMC",
+      "description": "MSCI POLAND MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI ACWI EX JAPAN"
+      ],
+      "title": "MSACEJ",
+      "description": "MSCI AC WORLD EX JAPAN INDEX (AKA MSCI KOKUSAI INDEX)"
+    },
+    
+    {
+      "enum": [
+        "MSCI ACWI ESG SCREENED"
+      ],
+      "title": "MSACES",
+      "description": "MSCI ACWI ESG SCREENED"
+    },
+    
+    {
+      "enum": [
+        "MSCI ACWI IMI"
+      ],
+      "title": "MSACW",
+      "description": "MSCI AC WORLD IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI ACWI"
+      ],
+      "title": "MSALL",
+      "description": "MSCI AC WORLD INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI AC ASIA PACIFIC ESG LEADERS"
+      ],
+      "title": "MSAPAC",
+      "description": "MSCI AC ASIA PACIFIC ESG LEADERS"
+    },
+    
+    {
+      "enum": [
+        "MSCI AUSTRALIA"
+      ],
+      "title": "MSAUST",
+      "description": "MSCI AUSTRALIA"
+    },
+    
+    {
+      "enum": [
+        "MSCI BELGIUM"
+      ],
+      "title": "MSBELG",
+      "description": "MSCI BELGIUM INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI BRAZIL"
+      ],
+      "title": "MSBRZ",
+      "description": "MSCI BRAZIL INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI CHINA"
+      ],
+      "title": "MSCHIN",
+      "description": "MSCI CHINA INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI EUROPE"
+      ],
+      "title": "MSCIE",
+      "description": "MSCI EUROPE INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI EMERGING MARKETS"
+      ],
+      "title": "MSCIEM",
+      "description": "MSCI EMERGING MARKETS INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI JAPAN"
+      ],
+      "title": "MSCIJP",
+      "description": "MSCI JAPAN INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI PAN EURO"
+      ],
+      "title": "MSCIPE",
+      "description": "MSCI PAN EURO INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI UK"
+      ],
+      "title": "MSCIUK",
+      "description": "MSCI UK INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI USA"
+      ],
+      "title": "MSCIUS",
+      "description": "MSCI USA INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI WORLD"
+      ],
+      "title": "MSCIWD",
+      "description": "MSCI WORLD INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI CANADA"
+      ],
+      "title": "MSCNDA",
+      "description": "MSCI CANADA"
+    },
+    
+    {
+      "enum": [
+        "MSCI CZECH REPUBLIC LARGE CAP"
+      ],
+      "title": "MSCRLC",
+      "description": "MSCI CZECH REPUBLIC LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI CZECH REPUBLIC MID CAP"
+      ],
+      "title": "MSCRMC",
+      "description": "MSCI CZECH REPUBLIC MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI SOUTH AFRICA"
+      ],
+      "title": "MSCSA",
+      "description": "MSCI SOUTH AFRICA INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI DENMARK IMI"
+      ],
+      "title": "MSDIMI",
+      "description": "MSCI DENMARK IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI WORLD ESG SCREENED"
+      ],
+      "title": "MSDWEE",
+      "description": "MSCI WORLD ESG SCREENED"
+    },
+    
+    {
+      "enum": [
+        "MSCI EAFE"
+      ],
+      "title": "MSEAFE",
+      "description": "MSCI EAFE INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI EUROPE ESG LEADERS"
+      ],
+      "title": "MSEESG",
+      "description": "MSCI EUROPE ESG LEADERS"
+    },
+    
+    {
+      "enum": [
+        "MSCI EM ASIA ESG LEADERS"
+      ],
+      "title": "MSEMAS",
+      "description": "MSCI EM ASIA ESG LEADERS"
+    },
+    
+    {
+      "enum": [
+        "MSCI AC EUROPE AND MIDDLE EAST"
+      ],
+      "title": "MSEME",
+      "description": "MSCI AC EUROPE AND MIDDLE EAST INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI EURO"
+      ],
+      "title": "MSERO",
+      "description": "MSCI EURO INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI EUROPE SMALL CAP"
+      ],
+      "title": "MSESC",
+      "description": "MSCI EUROPE SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI FINLAND LARGE CAP"
+      ],
+      "title": "MSFDLC",
+      "description": "MSCI FINLAND LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI FINLAND MID CAP"
+      ],
+      "title": "MSFDMC",
+      "description": "MSCI FINLAND MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI FRANCE IMI"
+      ],
+      "title": "MSFIMI",
+      "description": "MSCI FRANCE IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI FRANCE LARGE CAP"
+      ],
+      "title": "MSFRLP",
+      "description": "MSCI FRANCE LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI EAFE IMI"
+      ],
+      "title": "MSIMI",
+      "description": "MSCI EAFE IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI INDIA"
+      ],
+      "title": "MSIND",
+      "description": "MSCI INDIA INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI ITALY"
+      ],
+      "title": "MSITAL",
+      "description": "MSCI ITALY INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI ITALY LARGE CAP"
+      ],
+      "title": "MSITLC",
+      "description": "MSCI ITALY LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI ITALY MID CAP"
+      ],
+      "title": "MSITMC",
+      "description": "MSCI ITALY MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI KOREA"
+      ],
+      "title": "MSKOR",
+      "description": "MSCI KOREA INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI WORLD LOW CARBON SRI LEADERS"
+      ],
+      "title": "MSLCBL",
+      "description": "MSCI WORLD LOW CARBON SRI LEADERS INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI MEXICO"
+      ],
+      "title": "MSMEX",
+      "description": "MSCI MEXICO INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI NETHERLANDS MID CAP"
+      ],
+      "title": "MSNEMC",
+      "description": "MSCI NETHERLANDS MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI NETHERLANDS"
+      ],
+      "title": "MSNETH",
+      "description": "MSCI NETHERLANDS INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI NORWAY"
+      ],
+      "title": "MSNORW",
+      "description": "MSCI NORWAY INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI PORTUGAL IMI"
+      ],
+      "title": "MSPIMI",
+      "description": "MSCI PORTUGAL IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI SPAIN IMI"
+      ],
+      "title": "MSSIMI",
+      "description": "MSCI SPAIN IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI SINGAPORE"
+      ],
+      "title": "MSSING",
+      "description": "MSCI SINGAPORE INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI SWITZERLAND LARGE CAP"
+      ],
+      "title": "MSSWLP",
+      "description": "MSCI SWITZERLAND LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI TAIWAN"
+      ],
+      "title": "MSTAI",
+      "description": "MSCI TAIWAN INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI THAILAND"
+      ],
+      "title": "MSTHAI",
+      "description": "MSCI THAILAND"
+    },
+    
+    {
+      "enum": [
+        "MSCI EUROPE ESG SCREENED"
+      ],
+      "title": "MSUREE",
+      "description": "MSCI EUROPE ESG SCREENED"
+    },
+    
+    {
+      "enum": [
+        "MSCI USA ESG LEADERS"
+      ],
+      "title": "MSUSAL",
+      "description": "MSCI USA ESG LEADERS"
+    },
+    
+    {
+      "enum": [
+        "MSCI USA ESG SCREENED"
+      ],
+      "title": "MSUSEE",
+      "description": "MSCI USA ESG SCREENED"
+    },
+    
+    {
+      "enum": [
+        "MSCI WORLD EX JAPAN (AKA KOKUSAI)"
+      ],
+      "title": "MSWDEJ",
+      "description": "MSCI ACWI EX JAPAN INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI SWEDEN LARGE CAP"
+      ],
+      "title": "MSWELC",
+      "description": "MSCI SWEDEN LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI WORLD ESG LEADERS"
+      ],
+      "title": "MSWESG",
+      "description": "MSCI WORLD ESG LEADERS"
+    },
+    
+    {
+      "enum": [
+        "MSCI WORLD SMALL CAP ESG SCREENED"
+      ],
+      "title": "MSWSCS",
+      "description": "MSCI WORLD SMALL CAP ESG SCREENED"
+    },
+    
+    {
+      "enum": [
+        "MWIG40"
+      ],
+      "title": "MWIG",
+      "description": "MWIG40 INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI WORLD SMID CAP"
+      ],
+      "title": "MWSMID",
+      "description": "MSCI WORLD SMID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "NASDAQ COMPOSITE"
+      ],
+      "title": "NASCOM",
+      "description": "NASDAQ COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "NASDAQ-100"
+      ],
+      "title": "NASDAQ",
+      "description": "NASDAQ 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "NEXT 150"
+      ],
+      "title": "NEXT15",
+      "description": "NEXT 150 INDEX"
+    },
+    
+    {
+      "enum": [
+        "NIKKEI 500"
+      ],
+      "title": "NIK500",
+      "description": "NIKKEI 500 INDEX"
+    },
+    
+    {
+      "enum": [
+        "NIKKEI 225"
+      ],
+      "title": "NIKKEI",
+      "description": "NIKKEI STOCK AVERAGE (NIKKEI 225) INDEX"
+    },
+    
+    {
+      "enum": [
+        "NIKKEI 300"
+      ],
+      "title": "NK300O",
+      "description": "NIKKEI STOCK INDEX 300"
+    },
+    
+    {
+      "enum": [
+        "JPX-NIKKEI 400"
+      ],
+      "title": "NK400",
+      "description": "JPX-NIKKEI 400 INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX HELSINKI TECHNOLOGY"
+      ],
+      "title": "NOMXT",
+      "description": "OMX HELSINKI TECHNOLOGY INDEX"
+    },
+    
+    {
+      "enum": [
+        "NYSE COMPOSITE"
+      ],
+      "title": "NYSE",
+      "description": "NYSE COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/NZX 50"
+      ],
+      "title": "NZSE50",
+      "description": "S&P/NZX 50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/NZX ALL CAPITAL"
+      ],
+      "title": "NZSEAL",
+      "description": "S&P/NZX ALL INDEX CAPITAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/NZX 10"
+      ],
+      "title": "NZX10",
+      "description": "S&P/NZX 10 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/NZX MIDCAP"
+      ],
+      "title": "NZXMI",
+      "description": "S&P/NZX MIDCAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/NZX SMALLCAP"
+      ],
+      "title": "NZXSI",
+      "description": "S&P/NZX SMALLCAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OSLO BORS ALL-SHARE"
+      ],
+      "title": "OBX",
+      "description": "OSLO BORS ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "OBX"
+      ],
+      "title": "OBX25",
+      "description": "OBX INDEX"
+    },
+    
+    {
+      "enum": [
+        "OSLO BORS BENCHMARK"
+      ],
+      "title": "OEBI",
+      "description": "OSLO BORS BENCHMARK INDEX"
+    },
+    
+    {
+      "enum": [
+        "OSLO BORS SMALL CAP"
+      ],
+      "title": "OESC",
+      "description": "OSLO BORS SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX HELSINKI MID CAP"
+      ],
+      "title": "OMHSM",
+      "description": "OMX HELSINKI MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX HELSINKI SMALL CAP"
+      ],
+      "title": "OMHSS",
+      "description": "OMX HELSINKI SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX STOCKHOLM 30"
+      ],
+      "title": "OMX",
+      "description": "OMX STOCKHOLM 30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX AFFARSVARLDENS GENERAL"
+      ],
+      "title": "OMXAFG",
+      "description": "OMX AFFARSVARLDENS GENERAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX COPENHAGEN MID CAP"
+      ],
+      "title": "OMXCPM",
+      "description": "OMX COPENHAGEN MID CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX COPENHAGEN SMALL CAP"
+      ],
+      "title": "OMXCPS",
+      "description": "OMX COPENHAGEN SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "OSLO BORS MUTUAL FUND"
+      ],
+      "title": "OSEMF",
+      "description": "OSLO BORS MUTUAL FUND INDEX"
+    },
+    
+    {
+      "enum": [
+        "STOXX ASIA/PACIFIC 600"
+      ],
+      "title": "PAC600",
+      "description": "STOXX ASIA/PACIFIC 600 INDEX"
+    },
+    
+    {
+      "enum": [
+        "BVL GENERAL LISBON"
+      ],
+      "title": "PBVGEN",
+      "description": "BVL GENERAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/BVL PERU GENERAL"
+      ],
+      "title": "PEGEN",
+      "description": "S&P/BVL PERU GENERAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "PX"
+      ],
+      "title": "PRAGE",
+      "description": "PRAGUE STOCK EXCHANGE INDEX"
+    },
+    
+    {
+      "enum": [
+        "PRIME ALL SHARE"
+      ],
+      "title": "PRIMAL",
+      "description": "PRIME ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "PSEI"
+      ],
+      "title": "PSECOM",
+      "description": "PHILIPPINE STOCK EXCHANGE PSEI INDEX"
+    },
+    
+    {
+      "enum": [
+        "PSI-20"
+      ],
+      "title": "PSI",
+      "description": "PORTUGAL PSI-20 INDEX"
+    },
+    
+    {
+      "enum": [
+        "PSI ALL-SHARE"
+      ],
+      "title": "PSIGI",
+      "description": "PORTUGAL PSI ALL-SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "WIG20"
+      ],
+      "title": "PWG20",
+      "description": "WIG20 INDEX"
+    },
+    
+    {
+      "enum": [
+        "WIG"
+      ],
+      "title": "PWWGI",
+      "description": "WIG INDEX"
+    },
+    
+    {
+      "enum": [
+        "RTS"
+      ],
+      "title": "RRTS",
+      "description": "RTS INDEX"
+    },
+    
+    {
+      "enum": [
+        "RUSSELL 1000"
+      ],
+      "title": "RU1000",
+      "description": "RUSSELL 1000 INDEX"
+    },
+    
+    {
+      "enum": [
+        "RUSSELL 2000"
+      ],
+      "title": "RU2000",
+      "description": "RUSSELL 2000 INDEX"
+    },
+    
+    {
+      "enum": [
+        "RUSSELL 2500"
+      ],
+      "title": "RU250",
+      "description": "RUSSELL 2500 INDEX"
+    },
+    
+    {
+      "enum": [
+        "RUSSELL 3000"
+      ],
+      "title": "RU3000",
+      "description": "RUSSELL 3000 INDEX"
+    },
+    
+    {
+      "enum": [
+        "OTOB RTX (USD)"
+      ],
+      "title": "RUSTRA",
+      "description": "OTOB RUSSIAN TRADED RTX (USD) INDEX"
+    },
+    
+    {
+      "enum": [
+        "CSI 300"
+      ],
+      "title": "S300",
+      "description": "SHANGHAI SHENZHEN CSI 300 INDEX"
+    },
+    
+    {
+      "enum": [
+        "SBF 120"
+      ],
+      "title": "SBF120",
+      "description": "SBF 120 INDEX"
+    },
+    
+    {
+      "enum": [
+        "CAC ALL-TRADABLE"
+      ],
+      "title": "SBF250",
+      "description": "CAC ALL TRADABLE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SBI TOP"
+      ],
+      "title": "SBITOP",
+      "description": "SBI TOP INDEX"
+    },
+    
+    {
+      "enum": [
+        "SDAX"
+      ],
+      "title": "SDAX",
+      "description": "SDAX PERFORMANCE INDEX"
+    },
+    
+    {
+      "enum": [
+        "SET100"
+      ],
+      "title": "SET100",
+      "description": "SET100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "KOSDAQ"
+      ],
+      "title": "SKKD",
+      "description": "KOSDAQ INDEX"
+    },
+    
+    {
+      "enum": [
+        "SLI SWISS LEADER"
+      ],
+      "title": "SLISWS",
+      "description": "SLI SWISS LEADER INDEX"
+    },
+    
+    {
+      "enum": [
+        "SMI"
+      ],
+      "title": "SMI",
+      "description": "SMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "SMI EXPANDED"
+      ],
+      "title": "SMIEX",
+      "description": "SMI EXPANDED INDEX"
+    },
+    
+    {
+      "enum": [
+        "SMI MID"
+      ],
+      "title": "SMIM",
+      "description": "SMI MID INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE ST ALL SHARE"
+      ],
+      "title": "SNGSES",
+      "description": "FTSE ST ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "STRAITS TIMES"
+      ],
+      "title": "SNGSTR",
+      "description": "STRAITS TIMES INDEX (STI)"
+    },
+    
+    {
+      "enum": [
+        "S&P/TSX PREFERRED SHARE"
+      ],
+      "title": "SNPPF",
+      "description": "S&P/TSX PREFERRED SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "OMX STOCKHOLM BENCHMARK"
+      ],
+      "title": "SOXP",
+      "description": "OMX STOCKHOLM BENCHMARK INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P 100"
+      ],
+      "title": "SP100",
+      "description": "S&P 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P COMPOSITE 1500"
+      ],
+      "title": "SP1500",
+      "description": "S&P 1500 SUPERCOMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P 500"
+      ],
+      "title": "SP500",
+      "description": "S&P 500 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/TSX 60"
+      ],
+      "title": "SP60",
+      "description": "S&P/TSX 60 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P SMALLCAP 600"
+      ],
+      "title": "SP600",
+      "description": "S&P 600 SMALLCAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P ADR"
+      ],
+      "title": "SPADR",
+      "description": "S&P ADR INDEX"
+    },
+    
+    {
+      "enum": [
+        "IGBM"
+      ],
+      "title": "SPAMAD",
+      "description": "IGBM INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX SMALL ORDINARIES"
+      ],
+      "title": "SPASX",
+      "description": "S&P/ASX SMALL ORDINARIES INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P 500 FINANCIAL"
+      ],
+      "title": "SPFINA",
+      "description": "S&P 500 FINANCIAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P GLOBAL 1200"
+      ],
+      "title": "SPGLBL",
+      "description": "S&P GLOBAL 1200 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P GLOBAL 1200 ENERGY"
+      ],
+      "title": "SPGNRG",
+      "description": "S&P GLOBAL 1200 ENERGY INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/HKEX GEM"
+      ],
+      "title": "SPHG",
+      "description": "S&P/HKEX GEM INDEX"
+    },
+    
+    {
+      "enum": [
+        "SWISS PERFORMANCE"
+      ],
+      "title": "SPI",
+      "description": "SWISS PERFORMANCE INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P 500 INDUSTRIALS"
+      ],
+      "title": "SPINDU",
+      "description": "S&P 500 INDUSTRIALS INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/HKEX LARGE CAP"
+      ],
+      "title": "SPLC",
+      "description": "S&P/HKEX LARGE CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P LATIN AMERICA 40"
+      ],
+      "title": "SPLT40",
+      "description": "S&P LATIN AMERICA 40 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE MIB"
+      ],
+      "title": "SPMIB",
+      "description": "FTSE MIB INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P MIDCAP 400"
+      ],
+      "title": "SPMIDC",
+      "description": "S&P MIDCAP 400 INDEX"
+    },
+    
+    {
+      "enum": [
+        "STOXX EUROPE 600 BANKS"
+      ],
+      "title": "STXE6B",
+      "description": "STOXX EUROPE 600 BANKS INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI SWEDEN IMI"
+      ],
+      "title": "SWEIMI",
+      "description": "MSCI SWEDEN IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "SWIG80"
+      ],
+      "title": "SWIG",
+      "description": "SWIG80 INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI SWITZERLAND IMI"
+      ],
+      "title": "SWIIMI",
+      "description": "MSCI SWITZERLAND IMI INDEX"
+    },
+    
+    {
+      "enum": [
+        "STOXX GLOBAL 1800"
+      ],
+      "title": "SX1800",
+      "description": "STOXX GLOBAL 1800 INDEX"
+    },
+    
+    {
+      "enum": [
+        "FTSE TWSE TAIWAN 50"
+      ],
+      "title": "TAI50",
+      "description": "FTSE TWSE TAIWAN 50 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TAIWAN SE OTC"
+      ],
+      "title": "TAIOTC",
+      "description": "TAIWAN SE OTC INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX CORE 30"
+      ],
+      "title": "TCOR30",
+      "description": "TOPIX CORE 30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TADAWUL ALL SHARE"
+      ],
+      "title": "TDWTAS",
+      "description": "TADAWUL ALL SHARE INDEX"
+    },
+    
+    {
+      "enum": [
+        "TECDAX"
+      ],
+      "title": "TECDAX",
+      "description": "TECDAX INDEX"
+    },
+    
+    {
+      "enum": [
+        "TA-35"
+      ],
+      "title": "TELAVI",
+      "description": "TA-35 INDEX"
+    },
+    
+    {
+      "enum": [
+        "BIST 30"
+      ],
+      "title": "TIN30",
+      "description": "BIST NATIONAL 30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOKYO STOCK EXCHANGE MARKET 250"
+      ],
+      "title": "TKMOTH",
+      "description": "TSE MOTHERS INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX MID 400"
+      ],
+      "title": "TMID40",
+      "description": "TOPIX MID 400 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX"
+      ],
+      "title": "TOPIX",
+      "description": "TOPIX INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX 100"
+      ],
+      "title": "TPX100",
+      "description": "TOPIX 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX LARGE 70"
+      ],
+      "title": "TPXLRG",
+      "description": "TOPIX LARGE 70 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX SMALL"
+      ],
+      "title": "TPXSMA",
+      "description": "TOPIX SMALL INDEX"
+    },
+    
+    {
+      "enum": [
+        "BIST 100"
+      ],
+      "title": "TRKSTN",
+      "description": "BIST NATIONAL 100 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TOPIX 1000"
+      ],
+      "title": "TS1000",
+      "description": "TOPIX 1000 INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/TSX COMPOSITE"
+      ],
+      "title": "TSE300",
+      "description": "S&P/TSX COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "EX-TSE FIRST SECTION"
+      ],
+      "title": "TSEFSI",
+      "description": "EX-TSE FIRST SECTION INDEX"
+    },
+    
+    {
+      "enum": [
+        "TSE GROWTH MARKET CORE"
+      ],
+      "title": "TSEGMC",
+      "description": "TSE GROWTH MARKET CORE INDEX"
+    },
+    
+    {
+      "enum": [
+        "TSE GROWTH MARKET"
+      ],
+      "title": "TSEGMI",
+      "description": "TSE GROWTH MARKET INDEX"
+    },
+    
+    {
+      "enum": [
+        "TSE PRIME MARKET COMPOSITE"
+      ],
+      "title": "TSEPMC",
+      "description": "TSE PRIME MARKET COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "TSE PRIME MARKET"
+      ],
+      "title": "TSEPMI",
+      "description": "TSE PRIME MARKET INDEX"
+    },
+    
+    {
+      "enum": [
+        "TSE REIT"
+      ],
+      "title": "TSER",
+      "description": "TSE REIT INDEX"
+    },
+    
+    {
+      "enum": [
+        "TSE STANDARD MARKET TOP 20"
+      ],
+      "title": "TSES20",
+      "description": "TSE STANDARD MARKET TOP20 INDEX"
+    },
+    
+    {
+      "enum": [
+        "TSE STANDARD MARKET"
+      ],
+      "title": "TSESMI",
+      "description": "TSE STANDARD MARKET INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/TSX VENTURE COMPOSITE"
+      ],
+      "title": "TSXVEN",
+      "description": "S&P/TSX VENTURE COMPOSITE INDEX"
+    },
+    
+    {
+      "enum": [
+        "TAIEX"
+      ],
+      "title": "TWSE",
+      "description": "TAIEX INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/TOPIX 150"
+      ],
+      "title": "TX150",
+      "description": "S&P TOPIX 150 INDEX"
+    },
+    
+    {
+      "enum": [
+        "MSCI UK IMI"
+      ],
+      "title": "UKIMI",
+      "description": "MSCI UK IMI"
+    },
+    
+    {
+      "enum": [
+        "MSCI UK SMALL CAP"
+      ],
+      "title": "UKSMCI",
+      "description": "MSCI UK SMALL CAP INDEX"
+    },
+    
+    {
+      "enum": [
+        "VENEZUELA GENERAL"
+      ],
+      "title": "VENGEN",
+      "description": "VENEZUELA SE GENERAL INDEX"
+    },
+    
+    {
+      "enum": [
+        "WORLD FEDERATION OF EXCHANGES"
+      ],
+      "title": "WFEXCH",
+      "description": "WORLD FEDERATION OF EXCHANGES INDEX"
+    },
+    
+    {
+      "enum": [
+        "WIG30"
+      ],
+      "title": "WIG30",
+      "description": "WIG30 INDEX"
+    },
+    
+    {
+      "enum": [
+        "GERMANY X-DAX"
+      ],
+      "title": "XDAX",
+      "description": "GERMANY X-DAX INDEX"
+    },
+    
+    {
+      "enum": [
+        "S&P/ASX 20"
+      ],
+      "title": "_20LEAD",
+      "description": "S&P/ASX 20 INDEX"
+    },
+    
+    {
+      "enum": [
+        "SHANGHAI SHENZEN CSI 300"
+      ],
+      "title": "_S300",
+      "description": "SHANGHAI SHENZHEN CSI 300 INDEX"
+    }
+  ]
+}

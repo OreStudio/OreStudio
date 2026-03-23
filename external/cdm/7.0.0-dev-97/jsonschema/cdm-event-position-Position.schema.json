@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "Position",
+  "description": "A Position describes how much of a given Product is being held and constitutes the atomic element of a Portfolio.",
+  "properties": {
+    "priceQuantity": {
+      "description": "Position with many price quantities.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-PriceQuantity.schema.json"
+      },
+      "minItems": 1
+    },
+    "product": {
+      "description": "The product underlying the position.",
+      "$ref": "cdm-product-template-Product.schema.json"
+    },
+    "asset": {
+      "description": "The asset that underlies the position.",
+      "$ref": "cdm-base-staticdata-asset-common-Asset.schema.json"
+    },
+    "cashBalance": {
+      "description": "The aggregate cost of proceeds.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "tradeReference": {
+      "description": "Reference to the Contract, in case product is contractual and the contract has been formed.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaTradeState.schema.json"
+    },
+    "product": {
+      "description": "The product underlying the position.",
+      "$ref": "cdm-product-template-Product.schema.json"
+    }
+  },
+  "required": [
+    "product"
+  ]
+}

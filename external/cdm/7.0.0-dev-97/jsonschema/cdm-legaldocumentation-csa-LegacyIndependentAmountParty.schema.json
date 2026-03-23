@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "LegacyIndependentAmountParty",
+  "description": "The party specific elections for the Independent Amount clause.",
+  "properties": {
+    "party": {
+      "description": "Identifies the Party making the election.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "isApplicable": {
+      "description": "Specifies whether Independent Amount is applicable to the elected party. If applicable, 'True', and if not applicable then 'False'.",
+      "type": "boolean"
+    },
+    "fixedAmount": {
+      "description": "Indicates the Independent Amount is specified as a fixed amount.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "ratingsBased": {
+      "description": "Indicates the Independent Amount is determined using a credit rating.",
+      "$ref": "cdm-legaldocumentation-csa-LegacyIndependentAmountRatingsBased.schema.json"
+    },
+    "ratingsXExposure": {
+      "description": "Indicates the Independent Amount is determined using both credit rating and exposure metrics.",
+      "$ref": "cdm-legaldocumentation-csa-LegacyIndependentAmountRatingsXExposure.schema.json"
+    }
+  },
+  "required": [
+    "party",
+    "isApplicable"
+  ]
+}

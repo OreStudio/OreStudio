@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "FxHaircutCurrency",
+  "description": "A class to specify the reference currency for the purpose of specifying the FX Haircut relating to a posting obligation, as being either the Termination Currency or an FX Designated Currency.",
+  "properties": {
+    "isTerminationCurrency": {
+      "description": "The reference currency for the purpose of specifying the FX Haircut relating to a posting obligation is the Termination Currency when the Boolean value is set to True.",
+      "type": "boolean"
+    },
+    "fxDesignatedCurrency": {
+      "description": "When specified, the reference currency for the purpose of specifying the FX Haircut relating to a posting obligation. The list of valid currencies is not presently positioned as an enumeration as part of the CDM because that scope is limited to the values specified by ISDA and FpML. As a result, implementers have to make reference to the relevant standard, such as the ISO 4217 standard for currency codes.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  },
+  "required": [
+    "isTerminationCurrency"
+  ]
+}

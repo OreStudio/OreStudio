@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "PartyTerminationCurrencySelection",
+  "description": "Specifies the termination currency to be used by a party when it is the Non-Defaulting Party or the Party which is not the Affected Party.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "statedPartyCurrency": {
+      "description": "Specifies termination Currency.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "statedPartyCurrency"
+  ]
+}

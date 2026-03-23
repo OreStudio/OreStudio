@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "PriceSourceDisruption",
+  "description": "A data defining:  the parameters used to get a price quote to replace the settlement rate option that is disrupted.",
+  "properties": {
+    "fallbackReferencePrice": {
+      "description": "The method, prioritised by the order it is listed in this element, to get a replacement rate for the disrupted settlement rate option.",
+      "$ref": "cdm-observable-asset-FallbackReferencePrice.schema.json"
+    }
+  },
+  "required": [
+    "fallbackReferencePrice"
+  ]
+}

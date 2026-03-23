@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "ExerciseFee",
+  "description": "A class defining the fee payable on exercise of an option. This fee may be defined as an amount or a percentage of the notional exercised. As a difference with FpML, it extends the BuyerSeller class.",
+  "properties": {
+    "payer": {
+      "description": "Specifies the counterparty responsible for making the payments defined by this structure.  The party is one of the two principal parties to the transaction.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "receiver": {
+      "description": "Specifies the party that receives the payments corresponding to this structure.  The party is one of the two counterparties to the transaction.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "notionalReference": {
+      "description": "A pointer style reference to the associated notional schedule defined elsewhere in the document.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaMoney.schema.json"
+    },
+    "feeAmount": {
+      "description": "The amount of fee to be paid on exercise. The fee currency is that of the referenced notional.",
+      "type": "number"
+    },
+    "feeRate": {
+      "description": "A fee represented as a percentage of some referenced notional. A percentage of 5% would be represented as 0.05.",
+      "type": "number"
+    },
+    "feePaymentDate": {
+      "description": "The date on which exercise fee(s) will be paid. It is specified as a relative date.",
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    }
+  },
+  "required": [
+    "notionalReference",
+    "feePaymentDate"
+  ]
+}

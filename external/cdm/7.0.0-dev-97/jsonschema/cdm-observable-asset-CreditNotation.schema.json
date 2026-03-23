@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "CreditNotation",
+  "description": "Represents a class to specify the credit notation as the combination of agency, notation, scale and debt type qualifications.",
+  "properties": {
+    "agency": {
+      "description": "Specifies The credit agency to which the other variables (notation, scale, debt type) refer to.",
+      "$ref": "cdm-observable-asset-CreditRatingAgencyEnum.schema.json"
+    },
+    "notation": {
+      "description": "Specifies The credit rating notation. As it varies among credit rating agencies, FpML doesn't specify a default scheme.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "scale": {
+      "description": "Specifies the credit rating scale, with a typical distinction between short term, long term. FpML doesn't specify a default scheme, which is hence not specified as an enumeration as part of the CDM.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "debt": {
+      "description": "Specifies the credit rating debt type (e.g. long term, high yield, deposits, ...) associated with the credit rating notation and scale.",
+      "$ref": "cdm-observable-asset-CreditRatingDebt.schema.json"
+    },
+    "outlook": {
+      "description": "Assesses the potential direction of a long-term credit rating over the intermediate term, which is generally up to two years for investment grade and generally up to one year for speculative grade.",
+      "$ref": "cdm-observable-asset-CreditRatingOutlookEnum.schema.json"
+    },
+    "creditWatch": {
+      "description": "Indicates the potential direction of a short-term or long-term rating. It focuses on identifiable events and short-term trends that cause ratings to be placed under special surveillance.",
+      "$ref": "cdm-observable-asset-CreditRatingCreditWatchEnum.schema.json"
+    }
+  },
+  "required": [
+    "agency",
+    "notation"
+  ]
+}

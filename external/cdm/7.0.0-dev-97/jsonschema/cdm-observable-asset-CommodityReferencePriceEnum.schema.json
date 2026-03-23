@@ -1,0 +1,343 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "CommodityReferencePriceEnum",
+  "description": "The enumeration values to specify the Commodity Reference Prices specified in the Annex to the 2005 ISDA Commodity Definitions.",
+  "enum": [
+    "ALUMINIUM ALLOY-LME 15 MONTH",
+    "COAL-CENTRAL APPALACHIAN-NYMEX",
+    "COCOA-ICE",
+    "COFFEE ARABICA-ICE",
+    "COFFEE ROBUSTA-ICE",
+    "COPPER-COMEX",
+    "CORN-CBOT",
+    "COTTON NO. 2-ICE",
+    "ETHANOL-CBOT",
+    "FEEDER CATTLE-CME",
+    "FROZEN CONCENTRATED ORANGE JUICE NO. 1-ICE",
+    "GASOLINE-RBOB-NEW YORK-ICE",
+    "GASOLINE-RBOB-NEW YORK-NYMEX",
+    "GOLD-COMEX",
+    "HEATING OIL-NEW YORK-NYMEX",
+    "LEAN HOGS-CME",
+    "LIVE CATTLE-CME",
+    "LUMBER-CME",
+    "MILK-CLASS III-CME",
+    "MILK-NONFAT-DRY-CME",
+    "NATURAL GAS-NYMEX",
+    "NATURAL GAS-PEPL (TEXOK MAINLINE)-INSIDE FERC",
+    "NATURAL GAS-W. TEXAS (WAHA)-INSIDE FERC",
+    "OATS-CBOT",
+    "OIL-WTI-NYMEX",
+    "PALLADIUM-NYMEX",
+    "PLATINUM-NYMEX",
+    "RICE-CBOT",
+    "SILVER-COMEX",
+    "SOYBEANS-CBOT",
+    "SOYBEAN MEAL-CBOT",
+    "SOYBEAN OIL-CBOT",
+    "SUGAR # 11 (WORLD)-ICE",
+    "SUGAR # 16 (US)-ICE",
+    "WHEAT-CBOT",
+    "WHEAT HRW-KCBOT",
+    "WHEAT RED SPRING-MGE"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ALUMINIUM ALLOY-LME 15 MONTH"
+      ],
+      "title": "ALUMINIUM_ALLOY_LME_15_MONTH",
+      "description": "Per 2005 ISDA Commodity Definitions, Sub-Annex A, Section 7.1 Commodity Reference Prices, as amended and supplemented through the date on which parties enter into the relevant transaction."
+    },
+    
+    {
+      "enum": [
+        "COAL-CENTRAL APPALACHIAN-NYMEX"
+      ],
+      "title": "COAL_CENTRAL_APPALACHIAN_NYMEX",
+      "description": "A code for the NYMEX Central Appalachian Coal commodity"
+    },
+    
+    {
+      "enum": [
+        "COCOA-ICE"
+      ],
+      "title": "COCOA_ICE",
+      "description": "A code for the ICE Futures U.S. (‘ICUS’) Cocoa commodity"
+    },
+    
+    {
+      "enum": [
+        "COFFEE ARABICA-ICE"
+      ],
+      "title": "COFFEE_ARABICA_ICE",
+      "description": "A code for the ICUS Coffee C commodity"
+    },
+    
+    {
+      "enum": [
+        "COFFEE ROBUSTA-ICE"
+      ],
+      "title": "COFFEE_ROBUSTA_ICE",
+      "description": "A code for the ICUS Coffee C commodity"
+    },
+    
+    {
+      "enum": [
+        "COPPER-COMEX"
+      ],
+      "title": "COPPER_COMEX",
+      "description": "A code for the COMEX (‘CMX’) Copper Grade #1 commodity"
+    },
+    
+    {
+      "enum": [
+        "CORN-CBOT"
+      ],
+      "title": "CORN_CBOT",
+      "description": "A code for the Chicago Board of Trade (‘CBOT’) Corn commodity"
+    },
+    
+    {
+      "enum": [
+        "COTTON NO. 2-ICE"
+      ],
+      "title": "COTTON_NO__2_ICE",
+      "description": "A code for the ICUS Cotton No. 2 commodity"
+    },
+    
+    {
+      "enum": [
+        "ETHANOL-CBOT"
+      ],
+      "title": "ETHANOL_CBOT",
+      "description": "A code for the CBOT Ethanol commodity"
+    },
+    
+    {
+      "enum": [
+        "FEEDER CATTLE-CME"
+      ],
+      "title": "FEEDER_CATTLE_CME",
+      "description": "A code for the CME Feeder Cattle commodity"
+    },
+    
+    {
+      "enum": [
+        "FROZEN CONCENTRATED ORANGE JUICE NO. 1-ICE"
+      ],
+      "title": "FROZEN_CONCENTRATED_ORANGE_JUICE_NO__1_ICE",
+      "description": "A code for the ICUS Frozen Concentrated Orange Juice commodity"
+    },
+    
+    {
+      "enum": [
+        "GASOLINE-RBOB-NEW YORK-ICE"
+      ],
+      "title": "GASOLINE_RBOB_NEW_YORK_ICE",
+      "description": "A code for the NYMEX Gasoline Blendstock (RBOB) commodity"
+    },
+    
+    {
+      "enum": [
+        "GASOLINE-RBOB-NEW YORK-NYMEX"
+      ],
+      "title": "GASOLINE_RBOB_NEW_YORK_NYMEX",
+      "description": "A code for the NYMEX Gasoline Blendstock (RBOB) commodity"
+    },
+    
+    {
+      "enum": [
+        "GOLD-COMEX"
+      ],
+      "title": "GOLD_COMEX",
+      "description": "A code for the CMX Gold commodity"
+    },
+    
+    {
+      "enum": [
+        "HEATING OIL-NEW YORK-NYMEX"
+      ],
+      "title": "HEATING_OIL_NEW_YORK_NYMEX",
+      "description": "A code for the NYMEX No. 2 Heating Oil, New York Harbor commodity"
+    },
+    
+    {
+      "enum": [
+        "LEAN HOGS-CME"
+      ],
+      "title": "LEAN_HOGS_CME",
+      "description": "A code for the CME Lean Hogs commodity"
+    },
+    
+    {
+      "enum": [
+        "LIVE CATTLE-CME"
+      ],
+      "title": "LIVE_CATTLE_CME",
+      "description": "A code for the CME Live Cattle commodity"
+    },
+    
+    {
+      "enum": [
+        "LUMBER-CME"
+      ],
+      "title": "LUMBER_CME",
+      "description": "A code for the CME Random Length Lumber commodity"
+    },
+    
+    {
+      "enum": [
+        "MILK-CLASS III-CME"
+      ],
+      "title": "MILK_CLASS_III_CME",
+      "description": "A code for the CME Milk Class III commodity"
+    },
+    
+    {
+      "enum": [
+        "MILK-NONFAT-DRY-CME"
+      ],
+      "title": "MILK_NONFAT_DRY_CME",
+      "description": "A code for the CME Non Fat Dry Milk commodity"
+    },
+    
+    {
+      "enum": [
+        "NATURAL GAS-NYMEX"
+      ],
+      "title": "NATURAL_GAS_NYMEX",
+      "description": "A code for the NYMEX Natural Gas commodity"
+    },
+    
+    {
+      "enum": [
+        "NATURAL GAS-PEPL (TEXOK MAINLINE)-INSIDE FERC"
+      ],
+      "title": "NATURAL_GAS_PEPL__TEXOK_MAINLINE__INSIDE_FERC",
+      "description": "A code for the NYMEX Panhandle Basis Swap commodity"
+    },
+    
+    {
+      "enum": [
+        "NATURAL GAS-W. TEXAS (WAHA)-INSIDE FERC"
+      ],
+      "title": "NATURAL_GAS_W__TEXAS__WAHA__INSIDE_FERC",
+      "description": "A code for the NYMEX Waha Basis Swap commodity"
+    },
+    
+    {
+      "enum": [
+        "OATS-CBOT"
+      ],
+      "title": "OATS_CBOT",
+      "description": "A code for the CBOT Oats commodity"
+    },
+    
+    {
+      "enum": [
+        "OIL-WTI-NYMEX"
+      ],
+      "title": "OIL_WTI_NYMEX",
+      "description": "A code for the NYMEX Crude Oil, Light Sweet commodity"
+    },
+    
+    {
+      "enum": [
+        "PALLADIUM-NYMEX"
+      ],
+      "title": "PALLADIUM_NYMEX",
+      "description": "A code for the NYMEX Palladium commodity"
+    },
+    
+    {
+      "enum": [
+        "PLATINUM-NYMEX"
+      ],
+      "title": "PLATINUM_NYMEX",
+      "description": "A code for the NYMEX Platinum commodity"
+    },
+    
+    {
+      "enum": [
+        "RICE-CBOT"
+      ],
+      "title": "RICE_CBOT",
+      "description": "A code for the CBOT Rough Rice commodity"
+    },
+    
+    {
+      "enum": [
+        "SILVER-COMEX"
+      ],
+      "title": "SILVER_COMEX",
+      "description": "A code for the CMX Silver commodity"
+    },
+    
+    {
+      "enum": [
+        "SOYBEANS-CBOT"
+      ],
+      "title": "SOYBEANS_CBOT",
+      "description": "A code for the CBOT Soybeans commodity"
+    },
+    
+    {
+      "enum": [
+        "SOYBEAN MEAL-CBOT"
+      ],
+      "title": "SOYBEAN_MEAL_CBOT",
+      "description": "A code for the CBOT Soybean Meal commodity"
+    },
+    
+    {
+      "enum": [
+        "SOYBEAN OIL-CBOT"
+      ],
+      "title": "SOYBEAN_OIL_CBOT",
+      "description": "A code for the CBOT Soybean Oil commodity"
+    },
+    
+    {
+      "enum": [
+        "SUGAR # 11 (WORLD)-ICE"
+      ],
+      "title": "SUGAR___11__WORLD__ICE",
+      "description": "A code for the ICUS Sugar No. 11 commodity"
+    },
+    
+    {
+      "enum": [
+        "SUGAR # 16 (US)-ICE"
+      ],
+      "title": "SUGAR___16__US__ICE",
+      "description": "A code for the ICUS Sugar No. 16 commodity"
+    },
+    
+    {
+      "enum": [
+        "WHEAT-CBOT"
+      ],
+      "title": "WHEAT_CBOT",
+      "description": "A code for the CBOT Wheat commodity"
+    },
+    
+    {
+      "enum": [
+        "WHEAT HRW-KCBOT"
+      ],
+      "title": "WHEAT_HRW_KCBOT",
+      "description": "A code for the Kansas City Board of Trade (‘KCBT’)Wheat commodity"
+    },
+    
+    {
+      "enum": [
+        "WHEAT RED SPRING-MGE"
+      ],
+      "title": "WHEAT_RED_SPRING_MGE",
+      "description": "A code for the Wheat commodity"
+    }
+  ]
+}

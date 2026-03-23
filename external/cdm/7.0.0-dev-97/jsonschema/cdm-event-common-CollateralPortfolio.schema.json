@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "CollateralPortfolio",
+  "description": "Represents common attributes to define the details of collateral assets, to be used in margin call messaging and contribute to collateral balances e.g securities in a collateral account.",
+  "properties": {
+    "portfolioIdentifier": {
+      "description": "Specifies a unique identifier for a set of collateral positions in a portfolio.",
+      "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+    },
+    "collateralPosition": {
+      "description": "Specifies the individual components of the collateral positions in the collateral portfolio.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-CollateralPosition.schema.json"
+      },
+      "minItems": 0
+    },
+    "collateralBalance": {
+      "description": "Represents the populated or calculated collateral aggregate balance amount for the collateral portfolio.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-CollateralBalance.schema.json"
+      },
+      "minItems": 0
+    },
+    "legalAgreement": {
+      "description": " The specification of a legal agreement between two parties governing the collateral relationship such as Credit Support Agreement or Collateral Transfer Agreement etc. (NB: this can be provided by reference to a global key for each LegalAgreement object).",
+      "$ref": "cdm-legaldocumentation-common-metafields-ReferenceWithMetaLegalAgreement.schema.json"
+    }
+  }
+}

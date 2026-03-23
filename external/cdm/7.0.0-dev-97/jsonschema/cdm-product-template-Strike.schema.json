@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "Strike",
+  "description": "A class describing a single cap or floor rate.",
+  "properties": {
+    "strikeRate": {
+      "description": "The rate for a cap or floor.",
+      "type": "number"
+    },
+    "buyer": {
+      "description": "The buyer of the option.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiverEnum.schema.json"
+    },
+    "seller": {
+      "description": "The party that has sold.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiverEnum.schema.json"
+    }
+  },
+  "required": [
+    "strikeRate"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "CollateralInterestHandlingEnum",
+  "description": "How is collateral interest to be handled?",
+  "enum": [
+    "Adjust",
+    "Transfer",
+    "Transfer_or_Adjust"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Adjust"
+      ],
+      "title": "Adjust",
+      "description": " Adjust the collateral balance to include the interest amount "
+    },
+    
+    {
+      "enum": [
+        "Transfer"
+      ],
+      "title": "Transfer",
+      "description": " Transfer the interest each period "
+    },
+    
+    {
+      "enum": [
+        "Transfer_or_Adjust"
+      ],
+      "title": "Transfer_or_Adjust",
+      "description": " Transfer the interest if it meets certain criteria, or otherwise adjust the collateral balance to reflect the interest amount  "
+    }
+  ]
+}

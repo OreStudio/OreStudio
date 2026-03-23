@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "IndependentAmountCompareEnum",
+  "description": "Specifies how multiple credit ratings are compared when determining the applicable Independent Amount, and whether that measure is highest, lowest, or a comparison of the ratings.",
+  "enum": [
+    "Average",
+    "Compare",
+    "Highest",
+    "Lowest",
+    "Other",
+    "ReferenceAgency",
+    "SecondBest"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Average"
+      ],
+      "title": "Average",
+      "description": "Denotes the average credit notation if several notations are listed."
+    },
+    
+    {
+      "enum": [
+        "Compare"
+      ],
+      "title": "Compare",
+      "description": "Represents that the credit ratings across multiple credit rating agencies will be compared against one another."
+    },
+    
+    {
+      "enum": [
+        "Highest"
+      ],
+      "title": "Highest",
+      "description": "Denotes the highest credit notation if several notations are listed."
+    },
+    
+    {
+      "enum": [
+        "Lowest"
+      ],
+      "title": "Lowest",
+      "description": "Denotes the lowest credit notation if several notations are listed."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Utilised where bespoke language represents the label characteristics of the rating."
+    },
+    
+    {
+      "enum": [
+        "ReferenceAgency"
+      ],
+      "title": "ReferenceAgency",
+      "description": "Denotes that a credit notation issued from a defined reference agency is used if several notations are listed."
+    },
+    
+    {
+      "enum": [
+        "SecondBest"
+      ],
+      "title": "SecondBest",
+      "description": "Denotes the second best credit notation if several notations are listed."
+    }
+  ]
+}

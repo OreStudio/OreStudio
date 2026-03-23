@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CalculationAgentTerms",
+  "description": "Details of the party calculating the value of collateral to be delivered or returned.",
+  "properties": {
+    "party": {
+      "description": "The party which is specified as Calculation Agent for Initial Margin.",
+      "$ref": "cdm-legaldocumentation-csa-CalculationValuationAgentPartyEnum.schema.json"
+    },
+    "bespokeCalculationAgentTerms": {
+      "description": "The Calculation Agent (IM) terms when specified.",
+      "type": "string"
+    }
+  }
+}

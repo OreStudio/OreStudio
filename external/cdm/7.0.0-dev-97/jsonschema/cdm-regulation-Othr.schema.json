@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Othr",
+  "properties": {
+    "finInstrmGnlAttrbts": {
+      "$ref": "cdm-regulation-FinInstrmGnlAttrbts.schema.json"
+    },
+    "derivInstrmAttrbts": {
+      "$ref": "cdm-regulation-DerivInstrmAttrbts.schema.json"
+    },
+    "id": {
+      "type": "string"
+    },
+    "schmeNm": {
+      "$ref": "cdm-regulation-SchmeNm.schema.json"
+    }
+  },
+  "required": [
+    "finInstrmGnlAttrbts",
+    "derivInstrmAttrbts",
+    "id",
+    "schmeNm"
+  ]
+}

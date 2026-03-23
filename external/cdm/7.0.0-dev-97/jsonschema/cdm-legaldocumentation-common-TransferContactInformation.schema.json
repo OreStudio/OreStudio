@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "TransferContactInformation",
+  "description": "Specifies transfer information including address and, optionally, an associated account. This type also supports the ISDA CSA representation as a single string, through the address attribute in Contact Information.",
+  "properties": {
+    "telephone": {
+      "description": "The telephone number.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-TelephoneNumber.schema.json"
+      },
+      "minItems": 0
+    },
+    "address": {
+      "description": "The street/postal address.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Address.schema.json"
+      },
+      "minItems": 0
+    },
+    "email": {
+      "description": "The email address.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "webPage": {
+      "description": "The web page. This attribute is not specified as part of the FpML ContactInformation complex type.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "account": {
+      "description": "Specifies the account infomation for transfers to a party.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Account.schema.json"
+      },
+      "minItems": 0
+    },
+    "additionalInformation": {
+      "description": "Additional transfer information.",
+      "type": "string"
+    }
+  }
+}

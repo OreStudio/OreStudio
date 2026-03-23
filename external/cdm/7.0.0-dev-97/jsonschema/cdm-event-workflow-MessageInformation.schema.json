@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "MessageInformation",
+  "description": "This class corresponds to the components of the FpML MessageHeader.model.",
+  "properties": {
+    "messageId": {
+      "description": "A unique identifier assigned to the message.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "sentBy": {
+      "description": "The identifier for the originator of a message instance.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "sentTo": {
+      "description": "The identifier(s) for the recipient(s) of a message instance.",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 0
+    },
+    "copyTo": {
+      "description": "A unique identifier (within the specified coding scheme) giving the details of some party to whom a copy of this message will be sent for reference.",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "messageId"
+  ]
+}

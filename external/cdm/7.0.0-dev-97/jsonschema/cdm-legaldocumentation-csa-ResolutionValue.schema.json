@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ResolutionValue",
+  "description": "Methodology for resolving disputes in respect of the determination of the value of collateral.",
+  "properties": {
+    "cash": {
+      "description": "Details of how cash collateral is valued when resolving disputes.",
+      "$ref": "cdm-legaldocumentation-csa-ValueCashEnum.schema.json"
+    },
+    "securities": {
+      "description": "Details of how securities collateral is valued when resolving disputes.",
+      "$ref": "cdm-legaldocumentation-csa-ValueSecuritiesEnum.schema.json"
+    },
+    "fallback": {
+      "description": "Represents whether a fallback calculation method is applicable. 'True' if fallback calculation method is applicable.",
+      "type": "boolean"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  }
+}

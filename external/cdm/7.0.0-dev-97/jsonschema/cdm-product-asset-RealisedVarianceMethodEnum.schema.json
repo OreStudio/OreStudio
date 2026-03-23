@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "RealisedVarianceMethodEnum",
+  "description": "The contract specifies which price must satisfy the boundary condition.  Used for variance, volatility and correlation caps and floors.",
+  "enum": [
+    "Both",
+    "Last",
+    "Previous"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Both"
+      ],
+      "title": "Both",
+      "description": "For a return on day T, the observed prices on both T and T-1 must be in range"
+    },
+    
+    {
+      "enum": [
+        "Last"
+      ],
+      "title": "Last",
+      "description": "For a return on day T, the observed price on T must be in range."
+    },
+    
+    {
+      "enum": [
+        "Previous"
+      ],
+      "title": "Previous",
+      "description": "For a return on day T, the observed price on T-1 must be in range."
+    }
+  ]
+}

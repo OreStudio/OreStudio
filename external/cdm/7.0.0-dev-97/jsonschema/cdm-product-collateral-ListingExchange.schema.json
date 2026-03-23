@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "ListingExchange",
+  "description": "Specifies a filter based on a stock exchange.",
+  "properties": {
+    "exchange": {
+      "description": "Represents a filter based on the Primary Stock Exchange facilitating the listing of companies, exchange of Stocks, Exchange traded Derivatives, Bonds, and other Securities expressed in ISO standard 10383.",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

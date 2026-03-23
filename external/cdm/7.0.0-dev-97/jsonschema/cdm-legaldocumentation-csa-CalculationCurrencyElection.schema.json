@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CalculationCurrencyElection",
+  "description": "A class to specify the ISDA SIMM Calculation Currency.",
+  "properties": {
+    "party": {
+      "description": "The party which the SIMM Calculation Currency qualification applies to.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "isBaseCurrency": {
+      "description": "The SIMM Calculation Currency (also known as SIMM Reporting Currency) means the Base Currency when True. It means a different currency when False. In that latter case, the SIMM Calculation Currency is specified as part of the currency attribute.",
+      "type": "boolean"
+    },
+    "currency": {
+      "description": "The currency in which the ISDA SIMM Calculation is denominated, when different from the Base Currency. The list of valid currencies is not presently positioned as an enumeration as part of the CDM because that scope is limited to the values specified by ISDA and FpML. As a result, implementers have to make reference to the relevant standard, such as the ISO 4217 standard for currency codes.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  },
+  "required": [
+    "party",
+    "isBaseCurrency"
+  ]
+}

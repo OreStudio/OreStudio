@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "Party",
+  "description": "A class to specify a party, without a qualification as to whether this party is a legal entity or a natural person, although the model provides the ability to associate a person (or set of persons) to a party, which use case would imply that such party would be a legal entity (even if not formally specified as such). ",
+  "properties": {
+    "partyId": {
+      "description": "The identifier associated with a party, e.g. the 20 digits LEI code.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "name": {
+      "description": "The party name.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "businessUnit": {
+      "description": "Optional organization unit information used to describe the organization units (e.g. trading desks) involved in a transaction or business process, incl. the contact information (when relevant).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-BusinessUnit.schema.json"
+      },
+      "minItems": 0
+    },
+    "person": {
+      "description": "The person(s) who might be associated with the party as part of the execution, contract or legal document.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-NaturalPerson.schema.json"
+      },
+      "minItems": 0
+    },
+    "personRole": {
+      "description": "The role of the person(s) ",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-NaturalPersonRole.schema.json"
+      },
+      "minItems": 0
+    },
+    "account": {
+      "description": "The account that might be associated with the party. At most one account can be specified, as it is expected that this information is used in the context of a contract or legal document where only one account per party can be associated with such object.",
+      "$ref": "cdm-base-staticdata-party-Account.schema.json"
+    },
+    "contactInformation": {
+      "description": "The postal/street address, telephone number, email address and/or web page. If the contact information is specific to the associated business unit(s) or person (s), it should be associated with those.",
+      "$ref": "cdm-base-staticdata-party-ContactInformation.schema.json"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SubstitutedRegimeTerms",
+  "description": "Specifies the applicability of the Substituted Regime as denoted in the Substituted Regime Table as part of certain legal agreements, such as such as the ISDA 2016 and 2018 CSA for Initial Margin.",
+  "properties": {
+    "party": {
+      "description": "The party for which the regime terms are being specified when acting as collateral taker.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "isApplicable": {
+      "description": "The specification of whether the regime is elected as applicable to the party when acting as collateral taker.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "party",
+    "isApplicable"
+  ]
+}

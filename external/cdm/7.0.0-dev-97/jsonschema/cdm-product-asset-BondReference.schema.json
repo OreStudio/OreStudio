@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "BondReference",
+  "description": "Reference to a bond underlier to represent an asset swap or Condition Precedent Bond.",
+  "properties": {
+    "bond": {
+      "description": "Reference to a bond underlier.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    },
+    "conditionPrecedentBond": {
+      "description": "To indicate whether the Condition Precedent Bond is applicable. The swap contract is only valid if the bond is issued and if there is any dispute over the terms of fixed stream then the bond terms would be used.",
+      "type": "boolean"
+    },
+    "discrepancyClause": {
+      "description": "To indicate whether the Discrepancy Clause is applicable.",
+      "type": "boolean"
+    },
+    "couponRate": {
+      "description": "Specifies the coupon rate (expressed in percentage) of a fixed income security or convertible bond.",
+      "$ref": "cdm-product-asset-FixedRateSpecification.schema.json"
+    }
+  },
+  "required": [
+    "bond",
+    "conditionPrecedentBond"
+  ]
+}

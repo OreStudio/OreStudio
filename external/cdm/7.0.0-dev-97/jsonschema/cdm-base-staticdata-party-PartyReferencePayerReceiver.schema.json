@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "PartyReferencePayerReceiver",
+  "description": "Specifies the parties responsible for making and receiving payments defined by this structure.",
+  "properties": {
+    "payerPartyReference": {
+      "description": "The party responsible for making the payments defined by this structure.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "payerAccountReference": {
+      "description": "A reference to the account responsible for making the payments defined by this structure.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaAccount.schema.json"
+    },
+    "receiverPartyReference": {
+      "description": "The party that receives the payments corresponding to this structure.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "receiverAccountReference": {
+      "description": "A reference to the account that receives the payments corresponding to this structure.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaAccount.schema.json"
+    }
+  },
+  "required": [
+    "payerPartyReference",
+    "receiverPartyReference"
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "AncillaryRoleEnum",
+  "description": "Defines the enumerated values to specify the ancillary roles to the transaction. The product is agnostic to the actual parties involved in the transaction, with the party references abstracted away from the product definition and replaced by the AncillaryRoleEnum. The AncillaryRoleEnum can then be positioned in the product and the AncillaryParty type, which is positioned outside of the product definition, allows the AncillaryRoleEnum to be associated with an actual party reference.",
+  "enum": [
+    "CalculationAgentFallback",
+    "CalculationAgentIndependent",
+    "CalculationAgentMandatoryEarlyTermination",
+    "CalculationAgentOptionalEarlyTermination",
+    "DisruptionEventsDeterminingParty",
+    "ExerciseNoticeReceiverPartyCancelableProvision",
+    "ExerciseNoticeReceiverPartyExtendibleProvision",
+    "ExerciseNoticeReceiverPartyManual",
+    "ExerciseNoticeReceiverPartyOptionalEarlyTermination",
+    "ExtraordinaryDividendsParty",
+    "PredeterminedClearingOrganizationParty"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CalculationAgentFallback"
+      ],
+      "title": "CalculationAgentFallback",
+      "description": "Specifies the party responsible for deciding the fallback rate."
+    },
+    
+    {
+      "enum": [
+        "CalculationAgentIndependent"
+      ],
+      "title": "CalculationAgentIndependent",
+      "description": "Specifies the party responsible for performing calculation agent duties as defined in the applicable product definition."
+    },
+    
+    {
+      "enum": [
+        "CalculationAgentMandatoryEarlyTermination"
+      ],
+      "title": "CalculationAgentMandatoryEarlyTermination",
+      "description": "Specifies the party responsible for performing calculation agent duties associated with an mandatory early termination."
+    },
+    
+    {
+      "enum": [
+        "CalculationAgentOptionalEarlyTermination"
+      ],
+      "title": "CalculationAgentOptionalEarlyTermination",
+      "description": "Specifies the party responsible for performing calculation agent duties associated with an optional early termination."
+    },
+    
+    {
+      "enum": [
+        "DisruptionEventsDeterminingParty"
+      ],
+      "title": "DisruptionEventsDeterminingParty",
+      "description": "Specifies the party which determines additional disruption events."
+    },
+    
+    {
+      "enum": [
+        "ExerciseNoticeReceiverPartyCancelableProvision"
+      ],
+      "title": "ExerciseNoticeReceiverPartyCancelableProvision",
+      "description": "Specifies the party to which notice of a cancelable provision exercise should be given."
+    },
+    
+    {
+      "enum": [
+        "ExerciseNoticeReceiverPartyExtendibleProvision"
+      ],
+      "title": "ExerciseNoticeReceiverPartyExtendibleProvision",
+      "description": "Specifies the party to which notice of a extendible provision exercise should be given."
+    },
+    
+    {
+      "enum": [
+        "ExerciseNoticeReceiverPartyManual"
+      ],
+      "title": "ExerciseNoticeReceiverPartyManual",
+      "description": "Specifies the party to which notice of a manual exercise should be given."
+    },
+    
+    {
+      "enum": [
+        "ExerciseNoticeReceiverPartyOptionalEarlyTermination"
+      ],
+      "title": "ExerciseNoticeReceiverPartyOptionalEarlyTermination",
+      "description": "Specifies the party to which notice of a optional early termination exercise should be given."
+    },
+    
+    {
+      "enum": [
+        "ExtraordinaryDividendsParty"
+      ],
+      "title": "ExtraordinaryDividendsParty",
+      "description": "Specifies the party which determines if dividends are extraordinary in relation to normal levels."
+    },
+    
+    {
+      "enum": [
+        "PredeterminedClearingOrganizationParty"
+      ],
+      "title": "PredeterminedClearingOrganizationParty",
+      "description": "Specifies the clearing organization (CCP, DCO) which the trade should be cleared."
+    }
+  ]
+}

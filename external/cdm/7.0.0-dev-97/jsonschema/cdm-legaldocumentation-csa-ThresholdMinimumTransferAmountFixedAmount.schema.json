@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ThresholdMinimumTransferAmountFixedAmount",
+  "description": "Defines the Threshold or the Minimum Transfer Amount (MTA) as a fixed amount.",
+  "properties": {
+    "zeroEvent": {
+      "description": "Indicates whether a trigger applies for the Threshold or Minimum Transfer Amount to fall to zero. If 'True' then such a trigger exists.",
+      "type": "boolean"
+    },
+    "event": {
+      "description": "Specifies the relevant trigger for the Threshold or Minimum Transfer Amount to fall to zero.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ZeroEventEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "amount": {
+      "description": "Specifies the monetary value of the Threshold or the Minimum Transfer Amount (MTA) applicable to collateral transfer obligations.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  },
+  "required": [
+    "amount"
+  ]
+}

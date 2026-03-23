@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "FPVFinalPriceElectionFallbackEnum",
+  "description": "Specifies the fallback provisions in respect to the applicable Futures Price Valuation.",
+  "enum": [
+    "FPVClose",
+    "FPVHedgeExecution"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FPVClose"
+      ],
+      "title": "FPVClose",
+      "description": "In respect of the Early Final Valuation Date, the provisions for FPV Close shall apply."
+    },
+    
+    {
+      "enum": [
+        "FPVHedgeExecution"
+      ],
+      "title": "FPVHedgeExecution",
+      "description": "In respect of the Early Final Valuation Date, the provisions for FPV Hedge Execution shall apply."
+    }
+  ]
+}

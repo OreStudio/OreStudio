@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "InterestRateCurve",
+  "properties": {
+    "floatingRateIndex": {
+      "$ref": "cdm-base-staticdata-asset-rates-metafields-FieldWithMetaFloatingRateIndexEnum.schema.json"
+    },
+    "tenor": {
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    }
+  },
+  "required": [
+    "floatingRateIndex",
+    "tenor"
+  ]
+}

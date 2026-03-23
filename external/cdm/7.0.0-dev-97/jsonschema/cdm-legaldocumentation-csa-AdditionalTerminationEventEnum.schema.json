@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "AdditionalTerminationEventEnum",
+  "description": "Specifies the types of events found in the related Master Agreement that may lead to the early termination of the Master Agreement, including suspension of the affected party's rights to rehypothecate, transfer, or substitute collateral.",
+  "enum": [
+    "AsApplicable",
+    "AsSpecified",
+    "FailureToNotifyNAV",
+    "InvestmentAdvisor",
+    "KeyPersons",
+    "NAVDeclineTrigger",
+    "NAVFloor",
+    "OperativeDocs",
+    "RatingsDowngradeOrWithdrawalParty1",
+    "RatingsDowngradeOrWithdrawalParty2"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsApplicable"
+      ],
+      "title": "AsApplicable",
+      "description": "Represents the Additional Termination Event(s) in the related Master Agreement."
+    },
+    
+    {
+      "enum": [
+        "AsSpecified"
+      ],
+      "title": "AsSpecified",
+      "description": "Represents any bespoke Additional Termination Event(s) that are set out in the related Specified Condition clause."
+    },
+    
+    {
+      "enum": [
+        "FailureToNotifyNAV"
+      ],
+      "title": "FailureToNotifyNAV",
+      "description": "Specifies an event where a party fails to notify the other of a decline in Net Asset Value by a specified amount over a specified period of time."
+    },
+    
+    {
+      "enum": [
+        "InvestmentAdvisor"
+      ],
+      "title": "InvestmentAdvisor",
+      "description": "Specifies an event where the investment advisor of a party ceases to act for the party."
+    },
+    
+    {
+      "enum": [
+        "KeyPersons"
+      ],
+      "title": "KeyPersons",
+      "description": "Specifies an event where a person deemed important to a party has departed."
+    },
+    
+    {
+      "enum": [
+        "NAVDeclineTrigger"
+      ],
+      "title": "NAVDeclineTrigger",
+      "description": "Specifies an event in which a partys Net Asset Value (NAV) has declined beyond a specified percentage or amount within a defined time period."
+    },
+    
+    {
+      "enum": [
+        "NAVFloor"
+      ],
+      "title": "NAVFloor",
+      "description": "Specifies an event in which a partys Net Asset Value (NAV) falls below a predetermined absolute value, regardless of the timeframe over which the decline occurs. This value sets a minimum acceptable NAV threshold expressed as either a percentage or amount."
+    },
+    
+    {
+      "enum": [
+        "OperativeDocs"
+      ],
+      "title": "OperativeDocs",
+      "description": "Specifies an event where a party delivers operative documents that are invalid, untrue or unenforceable."
+    },
+    
+    {
+      "enum": [
+        "RatingsDowngradeOrWithdrawalParty1"
+      ],
+      "title": "RatingsDowngradeOrWithdrawalParty1",
+      "description": "Specifies an event where Party 1 experiences a downgrade beyond a predetermined level, or has their credit rating withdrawn or suspended."
+    },
+    
+    {
+      "enum": [
+        "RatingsDowngradeOrWithdrawalParty2"
+      ],
+      "title": "RatingsDowngradeOrWithdrawalParty2",
+      "description": "Specifies an event where Party 2 experiences a downgrade beyond a predetermined level, or has their credit rating withdrawn or suspended."
+    }
+  ]
+}

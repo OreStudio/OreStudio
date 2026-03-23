@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "MinimumTransferAmountElection",
+  "description": "Specifies the method by which the minimum transfer amount is defined, such as a fixed amount, ratings based, or an alternative basis set out in the agreement.",
+  "properties": {
+    "party": {
+      "description": "The party to which the minimum transfer amount applies.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "fixedAmount": {
+      "description": "Defines that the Minimum Transfer Amount (MTA) is a Fixed Amount.",
+      "$ref": "cdm-legaldocumentation-csa-ThresholdMinimumTransferAmountFixedAmount.schema.json"
+    },
+    "ratingsBased": {
+      "description": "Defines that the Minimum Transfer Amount (MTA) is based on a Ratings condition(s).",
+      "$ref": "cdm-legaldocumentation-csa-MinimumTransferAmountRatingsBased.schema.json"
+    },
+    "other": {
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

@@ -1,0 +1,1612 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "ISOCurrencyCodeEnum",
+  "description": "The enumerated values to specify standard currency codes according to the International Standards Organization (ISO).  The set of codes in this enumerated list is sourced from ISO Standard 4217 (https://www.currency-iso.org/en/home/tables/table-a1.html), as of 29-Aug-18.",
+  "enum": [
+    "AED",
+    "AFN",
+    "ALL",
+    "AMD",
+    "AOA",
+    "ARS",
+    "AUD",
+    "AWG",
+    "AZN",
+    "BAM",
+    "BBD",
+    "BDT",
+    "BHD",
+    "BIF",
+    "BMD",
+    "BND",
+    "BOB",
+    "BOV",
+    "BRL",
+    "BSD",
+    "BTN",
+    "BWP",
+    "BYN",
+    "BZD",
+    "CAD",
+    "CDF",
+    "CHE",
+    "CHF",
+    "CHW",
+    "CLF",
+    "CLP",
+    "CNY",
+    "COP",
+    "COU",
+    "CRC",
+    "CUP",
+    "CVE",
+    "CZK",
+    "DJF",
+    "DKK",
+    "DOP",
+    "DZD",
+    "EGP",
+    "ERN",
+    "ETB",
+    "EUR",
+    "FJD",
+    "FKP",
+    "GBP",
+    "GEL",
+    "GHS",
+    "GIP",
+    "GMD",
+    "GNF",
+    "GTQ",
+    "GYD",
+    "HKD",
+    "HNL",
+    "HTG",
+    "HUF",
+    "IDR",
+    "ILS",
+    "INR",
+    "IQD",
+    "IRR",
+    "ISK",
+    "JMD",
+    "JOD",
+    "JPY",
+    "KES",
+    "KGS",
+    "KHR",
+    "KMF",
+    "KPW",
+    "KRW",
+    "KWD",
+    "KYD",
+    "KZT",
+    "LAK",
+    "LBP",
+    "LKR",
+    "LRD",
+    "LSL",
+    "LYD",
+    "MAD",
+    "MDL",
+    "MGA",
+    "MKD",
+    "MMK",
+    "MNT",
+    "MOP",
+    "MRU",
+    "MUR",
+    "MVR",
+    "MWK",
+    "MXN",
+    "MXV",
+    "MYR",
+    "MZN",
+    "NAD",
+    "NGN",
+    "NIO",
+    "NOK",
+    "NPR",
+    "NZD",
+    "OMR",
+    "PAB",
+    "PEN",
+    "PGK",
+    "PHP",
+    "PKR",
+    "PLN",
+    "PYG",
+    "QAR",
+    "RON",
+    "RSD",
+    "RUB",
+    "RWF",
+    "SAR",
+    "SBD",
+    "SCR",
+    "SDG",
+    "SEK",
+    "SGD",
+    "SHP",
+    "SLE",
+    "SOS",
+    "SRD",
+    "SSP",
+    "STN",
+    "SVC",
+    "SYP",
+    "SZL",
+    "THB",
+    "TJS",
+    "TMT",
+    "TND",
+    "TOP",
+    "TRY",
+    "TTD",
+    "TWD",
+    "TZS",
+    "UAH",
+    "UGX",
+    "USD",
+    "USN",
+    "UYI",
+    "UYU",
+    "UYW",
+    "UZS",
+    "VED",
+    "VES",
+    "VND",
+    "VUV",
+    "WST",
+    "XAD",
+    "XAF",
+    "XAG",
+    "XAU",
+    "XBA",
+    "XBB",
+    "XBC",
+    "XBD",
+    "XCD",
+    "XCG",
+    "XDR",
+    "XOF",
+    "XPD",
+    "XPF",
+    "XPT",
+    "XSU",
+    "XTS",
+    "XUA",
+    "XXX",
+    "YER",
+    "ZAR",
+    "ZMW",
+    "ZWG"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AED"
+      ],
+      "title": "AED",
+      "description": "UAE Dirham"
+    },
+    
+    {
+      "enum": [
+        "AFN"
+      ],
+      "title": "AFN",
+      "description": "Afghani"
+    },
+    
+    {
+      "enum": [
+        "ALL"
+      ],
+      "title": "ALL",
+      "description": "Lek"
+    },
+    
+    {
+      "enum": [
+        "AMD"
+      ],
+      "title": "AMD",
+      "description": "Armenian Dram"
+    },
+    
+    {
+      "enum": [
+        "AOA"
+      ],
+      "title": "AOA",
+      "description": "Kwanza"
+    },
+    
+    {
+      "enum": [
+        "ARS"
+      ],
+      "title": "ARS",
+      "description": "Argentine Peso"
+    },
+    
+    {
+      "enum": [
+        "AUD"
+      ],
+      "title": "AUD",
+      "description": "Australian Dollar"
+    },
+    
+    {
+      "enum": [
+        "AWG"
+      ],
+      "title": "AWG",
+      "description": "Aruban Florin"
+    },
+    
+    {
+      "enum": [
+        "AZN"
+      ],
+      "title": "AZN",
+      "description": "Azerbaijan Manat"
+    },
+    
+    {
+      "enum": [
+        "BAM"
+      ],
+      "title": "BAM",
+      "description": "Convertible Mark"
+    },
+    
+    {
+      "enum": [
+        "BBD"
+      ],
+      "title": "BBD",
+      "description": "Barbados Dollar"
+    },
+    
+    {
+      "enum": [
+        "BDT"
+      ],
+      "title": "BDT",
+      "description": "Taka"
+    },
+    
+    {
+      "enum": [
+        "BHD"
+      ],
+      "title": "BHD",
+      "description": "Bahraini Dinar"
+    },
+    
+    {
+      "enum": [
+        "BIF"
+      ],
+      "title": "BIF",
+      "description": "Burundi Franc"
+    },
+    
+    {
+      "enum": [
+        "BMD"
+      ],
+      "title": "BMD",
+      "description": "Bermudian Dollar"
+    },
+    
+    {
+      "enum": [
+        "BND"
+      ],
+      "title": "BND",
+      "description": "Brunei Dollar"
+    },
+    
+    {
+      "enum": [
+        "BOB"
+      ],
+      "title": "BOB",
+      "description": "Boliviano"
+    },
+    
+    {
+      "enum": [
+        "BOV"
+      ],
+      "title": "BOV",
+      "description": "Mvdol"
+    },
+    
+    {
+      "enum": [
+        "BRL"
+      ],
+      "title": "BRL",
+      "description": "Brazilian Real"
+    },
+    
+    {
+      "enum": [
+        "BSD"
+      ],
+      "title": "BSD",
+      "description": "Bahamian Dollar"
+    },
+    
+    {
+      "enum": [
+        "BTN"
+      ],
+      "title": "BTN",
+      "description": "Ngultrum"
+    },
+    
+    {
+      "enum": [
+        "BWP"
+      ],
+      "title": "BWP",
+      "description": "Pula"
+    },
+    
+    {
+      "enum": [
+        "BYN"
+      ],
+      "title": "BYN",
+      "description": "Belarusian Ruble"
+    },
+    
+    {
+      "enum": [
+        "BZD"
+      ],
+      "title": "BZD",
+      "description": "Belize Dollar"
+    },
+    
+    {
+      "enum": [
+        "CAD"
+      ],
+      "title": "CAD",
+      "description": "Canadian Dollar"
+    },
+    
+    {
+      "enum": [
+        "CDF"
+      ],
+      "title": "CDF",
+      "description": "Congolese Franc"
+    },
+    
+    {
+      "enum": [
+        "CHE"
+      ],
+      "title": "CHE",
+      "description": "WIR Euro"
+    },
+    
+    {
+      "enum": [
+        "CHF"
+      ],
+      "title": "CHF",
+      "description": "Swiss Franc"
+    },
+    
+    {
+      "enum": [
+        "CHW"
+      ],
+      "title": "CHW",
+      "description": "WIR Franc"
+    },
+    
+    {
+      "enum": [
+        "CLF"
+      ],
+      "title": "CLF",
+      "description": "Unidad de Fomento"
+    },
+    
+    {
+      "enum": [
+        "CLP"
+      ],
+      "title": "CLP",
+      "description": "Chilean Peso"
+    },
+    
+    {
+      "enum": [
+        "CNY"
+      ],
+      "title": "CNY",
+      "description": "Yuan Renminbi"
+    },
+    
+    {
+      "enum": [
+        "COP"
+      ],
+      "title": "COP",
+      "description": "Colombian Peso"
+    },
+    
+    {
+      "enum": [
+        "COU"
+      ],
+      "title": "COU",
+      "description": "Unidad de Valor Real"
+    },
+    
+    {
+      "enum": [
+        "CRC"
+      ],
+      "title": "CRC",
+      "description": "Costa Rican Colon"
+    },
+    
+    {
+      "enum": [
+        "CUP"
+      ],
+      "title": "CUP",
+      "description": "Cuban Peso"
+    },
+    
+    {
+      "enum": [
+        "CVE"
+      ],
+      "title": "CVE",
+      "description": "Cabo Verde Escudo"
+    },
+    
+    {
+      "enum": [
+        "CZK"
+      ],
+      "title": "CZK",
+      "description": "Czech Koruna"
+    },
+    
+    {
+      "enum": [
+        "DJF"
+      ],
+      "title": "DJF",
+      "description": "Djibouti Franc"
+    },
+    
+    {
+      "enum": [
+        "DKK"
+      ],
+      "title": "DKK",
+      "description": "Danish Krone"
+    },
+    
+    {
+      "enum": [
+        "DOP"
+      ],
+      "title": "DOP",
+      "description": "Dominican Peso"
+    },
+    
+    {
+      "enum": [
+        "DZD"
+      ],
+      "title": "DZD",
+      "description": "Algerian Dinar"
+    },
+    
+    {
+      "enum": [
+        "EGP"
+      ],
+      "title": "EGP",
+      "description": "Egyptian Pound"
+    },
+    
+    {
+      "enum": [
+        "ERN"
+      ],
+      "title": "ERN",
+      "description": "Nakfa"
+    },
+    
+    {
+      "enum": [
+        "ETB"
+      ],
+      "title": "ETB",
+      "description": "Ethiopian Birr"
+    },
+    
+    {
+      "enum": [
+        "EUR"
+      ],
+      "title": "EUR",
+      "description": "Euro"
+    },
+    
+    {
+      "enum": [
+        "FJD"
+      ],
+      "title": "FJD",
+      "description": "Fiji Dollar"
+    },
+    
+    {
+      "enum": [
+        "FKP"
+      ],
+      "title": "FKP",
+      "description": "Falkland Islands Pound"
+    },
+    
+    {
+      "enum": [
+        "GBP"
+      ],
+      "title": "GBP",
+      "description": "Pound Sterling"
+    },
+    
+    {
+      "enum": [
+        "GEL"
+      ],
+      "title": "GEL",
+      "description": "Lari"
+    },
+    
+    {
+      "enum": [
+        "GHS"
+      ],
+      "title": "GHS",
+      "description": "Ghana Cedi"
+    },
+    
+    {
+      "enum": [
+        "GIP"
+      ],
+      "title": "GIP",
+      "description": "Gibraltar Pound"
+    },
+    
+    {
+      "enum": [
+        "GMD"
+      ],
+      "title": "GMD",
+      "description": "Dalasi"
+    },
+    
+    {
+      "enum": [
+        "GNF"
+      ],
+      "title": "GNF",
+      "description": "Guinean Franc"
+    },
+    
+    {
+      "enum": [
+        "GTQ"
+      ],
+      "title": "GTQ",
+      "description": "Quetzal"
+    },
+    
+    {
+      "enum": [
+        "GYD"
+      ],
+      "title": "GYD",
+      "description": "Guyana Dollar"
+    },
+    
+    {
+      "enum": [
+        "HKD"
+      ],
+      "title": "HKD",
+      "description": "Hong Kong Dollar"
+    },
+    
+    {
+      "enum": [
+        "HNL"
+      ],
+      "title": "HNL",
+      "description": "Lempira"
+    },
+    
+    {
+      "enum": [
+        "HTG"
+      ],
+      "title": "HTG",
+      "description": "Gourde"
+    },
+    
+    {
+      "enum": [
+        "HUF"
+      ],
+      "title": "HUF",
+      "description": "Forint"
+    },
+    
+    {
+      "enum": [
+        "IDR"
+      ],
+      "title": "IDR",
+      "description": "Rupiah"
+    },
+    
+    {
+      "enum": [
+        "ILS"
+      ],
+      "title": "ILS",
+      "description": "New Israeli Sheqel"
+    },
+    
+    {
+      "enum": [
+        "INR"
+      ],
+      "title": "INR",
+      "description": "Indian Rupee"
+    },
+    
+    {
+      "enum": [
+        "IQD"
+      ],
+      "title": "IQD",
+      "description": "Iraqi Dinar"
+    },
+    
+    {
+      "enum": [
+        "IRR"
+      ],
+      "title": "IRR",
+      "description": "Iranian Rial"
+    },
+    
+    {
+      "enum": [
+        "ISK"
+      ],
+      "title": "ISK",
+      "description": "Iceland Krona"
+    },
+    
+    {
+      "enum": [
+        "JMD"
+      ],
+      "title": "JMD",
+      "description": "Jamaican Dollar"
+    },
+    
+    {
+      "enum": [
+        "JOD"
+      ],
+      "title": "JOD",
+      "description": "Jordanian Dinar"
+    },
+    
+    {
+      "enum": [
+        "JPY"
+      ],
+      "title": "JPY",
+      "description": "Yen"
+    },
+    
+    {
+      "enum": [
+        "KES"
+      ],
+      "title": "KES",
+      "description": "Kenyan Shilling"
+    },
+    
+    {
+      "enum": [
+        "KGS"
+      ],
+      "title": "KGS",
+      "description": "Som"
+    },
+    
+    {
+      "enum": [
+        "KHR"
+      ],
+      "title": "KHR",
+      "description": "Riel"
+    },
+    
+    {
+      "enum": [
+        "KMF"
+      ],
+      "title": "KMF",
+      "description": "Comorian Franc "
+    },
+    
+    {
+      "enum": [
+        "KPW"
+      ],
+      "title": "KPW",
+      "description": "North Korean Won"
+    },
+    
+    {
+      "enum": [
+        "KRW"
+      ],
+      "title": "KRW",
+      "description": "Won"
+    },
+    
+    {
+      "enum": [
+        "KWD"
+      ],
+      "title": "KWD",
+      "description": "Kuwaiti Dinar"
+    },
+    
+    {
+      "enum": [
+        "KYD"
+      ],
+      "title": "KYD",
+      "description": "Cayman Islands Dollar"
+    },
+    
+    {
+      "enum": [
+        "KZT"
+      ],
+      "title": "KZT",
+      "description": "Tenge"
+    },
+    
+    {
+      "enum": [
+        "LAK"
+      ],
+      "title": "LAK",
+      "description": "Lao Kip"
+    },
+    
+    {
+      "enum": [
+        "LBP"
+      ],
+      "title": "LBP",
+      "description": "Lebanese Pound"
+    },
+    
+    {
+      "enum": [
+        "LKR"
+      ],
+      "title": "LKR",
+      "description": "Sri Lanka Rupee"
+    },
+    
+    {
+      "enum": [
+        "LRD"
+      ],
+      "title": "LRD",
+      "description": "Liberian Dollar"
+    },
+    
+    {
+      "enum": [
+        "LSL"
+      ],
+      "title": "LSL",
+      "description": "Loti"
+    },
+    
+    {
+      "enum": [
+        "LYD"
+      ],
+      "title": "LYD",
+      "description": "Libyan Dinar"
+    },
+    
+    {
+      "enum": [
+        "MAD"
+      ],
+      "title": "MAD",
+      "description": "Moroccan Dirham"
+    },
+    
+    {
+      "enum": [
+        "MDL"
+      ],
+      "title": "MDL",
+      "description": "Moldovan Leu"
+    },
+    
+    {
+      "enum": [
+        "MGA"
+      ],
+      "title": "MGA",
+      "description": "Malagasy Ariary"
+    },
+    
+    {
+      "enum": [
+        "MKD"
+      ],
+      "title": "MKD",
+      "description": "Denar"
+    },
+    
+    {
+      "enum": [
+        "MMK"
+      ],
+      "title": "MMK",
+      "description": "Kyat"
+    },
+    
+    {
+      "enum": [
+        "MNT"
+      ],
+      "title": "MNT",
+      "description": "Tugrik"
+    },
+    
+    {
+      "enum": [
+        "MOP"
+      ],
+      "title": "MOP",
+      "description": "Pataca"
+    },
+    
+    {
+      "enum": [
+        "MRU"
+      ],
+      "title": "MRU",
+      "description": "Ouguiya"
+    },
+    
+    {
+      "enum": [
+        "MUR"
+      ],
+      "title": "MUR",
+      "description": "Mauritius Rupee"
+    },
+    
+    {
+      "enum": [
+        "MVR"
+      ],
+      "title": "MVR",
+      "description": "Rufiyaa"
+    },
+    
+    {
+      "enum": [
+        "MWK"
+      ],
+      "title": "MWK",
+      "description": "Malawi Kwacha"
+    },
+    
+    {
+      "enum": [
+        "MXN"
+      ],
+      "title": "MXN",
+      "description": "Mexican Peso"
+    },
+    
+    {
+      "enum": [
+        "MXV"
+      ],
+      "title": "MXV",
+      "description": "Mexican Unidad de Inversion (UDI)"
+    },
+    
+    {
+      "enum": [
+        "MYR"
+      ],
+      "title": "MYR",
+      "description": "Malaysian Ringgit"
+    },
+    
+    {
+      "enum": [
+        "MZN"
+      ],
+      "title": "MZN",
+      "description": "Mozambique Metical"
+    },
+    
+    {
+      "enum": [
+        "NAD"
+      ],
+      "title": "NAD",
+      "description": "Namibia Dollar"
+    },
+    
+    {
+      "enum": [
+        "NGN"
+      ],
+      "title": "NGN",
+      "description": "Naira"
+    },
+    
+    {
+      "enum": [
+        "NIO"
+      ],
+      "title": "NIO",
+      "description": "Cordoba Oro"
+    },
+    
+    {
+      "enum": [
+        "NOK"
+      ],
+      "title": "NOK",
+      "description": "Norwegian Krone"
+    },
+    
+    {
+      "enum": [
+        "NPR"
+      ],
+      "title": "NPR",
+      "description": "Nepalese Rupee"
+    },
+    
+    {
+      "enum": [
+        "NZD"
+      ],
+      "title": "NZD",
+      "description": "New Zealand Dollar"
+    },
+    
+    {
+      "enum": [
+        "OMR"
+      ],
+      "title": "OMR",
+      "description": "Rial Omani"
+    },
+    
+    {
+      "enum": [
+        "PAB"
+      ],
+      "title": "PAB",
+      "description": "Balboa"
+    },
+    
+    {
+      "enum": [
+        "PEN"
+      ],
+      "title": "PEN",
+      "description": "Sol"
+    },
+    
+    {
+      "enum": [
+        "PGK"
+      ],
+      "title": "PGK",
+      "description": "Kina"
+    },
+    
+    {
+      "enum": [
+        "PHP"
+      ],
+      "title": "PHP",
+      "description": "Philippine Peso"
+    },
+    
+    {
+      "enum": [
+        "PKR"
+      ],
+      "title": "PKR",
+      "description": "Pakistan Rupee"
+    },
+    
+    {
+      "enum": [
+        "PLN"
+      ],
+      "title": "PLN",
+      "description": "Zloty"
+    },
+    
+    {
+      "enum": [
+        "PYG"
+      ],
+      "title": "PYG",
+      "description": "Guarani"
+    },
+    
+    {
+      "enum": [
+        "QAR"
+      ],
+      "title": "QAR",
+      "description": "Qatari Rial"
+    },
+    
+    {
+      "enum": [
+        "RON"
+      ],
+      "title": "RON",
+      "description": "Romanian Leu"
+    },
+    
+    {
+      "enum": [
+        "RSD"
+      ],
+      "title": "RSD",
+      "description": "Serbian Dinar"
+    },
+    
+    {
+      "enum": [
+        "RUB"
+      ],
+      "title": "RUB",
+      "description": "Russian Ruble"
+    },
+    
+    {
+      "enum": [
+        "RWF"
+      ],
+      "title": "RWF",
+      "description": "Rwanda Franc"
+    },
+    
+    {
+      "enum": [
+        "SAR"
+      ],
+      "title": "SAR",
+      "description": "Saudi Riyal"
+    },
+    
+    {
+      "enum": [
+        "SBD"
+      ],
+      "title": "SBD",
+      "description": "Solomon Islands Dollar"
+    },
+    
+    {
+      "enum": [
+        "SCR"
+      ],
+      "title": "SCR",
+      "description": "Seychelles Rupee"
+    },
+    
+    {
+      "enum": [
+        "SDG"
+      ],
+      "title": "SDG",
+      "description": "Sudanese Pound"
+    },
+    
+    {
+      "enum": [
+        "SEK"
+      ],
+      "title": "SEK",
+      "description": "Swedish Krona"
+    },
+    
+    {
+      "enum": [
+        "SGD"
+      ],
+      "title": "SGD",
+      "description": "Singapore Dollar"
+    },
+    
+    {
+      "enum": [
+        "SHP"
+      ],
+      "title": "SHP",
+      "description": "Saint Helena Pound"
+    },
+    
+    {
+      "enum": [
+        "SLE"
+      ],
+      "title": "SLE",
+      "description": "Leone"
+    },
+    
+    {
+      "enum": [
+        "SOS"
+      ],
+      "title": "SOS",
+      "description": "Somali Shilling"
+    },
+    
+    {
+      "enum": [
+        "SRD"
+      ],
+      "title": "SRD",
+      "description": "Surinam Dollar"
+    },
+    
+    {
+      "enum": [
+        "SSP"
+      ],
+      "title": "SSP",
+      "description": "South Sudanese Pound"
+    },
+    
+    {
+      "enum": [
+        "STN"
+      ],
+      "title": "STN",
+      "description": "Dobra"
+    },
+    
+    {
+      "enum": [
+        "SVC"
+      ],
+      "title": "SVC",
+      "description": "El Salvador Colon"
+    },
+    
+    {
+      "enum": [
+        "SYP"
+      ],
+      "title": "SYP",
+      "description": "Syrian Pound"
+    },
+    
+    {
+      "enum": [
+        "SZL"
+      ],
+      "title": "SZL",
+      "description": "Lilangeni"
+    },
+    
+    {
+      "enum": [
+        "THB"
+      ],
+      "title": "THB",
+      "description": "Baht"
+    },
+    
+    {
+      "enum": [
+        "TJS"
+      ],
+      "title": "TJS",
+      "description": "Somoni"
+    },
+    
+    {
+      "enum": [
+        "TMT"
+      ],
+      "title": "TMT",
+      "description": "Turkmenistan New Manat"
+    },
+    
+    {
+      "enum": [
+        "TND"
+      ],
+      "title": "TND",
+      "description": "Tunisian Dinar"
+    },
+    
+    {
+      "enum": [
+        "TOP"
+      ],
+      "title": "TOP",
+      "description": "Pa’anga"
+    },
+    
+    {
+      "enum": [
+        "TRY"
+      ],
+      "title": "TRY",
+      "description": "Turkish Lira"
+    },
+    
+    {
+      "enum": [
+        "TTD"
+      ],
+      "title": "TTD",
+      "description": "Trinidad and Tobago Dollar"
+    },
+    
+    {
+      "enum": [
+        "TWD"
+      ],
+      "title": "TWD",
+      "description": "New Taiwan Dollar"
+    },
+    
+    {
+      "enum": [
+        "TZS"
+      ],
+      "title": "TZS",
+      "description": "Tanzanian Shilling"
+    },
+    
+    {
+      "enum": [
+        "UAH"
+      ],
+      "title": "UAH",
+      "description": "Hryvnia"
+    },
+    
+    {
+      "enum": [
+        "UGX"
+      ],
+      "title": "UGX",
+      "description": "Uganda Shilling"
+    },
+    
+    {
+      "enum": [
+        "USD"
+      ],
+      "title": "USD",
+      "description": "US Dollar"
+    },
+    
+    {
+      "enum": [
+        "USN"
+      ],
+      "title": "USN",
+      "description": "US Dollar (Next day)"
+    },
+    
+    {
+      "enum": [
+        "UYI"
+      ],
+      "title": "UYI",
+      "description": "Uruguay Peso en Unidades Indexadas (UI)"
+    },
+    
+    {
+      "enum": [
+        "UYU"
+      ],
+      "title": "UYU",
+      "description": "Peso Uruguayo"
+    },
+    
+    {
+      "enum": [
+        "UYW"
+      ],
+      "title": "UYW",
+      "description": "Unidad Previsional"
+    },
+    
+    {
+      "enum": [
+        "UZS"
+      ],
+      "title": "UZS",
+      "description": "Uzbekistan Sum"
+    },
+    
+    {
+      "enum": [
+        "VED"
+      ],
+      "title": "VED",
+      "description": "Bolívar Soberano"
+    },
+    
+    {
+      "enum": [
+        "VES"
+      ],
+      "title": "VES",
+      "description": "Bolívar Soberano"
+    },
+    
+    {
+      "enum": [
+        "VND"
+      ],
+      "title": "VND",
+      "description": "Dong"
+    },
+    
+    {
+      "enum": [
+        "VUV"
+      ],
+      "title": "VUV",
+      "description": "Vatu"
+    },
+    
+    {
+      "enum": [
+        "WST"
+      ],
+      "title": "WST",
+      "description": "Tala"
+    },
+    
+    {
+      "enum": [
+        "XAD"
+      ],
+      "title": "XAD",
+      "description": "Arab Accounting Dinar"
+    },
+    
+    {
+      "enum": [
+        "XAF"
+      ],
+      "title": "XAF",
+      "description": "CFA Franc BEAC"
+    },
+    
+    {
+      "enum": [
+        "XAG"
+      ],
+      "title": "XAG",
+      "description": "Silver"
+    },
+    
+    {
+      "enum": [
+        "XAU"
+      ],
+      "title": "XAU",
+      "description": "Gold"
+    },
+    
+    {
+      "enum": [
+        "XBA"
+      ],
+      "title": "XBA",
+      "description": "Bond Markets Unit European Composite Unit (EURCO)"
+    },
+    
+    {
+      "enum": [
+        "XBB"
+      ],
+      "title": "XBB",
+      "description": "Bond Markets Unit European Monetary Unit (E.M.U.-6)"
+    },
+    
+    {
+      "enum": [
+        "XBC"
+      ],
+      "title": "XBC",
+      "description": "Bond Markets Unit European Unit of Account 9 (E.U.A.-9)"
+    },
+    
+    {
+      "enum": [
+        "XBD"
+      ],
+      "title": "XBD",
+      "description": "Bond Markets Unit European Unit of Account 17 (E.U.A.-17)"
+    },
+    
+    {
+      "enum": [
+        "XCD"
+      ],
+      "title": "XCD",
+      "description": "East Caribbean Dollar"
+    },
+    
+    {
+      "enum": [
+        "XCG"
+      ],
+      "title": "XCG",
+      "description": "Caribbean Guilder"
+    },
+    
+    {
+      "enum": [
+        "XDR"
+      ],
+      "title": "XDR",
+      "description": "SDR (Special Drawing Right)"
+    },
+    
+    {
+      "enum": [
+        "XOF"
+      ],
+      "title": "XOF",
+      "description": "CFA Franc BCEAO"
+    },
+    
+    {
+      "enum": [
+        "XPD"
+      ],
+      "title": "XPD",
+      "description": "Palladium"
+    },
+    
+    {
+      "enum": [
+        "XPF"
+      ],
+      "title": "XPF",
+      "description": "CFP Franc"
+    },
+    
+    {
+      "enum": [
+        "XPT"
+      ],
+      "title": "XPT",
+      "description": "Platinum"
+    },
+    
+    {
+      "enum": [
+        "XSU"
+      ],
+      "title": "XSU",
+      "description": "Sucre"
+    },
+    
+    {
+      "enum": [
+        "XTS"
+      ],
+      "title": "XTS",
+      "description": "Codes specifically reserved for testing purposes"
+    },
+    
+    {
+      "enum": [
+        "XUA"
+      ],
+      "title": "XUA",
+      "description": "ADB Unit of Account"
+    },
+    
+    {
+      "enum": [
+        "XXX"
+      ],
+      "title": "XXX",
+      "description": "The codes assigned for transactions where no currency is involved"
+    },
+    
+    {
+      "enum": [
+        "YER"
+      ],
+      "title": "YER",
+      "description": "Yemeni Rial"
+    },
+    
+    {
+      "enum": [
+        "ZAR"
+      ],
+      "title": "ZAR",
+      "description": "Rand"
+    },
+    
+    {
+      "enum": [
+        "ZMW"
+      ],
+      "title": "ZMW",
+      "description": "Zambian Kwacha"
+    },
+    
+    {
+      "enum": [
+        "ZWG"
+      ],
+      "title": "ZWG",
+      "description": "Zimbabwe Gold"
+    }
+  ]
+}

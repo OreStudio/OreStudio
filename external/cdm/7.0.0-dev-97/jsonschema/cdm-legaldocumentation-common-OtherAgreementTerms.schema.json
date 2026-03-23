@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "OtherAgreementTerms",
+  "description": "A class to specify a related legal agreement. For example, ISDA 2016 Credit Support Annex for Initial Margin, paragraph 13, General Principles, (s): Other CSA and Japanese Law CSA (VM). | ISDA 2016 Credit Support Annex for Variation Margin, paragraph 13, (o): Other CSA.",
+  "properties": {
+    "isSpecified": {
+      "description": "The qualification of whether some other related agreement is specified (True) or not (False).",
+      "type": "boolean"
+    },
+    "legalDocument": {
+      "description": "The specification of this other agreement, when the qualification is True.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isSpecified"
+  ]
+}

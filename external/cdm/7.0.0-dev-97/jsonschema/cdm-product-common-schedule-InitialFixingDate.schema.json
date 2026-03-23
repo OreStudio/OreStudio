@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "InitialFixingDate",
+  "description": "A CDM class which purpose is to specify the initial fixing date either alongside the FpML interest rate specification as an offset of another date, or alongside the credit derivative specification as an unadjusted date.",
+  "properties": {
+    "relativeDateOffset": {
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    },
+    "initialFixingDate": {
+      "type": "string"
+    }
+  }
+}

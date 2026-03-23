@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PrincipalPayments",
+  "description": "A class defining which principal exchanges occur for the stream.",
+  "properties": {
+    "initialPayment": {
+      "description": "A true/false flag to indicate whether there is an initial exchange of principal on the effective date.",
+      "type": "boolean"
+    },
+    "finalPayment": {
+      "description": "A true/false flag to indicate whether there is a final exchange of principal on the termination date.",
+      "type": "boolean"
+    },
+    "intermediatePayment": {
+      "description": "A true/false flag to indicate whether there are intermediate or interim exchanges of principal during the term of the swap.",
+      "type": "boolean"
+    },
+    "varyingLegNotionalCurrency": {
+      "description": "Indicate the Payout legs which nominal amount may vary in regards of FX Fixing dates as determined in the product terms.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "principalPaymentSchedule": {
+      "description": "Describe dates schedules for Principal Exchanges and related role of the parties when known.",
+      "$ref": "cdm-product-common-settlement-PrincipalPaymentSchedule.schema.json"
+    }
+  },
+  "required": [
+    "initialPayment",
+    "finalPayment",
+    "intermediatePayment"
+  ]
+}

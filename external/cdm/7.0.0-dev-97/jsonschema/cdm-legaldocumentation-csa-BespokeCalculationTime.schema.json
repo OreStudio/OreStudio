@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "BespokeCalculationTime",
+  "description": "A class to specify additional Calculation Time terms for the purposes of Initial Margin.",
+  "properties": {
+    "asCalculationAgent": {
+      "description": "If set to True, the Calculation Time for Initial Margin is the time as of which the Calculation Agent (IM) computes its end of day valuations of derivatives transactions.",
+      "type": "boolean"
+    },
+    "bespokeCalculationTimeTerms": {
+      "description": "Additional Terms applicable to Calculation Time for Initial Margin.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "asCalculationAgent"
+  ]
+}

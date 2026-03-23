@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CollateralValueMethod",
+  "description": "Details how particular types of collateral are valued (other than in respect of a default).",
+  "properties": {
+    "cashCollateral": {
+      "description": "Details of how cash collateral is valued.",
+      "$ref": "cdm-legaldocumentation-csa-ValueCashEnum.schema.json"
+    },
+    "securitiesCollateral": {
+      "description": "Details of how securities collateral is valued.",
+      "$ref": "cdm-legaldocumentation-csa-ValueSecuritiesEnum.schema.json"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  }
+}

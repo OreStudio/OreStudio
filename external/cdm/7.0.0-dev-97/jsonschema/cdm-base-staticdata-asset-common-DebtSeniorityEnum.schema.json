@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "DebtSeniorityEnum",
+  "description": "Specifies the order of repayment in the event of a sale or bankruptcy of the issuer or a related party (eg guarantor).",
+  "enum": [
+    "Secured",
+    "Senior",
+    "Subordinated"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Secured"
+      ],
+      "title": "Secured",
+      "description": "Denotes debt which is secured over assets of the issuer or a related party (eg guarantor)."
+    },
+    
+    {
+      "enum": [
+        "Senior"
+      ],
+      "title": "Senior",
+      "description": "Denotes debt  which ranks pari passu with all other unsecured creditors of the issuer."
+    },
+    
+    {
+      "enum": [
+        "Subordinated"
+      ],
+      "title": "Subordinated",
+      "description": "Denotes debt  owed to an unsecured creditor that in the event of a liquidation can only be paid after the claims of secured and senior creditors have been met."
+    }
+  ]
+}

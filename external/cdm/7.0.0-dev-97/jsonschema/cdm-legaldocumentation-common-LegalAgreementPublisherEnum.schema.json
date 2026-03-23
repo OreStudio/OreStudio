@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "LegalAgreementPublisherEnum",
+  "description": "The enumerated values to specify the legal agreement publisher.",
+  "enum": [
+    "AFB",
+    "BNYM",
+    "EMTA",
+    "ICMA",
+    "ISDA",
+    "ISDAClearstream",
+    "ISDAEuroclear",
+    "ISLA",
+    "JPMorgan",
+    "TheFXCommittee"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AFB"
+      ],
+      "title": "AFB",
+      "description": "Association Française des Banques."
+    },
+    
+    {
+      "enum": [
+        "BNYM"
+      ],
+      "title": "BNYM",
+      "description": "BNY Mellon"
+    },
+    
+    {
+      "enum": [
+        "EMTA"
+      ],
+      "title": "EMTA",
+      "description": "Emerging Markets Traders Association"
+    },
+    
+    {
+      "enum": [
+        "ICMA"
+      ],
+      "title": "ICMA",
+      "description": "International Capital Markets Association"
+    },
+    
+    {
+      "enum": [
+        "ISDA"
+      ],
+      "title": "ISDA",
+      "description": "International Swaps and Derivatives Association, Inc."
+    },
+    
+    {
+      "enum": [
+        "ISDAClearstream"
+      ],
+      "title": "ISDAClearstream",
+      "description": "ISDA and Clearstream"
+    },
+    
+    {
+      "enum": [
+        "ISDAEuroclear"
+      ],
+      "title": "ISDAEuroclear",
+      "description": "ISDA and Euroclear"
+    },
+    
+    {
+      "enum": [
+        "ISLA"
+      ],
+      "title": "ISLA",
+      "description": "International Securities Lending Association"
+    },
+    
+    {
+      "enum": [
+        "JPMorgan"
+      ],
+      "title": "JPMorgan",
+      "description": "JP Morgan"
+    },
+    
+    {
+      "enum": [
+        "TheFXCommittee"
+      ],
+      "title": "TheFXCommittee",
+      "description": "The Foreign Exchange Committee"
+    }
+  ]
+}

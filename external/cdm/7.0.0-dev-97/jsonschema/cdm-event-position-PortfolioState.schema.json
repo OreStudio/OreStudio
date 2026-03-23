@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "PortfolioState",
+  "description": "State-full representation of a Portfolio that describes all the positions held at a given time, in various states which can be either traded, settled, etc., with lineage information to the previous state",
+  "properties": {
+    "positions": {
+      "description": "The list of positions, each containing a Quantity and a Product.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-position-Position.schema.json"
+      },
+      "minItems": 0
+    },
+    "lineage": {
+      "description": "Pointer to the previous PortfolioState and new Event(s) leading to the current (new) state. Previous PortfolioState in the Lineage can be Null in case this is the start of the chain of Events.",
+      "$ref": "cdm-event-common-Lineage.schema.json"
+    }
+  },
+  "required": [
+    "lineage"
+  ]
+}

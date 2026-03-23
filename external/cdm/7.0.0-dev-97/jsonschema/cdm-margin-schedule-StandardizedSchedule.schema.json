@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.margin.schedule",
+  "type": "object",
+  "title": "StandardizedSchedule",
+  "properties": {
+    "assetClass": {
+      "$ref": "cdm-margin-schedule-StandardizedScheduleAssetClassEnum.schema.json"
+    },
+    "productClass": {
+      "$ref": "cdm-margin-schedule-StandardizedScheduleProductClassEnum.schema.json"
+    },
+    "notional": {
+      "type": "number"
+    },
+    "notionalCurrency": {
+      "type": "string"
+    },
+    "durationInYears": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "assetClass",
+    "productClass",
+    "notional",
+    "notionalCurrency"
+  ]
+}

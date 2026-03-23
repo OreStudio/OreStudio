@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "AveragingFeature",
+  "description": "As per ISDA 2002 Definitions.",
+  "properties": {
+    "averagingCalculation": {
+      "description": "Defines parameters for use in cases when a valuation or other term is based on an average of market observations.",
+      "$ref": "cdm-product-template-AveragingCalculation.schema.json"
+    },
+    "averagingInOut": {
+      "$ref": "cdm-product-template-AveragingInOutEnum.schema.json"
+    },
+    "strikeFactor": {
+      "description": "The factor of strike.",
+      "type": "number"
+    },
+    "averagingPeriodIn": {
+      "description": "The averaging in period.",
+      "$ref": "cdm-product-common-schedule-AveragingPeriod.schema.json"
+    },
+    "averagingPeriodOut": {
+      "description": "The averaging out period.",
+      "$ref": "cdm-product-common-schedule-AveragingPeriod.schema.json"
+    }
+  },
+  "required": [
+    "averagingCalculation",
+    "averagingInOut"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "CollateralMarginTypeEnum",
+  "description": "The enumerated values to specify the type of margin for which a legal agreement is named.",
+  "enum": [
+    "InitialMargin",
+    "VariationMargin"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "InitialMargin"
+      ],
+      "title": "InitialMargin",
+      "description": "Denotes a margin agreement that is identified for use with Initial Margin/IM."
+    },
+    
+    {
+      "enum": [
+        "VariationMargin"
+      ],
+      "title": "VariationMargin",
+      "description": "Denotes a margin agreement that is identified for use with Variation Margin/VM."
+    }
+  ]
+}

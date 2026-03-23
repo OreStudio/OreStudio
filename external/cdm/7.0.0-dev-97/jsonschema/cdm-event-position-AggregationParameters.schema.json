@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "AggregationParameters",
+  "description": " Parameters to be used to filter events that are relevant to a given portfolio in order to calculate the state of this portfolio. The attributes correspond to all the possible aggregation criteria that can be used and these criteria can be combined. All the attributes are optional.",
+  "properties": {
+    "dateTime": {
+      "description": "To aggregate as of a particular date",
+      "type": "string"
+    },
+    "totalPosition": {
+      "description": "Specifies whether to calculate total position to given date, or only daily position for the given date.",
+      "type": "boolean"
+    },
+    "positionStatus": {
+      "description": "To aggregate based on position status (EXECUTED, SETTLED etc)",
+      "$ref": "cdm-event-position-PositionStatusEnum.schema.json"
+    },
+    "party": {
+      "description": "To aggregate based on a selection of party(ies) / legal entity(ies).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+      },
+      "minItems": 0
+    },
+    "product": {
+      "description": "To aggregate based on a selection of products.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-NonTransferableProduct.schema.json"
+      },
+      "minItems": 0
+    },
+    "productQualifier": {
+      "description": "To aggregate based on a selection of product type(s).",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "tradeReference": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-metafields-ReferenceWithMetaTrade.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "dateTime"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "MarginApproach",
+  "description": "A class for selection of Margin Approach.",
+  "properties": {
+    "marginApproach": {
+      "description": "Specifies the margin approach specific to Initial Margin agreements.",
+      "$ref": "cdm-legaldocumentation-csa-MarginApproachEnum.schema.json"
+    }
+  },
+  "required": [
+    "marginApproach"
+  ]
+}

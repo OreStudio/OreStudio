@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CollateralProvisions",
+  "description": "Contains collateral attributes which can also inherit information from a GMRA",
+  "properties": {
+    "collateralType": {
+      "description": "Enumerates the collateral types which are accepted by the Seller.",
+      "$ref": "cdm-product-collateral-CollateralTypeEnum.schema.json"
+    },
+    "eligibleCollateral": {
+      "description": "The eligible collateral as specified in relation to the transaction.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-collateral-EligibleCollateralCriteria.schema.json"
+      },
+      "minItems": 0
+    },
+    "substitutionProvisions": {
+      "description": "The provisions for collateral substitutions such as how many and when they are allowed.",
+      "$ref": "cdm-product-collateral-SubstitutionProvisions.schema.json"
+    }
+  },
+  "required": [
+    "collateralType"
+  ]
+}

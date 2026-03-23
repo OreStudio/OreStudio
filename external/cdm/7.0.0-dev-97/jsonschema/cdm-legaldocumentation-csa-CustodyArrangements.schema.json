@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CustodyArrangements",
+  "description": "Describes how posted collateral is held, maintained, and safeguarded by a custodian or third-party agent, in accordance with the terms of the governing agreement.",
+  "properties": {
+    "isCreditSupportDocument": {
+      "description": "Unless specified as True, the Control Agreement is not a Credit Support Document under the agreement with respect to a party.",
+      "type": "boolean"
+    },
+    "hasControlAgreementLanguage": {
+      "description": "Control Agreement language is specified when True.",
+      "type": "boolean"
+    },
+    "otherProvisions": {
+      "description": "Other Custom Provisions of Custody Arrangements.",
+      "type": "string"
+    },
+    "collateralAccessBreach": {
+      "description": "The elections specific to Collateral Access Breach language.",
+      "$ref": "cdm-legaldocumentation-csa-CollateralAccessBreach.schema.json"
+    },
+    "custodianRisk": {
+      "description": "The qualification of the Custodian Risk.",
+      "$ref": "cdm-legaldocumentation-csa-CustodianRisk.schema.json"
+    },
+    "controlAgreement": {
+      "description": "The party-specific election with respect to the control agreement.",
+      "$ref": "cdm-legaldocumentation-csa-ControlAgreement.schema.json"
+    },
+    "custodianEvent": {
+      "description": "Specifies if and until when a Custodian Event clause applies.",
+      "$ref": "cdm-legaldocumentation-csa-CustodianEvent.schema.json"
+    },
+    "custodian": {
+      "description": "The custodian and segregated account details for each party to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-Custodian.schema.json"
+    },
+    "collateralManagementAgreement": {
+      "$ref": "cdm-legaldocumentation-csa-CollateralManagementAgreement.schema.json"
+    }
+  }
+}

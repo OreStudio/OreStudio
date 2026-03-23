@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "AdjustmentFactorCalculationTerms",
+  "description": "Describes the input terms involved in the calculation of the adjustment factor applied to the price of the underlier impacted by a Corporate Action.",
+  "properties": {
+    "shareForShareRatio": {
+      "description": "Multiple value, say 'M/N' where 'M' is the number of shares after the event and 'N' is the number of shares prior to the event. ",
+      "type": "number"
+    },
+    "shareForRightsRatio": {
+      "description": "Multiple value, say 'M/N' where 'M' is the number of rights after the event, and 'N' of shares prior to the event. ",
+      "type": "number"
+    },
+    "rightsSubscriptionPrice": {
+      "description": "The price to pay per each right.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "dividendRatio": {
+      "description": "Multipler value (e.g. 85 %, etc.) to calculate net dividend amount, given gross amount before taking into account the relevant fiscal features.",
+      "type": "number"
+    },
+    "spinOff": {
+      "description": "Defines the underlier for both the Parent Company and the Child Compagny involved in Spin Off corporate action, as well as the respective price observation for each.",
+      "$ref": "cdm-event-common-SpinOff.schema.json"
+    },
+    "merger": {
+      "description": "Defines the underlier for both the Purchaser Company and the Acquired Compagny involved in Spin Off corporate action, as well as the respective price observation for each.",
+      "$ref": "cdm-event-common-Merger.schema.json"
+    },
+    "accrualFactor": {
+      "description": "The accrual rate and related terms, to adjust the price of an underlier impacted by a Corporate Action when economic impact consists in freezing the underlier price to last fixing and applying accruals for each remaining underlier price fixing date required i.e. for each, adjustedPrice = lastFixingPrice x (1 + accrualRate x DCF).",
+      "$ref": "cdm-event-common-AccrualFactor.schema.json"
+    },
+    "lastFixingPriceBeforeAdjustment": {
+      "description": "The last fixing price of the Underlier affected by the CorporateAction, before any adjustment with regards to the CorporateAction.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "dividendObservation": {
+      "description": "To record observations of dividends.",
+      "$ref": "cdm-observable-asset-PriceSchedule.schema.json"
+    },
+    "bespokeCalculationFormula": {
+      "description": "To describe the formula used to calculate the Adjustment Factor.",
+      "type": "string"
+    }
+  }
+}

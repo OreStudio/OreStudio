@@ -1,0 +1,866 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "CommodityInformationPublisherEnum",
+  "description": "Defines a publication in which the price can be found. (e.g Gas Daily, Platts Bloomberg.",
+  "enum": [
+    "Argus",
+    "ArgusAmericasCrudeReport",
+    "ArgusBiofuelReport",
+    "ArgusCrudeReport",
+    "ArgusEuropeanProductsReport",
+    "ArgusFMB",
+    "ArgusInternationalLPGReport",
+    "ArgusLPG",
+    "ArgusMcCloskeys",
+    "ArgusNatGas",
+    "AssocBanksSingapore",
+    "BLUENEXT",
+    "BalticExchange",
+    "BandD",
+    "BankOfCanada",
+    "BankOfEngland",
+    "BankOfJapan",
+    "Bloomberg",
+    "CAISO",
+    "CMAIAromaticsMarketReport",
+    "CMAIWeeklyMethanolMarketReport",
+    "CRUSteelLongProductMonitor",
+    "CRUSteelSheetProductsMonitor",
+    "CanadianGasPriceReporter",
+    "CanadianGasReporter",
+    "ChemicalMarketsAssociation",
+    "DowJonesEnergyService",
+    "DowJonesEnergyServiceScreen",
+    "DowJonesNatGas",
+    "EEX",
+    "ERCOT",
+    "EURONEXMATIF",
+    "EuroCentralBank",
+    "FERTECON",
+    "FHLBSF",
+    "FederalReserve",
+    "FertilizerWeek",
+    "GME",
+    "GasDaily",
+    "GasDailyPriceGuide",
+    "GlobalCoale",
+    "HerenReport",
+    "ICE",
+    "ICE10XDailyNaturalGas",
+    "ICE10XDailyPower",
+    "ICE10XMonthly",
+    "ICEDayAheadIndex",
+    "ICEECX",
+    "ICIS",
+    "IPE",
+    "ISDA",
+    "ISONewEngland",
+    "InsideFERC",
+    "JAPANMOFTSRR",
+    "LEBA",
+    "LONDONPLATINUMPALLADIUMMARKET",
+    "LondonBullionMarketAssociation",
+    "MISO",
+    "MegawattDaily",
+    "MetalBulletin",
+    "NGIBidweekSurvey",
+    "NYISO",
+    "NaturalGasWeek",
+    "OBM",
+    "OMEL",
+    "OPIS",
+    "PIX",
+    "PJM",
+    "PPM",
+    "PPMEurope",
+    "PPW",
+    "PaperTrader",
+    "PlattsAsiaPacific",
+    "PlattsAsiaPacificArabMarketscan",
+    "PlattsCleanTankerwire",
+    "PlattsCoalTrader",
+    "PlattsCrudeOilMarketwire",
+    "PlattsDirtyTakerwire",
+    "PlattsENGR",
+    "PlattsEuropean",
+    "PlattsEuropeanMarketscan",
+    "PlattsGasDaily",
+    "PlattsGasDailyPriceGuide",
+    "PlattsInsideFERC",
+    "PlattsLPG",
+    "PlattsMarketwire",
+    "PlattsMegawattDaily",
+    "PlattsMetalsAlert",
+    "PlattsOilgram",
+    "PlattsOilgramBunkerwire",
+    "PlattsPolymerscan",
+    "PlattsTSIIronOre",
+    "PlattsUS",
+    "PlattsUSMarketscan",
+    "RIMIntelligenceProducts",
+    "ReserveBankAustralia",
+    "ReserveBankNewZealand",
+    "Reuters",
+    "ReutersScreen",
+    "SeaPac",
+    "TSIScrap",
+    "TSISteel",
+    "Telerate",
+    "TelerateScreen",
+    "UXWEEKLY",
+    "WorldCrudeReport",
+    "WorldPulpMonthly"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Argus"
+      ],
+      "title": "Argus"
+    },
+    
+    {
+      "enum": [
+        "ArgusAmericasCrudeReport"
+      ],
+      "title": "ArgusAmericasCrudeReport"
+    },
+    
+    {
+      "enum": [
+        "ArgusBiofuelReport"
+      ],
+      "title": "ArgusBiofuelReport"
+    },
+    
+    {
+      "enum": [
+        "ArgusCrudeReport"
+      ],
+      "title": "ArgusCrudeReport"
+    },
+    
+    {
+      "enum": [
+        "ArgusEuropeanProductsReport"
+      ],
+      "title": "ArgusEuropeanProductsReport"
+    },
+    
+    {
+      "enum": [
+        "ArgusFMB"
+      ],
+      "title": "ArgusFMB"
+    },
+    
+    {
+      "enum": [
+        "ArgusInternationalLPGReport"
+      ],
+      "title": "ArgusInternationalLPGReport"
+    },
+    
+    {
+      "enum": [
+        "ArgusLPG"
+      ],
+      "title": "ArgusLPG"
+    },
+    
+    {
+      "enum": [
+        "ArgusMcCloskeys"
+      ],
+      "title": "ArgusMcCloskeys"
+    },
+    
+    {
+      "enum": [
+        "ArgusNatGas"
+      ],
+      "title": "ArgusNatGas"
+    },
+    
+    {
+      "enum": [
+        "AssocBanksSingapore"
+      ],
+      "title": "AssocBanksSingapore"
+    },
+    
+    {
+      "enum": [
+        "BLUENEXT"
+      ],
+      "title": "BLUENEXT"
+    },
+    
+    {
+      "enum": [
+        "BalticExchange"
+      ],
+      "title": "BalticExchange"
+    },
+    
+    {
+      "enum": [
+        "BandD"
+      ],
+      "title": "BandD"
+    },
+    
+    {
+      "enum": [
+        "BankOfCanada"
+      ],
+      "title": "BankOfCanada"
+    },
+    
+    {
+      "enum": [
+        "BankOfEngland"
+      ],
+      "title": "BankOfEngland"
+    },
+    
+    {
+      "enum": [
+        "BankOfJapan"
+      ],
+      "title": "BankOfJapan"
+    },
+    
+    {
+      "enum": [
+        "Bloomberg"
+      ],
+      "title": "Bloomberg"
+    },
+    
+    {
+      "enum": [
+        "CAISO"
+      ],
+      "title": "CAISO"
+    },
+    
+    {
+      "enum": [
+        "CMAIAromaticsMarketReport"
+      ],
+      "title": "CMAIAromaticsMarketReport"
+    },
+    
+    {
+      "enum": [
+        "CMAIWeeklyMethanolMarketReport"
+      ],
+      "title": "CMAIWeeklyMethanolMarketReport"
+    },
+    
+    {
+      "enum": [
+        "CRUSteelLongProductMonitor"
+      ],
+      "title": "CRUSteelLongProductMonitor"
+    },
+    
+    {
+      "enum": [
+        "CRUSteelSheetProductsMonitor"
+      ],
+      "title": "CRUSteelSheetProductsMonitor"
+    },
+    
+    {
+      "enum": [
+        "CanadianGasPriceReporter"
+      ],
+      "title": "CanadianGasPriceReporter"
+    },
+    
+    {
+      "enum": [
+        "CanadianGasReporter"
+      ],
+      "title": "CanadianGasReporter"
+    },
+    
+    {
+      "enum": [
+        "ChemicalMarketsAssociation"
+      ],
+      "title": "ChemicalMarketsAssociation"
+    },
+    
+    {
+      "enum": [
+        "DowJonesEnergyService"
+      ],
+      "title": "DowJonesEnergyService"
+    },
+    
+    {
+      "enum": [
+        "DowJonesEnergyServiceScreen"
+      ],
+      "title": "DowJonesEnergyServiceScreen"
+    },
+    
+    {
+      "enum": [
+        "DowJonesNatGas"
+      ],
+      "title": "DowJonesNatGas"
+    },
+    
+    {
+      "enum": [
+        "EEX"
+      ],
+      "title": "EEX"
+    },
+    
+    {
+      "enum": [
+        "ERCOT"
+      ],
+      "title": "ERCOT"
+    },
+    
+    {
+      "enum": [
+        "EURONEXMATIF"
+      ],
+      "title": "EURONEXMATIF"
+    },
+    
+    {
+      "enum": [
+        "EuroCentralBank"
+      ],
+      "title": "EuroCentralBank"
+    },
+    
+    {
+      "enum": [
+        "FERTECON"
+      ],
+      "title": "FERTECON"
+    },
+    
+    {
+      "enum": [
+        "FHLBSF"
+      ],
+      "title": "FHLBSF"
+    },
+    
+    {
+      "enum": [
+        "FederalReserve"
+      ],
+      "title": "FederalReserve"
+    },
+    
+    {
+      "enum": [
+        "FertilizerWeek"
+      ],
+      "title": "FertilizerWeek"
+    },
+    
+    {
+      "enum": [
+        "GME"
+      ],
+      "title": "GME"
+    },
+    
+    {
+      "enum": [
+        "GasDaily"
+      ],
+      "title": "GasDaily"
+    },
+    
+    {
+      "enum": [
+        "GasDailyPriceGuide"
+      ],
+      "title": "GasDailyPriceGuide"
+    },
+    
+    {
+      "enum": [
+        "GlobalCoale"
+      ],
+      "title": "GlobalCoale"
+    },
+    
+    {
+      "enum": [
+        "HerenReport"
+      ],
+      "title": "HerenReport"
+    },
+    
+    {
+      "enum": [
+        "ICE"
+      ],
+      "title": "ICE"
+    },
+    
+    {
+      "enum": [
+        "ICE10XDailyNaturalGas"
+      ],
+      "title": "ICE10XDailyNaturalGas"
+    },
+    
+    {
+      "enum": [
+        "ICE10XDailyPower"
+      ],
+      "title": "ICE10XDailyPower"
+    },
+    
+    {
+      "enum": [
+        "ICE10XMonthly"
+      ],
+      "title": "ICE10XMonthly"
+    },
+    
+    {
+      "enum": [
+        "ICEDayAheadIndex"
+      ],
+      "title": "ICEDayAheadIndex"
+    },
+    
+    {
+      "enum": [
+        "ICEECX"
+      ],
+      "title": "ICEECX"
+    },
+    
+    {
+      "enum": [
+        "ICIS"
+      ],
+      "title": "ICIS"
+    },
+    
+    {
+      "enum": [
+        "IPE"
+      ],
+      "title": "IPE"
+    },
+    
+    {
+      "enum": [
+        "ISDA"
+      ],
+      "title": "ISDA"
+    },
+    
+    {
+      "enum": [
+        "ISONewEngland"
+      ],
+      "title": "ISONewEngland"
+    },
+    
+    {
+      "enum": [
+        "InsideFERC"
+      ],
+      "title": "InsideFERC"
+    },
+    
+    {
+      "enum": [
+        "JAPANMOFTSRR"
+      ],
+      "title": "JAPANMOFTSRR"
+    },
+    
+    {
+      "enum": [
+        "LEBA"
+      ],
+      "title": "LEBA"
+    },
+    
+    {
+      "enum": [
+        "LONDONPLATINUMPALLADIUMMARKET"
+      ],
+      "title": "LONDONPLATINUMPALLADIUMMARKET"
+    },
+    
+    {
+      "enum": [
+        "LondonBullionMarketAssociation"
+      ],
+      "title": "LondonBullionMarketAssociation"
+    },
+    
+    {
+      "enum": [
+        "MISO"
+      ],
+      "title": "MISO"
+    },
+    
+    {
+      "enum": [
+        "MegawattDaily"
+      ],
+      "title": "MegawattDaily"
+    },
+    
+    {
+      "enum": [
+        "MetalBulletin"
+      ],
+      "title": "MetalBulletin"
+    },
+    
+    {
+      "enum": [
+        "NGIBidweekSurvey"
+      ],
+      "title": "NGIBidweekSurvey"
+    },
+    
+    {
+      "enum": [
+        "NYISO"
+      ],
+      "title": "NYISO"
+    },
+    
+    {
+      "enum": [
+        "NaturalGasWeek"
+      ],
+      "title": "NaturalGasWeek"
+    },
+    
+    {
+      "enum": [
+        "OBM"
+      ],
+      "title": "OBM"
+    },
+    
+    {
+      "enum": [
+        "OMEL"
+      ],
+      "title": "OMEL"
+    },
+    
+    {
+      "enum": [
+        "OPIS"
+      ],
+      "title": "OPIS"
+    },
+    
+    {
+      "enum": [
+        "PIX"
+      ],
+      "title": "PIX"
+    },
+    
+    {
+      "enum": [
+        "PJM"
+      ],
+      "title": "PJM"
+    },
+    
+    {
+      "enum": [
+        "PPM"
+      ],
+      "title": "PPM"
+    },
+    
+    {
+      "enum": [
+        "PPMEurope"
+      ],
+      "title": "PPMEurope"
+    },
+    
+    {
+      "enum": [
+        "PPW"
+      ],
+      "title": "PPW"
+    },
+    
+    {
+      "enum": [
+        "PaperTrader"
+      ],
+      "title": "PaperTrader"
+    },
+    
+    {
+      "enum": [
+        "PlattsAsiaPacific"
+      ],
+      "title": "PlattsAsiaPacific"
+    },
+    
+    {
+      "enum": [
+        "PlattsAsiaPacificArabMarketscan"
+      ],
+      "title": "PlattsAsiaPacificArabMarketscan"
+    },
+    
+    {
+      "enum": [
+        "PlattsCleanTankerwire"
+      ],
+      "title": "PlattsCleanTankerwire"
+    },
+    
+    {
+      "enum": [
+        "PlattsCoalTrader"
+      ],
+      "title": "PlattsCoalTrader"
+    },
+    
+    {
+      "enum": [
+        "PlattsCrudeOilMarketwire"
+      ],
+      "title": "PlattsCrudeOilMarketwire"
+    },
+    
+    {
+      "enum": [
+        "PlattsDirtyTakerwire"
+      ],
+      "title": "PlattsDirtyTakerwire"
+    },
+    
+    {
+      "enum": [
+        "PlattsENGR"
+      ],
+      "title": "PlattsENGR"
+    },
+    
+    {
+      "enum": [
+        "PlattsEuropean"
+      ],
+      "title": "PlattsEuropean"
+    },
+    
+    {
+      "enum": [
+        "PlattsEuropeanMarketscan"
+      ],
+      "title": "PlattsEuropeanMarketscan"
+    },
+    
+    {
+      "enum": [
+        "PlattsGasDaily"
+      ],
+      "title": "PlattsGasDaily"
+    },
+    
+    {
+      "enum": [
+        "PlattsGasDailyPriceGuide"
+      ],
+      "title": "PlattsGasDailyPriceGuide"
+    },
+    
+    {
+      "enum": [
+        "PlattsInsideFERC"
+      ],
+      "title": "PlattsInsideFERC"
+    },
+    
+    {
+      "enum": [
+        "PlattsLPG"
+      ],
+      "title": "PlattsLPG"
+    },
+    
+    {
+      "enum": [
+        "PlattsMarketwire"
+      ],
+      "title": "PlattsMarketwire"
+    },
+    
+    {
+      "enum": [
+        "PlattsMegawattDaily"
+      ],
+      "title": "PlattsMegawattDaily"
+    },
+    
+    {
+      "enum": [
+        "PlattsMetalsAlert"
+      ],
+      "title": "PlattsMetalsAlert"
+    },
+    
+    {
+      "enum": [
+        "PlattsOilgram"
+      ],
+      "title": "PlattsOilgram"
+    },
+    
+    {
+      "enum": [
+        "PlattsOilgramBunkerwire"
+      ],
+      "title": "PlattsOilgramBunkerwire"
+    },
+    
+    {
+      "enum": [
+        "PlattsPolymerscan"
+      ],
+      "title": "PlattsPolymerscan"
+    },
+    
+    {
+      "enum": [
+        "PlattsTSIIronOre"
+      ],
+      "title": "PlattsTSIIronOre"
+    },
+    
+    {
+      "enum": [
+        "PlattsUS"
+      ],
+      "title": "PlattsUS"
+    },
+    
+    {
+      "enum": [
+        "PlattsUSMarketscan"
+      ],
+      "title": "PlattsUSMarketscan"
+    },
+    
+    {
+      "enum": [
+        "RIMIntelligenceProducts"
+      ],
+      "title": "RIMIntelligenceProducts"
+    },
+    
+    {
+      "enum": [
+        "ReserveBankAustralia"
+      ],
+      "title": "ReserveBankAustralia"
+    },
+    
+    {
+      "enum": [
+        "ReserveBankNewZealand"
+      ],
+      "title": "ReserveBankNewZealand"
+    },
+    
+    {
+      "enum": [
+        "Reuters"
+      ],
+      "title": "Reuters"
+    },
+    
+    {
+      "enum": [
+        "ReutersScreen"
+      ],
+      "title": "ReutersScreen"
+    },
+    
+    {
+      "enum": [
+        "SeaPac"
+      ],
+      "title": "SeaPac"
+    },
+    
+    {
+      "enum": [
+        "TSIScrap"
+      ],
+      "title": "TSIScrap"
+    },
+    
+    {
+      "enum": [
+        "TSISteel"
+      ],
+      "title": "TSISteel"
+    },
+    
+    {
+      "enum": [
+        "Telerate"
+      ],
+      "title": "Telerate"
+    },
+    
+    {
+      "enum": [
+        "TelerateScreen"
+      ],
+      "title": "TelerateScreen"
+    },
+    
+    {
+      "enum": [
+        "UXWEEKLY"
+      ],
+      "title": "UXWEEKLY"
+    },
+    
+    {
+      "enum": [
+        "WorldCrudeReport"
+      ],
+      "title": "WorldCrudeReport"
+    },
+    
+    {
+      "enum": [
+        "WorldPulpMonthly"
+      ],
+      "title": "WorldPulpMonthly"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SimmCalculationCurrency",
+  "description": "A class to specify the SIMM Calculation Currency elections by each party to the agreement.",
+  "properties": {
+    "partyElection": {
+      "description": "The parties' SIMM Calculation Currency election.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-CalculationCurrencyElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

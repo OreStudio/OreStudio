@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "AgreementTerms",
+  "description": "Specification of the content of a legal agreement.",
+  "properties": {
+    "agreement": {
+      "description": "Specification of the standard set of terms that define a legal agreement.",
+      "$ref": "cdm-legaldocumentation-common-Agreement.schema.json"
+    },
+    "clauseLibrary": {
+      "description": "Specification of whether the agreement terms have been negotiated using the clause library methodology.",
+      "type": "boolean"
+    },
+    "counterparty": {
+      "description": "Specification of the roles of the counterparties to the agreement.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Counterparty.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "agreement"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "FieldWithMetaMatrixTermEnum",
+  "properties": {
+    "value": {
+      "$ref": "cdm-legaldocumentation-common-MatrixTermEnum.schema.json"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

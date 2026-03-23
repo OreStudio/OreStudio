@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "TimeZone",
+  "description": "The time alongside with the timezone location information. This class makes use of the FpML TimezoneLocation construct.",
+  "properties": {
+    "time": {
+      "description": "The observation time.",
+      "type": "string"
+    },
+    "location": {
+      "description": "FpML specifies the timezoneLocationScheme by reference to the Time Zone Database (a.k.a. tz database) maintained by IANA, the Internet Assigned Numbers Authority.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  },
+  "required": [
+    "time"
+  ]
+}

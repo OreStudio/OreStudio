@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "ObservationSchedule",
+  "description": "Specifies a single date on which market observations take place and specifies optional associated weighting.",
+  "properties": {
+    "observationDate": {
+      "description": "Specifies an adjusted or unadjusted date for a market observation.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-common-schedule-ObservationDate.schema.json"
+      },
+      "minItems": 0
+    },
+    "dateAdjustments": {
+      "description": "The business day convention and financial business centers used for adjusting the date if it would otherwise fall on a day that is not a business date in the specified business centers.",
+      "$ref": "cdm-base-datetime-BusinessDayAdjustments.schema.json"
+    }
+  }
+}

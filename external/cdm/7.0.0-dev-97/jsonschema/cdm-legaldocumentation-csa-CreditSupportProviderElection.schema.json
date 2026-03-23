@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportProviderElection",
+  "description": "The party election of Credit Support Provider(s), if any.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "creditSupportProviderTerms": {
+      "description": "Specification of the Credit Support Provider terms.",
+      "$ref": "cdm-legaldocumentation-common-CreditSupportProviderTermsEnum.schema.json"
+    },
+    "creditSupportProvider": {
+      "description": "The specified Credit Support Provider(s), if any.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "bespokeCreditSuppportProvider": {
+      "description": "...",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "creditSupportProviderTerms"
+  ]
+}

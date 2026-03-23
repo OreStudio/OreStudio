@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "CreditRiskEnum",
+  "description": "Represents an enumeration list to identify tranched or untranched credit risk.",
+  "enum": [
+    "TranchedCreditRisk",
+    "UntranchedCreditRisk"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "TranchedCreditRisk"
+      ],
+      "title": "TranchedCreditRisk",
+      "description": "Indicates tranched credit risk, including securitizations."
+    },
+    
+    {
+      "enum": [
+        "UntranchedCreditRisk"
+      ],
+      "title": "UntranchedCreditRisk",
+      "description": "Indicates tranched credit risk, including repackagings."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "ValuationTerms",
+  "properties": {
+    "futuresPriceValuation": {
+      "description": "The official settlement price as announced by the related exchange is applicable, in accordance with the ISDA 2002 definitions.",
+      "type": "boolean"
+    },
+    "optionsPriceValuation": {
+      "description": "The official settlement price as announced by the related exchange is applicable, in accordance with the ISDA 2002 definitions",
+      "type": "boolean"
+    },
+    "numberOfValuationDates": {
+      "description": "The number of valuation dates between valuation start date and valuation end date.",
+      "type": "integer"
+    },
+    "dividendValuationDates": {
+      "description": "Specifies the dividend valuation dates of the swap.",
+      "$ref": "cdm-base-datetime-AdjustableRelativeOrPeriodicDates.schema.json"
+    },
+    "fPVFinalPriceElectionFallback": {
+      "description": "Specifies the fallback provisions for Hedging Party in the determination of the Final Price.",
+      "$ref": "cdm-product-asset-FPVFinalPriceElectionFallbackEnum.schema.json"
+    },
+    "multipleExchangeIndexAnnexFallback": {
+      "description": "For an index option transaction, a flag to indicate whether a relevant Multiple Exchange Index Annex is applicable to the transaction. This annex defines additional provisions which are applicable where an index is comprised of component securities that are traded on multiple exchanges.",
+      "type": "boolean"
+    },
+    "componentSecurityIndexAnnexFallback": {
+      "description": "For an index option transaction, a flag to indicate whether a relevant Component Security Index Annex is applicable to the transaction.",
+      "type": "boolean"
+    }
+  }
+}

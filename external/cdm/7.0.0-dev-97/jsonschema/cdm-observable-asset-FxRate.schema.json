@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "FxRate",
+  "description": "A class describing the rate of a currency conversion: pair of currency, quotation mode and exchange rate.",
+  "properties": {
+    "quotedCurrencyPair": {
+      "description": "Defines the two currencies for an FX trade and the quotation relationship between the two currencies.",
+      "$ref": "cdm-observable-asset-QuotedCurrencyPair.schema.json"
+    },
+    "rate": {
+      "description": "The rate of exchange between the two currencies of the leg of a deal. Must be specified with a quote basis.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "quotedCurrencyPair"
+  ]
+}

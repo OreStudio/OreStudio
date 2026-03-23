@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "TradePricingReport",
+  "description": "The attributes that are specific for consensus based pricing reporting.",
+  "properties": {
+    "trade": {
+      "description": "Represents the cosensus based pricing parameters on a trade basis.",
+      "$ref": "cdm-event-common-Trade.schema.json"
+    },
+    "pricingTime": {
+      "description": "The regional exchange close time for the underlying contract,including time zone, at which the trades should be priced. This provides an indication for which regional snapshot should be used for pricing primarily for Global markets where there are multiple regional close times.",
+      "$ref": "cdm-base-datetime-TimeZone.schema.json"
+    },
+    "discountingIndex": {
+      "description": "It specifies the interest payable on collateral delivered under a CSA covering the trade.",
+      "$ref": "cdm-base-staticdata-asset-rates-FloatingRateIndexEnum.schema.json"
+    }
+  },
+  "required": [
+    "trade",
+    "pricingTime"
+  ]
+}

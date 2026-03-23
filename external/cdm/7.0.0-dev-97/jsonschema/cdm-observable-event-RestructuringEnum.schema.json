@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "string",
+  "title": "RestructuringEnum",
+  "description": "The enumerated values to specify the form of the restructuring credit event that is applicable to the credit default swap.",
+  "enum": [
+    "ModModR",
+    "ModR",
+    "R"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ModModR"
+      ],
+      "title": "ModModR",
+      "description": "Restructuring (Section 4.7) and Modified Restructuring Maturity Limitation and Conditionally Transferable Obligation (2014 Definitions: Section 3.31, 2003 Definitions: 2.32) apply."
+    },
+    
+    {
+      "enum": [
+        "ModR"
+      ],
+      "title": "ModR",
+      "description": "Restructuring (Section 4.7) and Restructuring Maturity Limitation and Fully Transferable Obligation (2014 Definitions: Section 3.31, 2003 Definitions: 2.32) apply."
+    },
+    
+    {
+      "enum": [
+        "R"
+      ],
+      "title": "R",
+      "description": "Restructuring as defined in the applicable ISDA Credit Derivatives Definitions. (2003 or 2014)."
+    }
+  ]
+}

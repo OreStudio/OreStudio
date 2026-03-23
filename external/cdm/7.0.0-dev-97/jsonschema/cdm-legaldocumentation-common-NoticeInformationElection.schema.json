@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "NoticeInformationElection",
+  "description": "Specifies the party reference and the associated notice and contact information.",
+  "properties": {
+    "partyReference": {
+      "description": "The party to which the election and details apply.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "primaryContactInformation": {
+      "description": "The main notice/address information of the party.",
+      "$ref": "cdm-base-staticdata-party-ContactInformation.schema.json"
+    },
+    "primaryContactInformation": {
+      "description": "The main notice/address information of the party.",
+      "$ref": "cdm-legaldocumentation-common-NoticeContactInformation.schema.json"
+    },
+    "additionalContactInformation": {
+      "description": "Additional notice/address information of the party.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-NoticeContactInformation.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "primaryContactInformation"
+  ]
+}

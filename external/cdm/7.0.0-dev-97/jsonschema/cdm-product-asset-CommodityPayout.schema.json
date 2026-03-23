@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "CommodityPayout",
+  "description": "Payout based on the averaged price of a referenced underlier. (e.g. Commodities). Can represent both average (average of many) & bullet (average of 1) pricing",
+  "properties": {
+    "payerReceiver": {
+      "description": "Canonical representation of the payer and receiver parties applicable to each payout leg.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "priceQuantity": {
+      "description": "Each payout leg must implement the quantity concept as a 'resolvable' type, which allows for different payout legs to be linked to each other (e.g. in the case of cross-curreny products).",
+      "$ref": "cdm-product-common-settlement-ResolvablePriceQuantity.schema.json"
+    },
+    "principalPayment": {
+      "description": "The specification of the principal exchange. Optional as only applicable in the case of cross-currency or zero-coupon swaps with a final payment.",
+      "$ref": "cdm-product-common-settlement-PrincipalPayments.schema.json"
+    },
+    "settlementTerms": {
+      "description": "Each payout leg must specifies its settlement terms, including the delivery type (i.e. cash vs physical, and their respective terms), the transfer type (DvP etc.) and settlement date, if any.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "averagingFeature": {
+      "description": "Indicates if the averaging calculation, when applicable, is weighted or unweighted.",
+      "$ref": "cdm-product-template-AveragingCalculation.schema.json"
+    },
+    "commodityPriceReturnTerms": {
+      "description": "Defines parameters in which the commodity price is assessed.",
+      "$ref": "cdm-product-common-settlement-CommodityPriceReturnTerms.schema.json"
+    },
+    "pricingDates": {
+      "description": "Specifies specific dates or parametric rules for the dates on which the price will be determined.",
+      "$ref": "cdm-product-common-settlement-PricingDates.schema.json"
+    },
+    "schedule": {
+      "description": "Allows the full representation of a payout by defining a set of schedule periods. It supports standard schedule customization by expressing all the dates, quantities, and pricing data in a non-parametric way.",
+      "$ref": "cdm-product-template-CalculationSchedule.schema.json"
+    },
+    "calculationPeriodDates": {
+      "description": "Defines the calculation period dates schedule.",
+      "$ref": "cdm-product-common-schedule-CalculationPeriodDates.schema.json"
+    },
+    "paymentDates": {
+      "description": "Defines the payment date schedule, as defined by the parameters that are needed to specify it, either in a parametric way or by reference to another schedule of dates (e.g. the valuation dates).",
+      "$ref": "cdm-product-common-schedule-PaymentDates.schema.json"
+    },
+    "underlier": {
+      "description": "Identifies the underlying product that is referenced for pricing of the applicable leg in a swap. Referenced in the '2018 ISDA CDM Equity Confirmation for Security Equity Swap' as Security.",
+      "$ref": "cdm-product-template-Underlier.schema.json"
+    },
+    "fxFeature": {
+      "description": "Defines quanto or composite FX features that are included in the swap leg.",
+      "$ref": "cdm-product-template-FxFeature.schema.json"
+    },
+    "delivery": {
+      "description": "Contains the information relative to the delivery of the asset.",
+      "$ref": "cdm-product-asset-AssetDeliveryInformation.schema.json"
+    }
+  },
+  "required": [
+    "pricingDates",
+    "paymentDates",
+    "underlier"
+  ]
+}

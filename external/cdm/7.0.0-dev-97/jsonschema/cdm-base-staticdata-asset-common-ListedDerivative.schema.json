@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "ListedDerivative",
+  "description": "A securitized derivative on another asset.",
+  "properties": {
+    "identifier": {
+      "description": "Asset Identifiers are used to uniquely identify an Asset, using a specified Asset Identifier Type.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-AssetIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "taxonomy": {
+      "description": "Defines the taxonomy of an object by combining a taxonomy source (i.e. the rules to classify the object) and a value (i.e. the output of those rules on the object.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-Taxonomy.schema.json"
+      },
+      "minItems": 0
+    },
+    "isExchangeListed": {
+      "description": "Defines whether the Asset is listed on a public exchange.",
+      "type": "boolean"
+    },
+    "exchange": {
+      "description": "If the Asset is listed, defines the public exchange of the listing.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "relatedExchange": {
+      "description": "Provides the related Exchanges, if applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "assetType": {
+      "description": "Specifies the type of asset.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetTypeEnum.schema.json"
+    },
+    "deliveryTerm": {
+      "description": "Also called contract month or delivery month. However, it's not always a month. It is usually expressed using a code, e.g. Z23 would be the Dec 2023 contract, (Z = December). For crude oil, the corresponding contract might be called CLZ23. Optional as this can be uniquely identified in the identifier.",
+      "type": "string"
+    },
+    "optionType": {
+      "description": "The type of option, ie Put or Call. Left empty if it is a Future.",
+      "$ref": "cdm-base-staticdata-asset-common-PutCallEnum.schema.json"
+    },
+    "strike": {
+      "description": "Specifies the strike of the option.",
+      "type": "number"
+    }
+  }
+}

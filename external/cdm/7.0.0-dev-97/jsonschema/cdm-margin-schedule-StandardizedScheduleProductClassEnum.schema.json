@@ -1,0 +1,241 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.margin.schedule",
+  "type": "string",
+  "title": "StandardizedScheduleProductClassEnum",
+  "enum": [
+    "BasisSwap",
+    "ContractForDifference",
+    "CorrelationSwap",
+    "CreditNthToDefault",
+    "CreditTotalReturnSwapOnABond",
+    "CrossCurrencySwap",
+    "DeliverableForward",
+    "DeliverableOption",
+    "DeliverableOptionF",
+    "DeliverableSwap",
+    "DividendSwap",
+    "FixedFloatSwap",
+    "Forward",
+    "ForwardRateAgreement",
+    "IRExoticSwapWithAnExoticCouponAgainstAFloatingLeg",
+    "IndexCDS",
+    "IndexTranche",
+    "NonDeliverableCrossCurrencySwap",
+    "NonDeliverableForward",
+    "NonDeliverableOption",
+    "Option",
+    "SingleNameCreditDefaultSwap",
+    "Swap",
+    "SwapWithCallableBermudanRightToEnterExitSwaps",
+    "SwapsAndPortfolioSwaps",
+    "Swaption",
+    "SwaptionStraddle",
+    "VarianceSwap",
+    "VolatilitySwap"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "BasisSwap"
+      ],
+      "title": "BasisSwap"
+    },
+    
+    {
+      "enum": [
+        "ContractForDifference"
+      ],
+      "title": "ContractForDifference"
+    },
+    
+    {
+      "enum": [
+        "CorrelationSwap"
+      ],
+      "title": "CorrelationSwap"
+    },
+    
+    {
+      "enum": [
+        "CreditNthToDefault"
+      ],
+      "title": "CreditNthToDefault"
+    },
+    
+    {
+      "enum": [
+        "CreditTotalReturnSwapOnABond"
+      ],
+      "title": "CreditTotalReturnSwapOnABond"
+    },
+    
+    {
+      "enum": [
+        "CrossCurrencySwap"
+      ],
+      "title": "CrossCurrencySwap"
+    },
+    
+    {
+      "enum": [
+        "DeliverableForward"
+      ],
+      "title": "DeliverableForward"
+    },
+    
+    {
+      "enum": [
+        "DeliverableOption"
+      ],
+      "title": "DeliverableOption"
+    },
+    
+    {
+      "enum": [
+        "DeliverableOptionF"
+      ],
+      "title": "DeliverableOptionF"
+    },
+    
+    {
+      "enum": [
+        "DeliverableSwap"
+      ],
+      "title": "DeliverableSwap"
+    },
+    
+    {
+      "enum": [
+        "DividendSwap"
+      ],
+      "title": "DividendSwap"
+    },
+    
+    {
+      "enum": [
+        "FixedFloatSwap"
+      ],
+      "title": "FixedFloatSwap"
+    },
+    
+    {
+      "enum": [
+        "Forward"
+      ],
+      "title": "Forward"
+    },
+    
+    {
+      "enum": [
+        "ForwardRateAgreement"
+      ],
+      "title": "ForwardRateAgreement"
+    },
+    
+    {
+      "enum": [
+        "IRExoticSwapWithAnExoticCouponAgainstAFloatingLeg"
+      ],
+      "title": "IRExoticSwapWithAnExoticCouponAgainstAFloatingLeg"
+    },
+    
+    {
+      "enum": [
+        "IndexCDS"
+      ],
+      "title": "IndexCDS"
+    },
+    
+    {
+      "enum": [
+        "IndexTranche"
+      ],
+      "title": "IndexTranche"
+    },
+    
+    {
+      "enum": [
+        "NonDeliverableCrossCurrencySwap"
+      ],
+      "title": "NonDeliverableCrossCurrencySwap"
+    },
+    
+    {
+      "enum": [
+        "NonDeliverableForward"
+      ],
+      "title": "NonDeliverableForward"
+    },
+    
+    {
+      "enum": [
+        "NonDeliverableOption"
+      ],
+      "title": "NonDeliverableOption"
+    },
+    
+    {
+      "enum": [
+        "Option"
+      ],
+      "title": "Option"
+    },
+    
+    {
+      "enum": [
+        "SingleNameCreditDefaultSwap"
+      ],
+      "title": "SingleNameCreditDefaultSwap"
+    },
+    
+    {
+      "enum": [
+        "Swap"
+      ],
+      "title": "Swap"
+    },
+    
+    {
+      "enum": [
+        "SwapWithCallableBermudanRightToEnterExitSwaps"
+      ],
+      "title": "SwapWithCallableBermudanRightToEnterExitSwaps"
+    },
+    
+    {
+      "enum": [
+        "SwapsAndPortfolioSwaps"
+      ],
+      "title": "SwapsAndPortfolioSwaps"
+    },
+    
+    {
+      "enum": [
+        "Swaption"
+      ],
+      "title": "Swaption"
+    },
+    
+    {
+      "enum": [
+        "SwaptionStraddle"
+      ],
+      "title": "SwaptionStraddle"
+    },
+    
+    {
+      "enum": [
+        "VarianceSwap"
+      ],
+      "title": "VarianceSwap"
+    },
+    
+    {
+      "enum": [
+        "VolatilitySwap"
+      ],
+      "title": "VolatilitySwap"
+    }
+  ]
+}

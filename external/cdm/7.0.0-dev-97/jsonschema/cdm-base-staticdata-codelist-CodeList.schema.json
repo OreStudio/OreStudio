@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.codelist",
+  "type": "object",
+  "title": "CodeList",
+  "description": "A type hold a list of codes for business data validation",
+  "properties": {
+    "identification": {
+      "description": "Identification information about the code list",
+      "$ref": "cdm-base-staticdata-codelist-CodeListIdentification.schema.json"
+    },
+    "codes": {
+      "description": "Code values",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-codelist-CodeValue.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "identification"
+  ]
+}

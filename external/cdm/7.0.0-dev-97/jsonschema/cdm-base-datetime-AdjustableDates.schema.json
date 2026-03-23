@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "AdjustableDates",
+  "description": "A class for defining a series of dates that shall be subject to adjustment if they would otherwise fall on a day that is not a business day in the specified business centers, together with the convention for adjusting the dates.",
+  "properties": {
+    "unadjustedDate": {
+      "description": "A date subject to adjustment.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "dateAdjustments": {
+      "description": "The business day convention and financial business centers used for adjusting the date if it would otherwise fall on a day that is not a business date in the specified business centers.",
+      "$ref": "cdm-base-datetime-BusinessDayAdjustments.schema.json"
+    },
+    "adjustedDate": {
+      "description": "The date(s) once the adjustment has been performed. (Note that this date may change if the business center holidays change).",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

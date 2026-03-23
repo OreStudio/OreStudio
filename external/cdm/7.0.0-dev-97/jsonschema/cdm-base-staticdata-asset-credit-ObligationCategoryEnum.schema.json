@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.credit",
+  "type": "string",
+  "title": "ObligationCategoryEnum",
+  "description": "The enumerated values used in both the obligations and deliverable obligations of the credit default swap to represent a class or type of securities which apply.",
+  "enum": [
+    "Bond",
+    "BondOrLoan",
+    "BorrowedMoney",
+    "Loan",
+    "Payment",
+    "ReferenceObligationsOnly"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Bond"
+      ],
+      "title": "Bond",
+      "description": "ISDA term 'Bond'."
+    },
+    
+    {
+      "enum": [
+        "BondOrLoan"
+      ],
+      "title": "BondOrLoan",
+      "description": "ISDA term 'Bond or Loan'."
+    },
+    
+    {
+      "enum": [
+        "BorrowedMoney"
+      ],
+      "title": "BorrowedMoney",
+      "description": "ISDA term 'Borrowed Money'."
+    },
+    
+    {
+      "enum": [
+        "Loan"
+      ],
+      "title": "Loan",
+      "description": "ISDA term 'Loan'."
+    },
+    
+    {
+      "enum": [
+        "Payment"
+      ],
+      "title": "Payment",
+      "description": "ISDA term 'Payment'."
+    },
+    
+    {
+      "enum": [
+        "ReferenceObligationsOnly"
+      ],
+      "title": "ReferenceObligationsOnly",
+      "description": "ISDA term 'Reference Obligations Only'."
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "QuantityChangeDirectionEnum",
+  "description": "Specifies whether a quantity change is an increase, a decrease or a replacement, whereby the quantity is always specified as a positive number.",
+  "enum": [
+    "Decrease",
+    "Increase",
+    "Replace"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Decrease"
+      ],
+      "title": "Decrease",
+      "description": "When the quantity should go down by the specified amount."
+    },
+    
+    {
+      "enum": [
+        "Increase"
+      ],
+      "title": "Increase",
+      "description": "When the quantity should go up by the specified amount."
+    },
+    
+    {
+      "enum": [
+        "Replace"
+      ],
+      "title": "Replace",
+      "description": "When the quantity should be replaced by the specified amount."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "TerminationCurrency",
+  "description": "Specifies how the Termination Currency for the agreement will be determined.",
+  "properties": {
+    "statedTerminationCurrency": {
+      "description": "Allows for specific Termination Currency(ies) and a fallback Termination Currency to be selected.",
+      "$ref": "cdm-legaldocumentation-master-isda-TerminationCurrencySelection.schema.json"
+    },
+    "partyOptionTerminationCurrency": {
+      "description": "Provides that the Termination Currency will be determined by reference to a contractual mechanism when closing out the Agreement.",
+      "$ref": "cdm-legaldocumentation-master-isda-PartyOptionTerminationCurrency.schema.json"
+    }
+  }
+}

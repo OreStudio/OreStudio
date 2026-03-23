@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "NotificationTime",
+  "description": "Specifies the time by which a demand for the Transfer of Eligible Credit Support or Posted Credit Support needs to be made in order for the transfer to take place in accordance with the Transfer Timing provisions.",
+  "properties": {
+    "partyElections": {
+      "description": "The parties' Notification Time election.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-NotificationTimeElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "disputeNotificationReference": {
+      "description": "The determination of whether reference is made to dispute resolution notification timing in the agreement.",
+      "type": "boolean"
+    },
+    "transferTimingProviso": {
+      "description": "The determination of whether transfer timing language is applicable or not.",
+      "type": "boolean"
+    }
+  }
+}

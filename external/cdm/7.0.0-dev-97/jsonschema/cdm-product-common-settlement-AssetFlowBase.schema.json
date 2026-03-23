@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "AssetFlowBase",
+  "description": "Defines the basic parameters of an asset transfer, e.g. a cashflow: what (the asset), how much (the quantity) and when (the settlement date).",
+  "properties": {
+    "quantity": {
+      "description": "Represents the amount of the asset to be transferred. The cashflow amount is always a positive number, as the cashflow direction is implied by the payer/receiver attribute.",
+      "$ref": "cdm-base-math-NonNegativeQuantity.schema.json"
+    },
+    "asset": {
+      "description": "Represents the object that is subject to the transfer, it could be an asset or a reference.",
+      "$ref": "cdm-base-staticdata-asset-common-Asset.schema.json"
+    },
+    "settlementDate": {
+      "description": "Represents the date on which the transfer to due.",
+      "$ref": "cdm-base-datetime-AdjustableOrAdjustedOrRelativeDate.schema.json"
+    }
+  },
+  "required": [
+    "quantity",
+    "asset",
+    "settlementDate"
+  ]
+}

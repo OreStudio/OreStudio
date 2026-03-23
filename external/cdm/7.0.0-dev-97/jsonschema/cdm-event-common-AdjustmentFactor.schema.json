@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "AdjustmentFactor",
+  "description": "Describes the terms involved for adjusting the price of the underlier impacted by a Corporate Action.",
+  "properties": {
+    "value": {
+      "description": "The multipler value applied to the price of the underlier impacted by a Corporate Action.",
+      "type": "number"
+    },
+    "calculationTerms": {
+      "description": "Describes the input terms involved in the calculation of the adjustment factor applied to the price of the underlier impacted by a Corporate Action.",
+      "$ref": "cdm-event-common-AdjustmentFactorCalculationTerms.schema.json"
+    }
+  },
+  "required": [
+    "value"
+  ]
+}

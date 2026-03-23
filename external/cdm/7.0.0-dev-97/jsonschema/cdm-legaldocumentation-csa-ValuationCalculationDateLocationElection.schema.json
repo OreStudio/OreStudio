@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ValuationCalculationDateLocationElection",
+  "description": "A class to specify each of the party elections with respect to the Calculation Date Location.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "businessCenter": {
+      "description": "The Calculation Date Location when specified as a business center which corresponds to the FpML list of business centers or can be mapped to it.",
+      "$ref": "cdm-base-staticdata-codelist-metafields-FieldWithMetaBusinessCenter.schema.json"
+    },
+    "customLocation": {
+      "description": "The Calculation Date Location when specified a location which doesn't correspond to the FpML list of business centers or cannot be mapped to it.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "UnitType",
+  "description": "Defines the unit to be used for price, quantity, or other purposes",
+  "properties": {
+    "capacityUnit": {
+      "description": "Provides an enumerated value for a capacity unit, generally used in the context of defining quantities for commodities.",
+      "$ref": "cdm-base-math-CapacityUnitEnum.schema.json"
+    },
+    "weatherUnit": {
+      "description": "Provides an enumerated values for a weather unit, generally used in the context of defining quantities for commodities.",
+      "$ref": "cdm-base-math-WeatherUnitEnum.schema.json"
+    },
+    "financialUnit": {
+      "description": "Provides an enumerated value for financial units, generally used in the context of defining quantities for securities.",
+      "$ref": "cdm-base-math-FinancialUnitEnum.schema.json"
+    },
+    "currency": {
+      "description": "Defines the currency to be used as a unit for a price, quantity, or other purpose.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  }
+}

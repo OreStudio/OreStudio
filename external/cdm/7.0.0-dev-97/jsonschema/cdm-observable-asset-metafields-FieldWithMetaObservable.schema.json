@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "FieldWithMetaObservable",
+  "properties": {
+    "value": {
+      "$ref": "cdm-observable-asset-Observable.schema.json"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "IndexAnnexSourceEnum",
+  "description": "The enumerated values to specify the CDX index annex source.",
+  "enum": [
+    "MasterConfirmation",
+    "Publisher"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "MasterConfirmation"
+      ],
+      "title": "MasterConfirmation",
+      "description": "As defined in the relevant form of Master Confirmation applicable to the confirmation of Dow Jones CDX indices."
+    },
+    
+    {
+      "enum": [
+        "Publisher"
+      ],
+      "title": "Publisher",
+      "description": "As defined in the relevant form of Master Confirmation applicable to the confirmation of Dow Jones CDX indices."
+    }
+  ]
+}

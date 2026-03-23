@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "string",
+  "title": "CreditLimitTypeEnum",
+  "description": "The enumeration values to qualify the type of credit limits.",
+  "enum": [
+    "CS01",
+    "DV01",
+    "IM",
+    "NPV",
+    "Notional",
+    "PV01"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CS01"
+      ],
+      "title": "CS01",
+      "description": "The type of credit line expressed in CS01. The sensitivity with respect to changes in the CDS spread."
+    },
+    
+    {
+      "enum": [
+        "DV01"
+      ],
+      "title": "DV01",
+      "description": "The type of credit line expressed in DV01. The dollar value of a one basis point decrease in interest rates. It shows the change in a bond's price compared to a decrease in the bond's yield."
+    },
+    
+    {
+      "enum": [
+        "IM"
+      ],
+      "title": "IM",
+      "description": "The type of credit line expressed in Initial Margin value."
+    },
+    
+    {
+      "enum": [
+        "NPV"
+      ],
+      "title": "NPV",
+      "description": "The type of credit line expressed as a Net Present Value."
+    },
+    
+    {
+      "enum": [
+        "Notional"
+      ],
+      "title": "Notional",
+      "description": "The type of credit line expressed in Notional amount."
+    },
+    
+    {
+      "enum": [
+        "PV01"
+      ],
+      "title": "PV01",
+      "description": "The type of credit line expressed in PV01. The value of a one dollar or one basis point annuity."
+    }
+  ]
+}

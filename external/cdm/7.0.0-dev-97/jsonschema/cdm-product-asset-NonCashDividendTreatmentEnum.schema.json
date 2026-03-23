@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "NonCashDividendTreatmentEnum",
+  "description": "The enumerated values to specify the treatment of Non-Cash Dividends.",
+  "enum": [
+    "CashEquivalent",
+    "PotentialAdjustmentEvent"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CashEquivalent"
+      ],
+      "title": "CashEquivalent",
+      "description": "Any non-cash dividend shall be treated as a Declared Cash Equivalent Dividend."
+    },
+    
+    {
+      "enum": [
+        "PotentialAdjustmentEvent"
+      ],
+      "title": "PotentialAdjustmentEvent",
+      "description": "The treatment of any non-cash dividend shall be determined in accordance with the Potential Adjustment Event provisions."
+    }
+  ]
+}

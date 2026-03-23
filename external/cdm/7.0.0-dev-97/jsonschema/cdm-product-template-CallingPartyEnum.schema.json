@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "string",
+  "title": "CallingPartyEnum",
+  "description": "Identifies a party to the on-demand repo transaction that has a right to demand for termination of the Security Finance transaction.",
+  "enum": [
+    "AsDefinedInMasterAgreement",
+    "Either",
+    "InitialBuyer",
+    "InitialSeller"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsDefinedInMasterAgreement"
+      ],
+      "title": "AsDefinedInMasterAgreement",
+      "description": "As defined in Master Agreement."
+    },
+    
+    {
+      "enum": [
+        "Either"
+      ],
+      "title": "Either",
+      "description": "Either, Buyer or Seller to the repo transaction."
+    },
+    
+    {
+      "enum": [
+        "InitialBuyer"
+      ],
+      "title": "InitialBuyer",
+      "description": "Initial buyer to the repo transaction."
+    },
+    
+    {
+      "enum": [
+        "InitialSeller"
+      ],
+      "title": "InitialSeller",
+      "description": "Initial seller to the repo transaction."
+    }
+  ]
+}

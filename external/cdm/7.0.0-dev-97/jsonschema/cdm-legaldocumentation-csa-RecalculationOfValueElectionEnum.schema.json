@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "RecalculationOfValueElectionEnum",
+  "description": "Values to specify the procedure under which the market value of posted collateral will be recalculated.",
+  "enum": [
+    "ConsulationProcedure",
+    "NotApplicable",
+    "OtherRegulatoryCSAProcedure",
+    "Specified"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ConsulationProcedure"
+      ],
+      "title": "ConsulationProcedure",
+      "description": "The parties agree to consult."
+    },
+    
+    {
+      "enum": [
+        "NotApplicable"
+      ],
+      "title": "NotApplicable",
+      "description": "Description to be added."
+    },
+    
+    {
+      "enum": [
+        "OtherRegulatoryCSAProcedure"
+      ],
+      "title": "OtherRegulatoryCSAProcedure",
+      "description": "The procedures specified in an Other Regulatory CSA."
+    },
+    
+    {
+      "enum": [
+        "Specified"
+      ],
+      "title": "Specified",
+      "description": "Bespoke Recalculation of value terms are specified in the agreement."
+    }
+  ]
+}

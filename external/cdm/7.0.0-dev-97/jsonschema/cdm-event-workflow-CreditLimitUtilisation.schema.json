@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "CreditLimitUtilisation",
+  "description": "Credit limit utilisation breakdown by executed trades and pending orders.",
+  "properties": {
+    "executed": {
+      "description": "Credit limit utilisation attributable to executed trades.",
+      "$ref": "cdm-event-workflow-CreditLimitUtilisationPosition.schema.json"
+    },
+    "pending": {
+      "description": "Credit limit utilisation attributable to pending unexecuted orders.",
+      "$ref": "cdm-event-workflow-CreditLimitUtilisationPosition.schema.json"
+    }
+  }
+}

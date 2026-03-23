@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "string",
+  "title": "TriggerTypeEnum",
+  "description": "The enumerated values to specify whether an option will trigger or expire depending upon whether the spot rate is above or below the barrier rate.",
+  "enum": [
+    "Equal",
+    "EqualOrGreater",
+    "EqualOrLess",
+    "Greater",
+    "Less"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Equal"
+      ],
+      "title": "Equal",
+      "description": "The underlier price must be equal to the Trigger level."
+    },
+    
+    {
+      "enum": [
+        "EqualOrGreater"
+      ],
+      "title": "EqualOrGreater",
+      "description": "The underlier price must be equal to or greater than the Trigger level."
+    },
+    
+    {
+      "enum": [
+        "EqualOrLess"
+      ],
+      "title": "EqualOrLess",
+      "description": "The underlier price must be equal to or less than the Trigger level."
+    },
+    
+    {
+      "enum": [
+        "Greater"
+      ],
+      "title": "Greater",
+      "description": "The underlier price must be greater than the Trigger level."
+    },
+    
+    {
+      "enum": [
+        "Less"
+      ],
+      "title": "Less",
+      "description": "The underlier price must be less than the Trigger level."
+    }
+  ]
+}

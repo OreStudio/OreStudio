@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SecurityInterestForObligations",
+  "description": "Security Interest for Obligations clause applicable to 1994 NY CSA, 1995 English Law CSA, 1995 English Law Credit Support Deed, 2016 English Law VM CSA and 2016 New York Law VM CSA.",
+  "properties": {
+    "party": {
+      "description": "The elective party to which the Security Interest for Obligations is applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "obligations": {
+      "description": "A description of any additional obligations secured by the credit support arrangements.",
+      "$ref": "cdm-legaldocumentation-csa-SecurityInterestObligationsEnum.schema.json"
+    },
+    "obligee": {
+      "description": "The party to whom obligations under the Master Agreement are owed and secured by the credit support arrangements.",
+      "$ref": "cdm-legaldocumentation-csa-SecurityInterestObligeeEnum.schema.json"
+    },
+    "other": {
+      "description": "Exception value.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "obligations",
+    "obligee"
+  ]
+}

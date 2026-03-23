@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "SecurityInterestObligationsEnum",
+  "description": "The enumerated values applicable for Security Interest for Obligations.",
+  "enum": [
+    "All Obligations of Party A",
+    "All Obligations of Party B",
+    "NotApplicable",
+    "Other"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "All Obligations of Party A"
+      ],
+      "title": "AllObligationsOfPartyA",
+      "description": "All Obligations of Party A."
+    },
+    
+    {
+      "enum": [
+        "All Obligations of Party B"
+      ],
+      "title": "AllObligationsOfPartyB",
+      "description": "All Obligations of Party B."
+    },
+    
+    {
+      "enum": [
+        "NotApplicable"
+      ],
+      "title": "NotApplicable",
+      "description": "Security Interest for Obligations is not applicable to the Party."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause."
+    }
+  ]
+}

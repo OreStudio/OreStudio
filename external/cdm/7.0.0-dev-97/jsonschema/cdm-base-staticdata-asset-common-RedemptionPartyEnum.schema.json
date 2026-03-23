@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "RedemptionPartyEnum",
+  "description": "Specifies the redeeming party of a debt security.",
+  "enum": [
+    "Holder",
+    "Issuer"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Holder"
+      ],
+      "title": "Holder",
+      "description": "Specifies the holder of a debt security."
+    },
+    
+    {
+      "enum": [
+        "Issuer"
+      ],
+      "title": "Issuer",
+      "description": "Specifies the issuer of a debt security."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.identifier",
+  "type": "string",
+  "title": "TradeIdentifierTypeEnum",
+  "description": "Defines the enumerated values to specify the nature of a trade identifier.",
+  "enum": [
+    "UniqueSwapIdentifier",
+    "UniqueTransactionIdentifier"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "UniqueSwapIdentifier"
+      ],
+      "title": "UniqueSwapIdentifier"
+    },
+    
+    {
+      "enum": [
+        "UniqueTransactionIdentifier"
+      ],
+      "title": "UniqueTransactionIdentifier"
+    }
+  ]
+}

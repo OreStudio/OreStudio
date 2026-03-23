@@ -1,0 +1,208 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "GoverningLawEnum",
+  "description": "The enumerated values to specify the law governing the contract or legal document.",
+  "enum": [
+    "AsSpecifiedInMasterAgreement",
+    "BE",
+    "CAAB",
+    "CABC",
+    "CAMN",
+    "CAON",
+    "CAQC",
+    "DE",
+    "FR",
+    "GBEN",
+    "GBGY",
+    "GBIM",
+    "GBJY",
+    "GBSC",
+    "IE",
+    "JP",
+    "LU",
+    "RelatedMasterAgreement",
+    "USCA",
+    "USDE",
+    "USIL",
+    "USNY"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsSpecifiedInMasterAgreement"
+      ],
+      "title": "AsSpecifiedInMasterAgreement",
+      "description": "The Governing Law is determined by reference to the relevant master agreement."
+    },
+    
+    {
+      "enum": [
+        "BE"
+      ],
+      "title": "BE",
+      "description": "Belgian law"
+    },
+    
+    {
+      "enum": [
+        "CAAB"
+      ],
+      "title": "CAAB",
+      "description": "Alberta law"
+    },
+    
+    {
+      "enum": [
+        "CABC"
+      ],
+      "title": "CABC",
+      "description": "British Columbia Law"
+    },
+    
+    {
+      "enum": [
+        "CAMN"
+      ],
+      "title": "CAMN",
+      "description": "Manitoba law"
+    },
+    
+    {
+      "enum": [
+        "CAON"
+      ],
+      "title": "CAON",
+      "description": "Ontario law"
+    },
+    
+    {
+      "enum": [
+        "CAQC"
+      ],
+      "title": "CAQC",
+      "description": "Quebec law"
+    },
+    
+    {
+      "enum": [
+        "DE"
+      ],
+      "title": "DE",
+      "description": "German law"
+    },
+    
+    {
+      "enum": [
+        "FR"
+      ],
+      "title": "FR",
+      "description": "French law"
+    },
+    
+    {
+      "enum": [
+        "GBEN"
+      ],
+      "title": "GBEN",
+      "description": "English law"
+    },
+    
+    {
+      "enum": [
+        "GBGY"
+      ],
+      "title": "GBGY",
+      "description": "The law of the island of Guernsey"
+    },
+    
+    {
+      "enum": [
+        "GBIM"
+      ],
+      "title": "GBIM",
+      "description": "The law of the Isle of Man"
+    },
+    
+    {
+      "enum": [
+        "GBJY"
+      ],
+      "title": "GBJY",
+      "description": "The law of the island of Jersey"
+    },
+    
+    {
+      "enum": [
+        "GBSC"
+      ],
+      "title": "GBSC",
+      "description": "Scottish law"
+    },
+    
+    {
+      "enum": [
+        "IE"
+      ],
+      "title": "IE",
+      "description": "Irish law"
+    },
+    
+    {
+      "enum": [
+        "JP"
+      ],
+      "title": "JP",
+      "description": "Japanese law"
+    },
+    
+    {
+      "enum": [
+        "LU"
+      ],
+      "title": "LU",
+      "description": "Luxembourg law"
+    },
+    
+    {
+      "enum": [
+        "RelatedMasterAgreement"
+      ],
+      "title": "RelatedMasterAgreement",
+      "description": "As agreed in the ISDA Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "USCA"
+      ],
+      "title": "USCA",
+      "description": "Californian law"
+    },
+    
+    {
+      "enum": [
+        "USDE"
+      ],
+      "title": "USDE",
+      "description": "Delaware law"
+    },
+    
+    {
+      "enum": [
+        "USIL"
+      ],
+      "title": "USIL",
+      "description": "Illinois law"
+    },
+    
+    {
+      "enum": [
+        "USNY"
+      ],
+      "title": "USNY",
+      "description": "New York law"
+    }
+  ]
+}

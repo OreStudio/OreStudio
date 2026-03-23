@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "BoundedCorrelation",
+  "description": "Describes correlation bounds, which form a cap and a floor on the realized correlation.",
+  "properties": {
+    "minimumBoundaryPercent": {
+      "description": "Minimum Boundary as a percentage of the Strike Price.",
+      "type": "number"
+    },
+    "maximumBoundaryPercent": {
+      "description": "Maximum Boundary as a percentage of the Strike Price.",
+      "type": "number"
+    }
+  }
+}

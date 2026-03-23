@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "AveragingPeriod",
+  "description": "Period over which an average value is taken.",
+  "properties": {
+    "schedule": {
+      "description": "A schedule for generating averaging observation dates.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-datetime-AveragingSchedule.schema.json"
+      },
+      "minItems": 0
+    },
+    "averagingDateTimes": {
+      "description": "An unweighted list of averaging observation date and times.",
+      "$ref": "cdm-base-datetime-DateTimeList.schema.json"
+    },
+    "averagingObservations": {
+      "description": "A weighted list of averaging observation date and times.",
+      "$ref": "cdm-product-common-schedule-AveragingObservationList.schema.json"
+    },
+    "marketDisruption": {
+      "description": "The market disruption event as defined by ISDA 2002 Definitions.",
+      "$ref": "cdm-observable-event-metafields-FieldWithMetaMarketDisruptionEnum.schema.json"
+    }
+  }
+}

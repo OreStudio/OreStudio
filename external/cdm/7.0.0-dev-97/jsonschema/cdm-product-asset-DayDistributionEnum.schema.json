@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "DayDistributionEnum",
+  "description": "Denotes the method by which the pricing days are distributed across the pricing period.",
+  "enum": [
+    "All",
+    "First",
+    "Last",
+    "Penultimate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "All"
+      ],
+      "title": "All"
+    },
+    
+    {
+      "enum": [
+        "First"
+      ],
+      "title": "First"
+    },
+    
+    {
+      "enum": [
+        "Last"
+      ],
+      "title": "Last"
+    },
+    
+    {
+      "enum": [
+        "Penultimate"
+      ],
+      "title": "Penultimate"
+    }
+  ]
+}

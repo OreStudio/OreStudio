@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "AdjustableOrRelativeDate",
+  "description": "A class giving the choice between defining a date as an explicit date together with applicable adjustments or as relative to some other (anchor) date.",
+  "properties": {
+    "adjustableDate": {
+      "description": "A date that shall be subject to adjustment if it would otherwise fall on a day that is not a business day in the specified business centers, together with the convention for adjusting the date.",
+      "$ref": "cdm-base-datetime-AdjustableDate.schema.json"
+    },
+    "relativeDate": {
+      "description": "A date specified as some offset to another date (the anchor date).",
+      "$ref": "cdm-base-datetime-AdjustedRelativeDateOffset.schema.json"
+    }
+  }
+}

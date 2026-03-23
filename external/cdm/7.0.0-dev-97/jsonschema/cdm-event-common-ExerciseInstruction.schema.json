@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ExerciseInstruction",
+  "description": "Specifies the information required to communicate the choices made by the exercising party, in a financial product endowing the party with at least one option.",
+  "properties": {
+    "exerciseQuantity": {
+      "description": "Contains instructions for exercising the option including a quantity change, and optionally a transfer.",
+      "$ref": "cdm-event-common-PrimitiveInstruction.schema.json"
+    },
+    "exerciseOption": {
+      "description": "Specifies the Option Payout being exercised on the trade.",
+      "$ref": "cdm-product-template-metafields-ReferenceWithMetaOptionPayout.schema.json"
+    },
+    "exerciseDate": {
+      "description": "Specifies the date on which an option contained within the financial product would be exercised. The date may be omitted if the contractual product allows for only a single date of exercise (European exercise).",
+      "$ref": "cdm-base-datetime-AdjustableOrAdjustedDate.schema.json"
+    },
+    "exerciseTime": {
+      "description": "Specifies the time at which an option contained within the financial product woulld be exercised. The time may be omitted if the contractual product allows for only a single time of exercise (European exercise). ",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "replacementTradeIdentifier": {
+      "description": "Specifies the trade identifier to apply to the replacement trade for physical exercise.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-TradeIdentifier.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "exerciseQuantity"
+  ]
+}

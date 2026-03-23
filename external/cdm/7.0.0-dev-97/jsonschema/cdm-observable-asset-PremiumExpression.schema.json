@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "PremiumExpression",
+  "description": "This class corresponds to the FpML Premium.model group for representing the option premium when expressed in a way other than an amount.",
+  "properties": {
+    "premiumType": {
+      "description": "Forward start premium type",
+      "$ref": "cdm-observable-asset-PremiumTypeEnum.schema.json"
+    },
+    "pricePerOption": {
+      "description": "The amount of premium to be paid expressed as a function of the number of options.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "percentageOfNotional": {
+      "description": "The amount of premium to be paid expressed as a percentage of the notional value of the transaction. A percentage of 5% would be expressed as 0.05.",
+      "type": "number"
+    }
+  }
+}

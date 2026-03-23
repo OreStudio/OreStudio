@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "string",
+  "title": "ExpirationTimeTypeEnum",
+  "description": "The time of day at which the equity option expires, for example the official closing time of the exchange.",
+  "enum": [
+    "AsSpecifiedInMasterConfirmation",
+    "Close",
+    "DerivativesClose",
+    "OSP",
+    "Open",
+    "SpecificTime",
+    "XETRA"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsSpecifiedInMasterConfirmation"
+      ],
+      "title": "AsSpecifiedInMasterConfirmation",
+      "description": "The time is determined as provided in the relevant Master Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Close"
+      ],
+      "title": "Close",
+      "description": "The official closing time of the exchange on the valuation date."
+    },
+    
+    {
+      "enum": [
+        "DerivativesClose"
+      ],
+      "title": "DerivativesClose",
+      "description": "The official closing time of the derivatives exchange on which a derivative contract is listed on that security underlyer."
+    },
+    
+    {
+      "enum": [
+        "OSP"
+      ],
+      "title": "OSP",
+      "description": "The time at which the official settlement price is determined."
+    },
+    
+    {
+      "enum": [
+        "Open"
+      ],
+      "title": "Open",
+      "description": "The official opening time of the exchange on the valuation date."
+    },
+    
+    {
+      "enum": [
+        "SpecificTime"
+      ],
+      "title": "SpecificTime",
+      "description": "The time specified in the element equityExpirationTime or valuationTime (as appropriate)"
+    },
+    
+    {
+      "enum": [
+        "XETRA"
+      ],
+      "title": "XETRA",
+      "description": "The time at which the official settlement price (following the auction by the exchange) is determined by the exchange."
+    }
+  ]
+}

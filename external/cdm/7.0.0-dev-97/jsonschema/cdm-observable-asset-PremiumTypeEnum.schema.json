@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "PremiumTypeEnum",
+  "description": "The enumerated values to specify the premium type for forward start options.",
+  "enum": [
+    "Fixed",
+    "PostPaid",
+    "PrePaid",
+    "Variable"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Fixed"
+      ],
+      "title": "Fixed"
+    },
+    
+    {
+      "enum": [
+        "PostPaid"
+      ],
+      "title": "PostPaid"
+    },
+    
+    {
+      "enum": [
+        "PrePaid"
+      ],
+      "title": "PrePaid"
+    },
+    
+    {
+      "enum": [
+        "Variable"
+      ],
+      "title": "Variable"
+    }
+  ]
+}

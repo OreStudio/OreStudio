@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "object",
+  "title": "BrokerConfirmation",
+  "description": "Identifies the market sector in which the trade has been arranged.",
+  "properties": {
+    "brokerConfirmationType": {
+      "description": "The type of broker confirmation executed between the parties.",
+      "$ref": "cdm-legaldocumentation-transaction-metafields-FieldWithMetaBrokerConfirmationTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "brokerConfirmationType"
+  ]
+}

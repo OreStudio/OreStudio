@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "InterestAdjustmentPeriodicityEnum",
+  "description": "Values to specify the interest adjustment periodicity election through standard language.",
+  "enum": [
+    "EachDay",
+    "LastLocalBusinessDayOfMonth"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "EachDay"
+      ],
+      "title": "EachDay",
+      "description": "The interest adjustment takes place each day."
+    },
+    
+    {
+      "enum": [
+        "LastLocalBusinessDayOfMonth"
+      ],
+      "title": "LastLocalBusinessDayOfMonth",
+      "description": "The interest adjustment takes place on the last local business day of each calendar month."
+    }
+  ]
+}

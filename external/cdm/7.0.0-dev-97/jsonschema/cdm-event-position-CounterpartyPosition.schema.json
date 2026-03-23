@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "CounterpartyPosition",
+  "description": "A Position describes the accumulated effect of a set of securities or financial transactions.",
+  "properties": {
+    "contractDetails": {
+      "description": "Represents information specific to trades or positions involving contractual products.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaContractDetails.schema.json"
+    },
+    "executionDetails": {
+      "description": "Defines specific attributes that relate to trade or position executions.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaExecutionDetails.schema.json"
+    },
+    "collateral": {
+      "description": "Represents the collateral obligations of a party.",
+      "$ref": "cdm-product-collateral-metafields-ReferenceWithMetaCollateral.schema.json"
+    },
+    "positionIdentifier": {
+      "description": "Represents the identifier(s) that uniquely identify a position for an identity issuer. A position can include multiple identifiers, for example an internal position identifer and a UTI (Unique Trade Identifier).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-PositionIdentifier.schema.json"
+      },
+      "minItems": 0
+    },
+    "openDateTime": {
+      "description": "The date and time when the position was opened.",
+      "type": "string"
+    },
+    "tradeReference": {
+      "description": "Reference to all the trades that constitute the position.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-metafields-ReferenceWithMetaTradeState.schema.json"
+      },
+      "minItems": 0
+    },
+    "party": {
+      "description": "The parties involved in the position, including the Clearing Organization.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Party.schema.json"
+      },
+      "minItems": 0
+    },
+    "partyRole": {
+      "description": "Represents the role each specified party takes in the position.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+      },
+      "minItems": 0
+    },
+    "positionBase": {
+      "description": "Encapsulates the core constituents that characterize a position.",
+      "$ref": "cdm-product-template-TradableProduct.schema.json"
+    }
+  },
+  "required": [
+    "positionBase"
+  ]
+}

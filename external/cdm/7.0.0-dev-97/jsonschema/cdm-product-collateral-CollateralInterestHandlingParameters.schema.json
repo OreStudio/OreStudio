@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CollateralInterestHandlingParameters",
+  "description": "Represents parameters that describe how calculated interest amounts are handled, i.e. are they transferred/distributed, or is the collateral balance adjusted, is netting done, and any other special handling.",
+  "properties": {
+    "interestPaymentHandling": {
+      "description": "Specifies how the collateral interest is to be handled.",
+      "$ref": "cdm-product-collateral-CollateralInterestHandlingEnum.schema.json"
+    },
+    "paymentBusinessCenter": {
+      "description": "Specifies applicable business centers for payments.",
+      "type": "array",
+      "items": {
+        "type": "BusinessCenter"
+      },
+      "minItems": 0
+    },
+    "netPostedAndHeldInterest": {
+      "description": "Indicates whether to net Held and Posted Interest Payments (i.e. whether interest payable for a period can be netted with interest receivable).",
+      "type": "boolean"
+    },
+    "netInterestWithMarginCalls": {
+      "description": "Indicates whether the interest amount may be offset against any margin call deliver or return amounts?   (aka 'net payments' indicator).",
+      "type": "boolean"
+    },
+    "includeAccrualInMarginCalc": {
+      "description": "Indicates whether or not to include the open interest accrual in the margin calculation.",
+      "type": "boolean"
+    },
+    "accrueInterestOnUnsettledInterest": {
+      "description": "Indicates whether interest accruing on unsettled interest amount is included (continues to be accrued) in the following period.",
+      "type": "boolean"
+    },
+    "onFullReturn": {
+      "description": "Indicates the option that accrued interest should be calculated and distributed when a full return of collateral occurs.",
+      "type": "boolean"
+    },
+    "onPartialReturn": {
+      "description": "Indicates the option that accrued interest should be calculated and distributed when a partial return collateral occurs.",
+      "type": "boolean"
+    },
+    "interestAmountApplication": {
+      "description": "The application of Interest Amount with respect to the Delivery Amount and the Return Amount.",
+      "$ref": "cdm-product-collateral-InterestAmountApplication.schema.json"
+    },
+    "interestRolloverLimit": {
+      "description": "Specifies the level below which the interest will be rolled over.",
+      "$ref": "cdm-base-math-NumberBound.schema.json"
+    },
+    "writeoffLimit": {
+      "description": "Specifies the level below which the interest will be written off; if omitted write-off is not applicable.",
+      "$ref": "cdm-base-math-NumberBound.schema.json"
+    },
+    "alternativeToInterestAmount": {
+      "description": "Specifies the alternative to interest amounts.",
+      "$ref": "cdm-product-collateral-AlternativeToInterestAmountEnum.schema.json"
+    },
+    "alternativeProvision": {
+      "description": "Specifies an alternative to interest amount, when the alternative provision clause is specified.",
+      "type": "string"
+    },
+    "cutoffTime": {
+      "description": "Specifies the time of day that interest needs to be confirmed by.",
+      "type": "string"
+    },
+    "notification": {
+      "description": "Specifies the terms describing notification requirements.",
+      "$ref": "cdm-product-collateral-CollateralInterestNotification.schema.json"
+    }
+  },
+  "required": [
+    "interestPaymentHandling",
+    "netPostedAndHeldInterest",
+    "netInterestWithMarginCalls",
+    "includeAccrualInMarginCalc",
+    "onFullReturn",
+    "onPartialReturn"
+  ]
+}

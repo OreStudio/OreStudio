@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "com.rosetta.model",
+  "type": "object",
+  "title": "FieldWithMetaString",
+  "properties": {
+    "value": {
+      "type": "string"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "ValuationDates",
+  "description": "Defines how and when a performance type option or performance type swap is to be valued, including initial, interim and final valuation dates.",
+  "properties": {
+    "initialValuationDate": {
+      "description": "Specifies the initial valuation dates of the underlyer.",
+      "$ref": "cdm-observable-asset-PerformanceValuationDates.schema.json"
+    },
+    "interimValuationDate": {
+      "description": "Specifies the interim valuation dates of the underlyer.",
+      "$ref": "cdm-observable-asset-PerformanceValuationDates.schema.json"
+    },
+    "finalValuationDate": {
+      "description": "Specifies the final valuation dates of the underlyer.",
+      "$ref": "cdm-observable-asset-PerformanceValuationDates.schema.json"
+    }
+  },
+  "required": [
+    "finalValuationDate"
+  ]
+}

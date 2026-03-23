@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "InterestAmountApplication",
+  "description": "A class to specify the application of Interest Amount with respect to the Delivery Amount and the Return Amount.",
+  "properties": {
+    "returnAmount": {
+      "description": "The application of Interest Amount with respect the Return Amount.",
+      "$ref": "cdm-product-collateral-ReturnAmount.schema.json"
+    },
+    "deliveryAmount": {
+      "description": "The application of Interest Amount with respect the Delivery Amount.",
+      "$ref": "cdm-product-collateral-DeliveryAmount.schema.json"
+    }
+  },
+  "required": [
+    "returnAmount",
+    "deliveryAmount"
+  ]
+}

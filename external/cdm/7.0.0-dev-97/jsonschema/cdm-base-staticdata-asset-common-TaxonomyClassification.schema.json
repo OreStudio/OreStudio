@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "TaxonomyClassification",
+  "properties": {
+    "className": {
+      "description": "The name defined by the classification system for a specific attribute in the taxonomy",
+      "type": "string"
+    },
+    "value": {
+      "description": "The value set by the taxonomy that is specific to the className attribute.",
+      "type": "string"
+    },
+    "description": {
+      "description": "A description of the class.",
+      "type": "string"
+    },
+    "ordinal": {
+      "description": "In the case of multi-layered hierarchical classification systems such as commodity classification, the layer the value and className occupy in the classification hierarchy, where 1 represents the top-layer.",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "value"
+  ]
+}

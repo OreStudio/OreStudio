@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AdditionalObligations",
+  "description": "The election of party specific additional obligations applicable to the agreement.",
+  "properties": {
+    "party": {
+      "description": "The party that the additional obligations apply to.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "additionalObligations": {
+      "description": "The party specific additional obligations applicable to the agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "additionalObligations"
+  ]
+}

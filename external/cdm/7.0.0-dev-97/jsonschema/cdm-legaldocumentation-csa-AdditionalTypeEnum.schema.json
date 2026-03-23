@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "AdditionalTypeEnum",
+  "description": "The enumerated values to specify the Additional Type of transaction that can require the collection or delivery of initial margin under a given regulatory regime for the purposes of Covered Transactions.",
+  "enum": [
+    "EquityOptionOrIndexOption",
+    "NotApplicable",
+    "Other"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "EquityOptionOrIndexOption"
+      ],
+      "title": "EquityOptionOrIndexOption",
+      "description": "Single stock equity option or index option transaction as referred to in the transitional provisions (if any) of the EMIR RTS."
+    },
+    
+    {
+      "enum": [
+        "NotApplicable"
+      ],
+      "title": "NotApplicable",
+      "description": "No Additional Type of transaction is applicable to the regulatory regulatory regime."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other"
+    }
+  ]
+}

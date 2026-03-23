@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexMappings",
+  "description": "This type defines mappings between FROs in different definitional versions.",
+  "properties": {
+    "mapsTo": {
+      "description": "The successor FRO that this index maps to.",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexMap.schema.json"
+    },
+    "mapsFrom": {
+      "description": "The predecessor FRO(s) that this index maps to.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-fro-FloatingRateIndexMap.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

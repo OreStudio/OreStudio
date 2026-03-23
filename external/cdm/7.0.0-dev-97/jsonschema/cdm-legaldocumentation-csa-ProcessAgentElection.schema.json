@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ProcessAgentElection",
+  "description": "Specifies the parties' respective elections with respect to the Process Agent.",
+  "properties": {
+    "partyReference": {
+      "description": "The party to which the election and details apply.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "primaryContactInformation": {
+      "description": "The main notice/address information of the party.",
+      "$ref": "cdm-base-staticdata-party-ContactInformation.schema.json"
+    },
+    "isApplicable": {
+      "description": "The qualification of whether the Process Agent is applicable (True) or not applicable (False).",
+      "type": "boolean"
+    },
+    "entity": {
+      "description": "Specification of the process agent entity.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "additionalInformation": {
+      "description": "Additional information relating to the Process Agent.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

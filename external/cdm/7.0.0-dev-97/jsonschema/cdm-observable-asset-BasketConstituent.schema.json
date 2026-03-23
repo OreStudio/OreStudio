@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "BasketConstituent",
+  "description": "Identifies the constituents of the basket",
+  "properties": {
+    "Asset": {
+      "description": "The object to be observed is an Asset, ie something that can be owned and transferred in the financial markets.",
+      "$ref": "cdm-base-staticdata-asset-common-Asset.schema.json"
+    },
+    "Basket": {
+      "description": "The object to be observed is a Basket, ie a collection of Observables with an identifier and optional weightings.",
+      "$ref": "cdm-observable-asset-Basket.schema.json"
+    },
+    "Index": {
+      "description": "The object to be observed is an Index, ie an observable computed on the prices, rates or valuations of a number of assets.",
+      "$ref": "cdm-observable-asset-Index.schema.json"
+    },
+    "quantity": {
+      "description": "Specifies a quantity schedule to be associated to an individual underlier that is a basket constituent. The multiple cardinality is aligned to the one of the PriceQuantity->quantity that this quantity is referencing.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-math-metafields-ReferenceWithMetaNonNegativeQuantitySchedule.schema.json"
+      },
+      "minItems": 0
+    },
+    "initialValuationPrice": {
+      "description": "Specifies an initial price schedule to be associated to an individual underlier that is a basket constituent. The multiple cardinality is aligned to the one of the PriceQuantity->price that this price is referencing.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+      },
+      "minItems": 0
+    },
+    "interimValuationPrice": {
+      "description": "Specifies an interim price schedule to be associated to an individual underlier that is a basket constituent. The multiple cardinality is aligned to the one of the PriceQuantity->price that this price is referencing.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+      },
+      "minItems": 0
+    },
+    "finalValuationPrice": {
+      "description": "Specifies a final price schedule to be associated to an individual underlier that is a basket constituent. The multiple cardinality is aligned to the one of the PriceQuantity->price that this price is referencing.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

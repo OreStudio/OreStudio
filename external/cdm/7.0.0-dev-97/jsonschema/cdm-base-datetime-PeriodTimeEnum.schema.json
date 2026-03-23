@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "PeriodTimeEnum",
+  "description": "The enumeration values to specify a time period containing additional values such as Term.",
+  "enum": [
+    "Hour",
+    "Minute",
+    "Second"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Hour"
+      ],
+      "title": "Hour",
+      "description": "Period measured in hours."
+    },
+    
+    {
+      "enum": [
+        "Minute"
+      ],
+      "title": "Minute",
+      "description": "Period measured in minutes."
+    },
+    
+    {
+      "enum": [
+        "Second"
+      ],
+      "title": "Second",
+      "description": "Period measured in seconds."
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "string",
+  "title": "MasterConfirmationAnnexTypeEnum",
+  "description": "The enumerated values to specify the type of annex to be used with master confirmation agreement governing the transaction.",
+  "enum": [
+    "ISDA2004IndexVarianceSwapAmericasInterdealer",
+    "ISDA2004ShareVarianceSwapAmericasInterdealer",
+    "ISDA2007DispersionVarianceSwapEuropean",
+    "ISDA2007EquityFinanceSwapEuropean",
+    "ISDA2007IndexVarianceSwapAmericasInterdealer",
+    "ISDA2007ShareVarianceSwapAmericasInterdealer",
+    "ISDA2007VarianceOptionEuropean",
+    "ISDA2008EquityFinanceSwapAsiaExcludingJapan",
+    "ISDA2008EquityFinanceSwapAsiaExcludingJapanRev1",
+    "ISDA2008EquityOptionAsiaExcludingJapan",
+    "ISDA2008EquityOptionAsiaExcludingJapanRev1",
+    "ISDA2008EquityOptionJapan",
+    "ISDA2009ClosedMarketsOptionsAsiaExcludingJapan",
+    "ISDA2009EquityEuropeanIS",
+    "ISDA2009EquityEuropeanInterdealerSS",
+    "ISDA2009IndexShareOptionAmericas",
+    "ISDA2009IndexSwapEuropeanInterdealer",
+    "ISDA2009IndexSwapPanAsiaInterdealer",
+    "ISDA2009ShareSwapPanAsia",
+    "ISDA2010FairValueShareSwapEuropeanInterdealer",
+    "ISDA2010IndexShareOptionEMEAInterdealer"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ISDA2004IndexVarianceSwapAmericasInterdealer"
+      ],
+      "title": "ISDA2004IndexVarianceSwapAmericasInterdealer",
+      "description": "The Index Variance Swap 2004 Annex to the ISDA 2004 Americas Interdealer Master Equity Derivatives Confirmation Agreement and to the Revised ISDA 2004 Americas Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2004ShareVarianceSwapAmericasInterdealer"
+      ],
+      "title": "ISDA2004ShareVarianceSwapAmericasInterdealer",
+      "description": "The Share Variance Swap 2004 Annex to the ISDA 2004 Americas Interdealer Master Equity Derivatives Confirmation Agreement and to the Revised ISDA 2004 Americas Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2007DispersionVarianceSwapEuropean"
+      ],
+      "title": "ISDA2007DispersionVarianceSwapEuropean",
+      "description": "The Dispersion Variance Swap Annex to the Revised 2007 ISDA European Variance Swap Master Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2007EquityFinanceSwapEuropean"
+      ],
+      "title": "ISDA2007EquityFinanceSwapEuropean",
+      "description": "The EFS (Equity Share Finance Swap) 2007 Annex to the ISDA 2007 European Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2007IndexVarianceSwapAmericasInterdealer"
+      ],
+      "title": "ISDA2007IndexVarianceSwapAmericasInterdealer",
+      "description": "The Index Variance Swap 2007 Annex to the Revised ISDA 2004 Americas Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2007ShareVarianceSwapAmericasInterdealer"
+      ],
+      "title": "ISDA2007ShareVarianceSwapAmericasInterdealer",
+      "description": "The Share Variance Swap 2007 Annex to the Revised ISDA 2004 Americas Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2007VarianceOptionEuropean"
+      ],
+      "title": "ISDA2007VarianceOptionEuropean",
+      "description": "The Variance Option Standard Terms Appendix to the Revised ISDA 2007 European Variance Swap Master Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2008EquityFinanceSwapAsiaExcludingJapan"
+      ],
+      "title": "ISDA2008EquityFinanceSwapAsiaExcludingJapan",
+      "description": "The Cash-settled Open Market EFS (Equity Finance Share Swap) 2008 Annex to the ISDA 2008 AEJ (Asia Excluding Japan) Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2008EquityFinanceSwapAsiaExcludingJapanRev1"
+      ],
+      "title": "ISDA2008EquityFinanceSwapAsiaExcludingJapanRev1",
+      "description": "The Cash-settled Open Market EFS (Equity Finance Share Swap) Annex to the Revised ISDA 2008 AEJ (Asia Excluding Japan) Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2008EquityOptionAsiaExcludingJapan"
+      ],
+      "title": "ISDA2008EquityOptionAsiaExcludingJapan",
+      "description": "The Open Market Equity Option 2008 Annex to the ISDA 2008 AEJ (Asia Excluding Japan) Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2008EquityOptionAsiaExcludingJapanRev1"
+      ],
+      "title": "ISDA2008EquityOptionAsiaExcludingJapanRev1",
+      "description": "The Open Market Equity Option Annex to the Revised ISDA 2008 AEJ (Asia Excluding Japan) Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2008EquityOptionJapan"
+      ],
+      "title": "ISDA2008EquityOptionJapan",
+      "description": "The Equity Option 2008 Annex to the ISDA 2008 Japanese Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2009ClosedMarketsOptionsAsiaExcludingJapan"
+      ],
+      "title": "ISDA2009ClosedMarketsOptionsAsiaExcludingJapan",
+      "description": "The Cash-settled Closed Market Index and Share Options 2009 Annex to the Revised ISDA 2008 AEJ (Asia Excluding Japan) Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2009EquityEuropeanIS"
+      ],
+      "title": "ISDA2009EquityEuropeanIS",
+      "description": "The Index Swap 2009 Annex to the ISDA 2007 European Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2009EquityEuropeanInterdealerSS"
+      ],
+      "title": "ISDA2009EquityEuropeanInterdealerSS",
+      "description": "The Interdealer Share Swap 2009 Annex to the ISDA 2009 European Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2009IndexShareOptionAmericas"
+      ],
+      "title": "ISDA2009IndexShareOptionAmericas",
+      "description": "The Index and Share Options 2009 Annex to the ISDA 2009 Americas Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2009IndexSwapEuropeanInterdealer"
+      ],
+      "title": "ISDA2009IndexSwapEuropeanInterdealer",
+      "description": "The Interdealer Index Swap 2009 Annex to the ISDA 2009 European Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2009IndexSwapPanAsiaInterdealer"
+      ],
+      "title": "ISDA2009IndexSwapPanAsiaInterdealer",
+      "description": "The Index Swap 2009 Annex to the ISDA 2009 Pan-Asia Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2009ShareSwapPanAsia"
+      ],
+      "title": "ISDA2009ShareSwapPanAsia",
+      "description": "The Share Swap 2009 Annex to the ISDA 2009 Pan-Asia Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2010FairValueShareSwapEuropeanInterdealer"
+      ],
+      "title": "ISDA2010FairValueShareSwapEuropeanInterdealer",
+      "description": "The Fair Value Interdealer Share Swap 2010 Annex to the ISDA 2009 European Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    },
+    
+    {
+      "enum": [
+        "ISDA2010IndexShareOptionEMEAInterdealer"
+      ],
+      "title": "ISDA2010IndexShareOptionEMEAInterdealer",
+      "description": "The Cash-settled Index Option/Cash/Physically-settled Share Option 2010 Annex to the ISDA 2010 EMEA EM Interdealer Master Equity Derivatives Confirmation Agreement applies."
+    }
+  ]
+}

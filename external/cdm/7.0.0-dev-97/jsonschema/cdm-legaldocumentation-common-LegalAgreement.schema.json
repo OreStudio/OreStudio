@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "LegalAgreement",
+  "description": "The specification of a legal agreement between two parties, being negotiated or having been executed. This includes the baseline information and the optional specialised elections",
+  "properties": {
+    "agreementDate": {
+      "description": "The date on which the legal agreement has been agreed between the parties. This corresponds to the Date of Deed in an English Law document.",
+      "type": "string"
+    },
+    "effectiveDate": {
+      "description": "The date on which, or as of which, the agreement is effective, if different from the agreement date. It is expected that it will most often correspond to the agreement date, although there could be situations where the parties will explicitly agree on a distinct effective date.",
+      "type": "string"
+    },
+    "identifier": {
+      "description": "The legal agreement identifier. Several identifiers can be specified.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+      },
+      "minItems": 0
+    },
+    "legalAgreementIdentification": {
+      "description": "The type of legal agreement, identified via a set of composable attributes: agreementName, publisher, governing law and version, e.g. ISDA 2013 Standard Credit Support Annex English Law.",
+      "$ref": "cdm-legaldocumentation-common-LegalAgreementIdentification.schema.json"
+    },
+    "contractualParty": {
+      "description": "The two contractual parties to the legal agreement, which reference information is positioned as part of the partyInformation attribute.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "otherParty": {
+      "description": "The role(s) that other party(ies) may have in relation to the legal agreement, further to the contractual parties.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+      },
+      "minItems": 0
+    },
+    "attachment": {
+      "description": "A human readable document, for example a confirmation.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-Resource.schema.json"
+      },
+      "minItems": 0
+    },
+    "agreementTerms": {
+      "description": "Specification of the content of the legal agreement.",
+      "$ref": "cdm-legaldocumentation-common-AgreementTerms.schema.json"
+    },
+    "relatedAgreements": {
+      "description": "Specifies the agreement(s) that govern the agreement, either as a reference to such agreements when specified as part of the CDM, or through identification of some of the key terms of those agreements, such as the type of agreement, the publisher, the vintage, the agreement identifier and the agreement date.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-LegalAgreement.schema.json"
+      },
+      "minItems": 0
+    },
+    "umbrellaAgreement": {
+      "description": "Specifies a set of legal entities which are part of a legal agreement beyond the two contracting parties to that agreement.",
+      "$ref": "cdm-legaldocumentation-common-UmbrellaAgreement.schema.json"
+    }
+  }
+}

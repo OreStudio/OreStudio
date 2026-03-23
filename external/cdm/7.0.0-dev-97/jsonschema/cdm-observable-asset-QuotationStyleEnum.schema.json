@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "QuotationStyleEnum",
+  "description": "The enumerated values to specify the actual quotation style (e.g. PointsUpFront, TradedSpread) used to quote a credit default swap fee leg.",
+  "enum": [
+    "PointsUpFront",
+    "Price",
+    "TradedSpread"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "PointsUpFront"
+      ],
+      "title": "PointsUpFront",
+      "description": "When quotation style is 'PointsUpFront', the initialPoints element of the Credit Default Swap feeLeg should be populated"
+    },
+    
+    {
+      "enum": [
+        "Price"
+      ],
+      "title": "Price",
+      "description": "When quotation style is 'Price', the marketPrice element of the Credit Default Swap feeLeg should be populated"
+    },
+    
+    {
+      "enum": [
+        "TradedSpread"
+      ],
+      "title": "TradedSpread",
+      "description": "When quotation style is 'TradedSpread', the marketFixedRate element of the Credit Default Swap feeLeg should be populated"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "object",
+  "title": "OffsetCalculation",
+  "description": "Defines business day shifts for daily componded or averaged rates.  This type is used for lookback and lockout rates. This type is used to represent modular computed rates in interestRatePayouts.",
+  "properties": {
+    "offsetDays": {
+      "description": "The number of business days offset.",
+      "type": "integer"
+    }
+  }
+}

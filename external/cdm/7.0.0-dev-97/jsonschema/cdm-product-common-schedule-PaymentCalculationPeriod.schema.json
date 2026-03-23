@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "PaymentCalculationPeriod",
+  "description": "A data defining:  the adjusted payment date and associated calculation period parameters required to calculate the actual or projected payment amount. This data forms:  part of the cashflow representation of a swap stream.",
+  "properties": {
+    "unadjustedPaymentDate": {
+      "description": "The unadjusted payment date.",
+      "type": "string"
+    },
+    "adjustedPaymentDate": {
+      "description": "The adjusted payment date. This date should already be adjusted for any applicable business day convention. This component is not intended for use in trade confirmation but may be specified to allow the fee structure to also serve as a cashflow type component.",
+      "type": "string"
+    },
+    "calculationPeriod": {
+      "description": "The parameters used in the calculation of a fixed or floating rate calculation period amount. A list of calculation period elements may be ordered in the document by ascending start date. An FpML document which contains an unordered list of calculation periods is still regarded as a conformant document.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-common-schedule-CalculationPeriod.schema.json"
+      },
+      "minItems": 1
+    },
+    "fixedPaymentAmount": {
+      "description": "A known fixed payment amount.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "discountFactor": {
+      "description": "A decimal value representing the discount factor used to calculate the present value of cash flow.",
+      "type": "number"
+    },
+    "forecastPaymentAmount": {
+      "description": "A monetary amount representing the forecast of the future value of the payment.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "presentValueAmount": {
+      "description": "A monetary amount representing the present value of the forecast payment.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  }
+}

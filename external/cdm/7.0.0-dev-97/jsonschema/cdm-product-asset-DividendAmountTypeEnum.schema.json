@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "DividendAmountTypeEnum",
+  "description": "The enumerated values to specify whether the dividend is paid with respect to the Dividend Period.",
+  "enum": [
+    "AsSpecifiedInMasterConfirmation",
+    "ExAmount",
+    "PaidAmount",
+    "RecordAmount"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsSpecifiedInMasterConfirmation"
+      ],
+      "title": "AsSpecifiedInMasterConfirmation",
+      "description": "The Amount is determined as provided in the relevant Master Confirmation."
+    },
+    
+    {
+      "enum": [
+        "ExAmount"
+      ],
+      "title": "ExAmount",
+      "description": "The ex-date for a dividend occurs during a dividend period."
+    },
+    
+    {
+      "enum": [
+        "PaidAmount"
+      ],
+      "title": "PaidAmount",
+      "description": "The payment date for a dividend occurs during a dividend period."
+    },
+    
+    {
+      "enum": [
+        "RecordAmount"
+      ],
+      "title": "RecordAmount",
+      "description": "The record date for a dividend occurs during a dividend period."
+    }
+  ]
+}

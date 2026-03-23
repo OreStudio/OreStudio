@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexExternalMappings",
+  "description": "Represents the mappings of FRO codes to other.",
+  "properties": {
+    "isoCode": {
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexExternalMap.schema.json"
+    }
+  }
+}

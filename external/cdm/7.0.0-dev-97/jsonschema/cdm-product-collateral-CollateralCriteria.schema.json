@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CollateralCriteria",
+  "description": "The possible different terms that can be combined, using AND, OR and NOT logic, to define the issuers and/or assets that meet a given criteria for collateral.",
+  "properties": {
+    "AllCriteria": {
+      "description": "Enables two or more Collateral Criteria to be combined using AND logic.",
+      "$ref": "cdm-product-collateral-AllCriteria.schema.json"
+    },
+    "AnyCriteria": {
+      "description": "Enables two or more Collateral Criteria to be combined using OR logic.",
+      "$ref": "cdm-product-collateral-AnyCriteria.schema.json"
+    },
+    "NegativeCriteria": {
+      "description": "Enables a single Collateral Criteria to be excluded using NOT logic.",
+      "$ref": "cdm-product-collateral-NegativeCriteria.schema.json"
+    },
+    "CollateralIssuerType": {
+      "description": "Criteria is the type of entity issuing the asset.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralIssuerType.schema.json"
+    },
+    "CollateralGuarantorType": {
+      "description": "Criteria is the type of entity guaranteeing the asset.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralGuarantorType.schema.json"
+    },
+    "AssetType": {
+      "description": "Criteria is the asset type of the collateral.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetType.schema.json"
+    },
+    "IssuerCountryOfOrigin": {
+      "description": "Criteria is the issuing entity country of origin.",
+      "$ref": "cdm-product-collateral-IssuerCountryOfOrigin.schema.json"
+    },
+    "AssetCountryOfOrigin": {
+      "description": "Criteria is the collateral asset country of origin.",
+      "$ref": "cdm-product-collateral-AssetCountryOfOrigin.schema.json"
+    },
+    "CurrencyCodeEnum": {
+      "description": "Criteria is the denominated currency of the collateral.",
+      "$ref": "cdm-base-staticdata-asset-common-CurrencyCodeEnum.schema.json"
+    },
+    "IssuerName": {
+      "description": "Criteria is a specific named issuer entity.",
+      "$ref": "cdm-product-collateral-IssuerName.schema.json"
+    },
+    "IssuerAgencyRating": {
+      "description": "Criteria is the agency rating(s) of the issuer.",
+      "$ref": "cdm-product-collateral-IssuerAgencyRating.schema.json"
+    },
+    "SovereignAgencyRating": {
+      "description": "Criteria is the agency rating(s) of the country of the issuer.",
+      "$ref": "cdm-product-collateral-SovereignAgencyRating.schema.json"
+    },
+    "AssetAgencyRating": {
+      "description": "Criteria is the agency rating(s) of the collateral asset.",
+      "$ref": "cdm-product-collateral-AssetAgencyRating.schema.json"
+    },
+    "AssetMaturity": {
+      "description": "Criteria is the maturity characteristics of the collateral asset.",
+      "$ref": "cdm-product-collateral-AssetMaturity.schema.json"
+    },
+    "SpecificAsset": {
+      "description": "Criteria is a specifically identified asset",
+      "$ref": "cdm-product-collateral-SpecificAsset.schema.json"
+    },
+    "CollateralTaxonomy": {
+      "description": "Criteria is the taxonomy characteristics of an collateral.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralTaxonomy.schema.json"
+    },
+    "ListingExchange": {
+      "description": "Criteria is that the collateral is listed on a specific exchange.",
+      "$ref": "cdm-product-collateral-ListingExchange.schema.json"
+    },
+    "ListingSector": {
+      "description": "Criteria is the industry sector of the collateral asset.",
+      "$ref": "cdm-product-collateral-ListingSector.schema.json"
+    },
+    "IndexType": {
+      "description": "Criteria is that the collateral is a constituent of a specific index.",
+      "$ref": "cdm-product-collateral-IndexType.schema.json"
+    },
+    "CounterpartyOwnIssuePermitted": {
+      "description": "Criteria includes collateral issued by the counterparty.",
+      "$ref": "cdm-product-collateral-CounterpartyOwnIssuePermitted.schema.json"
+    },
+    "DomesticCurrencyIssued": {
+      "description": "Criteria is that collateral must be denominated in the domestic currency of the issuer.",
+      "$ref": "cdm-product-collateral-DomesticCurrencyIssued.schema.json"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "FieldWithMetaAssetClassEnum",
+  "properties": {
+    "value": {
+      "$ref": "cdm-base-staticdata-asset-common-AssetClassEnum.schema.json"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template.metafields",
+  "type": "object",
+  "title": "ReferenceWithMetaOptionPayout",
+  "properties": {
+    "globalReference": {
+      "type": "string"
+    },
+    "externalReference": {
+      "type": "string"
+    },
+    "address": {
+      "$ref": "com-rosetta-model-lib-meta-Reference.schema.json"
+    }
+  }
+}

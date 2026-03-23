@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "CalculationScheduleDeliveryPeriods",
+  "description": "Period and time profile over which the delivery takes place.",
+  "properties": {
+    "profile": {
+      "description": "Defines the delivery profile of the asset, including the load type and the delivery intervals.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-AssetDeliveryProfile.schema.json"
+      },
+      "minItems": 0
+    },
+    "startDate": {
+      "description": "Delivery start date",
+      "type": "string"
+    },
+    "endDate": {
+      "description": "Delivery end date",
+      "type": "string"
+    },
+    "deliveryCapacity": {
+      "description": "The number of units included in the transaction for each delivery interval",
+      "$ref": "cdm-base-math-Quantity.schema.json"
+    },
+    "priceTimeIntervalQuantity": {
+      "description": "Price per quantity per delivery time interval.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    }
+  }
+}

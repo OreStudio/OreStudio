@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "RedemptionTypeEnum",
+  "description": "Specifies the contractual redemption or conversion features associated with a debt security.",
+  "enum": [
+    "ContingentConvertible",
+    "Convertible",
+    "Exchangeable",
+    "Extraordinary",
+    "Sinkable"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ContingentConvertible"
+      ],
+      "title": "ContingentConvertible",
+      "description": "Specifies a debt security that can be converted into equity if a pre-defined trigger event occurs."
+    },
+    
+    {
+      "enum": [
+        "Convertible"
+      ],
+      "title": "Convertible",
+      "description": "Specifies a debt instrument that can be converted into common shares."
+    },
+    
+    {
+      "enum": [
+        "Exchangeable"
+      ],
+      "title": "Exchangeable",
+      "description": "Specifies a debt security that can be converted to equity in a company other than the issuing company."
+    },
+    
+    {
+      "enum": [
+        "Extraordinary"
+      ],
+      "title": "Extraordinary",
+      "description": "Specifies a debt security that can be redeemed early if certain extraordinary events occur."
+    },
+    
+    {
+      "enum": [
+        "Sinkable"
+      ],
+      "title": "Sinkable",
+      "description": "Specifies a debt security that requires the issuer to periodically set aside money to buy back portions of the debt."
+    }
+  ]
+}

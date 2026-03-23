@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "CounterpartyPositionState",
+  "description": "Defines the fundamental financial information that can be changed by a Primitive Event and by extension any business or life-cycle event. Each PositionState specifies where a Position is in its life-cycle. PositionState is a root type and as such, can be created independently to any other CDM data type, but can also be used as part of the CDM Event Model.",
+  "properties": {
+    "counterpartyPosition": {
+      "description": "Represents the Position that has been effected by a business or life-cycle event.",
+      "$ref": "cdm-event-position-CounterpartyPosition.schema.json"
+    },
+    "state": {
+      "description": "Represents the State of the Position through its life-cycle.",
+      "$ref": "cdm-event-common-State.schema.json"
+    },
+    "observationHistory": {
+      "description": "Represents the observed events related to a particular product or process, such as credit events or corporate actions.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-ObservationEvent.schema.json"
+      },
+      "minItems": 0
+    },
+    "valuationHistory": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-Valuation.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "counterpartyPosition"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValuationDateDateEnum",
+  "description": "Defines whether the date of a Valuation is defined by a certain day of the week or a particular date in the month.",
+  "enum": [
+    "As Selected",
+    "CalendarDay",
+    "Each",
+    "4th Last",
+    "Last",
+    "2nd Last",
+    "3rd Last"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "As Selected"
+      ],
+      "title": "AsSelected",
+      "description": "As Selected."
+    },
+    
+    {
+      "enum": [
+        "CalendarDay"
+      ],
+      "title": "CalendarDay",
+      "description": "A specific day of the calendar, defined."
+    },
+    
+    {
+      "enum": [
+        "Each"
+      ],
+      "title": "Each",
+      "description": "Specific Valuation date frequency."
+    },
+    
+    {
+      "enum": [
+        "4th Last"
+      ],
+      "title": "Fourthlast",
+      "description": "Specific Valuation date frequency."
+    },
+    
+    {
+      "enum": [
+        "Last"
+      ],
+      "title": "Last",
+      "description": "Specific Valuation date frequency."
+    },
+    
+    {
+      "enum": [
+        "2nd Last"
+      ],
+      "title": "Secondlast",
+      "description": "Specific Valuation date frequency."
+    },
+    
+    {
+      "enum": [
+        "3rd Last"
+      ],
+      "title": "Thirdlast",
+      "description": "Specific Valuation date frequency."
+    }
+  ]
+}

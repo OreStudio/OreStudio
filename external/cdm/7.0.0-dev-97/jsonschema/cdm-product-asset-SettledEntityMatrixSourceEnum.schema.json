@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "SettledEntityMatrixSourceEnum",
+  "description": "The enumerated values to specify the relevant settled entity matrix source.",
+  "enum": [
+    "ConfirmationAnnex",
+    "NotApplicable",
+    "Publisher"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ConfirmationAnnex"
+      ],
+      "title": "ConfirmationAnnex",
+      "description": "The Relevant Settled Entity Matrix shall be the list agreed for this purpose by the parties. The list is not included as part of the electronic confirmation."
+    },
+    
+    {
+      "enum": [
+        "NotApplicable"
+      ],
+      "title": "NotApplicable",
+      "description": "The term is not applicable."
+    },
+    
+    {
+      "enum": [
+        "Publisher"
+      ],
+      "title": "Publisher",
+      "description": "The Settled Entity Matrix published by the Index Publisher."
+    }
+  ]
+}

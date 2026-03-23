@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "string",
+  "title": "FxIllegalityOrImpossibilityEnum",
+  "description": "The enumerated values to specify whether such terms i.e. Illegality or Impossibility shall be treated either as defined per the documents applicable to the FX transaction.",
+  "enum": [
+    "ToBeTreatedAsDisruptionEvent",
+    "ToBeTreatedAsIllegalityOrImpossibility"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ToBeTreatedAsDisruptionEvent"
+      ],
+      "title": "ToBeTreatedAsDisruptionEvent"
+    },
+    
+    {
+      "enum": [
+        "ToBeTreatedAsIllegalityOrImpossibility"
+      ],
+      "title": "ToBeTreatedAsIllegalityOrImpossibility"
+    }
+  ]
+}

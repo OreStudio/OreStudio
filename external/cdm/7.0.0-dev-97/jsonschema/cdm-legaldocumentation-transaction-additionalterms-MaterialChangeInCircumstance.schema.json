@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "MaterialChangeInCircumstance",
+  "properties": {
+    "materialChangeInCircumstanceIsApplicable": {
+      "type": "boolean"
+    },
+    "escrowArrangement": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EscrowArrangement.schema.json"
+    },
+    "maximumDaysOfDisruption": {
+      "$ref": "cdm-observable-asset-ValuationPostponement.schema.json"
+    }
+  },
+  "required": [
+    "materialChangeInCircumstanceIsApplicable"
+  ]
+}

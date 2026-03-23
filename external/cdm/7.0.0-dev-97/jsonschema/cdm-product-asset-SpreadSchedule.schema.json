@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "SpreadSchedule",
+  "description": "Adds an optional spread type element to the Schedule to identify a long or short spread value.",
+  "properties": {
+    "price": {
+      "description": "The initial rate. An initial rate of 5% would be represented as 0.05.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+    },
+    "spreadScheduleType": {
+      "description": "An element which purpose is to identify a long or short spread value.",
+      "$ref": "cdm-product-asset-metafields-FieldWithMetaSpreadScheduleTypeEnum.schema.json"
+    }
+  }
+}

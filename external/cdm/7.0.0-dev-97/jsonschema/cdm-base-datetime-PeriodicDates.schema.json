@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "PeriodicDates",
+  "description": "A class for specifying a calculation period schedule.",
+  "properties": {
+    "startDate": {
+      "description": "The start date of the calculation period. FpML specifies that for interest rate swaps this date must only be specified if it is not equal to the effective date. It is always specified in the case of equity swaps and credit default swaps with periodic payments. This date may be subject to adjustment in accordance with a business day convention.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "endDate": {
+      "description": "The end date of the calculation period. FpML specifies that for interest rate swaps this date must only be specified if it is not equal to the termination date. It is always specified in the case of equity swaps with periodic payments. This date may be subject to adjustment in accordance with a business day convention.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "periodFrequency": {
+      "description": "The frequency at which calculation period end dates occur with the regular part of the calculation period schedule and their roll date convention.",
+      "$ref": "cdm-base-datetime-CalculationPeriodFrequency.schema.json"
+    },
+    "periodDatesAdjustments": {
+      "description": "The specification of the business day convention and financial business centers used for adjusting any calculation period date if it would otherwise fall on a day that is not a business day in the specified business center.",
+      "$ref": "cdm-base-datetime-BusinessDayAdjustments.schema.json"
+    },
+    "dayType": {
+      "description": "Denotes the enumerated values to specify the day type classification used in counting the number of days between two dates.",
+      "$ref": "cdm-base-datetime-DayTypeEnum.schema.json"
+    }
+  }
+}

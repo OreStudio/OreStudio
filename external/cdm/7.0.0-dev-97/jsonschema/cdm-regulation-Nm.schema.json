@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Nm",
+  "properties": {
+    "refRate": {
+      "$ref": "cdm-regulation-RefRate.schema.json"
+    },
+    "term": {
+      "$ref": "cdm-regulation-Term.schema.json"
+    }
+  },
+  "required": [
+    "refRate",
+    "term"
+  ]
+}

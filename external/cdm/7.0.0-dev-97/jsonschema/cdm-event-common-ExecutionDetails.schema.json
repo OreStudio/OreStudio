@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ExecutionDetails",
+  "description": "Defines specific attributes that relate to trade executions.",
+  "properties": {
+    "executionType": {
+      "description": "Identifies the type of execution, e.g. via voice, electronically...",
+      "$ref": "cdm-event-common-ExecutionTypeEnum.schema.json"
+    },
+    "executionVenue": {
+      "description": "Represents the venue on which a trade was executed.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "packageReference": {
+      "description": "A reference to the package linking the trade with other trades, in case the trade was executed as part of a package (hence this attribute is optional).",
+      "$ref": "cdm-base-staticdata-identifier-IdentifiedList.schema.json"
+    }
+  },
+  "required": [
+    "executionType"
+  ]
+}

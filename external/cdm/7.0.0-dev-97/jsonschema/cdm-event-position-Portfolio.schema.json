@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "Portfolio",
+  "description": " A Portfolio represents an aggregation of multiple Positions, by describing the parameters that this Portfolio should be aggregated based on. The resulting PortfolioState is calculated using these aggregation parameters as inputs, by aggregating all the Events that are relevant to this Portfolio. The concept of Portfolio works at all levels in the model: from the highest for a given LegalEntity for instance, to the lowest to account for security substitutions in a secutity financing transaction. As such, Portfolio can be used either above or below the Contract level.",
+  "properties": {
+    "aggregationParameters": {
+      "description": "Describes the portfolio by describing how to aggregate all its relevant Events.",
+      "$ref": "cdm-event-position-AggregationParameters.schema.json"
+    },
+    "portfolioState": {
+      "description": "Describes the state of the Portfolio as a list of Positions resulting from the aggregation.",
+      "$ref": "cdm-event-position-PortfolioState.schema.json"
+    }
+  },
+  "required": [
+    "aggregationParameters",
+    "portfolioState"
+  ]
+}

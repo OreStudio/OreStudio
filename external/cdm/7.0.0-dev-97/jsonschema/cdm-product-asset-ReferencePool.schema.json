@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "ReferencePool",
+  "description": "This type contains all the reference pool items to define the reference entity and reference obligation(s) in the basket.",
+  "properties": {
+    "referencePoolItem": {
+      "description": "This type contains all the constituent weight and reference information.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-ReferencePoolItem.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

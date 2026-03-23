@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ExecutionTerms",
+  "description": "A class to specify execution location and language of execution to determine duty to be paid.",
+  "properties": {
+    "executionLanguage": {
+      "description": "The bespoke execution language election.",
+      "$ref": "cdm-legaldocumentation-csa-ExecutionLanguage.schema.json"
+    },
+    "executionLocation": {
+      "description": "The bespoke execution location election.",
+      "$ref": "cdm-legaldocumentation-csa-ExecutionLocation.schema.json"
+    }
+  },
+  "required": [
+    "executionLanguage",
+    "executionLocation"
+  ]
+}

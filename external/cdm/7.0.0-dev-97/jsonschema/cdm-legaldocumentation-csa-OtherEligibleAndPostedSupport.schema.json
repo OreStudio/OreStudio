@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "OtherEligibleAndPostedSupport",
+  "description": "Specifies the Other Eligible Support elections.",
+  "properties": {
+    "applicableValue": {
+      "description": "The definition of 'Value' with respect to Other Eligible Support and Other Posted Support.",
+      "type": "boolean"
+    },
+    "applicableTransfer": {
+      "description": "The definition of 'Transfer' with respect to Other Eligible Support and Other Posted Support.",
+      "type": "boolean"
+    },
+    "value": {
+      "description": "Details how particular types of collateral are valued (other than in respect of a default).",
+      "$ref": "cdm-legaldocumentation-csa-CollateralValueMethod.schema.json"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "Composite",
+  "description": "Specifies the conditions to be applied for converting into a reference currency when the actual currency rate is not determined upfront.",
+  "properties": {
+    "determinationMethod": {
+      "description": "Specifies the method according to which an amount or a date is determined.",
+      "$ref": "cdm-observable-common-DeterminationMethodEnum.schema.json"
+    },
+    "relativeDate": {
+      "description": "A date specified as some offset to another date (the anchor date).",
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    },
+    "fxSpotRateSource": {
+      "description": "Specifies the methodology (reference source and, optionally, fixing time) to be used for determining a currency conversion rate.",
+      "$ref": "cdm-observable-asset-FxSpotRateSource.schema.json"
+    },
+    "fixingTime": {
+      "description": "The time at which the spot currency exchange rate will be observed. It is specified as a time in a business day calendar location, e.g. 11:00am London time.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    }
+  }
+}

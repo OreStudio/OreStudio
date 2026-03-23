@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "object",
+  "title": "TriggerEvent",
+  "description": "Observation point for trigger.",
+  "properties": {
+    "schedule": {
+      "description": "A derivative schedule.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-datetime-AveragingSchedule.schema.json"
+      },
+      "minItems": 0
+    },
+    "triggerDates": {
+      "description": "The trigger Dates.",
+      "$ref": "cdm-base-datetime-DateList.schema.json"
+    },
+    "trigger": {
+      "description": "The trigger level",
+      "$ref": "cdm-observable-event-Trigger.schema.json"
+    },
+    "featurePayment": {
+      "description": "The feature payment, i.e. the payment made following trigger occurrence.",
+      "$ref": "cdm-observable-event-FeaturePayment.schema.json"
+    }
+  },
+  "required": [
+    "trigger"
+  ]
+}

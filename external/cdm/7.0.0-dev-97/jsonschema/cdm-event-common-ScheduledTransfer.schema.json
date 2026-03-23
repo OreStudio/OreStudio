@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ScheduledTransfer",
+  "description": "A scheduled transfer built into the contract.",
+  "properties": {
+    "transferType": {
+      "description": "Specifies the type of scheduled transfer.",
+      "$ref": "cdm-product-common-settlement-ScheduledTransferEnum.schema.json"
+    },
+    "corporateActionTransferType": {
+      "$ref": "cdm-event-common-CorporateActionTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "transferType"
+  ]
+}

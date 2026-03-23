@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "FixedPrice",
+  "description": "A predefined price accorded by the counterparties.",
+  "properties": {
+    "price": {
+      "description": "Fixed price step schedule, including an initial price specified as an absolute number.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+    }
+  }
+}

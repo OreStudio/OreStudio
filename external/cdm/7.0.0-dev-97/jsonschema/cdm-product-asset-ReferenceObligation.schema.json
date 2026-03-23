@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "ReferenceObligation",
+  "description": "A class to specify the reference obligation that is associated with a credit derivative instrument.",
+  "properties": {
+    "security": {
+      "description": "Identifies the underlying asset when it is a security, such as a bond or convertible bond. The security data type requires one or more productIdentifiers, specificaiton of the security type (e.g. debt), and includes optional attributes to specify a debt class, such as asset-backed, as well as seniority.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    },
+    "loan": {
+      "description": "Identifies the underlying asset when it is a loan.",
+      "$ref": "cdm-base-staticdata-asset-common-Loan.schema.json"
+    },
+    "primaryObligor": {
+      "description": "The entity primarily responsible for repaying debt to a creditor as a result of borrowing or issuing bonds. ISDA 2003 Term: Primary Obligor.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "primaryObligorReference": {
+      "description": "A pointer style reference to a reference entity defined elsewhere in the document. Used when the reference entity is the primary obligor.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaLegalEntity.schema.json"
+    },
+    "guarantor": {
+      "description": "The party that guarantees by way of a contractual arrangement to pay the debts of an obligor if the obligor is unable to make the required payments itself. ISDA 2003 Term: Guarantor.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "guarantorReference": {
+      "description": "A pointer style reference to a reference entity defined elsewhere in the document. Used when the reference entity is the guarantor.",
+      "type": "string"
+    },
+    "standardReferenceObligation": {
+      "description": "Indicates if the reference obligation is a Standard Reference Obligation. ISDA 2014 Term: Standard Reference Obligation.",
+      "type": "boolean"
+    }
+  }
+}

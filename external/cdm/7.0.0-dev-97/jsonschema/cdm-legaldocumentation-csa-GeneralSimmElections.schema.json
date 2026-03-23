@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "GeneralSimmElections",
+  "description": "A class to specify the ISDA SIMM as the Method for all Covered Transactions with respect to all Regimes.",
+  "properties": {
+    "simmVersion": {
+      "description": "The qualification of the ISDA SIMM version that is specified for all Covered Transactions.",
+      "$ref": "cdm-legaldocumentation-csa-SimmVersion.schema.json"
+    },
+    "simmCalculationCurrency": {
+      "description": "The SIMM Calculation Currency, as specified for each of the parties to the CSA Initial Margin.",
+      "$ref": "cdm-legaldocumentation-csa-SimmCalculationCurrency.schema.json"
+    }
+  },
+  "required": [
+    "simmCalculationCurrency"
+  ]
+}

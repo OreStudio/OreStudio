@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CSAValuationDate",
+  "description": "Specifies the date on which the value of collateral or exposure are calculated in accordance with the agreement.",
+  "properties": {
+    "date": {
+      "description": "Defines whether a date is defined by a certain day of the week or a particular date in the month. If not specified here, then additional language must be used.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationDateDateEnum.schema.json"
+    },
+    "day": {
+      "description": "Specific day(s) or day of the week, if any, specified for Valuation Time.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationDateDayEnum.schema.json"
+    },
+    "calendarDay": {
+      "description": "Defines the day of the calendar if this is specified for in the ValuationDateDateEnum.",
+      "type": "number"
+    },
+    "frequency": {
+      "description": "Defines the regularity of the date specified for the Valuation Date.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationDateFrequencyEnum.schema.json"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "RelativeTimeOffset",
+  "description": "Describes how a time is offset from a reference point, including the unit, magnitude, and rounding behavior.",
+  "properties": {
+    "offsetTimeUnit": {
+      "description": "The unit of time for the offset (e.g., seconds, minutes, hours, days). ",
+      "$ref": "cdm-base-datetime-TimeUnitEnum.schema.json"
+    },
+    "offsetMultiplier": {
+      "description": "A time offset multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying a negative offset, e.g. -2 hours.",
+      "type": "integer"
+    },
+    "rounding": {
+      "description": "Optional rules that define how the calculated time should be rounded after the offset has been applied.",
+      "$ref": "cdm-base-datetime-TimeRounding.schema.json"
+    }
+  }
+}

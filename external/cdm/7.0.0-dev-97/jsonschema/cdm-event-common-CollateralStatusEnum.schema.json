@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "CollateralStatusEnum",
+  "description": "Represents the enumeration list to identify the settlement status of the collateral.",
+  "enum": [
+    "FullAmount",
+    "InTransitAmount",
+    "SettledAmount"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FullAmount"
+      ],
+      "title": "FullAmount",
+      "description": "Indicates the collateral balance amount in full, inclusive of any pre-agreed collateral positions in transit for settlement."
+    },
+    
+    {
+      "enum": [
+        "InTransitAmount"
+      ],
+      "title": "InTransitAmount",
+      "description": "Indicates collateral amount in transit settlement cycle only, excluding settled collateral amount/s."
+    },
+    
+    {
+      "enum": [
+        "SettledAmount"
+      ],
+      "title": "SettledAmount",
+      "description": "Indicates the collateral is settled and not an in transit pre-agreed collateral amount/s."
+    }
+  ]
+}

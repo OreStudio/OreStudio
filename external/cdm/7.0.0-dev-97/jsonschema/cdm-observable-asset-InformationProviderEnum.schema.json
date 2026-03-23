@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "InformationProviderEnum",
+  "description": "The enumerated values to specify the list of information providers.",
+  "enum": [
+    "AssocBanksSingapore",
+    "BancoCentralChile",
+    "BankOfCanada",
+    "BankOfEngland",
+    "BankOfJapan",
+    "Bloomberg",
+    "EuroCentralBank",
+    "FHLBSF",
+    "FederalReserve",
+    "ICESWAP",
+    "ISDA",
+    "Refinitiv",
+    "ReserveBankAustralia",
+    "ReserveBankNewZealand",
+    "Reuters",
+    "SAFEX",
+    "TOKYOSWAP",
+    "Telerate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AssocBanksSingapore"
+      ],
+      "title": "AssocBanksSingapore",
+      "description": "The Association of Banks in Singapore."
+    },
+    
+    {
+      "enum": [
+        "BancoCentralChile"
+      ],
+      "title": "BancoCentralChile",
+      "description": "The central bank of Chile."
+    },
+    
+    {
+      "enum": [
+        "BankOfCanada"
+      ],
+      "title": "BankOfCanada",
+      "description": "The central bank of Canada."
+    },
+    
+    {
+      "enum": [
+        "BankOfEngland"
+      ],
+      "title": "BankOfEngland",
+      "description": "The Bank Of England."
+    },
+    
+    {
+      "enum": [
+        "BankOfJapan"
+      ],
+      "title": "BankOfJapan",
+      "description": "The central bank of Japan."
+    },
+    
+    {
+      "enum": [
+        "Bloomberg"
+      ],
+      "title": "Bloomberg",
+      "description": "Bloomberg LP."
+    },
+    
+    {
+      "enum": [
+        "EuroCentralBank"
+      ],
+      "title": "EuroCentralBank",
+      "description": "The European Central Bank."
+    },
+    
+    {
+      "enum": [
+        "FHLBSF"
+      ],
+      "title": "FHLBSF",
+      "description": "The Federal Home Loan Bank of San Francisco, or its successor."
+    },
+    
+    {
+      "enum": [
+        "FederalReserve"
+      ],
+      "title": "FederalReserve",
+      "description": "The Federal Reserve, the central bank of the United States."
+    },
+    
+    {
+      "enum": [
+        "ICESWAP"
+      ],
+      "title": "ICESWAP",
+      "description": "ICESWAP Rate Administrator which means ICE Benchmark Administration, or any successor thereto, as administrator of the ICE Swap Rate."
+    },
+    
+    {
+      "enum": [
+        "ISDA"
+      ],
+      "title": "ISDA",
+      "description": "International Swaps and Derivatives Association, Inc."
+    },
+    
+    {
+      "enum": [
+        "Refinitiv"
+      ],
+      "title": "Refinitiv",
+      "description": "Refinitiv, formerly Thomson Reuters Financial & Risk."
+    },
+    
+    {
+      "enum": [
+        "ReserveBankAustralia"
+      ],
+      "title": "ReserveBankAustralia",
+      "description": "The Reserve Bank of Australia."
+    },
+    
+    {
+      "enum": [
+        "ReserveBankNewZealand"
+      ],
+      "title": "ReserveBankNewZealand",
+      "description": "The Reserve Bank of New Zealand."
+    },
+    
+    {
+      "enum": [
+        "Reuters"
+      ],
+      "title": "Reuters",
+      "description": "Reuters Group Plc."
+    },
+    
+    {
+      "enum": [
+        "SAFEX"
+      ],
+      "title": "SAFEX",
+      "description": "South African Futures Exchange, or its successor."
+    },
+    
+    {
+      "enum": [
+        "TOKYOSWAP"
+      ],
+      "title": "TOKYOSWAP",
+      "description": "The Tokyo Swap Reference Rate (or TSR) Administrator, which means Refinitiv Asia Pacific Limited, or any successor thereto, as administrator of the TSR."
+    },
+    
+    {
+      "enum": [
+        "Telerate"
+      ],
+      "title": "Telerate",
+      "description": "Telerate, Inc."
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "BusinessDayConventionEnum",
+  "description": "The enumerated values to specify the convention for adjusting any relevant date if it would otherwise fall on a day that is not a valid business day.",
+  "enum": [
+    "FOLLOWING",
+    "FRN",
+    "MODFOLLOWING",
+    "MODPRECEDING",
+    "NEAREST",
+    "NONE",
+    "NotApplicable",
+    "PRECEDING"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FOLLOWING"
+      ],
+      "title": "FOLLOWING",
+      "description": "The non-business date will be adjusted to the first following day that is a business day"
+    },
+    
+    {
+      "enum": [
+        "FRN"
+      ],
+      "title": "FRN",
+      "description": "Per 2000 ISDA Definitions, Section 4.11. FRN Convention; Eurodollar Convention. FRN is included here as a type of business day convention although it does not strictly fall within ISDA's definition of a Business Day Convention and does not conform to the simple definition given above."
+    },
+    
+    {
+      "enum": [
+        "MODFOLLOWING"
+      ],
+      "title": "MODFOLLOWING",
+      "description": "The non-business date will be adjusted to the first following day that is a business day unless that day falls in the next calendar month, in which case that date will be the first preceding day that is a business day."
+    },
+    
+    {
+      "enum": [
+        "MODPRECEDING"
+      ],
+      "title": "MODPRECEDING",
+      "description": "The non-business date will be adjusted to the first preceding day that is a business day unless that day falls in the previous calendar month, in which case that date will be the first following day that us a business day."
+    },
+    
+    {
+      "enum": [
+        "NEAREST"
+      ],
+      "title": "NEAREST",
+      "description": "The non-business date will be adjusted to the nearest day that is a business day - i.e. if the non-business day falls on any day other than a Sunday or a Monday, it will be the first preceding day that is a business day, and will be the first following business day if it falls on a Sunday or a Monday."
+    },
+    
+    {
+      "enum": [
+        "NONE"
+      ],
+      "title": "NONE",
+      "description": "The date will not be adjusted if it falls on a day that is not a business day."
+    },
+    
+    {
+      "enum": [
+        "NotApplicable"
+      ],
+      "title": "NotApplicable",
+      "description": "The date adjustments conventions are defined elsewhere, so it is not required to specify them here."
+    },
+    
+    {
+      "enum": [
+        "PRECEDING"
+      ],
+      "title": "PRECEDING",
+      "description": "The non-business day will be adjusted to the first preceding day that is a business day."
+    }
+  ]
+}

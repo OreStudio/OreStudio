@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "DisputeResolution",
+  "description": "A class to specify the election terms under which a party disputes the Value of any Transfer of Eligible Credit Support or Posted Credit Support.",
+  "properties": {
+    "resolutionTime": {
+      "description": "The time by which the dispute needs to be resolved, failure of which would trigger a recalculation alongside a process that is specified as part of the agreement.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "otherTerms": {
+      "description": "The custom Resolution Time election that might be specified by the parties.",
+      "type": "string"
+    },
+    "alternativeTerms": {
+      "description": "The alternative dispute resolution procedure if specified.",
+      "type": "string"
+    },
+    "recalculationOfValue": {
+      "description": "The elections to specify terms for recalculation of the market value of posted collateral.",
+      "$ref": "cdm-legaldocumentation-csa-RecalculationOfValue.schema.json"
+    },
+    "legacyAlternative": {
+      "description": "Alternative procedures to those in the pre-print for resolving collateral related disputes.",
+      "$ref": "cdm-legaldocumentation-csa-LegacyResolutionAlternative.schema.json"
+    },
+    "value": {
+      "description": "Methodology for resolving disputes in respect of the determination of the value of collateral.",
+      "$ref": "cdm-legaldocumentation-csa-ResolutionValue.schema.json"
+    }
+  }
+}

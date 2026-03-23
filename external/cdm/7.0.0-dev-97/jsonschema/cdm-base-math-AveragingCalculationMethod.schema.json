@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "AveragingCalculationMethod",
+  "description": "Defines the ways in which multiple values can be aggregated into a single value.",
+  "properties": {
+    "isWeighted": {
+      "description": "Identifies whether the average values will be weighted or unweighted.",
+      "type": "boolean"
+    },
+    "calculationMethod": {
+      "description": "Identifies which of the Pythagorean means is being used to compute an average value.",
+      "$ref": "cdm-base-math-AveragingCalculationMethodEnum.schema.json"
+    }
+  },
+  "required": [
+    "isWeighted",
+    "calculationMethod"
+  ]
+}

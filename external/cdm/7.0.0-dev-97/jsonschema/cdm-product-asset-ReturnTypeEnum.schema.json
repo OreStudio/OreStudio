@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "ReturnTypeEnum",
+  "description": "The enumerated values to specify the type of return associated the equity payout.",
+  "enum": [
+    "Price",
+    "Total"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Price"
+      ],
+      "title": "Price",
+      "description": "Price return, i.e. excluding dividends."
+    },
+    
+    {
+      "enum": [
+        "Total"
+      ],
+      "title": "Total",
+      "description": "Total return, i.e. including dividend and price components."
+    }
+  ]
+}

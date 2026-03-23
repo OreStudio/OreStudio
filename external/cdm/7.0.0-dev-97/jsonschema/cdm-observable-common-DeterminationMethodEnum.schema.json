@@ -1,0 +1,154 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.common",
+  "type": "string",
+  "title": "DeterminationMethodEnum",
+  "description": "The enumerated values to specify the method according to which an amount or a date is determined.",
+  "enum": [
+    "AgreedInitialPrice",
+    "AsSpecifiedInMasterConfirmation",
+    "CalculationAgent",
+    "ClosingPrice",
+    "DividendCurrency",
+    "ExpiringContractLevel",
+    "HedgeExecution",
+    "IssuerPaymentCurrency",
+    "NAV",
+    "OSPPrice",
+    "OpenPrice",
+    "SettlementCurrency",
+    "StrikeDateDetermination",
+    "TWAPPrice",
+    "VWAPPrice",
+    "ValuationTime"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AgreedInitialPrice"
+      ],
+      "title": "AgreedInitialPrice",
+      "description": "Agreed separately between the parties."
+    },
+    
+    {
+      "enum": [
+        "AsSpecifiedInMasterConfirmation"
+      ],
+      "title": "AsSpecifiedInMasterConfirmation",
+      "description": "As specified in Master Confirmation."
+    },
+    
+    {
+      "enum": [
+        "CalculationAgent"
+      ],
+      "title": "CalculationAgent",
+      "description": "Determined by the Calculation Agent."
+    },
+    
+    {
+      "enum": [
+        "ClosingPrice"
+      ],
+      "title": "ClosingPrice",
+      "description": "Official Closing Price."
+    },
+    
+    {
+      "enum": [
+        "DividendCurrency"
+      ],
+      "title": "DividendCurrency",
+      "description": "Determined by the Currency of Equity Dividends."
+    },
+    
+    {
+      "enum": [
+        "ExpiringContractLevel"
+      ],
+      "title": "ExpiringContractLevel",
+      "description": "The initial Index Level is the level of the Expiring Contract as provided in the Master Confirmation."
+    },
+    
+    {
+      "enum": [
+        "HedgeExecution"
+      ],
+      "title": "HedgeExecution",
+      "description": "Determined by the Hedging Party."
+    },
+    
+    {
+      "enum": [
+        "IssuerPaymentCurrency"
+      ],
+      "title": "IssuerPaymentCurrency",
+      "description": "Issuer Payment Currency."
+    },
+    
+    {
+      "enum": [
+        "NAV"
+      ],
+      "title": "NAV",
+      "description": "Net Asset Value."
+    },
+    
+    {
+      "enum": [
+        "OSPPrice"
+      ],
+      "title": "OSPPrice",
+      "description": "OSP Price."
+    },
+    
+    {
+      "enum": [
+        "OpenPrice"
+      ],
+      "title": "OpenPrice",
+      "description": "Opening Price of the Market."
+    },
+    
+    {
+      "enum": [
+        "SettlementCurrency"
+      ],
+      "title": "SettlementCurrency",
+      "description": "Settlement Currency."
+    },
+    
+    {
+      "enum": [
+        "StrikeDateDetermination"
+      ],
+      "title": "StrikeDateDetermination",
+      "description": "Date on which the strike is determined in respect of a forward starting swap."
+    },
+    
+    {
+      "enum": [
+        "TWAPPrice"
+      ],
+      "title": "TWAPPrice",
+      "description": "Official TWAP Price."
+    },
+    
+    {
+      "enum": [
+        "VWAPPrice"
+      ],
+      "title": "VWAPPrice",
+      "description": "Official VWAP Price."
+    },
+    
+    {
+      "enum": [
+        "ValuationTime"
+      ],
+      "title": "ValuationTime",
+      "description": "Price determined at valuation time."
+    }
+  ]
+}

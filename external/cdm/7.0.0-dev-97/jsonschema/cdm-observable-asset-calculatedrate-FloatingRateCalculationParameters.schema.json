@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "object",
+  "title": "FloatingRateCalculationParameters",
+  "description": "Defines the structures needed to represent the calculation parameters for daily averaged and compounded modular rates as defined in the 2021 ISDA Definitions in Section 7. This type is used to represent modular computed rates in interestRatePayouts.",
+  "properties": {
+    "calculationMethod": {
+      "description": "calculation type (averaging or compounding).",
+      "$ref": "cdm-observable-asset-calculatedrate-CalculationMethodEnum.schema.json"
+    },
+    "observationShiftCalculation": {
+      "description": "any obervation shift parameters if applicable.",
+      "$ref": "cdm-observable-asset-calculatedrate-ObservationShiftCalculation.schema.json"
+    },
+    "lookbackCalculation": {
+      "description": "any lookback  parameters if applicable.",
+      "$ref": "cdm-observable-asset-calculatedrate-OffsetCalculation.schema.json"
+    },
+    "lockoutCalculation": {
+      "description": "any lockout  parameters if applicable.",
+      "$ref": "cdm-observable-asset-calculatedrate-OffsetCalculation.schema.json"
+    },
+    "applicableBusinessDays": {
+      "description": "the business days that are applicable for the calculation.",
+      "$ref": "cdm-base-datetime-BusinessCenters.schema.json"
+    },
+    "observationParameters": {
+      "description": " any applicable observation parameters, such as daily caps or floors.",
+      "$ref": "cdm-observable-asset-calculatedrate-ObservationParameters.schema.json"
+    }
+  },
+  "required": [
+    "calculationMethod"
+  ]
+}

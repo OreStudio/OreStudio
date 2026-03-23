@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "CompareOp",
+  "enum": [
+    "Equals",
+    "GreaterThan",
+    "GreaterThanOrEquals",
+    "LessThan",
+    "LessThanOrEquals"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Equals"
+      ],
+      "title": "Equals"
+    },
+    
+    {
+      "enum": [
+        "GreaterThan"
+      ],
+      "title": "GreaterThan"
+    },
+    
+    {
+      "enum": [
+        "GreaterThanOrEquals"
+      ],
+      "title": "GreaterThanOrEquals"
+    },
+    
+    {
+      "enum": [
+        "LessThan"
+      ],
+      "title": "LessThan"
+    },
+    
+    {
+      "enum": [
+        "LessThanOrEquals"
+      ],
+      "title": "LessThanOrEquals"
+    }
+  ]
+}

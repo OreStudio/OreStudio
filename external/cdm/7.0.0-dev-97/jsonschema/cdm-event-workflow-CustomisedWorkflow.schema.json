@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "CustomisedWorkflow",
+  "description": "In its initial iteration, this class is meant to support the DTCC TIW workflow information.",
+  "properties": {
+    "itemName": {
+      "description": "In this initial iteration, this corresponds to the DTCC TIW element name.",
+      "type": "string"
+    },
+    "itemValue": {
+      "description": "In this initial iteration, this corresponds to the DTCC value.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "itemName",
+    "itemValue"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.icma",
+  "type": "object",
+  "title": "GlobalMasterRepoAgreement",
+  "description": "The set of elections that define a GMRA",
+  "properties": {
+  }
+}

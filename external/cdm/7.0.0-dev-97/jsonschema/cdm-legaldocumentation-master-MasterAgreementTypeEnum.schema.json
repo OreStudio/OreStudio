@@ -1,0 +1,325 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "string",
+  "title": "MasterAgreementTypeEnum",
+  "description": "The enumerated values to specify the type of the master agreement governing the transaction.",
+  "enum": [
+    "AFB",
+    "Bespoke",
+    "CMA",
+    "CMOF",
+    "EEIPower",
+    "EFETElectricity",
+    "EFETGas",
+    "EMA",
+    "FBF",
+    "GMRA",
+    "GMSLA",
+    "GTMA",
+    "GasEDI",
+    "German",
+    "ICOM",
+    "IETA-ERPA",
+    "IETA-ETMA",
+    "IETA-IETMA",
+    "IFEMA",
+    "IFEOMA",
+    "ISDAFIA-CDEA",
+    "ISDAIIFM-TMA",
+    "ISDAMaster",
+    "JSCC",
+    "LBMA",
+    "LEAP",
+    "MCPSA",
+    "NAESBGas",
+    "NBP",
+    "RussianDerivatives",
+    "RussianRepo",
+    "SCoTA",
+    "Swiss",
+    "TTF",
+    "ZBT"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AFB"
+      ],
+      "title": "AFB",
+      "description": "AFB Master Agreement for Foreign Exchange and Derivatives Transactions"
+    },
+    
+    {
+      "enum": [
+        "Bespoke"
+      ],
+      "title": "Bespoke",
+      "description": "A Bespoke (custom) Master Agreement, including one-off agreements for transactions"
+    },
+    
+    {
+      "enum": [
+        "CMA"
+      ],
+      "title": "CMA",
+      "description": "Clearing Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "CMOF"
+      ],
+      "title": "CMOF",
+      "description": "Contrato Marco de Operaciones Financieras"
+    },
+    
+    {
+      "enum": [
+        "EEIPower"
+      ],
+      "title": "EEIPower",
+      "description": "EEI Master Power Purchase and Sale Agreement"
+    },
+    
+    {
+      "enum": [
+        "EFETElectricity"
+      ],
+      "title": "EFETElectricity",
+      "description": "EFET General Agreement Concerning the Delivery and Acceptance of Electricity"
+    },
+    
+    {
+      "enum": [
+        "EFETGas"
+      ],
+      "title": "EFETGas",
+      "description": "EFET General Agreement Concerning The Delivery And Acceptance of Natural Gas"
+    },
+    
+    {
+      "enum": [
+        "EMA"
+      ],
+      "title": "EMA",
+      "description": "European Master Agreement and the Derivatives Annex (Banking Federation of the European Union)"
+    },
+    
+    {
+      "enum": [
+        "FBF"
+      ],
+      "title": "FBF",
+      "description": "Master Agreement Relating to transactions on Forward Financial Instruments (Federation Bancaire Francaise)"
+    },
+    
+    {
+      "enum": [
+        "GMRA"
+      ],
+      "title": "GMRA",
+      "description": "ICMA Global Master Agreement for REPO Trades"
+    },
+    
+    {
+      "enum": [
+        "GMSLA"
+      ],
+      "title": "GMSLA",
+      "description": "ISLA Global Master Agreement for Securities Lending"
+    },
+    
+    {
+      "enum": [
+        "GTMA"
+      ],
+      "title": "GTMA",
+      "description": "FOA Grid Trade Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "GasEDI"
+      ],
+      "title": "GasEDI",
+      "description": "GasEDI Base Contract for Short-term Sale and Purchase of Natural Gas"
+    },
+    
+    {
+      "enum": [
+        "German"
+      ],
+      "title": "German",
+      "description": "German Master Agreement for Financial derivatives and Addendum for Options on Stock Exchange Indices or Securities"
+    },
+    
+    {
+      "enum": [
+        "ICOM"
+      ],
+      "title": "ICOM",
+      "description": "International Currency Options Market Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "IETA-ERPA"
+      ],
+      "title": "IETA_ERPA",
+      "description": "International Emissions Trading Association Emissions Reduction Purchase Agreement"
+    },
+    
+    {
+      "enum": [
+        "IETA-ETMA"
+      ],
+      "title": "IETA_ETMA",
+      "description": "International Emissions Trading Association Emissions Trading Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "IETA-IETMA"
+      ],
+      "title": "IETA_IETMA",
+      "description": "International Emissions Trading Association International Emissions Trading Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "IFEMA"
+      ],
+      "title": "IFEMA",
+      "description": "International Foreign Exchange Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "IFEOMA"
+      ],
+      "title": "IFEOMA",
+      "description": "International Foreign Exchange and Options Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "ISDAFIA-CDEA"
+      ],
+      "title": "ISDAFIA_CDEA",
+      "description": "ISDA-FIA Cleared Derivatives Execution Agreement"
+    },
+    
+    {
+      "enum": [
+        "ISDAIIFM-TMA"
+      ],
+      "title": "ISDAIIFM_TMA",
+      "description": "ISDA/IIFM Tahawwut (Hedging) Master Agreement (TMA)"
+    },
+    
+    {
+      "enum": [
+        "ISDAMaster"
+      ],
+      "title": "ISDAMaster",
+      "description": "ISDA Master Agreement"
+    },
+    
+    {
+      "enum": [
+        "JSCC"
+      ],
+      "title": "JSCC",
+      "description": "Master agreement of Japan Securities Clearing Corporation"
+    },
+    
+    {
+      "enum": [
+        "LBMA"
+      ],
+      "title": "LBMA",
+      "description": "International Bullion Master Agreement Terms published by the London Bullion Market Association"
+    },
+    
+    {
+      "enum": [
+        "LEAP"
+      ],
+      "title": "LEAP",
+      "description": "Leadership in Energy Automated Processing"
+    },
+    
+    {
+      "enum": [
+        "MCPSA"
+      ],
+      "title": "MCPSA",
+      "description": "CTA Master Coal Purchase and Sales Agreement"
+    },
+    
+    {
+      "enum": [
+        "NAESBGas"
+      ],
+      "title": "NAESBGas",
+      "description": "NAESB Base Contract for Sale and Purchase of Natural Gas"
+    },
+    
+    {
+      "enum": [
+        "NBP"
+      ],
+      "title": "NBP",
+      "description": "Short Term Flat NBP Trading Terms and Conditions"
+    },
+    
+    {
+      "enum": [
+        "RussianDerivatives"
+      ],
+      "title": "RussianDerivatives",
+      "description": "Standard Documentation for Derivative Transactions on the Russian Financial Markets"
+    },
+    
+    {
+      "enum": [
+        "RussianRepo"
+      ],
+      "title": "RussianRepo",
+      "description": "Master Agreement and Contractual Terms for Repurchase Agreements on the Russian Financial Market"
+    },
+    
+    {
+      "enum": [
+        "SCoTA"
+      ],
+      "title": "SCoTA",
+      "description": "globalCOAL Standard Coal Trading Agreement"
+    },
+    
+    {
+      "enum": [
+        "Swiss"
+      ],
+      "title": "Swiss",
+      "description": "Swiss Master Agreement for OTC Derivatives Instruments"
+    },
+    
+    {
+      "enum": [
+        "TTF"
+      ],
+      "title": "TTF",
+      "description": "TTF Hub Natural Gas Trading Terms and Conditions"
+    },
+    
+    {
+      "enum": [
+        "ZBT"
+      ],
+      "title": "ZBT",
+      "description": "Zeebrugge Hub Natural Gas Trading Terms and Conditions"
+    }
+  ]
+}

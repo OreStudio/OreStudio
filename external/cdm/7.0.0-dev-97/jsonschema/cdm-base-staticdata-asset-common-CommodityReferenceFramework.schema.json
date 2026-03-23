@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "CommodityReferenceFramework",
+  "description": "Specifies the type of commodity.",
+  "properties": {
+    "commodityName": {
+      "description": "Identifies the commodity more specifically. Where possible, this should follow the naming convention used in the 2005 ISDA Commodity Definitions SubAnnex A, including the subCommodity and additional qualifiers, but should be limited to 256 characters or less.",
+      "type": "string"
+    },
+    "capacityUnit": {
+      "description": "Provides an enumerated value for a capacity unit, generally used in the context of defining quantities for commodities.",
+      "$ref": "cdm-base-math-CapacityUnitEnum.schema.json"
+    },
+    "weatherUnit": {
+      "description": "Provides an enumerated values for a weather unit, generally used in the context of defining quantities for commodities.",
+      "$ref": "cdm-base-math-WeatherUnitEnum.schema.json"
+    },
+    "currency": {
+      "description": "Defines the currency in which the commodity is priced.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  },
+  "required": [
+    "commodityName",
+    "currency"
+  ]
+}

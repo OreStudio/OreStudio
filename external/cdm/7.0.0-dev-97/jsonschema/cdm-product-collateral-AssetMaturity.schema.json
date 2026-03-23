@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "AssetMaturity",
+  "properties": {
+    "maturityType": {
+      "description": "Specifies whether the maturity range is the remaining or original maturity.",
+      "$ref": "cdm-base-staticdata-asset-common-MaturityTypeEnum.schema.json"
+    },
+    "maturityRange": {
+      "description": "Represents a filter based on the underlying asset maturity.",
+      "$ref": "cdm-base-datetime-PeriodRange.schema.json"
+    }
+  },
+  "required": [
+    "maturityType",
+    "maturityRange"
+  ]
+}

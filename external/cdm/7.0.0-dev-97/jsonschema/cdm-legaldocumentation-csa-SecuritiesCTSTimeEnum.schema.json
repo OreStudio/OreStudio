@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "SecuritiesCTSTimeEnum",
+  "description": "Details the day on which securities collateral is required to be transferred relative to the Notification Time.",
+  "enum": [
+    "First Local Business Day",
+    "Next",
+    "Other",
+    "Same",
+    "Second Local Business Day",
+    "Third Local Business Day"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "First Local Business Day"
+      ],
+      "title": "FirstDay",
+      "description": "The securities collateral should be transferred on the first local business day."
+    },
+    
+    {
+      "enum": [
+        "Next"
+      ],
+      "title": "Next",
+      "description": "The securities collateral should be transferred on the next day."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Exception value."
+    },
+    
+    {
+      "enum": [
+        "Same"
+      ],
+      "title": "Same",
+      "description": "The securities collateral should be transferred on the same day."
+    },
+    
+    {
+      "enum": [
+        "Second Local Business Day"
+      ],
+      "title": "SecondDay",
+      "description": "The securities collateral should be transferred on the second local business day."
+    },
+    
+    {
+      "enum": [
+        "Third Local Business Day"
+      ],
+      "title": "ThirdDay",
+      "description": "The securities collateral should be transferred on the third local business day."
+    }
+  ]
+}

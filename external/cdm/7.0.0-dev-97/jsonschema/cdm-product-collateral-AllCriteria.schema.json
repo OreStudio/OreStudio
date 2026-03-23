@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "AllCriteria",
+  "description": "Used to combine two or more Collateral Criteria using AND logic.",
+  "properties": {
+    "allCriteria": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-collateral-CollateralCriteria.schema.json"
+      },
+      "minItems": 2
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "CreditLimitUtilisationPosition",
+  "properties": {
+    "shortPosition": {
+      "description": "Credit limit utilisation attributable to short positions.",
+      "type": "number"
+    },
+    "longPosition": {
+      "description": "Credit limit utilisation attributable to long positions.",
+      "type": "number"
+    },
+    "global": {
+      "description": "Global credit limit utilisation amount, agnostic of long/short position direction.",
+      "type": "number"
+    }
+  }
+}

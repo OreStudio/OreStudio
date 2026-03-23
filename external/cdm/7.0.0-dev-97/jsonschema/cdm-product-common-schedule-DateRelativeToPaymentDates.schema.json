@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "DateRelativeToPaymentDates",
+  "description": "A data to:  provide the ability to point to multiple payment nodes in the document through the unbounded paymentDatesReference.",
+  "properties": {
+    "paymentDatesReference": {
+      "description": "A set of href pointers to payment dates defined somewhere else in the document.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-common-schedule-metafields-ReferenceWithMetaPaymentDates.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

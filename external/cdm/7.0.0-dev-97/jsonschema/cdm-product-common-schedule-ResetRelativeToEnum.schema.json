@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "string",
+  "title": "ResetRelativeToEnum",
+  "description": "The enumerated values to specify whether resets occur relative to the first or last day of a calculation period.",
+  "enum": [
+    "CalculationPeriodEndDate",
+    "CalculationPeriodStartDate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CalculationPeriodEndDate"
+      ],
+      "title": "CalculationPeriodEndDate",
+      "description": "Resets occur relative to the last day of a calculation period."
+    },
+    
+    {
+      "enum": [
+        "CalculationPeriodStartDate"
+      ],
+      "title": "CalculationPeriodStartDate",
+      "description": "Resets occur relative to the first day of a calculation period."
+    }
+  ]
+}

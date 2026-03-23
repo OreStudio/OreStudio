@@ -116,18 +116,25 @@ option(ORES_TEST_LOG_DATABASE "Enable database output for test logs" OFF)
 #
 set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
 
-# Load ORES_TEST_DB_* credentials from .env for local development.
-# Skipped in CI environments where the variables are already exported.
+# Load ORES_TEST_DB_* credentials and logging settings from .env for local
+# development. Skipped in CI environments where variables are already exported.
 if(NOT DEFINED ENV{CI})
     set(ORES_ENV_FILE "${CMAKE_SOURCE_DIR}/.env")
     if(EXISTS "${ORES_ENV_FILE}")
         file(STRINGS "${ORES_ENV_FILE}" _ores_env_lines)
         foreach(_line ${_ores_env_lines})
-            if(_line MATCHES "^ORES_TEST_DB_")
+            # Skip the JWT private key — it's long and tests don't need it
+            if(_line MATCHES "^ORES_IAM_SERVICE_JWT_PRIVATE_KEY")
+                continue()
+            elseif(_line MATCHES "^ORES_TEST_LOG_LEVEL=(.+)")
+                set(ORES_TEST_LOG_LEVEL "${CMAKE_MATCH_1}" CACHE STRING "" FORCE)
+            elseif(_line MATCHES "^ORES_TEST_LOG_CONSOLE=true")
+                set(ORES_TEST_LOG_CONSOLE ON CACHE BOOL "" FORCE)
+            elseif(_line MATCHES "^ORES_")
                 string(APPEND ORES_TEST_ENV ";${_line}")
             endif()
         endforeach()
-        message(STATUS "Loaded ORES_TEST_DB_* credentials from .env")
+        message(STATUS "Loaded test credentials and logging settings from .env")
     endif()
 endif()
 

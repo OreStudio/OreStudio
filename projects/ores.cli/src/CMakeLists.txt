@@ -48,6 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.dq.core.lib
         ores.ore.lib
         ores.refdata.core.lib
+        ores.variability.core.lib
         ores.security.lib
         ores.compute.core.lib
         magic_enum::magic_enum

@@ -30,7 +30,7 @@
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.variability/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 

@@ -20,8 +20,8 @@
 #include "ores.qt/ClientJobDefinitionModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.scheduler/rfl/reflectors.hpp"
-#include "ores.scheduler/messaging/scheduler_protocol.hpp"
+#include "ores.scheduler.api/rfl/reflectors.hpp"
+#include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

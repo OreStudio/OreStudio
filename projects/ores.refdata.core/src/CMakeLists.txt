@@ -41,7 +41,7 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.service.lib
         pugixml::pugixml
-        ores.variability.lib
+        ores.variability.api.lib
         ores.platform.lib
         ores.utility.lib
         ores.security.lib

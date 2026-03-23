@@ -23,7 +23,7 @@
 
 #include <QHBoxLayout>
 #include <QPushButton>
-#include "ores.scheduler/domain/cron_expression.hpp"
+#include "ores.scheduler.api/domain/cron_expression.hpp"
 
 namespace ores::qt {
 

@@ -28,7 +28,7 @@
 #include "ores.qt/ClientJobDefinitionModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.scheduler/domain/job_definition.hpp"
+#include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace ores::qt {
 

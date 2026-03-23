@@ -27,8 +27,8 @@
 #include "ores.qt/SystemSettingHistoryDialog.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.variability/eventing/system_setting_changed_event.hpp"
-#include "ores.variability/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 
 namespace ores::qt {

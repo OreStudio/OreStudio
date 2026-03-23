@@ -23,8 +23,8 @@
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
-#include "ores.variability/service/system_settings_service.hpp"
-#include "ores.variability/eventing/system_setting_changed_event.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.logging/make_logger.hpp"
 

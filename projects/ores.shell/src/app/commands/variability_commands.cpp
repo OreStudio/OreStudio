@@ -24,8 +24,8 @@
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <cli/cli.h>
-#include "ores.variability/messaging/system_settings_protocol.hpp"
-#include "ores.variability/domain/system_setting_table_io.hpp"  // IWYU pragma: keep.
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/domain/system_setting_table_io.hpp"  // IWYU pragma: keep.
 
 namespace ores::shell::app::commands {
 

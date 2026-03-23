@@ -54,8 +54,8 @@
 #include "ores.refdata.core/generators/currency_generator.hpp"
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
-#include "ores.variability/eventing/system_setting_changed_event.hpp"
-#include "ores.variability/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
 namespace ores::qt {
 

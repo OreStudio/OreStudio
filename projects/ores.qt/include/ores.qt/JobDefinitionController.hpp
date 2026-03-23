@@ -25,7 +25,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.scheduler/domain/job_definition.hpp"
+#include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {

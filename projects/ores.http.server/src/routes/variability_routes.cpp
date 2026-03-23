@@ -21,7 +21,7 @@
 
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include "ores.variability/messaging/system_settings_protocol.hpp"
+#include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
 namespace ores::http_server::routes {
 

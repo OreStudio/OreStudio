@@ -25,7 +25,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.scheduler/domain/job_instance.hpp"
+#include "ores.scheduler.api/domain/job_instance.hpp"
 
 namespace Ui {
 class JobDefinitionHistoryDialog;

@@ -29,7 +29,7 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/login_info_repository.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
-#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.utility/uuid/uuid_v7_generator.hpp"
 #include "ores.logging/make_logger.hpp"
 

@@ -28,7 +28,7 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
-#include "ores.variability/service/system_settings_service.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.iam.core/service/auth_session_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
@@ -42,7 +42,7 @@
 #include "ores.eventing/service/event_bus.hpp"
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
-#include "ores.variability/eventing/system_setting_changed_event.hpp"
+#include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.utility/version/version.hpp"
 

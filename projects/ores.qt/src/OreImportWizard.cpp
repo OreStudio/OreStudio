@@ -41,7 +41,7 @@
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
-#include "ores.trading/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"

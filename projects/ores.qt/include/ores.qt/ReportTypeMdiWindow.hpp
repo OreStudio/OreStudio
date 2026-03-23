@@ -28,7 +28,7 @@
 #include "ores.qt/ClientReportTypeModel.hpp"
 #include "ores.qt/PaginationWidget.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.reporting/domain/report_type.hpp"
+#include "ores.reporting.api/domain/report_type.hpp"
 
 namespace ores::qt {
 

@@ -26,7 +26,7 @@
 #include "ui_ConcurrencyPolicyHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.reporting/messaging/concurrency_policy_protocol.hpp"
+#include "ores.reporting.api/messaging/concurrency_policy_protocol.hpp"
 
 namespace ores::qt {
 

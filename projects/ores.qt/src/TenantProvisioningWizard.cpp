@@ -38,7 +38,7 @@
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
-#include "ores.reporting/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.synthetic/messaging/generate_organisation_protocol.hpp"
 #include "ores.variability/domain/system_setting.hpp"
 #include "ores.variability/messaging/system_settings_protocol.hpp"

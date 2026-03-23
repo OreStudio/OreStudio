@@ -25,7 +25,7 @@
 #include "ores.qt/EntityController.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading/domain/trade.hpp"
+#include "ores.trading.api/domain/trade.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {

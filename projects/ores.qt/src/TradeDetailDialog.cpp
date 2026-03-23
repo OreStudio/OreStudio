@@ -31,7 +31,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/WidgetUtils.hpp"
-#include "ores.trading/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 

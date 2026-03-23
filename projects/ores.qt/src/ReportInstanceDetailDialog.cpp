@@ -29,7 +29,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
-#include "ores.reporting/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 
 namespace ores::qt {
 

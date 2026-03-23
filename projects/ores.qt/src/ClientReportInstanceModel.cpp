@@ -21,7 +21,7 @@
 
 #include <QtConcurrent>
 #include <boost/uuid/uuid_io.hpp>
-#include "ores.reporting/messaging/report_instance_protocol.hpp"
+#include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"

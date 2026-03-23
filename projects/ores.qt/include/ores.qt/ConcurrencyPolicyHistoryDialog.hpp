@@ -25,7 +25,7 @@
 #include <QTableWidget>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.reporting/domain/concurrency_policy.hpp"
+#include "ores.reporting.api/domain/concurrency_policy.hpp"
 
 namespace Ui {
 class ConcurrencyPolicyHistoryDialog;

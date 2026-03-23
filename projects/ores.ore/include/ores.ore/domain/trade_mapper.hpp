@@ -21,7 +21,7 @@
 #define ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading/domain/trade.hpp"
+#include "ores.trading.api/domain/trade.hpp"
 #include "ores.ore/domain/domain.hpp"
 
 namespace ores::ore::domain {

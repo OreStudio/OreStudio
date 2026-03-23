@@ -23,7 +23,7 @@
 #include <QColor>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.platform/time/datetime.hpp"
-#include "ores.reporting/messaging/report_definition_protocol.hpp"
+#include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.scheduler/domain/cron_expression.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"

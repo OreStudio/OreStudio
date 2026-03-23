@@ -20,7 +20,7 @@
 #include "ores.ore/domain/trade_mapper.hpp"
 
 #include <boost/uuid/nil_generator.hpp>
-#include "ores.trading/domain/trade_json_io.hpp" // IWYU pragma: keep.
+#include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
 
 namespace ores::ore::domain {
 

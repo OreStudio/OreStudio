@@ -31,8 +31,8 @@
 #include "ores.eventing/service/postgres_event_source.hpp"
 #include "ores.eventing/service/registrar.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
-#include "ores.trading/eventing/trade_changed_event.hpp"
-#include "ores.trading/messaging/registrar.hpp"
+#include "ores.trading.api/eventing/trade_changed_event.hpp"
+#include "ores.trading.core/messaging/registrar.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include "ores.service/service/domain_service_runner.hpp"

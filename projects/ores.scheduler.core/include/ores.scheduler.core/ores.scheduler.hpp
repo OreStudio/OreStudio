@@ -34,5 +34,3 @@
 // Service
 #include "ores.scheduler.core/service/cron_scheduler.hpp"
 
-// Generators
-#include "ores.scheduler.core/generators/job_definition_generator.hpp"

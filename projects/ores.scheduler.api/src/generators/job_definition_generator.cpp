@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.scheduler.core/generators/job_definition_generator.hpp"
+#include "ores.scheduler.api/generators/job_definition_generator.hpp"
 
 #include <faker-cxx/word.h>
 #include "ores.utility/uuid/uuid_v7_generator.hpp"

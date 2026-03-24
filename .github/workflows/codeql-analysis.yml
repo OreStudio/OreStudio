@@ -55,7 +55,7 @@ jobs:
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}
-          max-size: 1000M
+          max-size: 2000M
 
       - name: Install dev packages
         run: ./build/scripts/install_debian_packages.sh

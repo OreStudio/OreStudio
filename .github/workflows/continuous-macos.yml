@@ -58,7 +58,7 @@ jobs:
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 1000M
+          max-size: 2000M
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
@@ -126,16 +126,6 @@ jobs:
         with:
           doNotCache: false
 
-      - name: Cache CMake build output
-        uses: actions/cache@v5
-        with:
-          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          key: cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.sha }}
-          restore-keys: |
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.ref }}-
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-refs/heads/main-
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
-
       - name: Run CTest workflow
         run: |
           brew install autoconf automake libtool autoconf-archive nats-server
@@ -149,6 +139,10 @@ jobs:
           export preset=${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
           export cmake_args="build_group=Continuous,preset=${preset}"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+
+      - name: Show sccache statistics
+        if: always()
+        run: sccache --show-stats
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.0

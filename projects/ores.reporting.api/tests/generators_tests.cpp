@@ -17,10 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.reporting.core/generators/concurrency_policy_generator.hpp"
-#include "ores.reporting.core/generators/report_definition_generator.hpp"
-#include "ores.reporting.core/generators/report_instance_generator.hpp"
-#include "ores.reporting.core/generators/report_type_generator.hpp"
+#include "ores.reporting.api/generators/concurrency_policy_generator.hpp"
+#include "ores.reporting.api/generators/report_definition_generator.hpp"
+#include "ores.reporting.api/generators/report_instance_generator.hpp"
+#include "ores.reporting.api/generators/report_type_generator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>

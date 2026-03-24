@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/generator/activity_type_generator.hpp"
-#include "ores.trading.core/generator/fpml_event_type_generator.hpp"
-#include "ores.trading.core/generator/lifecycle_event_generator.hpp"
-#include "ores.trading.core/generator/party_role_type_generator.hpp"
-#include "ores.trading.core/generator/trade_generator.hpp"
-#include "ores.trading.core/generator/trade_id_type_generator.hpp"
-#include "ores.trading.core/generator/trade_identifier_generator.hpp"
-#include "ores.trading.core/generator/trade_party_role_generator.hpp"
-#include "ores.trading.core/generator/trade_type_generator.hpp"
+#include "ores.trading.api/generators/activity_type_generator.hpp"
+#include "ores.trading.api/generators/fpml_event_type_generator.hpp"
+#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
+#include "ores.trading.api/generators/party_role_type_generator.hpp"
+#include "ores.trading.api/generators/trade_generator.hpp"
+#include "ores.trading.api/generators/trade_id_type_generator.hpp"
+#include "ores.trading.api/generators/trade_identifier_generator.hpp"
+#include "ores.trading.api/generators/trade_party_role_generator.hpp"
+#include "ores.trading.api/generators/trade_type_generator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>

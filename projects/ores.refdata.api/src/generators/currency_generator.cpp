@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.refdata.core/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
 
 #include <atomic>
 #include <unordered_set>

@@ -17,14 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/generators/tenant_generator.hpp"
-#include "ores.iam.core/generators/tenant_status_generator.hpp"
-#include "ores.iam.core/generators/tenant_type_generator.hpp"
-#include "ores.iam.core/generators/role_generator.hpp"
-#include "ores.iam.core/generators/permission_generator.hpp"
-#include "ores.iam.core/generators/session_generator.hpp"
-#include "ores.iam.core/generators/login_info_generator.hpp"
-#include "ores.iam.core/generators/account_role_generator.hpp"
+#include "ores.iam.api/generators/tenant_generator.hpp"
+#include "ores.iam.api/generators/tenant_status_generator.hpp"
+#include "ores.iam.api/generators/tenant_type_generator.hpp"
+#include "ores.iam.api/generators/role_generator.hpp"
+#include "ores.iam.api/generators/permission_generator.hpp"
+#include "ores.iam.api/generators/session_generator.hpp"
+#include "ores.iam.api/generators/login_info_generator.hpp"
+#include "ores.iam.api/generators/account_role_generator.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"

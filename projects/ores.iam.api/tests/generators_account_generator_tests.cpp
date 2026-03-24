@@ -26,7 +26,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.iam.api/domain/account.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.core/generators/account_generator.hpp"
+#include "ores.iam.api/generators/account_generator.hpp"
 
 namespace {
 

@@ -24,7 +24,7 @@
 #include "ores.utility/generation/generation_context.hpp"
 #include "ores.refdata.api/domain/currency.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/currency_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
 
 namespace {
 

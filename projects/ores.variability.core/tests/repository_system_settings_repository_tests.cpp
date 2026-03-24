@@ -33,11 +33,13 @@ const std::string tags("[repository]");
 
 ores::variability::domain::system_setting make_system_setting(
     const std::string& name,
+    const std::string& tenant_id,
     const std::string& value = "test_value",
     const std::string& data_type = "string") {
 
     ores::variability::domain::system_setting s;
     s.name = name;
+    s.tenant_id = tenant_id;
     s.value = value;
     s.data_type = data_type;
     s.description = "Test setting for " + name;
@@ -58,7 +60,7 @@ TEST_CASE("write_single_system_setting", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto s = make_system_setting("system.write_single_test");
+    auto s = make_system_setting("system.write_single_test", h.tenant_id().to_string());
     BOOST_LOG_SEV(lg, debug) << "System setting: " << s;
 
     system_settings_repository repo;
@@ -69,10 +71,11 @@ TEST_CASE("write_multiple_system_settings", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    const auto tid = h.tenant_id().to_string();
     std::vector<system_setting> settings = {
-        make_system_setting("system.write_multi_test_1", "value1", "string"),
-        make_system_setting("system.write_multi_test_2", "42", "integer"),
-        make_system_setting("system.write_multi_test_3", "true", "boolean")
+        make_system_setting("system.write_multi_test_1", tid, "value1", "string"),
+        make_system_setting("system.write_multi_test_2", tid, "42", "integer"),
+        make_system_setting("system.write_multi_test_3", tid, "true", "boolean")
     };
     BOOST_LOG_SEV(lg, debug) << "Writing " << settings.size() << " settings";
 
@@ -84,7 +87,7 @@ TEST_CASE("read_latest_system_settings", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto s = make_system_setting("system.read_latest_test");
+    auto s = make_system_setting("system.read_latest_test", h.tenant_id().to_string());
 
     system_settings_repository repo;
     repo.write(h.context(), s);
@@ -102,7 +105,7 @@ TEST_CASE("read_latest_system_setting_by_name", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto s = make_system_setting("system.read_by_name_test", "hello", "string");
+    auto s = make_system_setting("system.read_by_name_test", h.tenant_id().to_string(), "hello", "string");
 
     system_settings_repository repo;
     repo.write(h.context(), s);
@@ -120,10 +123,11 @@ TEST_CASE("read_latest_with_pagination", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
+    const auto tid = h.tenant_id().to_string();
     std::vector<system_setting> settings = {
-        make_system_setting("system.pagination_test_1"),
-        make_system_setting("system.pagination_test_2"),
-        make_system_setting("system.pagination_test_3")
+        make_system_setting("system.pagination_test_1", tid),
+        make_system_setting("system.pagination_test_2", tid),
+        make_system_setting("system.pagination_test_3", tid)
     };
 
     system_settings_repository repo;
@@ -144,7 +148,7 @@ TEST_CASE("read_all_versions_of_system_setting", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto s = make_system_setting("system.read_all_test", "initial", "string");
+    auto s = make_system_setting("system.read_all_test", h.tenant_id().to_string(), "initial", "string");
 
     system_settings_repository repo;
     repo.write(h.context(), s);
@@ -162,7 +166,7 @@ TEST_CASE("remove_system_setting", tags) {
     auto lg(make_logger(test_suite));
 
     scoped_database_helper h;
-    auto s = make_system_setting("system.remove_test");
+    auto s = make_system_setting("system.remove_test", h.tenant_id().to_string());
 
     system_settings_repository repo;
     repo.write(h.context(), s);

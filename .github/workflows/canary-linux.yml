@@ -125,15 +125,19 @@ jobs:
         with:
           doNotCache: false
 
-      - name: Cache CMake build output
-        uses: actions/cache@v5
+      - name: Restore cmake build cache
+        uses: actions/cache/restore@v4
         with:
-          path: build/output/linux-gcc-debug-ninja
-          key: cmake-linux-gcc-debug-ninja-${{ github.sha }}
+          path: build/output/linux-gcc-debug-ninja/projects
+          key: cmake-build-linux-gcc-debug-ninja-${{ github.sha }}
           restore-keys: |
-            cmake-linux-gcc-debug-ninja-${{ github.ref }}-
-            cmake-linux-gcc-debug-ninja-refs/heads/main-
-            cmake-linux-gcc-debug-ninja-
+            cmake-build-linux-gcc-debug-ninja-
+
+      - name: Ensure modified source files will be rebuilt
+        run: |
+          git diff origin/main...HEAD --name-only 2>/dev/null \
+            | grep -E '\.(cpp|hpp|h)$' \
+            | while IFS= read -r f; do [ -f "$f" ] && touch "$f"; done || true
 
       - name: Run CTest workflow
         run: |

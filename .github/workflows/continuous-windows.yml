@@ -156,16 +156,6 @@ jobs:
         with:
           doNotCache: false
 
-      - name: Cache CMake build output
-        uses: actions/cache@v5
-        with:
-          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          key: cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.sha }}
-          restore-keys: |
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.ref }}-
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-refs/heads/main-
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
-
       - name: Run CTest workflow
         run: |
           $env:VCPKG_DISABLE_SYSTEM_PACKAGE_CHECK=1

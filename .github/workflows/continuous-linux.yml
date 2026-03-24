@@ -158,16 +158,6 @@ jobs:
         with:
           doNotCache: false
 
-      - name: Cache CMake build output
-        uses: actions/cache@v5
-        with:
-          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          key: cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.sha }}
-          restore-keys: |
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.ref }}-
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-refs/heads/main-
-            cmake-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-
-
       - name: Run CTest workflow
         run: |
           export CMAKE_BUILD_PARALLEL_LEVEL=$(nproc)
@@ -188,6 +178,13 @@ jobs:
       - name: Show sccache statistics
         if: always()
         run: sccache --show-stats
+
+      - name: Save cmake build cache
+        uses: actions/cache/save@v4
+        if: always() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
+        with:
+          path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects
+          key: cmake-build-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja-${{ github.sha }}
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v7.0.0

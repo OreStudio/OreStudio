@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.iam.core/http/iam_routes.hpp"
+#include "ores.http.server/routes/iam_routes.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -44,7 +44,7 @@
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.database/service/tenant_context.hpp"
 
-namespace ores::iam::http {
+namespace ores::http_server::routes {
 
 using namespace ores::logging;
 using namespace ores::http::domain;

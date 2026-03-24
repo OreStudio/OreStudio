@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.assets.core/http/assets_routes.hpp"
+#include "ores.http.server/routes/assets_routes.hpp"
 
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -25,7 +25,7 @@
 #include "ores.assets.api/messaging/assets_protocol.hpp"
 #include "ores.assets.core/service/assets_service.hpp"
 
-namespace ores::assets::http {
+namespace ores::http_server::routes {
 
 using namespace ores::logging;
 using namespace ores::http::domain;

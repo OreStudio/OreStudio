@@ -37,7 +37,6 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.iam.api.lib
-        ores.http.lib
         ores.variability.core.lib
         ores.eventing.lib
         ores.geo.lib

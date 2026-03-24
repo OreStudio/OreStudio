@@ -29,13 +29,13 @@
 #include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.iam.api/service/auth_session_service.hpp"
+#include "ores.iam.core/service/auth_session_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.iam.core/http/iam_routes.hpp"
-#include "ores.refdata.core/http/risk_routes.hpp"
-#include "ores.variability.core/http/variability_routes.hpp"
-#include "ores.assets.core/http/assets_routes.hpp"
+#include "ores.http.server/routes/iam_routes.hpp"
+#include "ores.http.server/routes/risk_routes.hpp"
+#include "ores.http.server/routes/variability_routes.hpp"
+#include "ores.http.server/routes/assets_routes.hpp"
 #include "ores.http.server/routes/compute_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
@@ -163,20 +163,20 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     router->add_route(api_info_builder.build());
 
     // Register IAM routes (accounts, auth, roles, sessions)
-    iam::http::iam_routes iam(ctx, system_flags, sessions, auth_service,
+    routes::iam_routes iam(ctx, system_flags, sessions, auth_service,
         server.get_authenticator(), geo_service);
     iam.register_routes(router, registry);
 
     // Register Risk routes (currencies)
-    refdata::http::risk_routes risk(ctx, sessions);
+    routes::risk_routes risk(ctx, sessions);
     risk.register_routes(router, registry);
 
     // Register Variability routes (system settings)
-    variability::http::variability_routes variability(ctx, system_flags, sessions);
+    routes::variability_routes variability(ctx, system_flags, sessions);
     variability.register_routes(router, registry);
 
     // Register Assets routes (images)
-    assets::http::assets_routes assets(ctx, sessions);
+    routes::assets_routes assets(ctx, sessions);
     assets.register_routes(router, registry);
 
     // Register Compute routes (packages, inputs, outputs)

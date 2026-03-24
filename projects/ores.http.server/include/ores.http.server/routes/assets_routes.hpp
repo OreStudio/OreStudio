@@ -17,42 +17,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REFDATA_CORE_HTTP_RISK_ROUTES_HPP
-#define ORES_REFDATA_CORE_HTTP_RISK_ROUTES_HPP
+#ifndef ORES_HTTP_SERVER_ROUTES_ASSETS_ROUTES_HPP
+#define ORES_HTTP_SERVER_ROUTES_ASSETS_ROUTES_HPP
 
 #include <memory>
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.iam.api/service/auth_session_service.hpp"
+#include "ores.iam.core/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 
-namespace ores::refdata::http {
+namespace ores::http_server::routes {
 
 /**
- * @brief Registers Risk HTTP endpoints.
+ * @brief Registers Assets HTTP endpoints.
  *
  * Maps the following protocol messages to REST endpoints:
  *
- * Currency Management:
- * - GET /api/v1/currencies - get_currencies_request (with pagination)
- * - POST /api/v1/currencies - save_currency_request
- * - DELETE /api/v1/currencies - delete_currency_request (batch)
- * - GET /api/v1/currencies/{code}/history - get_currency_history_request
+ * Asset Management:
+ * - POST /api/v1/assets/images - get_images_request (batch retrieval)
  */
-class risk_routes final {
+class assets_routes final {
 public:
-    risk_routes(database::context ctx,
+    assets_routes(database::context ctx,
         std::shared_ptr<iam::service::auth_session_service> sessions);
 
     /**
-     * @brief Registers all Risk routes with the router.
+     * @brief Registers all Assets routes with the router.
      */
     void register_routes(std::shared_ptr<http::net::router> router,
         std::shared_ptr<http::openapi::endpoint_registry> registry);
 
 private:
-    inline static std::string_view logger_name = "ores.http.server.routes.risk_routes";
+    inline static std::string_view logger_name = "ores.http.server.routes.assets_routes";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -60,18 +57,8 @@ private:
         return instance;
     }
 
-    // Currency handlers
     boost::asio::awaitable<http::domain::http_response>
-    handle_get_currencies(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_save_currency(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_delete_currencies(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_get_currency_history(const http::domain::http_request& req);
+    handle_get_images(const http::domain::http_request& req);
 
     database::context ctx_;
     std::shared_ptr<iam::service::auth_session_service> sessions_;

@@ -17,42 +17,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_SERVER_ROUTES_RISK_ROUTES_HPP
-#define ORES_HTTP_SERVER_ROUTES_RISK_ROUTES_HPP
+#ifndef ORES_VARIABILITY_CORE_HTTP_VARIABILITY_ROUTES_HPP
+#define ORES_VARIABILITY_CORE_HTTP_VARIABILITY_ROUTES_HPP
 
 #include <memory>
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.iam.core/service/auth_session_service.hpp"
+#include "ores.variability.core/service/system_settings_service.hpp"
+#include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 
-namespace ores::http_server::routes {
+namespace ores::variability::http {
 
 /**
- * @brief Registers Risk HTTP endpoints.
+ * @brief Registers Variability (System Settings) HTTP endpoints.
  *
  * Maps the following protocol messages to REST endpoints:
  *
- * Currency Management:
- * - GET /api/v1/currencies - get_currencies_request (with pagination)
- * - POST /api/v1/currencies - save_currency_request
- * - DELETE /api/v1/currencies - delete_currency_request (batch)
- * - GET /api/v1/currencies/{code}/history - get_currency_history_request
+ * System Settings:
+ * - GET /api/v1/system-settings - list_settings_request
  */
-class risk_routes final {
+class variability_routes final {
 public:
-    risk_routes(database::context ctx,
+    variability_routes(database::context ctx,
+        std::shared_ptr<variability::service::system_settings_service> system_settings,
         std::shared_ptr<iam::service::auth_session_service> sessions);
 
     /**
-     * @brief Registers all Risk routes with the router.
+     * @brief Registers all Variability routes with the router.
      */
     void register_routes(std::shared_ptr<http::net::router> router,
         std::shared_ptr<http::openapi::endpoint_registry> registry);
 
 private:
-    inline static std::string_view logger_name = "ores.http.server.routes.risk_routes";
+    inline static std::string_view logger_name = "ores.http.server.routes.variability_routes";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -60,20 +59,11 @@ private:
         return instance;
     }
 
-    // Currency handlers
     boost::asio::awaitable<http::domain::http_response>
-    handle_get_currencies(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_save_currency(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_delete_currencies(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_get_currency_history(const http::domain::http_request& req);
+    handle_list_system_settings(const http::domain::http_request& req);
 
     database::context ctx_;
+    std::shared_ptr<variability::service::system_settings_service> system_settings_;
     std::shared_ptr<iam::service::auth_session_service> sessions_;
 };
 

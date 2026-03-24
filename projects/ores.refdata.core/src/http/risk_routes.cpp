@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/routes/risk_routes.hpp"
+#include "ores.refdata.core/http/risk_routes.hpp"
 
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -26,7 +26,7 @@
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
 #include "ores.refdata.core/service/currency_service.hpp"
 
-namespace ores::http_server::routes {
+namespace ores::refdata::http {
 
 using namespace ores::logging;
 using namespace ores::http::domain;

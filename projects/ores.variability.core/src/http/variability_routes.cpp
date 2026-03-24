@@ -17,13 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/routes/variability_routes.hpp"
+#include "ores.variability.core/http/variability_routes.hpp"
 
 #include <rfl/json.hpp>
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
-namespace ores::http_server::routes {
+namespace ores::variability::http {
 
 using namespace ores::logging;
 using namespace ores::http::domain;

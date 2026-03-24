@@ -37,6 +37,8 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PUBLIC
         ores.variability.api.lib
+        ores.http.lib
+        ores.iam.api.lib
         ores.database.lib
         ores.logging.lib
         ores.nats.lib

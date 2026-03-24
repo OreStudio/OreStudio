@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/routes/compute_routes.hpp"
+#include "ores.http.core/routes/compute_routes.hpp"
 
 #include <fstream>
 #include <filesystem>

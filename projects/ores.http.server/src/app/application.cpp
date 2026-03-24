@@ -35,7 +35,7 @@
 #include "ores.http.core/routes/risk_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.core/routes/assets_routes.hpp"
-#include "ores.http.server/routes/compute_routes.hpp"
+#include "ores.http.core/routes/compute_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"

@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.refdata.core.lib
         ores.assets.core.lib
         ores.variability.core.lib
+        ores.compute.core.lib
         ores.geo.lib
     PRIVATE
         ores.utility.lib

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "RefRate",
+  "properties": {
+    "indx": {
+      "type": "string"
+    },
+    "nm": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "indx",
+    "nm"
+  ]
+}

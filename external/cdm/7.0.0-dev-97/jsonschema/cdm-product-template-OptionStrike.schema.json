@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "OptionStrike",
+  "description": "Defines the strike price of an option.",
+  "properties": {
+    "strikePrice": {
+      "description": "Defines the strike of an option in the form of a price that could be a cash price, interestRate, or other types.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "strikeReference": {
+      "description": "Defines the strike of an option in reference to the spread of the underlying swap (typical practice in the case of an option on a credit single name swaps).",
+      "$ref": "cdm-product-asset-metafields-ReferenceWithMetaFixedRateSpecification.schema.json"
+    },
+    "referenceSwapCurve": {
+      "description": "Defines the strike of an option when expressed by reference to a swap curve (Typically the case for a convertible bond option).",
+      "$ref": "cdm-observable-asset-ReferenceSwapCurve.schema.json"
+    },
+    "averagingStrikeFeature": {
+      "description": "Defines an  option strike that is calculated from an average of observed market prices.",
+      "$ref": "cdm-product-template-AveragingStrikeFeature.schema.json"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "BillingRecord",
+  "description": "Specifies individual records within a billing invoice.",
+  "properties": {
+    "tradeState": {
+      "description": "The trade for the individual billing record.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaTradeState.schema.json"
+    },
+    "recordTransfer": {
+      "description": "The settlement terms for the billing record",
+      "$ref": "cdm-event-common-Transfer.schema.json"
+    },
+    "recordStartDate": {
+      "description": "The starting date of the period described by this record",
+      "type": "string"
+    },
+    "recordEndDate": {
+      "description": "The ending date of the period described by this record",
+      "type": "string"
+    },
+    "minimumFee": {
+      "description": "Indicates the minimum fee amount applied to the billing record, if any.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  },
+  "required": [
+    "tradeState",
+    "recordTransfer",
+    "recordStartDate",
+    "recordEndDate"
+  ]
+}

@@ -1,0 +1,1611 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "CollateralAssetDefinitionsEnum",
+  "enum": [
+    "AU_CASH",
+    "AU-CIB",
+    "AU-FIB",
+    "AU-FRB",
+    "AU-ILB",
+    "AU-NOTE",
+    "AU-STATENOTE",
+    "AU-TAB",
+    "BE-BEL20",
+    "BE-CERT",
+    "BE-LINEAR",
+    "BE-NOTE",
+    "BE-REGIONGT",
+    "BE-STATEGT",
+    "BE-STATELOAN",
+    "CA-BOND",
+    "CA-CASH",
+    "CA-RRB",
+    "CA-TBILL",
+    "CH-CANTON",
+    "CH-CASH",
+    "CH-FEDBOND",
+    "DE-BILL",
+    "DE-BOND",
+    "DE-ERBLAST",
+    "DE-MUNI",
+    "DE-NOTE2",
+    "DE-NOTE5.5",
+    "DE-PFAND",
+    "DK-BILL",
+    "DK-BOLIGX",
+    "DK-BOND",
+    "DK-CALLMORT",
+    "DK-CASH",
+    "DK-KFX",
+    "DK-MORT",
+    "DK-NOTE",
+    "ES-BILL",
+    "ES-BOND",
+    "ES-CEDULAS",
+    "ES-CORP",
+    "ES-EQUITY",
+    "EU-CASH",
+    "EU-EURO100",
+    "EU-EUROTOP300",
+    "EU-STOXX50",
+    "EU-STOXX600",
+    "FI-BILL",
+    "FI-BOND",
+    "FI-HEX",
+    "FR-BDT",
+    "FR-BTAN",
+    "FR-BTF",
+    "FR-OAT",
+    "FR-STRIP",
+    "GA-AU-GOV",
+    "GA-BE-GOV",
+    "GA-CA-GOV",
+    "GA-CH-GOV",
+    "GA-DE-GOV",
+    "GA-DK-GOV",
+    "GA-ES-GOV",
+    "GA-EUROZONE-GOV",
+    "GA-EU-GOV",
+    "GA-FI-GOV",
+    "GA-FR-GOV",
+    "GA-G5-GOV",
+    "GA-GB-GOV",
+    "GA-HK-GOV",
+    "GA-IT-GOV",
+    "GA-JP-GOV",
+    "GA-KR-GOV",
+    "GA-NL-GOV",
+    "GA-NO-GOV",
+    "GA-NZ-GOV",
+    "GA-SE-GOV",
+    "GA-SG-GOV",
+    "GA-US-AGENCY",
+    "GA-US-GOV",
+    "GA-US-MORTGAGES",
+    "GB-CASH",
+    "GB-DDGILT",
+    "GB-FT100",
+    "GB-FT250",
+    "GB-FT350",
+    "GB-GILT",
+    "GB-INDEXGILT",
+    "GB-PERPGILT",
+    "GB-RUMPGILT",
+    "GB-SUPR1",
+    "GB-SUPR2",
+    "GB-TBILL",
+    "GB-ZEROGILT",
+    "HK-BILL",
+    "HK-CASH",
+    "HK-NOTE",
+    "IT-BOT",
+    "IT-BTP",
+    "IT-CCT",
+    "IT-CORP",
+    "IT-CTZ",
+    "IT-MIB30",
+    "IT-REP",
+    "JP-CASH",
+    "JP-CORPORATE",
+    "JP-CP",
+    "JP-EQUITY",
+    "JP-EUROBOND",
+    "JP-JGB",
+    "KR-BOND",
+    "KR-CASH",
+    "KR-EXIM",
+    "KR-KDICKRW",
+    "KR-KDR",
+    "KR-KEPCO",
+    "KR-MSB",
+    "KR-NHC",
+    "KR-ROK",
+    "NL-AEX",
+    "NL-BILL",
+    "NL-BOND",
+    "NO-BOND",
+    "NO-CASH",
+    "NO-OBX",
+    "NO-TBILL",
+    "NZ-BOND",
+    "NZ-CASH",
+    "NZ-TBILL",
+    "SE-CASH",
+    "SE-GOVT",
+    "SE-ILGOVT",
+    "SE-MORT",
+    "SE-OMX",
+    "SE-TBILL",
+    "SG-BOND",
+    "SG-CASH",
+    "SG-TBILL",
+    "SU-IADB",
+    "SU-IBRDDN",
+    "SU-IBRDGB",
+    "US-ARM",
+    "US-CASH",
+    "US-DERIV",
+    "US-DOW",
+    "US-DOW-COMP",
+    "US-DOW-TRAN",
+    "US-DOW-UTIL",
+    "US-FAMC",
+    "US-FCS",
+    "US-FCSFAC",
+    "US-FHLB",
+    "US-FHLBNC",
+    "US-FHLBNCDN",
+    "US-FHLMC",
+    "US-FHLMCMBS",
+    "US-FICO",
+    "US-FNMA",
+    "US-FNMAMBS",
+    "US-GNMA",
+    "US-GNMAMBS",
+    "US-LEHM-BOND",
+    "US-NAS-100",
+    "US-NAS-COMP",
+    "US-NCAD",
+    "US-NCADN",
+    "US-NYSE-COMP",
+    "US-REFCORP",
+    "US-SLMA",
+    "US-STRIP",
+    "US-S&P100",
+    "US-S&P400",
+    "US-S&P500",
+    "US-S&P600",
+    "US-TBILL",
+    "US-TBOND",
+    "US-TIPS",
+    "US-TNOTE",
+    "US-TVA"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AU_CASH"
+      ],
+      "title": "AU_CASH",
+      "description": "Australian Dollar (AUD) Cash."
+    },
+    
+    {
+      "enum": [
+        "AU-CIB"
+      ],
+      "title": "AU_CIB",
+      "description": "Australian Government Securities Capital-Indexed Bonds."
+    },
+    
+    {
+      "enum": [
+        "AU-FIB"
+      ],
+      "title": "AU_FIB",
+      "description": "Australian Semi-Government Securities Fixed Interest Bonds."
+    },
+    
+    {
+      "enum": [
+        "AU-FRB"
+      ],
+      "title": "AU_FRB",
+      "description": "Australian Government Securities Fixed Rate Bonds."
+    },
+    
+    {
+      "enum": [
+        "AU-ILB"
+      ],
+      "title": "AU_ILB",
+      "description": "Australian Semi-Government Securities Index Linked Bonds."
+    },
+    
+    {
+      "enum": [
+        "AU-NOTE"
+      ],
+      "title": "AU_NOTE",
+      "description": "Australian Government Securities Treasury Notes."
+    },
+    
+    {
+      "enum": [
+        "AU-STATENOTE"
+      ],
+      "title": "AU_STATENOTE",
+      "description": "Australian Semi-Government Securities Treasury Notes."
+    },
+    
+    {
+      "enum": [
+        "AU-TAB"
+      ],
+      "title": "AU_TAB",
+      "description": "Australian Government Securities Treasury Adjustable Rate Bonds."
+    },
+    
+    {
+      "enum": [
+        "BE-BEL20"
+      ],
+      "title": "BE_BEL20",
+      "description": "BEL20 Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "BE-CERT"
+      ],
+      "title": "BE_CERT",
+      "description": "Belgian Treasury Certificates."
+    },
+    
+    {
+      "enum": [
+        "BE-LINEAR"
+      ],
+      "title": "BE_LINEAR",
+      "description": "Belgian Linear Obligations."
+    },
+    
+    {
+      "enum": [
+        "BE-NOTE"
+      ],
+      "title": "BE_NOTE",
+      "description": "Belgian Treasury notes."
+    },
+    
+    {
+      "enum": [
+        "BE-REGIONGT"
+      ],
+      "title": "BE_REGIONGT",
+      "description": "Public sector issues guaranteed by Regional Authorities."
+    },
+    
+    {
+      "enum": [
+        "BE-STATEGT"
+      ],
+      "title": "BE_STATEGT",
+      "description": "Public sector issues guaranteed by the Belgian State."
+    },
+    
+    {
+      "enum": [
+        "BE-STATELOAN"
+      ],
+      "title": "BE_STATELOAN",
+      "description": "Belgian State Loans."
+    },
+    
+    {
+      "enum": [
+        "CA-BOND"
+      ],
+      "title": "CA_BOND",
+      "description": "Canada Bonds."
+    },
+    
+    {
+      "enum": [
+        "CA-CASH"
+      ],
+      "title": "CA_CASH",
+      "description": "Canadian Dollar (CAD) Cash."
+    },
+    
+    {
+      "enum": [
+        "CA-RRB"
+      ],
+      "title": "CA_RRB",
+      "description": "Government of Canada Real Return Bonds."
+    },
+    
+    {
+      "enum": [
+        "CA-TBILL"
+      ],
+      "title": "CA_TBILL",
+      "description": "Government of Canada Treasury Bills."
+    },
+    
+    {
+      "enum": [
+        "CH-CANTON"
+      ],
+      "title": "CH_CANTON",
+      "description": "Public Authority Bond."
+    },
+    
+    {
+      "enum": [
+        "CH-CASH"
+      ],
+      "title": "CH_CASH",
+      "description": "Swiss Franc (CHF) Cash."
+    },
+    
+    {
+      "enum": [
+        "CH-FEDBOND"
+      ],
+      "title": "CH_FEDBOND",
+      "description": "Federal Bond."
+    },
+    
+    {
+      "enum": [
+        "DE-BILL"
+      ],
+      "title": "DE_BILL",
+      "description": "Unverzinsliche Schatzanweisungen (Bills)."
+    },
+    
+    {
+      "enum": [
+        "DE-BOND"
+      ],
+      "title": "DE_BOND",
+      "description": "Bundesanleihen (Bonds)."
+    },
+    
+    {
+      "enum": [
+        "DE-ERBLAST"
+      ],
+      "title": "DE_ERBLAST",
+      "description": "Negotiable Debt Obligations issued by or taken over and since serviced and managed by the Erblasttilgungsfond (Redemption Fund for Inherited Liabilities) backed by Federal Republic of Germany, including but not limited to former issues of the Treuhandanstalt, the Bundesbahn, the Bundespost, the Economic Recovery Program (ERP), the privatised Federal Railway (Bahn AG), the telecommunications element of the Federal Post Office (Telekom) and the German Unity Fund."
+    },
+    
+    {
+      "enum": [
+        "DE-MUNI"
+      ],
+      "title": "DE_MUNI",
+      "description": "Kommunalschuldverschreib	ungen (Municipal Bonds)."
+    },
+    
+    {
+      "enum": [
+        "DE-NOTE2"
+      ],
+      "title": "DE_NOTE2",
+      "description": "Bundesschatzanweisungen (Notes)."
+    },
+    
+    {
+      "enum": [
+        "DE-NOTE5.5"
+      ],
+      "title": "DE_NOTE5_5",
+      "description": "Bundesobligationen (Notes)."
+    },
+    
+    {
+      "enum": [
+        "DE-PFAND"
+      ],
+      "title": "DE_PFAND",
+      "description": "Hypothekenpfandbriefe (Mortgage Bonds)."
+    },
+    
+    {
+      "enum": [
+        "DK-BILL"
+      ],
+      "title": "DK_BILL",
+      "description": "Skatkammerbeviser (Treasury Bills)."
+    },
+    
+    {
+      "enum": [
+        "DK-BOLIGX"
+      ],
+      "title": "DK_BOLIGX",
+      "description": "BoligX obligationer."
+    },
+    
+    {
+      "enum": [
+        "DK-BOND"
+      ],
+      "title": "DK_BOND",
+      "description": "Statsobligationer (Government Bonds)."
+    },
+    
+    {
+      "enum": [
+        "DK-CALLMORT"
+      ],
+      "title": "DK_CALLMORT",
+      "description": "Callable Mortgage Bonds."
+    },
+    
+    {
+      "enum": [
+        "DK-CASH"
+      ],
+      "title": "DK_CASH",
+      "description": "Danish Krone (DKK) Cash."
+    },
+    
+    {
+      "enum": [
+        "DK-KFX"
+      ],
+      "title": "DK_KFX",
+      "description": "KFX Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "DK-MORT"
+      ],
+      "title": "DK_MORT",
+      "description": "Non-callable Mortgage Bonds."
+    },
+    
+    {
+      "enum": [
+        "DK-NOTE"
+      ],
+      "title": "DK_NOTE",
+      "description": "Statsgaeldsbeviser (Treasury Notes)."
+    },
+    
+    {
+      "enum": [
+        "ES-BILL"
+      ],
+      "title": "ES_BILL",
+      "description": "Treasury Bills - Letras del Tesoro."
+    },
+    
+    {
+      "enum": [
+        "ES-BOND"
+      ],
+      "title": "ES_BOND",
+      "description": "Public Government Debt."
+    },
+    
+    {
+      "enum": [
+        "ES-CEDULAS"
+      ],
+      "title": "ES_CEDULAS",
+      "description": "Cedulas."
+    },
+    
+    {
+      "enum": [
+        "ES-CORP"
+      ],
+      "title": "ES_CORP",
+      "description": "Corporate Bonds."
+    },
+    
+    {
+      "enum": [
+        "ES-EQUITY"
+      ],
+      "title": "ES_EQUITY",
+      "description": "Equity securities issued by a Spanish company, and listed as an IBEX 35 constituent company as reported by the Sociedad de Bolsas, each share representing the minimum unit of participation of a shareholder in the stock capital of the company."
+    },
+    
+    {
+      "enum": [
+        "EU-CASH"
+      ],
+      "title": "EU_CASH",
+      "description": "Euro (EUR) Cash."
+    },
+    
+    {
+      "enum": [
+        "EU-EURO100"
+      ],
+      "title": "EU_EURO100",
+      "description": "FTSE Euro 100 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "EU-EUROTOP300"
+      ],
+      "title": "EU_EUROTOP300",
+      "description": "FTSE Eurotop 300 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "EU-STOXX50"
+      ],
+      "title": "EU_STOXX50",
+      "description": "EuroSTOXX 50 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "EU-STOXX600"
+      ],
+      "title": "EU_STOXX600",
+      "description": "STOXX 600 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "FI-BILL"
+      ],
+      "title": "FI_BILL",
+      "description": "Treasury bills."
+    },
+    
+    {
+      "enum": [
+        "FI-BOND"
+      ],
+      "title": "FI_BOND",
+      "description": "Serial bonds (Finnish Government Bond)."
+    },
+    
+    {
+      "enum": [
+        "FI-HEX"
+      ],
+      "title": "FI_HEX",
+      "description": "HEX Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "FR-BDT"
+      ],
+      "title": "FR_BDT",
+      "description": "Commercial Paper: (Billet de Trsorerie)."
+    },
+    
+    {
+      "enum": [
+        "FR-BTAN"
+      ],
+      "title": "FR_BTAN",
+      "description": "Treasury Notes: Bons du Trsor  Taux Annuel (BTAN)."
+    },
+    
+    {
+      "enum": [
+        "FR-BTF"
+      ],
+      "title": "FR_BTF",
+      "description": "Treasury Bills: Bons du Trsor  Taux Fixe (BTF)."
+    },
+    
+    {
+      "enum": [
+        "FR-OAT"
+      ],
+      "title": "FR_OAT",
+      "description": "Government bonds: Obligations Assimilables du Trsor (OAT)."
+    },
+    
+    {
+      "enum": [
+        "FR-STRIP"
+      ],
+      "title": "FR_STRIP",
+      "description": "STRIPS."
+    },
+    
+    {
+      "enum": [
+        "GA-AU-GOV"
+      ],
+      "title": "GA_AU_GOV",
+      "description": "Generally Accepted Australian Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-BE-GOV"
+      ],
+      "title": "GA_BE_GOV",
+      "description": "Generally Accepted Belgian Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-CA-GOV"
+      ],
+      "title": "GA_CA_GOV",
+      "description": "Generally Accepted Canadian Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-CH-GOV"
+      ],
+      "title": "GA_CH_GOV",
+      "description": "Generally Accepted Swiss Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-DE-GOV"
+      ],
+      "title": "GA_DE_GOV",
+      "description": "Generally Accepted German Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-DK-GOV"
+      ],
+      "title": "GA_DK_GOV",
+      "description": "Generally Accepted Danish Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-ES-GOV"
+      ],
+      "title": "GA_ES_GOV",
+      "description": "Generally Accepted Spanish Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-EUROZONE-GOV"
+      ],
+      "title": "GA_EUROZONE_GOV",
+      "description": "Generally Accepted Euro Zone Government Securities."
+    },
+    
+    {
+      "enum": [
+        "GA-EU-GOV"
+      ],
+      "title": "GA_EU_GOV",
+      "description": "Generally Accepted EU Member State Government Securities."
+    },
+    
+    {
+      "enum": [
+        "GA-FI-GOV"
+      ],
+      "title": "GA_FI_GOV",
+      "description": "Generally Accepted Finnish Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-FR-GOV"
+      ],
+      "title": "GA_FR_GOV",
+      "description": "Generally Accepted French Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-G5-GOV"
+      ],
+      "title": "GA_G5_GOV",
+      "description": "Generally Accepted G5 Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-GB-GOV"
+      ],
+      "title": "GA_GB_GOV",
+      "description": "Generally Accepted British Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-HK-GOV"
+      ],
+      "title": "GA_HK_GOV",
+      "description": "Generally Accepted Hong Kong Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-IT-GOV"
+      ],
+      "title": "GA_IT_GOV",
+      "description": "Generally Accepted Italian Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-JP-GOV"
+      ],
+      "title": "GA_JP_GOV",
+      "description": "Generally Accepted Japanese Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-KR-GOV"
+      ],
+      "title": "GA_KR_GOV",
+      "description": "Generally Accepted Korean Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-NL-GOV"
+      ],
+      "title": "GA_NL_GOV",
+      "description": "Generally Accepted Netherlands Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-NO-GOV"
+      ],
+      "title": "GA_NO_GOV",
+      "description": "Generally Accepted Norwegian Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-NZ-GOV"
+      ],
+      "title": "GA_NZ_GOV",
+      "description": "Generally Accepted New Zealand Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-SE-GOV"
+      ],
+      "title": "GA_SE_GOV",
+      "description": "Generally Accepted Swedish Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-SG-GOV"
+      ],
+      "title": "GA_SG_GOV",
+      "description": "Generally Accepted Singaporean Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-US-AGENCY"
+      ],
+      "title": "GA_US_AGENCY",
+      "description": "Generally Accepted US Agency Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-US-GOV"
+      ],
+      "title": "GA_US_GOV",
+      "description": "Generally Accepted US Government Obligations."
+    },
+    
+    {
+      "enum": [
+        "GA-US-MORTGAGES"
+      ],
+      "title": "GA_US_MORTGAGES",
+      "description": "Generally Accepted US Mortgage-Backed Obligations."
+    },
+    
+    {
+      "enum": [
+        "GB-CASH"
+      ],
+      "title": "GB_CASH",
+      "description": "British Pound Sterling (GBP) Cash."
+    },
+    
+    {
+      "enum": [
+        "GB-DDGILT"
+      ],
+      "title": "GB_DDGILT",
+      "description": "Double-dated Gilts."
+    },
+    
+    {
+      "enum": [
+        "GB-FT100"
+      ],
+      "title": "GB_FT100",
+      "description": "FTSE 100 Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "GB-FT250"
+      ],
+      "title": "GB_FT250",
+      "description": "FTSE 250 Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "GB-FT350"
+      ],
+      "title": "GB_FT350",
+      "description": "FTSE 350 Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "GB-GILT"
+      ],
+      "title": "GB_GILT",
+      "description": "Conventional Gilts."
+    },
+    
+    {
+      "enum": [
+        "GB-INDEXGILT"
+      ],
+      "title": "GB_INDEXGILT",
+      "description": "Index-Linked Gilts."
+    },
+    
+    {
+      "enum": [
+        "GB-PERPGILT"
+      ],
+      "title": "GB_PERPGILT",
+      "description": "Undated or Perpetual Gilts."
+    },
+    
+    {
+      "enum": [
+        "GB-RUMPGILT"
+      ],
+      "title": "GB_RUMPGILT",
+      "description": "Rump Stock."
+    },
+    
+    {
+      "enum": [
+        "GB-SUPR1"
+      ],
+      "title": "GB_SUPR1",
+      "description": "Bank of England Euro Bills."
+    },
+    
+    {
+      "enum": [
+        "GB-SUPR2"
+      ],
+      "title": "GB_SUPR2",
+      "description": "Bank of England Euro Notes."
+    },
+    
+    {
+      "enum": [
+        "GB-TBILL"
+      ],
+      "title": "GB_TBILL",
+      "description": "UK Treasury Bills."
+    },
+    
+    {
+      "enum": [
+        "GB-ZEROGILT"
+      ],
+      "title": "GB_ZEROGILT",
+      "description": "Gilt Strips or Zero Coupon Gilts."
+    },
+    
+    {
+      "enum": [
+        "HK-BILL"
+      ],
+      "title": "HK_BILL",
+      "description": "Hong Kong Government Exchange Fund Bills."
+    },
+    
+    {
+      "enum": [
+        "HK-CASH"
+      ],
+      "title": "HK_CASH",
+      "description": "Hong Kong Dollar (HKD) Cash."
+    },
+    
+    {
+      "enum": [
+        "HK-NOTE"
+      ],
+      "title": "HK_NOTE",
+      "description": "Hong Kong Government Exchange Fund Notes."
+    },
+    
+    {
+      "enum": [
+        "IT-BOT"
+      ],
+      "title": "IT_BOT",
+      "description": "Botbuoni Ordinari del Tesoro (BOT) zero coupon debt securities issued by the Italian Treasury with maturities up to 365 days."
+    },
+    
+    {
+      "enum": [
+        "IT-BTP"
+      ],
+      "title": "IT_BTP",
+      "description": "Buoni del Tesoro Poliennali fixed interest semi-annual debt securities issued by the Italian Treasury with original maturities between 3 and 30 years."
+    },
+    
+    {
+      "enum": [
+        "IT-CCT"
+      ],
+      "title": "IT_CCT",
+      "description": "Certificati di Credito del Tesoro a Cedola Variable (CCT) or floating rate interest bearing debt securities issued by the Italian Treasury."
+    },
+    
+    {
+      "enum": [
+        "IT-CORP"
+      ],
+      "title": "IT_CORP",
+      "description": "Corporate bonds."
+    },
+    
+    {
+      "enum": [
+        "IT-CTZ"
+      ],
+      "title": "IT_CTZ",
+      "description": "Certificati del Tesoro zero coupon debt securities issued by the Italian Treasury with maturities between 18 and 24 months."
+    },
+    
+    {
+      "enum": [
+        "IT-MIB30"
+      ],
+      "title": "IT_MIB30",
+      "description": "MIB30 Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "IT-REP"
+      ],
+      "title": "IT_REP",
+      "description": "Debt securities issued and marketed by the Republic of Italy outside the Italian market, traded as Eurobonds."
+    },
+    
+    {
+      "enum": [
+        "JP-CASH"
+      ],
+      "title": "JP_CASH",
+      "description": "Japanese Yen (JPY) Cash."
+    },
+    
+    {
+      "enum": [
+        "JP-CORPORATE"
+      ],
+      "title": "JP_CORPORATE",
+      "description": "Corporate bonds including straight bonds."
+    },
+    
+    {
+      "enum": [
+        "JP-CP"
+      ],
+      "title": "JP_CP",
+      "description": "Commercial Paper."
+    },
+    
+    {
+      "enum": [
+        "JP-EQUITY"
+      ],
+      "title": "JP_EQUITY",
+      "description": "Equity securities issued by a Japanese company, each share representing the minimum unit of participation of a partner in the stock capital of the company."
+    },
+    
+    {
+      "enum": [
+        "JP-EUROBOND"
+      ],
+      "title": "JP_EUROBOND",
+      "description": "Yen-denominated foreign bonds."
+    },
+    
+    {
+      "enum": [
+        "JP-JGB"
+      ],
+      "title": "JP_JGB",
+      "description": "Japanese Government Bonds."
+    },
+    
+    {
+      "enum": [
+        "KR-BOND"
+      ],
+      "title": "KR_BOND",
+      "description": "Korean Treasury Bonds."
+    },
+    
+    {
+      "enum": [
+        "KR-CASH"
+      ],
+      "title": "KR_CASH",
+      "description": "Korean Won (KRW) Cash."
+    },
+    
+    {
+      "enum": [
+        "KR-EXIM"
+      ],
+      "title": "KR_EXIM",
+      "description": "Non Korean Won denominated Export-Import Bank of Korea bonds."
+    },
+    
+    {
+      "enum": [
+        "KR-KDICKRW"
+      ],
+      "title": "KR_KDICKRW",
+      "description": "Korean Development Insurance Corporation Bonds (Korean Won denominated)."
+    },
+    
+    {
+      "enum": [
+        "KR-KDR"
+      ],
+      "title": "KR_KDR",
+      "description": "Non-Korean Won denominated Korea Development Bank bonds (KDBs)."
+    },
+    
+    {
+      "enum": [
+        "KR-KEPCO"
+      ],
+      "title": "KR_KEPCO",
+      "description": "KEPCO bonds."
+    },
+    
+    {
+      "enum": [
+        "KR-MSB"
+      ],
+      "title": "KR_MSB",
+      "description": "Monetary Stabilisation Bonds."
+    },
+    
+    {
+      "enum": [
+        "KR-NHC"
+      ],
+      "title": "KR_NHC",
+      "description": "Non Korean Won denominated Korea National Housing Corporation bonds (KNHCs)."
+    },
+    
+    {
+      "enum": [
+        "KR-ROK"
+      ],
+      "title": "KR_ROK",
+      "description": "Non-Korean Won denominated Republic of Korea bonds (ROKs)."
+    },
+    
+    {
+      "enum": [
+        "NL-AEX"
+      ],
+      "title": "NL_AEX",
+      "description": "AEX Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "NL-BILL"
+      ],
+      "title": "NL_BILL",
+      "description": "Dutch Treasury Certificates."
+    },
+    
+    {
+      "enum": [
+        "NL-BOND"
+      ],
+      "title": "NL_BOND",
+      "description": "Dutch State Loans."
+    },
+    
+    {
+      "enum": [
+        "NO-BOND"
+      ],
+      "title": "NO_BOND",
+      "description": "Norwegian Government Bonds."
+    },
+    
+    {
+      "enum": [
+        "NO-CASH"
+      ],
+      "title": "NO_CASH",
+      "description": "Norwegian Krone (NOK) Cash."
+    },
+    
+    {
+      "enum": [
+        "NO-OBX"
+      ],
+      "title": "NO_OBX",
+      "description": "OBX Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "NO-TBILL"
+      ],
+      "title": "NO_TBILL",
+      "description": "Norwegian T-Bills."
+    },
+    
+    {
+      "enum": [
+        "NZ-BOND"
+      ],
+      "title": "NZ_BOND",
+      "description": "New Zealand Government Bonds."
+    },
+    
+    {
+      "enum": [
+        "NZ-CASH"
+      ],
+      "title": "NZ_CASH",
+      "description": "New Zealand Dollar (NZD) Cash."
+    },
+    
+    {
+      "enum": [
+        "NZ-TBILL"
+      ],
+      "title": "NZ_TBILL",
+      "description": "New Zealand Government Treasury Bills."
+    },
+    
+    {
+      "enum": [
+        "SE-CASH"
+      ],
+      "title": "SE_CASH",
+      "description": "Swedish Krona (SEK) Cash."
+    },
+    
+    {
+      "enum": [
+        "SE-GOVT"
+      ],
+      "title": "SE_GOVT",
+      "description": "Swedish Government Bonds (SGB)."
+    },
+    
+    {
+      "enum": [
+        "SE-ILGOVT"
+      ],
+      "title": "SE_ILGOVT",
+      "description": "Swedish Index Linked Government bonds."
+    },
+    
+    {
+      "enum": [
+        "SE-MORT"
+      ],
+      "title": "SE_MORT",
+      "description": "Swedish Mortgage Bonds."
+    },
+    
+    {
+      "enum": [
+        "SE-OMX"
+      ],
+      "title": "SE_OMX",
+      "description": "OMX Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "SE-TBILL"
+      ],
+      "title": "SE_TBILL",
+      "description": "Swedish Treasury Bills (STB)."
+    },
+    
+    {
+      "enum": [
+        "SG-BOND"
+      ],
+      "title": "SG_BOND",
+      "description": "Singapore Government (SGS) Bonds."
+    },
+    
+    {
+      "enum": [
+        "SG-CASH"
+      ],
+      "title": "SG_CASH",
+      "description": "Singapore Dollar (SGD) Cash."
+    },
+    
+    {
+      "enum": [
+        "SG-TBILL"
+      ],
+      "title": "SG_TBILL",
+      "description": "Singapore Government T-Bills (T-Bills)."
+    },
+    
+    {
+      "enum": [
+        "SU-IADB"
+      ],
+      "title": "SU_IADB",
+      "description": "Inter-American Development Bank Bonds."
+    },
+    
+    {
+      "enum": [
+        "SU-IBRDDN"
+      ],
+      "title": "SU_IBRDDN",
+      "description": "International Bank for Reconstruction and Development (World Bank) Discount Notes."
+    },
+    
+    {
+      "enum": [
+        "SU-IBRDGB"
+      ],
+      "title": "SU_IBRDGB",
+      "description": "International Bank for Reconstruction and Development (World Bank or IBRD) Global Benchmark Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-ARM"
+      ],
+      "title": "US_ARM",
+      "description": "Adjustable Rate Mortgage (ARM) Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-CASH"
+      ],
+      "title": "US_CASH",
+      "description": "United States of America Dollar (USD) Cash."
+    },
+    
+    {
+      "enum": [
+        "US-DERIV"
+      ],
+      "title": "US_DERIV",
+      "description": "REMICs, CMOs and other derivative structures."
+    },
+    
+    {
+      "enum": [
+        "US-DOW"
+      ],
+      "title": "US_DOW",
+      "description": "Dow Jones Industrial Average Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-DOW-COMP"
+      ],
+      "title": "US_DOW_COMP",
+      "description": "Dow Jones Composite Average Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-DOW-TRAN"
+      ],
+      "title": "US_DOW_TRAN",
+      "description": "Dow Jones Transportation	Average Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-DOW-UTIL"
+      ],
+      "title": "US_DOW_UTIL",
+      "description": "Dow Jones Utilities Average Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-FAMC"
+      ],
+      "title": "US_FAMC",
+      "description": "Federal Agricultural Mortgage Corp (Farmer Mac) Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-FCS"
+      ],
+      "title": "US_FCS",
+      "description": "Farm Credit System (FCS) Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-FCSFAC"
+      ],
+      "title": "US_FCSFAC",
+      "description": "Farm Credit System Financial Assistance Corporation (FCSFAC) Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-FHLB"
+      ],
+      "title": "US_FHLB",
+      "description": "Callable Agency Debt  Federal Home Loan Bank (FHLB)."
+    },
+    
+    {
+      "enum": [
+        "US-FHLBNC"
+      ],
+      "title": "US_FHLBNC",
+      "description": "Non-Callable Federal Home Loan Bank Debt."
+    },
+    
+    {
+      "enum": [
+        "US-FHLBNCDN"
+      ],
+      "title": "US_FHLBNCDN",
+      "description": "Non-Callable Federal Home Loan Bank Discount Notes."
+    },
+    
+    {
+      "enum": [
+        "US-FHLMC"
+      ],
+      "title": "US_FHLMC",
+      "description": "Callable Agency Debt  the Federal Home Loan Mortgage Corporation (FHLMC or Freddie Mac)."
+    },
+    
+    {
+      "enum": [
+        "US-FHLMCMBS"
+      ],
+      "title": "US_FHLMCMBS",
+      "description": "Federal Home Loan Mortgage Corporation Certificates  Mortgage Backed Securities."
+    },
+    
+    {
+      "enum": [
+        "US-FICO"
+      ],
+      "title": "US_FICO",
+      "description": "Financing Corp (FICO) Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-FNMA"
+      ],
+      "title": "US_FNMA",
+      "description": "Callable Agency Debt  Federal National Mortgage Association (FNMA or Fannie Mae)."
+    },
+    
+    {
+      "enum": [
+        "US-FNMAMBS"
+      ],
+      "title": "US_FNMAMBS",
+      "description": "Federal National Mortgage Association Certificates  Mortgage Backed Securities."
+    },
+    
+    {
+      "enum": [
+        "US-GNMA"
+      ],
+      "title": "US_GNMA",
+      "description": "Callable Agency Debt  Government National Mortgage Association (GNMA)."
+    },
+    
+    {
+      "enum": [
+        "US-GNMAMBS"
+      ],
+      "title": "US_GNMAMBS",
+      "description": "Government National Mortgage Association Certificates  Mortgage Backed Securities (GNMA or Ginnie Mae)."
+    },
+    
+    {
+      "enum": [
+        "US-LEHM-BOND"
+      ],
+      "title": "US_LEHM_BOND",
+      "description": "Lehman Brothers Credit Bond Index Debt Securities."
+    },
+    
+    {
+      "enum": [
+        "US-NAS-100"
+      ],
+      "title": "US_NAS_100",
+      "description": "NASDAQ-100 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-NAS-COMP"
+      ],
+      "title": "US_NAS_COMP",
+      "description": "NASDAQ Composite Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-NCAD"
+      ],
+      "title": "US_NCAD",
+      "description": "Non-Callable Agency Debt  Various Issuers."
+    },
+    
+    {
+      "enum": [
+        "US-NCADN"
+      ],
+      "title": "US_NCADN",
+      "description": "Non-Callable Agency Discount Notes  Various Issuers."
+    },
+    
+    {
+      "enum": [
+        "US-NYSE-COMP"
+      ],
+      "title": "US_NYSE_COMP",
+      "description": "NYSE Composite Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-REFCORP"
+      ],
+      "title": "US_REFCORP",
+      "description": "Resolution Funding Corp (REFCorp) Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-SLMA"
+      ],
+      "title": "US_SLMA",
+      "description": "Student Loan Marketing Association (Sallie Mae) Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-STRIP"
+      ],
+      "title": "US_STRIP",
+      "description": "US Treasury Strips."
+    },
+    
+    {
+      "enum": [
+        "US-S&P100"
+      ],
+      "title": "US_S_P100",
+      "description": "Standard & Poors 100 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-S&P400"
+      ],
+      "title": "US_S_P400",
+      "description": "Standard & Poors Midcap 400 Equity Securities. corporations that are included within the Standard And Poor's Midcap 400 Index published by Standard And Poor's, a division of The McGraw-Hill Companies, Inc."
+    },
+    
+    {
+      "enum": [
+        "US-S&P500"
+      ],
+      "title": "US_S_P500",
+      "description": "Standard & Poors 500 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-S&P600"
+      ],
+      "title": "US_S_P600",
+      "description": "Standard & Poors Smallcap 600 Index Equity Securities."
+    },
+    
+    {
+      "enum": [
+        "US-TBILL"
+      ],
+      "title": "US_TBILL",
+      "description": "US Treasury Bills."
+    },
+    
+    {
+      "enum": [
+        "US-TBOND"
+      ],
+      "title": "US_TBOND",
+      "description": "US Treasury Bonds."
+    },
+    
+    {
+      "enum": [
+        "US-TIPS"
+      ],
+      "title": "US_TIPS",
+      "description": "US Treasury Inflation Protected Issues (TIPS)."
+    },
+    
+    {
+      "enum": [
+        "US-TNOTE"
+      ],
+      "title": "US_TNOTE",
+      "description": "US Treasury Notes."
+    },
+    
+    {
+      "enum": [
+        "US-TVA"
+      ],
+      "title": "US_TVA",
+      "description": "Tennessee Valley Authority (TVA) Bonds."
+    }
+  ]
+}

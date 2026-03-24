@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PaymentDetail",
+  "properties": {
+    "paymentDate": {
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "paymentRule": {
+      "description": "The calculation rule.",
+      "$ref": "cdm-product-common-settlement-PaymentRule.schema.json"
+    },
+    "paymentAmount": {
+      "description": "A fixed payment amount.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  },
+  "required": [
+    "paymentRule"
+  ]
+}

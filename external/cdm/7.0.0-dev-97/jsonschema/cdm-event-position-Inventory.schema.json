@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "Inventory",
+  "description": "A data type that can be used to describe an inventory of securities.",
+  "properties": {
+    "inventoryRecord": {
+      "description": "An array holding the list of inventory being described. Each element in the inventoryRecord array represents an individual piece of inventory i.e. a security.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-position-InventoryRecord.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

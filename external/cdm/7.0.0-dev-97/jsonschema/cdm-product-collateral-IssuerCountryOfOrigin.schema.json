@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "IssuerCountryOfOrigin",
+  "properties": {
+    "issuerCountryOfOrigin": {
+      "description": "Represents a filter on the issuing entity country of origin based on the ISO Standard 3166, which is the same as filtering by eligible Sovereigns.",
+      "$ref": "cdm-base-staticdata-asset-common-ISOCountryCodeEnum.schema.json"
+    }
+  },
+  "required": [
+    "issuerCountryOfOrigin"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "CalendarSpread",
+  "description": "A type for defining a calendar spread feature.",
+  "properties": {
+    "expirationDateTwo": {
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    }
+  },
+  "required": [
+    "expirationDateTwo"
+  ]
+}

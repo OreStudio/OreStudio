@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SinglePostingParty",
+  "description": "Where only a single  party is explicitly designated to post collateral, the party which is specified as the sole poster of collateral.",
+  "properties": {
+    "party": {
+      "description": "The party acting as the Single Posting Party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "other": {
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause.",
+      "type": "string"
+    }
+  }
+}

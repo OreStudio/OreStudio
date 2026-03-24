@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "ContractBase",
+  "description": "Encapsulates data features common to trade and position.",
+  "properties": {
+    "contractDetails": {
+      "description": "Represents information specific to trades or positions involving contractual products.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaContractDetails.schema.json"
+    },
+    "executionDetails": {
+      "description": "Defines specific attributes that relate to trade or position executions.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaExecutionDetails.schema.json"
+    },
+    "collateral": {
+      "description": "Represents the collateral obligations of a party.",
+      "$ref": "cdm-product-collateral-metafields-ReferenceWithMetaCollateral.schema.json"
+    }
+  }
+}

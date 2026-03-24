@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "FixedRateSpecification",
+  "description": "Type defining the specification for a fixed rate.",
+  "properties": {
+    "rateSchedule": {
+      "description": "The fixed rate or fixed rate schedule expressed as explicit fixed rates and dates. In the case of a schedule, the step dates may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments.",
+      "$ref": "cdm-product-common-schedule-RateSchedule.schema.json"
+    }
+  }
+}

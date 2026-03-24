@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "DomesticCurrencyIssued",
+  "properties": {
+    "domesticCurrencyIssued": {
+      "description": "Identifies that the Security must be denominated in the domestic currency of the issuer.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "domesticCurrencyIssued"
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "AssetBackedEnum",
+  "description": "Specifies the underlying asset or asset pool securing an Asset Backed debt instrument.",
+  "enum": [
+    "AutoLoan",
+    "CreditCard",
+    "HomeEquity",
+    "Mortgage",
+    "Other",
+    "Property",
+    "StudentLoan"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AutoLoan"
+      ],
+      "title": "AutoLoan",
+      "description": "When the asset(s) backing the debt are auto loans."
+    },
+    
+    {
+      "enum": [
+        "CreditCard"
+      ],
+      "title": "CreditCard",
+      "description": "When the asset(s) backing the debt are credit card loans."
+    },
+    
+    {
+      "enum": [
+        "HomeEquity"
+      ],
+      "title": "HomeEquity",
+      "description": "When the asset(s) backing the debt are home equity loans, in which the borrower uses the equity of their home as collateral."
+    },
+    
+    {
+      "enum": [
+        "Mortgage"
+      ],
+      "title": "Mortgage",
+      "description": "When the asset(s) backing the debt instrument is a pool of mortgage loans, e.g. for a mortgage backed security."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Any other asset which generates receivables for an Asset Backed Security."
+    },
+    
+    {
+      "enum": [
+        "Property"
+      ],
+      "title": "Property",
+      "description": "When the asset(s) backing the debt are property, typically when the debt is a mortgage loan."
+    },
+    
+    {
+      "enum": [
+        "StudentLoan"
+      ],
+      "title": "StudentLoan",
+      "description": "When the asset(s) backing the debt are student loans."
+    }
+  ]
+}

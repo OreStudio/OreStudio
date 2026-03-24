@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "MarginCallActionEnum",
+  "description": "Represents the enumeration values to identify the collateral action instruction.",
+  "enum": [
+    "Delivery",
+    "Return"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Delivery"
+      ],
+      "title": "Delivery",
+      "description": "Indicates an instruction of a new collateral asset delivery."
+    },
+    
+    {
+      "enum": [
+        "Return"
+      ],
+      "title": "Return",
+      "description": "Indicates an instruction for a return of a principals collateral asset delivery."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "object",
+  "title": "ObservationIdentifier",
+  "description": "Defines the parameters needed to uniquely identify a piece of data among the population of all available market data.",
+  "properties": {
+    "observable": {
+      "description": "Represents the asset or rate to which the observation relates.",
+      "$ref": "cdm-observable-asset-Observable.schema.json"
+    },
+    "observationDate": {
+      "description": "Specifies the date value to use when resolving the market data.",
+      "type": "string"
+    },
+    "observationTime": {
+      "description": "Represents the time and time-zone.",
+      "$ref": "cdm-base-datetime-TimeZone.schema.json"
+    },
+    "informationSource": {
+      "description": "Represents where the market data published and should be observed.",
+      "$ref": "cdm-observable-asset-InformationSource.schema.json"
+    },
+    "determinationMethodology": {
+      "description": "Specifies the method according to which an amount or a date is determined.",
+      "$ref": "cdm-observable-event-DeterminationMethodology.schema.json"
+    }
+  },
+  "required": [
+    "observable",
+    "observationDate"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "RecalculationOfValue",
+  "description": "A class to specify terms for Recalculation of the Market Value of Posted Collateral when a dispute has been failed to be resolved by Resolution Time.",
+  "properties": {
+    "partyElection": {
+      "description": "The parties' Recalculation of Value terms.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-RecalculationOfValueElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

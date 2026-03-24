@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "PriceOperandEnum",
+  "enum": [
+    "AccruedInterest",
+    "Commission",
+    "ForwardPoint"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AccruedInterest"
+      ],
+      "title": "AccruedInterest"
+    },
+    
+    {
+      "enum": [
+        "Commission"
+      ],
+      "title": "Commission"
+    },
+    
+    {
+      "enum": [
+        "ForwardPoint"
+      ],
+      "title": "ForwardPoint"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "string",
+  "title": "IndexEventConsequenceEnum",
+  "description": "The enumerated values to specify the consequences of Index Events.",
+  "enum": [
+    "CalculationAgentAdjustment",
+    "CancellationAndPayment",
+    "NegotiatedCloseOut",
+    "RelatedExchange"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CalculationAgentAdjustment"
+      ],
+      "title": "CalculationAgentAdjustment",
+      "description": "Calculation Agent Adjustment."
+    },
+    
+    {
+      "enum": [
+        "CancellationAndPayment"
+      ],
+      "title": "CancellationAndPayment",
+      "description": "Cancellation and Payment."
+    },
+    
+    {
+      "enum": [
+        "NegotiatedCloseOut"
+      ],
+      "title": "NegotiatedCloseOut",
+      "description": "Negotiated Close Out."
+    },
+    
+    {
+      "enum": [
+        "RelatedExchange"
+      ],
+      "title": "RelatedExchange",
+      "description": "Related Exchange."
+    }
+  ]
+}

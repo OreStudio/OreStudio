@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CollateralInterestNotification",
+  "description": "Represents the parameters describing when notifications should be made for required collateral interest transfers.",
+  "properties": {
+    "trigger": {
+      "description": "Specifies what triggers notification (should be enum) Interest Statement Frequency, Period End Date.",
+      "type": "string"
+    },
+    "offset": {
+      "description": "Specifies the number of days before (negative) or after (positive) the trigger event.",
+      "type": "number"
+    },
+    "notificationTime": {
+      "description": "Specifies the time of day that the notification should occur.",
+      "type": "string"
+    },
+    "notificationDayType": {
+      "description": "The type of days on which notification should occur.",
+      "$ref": "cdm-base-datetime-DayTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "trigger",
+    "offset",
+    "notificationTime",
+    "notificationDayType"
+  ]
+}

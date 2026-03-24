@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CustodianEventEndDate",
+  "description": "A class to specify the Custodian Event.",
+  "properties": {
+    "daysAfterCustodianEvent": {
+      "description": "Election to specify the number of days after the occurrence of the Custodian Event/Collateral Management Event for the purpose of qualifying the CE/CME End Date.",
+      "$ref": "cdm-base-datetime-CustomisableOffset.schema.json"
+    },
+    "releaseDate": {
+      "description": "Election to specify the number of days prior to the termination of the Control Agreement /Collateral Management Event for the purpose of qualifying the CE/CME End Date, in the case where advance notice is given.",
+      "$ref": "cdm-base-datetime-CustomisableOffset.schema.json"
+    },
+    "safekeepingPeriodExpiry": {
+      "description": "The parties' election to specify the number of days prior to the end of the safekeeping period (Clearstream CTA) purpose of qualifying the CE/CME End Date, in the case where advance notice is given.",
+      "$ref": "cdm-base-datetime-CustomisableOffset.schema.json"
+    },
+    "dateOfTimelyStatement": {
+      "description": "The parties' election to specify the number of days one party has effectively provided the Timely Statement to the other party.",
+      "$ref": "cdm-base-datetime-CustomisableOffset.schema.json"
+    }
+  },
+  "required": [
+    "daysAfterCustodianEvent",
+    "releaseDate",
+    "dateOfTimelyStatement"
+  ]
+}

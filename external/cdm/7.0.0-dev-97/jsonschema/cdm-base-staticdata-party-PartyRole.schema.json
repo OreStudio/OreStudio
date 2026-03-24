@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "PartyRole",
+  "description": "A class to specify the role(s) that party(ies) may have in relation to the execution, contract or other legal agreement.",
+  "properties": {
+    "partyReference": {
+      "description": "A reference to the party to which the role refers to.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "role": {
+      "description": "The party role.",
+      "$ref": "cdm-base-staticdata-party-PartyRoleEnum.schema.json"
+    },
+    "ownershipPartyReference": {
+      "description": "A reference to the party that has ownership of this party role information. FpML specifies that For shared trade information, this attribute will reference the originator of the data (for example, an execution facility or clearing house).",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    }
+  },
+  "required": [
+    "partyReference",
+    "role"
+  ]
+}

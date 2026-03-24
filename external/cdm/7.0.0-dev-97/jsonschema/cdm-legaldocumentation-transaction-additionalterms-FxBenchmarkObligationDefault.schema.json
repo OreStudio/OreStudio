@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "FxBenchmarkObligationDefault",
+  "properties": {
+    "benchmarkObligationDefaultIsApplicable": {
+      "type": "boolean"
+    },
+    "localSubstituteProvisionType": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxSubstitutionProvisionTypeEnum.schema.json"
+    },
+    "specifiedValue": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-SpecifiedValueEnum.schema.json"
+    },
+    "escrowArrangement": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EscrowArrangement.schema.json"
+    }
+  },
+  "required": [
+    "benchmarkObligationDefaultIsApplicable"
+  ]
+}

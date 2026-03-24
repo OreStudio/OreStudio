@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "HoldingAndUsingPostedCollateral",
+  "description": "Specifies the conditions that need to be satisfied before the Secured Party or Custodian acting on its behalf can hold and use posted collateral.",
+  "properties": {
+    "partyElection": {
+      "description": "The parties' elections for the holding and using of posted collateral.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-HoldingAndUsingPostedCollateralElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  }
+}

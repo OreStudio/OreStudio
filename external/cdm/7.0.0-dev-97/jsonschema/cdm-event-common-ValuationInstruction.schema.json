@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ValuationInstruction",
+  "description": "Specifies inputs needed to process a valuation.",
+  "properties": {
+    "valuation": {
+      "description": "Contains all information related to a valuation.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-Valuation.schema.json"
+      },
+      "minItems": 1
+    },
+    "replace": {
+      "description": "Specifies whether the previous valuation tracks in the valuation history are removed (True) or kept (False).",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "replace"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "MasterAgreement",
+  "description": "The set of elections that define an ISDA Master Agreement.",
+  "properties": {
+    "automaticEarlyTermination": {
+      "description": "The specification of whether there is an automatic occurrence of an Early Termination Date in respect of Transactions upon the occurrence of certain bankruptcy / insolvency related events.",
+      "$ref": "cdm-legaldocumentation-master-isda-AutomaticEarlyTermination.schema.json"
+    },
+    "terminationCurrency": {
+      "description": "Specification of the currency in which the termination payment is made (including the process by which such currency is determined).",
+      "$ref": "cdm-legaldocumentation-master-isda-TerminationCurrency.schema.json"
+    },
+    "addressForNotices": {
+      "description": "Specification of the address and other details for notices.",
+      "$ref": "cdm-legaldocumentation-csa-DemandsAndNotices.schema.json"
+    },
+    "nonContractualObligations": {
+      "description": "Specification of whether the Governing Law clause extends to Non-Contractual Obligations (True) or does not extend to Non-Contractual Obligations (False).",
+      "type": "boolean"
+    },
+    "creditSupportDocument": {
+      "description": "Identification of party specific Credit Support Documents applicable to the document.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportDocument.schema.json"
+    },
+    "creditSupportProvider": {
+      "description": "Identification of party specific Credit Support Providers applicable to the document.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportProvider.schema.json"
+    },
+    "specifiedEntities": {
+      "description": "A provision that allows each party to specify its Specified Entities for certain Events of Default and Termination Events.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-master-isda-SpecifiedEntities.schema.json"
+      },
+      "minItems": 4,
+      "maxItems": 4
+    }
+  },
+  "required": [
+    "automaticEarlyTermination",
+    "terminationCurrency",
+    "addressForNotices",
+    "nonContractualObligations",
+    "creditSupportDocument",
+    "creditSupportProvider"
+  ]
+}

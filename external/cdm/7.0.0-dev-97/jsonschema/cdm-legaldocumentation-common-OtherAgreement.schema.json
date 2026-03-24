@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "OtherAgreement",
+  "description": "A class for defining an agreement executed between parties.",
+  "properties": {
+    "identifier": {
+      "description": "An identifier that has been created to identify the agreement.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "otherAgreementType": {
+      "description": "The agreement executed between the parties and intended to govern product-specific derivatives transactions between those parties.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "version": {
+      "description": "The version of the agreement.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "date": {
+      "description": "The date on which the agreement was signed.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "otherAgreementType"
+  ]
+}

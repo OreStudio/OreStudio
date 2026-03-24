@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CustodianElection",
+  "description": "A class to specify the custodian and custody account details for each party to the agreement.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "custodian": {
+      "description": "The custody agent. While CreateiQ only specifies the custodian's name, specifying the legal entity as part of the CDM is deemed more appropriate, while this will still provide the ability to accommodate situations where only the entity name is available, as the entityId attribute is optional as part of the LegalEntity class.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "segregatedCashAccount": {
+      "description": "The identification of the segregated cash account for the purpose of holding cash collateral.",
+      "$ref": "cdm-base-staticdata-party-Account.schema.json"
+    },
+    "segregatedSecurityAccount": {
+      "description": "The identification of the segregated security account for the purpose of holding security collateral.",
+      "$ref": "cdm-base-staticdata-party-Account.schema.json"
+    },
+    "legacyVMCustodian": {
+      "description": "Details how the Custodian is determined.",
+      "$ref": "cdm-legaldocumentation-csa-LegacyVMCustodianEnum.schema.json"
+    },
+    "legacyNamedEntity": {
+      "description": "The identity of the relevant custodian where Named Entity is elected.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

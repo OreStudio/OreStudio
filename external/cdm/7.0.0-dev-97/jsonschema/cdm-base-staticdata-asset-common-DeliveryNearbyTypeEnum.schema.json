@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "DeliveryNearbyTypeEnum",
+  "enum": [
+    "CalculationPeriod",
+    "NearbyMonth",
+    "NearbyWeek"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CalculationPeriod"
+      ],
+      "title": "CalculationPeriod",
+      "description": "Describes the reference contract as the one that pertains to the month-year of the calculation period. If used, the nearby count is expected to be 0."
+    },
+    
+    {
+      "enum": [
+        "NearbyMonth"
+      ],
+      "title": "NearbyMonth",
+      "description": "Specifies that the reference delivery date of the underlying Commodity shall be the expiration date of the futures contract in the nth nearby month."
+    },
+    
+    {
+      "enum": [
+        "NearbyWeek"
+      ],
+      "title": "NearbyWeek",
+      "description": "Specifies that the reference delivery date of the underlying Commodity shall be the expiration date of the futures contract in the nth nearby week."
+    }
+  ]
+}

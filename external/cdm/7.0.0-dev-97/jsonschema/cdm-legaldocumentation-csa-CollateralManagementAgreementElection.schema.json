@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CollateralManagementAgreementElection",
+  "description": "A class to specify the Collateral Management Agreement election.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "collateralManagementAgreement": {
+      "description": "The designated Collateral Management Agreement with respect to the elective party as the Obligee.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "collateralManagementAgreement"
+  ]
+}

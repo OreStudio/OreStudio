@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "DatedValue",
+  "description": "Defines a date and value pair. This definition is used for varying rate or amount schedules, e.g. a notional amortisation or a step-up coupon schedule.",
+  "properties": {
+    "date": {
+      "description": "The date on which the associated step value becomes effective. This day may be subject to adjustment in accordance with a business day convention.",
+      "type": "string"
+    },
+    "value": {
+      "description": "The rate of amount which becomes effective on the associated step date. A rate of 5% would be represented as 0.05.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "date",
+    "value"
+  ]
+}

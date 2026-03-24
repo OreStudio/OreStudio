@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "BusinessUnit",
+  "description": "A class to specify an organizational unit.",
+  "properties": {
+    "name": {
+      "description": "A name used to describe the organizational unit",
+      "type": "string"
+    },
+    "identifier": {
+      "description": "An identifier used to uniquely identify the organizational unit",
+      "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+    },
+    "contactInformation": {
+      "description": "The contact information for such business unit, when different from the contact information associated with the party.",
+      "$ref": "cdm-base-staticdata-party-ContactInformation.schema.json"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

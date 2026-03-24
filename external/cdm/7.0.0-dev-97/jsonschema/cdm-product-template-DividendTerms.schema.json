@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "DividendTerms",
+  "description": "Information related to dividends and payments.",
+  "properties": {
+    "manufacturedIncomeRequirement": {
+      "description": "Specifies the proportion of the value of the dividend on the borrowed shares that the borrower is legally obligated to return to the lender.",
+      "$ref": "cdm-product-asset-DividendPayoutRatio.schema.json"
+    },
+    "dividendEntitlement": {
+      "description": "Defines the date on which the receiver of the equity return is entitled to the dividend.",
+      "$ref": "cdm-product-asset-DividendEntitlementEnum.schema.json"
+    },
+    "minimumBillingAmount": {
+      "description": "daily fee increments accrue until a threshold is crossed, at which point payment becomes due)",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  },
+  "required": [
+    "manufacturedIncomeRequirement"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "IndependentAmountEligibilityEnum",
+  "description": "The enumerated values to specify the instances where the independent amount eligible collateral is not defined as a set of eligible collateral assets.",
+  "enum": [
+    "None",
+    "NoneUnlessSpecifiedInConfirmation"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "None"
+      ],
+      "title": "None",
+      "description": "None."
+    },
+    
+    {
+      "enum": [
+        "NoneUnlessSpecifiedInConfirmation"
+      ],
+      "title": "NoneUnlessSpecifiedInConfirmation",
+      "description": "None, unless otherwise specified in a Confirmation."
+    }
+  ]
+}

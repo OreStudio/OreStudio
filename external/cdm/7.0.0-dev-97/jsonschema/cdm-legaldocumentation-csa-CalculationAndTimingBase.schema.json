@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CalculationAndTimingBase",
+  "description": "A logical container designed to hold a set of related data. In this case, designed to hold a set of clauses that are common amongst Legacy (1994/95), Variation Margin and Initial Margin Credit Support Documents in regards to Calculation, Valuation and Timing terms.",
+  "properties": {
+    "notificationTime": {
+      "description": "The time by which a demand for the Transfer of Eligible Credit Support (IM) or Posted Credit Support (IM) needs to be made in order for the transfer to take place in accordance with the Transfer Timing provisions.",
+      "$ref": "cdm-legaldocumentation-csa-NotificationTime.schema.json"
+    }
+  },
+  "required": [
+    "notificationTime"
+  ]
+}

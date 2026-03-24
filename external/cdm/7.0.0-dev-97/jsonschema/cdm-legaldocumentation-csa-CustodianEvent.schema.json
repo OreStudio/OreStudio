@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CustodianEvent",
+  "description": "A class to specify the Custodian Event.",
+  "properties": {
+    "isApplicable": {
+      "description": "The qualification as to whether the Custodian Event (English Law & New York Law ISDA CSA) or the Collateral Manager Event (Japanese Law ISDA CSA) is applicable.",
+      "type": "boolean"
+    },
+    "endDate": {
+      "description": "The qualification of the Custodian Event (English Law & New York Law ISDA CSA) or Collateral Manager Event (Japanese Law ISDA CSA) End Date.",
+      "$ref": "cdm-legaldocumentation-csa-CustodianEventEndDate.schema.json"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

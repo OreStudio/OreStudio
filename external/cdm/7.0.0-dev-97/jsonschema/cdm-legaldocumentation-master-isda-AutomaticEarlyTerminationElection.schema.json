@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "AutomaticEarlyTerminationElection",
+  "description": "A class to specify the party elections specific to the Automatic Early Termination Clause.",
+  "properties": {
+    "party": {
+      "description": "The party for which the Automatic Early Termination provisions are being specified.",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "isApplicable": {
+      "description": "A boolean election to specify whether the Automatic Early Termination provisions of Section 6(a) are applicable (True) or not applicable (False).",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "party",
+    "isApplicable"
+  ]
+}

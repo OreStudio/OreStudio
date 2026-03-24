@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "TradeState",
+  "description": "Defines the fundamental financial information that can be changed by a Primitive Event and by extension any business or life-cycle event. Each TradeState specifies where a Trade is in its life-cycle. TradeState is a root type and as such, can be created independently to any other CDM data type, but can also be used as part of the CDM Event Model.",
+  "properties": {
+    "trade": {
+      "description": "Represents the Trade that has been effected by a business or life-cycle event.",
+      "$ref": "cdm-event-common-Trade.schema.json"
+    },
+    "state": {
+      "description": "Represents the State of the Trade through its life-cycle.",
+      "$ref": "cdm-event-common-State.schema.json"
+    },
+    "resetHistory": {
+      "description": "Represents the updated Trade attributes which can change as the result of a reset event. Only the changed values are captured, leaving the remaining data attributes empty. See Create_Reset function for further details on how TradeState is used in the Reset event. The TradeState data type is used to maintain backwards compatibility with the current Reset mechanism.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-Reset.schema.json"
+      },
+      "minItems": 0
+    },
+    "transferHistory": {
+      "description": "Represents the updated Trade attributes which can change as the result of a transfer event.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-TransferState.schema.json"
+      },
+      "minItems": 0
+    },
+    "observationHistory": {
+      "description": "Represents the observed events related to a particular product or process, such as credit events or corporate actions.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-ObservationEvent.schema.json"
+      },
+      "minItems": 0
+    },
+    "valuationHistory": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-Valuation.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "trade"
+  ]
+}

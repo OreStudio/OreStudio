@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "object",
+  "title": "ObservationParameters",
+  "description": "Parameters on daily observed computed rates, specifically daily caps and floors. This type is used to represent modular computed rates in interestRatePayouts.",
+  "properties": {
+    "observationCapRate": {
+      "description": "A daily observation cap rate.",
+      "type": "number"
+    },
+    "observationFloorRate": {
+      "description": "A daily observation floor rate.",
+      "type": "number"
+    }
+  }
+}

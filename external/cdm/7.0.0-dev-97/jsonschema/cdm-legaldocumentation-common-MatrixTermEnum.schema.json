@@ -1,0 +1,712 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "MatrixTermEnum",
+  "description": "The enumerated values to specify a scheme of transaction types specified in the Equity Derivatives Settlement Matrix.",
+  "enum": [
+    "AsiaCorporate",
+    "AsiaFinancialCorporate",
+    "AsiaSovereign",
+    "AustraliaCorporate",
+    "AustraliaFinancialCorporate",
+    "AustraliaSovereign",
+    "EmergingEuropeanAndMiddleEasternSovereign",
+    "EmergingEuropeanCorporate",
+    "EmergingEuropeanCorporateLPN",
+    "EmergingEuropeanFinancialCorporate",
+    "EmergingEuropeanFinancialCorporateLPN",
+    "EuropeanCoCoFinancialCorporate",
+    "EuropeanCorporate",
+    "EuropeanFinancialCorporate",
+    "EuropeanSeniorNonPreferredFinancialCorporate",
+    "IVS1OpenMarkets",
+    "JapanCorporate",
+    "JapanFinancialCorporate",
+    "JapanSovereign",
+    "LatinAmericaCorporate",
+    "LatinAmericaCorporateBond",
+    "LatinAmericaCorporateBondOrLoan",
+    "LatinAmericaFinancialCorporateBond",
+    "LatinAmericaFinancialCorporateBondOrLoan",
+    "LatinAmericaSovereign",
+    "NewZealandCorporate",
+    "NewZealandFinancialCorporate",
+    "NewZealandSovereign",
+    "NorthAmericanCorporate",
+    "NorthAmericanFinancialCorporate",
+    "SingaporeCorporate",
+    "SingaporeFinancialCorporate",
+    "SingaporeSovereign",
+    "StandardAsiaCorporate",
+    "StandardAsiaFinancialCorporate",
+    "StandardAsiaSovereign",
+    "StandardAustraliaCorporate",
+    "StandardAustraliaFinancialCorporate",
+    "StandardAustraliaSovereign",
+    "StandardEmergingEuropeanAndMiddleEasternSovereign",
+    "StandardEmergingEuropeanCorporate",
+    "StandardEmergingEuropeanCorporateLPN",
+    "StandardEmergingEuropeanFinancialCorporate",
+    "StandardEmergingEuropeanFinancialCorporateLPN",
+    "StandardEuropeanCoCoFinancialCorporate",
+    "StandardEuropeanCorporate",
+    "StandardEuropeanFinancialCorporate",
+    "StandardEuropeanSeniorNonPreferredFinancialCorporate",
+    "StandardJapanCorporate",
+    "StandardJapanFinancialCorporate",
+    "StandardJapanSovereign",
+    "StandardLatinAmericaCorporateBond",
+    "StandardLatinAmericaCorporateBondOrLoan",
+    "StandardLatinAmericaFinancialCorporateBond",
+    "StandardLatinAmericaFinancialCorporateBondOrLoan",
+    "StandardLatinAmericaSovereign",
+    "StandardNewZealandCorporate",
+    "StandardNewZealandFinancialCorporate",
+    "StandardNewZealandSovereign",
+    "StandardNorthAmericanCorporate",
+    "StandardNorthAmericanFinancialCorporate",
+    "StandardSingaporeCorporate",
+    "StandardSingaporeFinancialCorporate",
+    "StandardSingaporeSovereign",
+    "StandardSubordinatedEuropeanInsuranceCorporate",
+    "StandardSukukFinancialCorporate",
+    "StandardUSMunicipalFullFaithAndCredit",
+    "StandardUSMunicipalGeneralFund",
+    "StandardUSMunicipalRevenue",
+    "StandardWesternEuropeanSovereign",
+    "SubordinatedEuropeanInsuranceCorporate",
+    "SukukCorporate",
+    "SukukFinancialCorporate",
+    "SukukSovereign",
+    "USMunicipalFullFaithAndCredit",
+    "USMunicipalGeneralFund",
+    "USMunicipalRevenue",
+    "WesternEuropeanSovereign"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsiaCorporate"
+      ],
+      "title": "AsiaCorporate",
+      "description": "Matrix Transaction Type of ASIA CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "AsiaFinancialCorporate"
+      ],
+      "title": "AsiaFinancialCorporate",
+      "description": "Matrix Transaction Type of ASIA FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "AsiaSovereign"
+      ],
+      "title": "AsiaSovereign",
+      "description": "Matrix Transaction Type of ASIA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "AustraliaCorporate"
+      ],
+      "title": "AustraliaCorporate",
+      "description": "Matrix Transaction Type of AUSTRALIA CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "AustraliaFinancialCorporate"
+      ],
+      "title": "AustraliaFinancialCorporate",
+      "description": "Matrix Transaction Type of AUSTRALIA FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "AustraliaSovereign"
+      ],
+      "title": "AustraliaSovereign",
+      "description": "Matrix Transaction Type of AUSTRALIA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanAndMiddleEasternSovereign"
+      ],
+      "title": "EmergingEuropeanAndMiddleEasternSovereign",
+      "description": "Matrix Transaction Type of EMERGING EUROPEAN AND MIDDLE EASTERN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanCorporate"
+      ],
+      "title": "EmergingEuropeanCorporate",
+      "description": "Matrix Transaction Type of EMERGING EUROPEAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanCorporateLPN"
+      ],
+      "title": "EmergingEuropeanCorporateLPN",
+      "description": "Matrix Transaction Type of EMERGING EUROPEAN CORPORATE LPN."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanFinancialCorporate"
+      ],
+      "title": "EmergingEuropeanFinancialCorporate",
+      "description": "Matrix Transaction Type of EMERGING EUROPEAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "EmergingEuropeanFinancialCorporateLPN"
+      ],
+      "title": "EmergingEuropeanFinancialCorporateLPN",
+      "description": "Matrix Transaction Type of EMERGING EUROPEAN FINANCIAL CORPORATE LPN."
+    },
+    
+    {
+      "enum": [
+        "EuropeanCoCoFinancialCorporate"
+      ],
+      "title": "EuropeanCoCoFinancialCorporate",
+      "description": "Matrix Transaction Type of EUROPEAN COCO FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "EuropeanCorporate"
+      ],
+      "title": "EuropeanCorporate",
+      "description": "Matrix Transaction Type of EUROPEAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "EuropeanFinancialCorporate"
+      ],
+      "title": "EuropeanFinancialCorporate",
+      "description": "Matrix Transaction Type of EUROPEAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "EuropeanSeniorNonPreferredFinancialCorporate"
+      ],
+      "title": "EuropeanSeniorNonPreferredFinancialCorporate",
+      "description": "Matrix Transaction Type of EUROPEAN SENIOR NON PREFERRED FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "IVS1OpenMarkets"
+      ],
+      "title": "IVS1OpenMarkets",
+      "description": "The ISDA-published 2011 Index Volatility Swap Agreement for Open Markets."
+    },
+    
+    {
+      "enum": [
+        "JapanCorporate"
+      ],
+      "title": "JapanCorporate",
+      "description": "Matrix Transaction Type of JAPAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "JapanFinancialCorporate"
+      ],
+      "title": "JapanFinancialCorporate",
+      "description": "Matrix Transaction Type of JAPAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "JapanSovereign"
+      ],
+      "title": "JapanSovereign",
+      "description": "Matrix Transaction Type of JAPAN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaCorporate"
+      ],
+      "title": "LatinAmericaCorporate",
+      "description": "Matrix Transaction Type of LATIN AMERICA CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaCorporateBond"
+      ],
+      "title": "LatinAmericaCorporateBond",
+      "description": "Matrix Transaction Type of LATIN AMERICA CORPORATE B."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaCorporateBondOrLoan"
+      ],
+      "title": "LatinAmericaCorporateBondOrLoan",
+      "description": "Matrix Transaction Type of LATIN AMERICA CORPORATE BL."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaFinancialCorporateBond"
+      ],
+      "title": "LatinAmericaFinancialCorporateBond",
+      "description": "Matrix Transaction Type of LATIN AMERICA FINANCIAL CORPORATE B."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaFinancialCorporateBondOrLoan"
+      ],
+      "title": "LatinAmericaFinancialCorporateBondOrLoan",
+      "description": "Matrix Transaction Type of LATIN AMERICA FINANCIAL CORPORATE BL."
+    },
+    
+    {
+      "enum": [
+        "LatinAmericaSovereign"
+      ],
+      "title": "LatinAmericaSovereign",
+      "description": "Matrix Transaction Type of LATIN AMERICA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "NewZealandCorporate"
+      ],
+      "title": "NewZealandCorporate",
+      "description": "Matrix Transaction Type of NEW ZEALAND CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "NewZealandFinancialCorporate"
+      ],
+      "title": "NewZealandFinancialCorporate",
+      "description": "Matrix Transaction Type of NEW ZEALAND FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "NewZealandSovereign"
+      ],
+      "title": "NewZealandSovereign",
+      "description": "Matrix Transaction Type of NEW ZEALAND SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "NorthAmericanCorporate"
+      ],
+      "title": "NorthAmericanCorporate",
+      "description": "Matrix Transaction Type of NORTH AMERICAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "NorthAmericanFinancialCorporate"
+      ],
+      "title": "NorthAmericanFinancialCorporate",
+      "description": "Matrix Transaction Type of NORTH AMERICAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "SingaporeCorporate"
+      ],
+      "title": "SingaporeCorporate",
+      "description": "Matrix Transaction Type of SINGAPORE CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "SingaporeFinancialCorporate"
+      ],
+      "title": "SingaporeFinancialCorporate",
+      "description": "Matrix Transaction Type of SINGAPORE FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "SingaporeSovereign"
+      ],
+      "title": "SingaporeSovereign",
+      "description": "Matrix Transaction Type of SINGAPORE SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardAsiaCorporate"
+      ],
+      "title": "StandardAsiaCorporate",
+      "description": "Matrix Transaction Type of STANDARD ASIA CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardAsiaFinancialCorporate"
+      ],
+      "title": "StandardAsiaFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD ASIA FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardAsiaSovereign"
+      ],
+      "title": "StandardAsiaSovereign",
+      "description": "Matrix Transaction Type of STANDARD ASIA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardAustraliaCorporate"
+      ],
+      "title": "StandardAustraliaCorporate",
+      "description": "Matrix Transaction Type of STANDARD AUSTRALIA CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardAustraliaFinancialCorporate"
+      ],
+      "title": "StandardAustraliaFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD AUSTRALIA FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardAustraliaSovereign"
+      ],
+      "title": "StandardAustraliaSovereign",
+      "description": "Matrix Transaction Type of STANDARD AUSTRALIA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanAndMiddleEasternSovereign"
+      ],
+      "title": "StandardEmergingEuropeanAndMiddleEasternSovereign",
+      "description": "Matrix Transaction Type of STANDARD EMERGING EUROPEAN AND MIDDLE EASTERN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanCorporate"
+      ],
+      "title": "StandardEmergingEuropeanCorporate",
+      "description": "Matrix Transaction Type of STANDARD EMERGING EUROPEAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanCorporateLPN"
+      ],
+      "title": "StandardEmergingEuropeanCorporateLPN",
+      "description": "Matrix Transaction Type of STANDARD EMERGING EUROPEAN CORPORATE LPN."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanFinancialCorporate"
+      ],
+      "title": "StandardEmergingEuropeanFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD EMERGING EUROPEAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardEmergingEuropeanFinancialCorporateLPN"
+      ],
+      "title": "StandardEmergingEuropeanFinancialCorporateLPN",
+      "description": "Matrix Transaction Type of STANDARD EMERGING EUROPEAN FINANCIAL CORPORATE LPN."
+    },
+    
+    {
+      "enum": [
+        "StandardEuropeanCoCoFinancialCorporate"
+      ],
+      "title": "StandardEuropeanCoCoFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD EUROPEAN COCO FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardEuropeanCorporate"
+      ],
+      "title": "StandardEuropeanCorporate",
+      "description": "Matrix Transaction Type of STANDARD EUROPEAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardEuropeanFinancialCorporate"
+      ],
+      "title": "StandardEuropeanFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD EUROPEAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardEuropeanSeniorNonPreferredFinancialCorporate"
+      ],
+      "title": "StandardEuropeanSeniorNonPreferredFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD EUROPEAN SENIOR NON PREFERRED FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardJapanCorporate"
+      ],
+      "title": "StandardJapanCorporate",
+      "description": "Matrix Transaction Type of STANDARD JAPAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardJapanFinancialCorporate"
+      ],
+      "title": "StandardJapanFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD JAPAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardJapanSovereign"
+      ],
+      "title": "StandardJapanSovereign",
+      "description": "Matrix Transaction Type of STANDARD JAPAN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaCorporateBond"
+      ],
+      "title": "StandardLatinAmericaCorporateBond",
+      "description": "Matrix Transaction Type of STANDARD LATIN AMERICA CORPORATE B."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaCorporateBondOrLoan"
+      ],
+      "title": "StandardLatinAmericaCorporateBondOrLoan",
+      "description": "Matrix Transaction Type of STANDARD LATIN AMERICA CORPORATE BL."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaFinancialCorporateBond"
+      ],
+      "title": "StandardLatinAmericaFinancialCorporateBond",
+      "description": "Matrix Transaction Type of STANDARD LATIN AMERICA FINANCIAL CORPORATE B."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaFinancialCorporateBondOrLoan"
+      ],
+      "title": "StandardLatinAmericaFinancialCorporateBondOrLoan",
+      "description": "Matrix Transaction Type of STANDARD LATIN AMERICA FINANCIAL CORPORATE BL."
+    },
+    
+    {
+      "enum": [
+        "StandardLatinAmericaSovereign"
+      ],
+      "title": "StandardLatinAmericaSovereign",
+      "description": "Matrix Transaction Type of STANDARD LATIN AMERICA SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardNewZealandCorporate"
+      ],
+      "title": "StandardNewZealandCorporate",
+      "description": "Matrix Transaction Type of STANDARD NEW ZEALAND CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardNewZealandFinancialCorporate"
+      ],
+      "title": "StandardNewZealandFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD NEW ZEALAND FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardNewZealandSovereign"
+      ],
+      "title": "StandardNewZealandSovereign",
+      "description": "Matrix Transaction Type of STANDARD NEW ZEALAND SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardNorthAmericanCorporate"
+      ],
+      "title": "StandardNorthAmericanCorporate",
+      "description": "Matrix Transaction Type of STANDARD NORTH AMERICAN CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardNorthAmericanFinancialCorporate"
+      ],
+      "title": "StandardNorthAmericanFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD NORTH AMERICAN FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardSingaporeCorporate"
+      ],
+      "title": "StandardSingaporeCorporate",
+      "description": "Matrix Transaction Type of STANDARD SINGAPORE CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardSingaporeFinancialCorporate"
+      ],
+      "title": "StandardSingaporeFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD SINGAPORE FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardSingaporeSovereign"
+      ],
+      "title": "StandardSingaporeSovereign",
+      "description": "Matrix Transaction Type of STANDARD SINGAPORE SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "StandardSubordinatedEuropeanInsuranceCorporate"
+      ],
+      "title": "StandardSubordinatedEuropeanInsuranceCorporate",
+      "description": "Transaction Type of STANDARD SUBORDINATED EUROPEAN INSURANCE CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardSukukFinancialCorporate"
+      ],
+      "title": "StandardSukukFinancialCorporate",
+      "description": "Matrix Transaction Type of STANDARD SUKUK FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "StandardUSMunicipalFullFaithAndCredit"
+      ],
+      "title": "StandardUSMunicipalFullFaithAndCredit",
+      "description": "Matrix Transaction Type of STANDARD U.S. MUNICIPAL FULL FAITH AND CREDIT."
+    },
+    
+    {
+      "enum": [
+        "StandardUSMunicipalGeneralFund"
+      ],
+      "title": "StandardUSMunicipalGeneralFund",
+      "description": "Matrix Transaction Type of STANDARD U.S. MUNICIPAL GENERAL FUND."
+    },
+    
+    {
+      "enum": [
+        "StandardUSMunicipalRevenue"
+      ],
+      "title": "StandardUSMunicipalRevenue",
+      "description": "Matrix Transaction Type of STANDARD U.S. MUNICIPAL REVENUE."
+    },
+    
+    {
+      "enum": [
+        "StandardWesternEuropeanSovereign"
+      ],
+      "title": "StandardWesternEuropeanSovereign",
+      "description": "Matrix Transaction Type of STANDARD WESTERN EUROPEAN SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "SubordinatedEuropeanInsuranceCorporate"
+      ],
+      "title": "SubordinatedEuropeanInsuranceCorporate",
+      "description": "Matrix Transaction Type of SUBORDINATED EUROPEAN INSURANCE CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "SukukCorporate"
+      ],
+      "title": "SukukCorporate",
+      "description": "Matrix Transaction Type of SUKUK CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "SukukFinancialCorporate"
+      ],
+      "title": "SukukFinancialCorporate",
+      "description": "Matrix Transaction Type of SUKUK FINANCIAL CORPORATE."
+    },
+    
+    {
+      "enum": [
+        "SukukSovereign"
+      ],
+      "title": "SukukSovereign",
+      "description": "Matrix Transaction Type of SUKUK SOVEREIGN."
+    },
+    
+    {
+      "enum": [
+        "USMunicipalFullFaithAndCredit"
+      ],
+      "title": "USMunicipalFullFaithAndCredit",
+      "description": "Matrix Transaction Type of U.S. MUNICIPAL FULL FAITH AND CREDIT."
+    },
+    
+    {
+      "enum": [
+        "USMunicipalGeneralFund"
+      ],
+      "title": "USMunicipalGeneralFund",
+      "description": "Matrix Transaction Type of U.S. MUNICIPAL GENERAL FUND."
+    },
+    
+    {
+      "enum": [
+        "USMunicipalRevenue"
+      ],
+      "title": "USMunicipalRevenue",
+      "description": "Matrix Transaction Type of U.S. MUNICIPAL REVENUE."
+    },
+    
+    {
+      "enum": [
+        "WesternEuropeanSovereign"
+      ],
+      "title": "WesternEuropeanSovereign",
+      "description": "Matrix Transaction Type of WESTERN EUROPEAN SOVEREIGN."
+    }
+  ]
+}

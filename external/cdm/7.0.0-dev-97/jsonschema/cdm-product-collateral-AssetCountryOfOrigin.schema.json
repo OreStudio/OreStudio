@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "AssetCountryOfOrigin",
+  "properties": {
+    "assetCountryOfOrigin": {
+      "description": "Represents a filter on the asset country of origin based on the ISO Standard 3166.",
+      "$ref": "cdm-base-staticdata-asset-common-ISOCountryCodeEnum.schema.json"
+    }
+  },
+  "required": [
+    "assetCountryOfOrigin"
+  ]
+}

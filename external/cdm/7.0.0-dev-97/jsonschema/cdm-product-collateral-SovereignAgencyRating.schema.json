@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "SovereignAgencyRating",
+  "properties": {
+    "sovereignAgencyRating": {
+      "description": "Represents an agency rating based on default risk of the country of the issuer.",
+      "$ref": "cdm-product-collateral-AgencyRatingCriteria.schema.json"
+    }
+  },
+  "required": [
+    "sovereignAgencyRating"
+  ]
+}

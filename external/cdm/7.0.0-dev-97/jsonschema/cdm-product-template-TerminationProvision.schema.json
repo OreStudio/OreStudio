@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "TerminationProvision",
+  "description": "A class for defining option provisions.",
+  "properties": {
+    "cancelableProvision": {
+      "description": "A provision that allows the specification of an embedded option within a swap giving the buyer of the option the right to terminate the swap, in whole or in part, on the early termination date.",
+      "$ref": "cdm-product-template-CancelableProvision.schema.json"
+    },
+    "earlyTerminationProvision": {
+      "description": "Parameters specifying provisions relating to the optional and mandatory early termination of a swap transaction.",
+      "$ref": "cdm-product-template-EarlyTerminationProvision.schema.json"
+    },
+    "evergreenProvision": {
+      "description": "A data defining: the right of a party to exercise an Evergreen option",
+      "$ref": "cdm-product-template-EvergreenProvision.schema.json"
+    },
+    "extendibleProvision": {
+      "description": "A provision that allows the specification of an embedded option with a swap giving the buyer of the option the right to extend the swap, in whole or in part, to the extended termination date.",
+      "$ref": "cdm-product-template-ExtendibleProvision.schema.json"
+    },
+    "recallProvision": {
+      "description": "A provision defining criteria controlling the ability for a lender to recall securities it has lent out.",
+      "$ref": "cdm-product-template-RecallProvision.schema.json"
+    }
+  }
+}

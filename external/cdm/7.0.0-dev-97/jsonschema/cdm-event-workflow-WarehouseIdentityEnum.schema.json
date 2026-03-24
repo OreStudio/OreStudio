@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "string",
+  "title": "WarehouseIdentityEnum",
+  "enum": [
+    "DTCC_TIW_Gold"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "DTCC_TIW_Gold"
+      ],
+      "title": "DTCC_TIW_Gold",
+      "description": "The DTCC Trade Information Warehouse Gold service"
+    }
+  ]
+}

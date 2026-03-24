@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "FinancialUnitEnum",
+  "description": "Provides enumerated values for financial units, generally used in the context of defining quantities for securities.",
+  "enum": [
+    "Contract",
+    "ContractualProduct",
+    "IndexUnit",
+    "LogNormalVolatility",
+    "Share",
+    "ValuePerDay",
+    "ValuePerPercent",
+    "Weight"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Contract"
+      ],
+      "title": "Contract",
+      "description": "Denotes financial contracts, such as listed futures and options."
+    },
+    
+    {
+      "enum": [
+        "ContractualProduct"
+      ],
+      "title": "ContractualProduct",
+      "description": "Denotes a Contractual Product as defined in the CDM.  This unit type would be used when the price applies to the whole product, for example, in the case of a premium expressed as a cash amount."
+    },
+    
+    {
+      "enum": [
+        "IndexUnit"
+      ],
+      "title": "IndexUnit",
+      "description": "Denotes a price expressed in index points, e.g. for a stock index."
+    },
+    
+    {
+      "enum": [
+        "LogNormalVolatility"
+      ],
+      "title": "LogNormalVolatility",
+      "description": "Denotes a log normal volatility, expressed in %/month, where the percentage is represented as a decimal. For example, 0.15 means a log-normal volatility of 15% per month."
+    },
+    
+    {
+      "enum": [
+        "Share"
+      ],
+      "title": "Share",
+      "description": "Denotes the number of units of financial stock shares."
+    },
+    
+    {
+      "enum": [
+        "ValuePerDay"
+      ],
+      "title": "ValuePerDay",
+      "description": "Denotes a value (expressed in currency units) for a one day change in a valuation date, which is typically used for expressing sensitivity to the passage of time, also known as theta risk, or carry, or other names."
+    },
+    
+    {
+      "enum": [
+        "ValuePerPercent"
+      ],
+      "title": "ValuePerPercent",
+      "description": "Denotes a value (expressed in currency units) per percent change in the underlying rate which is typically used for expressing sensitivity to volatility changes, also known as vega risk."
+    },
+    
+    {
+      "enum": [
+        "Weight"
+      ],
+      "title": "Weight",
+      "description": "Denotes a quantity (expressed as a decimal value) represented the weight of a component in a basket."
+    }
+  ]
+}

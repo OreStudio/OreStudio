@@ -1,0 +1,658 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.commodity",
+  "type": "string",
+  "title": "ProductGradeEnum",
+  "description": "Identifies the grade of physical commodity product to be delivered.",
+  "enum": [
+    "Arabian-Light",
+    "Brass-Blend",
+    "Brent",
+    "CARBOB",
+    "CBOB",
+    "Cold-Lake",
+    "Dubai",
+    "EUROBOB",
+    "Edmonton-High-Sulphur-Sour",
+    "German-10PPM",
+    "Gulf-Coast-Sweet",
+    "Hardisty-Light",
+    "Iranian-Light",
+    "Iranian-Light",
+    "Jet",
+    "Kirkuk-Light",
+    "Kuwait",
+    "Light-Louisiana-Sweet",
+    "Low-Sulphur",
+    "Low-Sulphur-Jet",
+    "Mars",
+    "Mixed-Sour-Blend",
+    "Mixed-Sweet-Blend",
+    "Murban",
+    "Natural-Gasoline",
+    "No.-2",
+    "No.-6-0.3-Percent",
+    "No.-6-0.3-Percent-HP",
+    "No.-6-0.3-Percent-LP",
+    "No.-6-0.7-Percent",
+    "No.-6-1.0-Percent",
+    "No.-6-2.2-Percent",
+    "No.-6-3-Percent",
+    "Normal-Butane",
+    "North-Dakota-Light",
+    "Oman",
+    "Polymer-Grade",
+    "RBOB",
+    "Saharan",
+    "Sour",
+    "Southern-Green-Canyon",
+    "Tapis",
+    "Thunder-Horse",
+    "US-Regular-Unleaded",
+    "Ultra-Low-Sulphur",
+    "Urals",
+    "Urals-Sour",
+    "WTI",
+    "WTS",
+    "Western-Canadian-Select",
+    "Zuetina",
+    "0.1-Percent",
+    "0.5-Percent",
+    "10-PPM",
+    "10-PPM-95-R",
+    "10-PPM-Premium-Unleaded",
+    "10-PPM-Regular-Unleaded",
+    "180-CST",
+    "1.0-Percent",
+    "380-CST",
+    "3.5-Percent",
+    "50-PPM",
+    "54",
+    "55",
+    "87-M",
+    "87-Unleaded",
+    "87-Unleaded-ULS-30",
+    "92-Unleaded",
+    "93-Unleaded",
+    "95-Unleaded",
+    "97-Unleaded",
+    "98-Unleaded"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Arabian-Light"
+      ],
+      "title": "Arabian_Light",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Brass-Blend"
+      ],
+      "title": "Brass_Blend",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Brent"
+      ],
+      "title": "Brent",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "CARBOB"
+      ],
+      "title": "CARBOB",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "CBOB"
+      ],
+      "title": "CBOB",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "Cold-Lake"
+      ],
+      "title": "Cold_Lake",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Dubai"
+      ],
+      "title": "Dubai",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "EUROBOB"
+      ],
+      "title": "EUROBOB",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "Edmonton-High-Sulphur-Sour"
+      ],
+      "title": "Edmonton_High_Sulphur_Sour",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "German-10PPM"
+      ],
+      "title": "German_10PPM",
+      "description": "Applies to Oil Product Type Diesel Fuel."
+    },
+    
+    {
+      "enum": [
+        "Gulf-Coast-Sweet"
+      ],
+      "title": "Gulf_Coast_Sweet",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Hardisty-Light"
+      ],
+      "title": "Hardisty_Light",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Iranian-Light"
+      ],
+      "title": "Iranian_Light",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Iranian-Light"
+      ],
+      "title": "Iranian_Light_1",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Jet"
+      ],
+      "title": "Jet",
+      "description": "Applies to Oil Product Type Jet Fuel."
+    },
+    
+    {
+      "enum": [
+        "Kirkuk-Light"
+      ],
+      "title": "Kirkuk_Light",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Kuwait"
+      ],
+      "title": "Kuwait",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Light-Louisiana-Sweet"
+      ],
+      "title": "Light_Louisiana_Sweet",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Low-Sulphur"
+      ],
+      "title": "Low_Sulphur",
+      "description": "Applies to Oil Product Type Diesel Fuel."
+    },
+    
+    {
+      "enum": [
+        "Low-Sulphur-Jet"
+      ],
+      "title": "Low_Sulphur_Jet",
+      "description": "Applies to Oil Product Type Jet Fuel."
+    },
+    
+    {
+      "enum": [
+        "Mars"
+      ],
+      "title": "Mars",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Mixed-Sour-Blend"
+      ],
+      "title": "Mixed_Sour_Blend",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Mixed-Sweet-Blend"
+      ],
+      "title": "Mixed_Sweet_Blend",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Murban"
+      ],
+      "title": "Murban",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Natural-Gasoline"
+      ],
+      "title": "Natural_Gasoline",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "No.-2"
+      ],
+      "title": "No__2",
+      "description": "Applies to Oil Product Type Diesel Fuel."
+    },
+    
+    {
+      "enum": [
+        "No.-6-0.3-Percent"
+      ],
+      "title": "No__6_0_3_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "No.-6-0.3-Percent-HP"
+      ],
+      "title": "No__6_0_3_Percent_HP",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "No.-6-0.3-Percent-LP"
+      ],
+      "title": "No__6_0_3_Percent_LP",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "No.-6-0.7-Percent"
+      ],
+      "title": "No__6_0_7_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "No.-6-1.0-Percent"
+      ],
+      "title": "No__6_1_0_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "No.-6-2.2-Percent"
+      ],
+      "title": "No__6_2_2_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "No.-6-3-Percent"
+      ],
+      "title": "No__6_3_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "Normal-Butane"
+      ],
+      "title": "Normal_Butane",
+      "description": "Applies to Oil Product Type Butane."
+    },
+    
+    {
+      "enum": [
+        "North-Dakota-Light"
+      ],
+      "title": "North_Dakota_Light",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Oman"
+      ],
+      "title": "Oman",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Polymer-Grade"
+      ],
+      "title": "Polymer_Grade",
+      "description": "Applies to Oil Product Type Propylene."
+    },
+    
+    {
+      "enum": [
+        "RBOB"
+      ],
+      "title": "RBOB",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "Saharan"
+      ],
+      "title": "Saharan",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Sour"
+      ],
+      "title": "Sour",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Southern-Green-Canyon"
+      ],
+      "title": "Southern_Green_Canyon",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Tapis"
+      ],
+      "title": "Tapis",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Thunder-Horse"
+      ],
+      "title": "Thunder_Horse",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "US-Regular-Unleaded"
+      ],
+      "title": "US_Regular_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "Ultra-Low-Sulphur"
+      ],
+      "title": "Ultra_Low_Sulphur",
+      "description": "Applies to Oil Product Type Diesel Fuel."
+    },
+    
+    {
+      "enum": [
+        "Urals"
+      ],
+      "title": "Urals",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Urals-Sour"
+      ],
+      "title": "Urals_Sour",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "WTI"
+      ],
+      "title": "WTI",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "WTS"
+      ],
+      "title": "WTS",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Western-Canadian-Select"
+      ],
+      "title": "Western_Canadian_Select",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "Zuetina"
+      ],
+      "title": "Zuetina",
+      "description": "Applies to Oil Product Type Oil."
+    },
+    
+    {
+      "enum": [
+        "0.1-Percent"
+      ],
+      "title": "_0_1_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "0.5-Percent"
+      ],
+      "title": "_0_5_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "10-PPM"
+      ],
+      "title": "_10_PPM",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "10-PPM-95-R"
+      ],
+      "title": "_10_PPM_95_R",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "10-PPM-Premium-Unleaded"
+      ],
+      "title": "_10_PPM_Premium_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "10-PPM-Regular-Unleaded"
+      ],
+      "title": "_10_PPM_Regular_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "180-CST"
+      ],
+      "title": "_180_CST",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "1.0-Percent"
+      ],
+      "title": "_1_0_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "380-CST"
+      ],
+      "title": "_380_CST",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "3.5-Percent"
+      ],
+      "title": "_3_5_Percent",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "50-PPM"
+      ],
+      "title": "_50_PPM",
+      "description": "Applies to Oil Product Type Fuel Oil."
+    },
+    
+    {
+      "enum": [
+        "54"
+      ],
+      "title": "_54",
+      "description": "Applies to Oil Product Type Jet Fuel."
+    },
+    
+    {
+      "enum": [
+        "55"
+      ],
+      "title": "_55",
+      "description": "Applies to Oil Product Type Jet Fuel."
+    },
+    
+    {
+      "enum": [
+        "87-M"
+      ],
+      "title": "_87_M",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "87-Unleaded"
+      ],
+      "title": "_87_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "87-Unleaded-ULS-30"
+      ],
+      "title": "_87_Unleaded_ULS_30",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "92-Unleaded"
+      ],
+      "title": "_92_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "93-Unleaded"
+      ],
+      "title": "_93_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "95-Unleaded"
+      ],
+      "title": "_95_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "97-Unleaded"
+      ],
+      "title": "_97_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    },
+    
+    {
+      "enum": [
+        "98-Unleaded"
+      ],
+      "title": "_98_Unleaded",
+      "description": "Applies to Oil Product Type Gasoline."
+    }
+  ]
+}

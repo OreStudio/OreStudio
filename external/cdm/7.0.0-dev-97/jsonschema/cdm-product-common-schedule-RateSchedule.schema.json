@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "RateSchedule",
+  "description": "A class defining a schedule of rates or amounts in terms of an initial value and then a series of step date and value pairs. On each step date the rate or amount changes to the new step value. The series of step date and value pairs are optional. If not specified, this implies that the initial value remains unchanged over time.",
+  "properties": {
+    "price": {
+      "description": "The initial rate. An initial rate of 5% would be represented as 0.05.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+    }
+  },
+  "required": [
+    "price"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "Agreement",
+  "description": "Specification of the standard set of terms that define a legal agreement.",
+  "properties": {
+    "creditSupportAgreementElections": {
+      "description": "Elections to specify a Credit Support Annex or Credit Support Deed for Intial or Variation Margin.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportAgreementElections.schema.json"
+    },
+    "collateralTransferAgreementElections": {
+      "description": "Elections to specify a Collateral Transfer Agreement.",
+      "$ref": "cdm-legaldocumentation-csa-CollateralTransferAgreementElections.schema.json"
+    },
+    "securityAgreementElections": {
+      "description": "Elections to specify a Security agreement.",
+      "$ref": "cdm-legaldocumentation-csa-SecurityAgreementElections.schema.json"
+    },
+    "masterAgreementSchedule": {
+      "description": "Elections to specify a Master Agreement Schedule.",
+      "$ref": "cdm-legaldocumentation-master-MasterAgreementSchedule.schema.json"
+    },
+    "transactionAdditionalTerms": {
+      "description": "Any additional terms which mainly intend to specify the extraordinary events that may affect a trade and the related contractual rights and obligation of the parties when this happens",
+      "$ref": "cdm-legaldocumentation-transaction-TransactionAdditionalTerms.schema.json"
+    },
+    "masterAgreementElections": {
+      "description": "A legal representation of the different possible master agreements",
+      "$ref": "cdm-legaldocumentation-master-MasterAgreementElections.schema.json"
+    }
+  }
+}

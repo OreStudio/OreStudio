@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "ExerciseProcedure",
+  "description": "A class describing how notice of exercise should be given. This can be either manual or automatic.",
+  "properties": {
+    "manualExercise": {
+      "description": "Specifies that the notice of exercise must be given by the buyer to the seller or seller's agent.",
+      "$ref": "cdm-product-template-ManualExercise.schema.json"
+    },
+    "automaticExercise": {
+      "description": "If automatic is specified, then the notional amount of the underlying swap not previously exercised under the swaption will be automatically exercised at the expiration time on the expiration date if at such time the buyer is in-the-money, provided that the difference between the settlement rate and the fixed rate under the relevant underlying swap is not less than the specified threshold rate. The term in-the-money is assumed to have the meaning defining in the 2000 ISDA Definitions, Section 17.4 In-the-money.",
+      "$ref": "cdm-product-template-AutomaticExercise.schema.json"
+    },
+    "followUpConfirmation": {
+      "description": "A flag to indicate whether follow-up confirmation of exercise (written or electronic) is required following telephonic notice by the buyer to the seller or seller's agent.",
+      "type": "boolean"
+    },
+    "limitedRightToConfirm": {
+      "description": "Has the meaning defined as part of the 1997 ISDA Government Bond Option Definitions, section 4.5 Limited Right to Confirm Exercise. If present, (i) the Seller may request the Buyer to confirm its intent if not done on or before the expiration time on the Expiration date (ii) specific rules will apply in relation to the settlement mode.",
+      "type": "boolean"
+    },
+    "splitTicket": {
+      "description": "Typically applicable to the physical settlement of bond and convertible bond options. If present, means that the party required to deliver the bonds will divide those to be delivered as notifying party desires to facilitate delivery obligations.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "followUpConfirmation"
+  ]
+}

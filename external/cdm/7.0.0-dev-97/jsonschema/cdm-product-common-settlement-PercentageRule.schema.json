@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PercentageRule",
+  "description": "A class defining a content model for a calculation rule defined as percentage of the notional amount.",
+  "properties": {
+    "paymentPercent": {
+      "description": "A percentage of the notional amount.",
+      "type": "number"
+    },
+    "notionalAmountReference": {
+      "description": "A reference to the notional amount.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaMoney.schema.json"
+    }
+  },
+  "required": [
+    "paymentPercent",
+    "notionalAmountReference"
+  ]
+}

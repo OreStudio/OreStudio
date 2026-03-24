@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "FeeTypeEnum",
+  "description": "The enumerated values to specify an event that has given rise to a fee.",
+  "enum": [
+    "Assignment",
+    "BrokerageCommission",
+    "CorporateAction",
+    "CreditEvent",
+    "Increase",
+    "Novation",
+    "PartialTermination",
+    "Premium",
+    "Renegotiation",
+    "Termination",
+    "Upfront"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Assignment"
+      ],
+      "title": "Assignment",
+      "description": "A cash flow resulting from the assignment of a contract to a new counterparty."
+    },
+    
+    {
+      "enum": [
+        "BrokerageCommission"
+      ],
+      "title": "BrokerageCommission",
+      "description": "The brokerage commission."
+    },
+    
+    {
+      "enum": [
+        "CorporateAction"
+      ],
+      "title": "CorporateAction",
+      "description": "A cash flow associated with a corporate action"
+    },
+    
+    {
+      "enum": [
+        "CreditEvent"
+      ],
+      "title": "CreditEvent",
+      "description": "A cash flow associated with a credit event."
+    },
+    
+    {
+      "enum": [
+        "Increase"
+      ],
+      "title": "Increase",
+      "description": "A cash flow associated with an increase lifecycle event."
+    },
+    
+    {
+      "enum": [
+        "Novation"
+      ],
+      "title": "Novation",
+      "description": "The novation fee."
+    },
+    
+    {
+      "enum": [
+        "PartialTermination"
+      ],
+      "title": "PartialTermination",
+      "description": "A cash flow associated with a partial termination lifecycle event."
+    },
+    
+    {
+      "enum": [
+        "Premium"
+      ],
+      "title": "Premium",
+      "description": "Denotes the amount payable by the buyer to the seller for an option. The premium is paid on the specified premium payment date or on each premium payment date if specified."
+    },
+    
+    {
+      "enum": [
+        "Renegotiation"
+      ],
+      "title": "Renegotiation",
+      "description": "A cash flow associated with a renegotiation lifecycle event."
+    },
+    
+    {
+      "enum": [
+        "Termination"
+      ],
+      "title": "Termination",
+      "description": "A cash flow associated with a termination lifecycle event."
+    },
+    
+    {
+      "enum": [
+        "Upfront"
+      ],
+      "title": "Upfront",
+      "description": "An upfront cashflow associated to the swap to adjust for a difference between the swap price and the current market price."
+    }
+  ]
+}

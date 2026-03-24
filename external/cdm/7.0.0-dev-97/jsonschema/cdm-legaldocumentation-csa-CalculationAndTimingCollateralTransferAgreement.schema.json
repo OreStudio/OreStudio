@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CalculationAndTimingCollateralTransferAgreement",
+  "description": "Specification of the Calculation, Valuation and Timing terms specific to the Initial Margin Credit Support Annex.",
+  "properties": {
+    "notificationTime": {
+      "description": "The time by which a demand for the Transfer of Eligible Credit Support (IM) or Posted Credit Support (IM) needs to be made in order for the transfer to take place in accordance with the Transfer Timing provisions.",
+      "$ref": "cdm-legaldocumentation-csa-NotificationTime.schema.json"
+    },
+    "calculationAgentTerms": {
+      "description": "Details of the party calculating the value of collateral to be delivered or returned.",
+      "$ref": "cdm-legaldocumentation-csa-CalculationAgentTerms.schema.json"
+    },
+    "bespokeCalculationDate": {
+      "description": "The specification of bespoke Calculation Date terms for the purposes of Initial or Variation Margin by the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-BespokeCalculationDate.schema.json"
+    },
+    "bespokeCalculationTime": {
+      "description": "Bespoke terms to describe the time as of which such party (or the Calculation Agent (IM) (if applicale)) computes its end of day valuations of derivatives transactions.",
+      "$ref": "cdm-legaldocumentation-csa-BespokeCalculationTime.schema.json"
+    },
+    "calculationDateLocation": {
+      "description": "The specified location where the credit exposure will be calculated by the respective parties.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationCalculationDateLocation.schema.json"
+    },
+    "cashSettlementDay": {
+      "type": "string"
+    },
+    "securitiesSettlementDay": {
+      "type": "string"
+    }
+  }
+}

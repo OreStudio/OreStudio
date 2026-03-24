@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValuationDateDayEnum",
+  "description": "Defines the conditions for the day for a Valuation Date.",
+  "enum": [
+    "CalendarDay",
+    "FRI",
+    "LocalBusinessDay",
+    "MON",
+    "New York Banking Day",
+    "SAT",
+    "SUN",
+    "THU",
+    "TUE",
+    "WED"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CalendarDay"
+      ],
+      "title": "CalendarDay",
+      "description": "The Date can be a given day on the regular calendar."
+    },
+    
+    {
+      "enum": [
+        "FRI"
+      ],
+      "title": "FRI",
+      "description": "Friday"
+    },
+    
+    {
+      "enum": [
+        "LocalBusinessDay"
+      ],
+      "title": "LocalBusinessDay",
+      "description": "The Date must be a day on which commercial banks are open for general business in the local market."
+    },
+    
+    {
+      "enum": [
+        "MON"
+      ],
+      "title": "MON",
+      "description": "Monday"
+    },
+    
+    {
+      "enum": [
+        "New York Banking Day"
+      ],
+      "title": "NewYorkBankingDay",
+      "description": "The Date must be a New York Banking Day, that is a day, other than a Saturday or Sunday, on which banks are open for general commercial business in New York, USA."
+    },
+    
+    {
+      "enum": [
+        "SAT"
+      ],
+      "title": "SAT",
+      "description": "Saturday"
+    },
+    
+    {
+      "enum": [
+        "SUN"
+      ],
+      "title": "SUN",
+      "description": "Sunday"
+    },
+    
+    {
+      "enum": [
+        "THU"
+      ],
+      "title": "THU",
+      "description": "Thursday"
+    },
+    
+    {
+      "enum": [
+        "TUE"
+      ],
+      "title": "TUE",
+      "description": "Tuesday"
+    },
+    
+    {
+      "enum": [
+        "WED"
+      ],
+      "title": "WED",
+      "description": "Wednesday"
+    }
+  ]
+}

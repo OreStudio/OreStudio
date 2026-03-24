@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "CompoundingTypeEnum",
+  "description": "The enumerated values to specify how the compounding calculation is done",
+  "enum": [
+    "Business",
+    "Calendar",
+    "None"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Business"
+      ],
+      "title": "Business",
+      "description": "Compounding is done only on business days, i.e. not compounded each day on weekends or holidays."
+    },
+    
+    {
+      "enum": [
+        "Calendar"
+      ],
+      "title": "Calendar",
+      "description": "Compounding is done on each calendar day."
+    },
+    
+    {
+      "enum": [
+        "None"
+      ],
+      "title": "None",
+      "description": "Compounding is not applicable"
+    }
+  ]
+}

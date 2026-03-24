@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CoveredTransactions",
+  "description": "Specification of Transactions covered by the legal agreement.",
+  "properties": {
+    "inclusionDate": {
+      "description": "Includes any Transaction specified below that is entered into on or after the specified date.",
+      "type": "string"
+    },
+    "coveredTransactions": {
+      "description": "Covered Transactions when expressed using the ISDA taxonomy.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-ProductTaxonomy.schema.json"
+      },
+      "minItems": 0
+    },
+    "bespokeCoveredTransactions": {
+      "description": "Covered Transactions when not expressed using the ISDA taxonomy.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "additionalObligations": {
+      "description": "The party specific additional obligations applicable to the document.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-AdditionalObligations.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "exposure": {
+      "description": "Specification of amendments to the calculation of Exposure in terms of the Transactions covered.",
+      "$ref": "cdm-legaldocumentation-csa-ExposureScope.schema.json"
+    }
+  }
+}

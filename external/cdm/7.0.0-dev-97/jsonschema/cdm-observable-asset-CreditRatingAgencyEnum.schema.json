@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "CreditRatingAgencyEnum",
+  "description": "Represents the enumerated values to specify the rating agencies.",
+  "enum": [
+    "AMBest",
+    "CBRS",
+    "DBRS",
+    "Fitch",
+    "Japanagency",
+    "Moodys",
+    "RatingAndInvestmentInformation",
+    "StandardAndPoors"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AMBest"
+      ],
+      "title": "AMBest",
+      "description": "A. M. Best"
+    },
+    
+    {
+      "enum": [
+        "CBRS"
+      ],
+      "title": "CBRS",
+      "description": "Canadian Bond Rating Service"
+    },
+    
+    {
+      "enum": [
+        "DBRS"
+      ],
+      "title": "DBRS",
+      "description": "Dominion Bond Rating Service"
+    },
+    
+    {
+      "enum": [
+        "Fitch"
+      ],
+      "title": "Fitch",
+      "description": "Fitch"
+    },
+    
+    {
+      "enum": [
+        "Japanagency"
+      ],
+      "title": "Japanagency",
+      "description": "Japan Credit Rating Agency, Ltd."
+    },
+    
+    {
+      "enum": [
+        "Moodys"
+      ],
+      "title": "Moodys",
+      "description": "Moody's"
+    },
+    
+    {
+      "enum": [
+        "RatingAndInvestmentInformation"
+      ],
+      "title": "RatingAndInvestmentInformation",
+      "description": "Rating And Investment Information, Inc."
+    },
+    
+    {
+      "enum": [
+        "StandardAndPoors"
+      ],
+      "title": "StandardAndPoors",
+      "description": "Standard And Poor's"
+    }
+  ]
+}

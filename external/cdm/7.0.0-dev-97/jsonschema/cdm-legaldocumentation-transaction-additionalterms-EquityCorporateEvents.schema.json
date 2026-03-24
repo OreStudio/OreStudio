@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "EquityCorporateEvents",
+  "description": "A class for defining the merger events and their treatment.",
+  "properties": {
+    "shareForShare": {
+      "description": "Shall occur if a Merger Event occurs and the consideration for the relevant Security consists solely of Combined Consideration.",
+      "$ref": "cdm-observable-event-ShareExtraordinaryEventEnum.schema.json"
+    },
+    "shareForOther": {
+      "description": "Shall occur if a Merger Event occurs and the consideration for the relevant Security consists solely of Other Consideration.",
+      "$ref": "cdm-observable-event-ShareExtraordinaryEventEnum.schema.json"
+    },
+    "shareForCombined": {
+      "description": "Shall occur if a Merger Event occurs and the consideration for the relevant Security consists solely of Combined Consideration.",
+      "$ref": "cdm-observable-event-ShareExtraordinaryEventEnum.schema.json"
+    }
+  },
+  "required": [
+    "shareForShare",
+    "shareForOther",
+    "shareForCombined"
+  ]
+}

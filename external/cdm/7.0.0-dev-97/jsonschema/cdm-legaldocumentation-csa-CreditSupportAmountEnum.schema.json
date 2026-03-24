@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "CreditSupportAmountEnum",
+  "description": "Specifies whether the meaning of credit support amount follows the pre-print definition or deviates from the standard (either based on a rating or some other methodology).",
+  "enum": [
+    "Non-Standard - IA Floor (Less GiverIA)",
+    "Non-Standard - IA Floor (Less GiverIA and TakerIA)",
+    "Non-Standard - Other",
+    "Non-Standard - Ratings",
+    "Standard"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Non-Standard - IA Floor (Less GiverIA)"
+      ],
+      "title": "IAFloorGIA"
+    },
+    
+    {
+      "enum": [
+        "Non-Standard - IA Floor (Less GiverIA and TakerIA)"
+      ],
+      "title": "IAFloorGIATIA"
+    },
+    
+    {
+      "enum": [
+        "Non-Standard - Other"
+      ],
+      "title": "NonStandardOther"
+    },
+    
+    {
+      "enum": [
+        "Non-Standard - Ratings"
+      ],
+      "title": "NonStandardRatings"
+    },
+    
+    {
+      "enum": [
+        "Standard"
+      ],
+      "title": "Standard",
+      "description": "The standard definition of the credit support amount applies."
+    }
+  ]
+}

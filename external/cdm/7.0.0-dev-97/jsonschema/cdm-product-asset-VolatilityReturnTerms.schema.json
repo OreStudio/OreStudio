@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "VolatilityReturnTerms",
+  "properties": {
+    "valuationTerms": {
+      "description": "Contains all non-date valuation information.",
+      "$ref": "cdm-product-asset-ValuationTerms.schema.json"
+    },
+    "annualizationFactor": {
+      "description": "This specifies the numerator of an annualization factor. Frequently this number is equal to the number of observations of prices in a year e.g. 252.",
+      "type": "integer"
+    },
+    "dividendApplicability": {
+      "description": "The parameters which define whether dividends are applicable",
+      "$ref": "cdm-observable-asset-DividendApplicability.schema.json"
+    },
+    "equityUnderlierProvisions": {
+      "description": "Contains Equity Underlyer provisions regarding jurisdiction and fallbacks.",
+      "$ref": "cdm-product-asset-EquityUnderlierProvisions.schema.json"
+    },
+    "sharePriceDividendAdjustment": {
+      "description": "Indicates whether the price of shares is adjusted for dividends or not.",
+      "type": "boolean"
+    },
+    "expectedN": {
+      "description": "Expected number of trading days.",
+      "type": "integer"
+    },
+    "initialLevel": {
+      "description": "Contract will strike off this initial level. Providing just the initialLevel without initialLevelSource, infers that this is AgreedInitialPrice - a specified Initial Index Level.",
+      "type": "number"
+    },
+    "initialLevelSource": {
+      "description": "In this context, this is AgreedInitialPrice - a specified Initial Index Level.",
+      "$ref": "cdm-observable-common-DeterminationMethodEnum.schema.json"
+    },
+    "meanAdjustment": {
+      "description": "Specifies whether Mean Adjustment is applicable or not in the calculation of the Realized Volatility, Variance or Correlation",
+      "type": "boolean"
+    },
+    "performance": {
+      "description": "Performance calculation, in accordance with Part 1 Section 12 of the 2018 ISDA CDM Equity Confirmation for Security Equity Swap, Para 75. 'Equity Performance'. Cumulative performance is used as a notional multiplier factor on both legs of an Equity Swap.",
+      "type": "string"
+    },
+    "volatilityStrikePrice": {
+      "description": "Volatility Strike Price in accordance with the ISDA 2011 Equity Derivatives Definitions.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "volatilityCapFloor": {
+      "description": "Contains volatility-based barriers",
+      "$ref": "cdm-product-asset-VolatilityCapFloor.schema.json"
+    },
+    "exchangeTradedContractNearest": {
+      "description": "Specification of the exchange traded contract nearest.",
+      "$ref": "cdm-base-staticdata-asset-common-ListedDerivative.schema.json"
+    }
+  },
+  "required": [
+    "volatilityStrikePrice"
+  ]
+}

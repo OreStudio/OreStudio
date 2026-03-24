@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "LimitApplicableExtended",
+  "description": "A class to represent the CDM attributes that are not part of the FpML standard. Once broader usage is confirmed, it is expected that those two classes can be collapsed.",
+  "properties": {
+    "limitType": {
+      "description": "Standard code to indicate which type of credit line is being referred to - i.e. IM, DV01, PV01, CS01, Notional, Clip Size, Notional, maximumOrderQuantity.",
+      "$ref": "cdm-event-workflow-metafields-FieldWithMetaCreditLimitTypeEnum.schema.json"
+    },
+    "clipSize": {
+      "description": "This element is required in FpML, optional in CDM for the purpose of accommodating the CME data representation while making reference to the FpML one.",
+      "type": "integer"
+    },
+    "amountUtilized": {
+      "description": "The limit utilised by all the cleared trades for the limit level and limit type. While the attribute is of type integer in FpML and the CME schema, it has been specified to be of type number in the CDM to take into consideration java size limits as well as for consistency purposes with the way most monetary amounts are expressed.",
+      "type": "number"
+    },
+    "utilization": {
+      "$ref": "cdm-event-workflow-CreditLimitUtilisation.schema.json"
+    },
+    "amountRemaining": {
+      "description": "The limit remaining for the limit level and limit type. This does not take into account any pending trades. While the attribute is of type integer in FpML and the CME schema, it has been specified to be of type number in the CDM to take into consideration java size limits as well as for consistency purposes with the way most monetary amounts are expressed.",
+      "type": "number"
+    },
+    "currency": {
+      "description": "The currency in which the applicable limit is denominated. The list of valid currencies is not presently positioned as an enumeration as part of the CDM because that scope is limited to the values specified by ISDA and FpML. As a result, implementers have to make reference to the relevant standard, such as the ISO 4217 standard for currency codes.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "velocity": {
+      "$ref": "cdm-event-workflow-Velocity.schema.json"
+    },
+    "limitLevel": {
+      "description": "The level at which the limit is set: customer business, proprietary business or account level. This attribute is specified as a string as part of the CME clearing confirmation specification.",
+      "$ref": "cdm-event-workflow-metafields-FieldWithMetaLimitLevelEnum.schema.json"
+    },
+    "limitAmount": {
+      "description": "The total limit available for the limit level and limit type. While the attribute is of type integer in the CME schema, it has been specified to be of type number in the CDM to take into consideration java size limits as well as for consistency purposes with the way most monetary amounts are expressed.",
+      "type": "number"
+    },
+    "limitImpactDueToTrade": {
+      "description": "The limit utilized by this specific trade. While the attribute is of type integer in the CME schema, it has been specified to be of type number in the CDM to take into consideration java size limits as well as for consistency purposes with the way most monetary amounts are expressed.",
+      "type": "number"
+    }
+  }
+}

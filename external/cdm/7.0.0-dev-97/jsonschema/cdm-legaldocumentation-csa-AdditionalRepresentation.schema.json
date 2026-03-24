@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AdditionalRepresentation",
+  "description": "A class to specify the Additional Representation.",
+  "properties": {
+    "partyElection": {
+      "description": "A qualification as to whether the Additional Representation is applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-AdditionalRepresentationElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "customElection": {
+      "description": "A supplemental custom election that might be specified by the parties for the purpose of specifying the Additional Representation.",
+      "type": "string"
+    }
+  }
+}

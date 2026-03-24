@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "DiscountingMethod",
+  "description": "A data defining:  discounting information. The 2000 ISDA definitions, section 8.4. discounting (related to the calculation of a discounted fixed amount or floating amount) apply. This type must only be included if discounting applies.",
+  "properties": {
+    "discountingType": {
+      "description": "The discounting method that is applicable.",
+      "$ref": "cdm-product-asset-DiscountingTypeEnum.schema.json"
+    },
+    "discountRate": {
+      "description": "A discount rate, expressed as a decimal, to be used in the calculation of a discounted amount. A discount amount of 5% would be represented as 0.05.",
+      "type": "number"
+    },
+    "discountRateDayCountFraction": {
+      "description": "A discount day count fraction to be used in the calculation of a discounted amount.",
+      "$ref": "cdm-base-datetime-daycount-metafields-FieldWithMetaDayCountFractionEnum.schema.json"
+    }
+  },
+  "required": [
+    "discountingType"
+  ]
+}

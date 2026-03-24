@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Swp",
+  "properties": {
+    "swpIn": {
+      "$ref": "cdm-regulation-SwpIn.schema.json"
+    },
+    "swpOut": {
+      "$ref": "cdm-regulation-SwpOut.schema.json"
+    }
+  },
+  "required": [
+    "swpIn",
+    "swpOut"
+  ]
+}

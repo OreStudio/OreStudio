@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ContractFormationInstruction",
+  "description": "Specifies instructions to create a fully formed contract, with optional legal agreements.",
+  "properties": {
+    "legalAgreement": {
+      "description": "Optional legal agreements associated to the contract being formed, for instance a master agreement.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-LegalAgreement.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "string",
+  "title": "TriggerTimeTypeEnum",
+  "description": "The enumerated values to specify the time of day which would be considered for valuing the knock event.",
+  "enum": [
+    "Anytime",
+    "Closing"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Anytime"
+      ],
+      "title": "Anytime",
+      "description": "At any time during the Knock Determination period (continuous barrier)."
+    },
+    
+    {
+      "enum": [
+        "Closing"
+      ],
+      "title": "Closing",
+      "description": "The close of trading on a day would be considered for valuation."
+    }
+  ]
+}

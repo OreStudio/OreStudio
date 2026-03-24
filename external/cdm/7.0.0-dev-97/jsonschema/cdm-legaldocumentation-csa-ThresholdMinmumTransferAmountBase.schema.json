@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ThresholdMinmumTransferAmountBase",
+  "description": "A logical container designed to hold a set of related data. In this case, designed to hold a set of information required to specify conditions under which Threshold or Minimum Transfer Amount can fall to zero.",
+  "properties": {
+    "zeroEvent": {
+      "description": "Indicates whether a trigger applies for the Threshold or Minimum Transfer Amount to fall to zero. If 'True' then such a trigger exists.",
+      "type": "boolean"
+    },
+    "event": {
+      "description": "Specifies the relevant trigger for the Threshold or Minimum Transfer Amount to fall to zero.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ZeroEventEnum.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "zeroEvent"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportDocumentElection",
+  "description": "The party election of Credit Support Provider(s), if any.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "creditSupportDocumentTerms": {
+      "description": "Specification of the Credit Support Document terms.",
+      "$ref": "cdm-legaldocumentation-common-CreditSupportDocumentTermsEnum.schema.json"
+    },
+    "creditSupportDocumentTypes": {
+      "description": "If a Credit Support Document is specified but not yet in CDM representation, it can still be captured. This argument should be used if the creditSupportDocument argument cannot be used due to not being able to represent the document fully in CDM format.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-LegalAgreementIdentification.schema.json"
+      },
+      "minItems": 0
+    },
+    "creditSupportDocument": {
+      "description": "The specified Credit Support Document(s), if any.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-LegalAgreement.schema.json"
+      },
+      "minItems": 0
+    },
+    "bespokeCreditSuppportDocument": {
+      "description": "Specification of a document when not captured under RelatedAgreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "creditSupportDocumentTerms"
+  ]
+}

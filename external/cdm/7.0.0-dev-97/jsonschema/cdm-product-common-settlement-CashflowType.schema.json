@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "CashflowType",
+  "description": "Characterises the type of cashflow, which can result from either a scheduled or a non-scheduled lifecycle event.",
+  "properties": {
+    "cashflowType": {
+      "description": "Type of cashflow corresponding to a scheduled event.",
+      "$ref": "cdm-product-common-settlement-ScheduledTransferEnum.schema.json"
+    },
+    "cashPrice": {
+      "description": "Type of cashflow corresponding to a non-scheduled event, where a price must be agreed between the parties.",
+      "$ref": "cdm-observable-asset-CashPrice.schema.json"
+    },
+    "priceExpression": {
+      "$ref": "cdm-observable-asset-PriceExpressionEnum.schema.json"
+    }
+  }
+}

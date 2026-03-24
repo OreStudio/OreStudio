@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SpecifiedConditionOrAccessCondition",
+  "description": "Specifies the events elected by the parties that are deemed an Access Condition (for Initial Margin CSA) or a Specified Condition (for Variation Margin and Legacy CSA), which, if triggered, may temporarily or permanently suspend rights to rehypothecate, transfer, or substitute collateral.",
+  "properties": {
+    "isApplicable": {
+      "description": "Indicates whether events that could temporarily or permanently suspend rights to rehypothecate, transfer or substitute collateral are applicable. If applicable,'True'. If not applicable,'False'.",
+      "type": "boolean"
+    },
+    "partyElection": {
+      "description": "The party specific elections.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-SpecifiedOrAccessConditionPartyElection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

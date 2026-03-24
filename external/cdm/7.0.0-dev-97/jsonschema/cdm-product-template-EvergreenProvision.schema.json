@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "EvergreenProvision",
+  "description": "Specifies a transaction which automatically extends for a specified timeframe until the exercise of an embedded option.",
+  "properties": {
+    "singlePartyOption": {
+      "description": "If evergreen termination is not available to both parties then this component specifies the buyer and seller of the option.",
+      "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+    },
+    "noticePeriod": {
+      "description": "The length of each evergreen extension period relative to the effective date of the preceding contract.",
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    },
+    "noticeDeadlinePeriod": {
+      "description": "Defines the minimum period before an evergreen is scheduled to terminate that notice can be given that it will terminate beyond the scheduled termination date.",
+      "$ref": "cdm-base-datetime-RelativeDateOffset.schema.json"
+    },
+    "noticeDeadlineDateTime": {
+      "description": "A specific date and time for the notice deadline",
+      "type": "string"
+    },
+    "extensionFrequency": {
+      "description": "The frequency with which the evergreen contract will be extended if notice is not given.",
+      "$ref": "cdm-base-datetime-AdjustableRelativeOrPeriodicDates.schema.json"
+    },
+    "finalPeriodFeeAdjustment": {
+      "description": "An optional adjustment to the rate for the last period of the evergreen i.e. the period from when notice is given to stop rolling the contract through to the termination date.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    }
+  },
+  "required": [
+    "noticePeriod",
+    "extensionFrequency"
+  ]
+}

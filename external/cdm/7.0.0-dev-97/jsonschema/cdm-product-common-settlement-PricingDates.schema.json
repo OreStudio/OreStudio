@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PricingDates",
+  "description": "Specifies specific dates or parametric rules for the dates on which the price will be determined",
+  "properties": {
+    "specifiedDates": {
+      "description": "Defines specified dates on which the price will be determined.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-datetime-AdjustableDates.schema.json"
+      },
+      "minItems": 0
+    },
+    "parametricDates": {
+      "description": "Defines rules for the dates on which the price will be determined.",
+      "$ref": "cdm-product-common-schedule-ParametricDates.schema.json"
+    }
+  }
+}

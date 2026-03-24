@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "TerminationCurrencyConditionEnum",
+  "enum": [
+    "FreelyAvailable",
+    "PaymentsDue",
+    "PaymentsDueAndFreelyAvailable",
+    "Specified"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FreelyAvailable"
+      ],
+      "title": "FreelyAvailable",
+      "description": "A currency that is freely available."
+    },
+    
+    {
+      "enum": [
+        "PaymentsDue"
+      ],
+      "title": "PaymentsDue",
+      "description": "A currency in which payments would be due under one or more Transactions."
+    },
+    
+    {
+      "enum": [
+        "PaymentsDueAndFreelyAvailable"
+      ],
+      "title": "PaymentsDueAndFreelyAvailable",
+      "description": "A currency in which payments would be due under one or more Transactions and that is freely available."
+    },
+    
+    {
+      "enum": [
+        "Specified"
+      ],
+      "title": "Specified",
+      "description": "Termination Currency Conditions are specified."
+    }
+  ]
+}

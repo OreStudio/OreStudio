@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ControlAgreementElections",
+  "description": "A class to specify the Control Agreement election sby each party to the agreement.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "controlAgreementAsCsd": {
+      "description": "The identification of whether the Control Agreement is a Credit Support Document with respect to each party.",
+      "type": "boolean"
+    },
+    "consistencyWithControlAgreement": {
+      "description": "Unless specified as inapplicable in the event of any inconsistency between this Deed and the Control Agreement, this Deed will prevail over the Control Agreement.",
+      "type": "boolean"
+    },
+    "relationshipWithControlAgreement": {
+      "description": "Unless specified as inapplicable the parties recognise that the Control Agreement is a means by which the parties can perform their obligations.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "party",
+    "controlAgreementAsCsd"
+  ]
+}

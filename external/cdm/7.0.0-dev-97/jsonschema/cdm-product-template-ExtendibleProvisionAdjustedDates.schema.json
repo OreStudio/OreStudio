@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "ExtendibleProvisionAdjustedDates",
+  "description": "A data defining:  the adjusted dates associated with a provision to extend a swap.",
+  "properties": {
+    "extensionEvent": {
+      "description": "The adjusted dates associated with a single extendible exercise date.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-ExtensionEvent.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

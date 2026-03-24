@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "DebtType",
+  "description": "Specifies the type of debt security.",
+  "properties": {
+    "debtEconomics": {
+      "description": "Specifies selected financial terms of a debt security.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-DebtEconomics.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

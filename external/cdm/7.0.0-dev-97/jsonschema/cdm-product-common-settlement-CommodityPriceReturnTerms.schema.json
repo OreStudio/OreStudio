@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "CommodityPriceReturnTerms",
+  "description": "Defines parameters in which the commodity price is assessed.",
+  "properties": {
+    "rounding": {
+      "description": "Defines rounding rules and precision to be used in the rounding of a number.",
+      "$ref": "cdm-base-math-Rounding.schema.json"
+    },
+    "spread": {
+      "description": "Defines a spread value for one or more defined dates.",
+      "$ref": "cdm-product-asset-SpreadSchedule.schema.json"
+    },
+    "rollFeature": {
+      "description": "Used in conjunction with an exchange-based pricing source. Identifies a way in which the futures contracts referenced will roll between periods. ",
+      "$ref": "cdm-product-common-settlement-RollFeature.schema.json"
+    },
+    "conversionFactor": {
+      "description": "Defines the conversion applied if the quantity unit on contract is different from unit on referenced underlier.",
+      "type": "number"
+    }
+  }
+}

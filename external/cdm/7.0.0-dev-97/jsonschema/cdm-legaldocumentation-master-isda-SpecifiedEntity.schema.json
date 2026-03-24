@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "SpecifiedEntity",
+  "description": "The party specific election of Specified Entities for the Event of Default or Termination Event specified.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "specifiedEntityTerms": {
+      "description": "The specified entity terms for the Event of Default or Termination Event specified.",
+      "$ref": "cdm-legaldocumentation-common-SpecifiedEntityTermsEnum.schema.json"
+    },
+    "specifiedEntity": {
+      "description": "The specified entities for the Event of Default or Termination Event specified.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "materialSubsidiaryTerms": {
+      "description": "The meaning of Material Subsidiary for the Event of Default or Termination Event specified.",
+      "type": "string"
+    },
+    "otherSpecifiedEntityTerms": {
+      "description": "The non standard terms for the Event of Default or Termination Event specified.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "specifiedEntityTerms"
+  ]
+}

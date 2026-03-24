@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "AssetDeliveryPeriods",
+  "description": "Defines the periods of delivery, including the delivery profile.",
+  "properties": {
+    "profile": {
+      "description": "Defines the delivery profile of the asset, including the load type and the delivery intervals.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-AssetDeliveryProfile.schema.json"
+      },
+      "minItems": 0
+    },
+    "startDate": {
+      "description": "Delivery start date",
+      "type": "string"
+    },
+    "endDate": {
+      "description": "Delivery end date",
+      "type": "string"
+    }
+  }
+}

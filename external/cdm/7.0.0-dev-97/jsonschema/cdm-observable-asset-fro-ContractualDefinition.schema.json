@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "ContractualDefinition",
+  "properties": {
+    "identifier": {
+      "description": "Corresponds to the unique identifier of the Contractual Definition in which the code is published",
+      "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+    },
+    "contractualDefinitionIdentifier": {
+      "description": "Contractual Definition Identifier in which the code is published. Includes Document Type and Document Version",
+      "$ref": "cdm-observable-asset-fro-ContractualDefinitionIdentifier.schema.json"
+    },
+    "publicationDate": {
+      "description": "2021-06-11",
+      "type": "string"
+    }
+  }
+}

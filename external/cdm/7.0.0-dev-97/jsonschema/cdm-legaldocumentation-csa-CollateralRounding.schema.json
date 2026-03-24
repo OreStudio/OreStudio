@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CollateralRounding",
+  "description": "A class to specify the rounding methodology applicable to the Delivery Amount and the Return Amount.",
+  "properties": {
+    "deliveryAmount": {
+      "description": "The nearest integral multiple of Base Currency units to which the Delivery Amount will be rounded in accordance with the specified rounding direction.",
+      "type": "number"
+    },
+    "deliveryDirection": {
+      "description": "The rounding rule applicable to the Delivery Amount (which can be (i) up to nearest; (ii) down to nearest).",
+      "$ref": "cdm-base-math-RoundingModeEnum.schema.json"
+    },
+    "returnAmount": {
+      "description": "The nearest integral multiple of Base Currency units to which the Return Amount will be rounded in accordance with the specified rounding direction.",
+      "type": "number"
+    },
+    "returnDirection": {
+      "description": "The rounding rule applicable to the Return Amount (which can be (i) up to nearest; (ii) down to nearest).",
+      "$ref": "cdm-base-math-RoundingModeEnum.schema.json"
+    },
+    "currency": {
+      "description": "The currency in which the Delivery Amount and Return Amount rounding amounts are specified.",
+      "$ref": "cdm-base-staticdata-asset-common-ISOCurrencyCodeEnum.schema.json"
+    },
+    "other": {
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "deliveryAmount",
+    "deliveryDirection",
+    "returnAmount",
+    "returnDirection",
+    "currency"
+  ]
+}

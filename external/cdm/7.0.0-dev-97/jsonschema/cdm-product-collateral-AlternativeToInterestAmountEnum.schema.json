@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "AlternativeToInterestAmountEnum",
+  "description": "If there is an alternative to interest amounts, how is it specified?",
+  "enum": [
+    "ActualAmountReceived",
+    "Other",
+    "Standard",
+    "TransferIfDeliveryAmountBelowMTA"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ActualAmountReceived"
+      ],
+      "title": "ActualAmountReceived",
+      "description": "The standard calculation of the Interest Amount is replaced with the amount of interest the secured party actually receives in relation to the Cash collateral."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "An other alternative option outside these choices that can be described as an alternative provision."
+    },
+    
+    {
+      "enum": [
+        "Standard"
+      ],
+      "title": "Standard",
+      "description": "Interest amount is not transferred if transfer would create or increase a delivery amount."
+    },
+    
+    {
+      "enum": [
+        "TransferIfDeliveryAmountBelowMTA"
+      ],
+      "title": "TransferIfDeliveryAmountBelowMTA",
+      "description": "Interest amount is not transferred if transfer would create or increase a delivery amount. (This is the 'Standard' provision). However, interest Amount will be transferred if Delivery Amount is below Minimum Transfer Amount."
+    }
+  ]
+}

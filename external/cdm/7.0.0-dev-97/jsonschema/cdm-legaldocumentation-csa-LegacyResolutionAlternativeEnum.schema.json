@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "LegacyResolutionAlternativeEnum",
+  "description": "Details of the alternative dispute resolution procedure (if any).",
+  "enum": [
+    "AdditionalConditions",
+    "NoAlternative",
+    "SplitDifference"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AdditionalConditions"
+      ],
+      "title": "AdditionalConditions",
+      "description": "Additional Conditions are defined."
+    },
+    
+    {
+      "enum": [
+        "NoAlternative"
+      ],
+      "title": "NoAlternative",
+      "description": "No Alternative dispute resolution procedure is defined."
+    },
+    
+    {
+      "enum": [
+        "SplitDifference"
+      ],
+      "title": "SplitDifference",
+      "description": "A split the difference resolution procedure applies."
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "NumberBound",
+  "description": "The number bound is defined as a number and whether the bound is inclusive.",
+  "properties": {
+    "number": {
+      "description": "The number to be used as the bound, e.g. 5.",
+      "type": "number"
+    },
+    "inclusive": {
+      "description": "Whether the number bound is inclusive, e.g. for a lower bound, false would indicate greater than, whereas true would indicate greater than or equal to.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "number",
+    "inclusive"
+  ]
+}

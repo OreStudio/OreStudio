@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "Commodity",
+  "description": "Identifies a specific commodity by referencing a product identifier or by a product definition.",
+  "properties": {
+    "identifier": {
+      "description": "Asset Identifiers are used to uniquely identify an Asset, using a specified Asset Identifier Type.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-AssetIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "taxonomy": {
+      "description": "Defines the taxonomy of an object by combining a taxonomy source (i.e. the rules to classify the object) and a value (i.e. the output of those rules on the object.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-Taxonomy.schema.json"
+      },
+      "minItems": 0
+    },
+    "isExchangeListed": {
+      "description": "Defines whether the Asset is listed on a public exchange.",
+      "type": "boolean"
+    },
+    "exchange": {
+      "description": "If the Asset is listed, defines the public exchange of the listing.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "relatedExchange": {
+      "description": "Provides the related Exchanges, if applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "assetType": {
+      "description": "Specifies the type of asset.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetTypeEnum.schema.json"
+    },
+    "commodityProductDefinition": {
+      "description": "Specifies the commodity underlier in the event that no ISDA Commodity Reference Benchmark exists.",
+      "$ref": "cdm-base-staticdata-asset-common-CommodityProductDefinition.schema.json"
+    },
+    "priceQuoteType": {
+      "description": "Describes the required quote type of the underlying price that will be observed. Example values include 'Bid, 'Ask', 'Settlement' (for a futures contract) and 'WeightedAverage' (for some published prices and indices).",
+      "$ref": "cdm-observable-asset-QuotationSideEnum.schema.json"
+    },
+    "deliveryDateReference": {
+      "description": "Specifies the parameters for identifying the relevant contract date when the commodity reference price is a futures contract.",
+      "$ref": "cdm-base-staticdata-asset-common-DeliveryDateParameters.schema.json"
+    },
+    "description": {
+      "description": "Provides additional information about the commodity underlier.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "priceQuoteType"
+  ]
+}

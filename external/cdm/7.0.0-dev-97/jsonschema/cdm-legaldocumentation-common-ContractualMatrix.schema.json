@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "ContractualMatrix",
+  "properties": {
+    "matrixType": {
+      "description": "Identifies the form of applicable matrix.",
+      "$ref": "cdm-legaldocumentation-common-metafields-FieldWithMetaMatrixTypeEnum.schema.json"
+    },
+    "matrixTerm": {
+      "description": "Defines any applicable key into the relevant matrix. For example, the Transaction Type would be the single term required for the Credit Derivatives Physical Settlement Matrix. This element should be omitted in the case of the 2000 ISDA Definitions Settlement Matrix for Early Termination and Swaptions.",
+      "$ref": "cdm-legaldocumentation-common-metafields-FieldWithMetaMatrixTermEnum.schema.json"
+    }
+  },
+  "required": [
+    "matrixType"
+  ]
+}

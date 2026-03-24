@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "object",
+  "title": "CalculatedRateObservations",
+  "description": "Type for reporting observations that went into the final reported rate.",
+  "properties": {
+    "observationDates": {
+      "description": "The observation date upon which the rate is observed.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "weights": {
+      "description": "The corresponding weight for each date.",
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 0
+    },
+    "observedRates": {
+      "description": "The value observed for that date",
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 0
+    },
+    "processedRates": {
+      "description": "The value after any processing, such as application of caps or floors.",
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 0
+    }
+  }
+}

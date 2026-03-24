@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AppropriatedCollateralValuation",
+  "description": "A class to specify the Valuation of Appropriated Collateral.",
+  "properties": {
+    "isSpecified": {
+      "description": "The qualification of whether the Valuation of Appropriate Collateral provision is applicable (True) or not applicable (False).",
+      "type": "boolean"
+    },
+    "election": {
+      "description": "The parties' election that qualify the Valuation of Appropriate Collateral in the case where it is deemed applicable.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isSpecified"
+  ]
+}

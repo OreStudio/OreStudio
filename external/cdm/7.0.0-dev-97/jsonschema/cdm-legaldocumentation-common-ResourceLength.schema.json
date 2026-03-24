@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "ResourceLength",
+  "description": "A class to indicate the length of the resource.",
+  "properties": {
+    "lengthUnit": {
+      "description": "The length unit of the resource. For example, pages (pdf, text documents) or time (audio, video files).",
+      "$ref": "cdm-legaldocumentation-common-LengthUnitEnum.schema.json"
+    },
+    "lengthValue": {
+      "description": "The length value of the resource.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "lengthUnit",
+    "lengthValue"
+  ]
+}

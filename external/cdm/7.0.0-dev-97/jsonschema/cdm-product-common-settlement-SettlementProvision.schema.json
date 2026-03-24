@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "SettlementProvision",
+  "description": "Defines parameters that regulate a settlement, for instance whether this settlement should be netted with other ones or broken-down into smaller amounts.",
+  "properties": {
+    "shapingProvisions": {
+      "description": "Defines the parameters that are necessary to 'shape' a settlement, i.e. break it down into smaller amounts.",
+      "$ref": "cdm-product-common-settlement-ShapingProvision.schema.json"
+    }
+  }
+}

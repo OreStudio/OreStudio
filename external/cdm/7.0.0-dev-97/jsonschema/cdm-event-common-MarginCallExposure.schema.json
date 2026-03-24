@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "MarginCallExposure",
+  "description": "Represents attributes required for mark to market value or IM calculation value of the trade portfolio as recorded by the principle (in base currency).",
+  "properties": {
+    "instructionType": {
+      "description": "Identifies the enumeration values to specify the call notification type, direction, specific action type.",
+      "$ref": "cdm-event-common-MarginCallInstructionType.schema.json"
+    },
+    "party": {
+      "description": "Represents the parties to the margin call. The cardinality is optional to address the case where both parties of the event are specified and a third party if applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Party.schema.json"
+      },
+      "minItems": 0
+    },
+    "partyRole": {
+      "description": "Represents the role each specified party takes in the margin call. further to the principal roles, payer and receiver.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+      },
+      "minItems": 0
+    },
+    "clearingBroker": {
+      "description": "Indicates the name of the Clearing Broker FCM/DCM.",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "callIdentifier": {
+      "description": "Represents a unique Identifier for a margin call message, that can be referenced throughout all points of the process.",
+      "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+    },
+    "callAgreementType": {
+      "description": "Specifies the legal agreement type the margin call is generated from and governed by.",
+      "$ref": "cdm-legaldocumentation-common-AgreementName.schema.json"
+    },
+    "agreementMinimumTransferAmount": {
+      "description": "Specifies the collateral legal agreement minimum transfer amount in base currency.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "agreementThreshold": {
+      "description": "Specifies the collateral legal agreement threshold amount in base currency.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "agreementRounding": {
+      "description": "Specifies the collateral legal agreement rounding in base currency.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "regMarginType": {
+      "description": "Identifies margin type and if related regulatory mandate",
+      "$ref": "cdm-event-common-RegMarginTypeEnum.schema.json"
+    },
+    "regIMRole": {
+      "description": "Indicates the role of the party in an regulatory initial margin call instruction (i.e Pledgor party or Secured party).",
+      "$ref": "cdm-event-common-RegIMRoleEnum.schema.json"
+    },
+    "baseCurrencyExposure": {
+      "description": "Represents the current mark to market value or IM calculation value of the trade portfolio as recorded by the principle (in base currency), to be referenced in a margin call.",
+      "$ref": "cdm-event-common-MarginCallExposure.schema.json"
+    },
+    "collateralPortfolio": {
+      "description": "Represents attributes to define the details of collateral assets within a collateral portfolio to be used in margin call messaging and contribute to collateral balances e.g securities in a collateral account recorded by the principal as held or posted.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaCollateralPortfolio.schema.json"
+    },
+    "independentAmountBalance": {
+      "description": "Represents additional credit support amount over and above mark to market value.",
+      "$ref": "cdm-event-common-CollateralBalance.schema.json"
+    },
+    "overallExposure": {
+      "description": "Represents the whole overall mark to market value or IM calculation value of the trade portfolio as recorded by the principle (in base currency).",
+      "$ref": "cdm-event-common-Exposure.schema.json"
+    },
+    "simmIMExposure": {
+      "description": "Represents Initial Margin (IM) exposure derived from ISDA SIMM calculation.",
+      "$ref": "cdm-event-common-Exposure.schema.json"
+    },
+    "scheduleGridIMExposure": {
+      "description": "Represents Initial Margin (IM) exposure derived from schedule or Grid calculation.",
+      "$ref": "cdm-event-common-Exposure.schema.json"
+    }
+  },
+  "required": [
+    "overallExposure"
+  ]
+}

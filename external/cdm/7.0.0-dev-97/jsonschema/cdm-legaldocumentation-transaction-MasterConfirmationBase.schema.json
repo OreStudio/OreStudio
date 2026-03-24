@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction",
+  "type": "object",
+  "title": "MasterConfirmationBase",
+  "description": "Legal agreement specification for General Terms and Elections that are applicable across multiple confirmations and are referenced by these confirmations.",
+  "properties": {
+  }
+}

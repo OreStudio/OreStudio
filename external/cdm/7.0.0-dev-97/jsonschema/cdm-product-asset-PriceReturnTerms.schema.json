@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "PriceReturnTerms",
+  "properties": {
+    "returnType": {
+      "description": "The type of return associated with the equity swap.",
+      "$ref": "cdm-product-asset-ReturnTypeEnum.schema.json"
+    },
+    "conversionFactor": {
+      "description": "Defines the conversion applied if the quantity unit on contract is different from unit on referenced underlier.",
+      "type": "number"
+    },
+    "performance": {
+      "description": "Performance calculation, in accordance with Part 1 Section 12 of the 2018 ISDA CDM Equity Confirmation for Security Equity Swap, Para 75. 'Equity Performance'. Cumulative performance is used as a notional multiplier factor on both legs of an Equity Swap.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "returnType"
+  ]
+}

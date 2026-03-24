@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "ReturnAmount",
+  "description": "A class to specify the application of Interest Amount with respect the Return Amount.",
+  "properties": {
+    "includesDefaultLanguage": {
+      "description": "Default language is included when True, and excluded when False.",
+      "type": "boolean"
+    },
+    "customElection": {
+      "description": "Custom election that might be specified by the parties to the agreement.",
+      "type": "string"
+    }
+  }
+}

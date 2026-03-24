@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "object",
+  "title": "Trigger",
+  "description": "Trigger point at which feature is effective.",
+  "properties": {
+    "level": {
+      "description": "The trigger level.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-PriceSchedule.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "creditEvents": {
+      "$ref": "cdm-observable-event-CreditEvents.schema.json"
+    },
+    "creditEventsReference": {
+      "$ref": "cdm-observable-event-metafields-ReferenceWithMetaCreditEvents.schema.json"
+    },
+    "triggerType": {
+      "description": "The Triggering condition.",
+      "$ref": "cdm-observable-event-TriggerTypeEnum.schema.json"
+    },
+    "triggerTimeType": {
+      "description": "The valuation time type of knock condition.",
+      "$ref": "cdm-observable-event-TriggerTimeTypeEnum.schema.json"
+    }
+  }
+}

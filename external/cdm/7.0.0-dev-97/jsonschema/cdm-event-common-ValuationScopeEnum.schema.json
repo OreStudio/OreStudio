@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "ValuationScopeEnum",
+  "description": "Scope of the valuation i.e. what it applies to.",
+  "enum": [
+    "Collateral",
+    "Trade"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Collateral"
+      ],
+      "title": "Collateral",
+      "description": "Valuation of the collateral used against a trade."
+    },
+    
+    {
+      "enum": [
+        "Trade"
+      ],
+      "title": "Trade",
+      "description": "Valuation of the actual trade itself."
+    }
+  ]
+}

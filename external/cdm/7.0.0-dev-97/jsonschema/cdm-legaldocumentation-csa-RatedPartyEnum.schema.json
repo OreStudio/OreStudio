@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "RatedPartyEnum",
+  "description": "The enumerated values applicable where a Rated Party is defined within the relevant clause.",
+  "enum": [
+    "All Affiliates to the Party",
+    "CreditSupportProvider",
+    "NamedAffiliate",
+    "NamedEntity",
+    "Party",
+    "PartyOrCreditSupportProvider"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "All Affiliates to the Party"
+      ],
+      "title": "AllAffiliates",
+      "description": "All Affiliates to the Party."
+    },
+    
+    {
+      "enum": [
+        "CreditSupportProvider"
+      ],
+      "title": "CreditSupportProvider",
+      "description": "Credit Support Provider."
+    },
+    
+    {
+      "enum": [
+        "NamedAffiliate"
+      ],
+      "title": "NamedAffiliate",
+      "description": "A Named Affiliate of the Party."
+    },
+    
+    {
+      "enum": [
+        "NamedEntity"
+      ],
+      "title": "NamedEntity",
+      "description": "A Named Entity."
+    },
+    
+    {
+      "enum": [
+        "Party"
+      ],
+      "title": "Party",
+      "description": "Party."
+    },
+    
+    {
+      "enum": [
+        "PartyOrCreditSupportProvider"
+      ],
+      "title": "PartyOrCreditSupportProvider",
+      "description": "The Party or Credit Support Provider."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "SupraNationalIssuerTypeEnum",
+  "description": "Represents an enumeration list to identify the type of supranational entity issuing the asset.",
+  "enum": [
+    "InternationalOrganisation",
+    "MultilateralBank"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "InternationalOrganisation"
+      ],
+      "title": "InternationalOrganisation",
+      "description": "Specifies International Financial Institution."
+    },
+    
+    {
+      "enum": [
+        "MultilateralBank"
+      ],
+      "title": "MultilateralBank",
+      "description": "Specifies Multilateral Bank or Multilateral Development Bank."
+    }
+  ]
+}

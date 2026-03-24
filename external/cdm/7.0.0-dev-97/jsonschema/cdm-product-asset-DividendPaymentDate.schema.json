@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "DividendPaymentDate",
+  "description": "A class describing the date on which the dividend will be paid/received. This class is also used to specify the date on which the FX rate will be determined, when applicable.",
+  "properties": {
+    "dividendDateReference": {
+      "$ref": "cdm-product-asset-DividendDateReference.schema.json"
+    },
+    "dividendDate": {
+      "$ref": "cdm-base-datetime-metafields-ReferenceWithMetaAdjustableOrRelativeDate.schema.json"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ElectiveAmountElection",
+  "description": "A class to specify the party elective amounts which can be used for the purpose of specifying elections such as the ISDA CSA Threshold and Minimum Transfer Amount.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "electiveAmount": {
+      "description": "Specifies an enumerated election to express the elective amount.",
+      "$ref": "cdm-legaldocumentation-csa-ElectiveAmountEnum.schema.json"
+    },
+    "amount": {
+      "description": "The elective amount when expressed as a currency amount. The associated PartyElectiveAmount_amount data rule enforces that the currency amount is actually greater than 0.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "customElection": {
+      "description": "The elective amount when expressed as a custom election by the party.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

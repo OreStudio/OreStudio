@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "ContractualDefinitionIdentifier",
+  "properties": {
+    "contractualDefinitionType": {
+      "description": "e.g. ISDA2021Definitions",
+      "$ref": "cdm-legaldocumentation-common-ContractualDefinitionsEnum.schema.json"
+    },
+    "contractualDefinitionVersion": {
+      "description": "e.g. V1",
+      "type": "string"
+    }
+  },
+  "required": [
+    "contractualDefinitionType"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "QuantityMultiplier",
+  "description": " Class to specify a mechanism for a quantity to be set as a multiplier to another (reference) quantity, based on a price observation. At the moment this class only supports FX or Equity-linked notional and re-uses existing building blocks for those 2 cases, until such time when component can be made more generic. This captures the case of resetting cross-currency swaps and resetting equity swaps.",
+  "properties": {
+    "fxLinkedNotionalSchedule": {
+      "description": "Multiplier specified as an FX-linked schedule, e.g. for a resetting cross-currency swap..",
+      "$ref": "cdm-product-common-schedule-FxLinkedNotionalSchedule.schema.json"
+    },
+    "multiplierValue": {
+      "type": "number"
+    }
+  }
+}

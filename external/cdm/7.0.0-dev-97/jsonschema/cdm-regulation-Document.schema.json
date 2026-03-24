@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Document",
+  "properties": {
+    "finInstrmRptgTxRpt": {
+      "$ref": "cdm-regulation-FinInstrmRptgTxRpt.schema.json"
+    }
+  },
+  "required": [
+    "finInstrmRptgTxRpt"
+  ]
+}

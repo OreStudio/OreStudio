@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "DebtRedemption",
+  "description": "Specifies the redemption features and whether the redemption right is exercised at the discretion of the issuer or the holder.",
+  "properties": {
+    "redemptionType": {
+      "description": "Specifies the contractual redemption or conversion features associated with a debt security.",
+      "$ref": "cdm-base-staticdata-asset-common-RedemptionTypeEnum.schema.json"
+    },
+    "putCall": {
+      "description": "Specifies the embedded option feature of a debt security.",
+      "$ref": "cdm-base-staticdata-asset-common-PutCallEnum.schema.json"
+    },
+    "party": {
+      "description": "Specifies whether the debt security is redeemed at the election of the Issuer/Holder.",
+      "$ref": "cdm-base-staticdata-asset-common-RedemptionPartyEnum.schema.json"
+    }
+  }
+}

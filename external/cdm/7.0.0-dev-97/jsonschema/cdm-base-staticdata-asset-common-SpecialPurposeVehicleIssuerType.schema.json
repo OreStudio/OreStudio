@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "SpecialPurposeVehicleIssuerType",
+  "description": "Represents a class to allow specification of different types of special purpose vehicle (SPV) collateral.",
+  "properties": {
+    "creditRisk": {
+      "description": "Indicates tranched or untranched credit risk.",
+      "$ref": "cdm-base-staticdata-asset-common-CreditRiskEnum.schema.json"
+    }
+  }
+}

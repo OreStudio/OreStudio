@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.margin.schedule",
+  "type": "string",
+  "title": "StandardizedScheduleAssetClassEnum",
+  "enum": [
+    "Commodity",
+    "Credit",
+    "Equity",
+    "ForeignExchange",
+    "InterestRates"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Commodity"
+      ],
+      "title": "Commodity"
+    },
+    
+    {
+      "enum": [
+        "Credit"
+      ],
+      "title": "Credit"
+    },
+    
+    {
+      "enum": [
+        "Equity"
+      ],
+      "title": "Equity"
+    },
+    
+    {
+      "enum": [
+        "ForeignExchange"
+      ],
+      "title": "ForeignExchange"
+    },
+    
+    {
+      "enum": [
+        "InterestRates"
+      ],
+      "title": "InterestRates"
+    }
+  ]
+}

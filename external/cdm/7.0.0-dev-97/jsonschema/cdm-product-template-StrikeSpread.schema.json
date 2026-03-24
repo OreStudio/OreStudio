@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "StrikeSpread",
+  "description": "A class for defining a strike spread feature.",
+  "properties": {
+    "upperStrike": {
+      "description": "Upper strike in a strike spread.",
+      "$ref": "cdm-product-template-OptionStrike.schema.json"
+    },
+    "upperStrikeNumberOfOptions": {
+      "description": "Number of options at the upper strike price in a strike spread.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "upperStrike",
+    "upperStrikeNumberOfOptions"
+  ]
+}

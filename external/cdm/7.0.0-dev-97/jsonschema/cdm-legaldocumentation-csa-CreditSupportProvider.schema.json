@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportProvider",
+  "description": "Identification of party specific Credit Support Providers applicable to the document.",
+  "properties": {
+    "creditSupportProviderElection": {
+      "description": "The party election of Credit Support Provider(s), if any.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-CreditSupportProviderElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "FinalPrincipalExchangeCalculationEnum",
+  "description": "To be specified only for products that embed a redemption payment.",
+  "enum": [
+    "Floored",
+    "NonFloored"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Floored"
+      ],
+      "title": "Floored",
+      "description": "If Floored is set then Principal Exchange takes the form: Notional Amount * Max(1, Index Final/ Index Base)."
+    },
+    
+    {
+      "enum": [
+        "NonFloored"
+      ],
+      "title": "NonFloored",
+      "description": "If NonFloored is set then the Principal Exchange takes the form: Notional Amount * Index Final / Index Base."
+    }
+  ]
+}

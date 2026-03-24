@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "SpecifiedEntityTermsEnum",
+  "description": "The enumerated values to specify the specified entity terms for the Event of Default or Termination Event specified.",
+  "enum": [
+    "AnyAffiliate",
+    "MaterialSubsidiary",
+    "NamedSpecifiedEntity",
+    "None",
+    "OtherSpecifiedEntity"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AnyAffiliate"
+      ],
+      "title": "AnyAffiliate",
+      "description": "Any Affiliate is a Specified Entity."
+    },
+    
+    {
+      "enum": [
+        "MaterialSubsidiary"
+      ],
+      "title": "MaterialSubsidiary",
+      "description": "Any Material Subsidiary."
+    },
+    
+    {
+      "enum": [
+        "NamedSpecifiedEntity"
+      ],
+      "title": "NamedSpecifiedEntity",
+      "description": "The Specified Entity is provided."
+    },
+    
+    {
+      "enum": [
+        "None"
+      ],
+      "title": "None",
+      "description": "No Specified Entity is provided"
+    },
+    
+    {
+      "enum": [
+        "OtherSpecifiedEntity"
+      ],
+      "title": "OtherSpecifiedEntity",
+      "description": "Non standard Specified Entity terms are provided."
+    }
+  ]
+}

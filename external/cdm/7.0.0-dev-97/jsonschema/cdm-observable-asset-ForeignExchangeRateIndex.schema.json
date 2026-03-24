@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "ForeignExchangeRateIndex",
+  "description": "Specification of a rate based on the exchange of a pair of cash assets in specific currencies, e.g. USD versus GBP.",
+  "properties": {
+    "identifier": {
+      "description": "Asset Identifiers are used to uniquely identify an Asset, using a specified Asset Identifier Type.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-AssetIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "taxonomy": {
+      "description": "Defines the taxonomy of an object by combining a taxonomy source (i.e. the rules to classify the object) and a value (i.e. the output of those rules on the object.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-Taxonomy.schema.json"
+      },
+      "minItems": 0
+    },
+    "isExchangeListed": {
+      "description": "Defines whether the Asset is listed on a public exchange.",
+      "type": "boolean"
+    },
+    "exchange": {
+      "description": "If the Asset is listed, defines the public exchange of the listing.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "relatedExchange": {
+      "description": "Provides the related Exchanges, if applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "assetType": {
+      "description": "Specifies the type of asset.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetTypeEnum.schema.json"
+    },
+    "name": {
+      "description": "A description of the Index.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "provider": {
+      "description": "The organisation that creates or maintains the Index.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "assetClass": {
+      "description": "The Asset Class of the Index.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetClassEnum.schema.json"
+    },
+    "quotedCurrencyPair": {
+      "description": "Describes the composition of a rate that has been quoted or is to be quoted.",
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaQuotedCurrencyPair.schema.json"
+    },
+    "primaryFxSpotRateSource": {
+      "description": "Specifies the primary source from which a rate should be observed.",
+      "$ref": "cdm-observable-asset-InformationSource.schema.json"
+    },
+    "secondaryFxSpotRateSource": {
+      "description": "Specifies an alternative, or secondary, source from which a rate should be observed.",
+      "$ref": "cdm-observable-asset-InformationSource.schema.json"
+    }
+  },
+  "required": [
+    "quotedCurrencyPair",
+    "primaryFxSpotRateSource"
+  ]
+}

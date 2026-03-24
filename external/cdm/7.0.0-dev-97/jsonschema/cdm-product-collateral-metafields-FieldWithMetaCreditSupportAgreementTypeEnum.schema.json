@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "FieldWithMetaCreditSupportAgreementTypeEnum",
+  "properties": {
+    "value": {
+      "$ref": "cdm-product-collateral-CreditSupportAgreementTypeEnum.schema.json"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "string",
+  "title": "PositionStatusEnum",
+  "description": "Enumeration to describe the different (risk) states of a Position, whether executed, settled, matured...etc",
+  "enum": [
+    "Cancelled",
+    "Closed",
+    "Executed",
+    "Formed",
+    "Settled"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Cancelled"
+      ],
+      "title": "Cancelled",
+      "description": "The position has been cancelled, in case of a cancellation event following an execution."
+    },
+    
+    {
+      "enum": [
+        "Closed"
+      ],
+      "title": "Closed",
+      "description": "The position has been closed, in case of a termination event."
+    },
+    
+    {
+      "enum": [
+        "Executed"
+      ],
+      "title": "Executed",
+      "description": "The position has been executed, which is the point at which risk has been transferred."
+    },
+    
+    {
+      "enum": [
+        "Formed"
+      ],
+      "title": "Formed",
+      "description": "Contract has been formed, in case position is on a contractual product."
+    },
+    
+    {
+      "enum": [
+        "Settled"
+      ],
+      "title": "Settled",
+      "description": "The position has settled, in case product is subject to settlement after execution, such as securities."
+    }
+  ]
+}

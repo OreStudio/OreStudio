@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ProcessAgent",
+  "description": "Specifies the Process Agent that might be appointed by the parties as part of a Credit Support Annex/Deed or Collateral Transfer Agreement.",
+  "properties": {
+    "partyElection": {
+      "description": "The parties' Process Agent election.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ProcessAgentElection.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 2
+    }
+  }
+}

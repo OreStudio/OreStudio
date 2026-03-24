@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "string",
+  "title": "FxSubstitutionProvisionTypeEnum",
+  "enum": [
+    "LocalAssetSubstituteGross",
+    "LocalAssetSubstituteNet",
+    "LocalCurrencySubstitute"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "LocalAssetSubstituteGross"
+      ],
+      "title": "LocalAssetSubstituteGross"
+    },
+    
+    {
+      "enum": [
+        "LocalAssetSubstituteNet"
+      ],
+      "title": "LocalAssetSubstituteNet"
+    },
+    
+    {
+      "enum": [
+        "LocalCurrencySubstitute"
+      ],
+      "title": "LocalCurrencySubstitute"
+    }
+  ]
+}

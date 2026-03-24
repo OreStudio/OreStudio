@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "AvailableInventoryRecord",
+  "description": "An individual piece of available inventory. This represents a single security and its associated criteria. The criteria are used to describe any restrictions on the securities.",
+  "properties": {
+    "identifer": {
+      "description": "Unique identifier for this record. This can be used to uniquely identify a specific piece of inventory.",
+      "$ref": "cdm-base-staticdata-identifier-AssignedIdentifier.schema.json"
+    },
+    "security": {
+      "description": "The security details.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    },
+    "expirationDateTime": {
+      "description": "There may be a set period/time restriction associated to the security.",
+      "type": "string"
+    },
+    "collateral": {
+      "description": "The type of collateral can often be required when determining if the piece of availability being described is suitable for a party.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-collateral-CollateralProvisions.schema.json"
+      },
+      "minItems": 0
+    },
+    "partyRole": {
+      "description": "An individual security may be held by several agents. Including the party role at this level allows us to reference the party holding this specific item.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+      },
+      "minItems": 0
+    },
+    "quantity": {
+      "description": "The quantity of the security",
+      "$ref": "cdm-base-math-Quantity.schema.json"
+    },
+    "interestRate": {
+      "description": "An optional element which can be used to hold a rate associated to this piece of availability.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    }
+  }
+}

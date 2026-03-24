@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "DeliveryAmountElectionEnum",
+  "description": "The enumerated values to specify the application of Interest Amount with respect to the Delivery Amount through standard language.",
+  "enum": [
+    "LastAndAnyLocalBusinessDay",
+    "LastLocalBusinessDay"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "LastAndAnyLocalBusinessDay"
+      ],
+      "title": "LastAndAnyLocalBusinessDay",
+      "description": "The delivery includes both `Transfer on last Local Business Day` and `Transfer a Delivery Amount (IM) consisting of cash on any Local Business Day.`"
+    },
+    
+    {
+      "enum": [
+        "LastLocalBusinessDay"
+      ],
+      "title": "LastLocalBusinessDay",
+      "description": "The delivery only includes `Transfer on last Local Business Day."
+    }
+  ]
+}

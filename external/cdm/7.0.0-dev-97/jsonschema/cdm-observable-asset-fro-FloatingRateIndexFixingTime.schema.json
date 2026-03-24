@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexFixingTime",
+  "description": "This type holds parameters defining the normal fixing time for a floating rate index.",
+  "properties": {
+    "hourMinuteTime": {
+      "description": "A time specified in hh:mm:ss format where the second component must be '00', e.g. 11am would be represented as 11:00:00.",
+      "type": "string"
+    },
+    "businessCenter": {
+      "description": "A code identifying a business day calendar location. A business day calendar location is drawn from the list identified by the business day calendar location enumeration.",
+      "$ref": "cdm-base-staticdata-codelist-metafields-FieldWithMetaBusinessCenter.schema.json"
+    },
+    "designatedMaturity": {
+      "description": "Allows a designed maturity to be specified for the fixing time.",
+      "type": "string"
+    },
+    "fixingTimeDefinition": {
+      "description": "Legal text that underlies the Fixing Time. ISDA Fixing Time Definition. (e.g. 09:30, Sydney time).",
+      "type": "string"
+    },
+    "fixingReason": {
+      "description": "Fixing Reason",
+      "type": "string"
+    }
+  }
+}

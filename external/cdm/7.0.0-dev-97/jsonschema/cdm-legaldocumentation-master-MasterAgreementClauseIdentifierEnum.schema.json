@@ -1,0 +1,513 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "string",
+  "title": "MasterAgreementClauseIdentifierEnum",
+  "enum": [
+    "ISLA_GMSLA_001",
+    "ISLA_GMSLA_002",
+    "ISLA_GMSLA_003",
+    "ISLA_GMSLA_004",
+    "ISLA_GMSLA_005",
+    "ISLA_GMSLA_006",
+    "ISLA_GMSLA_007",
+    "ISLA_GMSLA_008",
+    "ISLA_GMSLA_009",
+    "ISLA_GMSLA_010",
+    "ISLA_GMSLA_011",
+    "ISLA_GMSLA_012",
+    "ISLA_GMSLA_013",
+    "ISLA_GMSLA_014",
+    "ISLA_GMSLA_015",
+    "ISLA_GMSLA_016",
+    "ISLA_GMSLA_017",
+    "ISLA_GMSLA_018",
+    "ISLA_GMSLA_019",
+    "ISLA_GMSLA_020",
+    "ISLA_GMSLA_021",
+    "ISLA_GMSLA_022",
+    "ISLA_GMSLA_023",
+    "ISLA_GMSLA_024",
+    "ISLA_GMSLA_025",
+    "ISLA_GMSLA_026",
+    "ISLA_GMSLA_027",
+    "ISLA_GMSLA_028",
+    "ISLA_GMSLA_029",
+    "ISLA_GMSLA_030",
+    "ISLA_GMSLA_031",
+    "ISLA_GMSLA_032",
+    "ISLA_GMSLA_033",
+    "ISLA_GMSLA_034",
+    "ISLA_GMSLA_035",
+    "ISLA_GMSLA_036",
+    "ISLA_GMSLA_037",
+    "ISLA_GMSLA_038",
+    "ISLA_GMSLA_039",
+    "ISLA_GMSLA_040",
+    "ISLA_GMSLA_041",
+    "ISLA_GMSLA_042",
+    "ISLA_GMSLA_043",
+    "ISLA_GMSLA_044",
+    "ISLA_GMSLA_045",
+    "ISLA_GMSLA_046",
+    "ISLA_GMSLA_047",
+    "ISLA_GMSLA_048",
+    "ISLA_GMSLA_049",
+    "ISLA_GMSLA_050",
+    "ISLA_GMSLA_051",
+    "ISLA_GMSLA_052",
+    "ISLA_GMSLA_053",
+    "ISLA_GMSLA_054",
+    "ISLA_GMSLA_055",
+    "ISLA_GMSLA_056"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ISLA_GMSLA_001"
+      ],
+      "title": "ISLA_GMSLA_001",
+      "description": "Date of Agreement"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_002"
+      ],
+      "title": "ISLA_GMSLA_002",
+      "description": "Parties"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_003"
+      ],
+      "title": "ISLA_GMSLA_003",
+      "description": "Specific Roles"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_004"
+      ],
+      "title": "ISLA_GMSLA_004",
+      "description": "Eligible Collateral"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_005"
+      ],
+      "title": "ISLA_GMSLA_005",
+      "description": "Margin"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_006"
+      ],
+      "title": "ISLA_GMSLA_006",
+      "description": "Aggregation"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_007"
+      ],
+      "title": "ISLA_GMSLA_007",
+      "description": "Collateral Disapplication"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_008"
+      ],
+      "title": "ISLA_GMSLA_008",
+      "description": "Settlement Netting"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_009"
+      ],
+      "title": "ISLA_GMSLA_009",
+      "description": "Notification Time"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_010"
+      ],
+      "title": "ISLA_GMSLA_010",
+      "description": "Indemnity"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_011"
+      ],
+      "title": "ISLA_GMSLA_011",
+      "description": "Base Currency"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_012"
+      ],
+      "title": "ISLA_GMSLA_012",
+      "description": "Places of Business"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_013"
+      ],
+      "title": "ISLA_GMSLA_013",
+      "description": "Value"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_014"
+      ],
+      "title": "ISLA_GMSLA_014",
+      "description": "Automatic Early Termination"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_015"
+      ],
+      "title": "ISLA_GMSLA_015",
+      "description": "Designated Offices"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_016"
+      ],
+      "title": "ISLA_GMSLA_016",
+      "description": "Address for Notices"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_017"
+      ],
+      "title": "ISLA_GMSLA_017",
+      "description": "Process Agent"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_018"
+      ],
+      "title": "ISLA_GMSLA_018",
+      "description": "Party Acting as Agent"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_019"
+      ],
+      "title": "ISLA_GMSLA_019",
+      "description": "Pooled Principal Transactions "
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_020"
+      ],
+      "title": "ISLA_GMSLA_020",
+      "description": "Party Preparing the Agreement "
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_021"
+      ],
+      "title": "ISLA_GMSLA_021",
+      "description": "Default Interest Rate"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_022"
+      ],
+      "title": "ISLA_GMSLA_022",
+      "description": "Existing Transactions"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_023"
+      ],
+      "title": "ISLA_GMSLA_023",
+      "description": "Automation"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_024"
+      ],
+      "title": "ISLA_GMSLA_024",
+      "description": "Act of Insolvency"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_025"
+      ],
+      "title": "ISLA_GMSLA_025",
+      "description": "Buy-In"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_026"
+      ],
+      "title": "ISLA_GMSLA_026",
+      "description": "Currency Conversions"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_027"
+      ],
+      "title": "ISLA_GMSLA_027",
+      "description": "Scope"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_028"
+      ],
+      "title": "ISLA_GMSLA_028",
+      "description": "Collateral Delivery Timings"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_029"
+      ],
+      "title": "ISLA_GMSLA_029",
+      "description": "Delivery"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_030"
+      ],
+      "title": "ISLA_GMSLA_030",
+      "description": "Substitution of Collateral"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_031"
+      ],
+      "title": "ISLA_GMSLA_031",
+      "description": "Manufactured Payments"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_032"
+      ],
+      "title": "ISLA_GMSLA_032",
+      "description": "Corporate Actions"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_033"
+      ],
+      "title": "ISLA_GMSLA_033",
+      "description": "Payment of Rates"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_034"
+      ],
+      "title": "ISLA_GMSLA_034",
+      "description": "Rate Applicable to Loaned Securities"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_035"
+      ],
+      "title": "ISLA_GMSLA_035",
+      "description": "Lender's Right to Terminate a Loan"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_036"
+      ],
+      "title": "ISLA_GMSLA_036",
+      "description": "Borrower's Right to Terminate a Loan"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_037"
+      ],
+      "title": "ISLA_GMSLA_037",
+      "description": "Failure to Deliver Event of Default"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_038"
+      ],
+      "title": "ISLA_GMSLA_038",
+      "description": "Failure to Redeliver"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_039"
+      ],
+      "title": "ISLA_GMSLA_039",
+      "description": "Assets Transferred to a Trustee"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_040"
+      ],
+      "title": "ISLA_GMSLA_040",
+      "description": "Suspension Event of Default"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_041"
+      ],
+      "title": "ISLA_GMSLA_041",
+      "description": "Costs and Expenses"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_042"
+      ],
+      "title": "ISLA_GMSLA_042",
+      "description": "Set-Off"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_043"
+      ],
+      "title": "ISLA_GMSLA_043",
+      "description": "Default Market Value Fallbacks"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_044"
+      ],
+      "title": "ISLA_GMSLA_044",
+      "description": "Assignment"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_045"
+      ],
+      "title": "ISLA_GMSLA_045",
+      "description": "Telephone Recordings"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_046"
+      ],
+      "title": "ISLA_GMSLA_046",
+      "description": "Waiver of Immunity"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_047"
+      ],
+      "title": "ISLA_GMSLA_047",
+      "description": "Agreement to Deliver Documents"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_048"
+      ],
+      "title": "ISLA_GMSLA_048",
+      "description": "Collateral Transfer Details"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_049"
+      ],
+      "title": "ISLA_GMSLA_049",
+      "description": "Confidentiality"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_050"
+      ],
+      "title": "ISLA_GMSLA_050",
+      "description": "Correction"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_051"
+      ],
+      "title": "ISLA_GMSLA_051",
+      "description": "Minimum Collateral Transfer Amount"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_052"
+      ],
+      "title": "ISLA_GMSLA_052",
+      "description": "Non-Reliance Representation"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_053"
+      ],
+      "title": "ISLA_GMSLA_053",
+      "description": "Records and Statements"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_054"
+      ],
+      "title": "ISLA_GMSLA_054",
+      "description": "Recovery and Resolution"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_055"
+      ],
+      "title": "ISLA_GMSLA_055",
+      "description": "Security Agreement Details"
+    },
+    
+    {
+      "enum": [
+        "ISLA_GMSLA_056"
+      ],
+      "title": "ISLA_GMSLA_056",
+      "description": "Triparty Services"
+    }
+  ]
+}

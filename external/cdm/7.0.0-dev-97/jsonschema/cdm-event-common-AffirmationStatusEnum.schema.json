@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "AffirmationStatusEnum",
+  "description": "Enumeration for the different types of affirmation status.",
+  "enum": [
+    "Affirmed",
+    "Unaffirmed"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Affirmed"
+      ],
+      "title": "Affirmed"
+    },
+    
+    {
+      "enum": [
+        "Unaffirmed"
+      ],
+      "title": "Unaffirmed"
+    }
+  ]
+}

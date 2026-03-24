@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common",
+  "type": "string",
+  "title": "NotionalAdjustmentEnum",
+  "description": "The enumerated values to specify the conditions that govern the adjustment to the number of units of the return swap.",
+  "enum": [
+    "Execution",
+    "PortfolioRebalancing",
+    "Standard"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Execution"
+      ],
+      "title": "Execution",
+      "description": "The adjustments to the number of units are governed by an execution clause."
+    },
+    
+    {
+      "enum": [
+        "PortfolioRebalancing"
+      ],
+      "title": "PortfolioRebalancing",
+      "description": "The adjustments to the number of units are governed by a portfolio rebalancing clause."
+    },
+    
+    {
+      "enum": [
+        "Standard"
+      ],
+      "title": "Standard",
+      "description": "The adjustments to the number of units are not governed by any specific clause."
+    }
+  ]
+}

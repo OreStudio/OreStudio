@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "InterestShortFall",
+  "description": "A class to specify the interest shortfall floating rate payment event.",
+  "properties": {
+    "interestShortfallCap": {
+      "description": "Specifies the nature of the interest Shortfall cap (i.e. Fixed Cap or Variable Cap) in the case where it is applicable. ISDA 2003 Term: Interest Shortfall Cap.",
+      "$ref": "cdm-product-asset-InterestShortfallCapEnum.schema.json"
+    },
+    "compounding": {
+      "type": "boolean"
+    },
+    "rateSource": {
+      "description": "The rate source in the case of a variable cap.",
+      "$ref": "cdm-base-staticdata-asset-rates-metafields-FieldWithMetaFloatingRateIndexEnum.schema.json"
+    }
+  },
+  "required": [
+    "interestShortfallCap",
+    "compounding"
+  ]
+}

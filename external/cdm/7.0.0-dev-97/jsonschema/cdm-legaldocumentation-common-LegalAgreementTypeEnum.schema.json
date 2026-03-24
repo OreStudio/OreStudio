@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "LegalAgreementTypeEnum",
+  "description": "The enumerated values to specify the legal agreement type.",
+  "enum": [
+    "BrokerConfirmation",
+    "Confirmation",
+    "CreditSupportAgreement",
+    "MasterAgreement",
+    "MasterConfirmation",
+    "Other",
+    "SecurityAgreement"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "BrokerConfirmation"
+      ],
+      "title": "BrokerConfirmation",
+      "description": "A Broker Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Confirmation"
+      ],
+      "title": "Confirmation",
+      "description": "A Transaction Confirmation."
+    },
+    
+    {
+      "enum": [
+        "CreditSupportAgreement"
+      ],
+      "title": "CreditSupportAgreement",
+      "description": "A Credit Support Agreement."
+    },
+    
+    {
+      "enum": [
+        "MasterAgreement"
+      ],
+      "title": "MasterAgreement",
+      "description": "A Master Agreement."
+    },
+    
+    {
+      "enum": [
+        "MasterConfirmation"
+      ],
+      "title": "MasterConfirmation",
+      "description": "A Master Confirmation."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Another type of agreement."
+    },
+    
+    {
+      "enum": [
+        "SecurityAgreement"
+      ],
+      "title": "SecurityAgreement",
+      "description": "A Security Agreement related to a Collateral Transfer Agreement (CTA)."
+    }
+  ]
+}

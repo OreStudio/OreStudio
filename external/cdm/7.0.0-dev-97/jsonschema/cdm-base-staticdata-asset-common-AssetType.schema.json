@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "AssetType",
+  "description": "Represents a class to allow specification of the asset product type.",
+  "properties": {
+    "assetType": {
+      "description": "Represents a filter based on the type of collateral asset.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetTypeEnum.schema.json"
+    },
+    "securityType": {
+      "description": "Represents a filter based on the type of security.",
+      "$ref": "cdm-base-staticdata-asset-common-SecurityTypeEnum.schema.json"
+    },
+    "debtType": {
+      "description": "Represents a filter based on the type of bond.",
+      "$ref": "cdm-base-staticdata-asset-common-DebtType.schema.json"
+    },
+    "equityType": {
+      "description": "Represents a filter based on the type of equity.",
+      "$ref": "cdm-base-staticdata-asset-common-EquityType.schema.json"
+    },
+    "fundType": {
+      "description": "Represents a filter based on the type of fund.",
+      "$ref": "cdm-base-staticdata-asset-common-FundProductTypeEnum.schema.json"
+    },
+    "otherAssetType": {
+      "description": "Specifies the eligible asset type when not enumerated.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "assetType"
+  ]
+}

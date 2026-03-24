@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "AveragingStrikeFeature",
+  "description": "Defines the terms required to calculate the average observations associated with an averaging strike.",
+  "properties": {
+    "averagingCalculation": {
+      "description": "Defines parameters for use in cases when a valuation or other term is based on an average of market observations.",
+      "$ref": "cdm-product-template-AveragingCalculation.schema.json"
+    },
+    "observationTerms": {
+      "description": "Class containing terms that are associated with observing a price/benchmark/index across either single or multple observations. ",
+      "$ref": "cdm-product-common-schedule-ObservationTerms.schema.json"
+    }
+  },
+  "required": [
+    "averagingCalculation",
+    "observationTerms"
+  ]
+}

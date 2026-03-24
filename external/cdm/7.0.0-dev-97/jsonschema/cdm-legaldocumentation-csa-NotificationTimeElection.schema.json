@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "NotificationTimeElection",
+  "description": "A class to specify the notification time election by the respective parties to the agreement.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "notificationTime": {
+      "description": "The Notification Time as a time that is qualified as a standard business center.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "customNotification": {
+      "description": "The Notification Time as a bespoke election.",
+      "type": "string"
+    },
+    "localBusinessDay": {
+      "description": "Whether the Notification Time is precluded on the day being a local business day.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "party"
+  ]
+}

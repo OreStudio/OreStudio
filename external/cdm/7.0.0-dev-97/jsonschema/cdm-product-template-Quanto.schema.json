@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "Quanto",
+  "description": "Determines the currency rate that the seller of the equity amounts will apply at each valuation date for converting the respective amounts into a currency that is different from the currency denomination of the underlier.",
+  "properties": {
+    "fxRate": {
+      "description": "Specifies a currency conversion rate.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-FxRate.schema.json"
+      },
+      "minItems": 0
+    },
+    "fxSpotRateSource": {
+      "description": "Specifies the methodology (reference source and, optionally, fixing time) to be used for determining a currency conversion rate.",
+      "$ref": "cdm-observable-asset-FxSpotRateSource.schema.json"
+    },
+    "fixingTime": {
+      "description": "The time at which the spot currency exchange rate will be observed. It is specified as a time in a business day calendar location, e.g. 11:00am London time.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    }
+  }
+}

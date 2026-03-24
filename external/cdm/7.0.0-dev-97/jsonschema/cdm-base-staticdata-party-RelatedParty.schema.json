@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "RelatedParty",
+  "properties": {
+    "partyReference": {
+      "description": "Reference to a party.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "accountReference": {
+      "description": "Reference to an account.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaAccount.schema.json"
+    },
+    "role": {
+      "description": "The category of the relationship. The related party performs the role specified in this field for the base party. For example, if the role is ,Guarantor, the related party acts as a guarantor for the base party.",
+      "$ref": "cdm-base-staticdata-party-PartyRoleEnum.schema.json"
+    }
+  },
+  "required": [
+    "partyReference",
+    "role"
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "BasketReferenceInformation",
+  "description": "CDS Basket Reference Information.",
+  "properties": {
+    "basketName": {
+      "description": "The name of the basket expressed as a free format string. FpML does not define usage rules for this element.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "basketId": {
+      "description": "A CDS basket identifier.",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 0
+    },
+    "referencePool": {
+      "description": "This element contains all the reference pool items to define the reference entity and reference obligation(s) in the basket.",
+      "$ref": "cdm-product-asset-ReferencePool.schema.json"
+    },
+    "nthToDefault": {
+      "description": "N th reference obligation to default triggers payout.",
+      "type": "integer"
+    },
+    "mthToDefault": {
+      "description": "M th reference obligation to default to allow representation of N th to M th defaults.",
+      "type": "integer"
+    },
+    "tranche": {
+      "description": "This element contains CDS tranche terms.",
+      "$ref": "cdm-product-asset-Tranche.schema.json"
+    }
+  },
+  "required": [
+    "referencePool"
+  ]
+}

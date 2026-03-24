@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CSAThresholdVariableSet",
+  "description": "Defines a combination of Rating Agency, Rating Value, Threshold amount and Currency code.",
+  "properties": {
+    "name": {
+      "description": "The relevant rating agency.",
+      "$ref": "cdm-observable-asset-CreditRatingAgencyEnum.schema.json"
+    },
+    "value": {
+      "description": "Rating applicable to the party from a given rating agency.",
+      "type": "string"
+    },
+    "amount": {
+      "description": "The amount value applicable to the Threshold.",
+      "type": "integer"
+    }
+  }
+}

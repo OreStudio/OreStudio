@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "CreditLimitInformation",
+  "description": "A class to represent the credit limit utilisation information.",
+  "properties": {
+    "limitApplicable": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-workflow-LimitApplicableExtended.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "CounterpartyRoleEnum",
+  "description": "Defines the enumerated values to specify the two counterparties to the transaction.",
+  "enum": [
+    "Party1",
+    "Party2"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Party1"
+      ],
+      "title": "Party1"
+    },
+    
+    {
+      "enum": [
+        "Party2"
+      ],
+      "title": "Party2"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "CoveredBondEnum",
+  "description": "Specifies the type of Covered Bond.",
+  "enum": [
+    "JumboPfandbriefe",
+    "Pfandbriefe"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "JumboPfandbriefe"
+      ],
+      "title": "JumboPfandbriefe",
+      "description": "Pfandbriefe with an issuing syndicate and a minimum issuance volume of EUR 1 billion."
+    },
+    
+    {
+      "enum": [
+        "Pfandbriefe"
+      ],
+      "title": "Pfandbriefe",
+      "description": "German bank debenture collateralized by long-term assets."
+    }
+  ]
+}

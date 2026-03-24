@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "PayerReceiverEnum",
+  "description": "The enumerated values to specify an interest rate stream payer or receiver party.",
+  "enum": [
+    "Payer",
+    "Receiver"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Payer"
+      ],
+      "title": "Payer",
+      "description": "The party identified as the stream payer."
+    },
+    
+    {
+      "enum": [
+        "Receiver"
+      ],
+      "title": "Receiver",
+      "description": "The party identified as the stream receiver."
+    }
+  ]
+}

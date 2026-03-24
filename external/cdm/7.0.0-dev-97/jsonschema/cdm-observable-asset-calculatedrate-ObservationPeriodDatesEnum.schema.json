@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.calculatedrate",
+  "type": "string",
+  "title": "ObservationPeriodDatesEnum",
+  "description": "The enumerated values to specify whether rate calculations occur relative to the first or last day of a calculation period. Done in uppercase due to a bug in code generation. This enumeration is used to represent the definitions of modular calculated rates as described in the 2021 ISDA Definitions, section 7.",
+  "enum": [
+    "FixingDate",
+    "SetInAdvance",
+    "Standard"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FixingDate"
+      ],
+      "title": "FixingDate",
+      "description": "Calculations occur relative to a previously defined reset date, e.g. for a fallback rate."
+    },
+    
+    {
+      "enum": [
+        "SetInAdvance"
+      ],
+      "title": "SetInAdvance",
+      "description": "Calculations occur relative to the first day of a calculation period."
+    },
+    
+    {
+      "enum": [
+        "Standard"
+      ],
+      "title": "Standard",
+      "description": "Calculations occur relative to the last day of a calculation period (set in arrears)."
+    }
+  ]
+}

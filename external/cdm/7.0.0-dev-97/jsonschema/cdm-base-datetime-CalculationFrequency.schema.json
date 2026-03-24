@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "CalculationFrequency",
+  "description": "Represents the parameters for describing how often something (such as collateral interest) is to be calculated.",
+  "properties": {
+    "period": {
+      "description": "Specifies the time period at which calculation is performed, e.g. 1 month.",
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    },
+    "monthOfYear": {
+      "description": "Specifies the month of the year if used.",
+      "type": "number"
+    },
+    "dayOfMonth": {
+      "description": "Specifies the day of the month if used.",
+      "type": "number"
+    },
+    "dayOfWeek": {
+      "description": "Specifies the day of the week if used.",
+      "$ref": "cdm-base-datetime-DayOfWeekEnum.schema.json"
+    },
+    "weekOfMonth": {
+      "description": "Specifies the week of the month if used.",
+      "type": "number"
+    },
+    "offsetDays": {
+      "description": "Specifies how many days from the trigger event should the payment occur.",
+      "type": "number"
+    },
+    "dateLocation": {
+      "description": "Specifies where is the time measured.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "businessCenter": {
+      "description": "Specifies the business center for adjustment of calculation period.",
+      "type": "array",
+      "items": {
+        "type": "BusinessCenter"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "period",
+    "offsetDays",
+    "dateLocation"
+  ]
+}

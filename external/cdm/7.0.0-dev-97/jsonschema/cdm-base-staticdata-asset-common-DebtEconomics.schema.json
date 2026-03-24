@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "DebtEconomics",
+  "description": "Specifies selected economics of a debt security.",
+  "properties": {
+    "seniority": {
+      "description": "Specifies the order of repayment in the event of a sale or bankruptcy of the issuer or a related party (eg guarantor).",
+      "$ref": "cdm-base-staticdata-asset-common-DebtSeniorityEnum.schema.json"
+    },
+    "interest": {
+      "description": "Specifies the general rule for periodic interest rate payment.",
+      "$ref": "cdm-base-staticdata-asset-common-DebtInterestEnum.schema.json"
+    },
+    "principal": {
+      "description": "Specifies the general rule for repayment of principal.",
+      "$ref": "cdm-base-staticdata-asset-common-DebtPrincipalEnum.schema.json"
+    },
+    "secured": {
+      "description": "Specifies the type of secured debt.",
+      "$ref": "cdm-base-staticdata-asset-common-SecuredDebt.schema.json"
+    },
+    "redemption": {
+      "description": "Specifies the general rule for redemption of a debt security.",
+      "$ref": "cdm-base-staticdata-asset-common-DebtRedemption.schema.json"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportObligationsVariationMargin",
+  "description": "Specification of the Credit Support Obligations applicable to the Variation Margin Credit Support Annex.",
+  "properties": {
+    "deliveryAmount": {
+      "description": "In respect of a Valuation Date, the amount of collateral which a party is entitled to demand to be transferred to it as a Delivery Amount.",
+      "$ref": "cdm-legaldocumentation-csa-CSADeliveryAmount.schema.json"
+    },
+    "returnAmount": {
+      "description": "In respect of a Valuation Date, the amount of collateral which a party is entitled to demand to be recalled to it as a Return Amount.",
+      "$ref": "cdm-legaldocumentation-csa-CSAReturnAmount.schema.json"
+    },
+    "minimumTransferAmount": {
+      "description": "Represents the threshold specified in the agreement below which collateral need not be delivered, and represents the smallest incremental value of exposure that must be reached before the parties are obliged to transfer collateral.",
+      "$ref": "cdm-legaldocumentation-csa-MinimumTransferAmount.schema.json"
+    },
+    "collateralTransferTiming": {
+      "description": "Specification of transfer / settlement timing for cash and securities collateral assuming that the notice is provided before the Notification Time (and with a 1LBD lag introduced if the notice is delivered after the Notification Time), and that securities allow for a further Local Business Day for transfer / settlement.",
+      "$ref": "cdm-legaldocumentation-csa-CollateralTransferTiming.schema.json"
+    },
+    "bespokeTransferTiming": {
+      "description": "The time by which the transfer of collateral must take place when different from the Regular Settlement Day as a result of parties' election.",
+      "$ref": "cdm-legaldocumentation-csa-BespokeTransferTiming.schema.json"
+    },
+    "ineligibleCreditSupport": {
+      "description": "The parties to which the provisions of the Credit Support Annex for Variation Margin will apply to.",
+      "$ref": "cdm-legaldocumentation-csa-IneligibleCreditSupport.schema.json"
+    },
+    "majorCurrency": {
+      "description": "The additional currencies that are specified as Major Currency for the purpose of applying the FX Haircut Percentage.",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 0
+    },
+    "fxHaircut": {
+      "description": "The alternative definition for FX haircut percentage that applies to each party and item of Eligible Collateral unless this item is denominated in a Major Currency or in the Base Currency.",
+      "type": "string"
+    },
+    "rounding": {
+      "description": "The rounding methodology applicable to the Delivery Amount and the Return Amount in terms of nearest integral multiple of Base Currency units.",
+      "$ref": "cdm-legaldocumentation-csa-CollateralRounding.schema.json"
+    },
+    "eligibleCreditSupport": {
+      "description": "Specification of the Eligible Collateral or Credit Support applicable to the Agreement.",
+      "$ref": "cdm-legaldocumentation-csa-EligibleCreditSupport.schema.json"
+    }
+  },
+  "required": [
+    "rounding",
+    "eligibleCreditSupport"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "EscrowArrangement",
+  "description": "Refers to the segregation deposit procedure parties may want to commmit into during the time a Disruption Event is effective",
+  "properties": {
+    "escrowArrangementIsApplicable": {
+      "type": "boolean"
+    },
+    "maximumDaysOfDisruption": {
+      "$ref": "cdm-observable-asset-ValuationPostponement.schema.json"
+    },
+    "bespokeEscrowArrangements": {
+      "$ref": "cdm-legaldocumentation-transaction-Clause.schema.json"
+    }
+  },
+  "required": [
+    "escrowArrangementIsApplicable"
+  ]
+}

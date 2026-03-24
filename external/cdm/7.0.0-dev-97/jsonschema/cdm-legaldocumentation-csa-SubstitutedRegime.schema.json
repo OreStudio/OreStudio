@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SubstitutedRegime",
+  "description": "A class to specify each party's election with respect to the Substituted Regimes that will be applicable...",
+  "properties": {
+    "regime": {
+      "description": "The applicable regulatory regime, as specified through an enumeration.",
+      "$ref": "cdm-legaldocumentation-csa-RegulatoryRegimeEnum.schema.json"
+    },
+    "additionalRegime": {
+      "description": "The additional regulatory regime as specified by the parties.",
+      "type": "string"
+    },
+    "regimeTerms": {
+      "description": "Specifies the applicability of the Substituted Regime as denoted in the Substituted Regime Table as part of certain legal agreements, such as the ISDA 2016 and 2018 CSA for Initial Margin.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-SubstitutedRegimeTerms.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

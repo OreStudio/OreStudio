@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PrincipalPayment",
+  "description": "Any kind of principal payments when the amount is known and thus fixed.",
+  "properties": {
+    "principalPaymentDate": {
+      "description": "The date where the PrincipalPayment shall be settled.",
+      "$ref": "cdm-base-datetime-AdjustableDate.schema.json"
+    },
+    "payerReceiver": {
+      "description": "Specifies the parties responsible for making and receiving payments defined by this structure.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "principalAmount": {
+      "description": "When known at the time the transaction is made, the cash amount to be paid.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "discountFactor": {
+      "description": "The value representing the discount factor used to calculate the present value of the principal payment amount.",
+      "type": "number"
+    },
+    "presentValuePrincipalAmount": {
+      "description": "The amount representing the present value of the principal payment.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  }
+}

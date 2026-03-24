@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "NumberOfRatingAgenciesEnum",
+  "description": "The enumerated values to define the number of Rating Agencies that must be considered to meet the rating condition.",
+  "enum": [
+    "All",
+    "AnyOne",
+    "AnyTwo",
+    "Other"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "All"
+      ],
+      "title": "All",
+      "description": "Ratings for all defined Rating Agencies will be considered."
+    },
+    
+    {
+      "enum": [
+        "AnyOne"
+      ],
+      "title": "AnyOne",
+      "description": "Ratings for Any 1 stated Rating Agency will be applicable."
+    },
+    
+    {
+      "enum": [
+        "AnyTwo"
+      ],
+      "title": "AnyTwo",
+      "description": "Ratings for Any 2 stated Rating Agencies will be applicable."
+    },
+    
+    {
+      "enum": [
+        "Other"
+      ],
+      "title": "Other",
+      "description": "Utilised where the clause data structure is not able to capture a material aspect of the clause."
+    }
+  ]
+}

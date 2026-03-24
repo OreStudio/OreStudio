@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "Transfer",
+  "description": "Defines the movement of an Asset (eg cash, securities or commodities) between two parties on a date.",
+  "properties": {
+    "quantity": {
+      "description": "Represents the amount of the asset to be transferred. The cashflow amount is always a positive number, as the cashflow direction is implied by the payer/receiver attribute.",
+      "$ref": "cdm-base-math-NonNegativeQuantity.schema.json"
+    },
+    "asset": {
+      "description": "Represents the object that is subject to the transfer, it could be an asset or a reference.",
+      "$ref": "cdm-base-staticdata-asset-common-Asset.schema.json"
+    },
+    "settlementDate": {
+      "description": "Represents the date on which the transfer to due.",
+      "$ref": "cdm-base-datetime-AdjustableOrAdjustedOrRelativeDate.schema.json"
+    },
+    "identifier": {
+      "description": "Represents a unique reference to the transfer.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-identifier-metafields-FieldWithMetaIdentifier.schema.json"
+      },
+      "minItems": 0
+    },
+    "payerReceiver": {
+      "description": "Represents the parties to the transfer and their role.",
+      "$ref": "cdm-base-staticdata-party-PartyReferencePayerReceiver.schema.json"
+    },
+    "settlementOrigin": {
+      "description": "Represents the origin to the transfer as a reference for lineage purposes, whether it originated from trade level settlement terms or from payment terms on an economic payout.",
+      "$ref": "cdm-product-template-metafields-ReferenceWithMetaPayout.schema.json"
+    },
+    "resetOrigin": {
+      "description": "Represents the reset and observation values that were used to determine the transfer amount.",
+      "$ref": "cdm-event-common-Reset.schema.json"
+    },
+    "transferExpression": {
+      "description": "Specifies a transfer expression (cash price, performance amount, scheduled payment amount, etc.) to define the nature of the transfer amount and its source.",
+      "$ref": "cdm-event-common-TransferExpression.schema.json"
+    }
+  },
+  "required": [
+    "payerReceiver",
+    "transferExpression"
+  ]
+}

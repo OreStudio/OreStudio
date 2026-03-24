@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "DepositaryReceiptTypeEnum",
+  "enum": [
+    "ADR",
+    "EDR",
+    "GDR",
+    "IDR"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ADR"
+      ],
+      "title": "ADR",
+      "description": "American Depositary Receipts. Identifies a depositary receipt that are issued only by U.S. banks for foreign stocks that are traded on a U.S. exchange."
+    },
+    
+    {
+      "enum": [
+        "EDR"
+      ],
+      "title": "EDR",
+      "description": "European Depositary Receipts. Identifies a depositary receipt that are issued only by European banks for foreign stocks that are traded on a European exchange."
+    },
+    
+    {
+      "enum": [
+        "GDR"
+      ],
+      "title": "GDR",
+      "description": "Global Depositary Receipts. Identifies a depositary receipt that is listed on European and other international exchanges."
+    },
+    
+    {
+      "enum": [
+        "IDR"
+      ],
+      "title": "IDR",
+      "description": "Indian Depositary Receipts. Identifies a depositary receipt that are issued only by domestic depositories for foreign stocks that are traded on an Indian exchange."
+    }
+  ]
+}

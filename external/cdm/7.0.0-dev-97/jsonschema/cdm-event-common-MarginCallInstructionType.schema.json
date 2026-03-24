@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "MarginCallInstructionType",
+  "description": "Represents enumeration values to specify the call notification type, direction, specific action type.",
+  "properties": {
+    "callType": {
+      "description": "Indicates the status of the call message type, such as expected call, notification of a call or an actionable margin call.",
+      "$ref": "cdm-event-common-CallTypeEnum.schema.json"
+    },
+    "visibilityIndicator": {
+      "description": "Indicates the choice if the call instruction is visible or not to the other party.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "callType"
+  ]
+}

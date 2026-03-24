@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "NaturalPersonRole",
+  "description": "A class to specify the role(s) that natural person(s) may have in relation to the contract.",
+  "properties": {
+    "personReference": {
+      "description": "A reference to the natural person to whom the role refers to.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaNaturalPerson.schema.json"
+    },
+    "role": {
+      "description": "FpML specifies a person role that is distinct from the party role.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-metafields-FieldWithMetaNaturalPersonRoleEnum.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "personReference"
+  ]
+}

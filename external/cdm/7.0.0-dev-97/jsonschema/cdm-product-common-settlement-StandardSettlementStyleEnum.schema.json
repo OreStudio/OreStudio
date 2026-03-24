@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "string",
+  "title": "StandardSettlementStyleEnum",
+  "description": "The enumerated values to specify whether a trade is settling using standard settlement instructions as well as whether it is a candidate for settlement netting.",
+  "enum": [
+    "Net",
+    "PairAndNet",
+    "Standard",
+    "StandardAndNet"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Net"
+      ],
+      "title": "Net",
+      "description": "This trade is a candidate for settlement netting."
+    },
+    
+    {
+      "enum": [
+        "PairAndNet"
+      ],
+      "title": "PairAndNet",
+      "description": "These trades have been paired and are a candidate for settlement netting."
+    },
+    
+    {
+      "enum": [
+        "Standard"
+      ],
+      "title": "Standard",
+      "description": "This trade will settle using standard predetermined funds settlement instructions."
+    },
+    
+    {
+      "enum": [
+        "StandardAndNet"
+      ],
+      "title": "StandardAndNet",
+      "description": "This trade will settle using standard predetermined funds settlement instructions and is a candidate for settlement netting."
+    }
+  ]
+}

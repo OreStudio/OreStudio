@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "MeasureBase",
+  "description": "Provides an abstract type to define a measure as a number associated to a unit. This type is abstract because all its attributes are optional. The types that extend it can specify further existence constraints.",
+  "properties": {
+    "value": {
+      "description": "Specifies the value of the measure as a number. Optional because in a measure vector or schedule, this single value may be omitted.",
+      "type": "number"
+    },
+    "unit": {
+      "description": "Qualifies the unit by which the amount is measured. Optional because a measure may be unit-less (e.g. when representing a ratio between amounts in the same unit).",
+      "$ref": "cdm-base-math-UnitType.schema.json"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexDefinition",
+  "properties": {
+    "fro": {
+      "description": "The underlying FRO name and designated maturity.",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexIdentification.schema.json"
+    },
+    "calculationDefaults": {
+      "description": "Any calculation default values.",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexCalculationDefaults.schema.json"
+    },
+    "supportedDefinition": {
+      "description": "The definition version or versions supported by the FRO.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-fro-ContractualDefinition.schema.json"
+      },
+      "minItems": 0
+    },
+    "definitionalSource": {
+      "description": "The source of an FRO, particularly if not a Contractual Definition (e.g. the broker rates matrix).",
+      "type": "string"
+    },
+    "designatedMaturityApplicable": {
+      "type": "boolean"
+    },
+    "mappings": {
+      "description": "Any mappings to other FRos.",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexMappings.schema.json"
+    },
+    "externalMappings": {
+      "description": "Any mappings to other codes for this index.",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexExternalMappings.schema.json"
+    },
+    "inLoan": {
+      "description": "YES / NO to flag FROs identified by the FpML Syndicated Loan WG as having underlying benchmark that may also be referenced in syndicated loans.",
+      "type": "boolean"
+    },
+    "history": {
+      "description": "FRO History",
+      "$ref": "cdm-observable-asset-fro-FroHistory.schema.json"
+    },
+    "deprecationReason": {
+      "description": "Deprecation and Code Descriptions",
+      "type": "string"
+    },
+    "fpmlDescription": {
+      "description": "FpML Description",
+      "type": "string"
+    }
+  },
+  "required": [
+    "fro"
+  ]
+}

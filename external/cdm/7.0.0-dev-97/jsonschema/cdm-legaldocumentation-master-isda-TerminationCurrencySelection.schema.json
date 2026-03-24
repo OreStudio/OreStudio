@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "TerminationCurrencySelection",
+  "description": "Specifies Termination Currency where a currency is stated at the time the agreement is entered into.",
+  "properties": {
+    "statedCurrency": {
+      "description": "Specifies a single Termination Currency for the agreement.",
+      "type": "string"
+    },
+    "fallbackCurrency": {
+      "description": "Specifies a single fallback Termination Currency should the stated currency not be freely available.",
+      "type": "string"
+    },
+    "partyElection": {
+      "description": "Specifies different termination currencies to apply depending on which party or parties are the Defaulting Party Affected Party(ies).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-master-isda-PartyTerminationCurrencySelection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "bothAffected": {
+      "description": "Specifies fallback Termination Currency where both parties are Affected Parties.",
+      "type": "string"
+    }
+  }
+}

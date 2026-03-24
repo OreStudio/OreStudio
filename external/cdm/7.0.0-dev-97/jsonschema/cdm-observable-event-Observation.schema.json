@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "object",
+  "title": "Observation",
+  "description": "Defines a single, numerical value that was observed in the marketplace. Observations of market data are made independently to business events or trade life-cycle events, so data instances of Observation can be created independently of any other model type, hence it is annotated as a root type. Observations will be broadly reused in many situations, so references to Observation are supported via the 'key' annotation.",
+  "properties": {
+    "observedValue": {
+      "description": "Specifies the observed value as a number.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "observationIdentifier": {
+      "description": "Represents the observation was made i.e. how to uniquely identify the observed value among the population of all available market data.",
+      "$ref": "cdm-observable-event-ObservationIdentifier.schema.json"
+    }
+  },
+  "required": [
+    "observedValue",
+    "observationIdentifier"
+  ]
+}

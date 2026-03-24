@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "WeatherUnitEnum",
+  "description": "Provides enumerated values for weather units, generally used in the context of defining quantities for commodities.",
+  "enum": [
+    "CDD",
+    "CPD",
+    "HDD"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CDD"
+      ],
+      "title": "CDD",
+      "description": "Denotes Cooling Degree Days as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "CPD"
+      ],
+      "title": "CPD",
+      "description": "Denotes Critical Precipitation Day as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "HDD"
+      ],
+      "title": "HDD",
+      "description": "Heating Degree Day as a standard unit."
+    }
+  ]
+}

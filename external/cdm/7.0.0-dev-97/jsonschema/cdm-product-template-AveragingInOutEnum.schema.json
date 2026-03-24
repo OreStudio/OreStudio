@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "string",
+  "title": "AveragingInOutEnum",
+  "description": "The enumerated values to specify the type of averaging used in an Asian option.",
+  "enum": [
+    "Both",
+    "In",
+    "Out"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Both"
+      ],
+      "title": "Both",
+      "description": "The average price is used to derive both the strike and the expiration price."
+    },
+    
+    {
+      "enum": [
+        "In"
+      ],
+      "title": "In",
+      "description": "The average price is used to derive the strike price. Also known as 'Asian strike' style option."
+    },
+    
+    {
+      "enum": [
+        "Out"
+      ],
+      "title": "Out",
+      "description": "The average price is used to derive the expiration price. Also known as 'Asian price' style option."
+    }
+  ]
+}

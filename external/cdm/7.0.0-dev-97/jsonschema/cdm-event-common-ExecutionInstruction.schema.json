@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ExecutionInstruction",
+  "description": "Specifies instructions for execution of a transaction, consisting of a product, price, quantity, parties, trade identifier, execution details, and settlement terms.",
+  "properties": {
+    "product": {
+      "description": "Defines the financial product to be executed and contract formed.",
+      "$ref": "cdm-product-template-NonTransferableProduct.schema.json"
+    },
+    "priceQuantity": {
+      "description": "Defines the prices (e.g. spread, equity price, FX rate), quantities (e.g. currency amount, no. shares) and settlement terms (e.g. initial fee, broker fee, up-front cds payment or option premium settlement) associated with the constituents of the transacted product.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-PriceQuantity.schema.json"
+      },
+      "minItems": 1
+    },
+    "counterparty": {
+      "description": "Maps two defined parties to counterparty enums for the transacted product.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Counterparty.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "ancillaryParty": {
+      "description": "Maps any ancillary parties, e.g. parties involved in the transaction that are not one of the two principal parties.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-AncillaryParty.schema.json"
+      },
+      "minItems": 0
+    },
+    "parties": {
+      "description": "Defines all parties to that execution, including agents and brokers.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Party.schema.json"
+      },
+      "minItems": 2
+    },
+    "partyRoles": {
+      "description": "Defines the role(s) that party(ies) may have in relation to the execution.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+      },
+      "minItems": 0
+    },
+    "executionDetails": {
+      "description": "Specifies the type and venue of execution, e.g. via voice, or electronically.",
+      "$ref": "cdm-event-common-ExecutionDetails.schema.json"
+    },
+    "tradeDate": {
+      "description": "Denotes the trade/execution date.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "tradeTime": {
+      "description": "Denotes the trade time and timezone as agreed by the parties to the trade.",
+      "$ref": "cdm-base-datetime-metafields-FieldWithMetaTimeZone.schema.json"
+    },
+    "tradeIdentifier": {
+      "description": "Denotes one or more identifiers associated with the transaction.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-TradeIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "collateral": {
+      "description": "Detail the collateral requirement anticipated with the transaction.",
+      "$ref": "cdm-product-collateral-Collateral.schema.json"
+    },
+    "lotIdentifier": {
+      "description": "Lot Identifier associated with the transaction.",
+      "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+    }
+  },
+  "required": [
+    "product",
+    "executionDetails",
+    "tradeDate"
+  ]
+}

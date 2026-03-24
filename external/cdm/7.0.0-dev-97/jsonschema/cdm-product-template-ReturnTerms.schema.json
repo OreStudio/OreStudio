@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "ReturnTerms",
+  "description": "Specifies the type of return of a performance payout.",
+  "properties": {
+    "priceReturnTerms": {
+      "description": "Return terms based upon the underlier's observed price.",
+      "$ref": "cdm-product-asset-PriceReturnTerms.schema.json"
+    },
+    "dividendReturnTerms": {
+      "description": "Return terms based upon dividend payments associated to the underlier.",
+      "$ref": "cdm-product-asset-DividendReturnTerms.schema.json"
+    },
+    "varianceReturnTerms": {
+      "description": "Return terms based upon the observed variance of the underlier's price.",
+      "$ref": "cdm-product-asset-VarianceReturnTerms.schema.json"
+    },
+    "volatilityReturnTerms": {
+      "description": "Return terms based upon the observed volatility of the underlier's price.",
+      "$ref": "cdm-product-asset-VolatilityReturnTerms.schema.json"
+    },
+    "correlationReturnTerms": {
+      "description": "Return terms based upon the observed correlation between the components of the underlying basket.",
+      "$ref": "cdm-product-asset-CorrelationReturnTerms.schema.json"
+    }
+  }
+}

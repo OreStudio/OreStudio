@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "PartyDeterminationEnum",
+  "description": "The enumerated values to specify how a calculation agent will be determined.",
+  "enum": [
+    "AsSpecifiedInMasterAgreement",
+    "AsSpecifiedInStandardTermsSupplement",
+    "Both",
+    "ExercisingParty",
+    "NonExercisingParty"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsSpecifiedInMasterAgreement"
+      ],
+      "title": "AsSpecifiedInMasterAgreement",
+      "description": "The Calculation Agent is determined by reference to the relevant master agreement."
+    },
+    
+    {
+      "enum": [
+        "AsSpecifiedInStandardTermsSupplement"
+      ],
+      "title": "AsSpecifiedInStandardTermsSupplement",
+      "description": "The Calculation Agent is determined by reference to the relevant standard terms supplement."
+    },
+    
+    {
+      "enum": [
+        "Both"
+      ],
+      "title": "Both",
+      "description": "Both parties with joined rights to be a calculation agent."
+    },
+    
+    {
+      "enum": [
+        "ExercisingParty"
+      ],
+      "title": "ExercisingParty",
+      "description": "The party that gives notice of exercise. Per 2000 ISDA Definitions, Section 11.1. Parties, paragraph (d)."
+    },
+    
+    {
+      "enum": [
+        "NonExercisingParty"
+      ],
+      "title": "NonExercisingParty",
+      "description": "The party that is given notice of exercise. Per 2000 ISDA Definitions, Section 11.1. Parties, paragraph (e)."
+    }
+  ]
+}

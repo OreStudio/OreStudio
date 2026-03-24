@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "WorkflowStepApproval",
+  "description": "Party approvals associated to the current WorkflowStep. ",
+  "properties": {
+    "approved": {
+      "description": "Flag denoting whether the workflow step is approved or not",
+      "type": "boolean"
+    },
+    "party": {
+      "description": "Reference to the Party who is approving/rejecting this workflow step",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "rejectedReason": {
+      "description": "Optional reason for rejecting the workflow step",
+      "type": "string"
+    },
+    "timestamp": {
+      "description": "Timestamp of the approval",
+      "$ref": "cdm-event-workflow-EventTimestamp.schema.json"
+    }
+  },
+  "required": [
+    "approved",
+    "party",
+    "timestamp"
+  ]
+}

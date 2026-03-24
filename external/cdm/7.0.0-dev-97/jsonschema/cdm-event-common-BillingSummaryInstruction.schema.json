@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "BillingSummaryInstruction",
+  "description": "Specifies the instructions for creation of a billing summary.",
+  "properties": {
+    "summaryAmountType": {
+      "description": "The account level for the billing summary.",
+      "$ref": "cdm-event-common-RecordAmountTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "summaryAmountType"
+  ]
+}

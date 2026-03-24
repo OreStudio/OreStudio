@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "MoneyMarketTypeEnum",
+  "enum": [
+    "CertificateOfDeposit",
+    "CommercialPaper"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CertificateOfDeposit"
+      ],
+      "title": "CertificateOfDeposit"
+    },
+    
+    {
+      "enum": [
+        "CommercialPaper"
+      ],
+      "title": "CommercialPaper"
+    }
+  ]
+}

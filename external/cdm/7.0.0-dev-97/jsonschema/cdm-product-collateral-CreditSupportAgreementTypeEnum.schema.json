@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "CreditSupportAgreementTypeEnum",
+  "description": "The enumerated values to specify the type of Credit Support Agreement governing the transaction.",
+  "enum": [
+    "CollateralTransferAgreement",
+    "CreditSupportAnnex",
+    "CreditSupportDeed"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CollateralTransferAgreement"
+      ],
+      "title": "CollateralTransferAgreement",
+      "description": "A Collateral Transfer Agreement"
+    },
+    
+    {
+      "enum": [
+        "CreditSupportAnnex"
+      ],
+      "title": "CreditSupportAnnex",
+      "description": "A Credit Support Annex legal agreement."
+    },
+    
+    {
+      "enum": [
+        "CreditSupportDeed"
+      ],
+      "title": "CreditSupportDeed",
+      "description": "A Credit Support Deed legal agreement."
+    }
+  ]
+}

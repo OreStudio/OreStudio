@@ -1,0 +1,514 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "PartyRoleEnum",
+  "description": "The enumerated values for the party role. The enumerated values go beyond the FpML partyRoleScheme as they also include elements that are part of the FpML Trade, such as the Barrier Determination Agent and the Hedging Party.",
+  "enum": [
+    "Accountant",
+    "AgentLender",
+    "AllocationAgent",
+    "ArrangingBroker",
+    "BarrierDeterminationAgent",
+    "BeneficialOwner",
+    "Beneficiary",
+    "BookingParty",
+    "Borrower",
+    "Buyer",
+    "BuyerDecisionMaker",
+    "Chargor",
+    "ClearingClient",
+    "ClearingExceptionParty",
+    "ClearingFirm",
+    "ClearingOrganization",
+    "Client",
+    "ClientDecisionMaker",
+    "ConfirmationPlatform",
+    "ContractualParty",
+    "CounterPartyAffiliate",
+    "CounterPartyUltimateParent",
+    "Counterparty",
+    "CreditSupportProvider",
+    "Custodian",
+    "DataSubmitter",
+    "DeterminingParty",
+    "DisputingParty",
+    "DocumentRepository",
+    "ExecutingBroker",
+    "ExecutingEntity",
+    "ExecutionAgent",
+    "ExecutionFacility",
+    "Guarantor",
+    "HedgingParty",
+    "Lender",
+    "MarginAffiliate",
+    "OrderTransmitter",
+    "PTRRServiceProvider",
+    "Pledgor",
+    "PrimeBroker",
+    "PriorTradeRepository",
+    "PublicationVenue",
+    "ReportingParty",
+    "ReportingPartyAffiliate",
+    "ReportingPartyUltimateParent",
+    "SecuredParty",
+    "Seller",
+    "SellerDecisionMaker",
+    "SettlementAgent",
+    "ThirdPartyCustodian",
+    "TradeRepository",
+    "TradeSource",
+    "TradingManager",
+    "TradingPartner",
+    "TripartyAgent"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Accountant"
+      ],
+      "title": "Accountant",
+      "description": "Organization responsible for preparing the accounting for the trade."
+    },
+    
+    {
+      "enum": [
+        "AgentLender"
+      ],
+      "title": "AgentLender",
+      "description": "An agent who lends securities of its principals under stock lending arrangements."
+    },
+    
+    {
+      "enum": [
+        "AllocationAgent"
+      ],
+      "title": "AllocationAgent",
+      "description": "The organization responsible for supplying the allocations for a trade to be allocated to multiple accounts/organizations."
+    },
+    
+    {
+      "enum": [
+        "ArrangingBroker"
+      ],
+      "title": "ArrangingBroker",
+      "description": "The organization that arranged the trade, i.e. brought together the counterparties.  Synonyms/Alternatives: Inter-dealer broker, agent."
+    },
+    
+    {
+      "enum": [
+        "BarrierDeterminationAgent"
+      ],
+      "title": "BarrierDeterminationAgent",
+      "description": "The party specified in the related confirmation as Barrier Determination Agent."
+    },
+    
+    {
+      "enum": [
+        "BeneficialOwner"
+      ],
+      "title": "BeneficialOwner",
+      "description": "The party that lends out securities under stock lending arrangements via an Agent Lender."
+    },
+    
+    {
+      "enum": [
+        "Beneficiary"
+      ],
+      "title": "Beneficiary",
+      "description": "Organization that suffers the economic benefit of the trade.  The beneficiary may be distinct from the principal/counterparty - an example occurs when a hedge fund trades via a prime broker; in this case the principal is the prime broker, but the beneficiary is the hedge fund.  This can be represented as a payer/receiver account in the name of the hedge fund, but it is also possible to add the party role of 'Beneficiary' at the partyTradeInformation level."
+    },
+    
+    {
+      "enum": [
+        "BookingParty"
+      ],
+      "title": "BookingParty",
+      "description": "The entity for which the organization supporting the trade's processing has booked/recorded the trade. This is used in non-reporting workflows situations in which the trade doesn't need to be reported but a firm still wants to specify their own side."
+    },
+    
+    {
+      "enum": [
+        "Borrower"
+      ],
+      "title": "Borrower",
+      "description": "The party that borrows securities under stock lending arrangements."
+    },
+    
+    {
+      "enum": [
+        "Buyer"
+      ],
+      "title": "Buyer",
+      "description": "Acquirer of the legal title to the financial instrument. In the case of an option, the buyer is the holder of the option. In the case of a swap or forward, the buyer will be determined by industry best practice.  This does not refer to an investor or investment manager or other organization on what is typically called  the 'Buy side'; for that, see the 'Client' role. Corresponds to 'Buyer' as defined in certain regulations such as ESMA MiFID II/MIFIR RTS 22 field 9."
+    },
+    
+    {
+      "enum": [
+        "BuyerDecisionMaker"
+      ],
+      "title": "BuyerDecisionMaker",
+      "description": "The party or person who, having legal authority to act on behalf of the trade counterparty acting as Buyer as defined in this coding scheme, made the decision to acquire the financial instrument. Corresponds to 'buyer decision maker' as defined in ESMA's MIFIR RTS 23 report. This does not refer to the decision maker for what is traditionally called the 'Buy side'; for that, see the 'Client Decision Maker' role."
+    },
+    
+    {
+      "enum": [
+        "Chargor"
+      ],
+      "title": "Chargor",
+      "description": "The party that provides credit support under English Law."
+    },
+    
+    {
+      "enum": [
+        "ClearingClient"
+      ],
+      "title": "ClearingClient",
+      "description": "An organization that clears trades through a clearing house, via a clearing broker (member of the clearing house) who acts as an agent on its behalf. The term 'client' refers to the organization's role in the clearing process in relation to its clearing broker, and not whether it is a price maker or taker in the execution process."
+    },
+    
+    {
+      "enum": [
+        "ClearingExceptionParty"
+      ],
+      "title": "ClearingExceptionParty",
+      "description": "A party to the trade that claims a clearing exception, such as an end-user exception under Dodd-Frank Act provisions."
+    },
+    
+    {
+      "enum": [
+        "ClearingFirm"
+      ],
+      "title": "ClearingFirm",
+      "description": "Organization that submits the trade to a clearing house on behalf of the principal. Synonyms/alternates: Futures Commission Merchant (FCM), Clearing Broker, Clearing Member Firm. Some implementations use 'Clearing Broker' as synonym."
+    },
+    
+    {
+      "enum": [
+        "ClearingOrganization"
+      ],
+      "title": "ClearingOrganization",
+      "description": "The organization that acts as a central counterparty to clear a derivatives contract.  This is used to represent the role of Central Counterparties (CCPs) or Derivative Clearing Organizations (DCOs).  Sometimes called 'ClearingService'. Some implementations also use the term 'Clearer'."
+    },
+    
+    {
+      "enum": [
+        "Client"
+      ],
+      "title": "Client",
+      "description": "Client as defined under ESMA MIFIR. This is generally the investor or other client of an investment firm, and is synonymous with the Beneficiary in many circumstances."
+    },
+    
+    {
+      "enum": [
+        "ClientDecisionMaker"
+      ],
+      "title": "ClientDecisionMaker",
+      "description": "The party or person who, having legal authority to act on behalf of a trade counterparty, made the decision to acquire or sell the financial instrument."
+    },
+    
+    {
+      "enum": [
+        "ConfirmationPlatform"
+      ],
+      "title": "ConfirmationPlatform",
+      "description": "Organization serving as a financial intermediary for the purposes of electronic confirmation or providing services for post-processing of transactional data."
+    },
+    
+    {
+      "enum": [
+        "ContractualParty"
+      ],
+      "title": "ContractualParty",
+      "description": "A party to a contractual document.  If the intended usage relates to the context of the trade lifecycle, more specific annotations have been defined which might be more appropriate."
+    },
+    
+    {
+      "enum": [
+        "CounterPartyAffiliate"
+      ],
+      "title": "CounterPartyAffiliate",
+      "description": "Organization officially attached to the counterparty. e.g. partner, branch, subsidiary."
+    },
+    
+    {
+      "enum": [
+        "CounterPartyUltimateParent"
+      ],
+      "title": "CounterPartyUltimateParent",
+      "description": "The topmost entity or organization, within the corporate hierarchy, responsible for the reporting party."
+    },
+    
+    {
+      "enum": [
+        "Counterparty"
+      ],
+      "title": "Counterparty",
+      "description": "An economic counterparty to the trade. Synonym: principal."
+    },
+    
+    {
+      "enum": [
+        "CreditSupportProvider"
+      ],
+      "title": "CreditSupportProvider",
+      "description": "Organization that enhances the credit of another organization (similar to guarantor, but may not fully guarantee the obligation)."
+    },
+    
+    {
+      "enum": [
+        "Custodian"
+      ],
+      "title": "Custodian",
+      "description": "Organization that maintains custody of the asset represented by the trade on behalf of the owner/principal."
+    },
+    
+    {
+      "enum": [
+        "DataSubmitter"
+      ],
+      "title": "DataSubmitter",
+      "description": "Entity submitting the transaction report to the competent authority."
+    },
+    
+    {
+      "enum": [
+        "DeterminingParty"
+      ],
+      "title": "DeterminingParty",
+      "description": "The party referenced is specified in the contract confirmation as Determination Party."
+    },
+    
+    {
+      "enum": [
+        "DisputingParty"
+      ],
+      "title": "DisputingParty",
+      "description": "Organization that is disputing the trade or transaction."
+    },
+    
+    {
+      "enum": [
+        "DocumentRepository"
+      ],
+      "title": "DocumentRepository",
+      "description": "A marketplace organization which purpose is to maintain document records.  If the intended usage relates to the context of the trade lifecycle, more specific annotations have been defined which might be more appropriate."
+    },
+    
+    {
+      "enum": [
+        "ExecutingBroker"
+      ],
+      "title": "ExecutingBroker",
+      "description": "The (generally sell-side) organization that executed the trade; the price-making party."
+    },
+    
+    {
+      "enum": [
+        "ExecutingEntity"
+      ],
+      "title": "ExecutingEntity",
+      "description": "Entity executing the transaction.  If the transaction is executed directly by the reporting party, it will be the reporting party.  If it is executed by an execution agent or an affiliated party on behalf of the reporting party, it will be that affiliate or agent."
+    },
+    
+    {
+      "enum": [
+        "ExecutionAgent"
+      ],
+      "title": "ExecutionAgent",
+      "description": "The (generally buy-side) organization that acts to execute trades on behalf of an investor. Typically this is an investment manager or asset manager, and also makes the investment decisions for the investor. If required, a separate InvestmentDecision role can be specified to distinguish that the party making the investment decision is different."
+    },
+    
+    {
+      "enum": [
+        "ExecutionFacility"
+      ],
+      "title": "ExecutionFacility",
+      "description": "The facility, exchange, or market where the trade was executed. Synonym: Swap Execution Facility, Designated Contract Market, Execution Venue."
+    },
+    
+    {
+      "enum": [
+        "Guarantor"
+      ],
+      "title": "Guarantor",
+      "description": "Organization that backs (guarantees) the credit risk of the trade."
+    },
+    
+    {
+      "enum": [
+        "HedgingParty"
+      ],
+      "title": "HedgingParty",
+      "description": "The ISDA Hedging Party that is specified in the related confirmation as Hedging, or if no Hedging Party is specified, either party to the contract."
+    },
+    
+    {
+      "enum": [
+        "Lender"
+      ],
+      "title": "Lender",
+      "description": "The party that lends out securities under stock lending arrangements as principal."
+    },
+    
+    {
+      "enum": [
+        "MarginAffiliate"
+      ],
+      "title": "MarginAffiliate",
+      "description": "Margin affiliate as defined by U.S. margin and capital rules §23.151."
+    },
+    
+    {
+      "enum": [
+        "OrderTransmitter"
+      ],
+      "title": "OrderTransmitter",
+      "description": "The entity transmitting the order to the reporting firm. Synonym: Transmitting Firm."
+    },
+    
+    {
+      "enum": [
+        "PTRRServiceProvider"
+      ],
+      "title": "PTRRServiceProvider",
+      "description": "The party that acts as either a portfolio compression or portfolio rebalancing service provider, as defined under ESMA MIFIR"
+    },
+    
+    {
+      "enum": [
+        "Pledgor"
+      ],
+      "title": "Pledgor",
+      "description": "The party that provides credit support under New York Law."
+    },
+    
+    {
+      "enum": [
+        "PrimeBroker"
+      ],
+      "title": "PrimeBroker",
+      "description": "The organization that takes on or took on the credit risk for this trade by stepping in between the two economic parties (without a central counterparty clearing mechanism)."
+    },
+    
+    {
+      "enum": [
+        "PriorTradeRepository"
+      ],
+      "title": "PriorTradeRepository",
+      "description": "The trade repository at which the trade was reported previous to the current trade repository."
+    },
+    
+    {
+      "enum": [
+        "PublicationVenue"
+      ],
+      "title": "PublicationVenue",
+      "description": "The reporting service (whether trade repository, market data service, or exchange/facility/venue data distribution service) that published the report of this trade."
+    },
+    
+    {
+      "enum": [
+        "ReportingParty"
+      ],
+      "title": "ReportingParty",
+      "description": "The party with the regulatory responsibility to report this trade."
+    },
+    
+    {
+      "enum": [
+        "ReportingPartyAffiliate"
+      ],
+      "title": "ReportingPartyAffiliate",
+      "description": "Organization officially attached to the reporting party  e.g. partner, branch, subsidiary."
+    },
+    
+    {
+      "enum": [
+        "ReportingPartyUltimateParent"
+      ],
+      "title": "ReportingPartyUltimateParent",
+      "description": "The topmost entity or organization, within the corporate hierarchy, responsible for the reporting party."
+    },
+    
+    {
+      "enum": [
+        "SecuredParty"
+      ],
+      "title": "SecuredParty",
+      "description": "The party that receives credit support under New York or English Law."
+    },
+    
+    {
+      "enum": [
+        "Seller"
+      ],
+      "title": "Seller",
+      "description": "A counterparty in a trade, which performs in one of the following capacities: 1) it transfers or agrees to transfer in the future an instrument or title to that instrument in exchange for payment, 2) it writes a derivatives instrument such as an option or a swap in which it provides risk protection to the buyer. This does not refer to the broker/dealer or other organization on what is typically called  the 'Sell side'; for that, see the 'Executing Broker' role. Corresponds to 'Seller' as defined in certain regulations such as ESMA MiFID II/MIFIR RTS 22 field 16."
+    },
+    
+    {
+      "enum": [
+        "SellerDecisionMaker"
+      ],
+      "title": "SellerDecisionMaker",
+      "description": "The party or person who, having legal authority to act on behalf of the trade counterparty acting as Seller as defined in this coding scheme, made the decision to sell the financial instrument. Corresponds to 'seller decision maker' as defined in ESMA's MIFIR RTS 23 report. This does not refer to the decision maker for what is traditionally called the 'Sell side'; for that, see the 'Trader' person role."
+    },
+    
+    {
+      "enum": [
+        "SettlementAgent"
+      ],
+      "title": "SettlementAgent",
+      "description": "The organization that makes or receives payments on behalf of the given principal party."
+    },
+    
+    {
+      "enum": [
+        "ThirdPartyCustodian"
+      ],
+      "title": "ThirdPartyCustodian",
+      "description": "A third-party providing custody, settlement, segregation and reporting services."
+    },
+    
+    {
+      "enum": [
+        "TradeRepository"
+      ],
+      "title": "TradeRepository",
+      "description": "An organization that maintains records of the trade for regulatory reporting purposes."
+    },
+    
+    {
+      "enum": [
+        "TradeSource"
+      ],
+      "title": "TradeSource",
+      "description": "The organization that originally supplied the record of the trade. In the context of regulatory reporting, it is the submitter of the trade record to a regulator or TR."
+    },
+    
+    {
+      "enum": [
+        "TradingManager"
+      ],
+      "title": "TradingManager",
+      "description": "The entity responsible for managing the assets/investments of this party.  Synonym:  Asset Manager, Investment Manager, Trading Advisory."
+    },
+    
+    {
+      "enum": [
+        "TradingPartner"
+      ],
+      "title": "TradingPartner",
+      "description": "An entity with which this party trades from time to time, ie. with which it acts as a counterparty on some transactions.   This role is used for static reference data, not individual transactions."
+    },
+    
+    {
+      "enum": [
+        "TripartyAgent"
+      ],
+      "title": "TripartyAgent",
+      "description": "A third party entity that acts as an intermediary and provides automated clearing, settlement, allocation, valuation and reporting services."
+    }
+  ]
+}

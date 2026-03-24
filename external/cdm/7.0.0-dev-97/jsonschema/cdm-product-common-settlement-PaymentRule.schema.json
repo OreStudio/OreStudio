@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PaymentRule",
+  "description": "A class defining the payment calculation rule. As of FpML 5.10, percentage rule is the only calculation rule that has been specified as part of the standard.",
+  "properties": {
+    "percentageRule": {
+      "description": "This attribute is not present as part of the FpML construct, as the payment rule is specialised by means of runtime type extension through the xsi:type.",
+      "$ref": "cdm-product-common-settlement-PercentageRule.schema.json"
+    }
+  }
+}

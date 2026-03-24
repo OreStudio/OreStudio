@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "ExerciseTerms",
+  "description": "A class defining the exercise period for an option together with any rules governing the notional amount of the underlying which can be exercised on any given exercise date and any associated exercise fees.",
+  "properties": {
+    "style": {
+      "description": "Whether the option has a single exercise (european), multiple exercise dates (bermuda), or a continuous range of exercise (american).",
+      "$ref": "cdm-product-template-OptionExerciseStyleEnum.schema.json"
+    },
+    "commencementDate": {
+      "description": "The first day of the exercise period for an American style option.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "exerciseDates": {
+      "description": "The dates that define the Bermuda option exercise dates and the expiration date. The last specified date is assumed to be the expiration date. The dates can either be specified as a series of explicit dates and associated adjustments or as a series of dates defined relative to another schedule of dates, for example, the calculation period start dates. Where a relative series of dates are defined the first and last possible exercise dates can be separately specified.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDates.schema.json"
+    },
+    "expirationDate": {
+      "description": "The last day within an exercise period for an American style option. For a European style option it is the only day within the exercise period.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+      },
+      "minItems": 0
+    },
+    "relevantUnderlyingDate": {
+      "description": "The effective date on the underlying product if the option is exercised.  For example, for a swaption it is the swap effective date, for an option on an FX spot or forward it is the value date for settlement, and in an extendible/cancelable provision it is the swap termination date, which is the date on which the termination is effective.'",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDates.schema.json"
+    },
+    "earliestExerciseTime": {
+      "description": "The earliest time at which notice of exercise can be given by the buyer to the seller (or seller's agent) to, and including, the expiration date.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "latestExerciseTime": {
+      "description": "For a Bermuda or American style option, the latest time on an exercise business day (excluding the expiration date) within the exercise period that notice can be given by the buyer to the seller or seller's agent. Notice of exercise given after this time will be deemed to have been given on the next exercise business day.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "expirationTime": {
+      "description": "The latest time for exercise on expirationDate. It is made mandatory given that for all option styles, this field is required.",
+      "$ref": "cdm-base-datetime-BusinessCenterTime.schema.json"
+    },
+    "expirationTimeType": {
+      "description": "The time of day at which the equity option expires, for example the official closing time of the exchange.",
+      "$ref": "cdm-product-template-ExpirationTimeTypeEnum.schema.json"
+    },
+    "multipleExercise": {
+      "description": "As defined in the 2000 ISDA Definitions, Section 12.4. Multiple Exercise, the buyer of the option has the right to exercise all or less than all the unexercised notional amount of the underlying swap on one or more days in the exercise period, but on any such day may not exercise less than the minimum notional amount or more that the maximum notional amount, and if an integral multiple amount is specified, the notional amount exercised must be equal to, or be an integral multiple of, the integral multiple amount.",
+      "$ref": "cdm-product-template-MultipleExercise.schema.json"
+    },
+    "exerciseFeeSchedule": {
+      "description": "The fees associated with an exercise date. The fees are conditional on the exercise occurring. The fees can be specified as actual currency amounts or as percentages of the notional amount being exercised.",
+      "$ref": "cdm-product-template-ExerciseFeeSchedule.schema.json"
+    },
+    "exerciseProcedure": {
+      "description": "The set of parameters defining the procedure associated with the exercise, e.g. manual exercise.",
+      "$ref": "cdm-product-template-ExerciseProcedure.schema.json"
+    },
+    "exerciseFee": {
+      "description": "A fee to be paid on exercise. This could be represented as an amount or a rate and notional reference on which to apply the rate.",
+      "$ref": "cdm-product-template-ExerciseFee.schema.json"
+    },
+    "partialExercise": {
+      "description": "As defined in the 2000 ISDA Definitions, Section 12.3. Partial Exercise, the buyer of the option has the right to exercise all or less than all the notional amount of the underlying swap on the expiration date, but may not exercise less than the minimum notional amount, and if an integral multiple amount is specified, the notional amount exercised must be equal to, or be an integral multiple of, the integral multiple amount.",
+      "$ref": "cdm-product-template-PartialExercise.schema.json"
+    }
+  },
+  "required": [
+    "expirationTimeType"
+  ]
+}

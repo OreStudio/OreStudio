@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "SingleValuationDate",
+  "description": "A class to specify the number of business days after satisfaction of all conditions to settlement.",
+  "properties": {
+    "businessDays": {
+      "description": "A number of business days. Its precise meaning is dependant on the context in which this element is used. ISDA 2003 Term: Business Day.",
+      "type": "integer"
+    }
+  }
+}

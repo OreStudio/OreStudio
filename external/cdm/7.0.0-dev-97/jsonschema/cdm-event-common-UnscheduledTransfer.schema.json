@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "UnscheduledTransfer",
+  "description": "An ad-hoc transfer instigated by a party to the contract.",
+  "properties": {
+    "transferType": {
+      "description": "Specifies the type of unscheduled transfer.",
+      "$ref": "cdm-product-common-settlement-UnscheduledTransferEnum.schema.json"
+    },
+    "priceTransfer": {
+      "description": "Specifies a transfer amount exchanged as a price or fee for entering into a Business Event, e.g. Premium, Termination fee, Novation fee.",
+      "$ref": "cdm-observable-asset-FeeTypeEnum.schema.json"
+    }
+  }
+}

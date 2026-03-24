@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SimmVersion",
+  "description": "A class to specify the ISDA SIMM version that applies to the ISDA 2018 CSA for Initial Margin.",
+  "properties": {
+    "isSpecified": {
+      "description": "A boolean attribute to determine whether the SIMM version is specified for the purpose of the legal agreement.",
+      "type": "boolean"
+    },
+    "partyVersion": {
+      "description": "The party which the specified SIMM version applies to.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "asSpecified": {
+      "description": "The SIMM version exception when specified as a customized approach by the party.",
+      "type": "string"
+    }
+  }
+}

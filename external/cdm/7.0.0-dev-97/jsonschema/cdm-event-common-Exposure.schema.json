@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "Exposure",
+  "description": "Represents the current mark to market value or IM calculation value of the trade portfolio as recorded by the principle (in base currency).",
+  "properties": {
+    "tradePortfolio": {
+      "description": "Represents a Portfolio that describes all the positions held at a given time, in various states which can be either traded, settled, etc., with lineage information to the previous state.",
+      "$ref": "cdm-event-position-metafields-ReferenceWithMetaPortfolioState.schema.json"
+    },
+    "aggregateValue": {
+      "description": "Represents the aggregate value of the portfolio in base currency.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "calculationDateTime": {
+      "description": "Indicates the date when the exposure is calculated if different from valuation date.",
+      "type": "string"
+    },
+    "valuationDateTime": {
+      "description": "Indicates the valuation date of the exposure underlying the calculation.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "tradePortfolio",
+    "aggregateValue",
+    "valuationDateTime"
+  ]
+}

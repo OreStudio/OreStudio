@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "Regime",
+  "description": "A class to specify one or more regimes that may be specified as relevant to a legal agreement.",
+  "properties": {
+    "applicableRegime": {
+      "description": "A class to specify the regime(s) that parties to a legal agreement, such as the ISDA 2016 and 2018 CSA for Initial Margin, might agree to apply to one or both parties when acting as collateral taker, and specific terms associated with that application.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ApplicableRegime.schema.json"
+      },
+      "minItems": 1
+    },
+    "fallbackToMandatoryMethodDays": {
+      "description": "The specification of the number of days after effective delivery of notice that Mandatory method fallback applies. Specification is only required when one or more Regimes have Fall Back to Mandatory Method elected as a SIMM exception.",
+      "type": "number"
+    }
+  }
+}

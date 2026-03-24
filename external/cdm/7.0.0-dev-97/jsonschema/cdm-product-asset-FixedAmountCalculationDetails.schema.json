@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "FixedAmountCalculationDetails",
+  "description": "Type for reporting the detailed results of calculating a cash flow for a calculation period.  This is enhanced relative to the FpML-based cashflows structure to allow more information to be returned about daily compounded rates.",
+  "properties": {
+    "calculationPeriod": {
+      "description": "The calculation period for which the floating calculation was performed.",
+      "$ref": "cdm-product-common-schedule-CalculationPeriodBase.schema.json"
+    },
+    "calculationPeriodNotionalAmount": {
+      "description": "The notional in effect during the calculation period.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "fixedRate": {
+      "description": "The value of the fixed rate that was used.",
+      "type": "number"
+    },
+    "yearFraction": {
+      "description": "The fraction of a year that this calculation represents, according to the day count fraction method.",
+      "type": "number"
+    },
+    "calculatedAmount": {
+      "description": "The amount of the cash flow that was computed, including any spreads and other processing.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "calculationPeriod",
+    "calculationPeriodNotionalAmount",
+    "fixedRate",
+    "yearFraction",
+    "calculatedAmount"
+  ]
+}

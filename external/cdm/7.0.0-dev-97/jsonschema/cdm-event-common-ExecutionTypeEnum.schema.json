@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "ExecutionTypeEnum",
+  "description": "The enumerated values to specify how a contract has been executed, e.g. electronically, verbally, ...",
+  "enum": [
+    "Electronic",
+    "OffFacility",
+    "OnVenue"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Electronic"
+      ],
+      "title": "Electronic",
+      "description": "Execution via electronic execution facility, derivatives contract market, or other electronic message such as an instant message."
+    },
+    
+    {
+      "enum": [
+        "OffFacility"
+      ],
+      "title": "OffFacility",
+      "description": "Bilateral execution between counterparties not pursuant to the rules of a SEF or DCM."
+    },
+    
+    {
+      "enum": [
+        "OnVenue"
+      ],
+      "title": "OnVenue",
+      "description": "Execution via a platform that may or may not be covered by a regulatory defintion. OnVenue is intended to distinguish trades executed on a trading platform from those executed via phone, email or messaging apps. The role and details of the venue are included in the party attribute of the trade. The general rule is that if the parties utilitzed the services of the platform to execute the trade then it would be considered OnVenue."
+    }
+  ]
+}

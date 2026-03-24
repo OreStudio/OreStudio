@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "ArithmeticOperationEnum",
+  "description": "An arithmetic operator that can be passed to a function",
+  "enum": [
+    "Add",
+    "Divide",
+    "Max",
+    "Min",
+    "Multiply",
+    "Subtract"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Add"
+      ],
+      "title": "Add",
+      "description": "Addition of 2 values"
+    },
+    
+    {
+      "enum": [
+        "Divide"
+      ],
+      "title": "Divide",
+      "description": "Division of 1st value by 2nd value"
+    },
+    
+    {
+      "enum": [
+        "Max"
+      ],
+      "title": "Max",
+      "description": "Maximum of 2 values"
+    },
+    
+    {
+      "enum": [
+        "Min"
+      ],
+      "title": "Min",
+      "description": "Minimum of 2 values"
+    },
+    
+    {
+      "enum": [
+        "Multiply"
+      ],
+      "title": "Multiply",
+      "description": "Multiplication of 2 values"
+    },
+    
+    {
+      "enum": [
+        "Subtract"
+      ],
+      "title": "Subtract",
+      "description": "Subtraction of 2nd value from 1st value"
+    }
+  ]
+}

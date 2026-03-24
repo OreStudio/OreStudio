@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "Tranche",
+  "description": "The class to represent a CDS Tranche.",
+  "properties": {
+    "attachmentPoint": {
+      "description": "Lower bound percentage of the loss that the Tranche can endure, expressed as a decimal. An attachment point of 5% would be represented as 0.05. The difference between Attachment and Exhaustion points is called the width of the Tranche.",
+      "type": "number"
+    },
+    "exhaustionPoint": {
+      "description": "Upper bound percentage of the loss that the Tranche can endure, expressed as a decimal. An exhaustion point of 5% would be represented as 0.05. The difference between Attachment and Exhaustion points is call the width of the Tranche.",
+      "type": "number"
+    },
+    "incurredRecoveryApplicable": {
+      "description": "Outstanding Swap Notional Amount is defined at any time on any day, as the greater of: (a) Zero; If Incurred Recovery Amount Applicable: (b) The Original Swap Notional Amount minus the sum of all Incurred Loss Amounts and all Incurred Recovery Amounts (if any) determined under this Confirmation at or prior to such time.Incurred Recovery Amount not populated: (b) The Original Swap Notional Amount minus the sum of all Incurred Loss Amounts determined under this Confirmation at or prior to such time.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "attachmentPoint",
+    "exhaustionPoint"
+  ]
+}

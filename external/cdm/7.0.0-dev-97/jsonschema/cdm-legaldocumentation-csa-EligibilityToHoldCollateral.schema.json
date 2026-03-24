@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "EligibilityToHoldCollateral",
+  "description": "Specifies the conditions under which a party and its custodian(s) are entitled to hold collateral.",
+  "properties": {
+    "custodianEligibility": {
+      "description": "Specifies whether the party's custodian is eligible to hold the other party's posted collateral. If 'True' then the custodian is eligible to hold the Posted Collateral given that the specified criteria are met.",
+      "type": "boolean"
+    },
+    "initialCustodian": {
+      "description": "Election to specify the initial custodian.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "criteria": {
+      "description": "A logical container to hold a defined set of related data. In this case the collation of criteria required by the party and its custodian to Hold the other party's Posted Collateral.",
+      "$ref": "cdm-legaldocumentation-csa-EligibilityToHoldCollateralCriteria.schema.json"
+    },
+    "eligibleCountry": {
+      "description": "The restrictions that might be required by a party and its custodian in terms of country(ies) where the other party's collateral can be held.",
+      "type": "array",
+      "items": {
+        "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+      },
+      "minItems": 0
+    },
+    "custodianCondition": {
+      "description": "Specifies any additional conditions relevant to the Custodian of the respective parties as set out in the Holding and Using Posted Collateral clause.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "custodianEligibility"
+  ]
+}

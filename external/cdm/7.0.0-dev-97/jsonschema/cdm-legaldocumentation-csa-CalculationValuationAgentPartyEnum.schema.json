@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "CalculationValuationAgentPartyEnum",
+  "description": "Specification of which party is calculating the value of collateral to be delivered or returned.",
+  "enum": [
+    "Party 1",
+    "Party 2",
+    "Party Making the Demand"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Party 1"
+      ],
+      "title": "Party1",
+      "description": "Party 1 will calculate the value of collateral to be delivered or returned."
+    },
+    
+    {
+      "enum": [
+        "Party 2"
+      ],
+      "title": "Party2",
+      "description": "Party 2 will calculate the value of collateral to be delivered or returned."
+    },
+    
+    {
+      "enum": [
+        "Party Making the Demand"
+      ],
+      "title": "PartyMakingDemand",
+      "description": "The party making the demand will calculate the value of collateral to be delivered or returned."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "string",
+  "title": "FxForceMajeureOrActOfSStateEnum",
+  "description": "The enumerated values to specify whether such terms i.e. Force Majeure or Act Of State shall be treated either as defined per the documents applicable to the FX transaction.",
+  "enum": [
+    "ToBeTreatedAsDisruptionEvent",
+    "ToBeTreatedAsForceMajeureOrActOfSState"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ToBeTreatedAsDisruptionEvent"
+      ],
+      "title": "ToBeTreatedAsDisruptionEvent"
+    },
+    
+    {
+      "enum": [
+        "ToBeTreatedAsForceMajeureOrActOfSState"
+      ],
+      "title": "ToBeTreatedAsForceMajeureOrActOfSState"
+    }
+  ]
+}

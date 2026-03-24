@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "CollateralInterestCalculationParameters",
+  "description": "Represents parameters for calculating the amount the floating interest calculation, e.g.  for a single currency or defaults for all currencies.",
+  "properties": {
+    "fixedRate": {
+      "description": "Specifies the applicable fixed rate  if used.",
+      "type": "number"
+    },
+    "floatingRate": {
+      "description": "Specifies the floating interest rate to be used.",
+      "$ref": "cdm-product-collateral-CollateralAgreementFloatingRate.schema.json"
+    },
+    "inBaseCurrency": {
+      "description": "If True, specifies that the interest transfers should be converted to base currency equivalent, or if False specifies that the transfer should be in the currency of the collateral.",
+      "type": "boolean"
+    },
+    "compoundingType": {
+      "description": "Specifies the type of compounding to be applied (None, Business, Calendar).",
+      "$ref": "cdm-base-datetime-CompoundingTypeEnum.schema.json"
+    },
+    "compoundingBusinessCenter": {
+      "description": "Specifies the applicable business centers for compounding.",
+      "type": "array",
+      "items": {
+        "type": "BusinessCenter"
+      },
+      "minItems": 0
+    },
+    "dayCountFraction": {
+      "description": "Specifies the day count fraction to use for that currency.",
+      "$ref": "cdm-base-datetime-daycount-DayCountFractionEnum.schema.json"
+    },
+    "rounding": {
+      "description": "Specifies the rounding rules for settling in that currency.",
+      "$ref": "cdm-base-math-Rounding.schema.json"
+    },
+    "roundingFrequency": {
+      "description": "Specifies when/how often is rounding applied?",
+      "$ref": "cdm-base-datetime-RoundingFrequencyEnum.schema.json"
+    },
+    "withholdingTaxRate": {
+      "description": "Specifies the withholding tax rate if a withholding tax is applicable.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "inBaseCurrency",
+    "dayCountFraction"
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "string",
+  "title": "EventTimestampQualificationEnum",
+  "description": "The enumeration values to qualify the timestamps that can be associated with a lifecycle event. The reason for such approach is that the experience of integrating the DTCC and CME data representations suggests that a wide set of timestamps are currently utilized among service providers, while there is not at present an objective set of criteria that could help suggest a defined set of timestamps as part of the CDM. Implementers are expected to evaluate the current enumeration values to determine whether those meet their requirements. If not, they are expected to engage with the CDM team to evaluate the addition of further value(s) to this enumeration, which will then participate to the development of a compendium for further evaluation at a later point in order to determine whether this modeling is appropriate.",
+  "enum": [
+    "clearingConfirmationDateTime",
+    "clearingDateTime",
+    "clearingReceiptDateTime",
+    "clearingSubmissionDateTime",
+    "confirmationDateTime",
+    "eventCreationDateTime",
+    "eventExpirationDateTime",
+    "eventProcessingDateTime",
+    "eventSentDateTime",
+    "eventSubmittedDateTime",
+    "executionDateTime",
+    "transactionCreationDateTime"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "clearingConfirmationDateTime"
+      ],
+      "title": "clearingConfirmationDateTime",
+      "description": "The date and time on which trade was confirmed as cleared."
+    },
+    
+    {
+      "enum": [
+        "clearingDateTime"
+      ],
+      "title": "clearingDateTime",
+      "description": "The date and time on the trade was cleared."
+    },
+    
+    {
+      "enum": [
+        "clearingReceiptDateTime"
+      ],
+      "title": "clearingReceiptDateTime",
+      "description": "The date and time on which trade was received by Clearing Body."
+    },
+    
+    {
+      "enum": [
+        "clearingSubmissionDateTime"
+      ],
+      "title": "clearingSubmissionDateTime",
+      "description": "The date and time on which the event was submitted for clearing."
+    },
+    
+    {
+      "enum": [
+        "confirmationDateTime"
+      ],
+      "title": "confirmationDateTime",
+      "description": "The date and time on which the event was confirmed."
+    },
+    
+    {
+      "enum": [
+        "eventCreationDateTime"
+      ],
+      "title": "eventCreationDateTime",
+      "description": "The date and time on which the event was created."
+    },
+    
+    {
+      "enum": [
+        "eventExpirationDateTime"
+      ],
+      "title": "eventExpirationDateTime",
+      "description": "The date and time on which the event will be considered expired."
+    },
+    
+    {
+      "enum": [
+        "eventProcessingDateTime"
+      ],
+      "title": "eventProcessingDateTime",
+      "description": "The date and time on which the event was processed."
+    },
+    
+    {
+      "enum": [
+        "eventSentDateTime"
+      ],
+      "title": "eventSentDateTime",
+      "description": "The date and time on which the event was sent."
+    },
+    
+    {
+      "enum": [
+        "eventSubmittedDateTime"
+      ],
+      "title": "eventSubmittedDateTime",
+      "description": "The date and time on which the event was submitted."
+    },
+    
+    {
+      "enum": [
+        "executionDateTime"
+      ],
+      "title": "executionDateTime",
+      "description": "The date and time on which the trade execution was performed."
+    },
+    
+    {
+      "enum": [
+        "transactionCreationDateTime"
+      ],
+      "title": "transactionCreationDateTime",
+      "description": "The date and time on which the transaction has been created. This timestamp is specified as such by the CME ClearPort Matched IRS Trade submission API specification: 'The transaction date time of the trade. Represents the date & time on which the trade was initially generated either by CME Clearing or firm. The transaction date time may be assigned by CME Clearing at the point the trade is reported as cleared. Transaction date time can also be provided by an external submitter of the trade at the point the trade is submitted.'"
+    }
+  ]
+}

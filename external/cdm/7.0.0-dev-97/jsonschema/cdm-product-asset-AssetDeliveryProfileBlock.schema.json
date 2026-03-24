@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "AssetDeliveryProfileBlock",
+  "description": "Defines a delivery profile block, including start and end time, days of the week, duration, delivery capacity and price time interval quantity.",
+  "properties": {
+    "startTime": {
+      "description": "The start time of the delivery interval for each block or shape.",
+      "type": "string"
+    },
+    "endTime": {
+      "description": "The end time of the delivery interval for each block or shape.",
+      "type": "string"
+    },
+    "dayOfWeek": {
+      "description": "The days of the week of the delivery.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-datetime-DayOfWeekEnum.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 7
+    },
+    "deliveryCapacity": {
+      "description": "The number of units included in the transaction for each delivery interval",
+      "$ref": "cdm-base-math-Quantity.schema.json"
+    },
+    "priceTimeIntervalQuantity": {
+      "description": "Price per quantity per delivery time interval.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    }
+  }
+}

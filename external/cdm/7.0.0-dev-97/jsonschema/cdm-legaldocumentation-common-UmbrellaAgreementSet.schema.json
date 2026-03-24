@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "UmbrellaAgreementSet",
+  "description": "Represents the groups of agreement term elections that exist within the agreement and to which entities that particular group of elections apply. Where all entities under the umbrella have the same set of elections only one agreement set will exist. At least one agreement set must be defined for an Umbrella agreement",
+  "properties": {
+    "agreement": {
+      "description": "Specification of the standard set of terms that define a legal agreement.",
+      "$ref": "cdm-legaldocumentation-common-Agreement.schema.json"
+    },
+    "party": {
+      "description": "Specifies the underlying parties to the agreement that either act as legal parties to the agreement or represent legal constructs that are managed by a party to the agreement but do not represent a Legal Entity as of themselves.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-UmbrellaAgreementParty.schema.json"
+      },
+      "minItems": 2
+    },
+    "additionalLanguage": {
+      "description": "Represents any additional language that may need to be captured regarding the structure or application of terms that may exist for the agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "agreement"
+  ]
+}

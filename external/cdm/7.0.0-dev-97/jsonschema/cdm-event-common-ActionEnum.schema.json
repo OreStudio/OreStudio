@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "ActionEnum",
+  "description": "The enumeration values to specify the actions associated with transactions.",
+  "enum": [
+    "Cancel",
+    "Correct",
+    "New"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Cancel"
+      ],
+      "title": "Cancel",
+      "description": "A cancellation of a prior instance of the transaction event. The eventIdentifier has an associated version greater than 1."
+    },
+    
+    {
+      "enum": [
+        "Correct"
+      ],
+      "title": "Correct",
+      "description": "A correction of a prior instance of the transaction event. The eventIdentifier has an associated version greater than 1."
+    },
+    
+    {
+      "enum": [
+        "New"
+      ],
+      "title": "New",
+      "description": "A new instance of a transaction event, which is also characterized by the fact that the eventIdentifier has an associated version 1."
+    }
+  ]
+}

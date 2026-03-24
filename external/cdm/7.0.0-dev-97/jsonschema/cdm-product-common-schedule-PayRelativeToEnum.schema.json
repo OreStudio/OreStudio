@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "string",
+  "title": "PayRelativeToEnum",
+  "description": "The enumerated values to specify whether payments occur relative to the calculation period start date or end date, each reset date, valuation date or the last pricing date.",
+  "enum": [
+    "CalculationPeriodEndDate",
+    "CalculationPeriodStartDate",
+    "LastPricingDate",
+    "ResetDate",
+    "ValuationDate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CalculationPeriodEndDate"
+      ],
+      "title": "CalculationPeriodEndDate",
+      "description": "Payments will occur relative to the last day of each calculation period."
+    },
+    
+    {
+      "enum": [
+        "CalculationPeriodStartDate"
+      ],
+      "title": "CalculationPeriodStartDate",
+      "description": "Payments will occur relative to the first day of each calculation period."
+    },
+    
+    {
+      "enum": [
+        "LastPricingDate"
+      ],
+      "title": "LastPricingDate",
+      "description": "Payments will occur relative to the last Pricing Date of each Calculation Period."
+    },
+    
+    {
+      "enum": [
+        "ResetDate"
+      ],
+      "title": "ResetDate",
+      "description": "Payments will occur relative to the reset date."
+    },
+    
+    {
+      "enum": [
+        "ValuationDate"
+      ],
+      "title": "ValuationDate",
+      "description": "Payments will occur relative to the valuation date."
+    }
+  ]
+}

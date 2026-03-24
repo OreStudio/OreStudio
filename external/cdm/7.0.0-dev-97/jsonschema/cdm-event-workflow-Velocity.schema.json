@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "Velocity",
+  "properties": {
+    "periodMultiplier": {
+      "type": "integer"
+    },
+    "period": {
+      "$ref": "cdm-base-datetime-PeriodTimeEnum.schema.json"
+    }
+  }
+}

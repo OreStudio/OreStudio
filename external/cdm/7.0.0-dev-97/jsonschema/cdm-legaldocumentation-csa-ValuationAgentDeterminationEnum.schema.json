@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValuationAgentDeterminationEnum",
+  "description": "Specifies how the Valuation Agent is determined.",
+  "enum": [
+    "FixedPartyForDisputes",
+    "SoleValuationAgent",
+    "SwitchUponDefault",
+    "SwitchUponFailureToPerform"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FixedPartyForDisputes"
+      ],
+      "title": "FixedPartyForDisputes",
+      "description": "There is a fixed party for disputes."
+    },
+    
+    {
+      "enum": [
+        "SoleValuationAgent"
+      ],
+      "title": "SoleValuationAgent",
+      "description": "There is only a Sole Valuation Agent."
+    },
+    
+    {
+      "enum": [
+        "SwitchUponDefault"
+      ],
+      "title": "SwitchUponDefault",
+      "description": "Switch of Valuation Agent can occur upon Default."
+    },
+    
+    {
+      "enum": [
+        "SwitchUponFailureToPerform"
+      ],
+      "title": "SwitchUponFailureToPerform",
+      "description": "Switch of Valuation Agent can occur upon failure to perform."
+    }
+  ]
+}

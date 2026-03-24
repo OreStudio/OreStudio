@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "ResourceTypeEnum",
+  "description": "The enumerated values to specify the type of a resource (e.g. document).",
+  "enum": [
+    "Confirmation",
+    "SupplementalMaterialEconomicTerms",
+    "TermSheet"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Confirmation"
+      ],
+      "title": "Confirmation",
+      "description": "Document describing the legal terms of a transaction."
+    },
+    
+    {
+      "enum": [
+        "SupplementalMaterialEconomicTerms"
+      ],
+      "title": "SupplementalMaterialEconomicTerms",
+      "description": "Document providing supplemental material economic terms to the FpML data representation. The initial intended usage is to fulfill the CFTC Part 45 rule requirement to report ‘Any other terms(s) of the swap matched or affirmed by the counterparties in verifying the swap’ when the reporting is done via the generic FpML representation."
+    },
+    
+    {
+      "enum": [
+        "TermSheet"
+      ],
+      "title": "TermSheet",
+      "description": "Document describing the economic characteristics of a transaction."
+    }
+  ]
+}

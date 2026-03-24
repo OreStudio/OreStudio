@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "AcctOwnr",
+  "properties": {
+    "id": {
+      "$ref": "cdm-regulation-Id.schema.json"
+    }
+  },
+  "required": [
+    "id"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "AssetClassEnum",
+  "description": "The enumerated values to specify the FpML asset class categorization.",
+  "enum": [
+    "Commodity",
+    "Credit",
+    "Equity",
+    "ForeignExchange",
+    "InterestRate",
+    "MoneyMarket"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Commodity"
+      ],
+      "title": "Commodity",
+      "description": "Commodity."
+    },
+    
+    {
+      "enum": [
+        "Credit"
+      ],
+      "title": "Credit",
+      "description": "Credit."
+    },
+    
+    {
+      "enum": [
+        "Equity"
+      ],
+      "title": "Equity",
+      "description": "Equity."
+    },
+    
+    {
+      "enum": [
+        "ForeignExchange"
+      ],
+      "title": "ForeignExchange",
+      "description": "ForeignExchange."
+    },
+    
+    {
+      "enum": [
+        "InterestRate"
+      ],
+      "title": "InterestRate",
+      "description": "InterestRate."
+    },
+    
+    {
+      "enum": [
+        "MoneyMarket"
+      ],
+      "title": "MoneyMarket",
+      "description": "Money Market Assets like CP and CD."
+    }
+  ]
+}

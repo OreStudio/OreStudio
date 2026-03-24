@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "HoldingPostedCollateralEnum",
+  "description": "The enumerated values to specify condition(s) required by a party from the other party to hold its posted collateral.",
+  "enum": [
+    "AcceptableCustodian"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AcceptableCustodian"
+      ],
+      "title": "AcceptableCustodian",
+      "description": "The custodian is acceptable to the other party to the agreement."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "SwapCurveValuation",
+  "description": "A class to specify a valuation swap curve, which is used as part of the strike construct for the bond and convertible bond options.",
+  "properties": {
+    "floatingRateIndex": {
+      "$ref": "cdm-base-staticdata-asset-rates-FloatingRateIndexEnum.schema.json"
+    },
+    "indexTenor": {
+      "description": "The ISDA Designated Maturity, i.e. the tenor of the floating rate.",
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    },
+    "spread": {
+      "description": "Spread in basis points over the floating rate index.",
+      "type": "number"
+    },
+    "side": {
+      "description": "The side (bid/mid/ask) of the measure.",
+      "$ref": "cdm-observable-asset-QuotationSideEnum.schema.json"
+    }
+  },
+  "required": [
+    "floatingRateIndex",
+    "spread"
+  ]
+}

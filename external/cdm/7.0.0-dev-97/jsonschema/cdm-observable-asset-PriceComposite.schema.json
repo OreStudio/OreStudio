@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "PriceComposite",
+  "description": "Defines the inputs required to calculate a price as a simple composite of 2 other values. The inputs consist of 2 numbers and a simple arithmetic operator. This generic data type applies to a variety of use cases where a price is obtained by simple composition, e.g. dirty = clean + accrued (Bond), forward rate = spot rate + forward point (FX) etc.",
+  "properties": {
+    "baseValue": {
+      "description": "The 1st value in the arithmetic operation, which may be non-commutative in some cases: Subtract, Divide). This 1st operand is called 'baseValue' as it refers to the price anchor in the arithmetic operation: e.g. the clean price (Bond) or the spot rate (FX).",
+      "type": "number"
+    },
+    "operand": {
+      "description": "The 2nd value in the arithmetic operation, which may be non-commutative in some cases: Subtract, Divide). The 2nd operand is called 'operand' to distinguish it from the 1st one which is the price anchor.",
+      "type": "number"
+    },
+    "arithmeticOperator": {
+      "description": "Specifies the arithmetic operator via an enumeration.",
+      "$ref": "cdm-base-math-ArithmeticOperationEnum.schema.json"
+    },
+    "operandType": {
+      "description": "Optionally qualifies the type of operand: e.g. accrued or forward point.",
+      "$ref": "cdm-observable-asset-PriceOperandEnum.schema.json"
+    }
+  },
+  "required": [
+    "baseValue",
+    "operand",
+    "arithmeticOperator"
+  ]
+}

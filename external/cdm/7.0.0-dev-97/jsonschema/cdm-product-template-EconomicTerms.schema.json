@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "EconomicTerms",
+  "description": " This class represents the full set of price-forming features associated with a contractual product: the payout component, the notional/quantity, the effective and termination date and the date adjustment provisions when applying uniformily across the payout components. This class also includes the legal provisions which have valuation implications: cancelable provision, extendible provision, early termination provision and extraordinary events specification.",
+  "properties": {
+    "effectiveDate": {
+      "description": "The first day of the terms of the trade. This day may be subject to adjustment in accordance with a business day convention.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "effectiveTime": {
+      "description": "The time and zone of the first day of the terms of the trade. It can also be specified in relation to another time.",
+      "$ref": "cdm-base-datetime-DirectOrRelativeTime.schema.json"
+    },
+    "terminationDate": {
+      "description": "The last day of the terms of the trade. This date may be subject to adjustments in accordance with the business day convention. It can also be specified in relation to another scheduled date (e.g. the last payment date).",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    },
+    "terminationTime": {
+      "description": "The time and zone of the last day of the terms of the trade. It can also be specified in relation to another time.",
+      "$ref": "cdm-base-datetime-DirectOrRelativeTime.schema.json"
+    },
+    "dateAdjustments": {
+      "description": "The business day adjustment convention when it applies across all the payout components. This specification of the business day convention and financial business centers is used for adjusting any calculation period date if it would otherwise fall on a day that is not a business day in the specified business center.",
+      "$ref": "cdm-base-datetime-BusinessDayAdjustments.schema.json"
+    },
+    "payout": {
+      "description": "The payout specifies the future cashflow computation methodology which characterizes a financial product.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-Payout.schema.json"
+      },
+      "minItems": 1
+    },
+    "terminationProvision": {
+      "description": "Contains optional provisions pertaining to the termination characteristics of a contract.",
+      "$ref": "cdm-product-template-TerminationProvision.schema.json"
+    },
+    "calculationAgent": {
+      "description": "The ISDA calculation agent responsible for performing duties as defined in the applicable product definitions.",
+      "$ref": "cdm-observable-asset-CalculationAgent.schema.json"
+    },
+    "nonStandardisedTerms": {
+      "description": "Specifies, when boolean value is True, that additional economic terms exist that have not been included in the product representation.",
+      "type": "boolean"
+    },
+    "collateral": {
+      "description": "Represents the collateral obligations of a party.",
+      "$ref": "cdm-product-collateral-Collateral.schema.json"
+    }
+  }
+}

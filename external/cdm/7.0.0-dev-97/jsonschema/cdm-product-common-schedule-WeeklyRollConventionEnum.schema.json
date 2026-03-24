@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "string",
+  "title": "WeeklyRollConventionEnum",
+  "description": "The enumerated values to specify the weekly roll day.",
+  "enum": [
+    "FRI",
+    "MON",
+    "SAT",
+    "SUN",
+    "TBILL",
+    "THU",
+    "TUE",
+    "WED"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FRI"
+      ],
+      "title": "FRI",
+      "description": "Friday"
+    },
+    
+    {
+      "enum": [
+        "MON"
+      ],
+      "title": "MON",
+      "description": "Monday"
+    },
+    
+    {
+      "enum": [
+        "SAT"
+      ],
+      "title": "SAT",
+      "description": "Saturday"
+    },
+    
+    {
+      "enum": [
+        "SUN"
+      ],
+      "title": "SUN",
+      "description": "Sunday"
+    },
+    
+    {
+      "enum": [
+        "TBILL"
+      ],
+      "title": "TBILL",
+      "description": "13-week and 26-week U.S. Treasury Bill Auction Dates. Each Monday except for U.S. (New York) holidays when it will occur on a Tuesday"
+    },
+    
+    {
+      "enum": [
+        "THU"
+      ],
+      "title": "THU",
+      "description": "Thursday"
+    },
+    
+    {
+      "enum": [
+        "TUE"
+      ],
+      "title": "TUE",
+      "description": "Tuesday"
+    },
+    
+    {
+      "enum": [
+        "WED"
+      ],
+      "title": "WED",
+      "description": "Wednesday"
+    }
+  ]
+}

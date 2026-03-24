@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "PrimitiveInstruction",
+  "description": "A Primitive Instruction describes the inputs required to pass into the corresponding PrimitiveEvent function.",
+  "properties": {
+    "contractFormation": {
+      "description": "Specifies instructions describing an contract formation primitive event.",
+      "$ref": "cdm-event-common-ContractFormationInstruction.schema.json"
+    },
+    "execution": {
+      "description": "Specifies instructions describing an execution primitive event.",
+      "$ref": "cdm-event-common-ExecutionInstruction.schema.json"
+    },
+    "exercise": {
+      "description": "Specifies instructions describing an exercise primitive event.",
+      "$ref": "cdm-event-common-ExerciseInstruction.schema.json"
+    },
+    "partyChange": {
+      "description": "Specifies instructions describing a party change primitive event.",
+      "$ref": "cdm-event-common-PartyChangeInstruction.schema.json"
+    },
+    "quantityChange": {
+      "description": "Specifies instructions describing an quantity change primitive event.",
+      "$ref": "cdm-event-common-QuantityChangeInstruction.schema.json"
+    },
+    "reset": {
+      "description": "Specifies instructions describing a reset event.",
+      "$ref": "cdm-event-common-ResetInstruction.schema.json"
+    },
+    "split": {
+      "description": "Specifies instructions to split a trade into multiple branches.",
+      "$ref": "cdm-event-common-SplitInstruction.schema.json"
+    },
+    "termsChange": {
+      "description": "Specifies instructions describing a terms change primitive event.",
+      "$ref": "cdm-event-common-TermsChangeInstruction.schema.json"
+    },
+    "transfer": {
+      "description": "Specifies instructions describing a transfer primitive event.",
+      "$ref": "cdm-event-common-TransferInstruction.schema.json"
+    },
+    "indexTransition": {
+      "description": "Specifies inputs needed to process a Index Transition business event.",
+      "$ref": "cdm-event-common-IndexTransitionInstruction.schema.json"
+    },
+    "stockSplit": {
+      "description": "Specifies inputs needed to process a Stock Split business event.",
+      "$ref": "cdm-event-common-StockSplitInstruction.schema.json"
+    },
+    "observation": {
+      "description": "Specifies inputs needed to process an observation.",
+      "$ref": "cdm-event-common-ObservationInstruction.schema.json"
+    },
+    "valuation": {
+      "description": "Specifies inputs needed to process an update of a valuation.",
+      "$ref": "cdm-event-common-ValuationInstruction.schema.json"
+    }
+  }
+}

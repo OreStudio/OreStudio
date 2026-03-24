@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "OptionalEarlyTermination",
+  "description": "A data defining:  an early termination provision where either or both parties have the right to exercise.",
+  "properties": {
+    "singlePartyOption": {
+      "description": "If optional early termination is not available to both parties then this component specifies the buyer and seller of the option. In FpML, this attribute is of type SinglePsrtyOption, which actually consists of the BuyerSeller.model.",
+      "$ref": "cdm-base-staticdata-party-BuyerSeller.schema.json"
+    },
+    "mutualEarlyTermination": {
+      "description": "Used for specifying whether the Mutual Early Termination Right that is detailed in the Master Confirmation will apply.",
+      "type": "boolean"
+    },
+    "exerciseNotice": {
+      "description": "Definition of the party to whom notice of exercise should be given.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-ExerciseNotice.schema.json"
+      },
+      "minItems": 0
+    },
+    "followUpConfirmation": {
+      "description": "A flag to indicate whether follow-up confirmation of exercise (written or electronic) is required following telephonic notice by the buyer to the seller or seller's agent.",
+      "type": "boolean"
+    },
+    "calculationAgent": {
+      "description": "The ISDA Calculation Agent responsible for performing duties associated with an optional early termination.",
+      "$ref": "cdm-observable-asset-CalculationAgent.schema.json"
+    },
+    "cashSettlement": {
+      "description": "If specified, this means that cash settlement is applicable to the transaction and defines the parameters associated with the cash settlement procedure. If not specified, then physical settlement is applicable.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "optionalEarlyTerminationAdjustedDates": {
+      "description": "An early termination provision to terminate the trade at fair value where one or both parties have the right to decide on termination.",
+      "$ref": "cdm-product-template-OptionalEarlyTerminationAdjustedDates.schema.json"
+    },
+    "exerciseTerms": {
+      "description": "The exercise terms associated with the optional early termination, including details such as exercise style, exercise fees, and any other relevant conditions or terms.",
+      "$ref": "cdm-product-template-ExerciseTerms.schema.json"
+    }
+  },
+  "required": [
+    "exerciseTerms"
+  ]
+}

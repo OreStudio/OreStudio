@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "RegionalGovernmentIssuerType",
+  "description": "Represents a class to allow specification of different type of Regional government collateral.",
+  "properties": {
+    "sovereignRecourse": {
+      "description": "Applies to regional governments, local authorities or municipals.  True if entity has recourse to sovereign (e.g. debt guaranteed by government).  False if entity does not have recourse to sovereign.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "sovereignRecourse"
+  ]
+}

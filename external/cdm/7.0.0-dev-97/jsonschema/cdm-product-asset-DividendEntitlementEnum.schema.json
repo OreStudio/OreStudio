@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "DividendEntitlementEnum",
+  "description": "The enumerated values to specify the date on which the receiver of the equity payout is entitled to the dividend.",
+  "enum": [
+    "ExDate",
+    "RecordDate"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ExDate"
+      ],
+      "title": "ExDate",
+      "description": "Dividend entitlement is on the dividend ex-date."
+    },
+    
+    {
+      "enum": [
+        "RecordDate"
+      ],
+      "title": "RecordDate",
+      "description": "Dividend entitlement is on the dividend record date."
+    }
+  ]
+}

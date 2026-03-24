@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "MinimumTransferAmountAmendment",
+  "description": " A class to specify whether Amendment to Minimum Transfer Amount language is applicable or not.",
+  "properties": {
+    "isApplicable": {
+      "description": "The definition of Minimum Transfer Amount in any Other Regulatory CSA will be amended when applicable.",
+      "type": "boolean"
+    },
+    "effectiveDate": {
+      "description": "The effective date of the Amendment to Termination Currency.",
+      "$ref": "cdm-legaldocumentation-csa-AmendmentEffectiveDate.schema.json"
+    },
+    "partyElections": {
+      "description": "The party elective amounts.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ElectiveAmountElection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

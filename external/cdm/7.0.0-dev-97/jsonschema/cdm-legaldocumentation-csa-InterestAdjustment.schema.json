@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "InterestAdjustment",
+  "description": "A class to specify whether the Interest Adjustment is applicable and what its periodicity is.",
+  "properties": {
+    "isApplicable": {
+      "description": "The Interest Adjustment is applicable when True and not applicable when False.",
+      "type": "boolean"
+    },
+    "periodicity": {
+      "description": "The qualification of the Interest Adjustment periodicity.",
+      "$ref": "cdm-legaldocumentation-csa-InterestAdjustmentPeriodicity.schema.json"
+    }
+  },
+  "required": [
+    "isApplicable",
+    "periodicity"
+  ]
+}

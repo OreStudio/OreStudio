@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "ResetFrequency",
+  "description": "A class defining the reset frequency. In the case of a weekly reset, also specifies the day of the week that the reset occurs. If the reset frequency is greater than the calculation period frequency the this implies that more or more reset dates is established for each calculation period and some form of rate averaging is applicable. The specific averaging method of calculation is specified in FloatingRateCalculation. In case the reset frequency is of value T (term), the period is defined by the swap/swapStream/calculationPerioDates/effectiveDate and the swap/swapStream/calculationPerioDates/terminationDate.",
+  "properties": {
+    "periodMultiplier": {
+      "description": "A time period multiplier, e.g. 1, 2, or 3. If the period value is T (Term) then period multiplier must contain the value 1.",
+      "type": "integer"
+    },
+    "period": {
+      "description": "A time period, e.g. a day, week, month, year or term of the stream.",
+      "$ref": "cdm-base-datetime-PeriodExtendedEnum.schema.json"
+    },
+    "weeklyRollConvention": {
+      "description": "The day of the week on which a weekly reset date occurs. This element must be included if the reset frequency is defined as weekly and not otherwise.",
+      "$ref": "cdm-product-common-schedule-WeeklyRollConventionEnum.schema.json"
+    }
+  }
+}

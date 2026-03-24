@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "EarlyTerminationProvision",
+  "description": "A data defining:  an early termination provision for a swap. This early termination is at fair value, i.e. on termination the fair value of the product must be settled between the parties.",
+  "properties": {
+    "mandatoryEarlyTermination": {
+      "description": "A mandatory early termination provision to terminate the swap at fair value.",
+      "$ref": "cdm-product-template-MandatoryEarlyTermination.schema.json"
+    },
+    "mandatoryEarlyTerminationDateTenor": {
+      "description": "Period after trade date of the mandatory early termination date.",
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    },
+    "optionalEarlyTermination": {
+      "description": "An option for either or both parties to terminate the swap at fair value.",
+      "$ref": "cdm-product-template-OptionalEarlyTermination.schema.json"
+    },
+    "optionalEarlyTerminationParameters": {
+      "description": "Definition of the first early termination date and the frequency of the termination dates subsequent to that. American exercise is defined by having a frequency of one day.",
+      "$ref": "cdm-product-template-ExercisePeriod.schema.json"
+    }
+  }
+}

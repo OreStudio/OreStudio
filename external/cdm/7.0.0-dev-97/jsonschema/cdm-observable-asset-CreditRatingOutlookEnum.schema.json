@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "CreditRatingOutlookEnum",
+  "description": "Represents the enumerated values to specify the credit rating outlook.",
+  "enum": [
+    "Developing",
+    "Negative",
+    "Positive",
+    "Stable"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Developing"
+      ],
+      "title": "Developing",
+      "description": "Denotes a rating may be raised, lowered, or affirmed."
+    },
+    
+    {
+      "enum": [
+        "Negative"
+      ],
+      "title": "Negative",
+      "description": "Denotes a rating may be lowered."
+    },
+    
+    {
+      "enum": [
+        "Positive"
+      ],
+      "title": "Positive",
+      "description": "Denotes a rating may be raised."
+    },
+    
+    {
+      "enum": [
+        "Stable"
+      ],
+      "title": "Stable",
+      "description": "Denotes a rating is not likely to change."
+    }
+  ]
+}

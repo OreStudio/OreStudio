@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "FallbackReferencePrice",
+  "description": "The method, prioritised by the order it is listed in this element, to get a replacement rate for the disrupted settlement rate option.",
+  "properties": {
+    "valuationPostponement": {
+      "description": "Specifies how long to wait to get a quote from a settlement rate option upon a price source disruption.",
+      "$ref": "cdm-observable-asset-ValuationPostponement.schema.json"
+    },
+    "fallBackSettlementRateOption": {
+      "description": "This settlement rate option will be used in its place.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-metafields-FieldWithMetaSettlementRateOptionEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "fallbackSurveyValuationPostponement": {
+      "description": "Request rate quotes from the market. This element is set as type Empty in FpML. When present, the FpML synonym is mapped to a value True in the CDM.",
+      "type": "boolean"
+    },
+    "calculationAgentDetermination": {
+      "description": "The calculation agent will decide the rate.",
+      "$ref": "cdm-observable-asset-CalculationAgent.schema.json"
+    }
+  }
+}

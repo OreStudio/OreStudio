@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "TransferInformationElection",
+  "description": "Specifies the party reference and the associated transfer & contact information.",
+  "properties": {
+    "partyReference": {
+      "description": "The party to which the election and details apply.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "primaryContactInformation": {
+      "description": "The main notice/address information of the party.",
+      "$ref": "cdm-base-staticdata-party-ContactInformation.schema.json"
+    },
+    "primaryContactInformation": {
+      "description": "The main notice/address and account information of the party.",
+      "$ref": "cdm-legaldocumentation-common-TransferContactInformation.schema.json"
+    }
+  },
+  "required": [
+    "primaryContactInformation"
+  ]
+}

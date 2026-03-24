@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "MandatoryEarlyTermination",
+  "description": "A data to:  define an early termination provision for which exercise is mandatory.",
+  "properties": {
+    "mandatoryEarlyTerminationDate": {
+      "description": "The early termination date associated with a mandatory early termination of a swap.",
+      "$ref": "cdm-base-datetime-AdjustableDate.schema.json"
+    },
+    "calculationAgent": {
+      "description": "The ISDA Calculation Agent responsible for performing duties associated with an optional early termination.",
+      "$ref": "cdm-observable-asset-CalculationAgent.schema.json"
+    },
+    "cashSettlement": {
+      "description": "If specified, this means that cash settlement is applicable to the transaction and defines the parameters associated with the cash settlement procedure. If not specified, then physical settlement is applicable.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "mandatoryEarlyTerminationAdjustedDates": {
+      "description": "The adjusted dates associated with a mandatory early termination provision. These dates have been adjusted for any applicable business day convention.",
+      "$ref": "cdm-product-template-MandatoryEarlyTerminationAdjustedDates.schema.json"
+    }
+  },
+  "required": [
+    "mandatoryEarlyTerminationDate",
+    "calculationAgent",
+    "cashSettlement"
+  ]
+}

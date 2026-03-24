@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "PersonIdentifier",
+  "description": "Comprises an identifier and a source. The associated metadata key denotes the ability to associate a hash value to the PersonIdentifier instantiations for the purpose of model cross-referencing, in support of functionality such as the event effect and the lineage.",
+  "properties": {
+    "identifier": {
+      "description": "Provides an identifier associated with a person. The identifier is unique within the public source specified in the source attribute.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "identifierType": {
+      "description": "Defines the source of the identifier.",
+      "$ref": "cdm-base-staticdata-party-PersonIdentifierTypeEnum.schema.json"
+    },
+    "country": {
+      "description": "The ISO 3166 standard code for the country issuing the identifier.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  },
+  "required": [
+    "identifier"
+  ]
+}

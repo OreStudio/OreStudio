@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "RoundingModeEnum",
+  "description": "The enumerated values to specify the rounding direction when rounding of a number to nearest.  Used by function cdm.base.math.RoundToNearest.",
+  "enum": [
+    "Down",
+    "Up"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Down"
+      ],
+      "title": "Down",
+      "description": "A number will be rounded down to the specified nearest number. For example, 529 rounded down to the nearest 10 is 520."
+    },
+    
+    {
+      "enum": [
+        "Up"
+      ],
+      "title": "Up",
+      "description": "A number will be rounded up to the specified nearest number. For example, 521 rounded up to the nearest 10 is 530."
+    }
+  ]
+}

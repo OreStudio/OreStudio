@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "SettlementPayout",
+  "description": "Represents a forward settling payout. The underlier attribute captures the underlying payout, which is settled according to the settlementTerms attribute (which is part of PayoutBase). Both FX Spot and FX Forward should use this component.",
+  "properties": {
+    "payerReceiver": {
+      "description": "Canonical representation of the payer and receiver parties applicable to each payout leg.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "priceQuantity": {
+      "description": "Each payout leg must implement the quantity concept as a 'resolvable' type, which allows for different payout legs to be linked to each other (e.g. in the case of cross-curreny products).",
+      "$ref": "cdm-product-common-settlement-ResolvablePriceQuantity.schema.json"
+    },
+    "principalPayment": {
+      "description": "The specification of the principal exchange. Optional as only applicable in the case of cross-currency or zero-coupon swaps with a final payment.",
+      "$ref": "cdm-product-common-settlement-PrincipalPayments.schema.json"
+    },
+    "settlementTerms": {
+      "description": "Each payout leg must specifies its settlement terms, including the delivery type (i.e. cash vs physical, and their respective terms), the transfer type (DvP etc.) and settlement date, if any.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "underlier": {
+      "description": "The underlying financial product that will be physically or cash settled, which can be of any type, eg an asset such as cash or a security, or the cash settlement of an index rate.",
+      "$ref": "cdm-product-template-Underlier.schema.json"
+    },
+    "deliveryTerm": {
+      "description": "Also called contract month or delivery month. However, it's not always a month. It is usually expressed using a code, e.g. Z23 would be the Dec 2023 contract, (Z = December). For crude oil, the corresponding contract might be called CLZ23.",
+      "type": "string"
+    },
+    "delivery": {
+      "description": "Contains the information relative to the delivery of the asset.",
+      "$ref": "cdm-product-asset-AssetDeliveryInformation.schema.json"
+    },
+    "schedule": {
+      "description": "Allows the full representation of a payout by defining a set of schedule periods. It supports standard schedule customization by expressing all the dates, quantities, and pricing data in a non-parametric way.",
+      "$ref": "cdm-product-template-CalculationSchedule.schema.json"
+    }
+  },
+  "required": [
+    "underlier"
+  ]
+}

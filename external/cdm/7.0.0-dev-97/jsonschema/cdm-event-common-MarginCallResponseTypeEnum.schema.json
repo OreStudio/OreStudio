@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "MarginCallResponseTypeEnum",
+  "description": "Represents the enumeration values to define the response type to a margin call.",
+  "enum": [
+    "AgreeinFull",
+    "Dispute",
+    "PartiallyAgree"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AgreeinFull"
+      ],
+      "title": "AgreeinFull",
+      "description": "Specifies a 'Full Agreement' to Margin Call."
+    },
+    
+    {
+      "enum": [
+        "Dispute"
+      ],
+      "title": "Dispute",
+      "description": "Specifies a 'Full Dispute' to a Margin call."
+    },
+    
+    {
+      "enum": [
+        "PartiallyAgree"
+      ],
+      "title": "PartiallyAgree",
+      "description": "Specifies a 'Partial agreement' to Margin Call."
+    }
+  ]
+}

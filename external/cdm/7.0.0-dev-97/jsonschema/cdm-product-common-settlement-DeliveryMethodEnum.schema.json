@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "string",
+  "title": "DeliveryMethodEnum",
+  "description": "Specifies delivery methods for securities transactions. This coding-scheme defines the possible delivery methods for securities.",
+  "enum": [
+    "DeliveryVersusPayment",
+    "FreeOfPayment",
+    "PreDelivery",
+    "PrePayment"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "DeliveryVersusPayment"
+      ],
+      "title": "DeliveryVersusPayment",
+      "description": "Indicates that a securities delivery must be made against payment in simultaneous transmissions and stipulate each other."
+    },
+    
+    {
+      "enum": [
+        "FreeOfPayment"
+      ],
+      "title": "FreeOfPayment",
+      "description": "Indicates that a securities delivery can be made without a simultaneous cash payment in exchange and not depending on if payment obligations are fulfilled or not and vice versa."
+    },
+    
+    {
+      "enum": [
+        "PreDelivery"
+      ],
+      "title": "PreDelivery",
+      "description": "Indicates that a securities delivery must be made in full before the payment for the securities; fulfillment of payment obligations depends on securities delivery obligations fulfillment."
+    },
+    
+    {
+      "enum": [
+        "PrePayment"
+      ],
+      "title": "PrePayment",
+      "description": "Indicates that a payment in full amount must be made before the securities delivery; fulfillment of securities delivery obligations depends on payment obligations fulfillment."
+    }
+  ]
+}

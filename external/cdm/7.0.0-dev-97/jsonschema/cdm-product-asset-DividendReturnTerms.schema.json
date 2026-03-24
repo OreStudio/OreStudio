@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "DividendReturnTerms",
+  "description": "A class describing the conditions governing the payment of dividends to the receiver of the equity return, with the exception of the dividend payout ratio, which is defined for each of the underlying components.",
+  "properties": {
+    "dividendPayoutRatio": {
+      "description": "Specifies the dividend payout ratio associated with each underlier. In FpML 5.10 the payout is positioned at the underlier level, although there is an intent to reconsider this approach and position it at the leg level. This is approach adopted by the CDM.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-DividendPayoutRatio.schema.json"
+      },
+      "minItems": 0
+    },
+    "dividendReinvestment": {
+      "description": "Boolean element that defines whether the dividend will be reinvested or not.",
+      "type": "boolean"
+    },
+    "dividendEntitlement": {
+      "description": "Defines the date on which the receiver of the equity return is entitled to the dividend.",
+      "$ref": "cdm-product-asset-DividendEntitlementEnum.schema.json"
+    },
+    "dividendAmountType": {
+      "description": "Specifies whether the dividend is paid with respect to the Dividend Period.",
+      "$ref": "cdm-product-asset-DividendAmountTypeEnum.schema.json"
+    },
+    "performance": {
+      "description": "Performance calculation, in accordance with Part 1 Section 12 of the 2018 ISDA CDM Equity Confirmation for Security Equity Swap, Para 75. 'Equity Performance'. Cumulative performance is used as a notional multiplier factor on both legs of an Equity Swap.",
+      "type": "string"
+    },
+    "firstOrSecondPeriod": {
+      "description": "2002 ISDA Equity Derivatives Definitions: Dividend Period as either the First Period or the Second Period. | ",
+      "$ref": "cdm-product-asset-DividendPeriodEnum.schema.json"
+    },
+    "extraordinaryDividendsParty": {
+      "description": "Specifies the party which determines if dividends are extraordinary in relation to normal levels.",
+      "$ref": "cdm-base-staticdata-party-AncillaryRoleEnum.schema.json"
+    },
+    "excessDividendAmount": {
+      "description": "Determination of Gross Cash Dividend per Share.",
+      "$ref": "cdm-product-asset-DividendAmountTypeEnum.schema.json"
+    },
+    "dividendCurrency": {
+      "description": "Specifies the currency in which the dividend will be denominated, e.g. the dividend currency, or a specified currency. This class is not specified as such in FpML, which makes use of the CurrencyAndDeterminationMethod.model to specify such terms.",
+      "$ref": "cdm-product-asset-DividendCurrency.schema.json"
+    },
+    "nonCashDividendTreatment": {
+      "description": "Specifies the treatment of Non-Cash Dividends.",
+      "$ref": "cdm-product-asset-NonCashDividendTreatmentEnum.schema.json"
+    },
+    "dividendComposition": {
+      "description": "Specifies how the composition of Dividends is to be determined.",
+      "$ref": "cdm-product-asset-DividendCompositionEnum.schema.json"
+    },
+    "specialDividends": {
+      "description": "Specifies the method according to which special dividends are determined.",
+      "type": "boolean"
+    },
+    "materialDividend": {
+      "description": "If present and true, then material non cash dividends are applicable.",
+      "type": "boolean"
+    },
+    "dividendPeriod": {
+      "description": "One to many time bounded dividend payment periods, each with a dividend payment date per period.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-DividendPeriod.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

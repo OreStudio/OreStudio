@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "CsaTypeEnum",
+  "description": "How is the Creadit Support Annex defined for this transaction as defined in the 2021 ISDA Definitions, section 18.2.1 ",
+  "enum": [
+    "ExistingCSA",
+    "NoCSA",
+    "ReferenceVMCSA"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ExistingCSA"
+      ],
+      "title": "ExistingCSA",
+      "description": "Thre is an existing Credit Support Annex"
+    },
+    
+    {
+      "enum": [
+        "NoCSA"
+      ],
+      "title": "NoCSA",
+      "description": "There is no CSA applicable"
+    },
+    
+    {
+      "enum": [
+        "ReferenceVMCSA"
+      ],
+      "title": "ReferenceVMCSA",
+      "description": "There is a bilateral Credit Support Annex specific to the transaction"
+    }
+  ]
+}

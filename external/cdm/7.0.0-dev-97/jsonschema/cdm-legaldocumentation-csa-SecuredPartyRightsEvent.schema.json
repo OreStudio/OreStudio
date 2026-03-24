@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SecuredPartyRightsEvent",
+  "description": "A class to specify Secured Party Rights Event language.",
+  "properties": {
+    "securedPartyRightsEventElection": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-SecuredPartyRightsEventElection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "earlyTerminationDateOptionalLanguage": {
+      "description": "A boolean attribute to specify whether Failure to Pay Early Termination language is included (True) or excluded (False) from the agreement.",
+      "type": "boolean"
+    },
+    "failureToPayEarlyTermination": {
+      "description": "A boolean attribute to specify whether Failure to Pay Early Termination language in the agreement is deemed applicable or not.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "earlyTerminationDateOptionalLanguage"
+  ]
+}

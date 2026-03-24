@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "DirectionRatingSet",
+  "description": "A logical container to hold a defined set of related data. In this case the collation of Ratings Agency, Rating value and an associated direction that are grouped by either AND or OR logic.",
+  "properties": {
+    "AllDirectionRating": {
+      "description": "Enables two or more Direction and Ratings to be combined using AND logic.",
+      "$ref": "cdm-legaldocumentation-csa-AllDirectionRating.schema.json"
+    },
+    "AnyDirectionRating": {
+      "description": "Enables two or more Direction and Ratings to be combined using OR logic.",
+      "$ref": "cdm-legaldocumentation-csa-AnyDirectionRating.schema.json"
+    },
+    "DirectionRating": {
+      "description": "A logical container to hold a defined set of related data. In this case the collation of Ratings Agency, Rating value and an associated direction.",
+      "$ref": "cdm-legaldocumentation-csa-DirectionRating.schema.json"
+    }
+  }
+}

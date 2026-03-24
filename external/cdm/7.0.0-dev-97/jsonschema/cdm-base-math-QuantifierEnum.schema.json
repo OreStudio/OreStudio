@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "QuantifierEnum",
+  "description": "Represents the enumerated values to specify a logical quantification, i.e. either All or Any.",
+  "enum": [
+    "All",
+    "Any"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "All"
+      ],
+      "title": "All",
+      "description": "Specifies that the condition in the scope of the quantifier is true of every member of the domain i.e. every one of the elements in scope."
+    },
+    
+    {
+      "enum": [
+        "Any"
+      ],
+      "title": "Any",
+      "description": "Specifies that the condition in the scope of the quantifier is true of at least one member of the domain i.e. one or more of the elements in scope."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "CorporateAction",
+  "description": "Specifies the relevant data regarding a corporate action",
+  "properties": {
+    "corporateActionType": {
+      "description": "The type of corporate action taking place.",
+      "$ref": "cdm-event-common-CorporateActionTypeEnum.schema.json"
+    },
+    "exDate": {
+      "description": "The date on which the corporate action is known to have taken place.",
+      "type": "string"
+    },
+    "payDate": {
+      "description": "The date on which resulting from the corporate action are delivered.",
+      "type": "string"
+    },
+    "recordDate": {
+      "description": "The date on which the account phyical balance and related underlier ownership is recorded by the custodian.",
+      "type": "string"
+    },
+    "announcementDate": {
+      "description": "The date on which the corporate action is announced by the issuer.",
+      "type": "string"
+    },
+    "underlier": {
+      "description": "The underlier impacted by the corporate action.",
+      "$ref": "cdm-product-template-Underlier.schema.json"
+    },
+    "adjustmentFactor": {
+      "description": "Specifies any additional details e.g. further descriptions depending on the particular type of Corporate Action, adjustmentFactor, calculations",
+      "$ref": "cdm-event-common-AdjustmentFactor.schema.json"
+    },
+    "informationSource": {
+      "description": "A class defining the source of data used in an Observation for any purposes. The data is either sourced from a Provider, or from a Party.",
+      "$ref": "cdm-observable-asset-InformationSource.schema.json"
+    },
+    "dividendObservation": {
+      "description": "To record observations of dividends.",
+      "$ref": "cdm-observable-asset-PriceSchedule.schema.json"
+    },
+    "bespokeEventDescription": {
+      "description": "Corporate action triggered by the occurrence of an event which description is seperatly agreed between the parties and/or described in any referenced agreement (for instance bespoke term described in any string type objects present in most root attributes of Agreement type).",
+      "type": "string"
+    }
+  },
+  "required": [
+    "corporateActionType",
+    "exDate",
+    "payDate",
+    "underlier"
+  ]
+}

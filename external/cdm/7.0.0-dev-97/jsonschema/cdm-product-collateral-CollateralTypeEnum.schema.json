@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "CollateralTypeEnum",
+  "description": "Specifies the types of collateral that are accepted by the Lender",
+  "enum": [
+    "Cash",
+    "CashPool",
+    "NonCash"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Cash"
+      ],
+      "title": "Cash",
+      "description": "Security Lending Trades against Cash collateral"
+    },
+    
+    {
+      "enum": [
+        "CashPool"
+      ],
+      "title": "CashPool",
+      "description": "Security Lending Trades against CashPool collateral"
+    },
+    
+    {
+      "enum": [
+        "NonCash"
+      ],
+      "title": "NonCash",
+      "description": "Security Lending Trades against NonCash collateral"
+    }
+  ]
+}

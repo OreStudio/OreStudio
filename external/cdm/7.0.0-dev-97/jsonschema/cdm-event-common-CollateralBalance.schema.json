@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "CollateralBalance",
+  "description": "Represents common attributes to define a collateral balance recorded by the principal as held or posted.",
+  "properties": {
+    "collateralBalanceStatus": {
+      "description": "Defines the collateral balance breakdown of settlement status.",
+      "$ref": "cdm-event-common-CollateralStatusEnum.schema.json"
+    },
+    "haircutIndicator": {
+      "description": "Indicates if the collateral balance amount is based on pre or post haircut, if a haircut is associated with the collateral asset",
+      "$ref": "cdm-event-common-HaircutIndicatorEnum.schema.json"
+    },
+    "amountBaseCurrency": {
+      "description": "Specifies the collateral balance amount in base currency determined within a collateral legal agreement, or defined for reporting purposes.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "payerReceiver": {
+      "description": "Specifies each of the parties in the collateral balance and its perspective with regards to the direction of the collateral balance, posted or received.",
+      "$ref": "cdm-base-staticdata-party-PartyReferencePayerReceiver.schema.json"
+    }
+  },
+  "required": [
+    "amountBaseCurrency",
+    "payerReceiver"
+  ]
+}

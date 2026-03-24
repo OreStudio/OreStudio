@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "PassThrough",
+  "description": "Type which contains pass through payments.",
+  "properties": {
+    "passThroughItem": {
+      "description": "One to many pass through payment items.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-PassThroughItem.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

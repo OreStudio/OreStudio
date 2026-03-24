@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AdditionalTerminationEvent",
+  "description": "A class to specify an optional termination event, additional to the Termination Events that will be deemed an Access Condition (Initial Margin CSA) or a Specified Condition (Variation Margin CSA).",
+  "properties": {
+    "name": {
+      "description": "The name of the additional termination event.",
+      "type": "string"
+    },
+    "applicableParty": {
+      "description": "Whether the additional termination event is applicable for the relevant party.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

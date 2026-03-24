@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValuationDateFrequencyEnum",
+  "description": "The regularity of the event for the Valuation Date.",
+  "enum": [
+    "AsAgreed",
+    "AsSelected",
+    "Daily",
+    "Fortnightly",
+    "Monthly",
+    "Weekly"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsAgreed"
+      ],
+      "title": "AsAgreed"
+    },
+    
+    {
+      "enum": [
+        "AsSelected"
+      ],
+      "title": "AsSelected"
+    },
+    
+    {
+      "enum": [
+        "Daily"
+      ],
+      "title": "Daily"
+    },
+    
+    {
+      "enum": [
+        "Fortnightly"
+      ],
+      "title": "Fortnightly"
+    },
+    
+    {
+      "enum": [
+        "Monthly"
+      ],
+      "title": "Monthly"
+    },
+    
+    {
+      "enum": [
+        "Weekly"
+      ],
+      "title": "Weekly"
+    }
+  ]
+}

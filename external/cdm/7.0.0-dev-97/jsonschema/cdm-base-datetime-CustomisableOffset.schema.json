@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "CustomisableOffset",
+  "description": "A class to specify an offset either as a normalized [multiplier, period, dayType] or as a custom provision of type string.",
+  "properties": {
+    "offset": {
+      "$ref": "cdm-base-datetime-Offset.schema.json"
+    },
+    "customProvision": {
+      "type": "string"
+    }
+  }
+}

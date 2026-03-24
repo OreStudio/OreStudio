@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "RegMarginTypeEnum",
+  "description": "Represents the enumeration values to specify the margin type in relation to bilateral or regulatory obligation.",
+  "enum": [
+    "NonRegIM",
+    "RegIM",
+    "VM"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "NonRegIM"
+      ],
+      "title": "NonRegIM",
+      "description": "Indicates Non Regulatory Initial margin or independent amount"
+    },
+    
+    {
+      "enum": [
+        "RegIM"
+      ],
+      "title": "RegIM",
+      "description": "Indicates Regulatory Initial Margin"
+    },
+    
+    {
+      "enum": [
+        "VM"
+      ],
+      "title": "VM",
+      "description": "Indicates Variation Margin"
+    }
+  ]
+}

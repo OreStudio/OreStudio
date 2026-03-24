@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "ParametricDates",
+  "description": "Defines rules for the dates on which the price will be determined.",
+  "properties": {
+    "dayType": {
+      "description": "Denotes the enumerated values to specify the day type classification used in counting the number of days between two dates.",
+      "$ref": "cdm-base-datetime-DayTypeEnum.schema.json"
+    },
+    "dayDistribution": {
+      "description": "Denotes the method by which the pricing days are distributed across the pricing period.",
+      "$ref": "cdm-product-asset-DayDistributionEnum.schema.json"
+    },
+    "dayOfWeek": {
+      "description": "Indicates the days of the week on which the price will be determined.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-datetime-DayOfWeekEnum.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 7
+    },
+    "dayFrequency": {
+      "description": "Defines the occurrence of the dayOfWeek within the pricing period on which pricing will take place, e.g. the 3rd Friday within each Calculation Period. If omitted, every dayOfWeek will be a pricing day.",
+      "type": "number"
+    },
+    "lag": {
+      "description": "The pricing period per calculation period if the pricing days do not wholly fall within the respective calculation period.",
+      "$ref": "cdm-product-common-schedule-Lag.schema.json"
+    },
+    "businessCenters": {
+      "description": "The enumerated values to specify the business centers.",
+      "$ref": "cdm-base-datetime-BusinessCenters.schema.json"
+    }
+  },
+  "required": [
+    "dayType",
+    "businessCenters"
+  ]
+}

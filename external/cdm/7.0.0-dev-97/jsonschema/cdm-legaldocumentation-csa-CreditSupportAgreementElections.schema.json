@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CreditSupportAgreementElections",
+  "description": "The set of elections which specify a Credit Support Annex or Deed.",
+  "properties": {
+    "CreditSupportAgreementInitialMarginElections": {
+      "description": "The set of elections which specify an Initial Margin Credit Support Annex or Deed.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportAgreementInitialMarginElections.schema.json"
+    },
+    "CreditSupportAgreementVariationMarginElections": {
+      "description": "The set of elections which specify a Variation Margin Credit Support Annex or Deed.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportAgreementVariationMarginElections.schema.json"
+    },
+    "CreditSupportAgreementLegacyElections": {
+      "description": "The set of elections which specify a Legacy (1994 or 1995) Credit Support Annex or Deed.",
+      "$ref": "cdm-legaldocumentation-csa-CreditSupportAgreementLegacyElections.schema.json"
+    }
+  }
+}

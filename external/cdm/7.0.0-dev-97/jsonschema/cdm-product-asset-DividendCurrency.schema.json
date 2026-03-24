@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "DividendCurrency",
+  "description": "A class to specify the currency in which the dividends will be denominated, i.e. either in the dividend currency or in a currency specified as part of the contract.",
+  "properties": {
+    "currency": {
+      "description": "The currency in which the dividend is denominated. The list of valid currencies is not presently positioned as an enumeration as part of the CDM because that scope is limited to the values specified by ISDA and FpML. As a result, implementers have to make reference to the relevant standard, such as the ISO 4217 standard for currency codes.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "determinationMethod": {
+      "description": "Specifies the method according to which the dividend is determined, e.g. the dividend currency.",
+      "$ref": "cdm-observable-common-DeterminationMethodEnum.schema.json"
+    },
+    "currencyReference": {
+      "description": "Reference to a currency specified elsewhere in the document",
+      "$ref": "com-rosetta-model-metafields-ReferenceWithMetaString.schema.json"
+    }
+  }
+}

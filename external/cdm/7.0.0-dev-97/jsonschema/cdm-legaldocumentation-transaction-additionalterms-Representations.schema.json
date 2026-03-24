@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "Representations",
+  "properties": {
+    "nonReliance": {
+      "description": "If true, then non reliance is applicable.",
+      "type": "boolean"
+    },
+    "agreementsRegardingHedging": {
+      "description": "If true, then agreements regarding hedging are applicable.",
+      "type": "boolean"
+    },
+    "indexDisclaimer": {
+      "description": "If present and true, then index disclaimer is applicable.",
+      "type": "boolean"
+    },
+    "additionalAcknowledgements": {
+      "description": "If true, then additional acknowledgements are applicable.",
+      "type": "boolean"
+    },
+    "additionalBespokeTerms": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-transaction-Clause.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "nonReliance",
+    "agreementsRegardingHedging"
+  ]
+}

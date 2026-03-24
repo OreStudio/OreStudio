@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "LegacyIndependentAmountRatingsBased",
+  "description": "Specifies that the Independent Amount is determined using a credit rating.",
+  "properties": {
+    "compare": {
+      "description": "Specifies how multiple credit ratings are compared when determining the applicable Independent Amount, and whether that measure is highest, lowest, or a comparison of either.",
+      "$ref": "cdm-legaldocumentation-csa-IndependentAmountCompareEnum.schema.json"
+    },
+    "ratedParty": {
+      "description": "Specifies the party to whom the rating agency rating applies to for the purposes of determining the Independent Amount.",
+      "$ref": "cdm-legaldocumentation-csa-RatedPartyEnum.schema.json"
+    },
+    "namedAffiliate": {
+      "description": "Details the Named Affiliate where the Rated Party is Named Affiliate.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "namedEntity": {
+      "description": "Details the Named Entity where the Rated Party is Named Entity.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "ratingType": {
+      "description": "The relevant rating type.",
+      "$ref": "cdm-legaldocumentation-csa-RatingTypeEnum.schema.json"
+    },
+    "variableSet": {
+      "description": "A logical container designed to hold a defined set of related data. In this case the collation of Rating Information and an associated Independent Amount.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-RatingAgencyAmount.schema.json"
+      },
+      "minItems": 1
+    },
+    "currency": {
+      "description": "Specifies the currency applicable to the relevant Independent Amount.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  }
+}

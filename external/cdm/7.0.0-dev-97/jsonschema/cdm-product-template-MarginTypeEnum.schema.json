@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "string",
+  "title": "MarginTypeEnum",
+  "description": "This indicator defines which type of assets (cash or securities) is specified to apply as margin to the repo transaction.",
+  "enum": [
+    "Cash",
+    "Instrument"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Cash"
+      ],
+      "title": "Cash",
+      "description": "When the margin type is Cash, the margin factor is applied to the cash value of the transaction."
+    },
+    
+    {
+      "enum": [
+        "Instrument"
+      ],
+      "title": "Instrument",
+      "description": "When the margin type is Instrument, the margin factor is applied to the instrument value for the transaction. In the 'instrument' case, the haircut would be applied to the securities."
+    }
+  ]
+}

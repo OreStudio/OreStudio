@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SecurityAgreementElections",
+  "description": "The set of elections which specify a Security Agremeent.",
+  "properties": {
+    "pledgedAccount": {
+      "description": "The pledged account associated with the agreement.",
+      "$ref": "cdm-base-staticdata-party-Account.schema.json"
+    },
+    "enforcementEvent": {
+      "description": "Enforcement Events specific to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-EnforcementEvent.schema.json"
+    },
+    "deliveryInLieuRight": {
+      "description": "Delivery In Lieu rights.",
+      "type": "boolean"
+    },
+    "fullDischarge": {
+      "description": "Full Discharge condition.",
+      "type": "boolean"
+    },
+    "appropriatedCollateralValuation": {
+      "description": "The election for the Valuation of Appropriate Collateral.",
+      "$ref": "cdm-legaldocumentation-csa-AppropriatedCollateralValuation.schema.json"
+    },
+    "processAgent": {
+      "description": "The Process Agent that might be appointed by the parties to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-ProcessAgent.schema.json"
+    },
+    "jurisdictionRelatedTerms": {
+      "description": "The jurisdiction specific terms.",
+      "$ref": "cdm-legaldocumentation-csa-JurisdictionRelatedTerms.schema.json"
+    },
+    "additionalAmendments": {
+      "description": "Any additional amendments that might be specified by the parties to the agreement.",
+      "type": "string"
+    },
+    "additionalBespokeTerms": {
+      "description": "Any additional terms that might be specified applicable.",
+      "type": "string"
+    },
+    "executionTerms": {
+      "description": "The location and language of execution to determine duty to be paid.",
+      "$ref": "cdm-legaldocumentation-csa-ExecutionTerms.schema.json"
+    }
+  }
+}

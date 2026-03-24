@@ -1,0 +1,604 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "string",
+  "title": "CapacityUnitEnum",
+  "description": "Provides enumerated values for capacity units, generally used in the context of defining quantities for commodities.",
+  "enum": [
+    "ALW",
+    "BBL",
+    "BCF",
+    "BDFT",
+    "CBM",
+    "CER",
+    "CRT",
+    "DAG",
+    "DAY",
+    "DMTU",
+    "ENVCRD",
+    "ENVOFST",
+    "FEU",
+    "G",
+    "GBBSH",
+    "GBBTU",
+    "GBCWT",
+    "GBGAL",
+    "GBMBTU",
+    "GBMMBTU",
+    "GBT",
+    "GBTHM",
+    "GJ",
+    "GW",
+    "GWH",
+    "HL",
+    "HOGB",
+    "ISOBTU",
+    "ISOMBTU",
+    "ISOMMBTU",
+    "ISOTHM",
+    "J",
+    "KG",
+    "KL",
+    "KW",
+    "KWD",
+    "KWH",
+    "KWM",
+    "KWMIN",
+    "KWY",
+    "L",
+    "LB",
+    "MB",
+    "MBF",
+    "MJ",
+    "MMBBL",
+    "MMBF",
+    "MSF",
+    "MT",
+    "MW",
+    "MWD",
+    "MWH",
+    "MWM",
+    "MWMIN",
+    "MWY",
+    "OZT",
+    "SGB",
+    "TEU",
+    "USBSH",
+    "USBTU",
+    "USCWT",
+    "USGAL",
+    "USMBTU",
+    "USMMBTU",
+    "UST",
+    "USTHM"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ALW"
+      ],
+      "title": "ALW",
+      "description": "Denotes Allowances as standard unit."
+    },
+    
+    {
+      "enum": [
+        "BBL"
+      ],
+      "title": "BBL",
+      "description": "Denotes a Barrel as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "BCF"
+      ],
+      "title": "BCF",
+      "description": "Denotes Billion Cubic Feet as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "BDFT"
+      ],
+      "title": "BDFT",
+      "description": "Denotes Board Feet as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "CBM"
+      ],
+      "title": "CBM",
+      "description": "Denotes Cubic Meters as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "CER"
+      ],
+      "title": "CER",
+      "description": "Denotes Certified Emissions Reduction as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "CRT"
+      ],
+      "title": "CRT",
+      "description": "Denotes Climate Reserve Tonnes as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "DAG"
+      ],
+      "title": "DAG",
+      "description": "Denotes 10 grams as a standard unit used in precious metals contracts (e.g MCX)."
+    },
+    
+    {
+      "enum": [
+        "DAY"
+      ],
+      "title": "DAY",
+      "description": "Denotes a single day as a standard unit used in time charter trades."
+    },
+    
+    {
+      "enum": [
+        "DMTU"
+      ],
+      "title": "DMTU",
+      "description": "Denotes Dry Metric Ton (Tonne) Units - Consists of a metric ton of mass excluding moisture."
+    },
+    
+    {
+      "enum": [
+        "ENVCRD"
+      ],
+      "title": "ENVCRD",
+      "description": "Denotes Environmental Credit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "ENVOFST"
+      ],
+      "title": "ENVOFST",
+      "description": "Denotes Environmental Offset as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "FEU"
+      ],
+      "title": "FEU",
+      "description": "Denotes a 40 ft. Equivalent Unit container as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "G"
+      ],
+      "title": "G",
+      "description": "Denotes a Gram as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBBSH"
+      ],
+      "title": "GBBSH",
+      "description": "Denotes a GB Bushel as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBBTU"
+      ],
+      "title": "GBBTU",
+      "description": "Denotes a GB British Thermal Unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBCWT"
+      ],
+      "title": "GBCWT",
+      "description": "Denotes a GB Hundredweight unit as standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBGAL"
+      ],
+      "title": "GBGAL",
+      "description": "Denotes a GB Gallon unit as standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBMBTU"
+      ],
+      "title": "GBMBTU",
+      "description": "Denotes a Thousand GB British Thermal Units as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBMMBTU"
+      ],
+      "title": "GBMMBTU",
+      "description": "Denotes a Million GB British Thermal Units as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBT"
+      ],
+      "title": "GBT",
+      "description": "Denotes a GB Ton as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GBTHM"
+      ],
+      "title": "GBTHM",
+      "description": "Denotes a GB Thermal Unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GJ"
+      ],
+      "title": "GJ",
+      "description": "Denotes a Gigajoule as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GW"
+      ],
+      "title": "GW",
+      "description": "Denotes a Gigawatt as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "GWH"
+      ],
+      "title": "GWH",
+      "description": "Denotes a Gigawatt-hour as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "HL"
+      ],
+      "title": "HL",
+      "description": "Denotes a Hectolitre as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "HOGB"
+      ],
+      "title": "HOGB",
+      "description": "Denotes a 100-troy ounces Gold Bar as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "ISOBTU"
+      ],
+      "title": "ISOBTU",
+      "description": "Denotes an ISO British Thermal Unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "ISOMBTU"
+      ],
+      "title": "ISOMBTU",
+      "description": "Denotes a Thousand ISO British Thermal Unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "ISOMMBTU"
+      ],
+      "title": "ISOMMBTU",
+      "description": "Denotes a Million ISO British Thermal Unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "ISOTHM"
+      ],
+      "title": "ISOTHM",
+      "description": "Denotes an ISO Thermal Unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "J"
+      ],
+      "title": "J",
+      "description": "Denotes a Joule as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KG"
+      ],
+      "title": "KG",
+      "description": "Denotes a Kilogram as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KL"
+      ],
+      "title": "KL",
+      "description": "Denotes a Kilolitre as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KW"
+      ],
+      "title": "KW",
+      "description": "Denotes a Kilowatt as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KWD"
+      ],
+      "title": "KWD",
+      "description": "Denotes a Kilowatt-day as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KWH"
+      ],
+      "title": "KWH",
+      "description": "Denotes a Kilowatt-hour as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KWM"
+      ],
+      "title": "KWM",
+      "description": "Denotes a Kilowatt-month as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KWMIN"
+      ],
+      "title": "KWMIN",
+      "description": "Denotes a Kilowatt-minute as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "KWY"
+      ],
+      "title": "KWY",
+      "description": "Denotes a Kilowatt-year as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "L"
+      ],
+      "title": "L",
+      "description": "Denotes a Litre as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "LB"
+      ],
+      "title": "LB",
+      "description": "Denotes a Pound as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MB"
+      ],
+      "title": "MB",
+      "description": "Denotes a Thousand Barrels as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MBF"
+      ],
+      "title": "MBF",
+      "description": "Denotes a Thousand board feet, which are used in contracts on forestry underlyers as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MJ"
+      ],
+      "title": "MJ",
+      "description": "Denotes a Megajoule as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MMBBL"
+      ],
+      "title": "MMBBL",
+      "description": "Denotes a Million Barrels as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MMBF"
+      ],
+      "title": "MMBF",
+      "description": "Denotes a Million board feet, which are used in contracts on forestry underlyers as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MSF"
+      ],
+      "title": "MSF",
+      "description": "Denotes a Thousand square feet as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MT"
+      ],
+      "title": "MT",
+      "description": "Denotes a Metric Ton as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MW"
+      ],
+      "title": "MW",
+      "description": "Denotes a Megawatt as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MWD"
+      ],
+      "title": "MWD",
+      "description": "Denotes a Megawatt-day as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MWH"
+      ],
+      "title": "MWH",
+      "description": "Denotes a Megawatt-hour as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MWM"
+      ],
+      "title": "MWM",
+      "description": "Denotes a Megawatt-month as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MWMIN"
+      ],
+      "title": "MWMIN",
+      "description": "Denotes a Megawatt-minute as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "MWY"
+      ],
+      "title": "MWY",
+      "description": "Denotes a Megawatt-year as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "OZT"
+      ],
+      "title": "OZT",
+      "description": "Denotes a Troy Ounce as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "SGB"
+      ],
+      "title": "SGB",
+      "description": "Denotes a Standard Gold Bar as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "TEU"
+      ],
+      "title": "TEU",
+      "description": "Denotes a 20 ft. Equivalent Unit container as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "USBSH"
+      ],
+      "title": "USBSH",
+      "description": "Denotes a US Bushel as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "USBTU"
+      ],
+      "title": "USBTU",
+      "description": "Denotes a US British Thermal Unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "USCWT"
+      ],
+      "title": "USCWT",
+      "description": "Denotes US Hundredweight unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "USGAL"
+      ],
+      "title": "USGAL",
+      "description": "Denotes a US Gallon unit as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "USMBTU"
+      ],
+      "title": "USMBTU",
+      "description": "Denotes a Thousand US British Thermal Units as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "USMMBTU"
+      ],
+      "title": "USMMBTU",
+      "description": "Denotes a Million US British Thermal Units as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "UST"
+      ],
+      "title": "UST",
+      "description": "Denotes a US Ton as a standard unit."
+    },
+    
+    {
+      "enum": [
+        "USTHM"
+      ],
+      "title": "USTHM",
+      "description": "Denotes a US Thermal Unit as a standard unit."
+    }
+  ]
+}

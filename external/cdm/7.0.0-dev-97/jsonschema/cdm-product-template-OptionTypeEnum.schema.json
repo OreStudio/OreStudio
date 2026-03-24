@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "string",
+  "title": "OptionTypeEnum",
+  "description": "The enumerated values to specify the type or strategy of the option.",
+  "enum": [
+    "Call",
+    "Payer",
+    "Put",
+    "Receiver",
+    "Straddle"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Call"
+      ],
+      "title": "Call",
+      "description": "A call option gives the holder the right to buy the underlying asset by a certain date for a certain price."
+    },
+    
+    {
+      "enum": [
+        "Payer"
+      ],
+      "title": "Payer",
+      "description": "A 'payer' option: If you buy a 'payer' option you have the right but not the obligation to enter into the underlying swap transaction as the 'fixed' rate/price payer and receive float."
+    },
+    
+    {
+      "enum": [
+        "Put"
+      ],
+      "title": "Put",
+      "description": "A put option gives the holder the right to sell the underlying asset by a certain date for a certain price."
+    },
+    
+    {
+      "enum": [
+        "Receiver"
+      ],
+      "title": "Receiver",
+      "description": "A 'receiver' option: If you buy a 'receiver' option you have the right but not the obligation to enter into the underlying swap transaction as the 'fixed' rate/price receiver and pay float."
+    },
+    
+    {
+      "enum": [
+        "Straddle"
+      ],
+      "title": "Straddle",
+      "description": "A straddle strategy, which involves the simultaneous buying of a put and a call of the same underlier, at the same strike and same expiration date"
+    }
+  ]
+}

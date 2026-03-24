@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "Asset",
+  "description": "An Asset is defined as something that can be owned and transferred in the financial markets. As a choice data type, one and only one of the attributes must be used.",
+  "properties": {
+    "Cash": {
+      "description": "An Asset that consists solely of a monetary holding in a currency.",
+      "$ref": "cdm-base-staticdata-asset-common-Cash.schema.json"
+    },
+    "Commodity": {
+      "description": "An Asset comprised of raw or refined materials or agricultural products, eg gold, oil or wheat.",
+      "$ref": "cdm-base-staticdata-asset-common-Commodity.schema.json"
+    },
+    "DigitalAsset": {
+      "description": "An Asset that exists only in digital form, eg Bitcoin or Ethereum; excludes the digital representation of other Assets.",
+      "$ref": "cdm-base-staticdata-asset-common-DigitalAsset.schema.json"
+    },
+    "Instrument": {
+      "description": "An asset that is issued by one party to one or more others; Instrument is also a choice data type.",
+      "$ref": "cdm-base-staticdata-asset-common-Instrument.schema.json"
+    }
+  }
+}

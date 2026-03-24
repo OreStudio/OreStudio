@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "NonDeliverableSubstitute",
+  "properties": {
+    "nonDeliverableSubstituteIsApplicable": {
+      "type": "boolean"
+    },
+    "valuationDate": {
+      "$ref": "cdm-base-datetime-AdjustedRelativeDateOffset.schema.json"
+    },
+    "settlementDate": {
+      "$ref": "cdm-base-datetime-AdjustedRelativeDateOffset.schema.json"
+    },
+    "settlementRateOption": {
+      "$ref": "cdm-observable-asset-SettlementRateOption.schema.json"
+    }
+  },
+  "required": [
+    "nonDeliverableSubstituteIsApplicable"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "AssetTransferTypeEnum",
+  "description": "The qualification of the type of asset transfer.",
+  "enum": [
+    "FreeOfPayment"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "FreeOfPayment"
+      ],
+      "title": "FreeOfPayment",
+      "description": "The transfer of assets takes place without a corresponding exchange of payment."
+    }
+  ]
+}

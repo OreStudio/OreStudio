@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset.floatingrate",
+  "type": "object",
+  "title": "FloatingAmountCalculationDetails",
+  "description": "Type for reporting the detailed results of calculating a cash flow for a calculation period.  This is enhanced relative to the FpML-based cashflows structure to allow more information to be returned about daily compounded rates.",
+  "properties": {
+    "calculationPeriod": {
+      "description": "The calculation period for which the floating calculation was performed.",
+      "$ref": "cdm-product-common-schedule-CalculationPeriodBase.schema.json"
+    },
+    "calculationPeriodNotionalAmount": {
+      "description": "The notional in effect during the calculation period.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "floatingRate": {
+      "description": "The details of the floating rate setting.  (If it is a calculated rate, details of that calculation will be inside that.",
+      "$ref": "cdm-product-asset-floatingrate-FloatingRateSettingDetails.schema.json"
+    },
+    "processingDetails": {
+      "description": "Details fo the floating rate treatment after the rate is observed or calculated.  This will include details of things like multipliers, spreads, caps and floors, and the raw and treated rates.",
+      "$ref": "cdm-product-asset-floatingrate-FloatingRateProcessingDetails.schema.json"
+    },
+    "appliedRate": {
+      "description": "The rate that was actually applied, after all calculations and treatments.",
+      "type": "number"
+    },
+    "yearFraction": {
+      "description": "The fraction of a year that this calculation represents, according to the day count fraction method.",
+      "type": "number"
+    },
+    "calculatedAmount": {
+      "description": "The amount of the cash flow that was computed, including any spreads and other processing.",
+      "type": "number"
+    },
+    "spreadExclusiveCalculatedAMount": {
+      "description": "The amount of the cash flow excluding any spread, for subsequent processing.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "calculationPeriod",
+    "calculationPeriodNotionalAmount",
+    "appliedRate",
+    "yearFraction",
+    "calculatedAmount",
+    "spreadExclusiveCalculatedAMount"
+  ]
+}

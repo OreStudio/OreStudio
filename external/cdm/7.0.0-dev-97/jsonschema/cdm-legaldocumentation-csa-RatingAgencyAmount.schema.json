@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "RatingAgencyAmount",
+  "description": "A logical container to hold a defined set of related data. In this case the collation of Rating Information and an associated Independent Amount.",
+  "properties": {
+    "ratingVariableSet": {
+      "description": "Allows a grouping of Rating agencies and Rating values.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-CreditNotation.schema.json"
+      },
+      "minItems": 1
+    },
+    "amount": {
+      "description": "Specifies the notional or collateral Independent Amount.",
+      "type": "number"
+    }
+  }
+}

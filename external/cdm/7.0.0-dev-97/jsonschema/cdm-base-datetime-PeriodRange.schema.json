@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "PeriodRange",
+  "description": "Indicates The period range defined as either a lower and upper period bound, or both.",
+  "properties": {
+    "lowerBound": {
+      "description": "Specifies the lower bound of a period range, e.g. greater than or equal to 5Y.",
+      "$ref": "cdm-base-datetime-PeriodBound.schema.json"
+    },
+    "upperBound": {
+      "description": "Specifies the upper bound of a period range, e.g. less than to 10Y.",
+      "$ref": "cdm-base-datetime-PeriodBound.schema.json"
+    }
+  }
+}

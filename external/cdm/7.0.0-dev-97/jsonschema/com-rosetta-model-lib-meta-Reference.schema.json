@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "com.rosetta.model.lib.meta",
+  "type": "object",
+  "title": "Reference",
+  "properties": {
+    "scope": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string"
+    }
+  }
+}

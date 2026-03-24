@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "string",
+  "title": "QuoteBasisEnum",
+  "description": "The enumerated values to specify how an exchange rate is quoted.",
+  "enum": [
+    "Currency1PerCurrency2",
+    "Currency2PerCurrency1"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Currency1PerCurrency2"
+      ],
+      "title": "Currency1PerCurrency2",
+      "description": "The amount of currency1 for one unit of currency2"
+    },
+    
+    {
+      "enum": [
+        "Currency2PerCurrency1"
+      ],
+      "title": "Currency2PerCurrency1",
+      "description": "The amount of currency2 for one unit of currency1"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "ProductIdentifier",
+  "description": "Comprises an identifier and a source. The associated metadata key denotes the ability to associate a hash value to the ProductIdentifier instantiations for the purpose of model cross-referencing, in support of functionality such as the event effect and the lineage.",
+  "properties": {
+    "identifier": {
+      "description": "Provides an identifier associated with a specific product.  The identifier is unique within the public source specified in the source attribute.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "source": {
+      "description": "Defines the source of the identifier.",
+      "$ref": "cdm-base-staticdata-asset-common-ProductIdTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "identifier",
+    "source"
+  ]
+}

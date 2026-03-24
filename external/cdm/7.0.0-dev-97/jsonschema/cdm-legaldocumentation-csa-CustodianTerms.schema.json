@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CustodianTerms",
+  "description": "A class to specify the requirements applicable to the custodian with respect to the holding of posted collateral.",
+  "properties": {
+    "minimumAssets": {
+      "description": "The minimal level of assets requirement with respect to the custody agent.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "minimumRating": {
+      "description": "The minimal rating requirement with respect to the custody agent.",
+      "$ref": "cdm-observable-asset-CreditNotation.schema.json"
+    },
+    "initialDesignation": {
+      "description": "Election to specify the initial custodian.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    }
+  }
+}

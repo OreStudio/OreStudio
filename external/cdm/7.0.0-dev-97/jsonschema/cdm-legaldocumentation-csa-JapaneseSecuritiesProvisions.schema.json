@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "JapaneseSecuritiesProvisions",
+  "description": "A class to specify Japanese Securities Provision elections.",
+  "properties": {
+    "isApplicable": {
+      "description": "Japanese Securities Provisions are applicable when True and Not Applicable when False.",
+      "type": "boolean"
+    },
+    "relevantProvisionsElection": {
+      "description": "Recommended Japanese Securities Provisions are applicable when True, additional Provisions are specified when False.",
+      "type": "boolean"
+    },
+    "relevantProvisionsTerms": {
+      "description": "Specific terms applicable to Recommended Japanese Securities Provisions.",
+      "type": "string"
+    },
+    "amendmentsToJapaneseProvisions": {
+      "description": "Additional Amendments to Japanese Securities Provisions are specified when True, and not specified when False.",
+      "type": "boolean"
+    },
+    "amendmentsToJapaneseProvisionsTerms": {
+      "description": "Specific terms applicable to Additional Amendments to Japanese Securities Provisions.",
+      "type": "string"
+    },
+    "clearstreamAmendmentToJapaneseProvisions": {
+      "description": "Specification of whether Clearstream Event amendment language is included (true) or excluded (false).",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

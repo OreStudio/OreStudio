@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "PersonIdentifierTypeEnum",
+  "description": "The enumeration values associated with person identifier sources.",
+  "enum": [
+    "ARNU",
+    "CCPT",
+    "CUST",
+    "DRLC",
+    "EMPL",
+    "NIDN",
+    "NPID",
+    "PLID",
+    "SOSE",
+    "TXID"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ARNU"
+      ],
+      "title": "ARNU",
+      "description": "Alien Registration Number, number assigned by a social security agency to identify a non-resident person."
+    },
+    
+    {
+      "enum": [
+        "CCPT"
+      ],
+      "title": "CCPT",
+      "description": "Passport Number, number assigned by an authority to identify the passport number of a person."
+    },
+    
+    {
+      "enum": [
+        "CUST"
+      ],
+      "title": "CUST",
+      "description": "Customer Identification Number, number assigned by an issuer to identify a customer."
+    },
+    
+    {
+      "enum": [
+        "DRLC"
+      ],
+      "title": "DRLC",
+      "description": "Drivers License Number, number assigned by an authority to identify a driver's license."
+    },
+    
+    {
+      "enum": [
+        "EMPL"
+      ],
+      "title": "EMPL",
+      "description": "Employee Identification Number, number assigned by a registration authority to an employee."
+    },
+    
+    {
+      "enum": [
+        "NIDN"
+      ],
+      "title": "NIDN",
+      "description": "National Identity Number, number assigned by an authority to identify the national identity number of a person.."
+    },
+    
+    {
+      "enum": [
+        "NPID"
+      ],
+      "title": "NPID",
+      "description": "Natural Person Identifier. To identify the person who is acting as private individual, not as business entity. Used for regulatory reporting."
+    },
+    
+    {
+      "enum": [
+        "PLID"
+      ],
+      "title": "PLID",
+      "description": "Privacy Law Identifier. It refers to the DMO Letter No. 17-16, http://www.cftc.gov/idc/groups/public/@lrlettergeneral/documents/letter/17-16.pdf"
+    },
+    
+    {
+      "enum": [
+        "SOSE"
+      ],
+      "title": "SOSE",
+      "description": "Social Security Number, number assigned by an authority to identify the social security number of a person."
+    },
+    
+    {
+      "enum": [
+        "TXID"
+      ],
+      "title": "TXID",
+      "description": "Tax Identification Number, number assigned by a tax authority to identify a person."
+    }
+  ]
+}

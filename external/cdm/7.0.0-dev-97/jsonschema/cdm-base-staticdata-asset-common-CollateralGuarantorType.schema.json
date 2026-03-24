@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "CollateralGuarantorType",
+  "description": "Specifies the origin of entity guaranteeing the collateral.",
+  "properties": {
+    "guarantorType": {
+      "description": "Specifies the origin of entity guaranteeing the collateral.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralEntityTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "guarantorType"
+  ]
+}

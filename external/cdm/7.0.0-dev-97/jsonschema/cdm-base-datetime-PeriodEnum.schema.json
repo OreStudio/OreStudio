@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "PeriodEnum",
+  "description": "The enumerated values to specify the period, e.g. day, week.",
+  "enum": [
+    "D",
+    "M",
+    "W",
+    "Y"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "D"
+      ],
+      "title": "D",
+      "description": "Day"
+    },
+    
+    {
+      "enum": [
+        "M"
+      ],
+      "title": "M",
+      "description": "Month"
+    },
+    
+    {
+      "enum": [
+        "W"
+      ],
+      "title": "W",
+      "description": "Week"
+    },
+    
+    {
+      "enum": [
+        "Y"
+      ],
+      "title": "Y",
+      "description": "Year"
+    }
+  ]
+}

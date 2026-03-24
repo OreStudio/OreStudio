@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "LegalEntity",
+  "description": "A class to specify a legal entity, with a required name and an optional entity identifier (such as the LEI).",
+  "properties": {
+    "name": {
+      "description": "The legal entity name.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "entityIdentifier": {
+      "description": "A legal entity identifier with a source (e.g. RED entity code).",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-EntityIdentifier.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

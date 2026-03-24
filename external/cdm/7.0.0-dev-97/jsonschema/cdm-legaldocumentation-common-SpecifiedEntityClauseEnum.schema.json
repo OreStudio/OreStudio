@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "SpecifiedEntityClauseEnum",
+  "description": "The enumerated values to specify the Event of Default or Termination event for which Specified Entities terms are being defined.",
+  "enum": [
+    "Bankruptcy",
+    "CreditEventUponMerger",
+    "CrossDefault",
+    "DefaultUnderSpecifiedTransaction"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Bankruptcy"
+      ],
+      "title": "Bankruptcy"
+    },
+    
+    {
+      "enum": [
+        "CreditEventUponMerger"
+      ],
+      "title": "CreditEventUponMerger"
+    },
+    
+    {
+      "enum": [
+        "CrossDefault"
+      ],
+      "title": "CrossDefault"
+    },
+    
+    {
+      "enum": [
+        "DefaultUnderSpecifiedTransaction"
+      ],
+      "title": "DefaultUnderSpecifiedTransaction"
+    }
+  ]
+}

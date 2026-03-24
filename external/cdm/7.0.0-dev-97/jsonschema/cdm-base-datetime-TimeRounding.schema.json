@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "TimeRounding",
+  "description": "Specifies how a calculated time should be rounded, including both the direction of rounding and the unit to which the time is rounded. Rounding is applied after all offsets have been calculated.",
+  "properties": {
+    "roundingDirection": {
+      "description": "The direction in which rounding is performed (e.g., up, down, or to the nearest value).",
+      "$ref": "cdm-base-math-RoundingDirectionEnum.schema.json"
+    },
+    "roundToUnit": {
+      "description": "The time unit to which the value should be rounded (e.g., minute, hour, day).",
+      "$ref": "cdm-base-datetime-TimeUnitEnum.schema.json"
+    }
+  },
+  "required": [
+    "roundingDirection"
+  ]
+}

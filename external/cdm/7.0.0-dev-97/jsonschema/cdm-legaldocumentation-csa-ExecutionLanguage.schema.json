@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ExecutionLanguage",
+  "description": "A class to specify execution language terms of a Security Agreement.",
+  "properties": {
+    "standardLanguage": {
+      "description": "A boolean attribute to determine if standard language is applicable or not.",
+      "type": "boolean"
+    },
+    "numberOfOriginals": {
+      "description": "The number of original documents.",
+      "type": "string"
+    },
+    "otherLanguage": {
+      "description": "Bespoke execution language to be included when specified.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "standardLanguage"
+  ]
+}

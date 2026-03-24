@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "FxAdditionalTerms",
+  "description": "TransactionAdditionalTerms which apply to the CurrencyPair asset class.",
+  "properties": {
+    "disruptionEvents": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxDisruptionEvents.schema.json"
+    },
+    "determinationTerms": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-DeterminationRolesAndTerms.schema.json"
+    },
+    "noFaultTermination": {
+      "type": "boolean"
+    }
+  }
+}

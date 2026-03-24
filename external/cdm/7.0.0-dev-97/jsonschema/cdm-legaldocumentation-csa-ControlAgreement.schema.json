@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ControlAgreement",
+  "description": "A class to specify the relationship between the Control Agreement and the Credit Support Agreement.",
+  "properties": {
+    "partyElection": {
+      "description": "The party specific elections.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ControlAgreementElections.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

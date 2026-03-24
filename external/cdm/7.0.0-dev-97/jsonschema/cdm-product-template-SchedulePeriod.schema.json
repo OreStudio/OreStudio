@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "SchedulePeriod",
+  "description": "A class that defines the period of a schedule. The period contains a set of start and end dates, quantities, fixing, and pricing data.",
+  "properties": {
+    "calculationPeriod": {
+      "description": "Period for which the payment is generated.",
+      "$ref": "cdm-base-datetime-DateRange.schema.json"
+    },
+    "paymentDate": {
+      "description": "Adjusted payment date.",
+      "type": "string"
+    },
+    "fixingPeriod": {
+      "description": "Period over which the underlying price is observed.",
+      "$ref": "cdm-base-datetime-DateRange.schema.json"
+    },
+    "deliveryPeriod": {
+      "description": "Period and time profile over which the delivery takes place.",
+      "$ref": "cdm-product-asset-CalculationScheduleDeliveryPeriods.schema.json"
+    }
+  },
+  "required": [
+    "calculationPeriod",
+    "paymentDate",
+    "fixingPeriod"
+  ]
+}

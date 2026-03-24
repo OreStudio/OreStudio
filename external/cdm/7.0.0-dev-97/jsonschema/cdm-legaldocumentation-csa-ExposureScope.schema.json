@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ExposureScope",
+  "description": "Optionally, for each party, specifies the amendments to the included coverage in the calculation of Exposure.",
+  "properties": {
+    "partyElection": {
+      "description": "Defines the electice scope for a specific party.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-LegacyExposureScopeElection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    }
+  }
+}

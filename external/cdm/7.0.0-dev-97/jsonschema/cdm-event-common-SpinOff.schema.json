@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "SpinOff",
+  "description": "Defines the underlier for both the Parent Company and the Child Compagny involved in Spin Off corporate action, as well as th respective price observation for each.",
+  "properties": {
+    "parentSecurity": {
+      "description": "Defines the underlier for the Parent Company involved in Spin Off corporate action.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    },
+    "parentSecurityPrice": {
+      "description": "The price observation that relates to underlier for the Parent Company.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "childSecurity": {
+      "description": "Defines the underlier for the Child Company involved in Spin Off corporate action.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    },
+    "childSecurityPrice": {
+      "description": "The price observation that relates to underlier for the Child Company.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    }
+  },
+  "required": [
+    "parentSecurity",
+    "parentSecurityPrice",
+    "childSecurity",
+    "childSecurityPrice"
+  ]
+}

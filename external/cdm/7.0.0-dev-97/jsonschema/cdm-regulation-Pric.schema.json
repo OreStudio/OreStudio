@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.regulation",
+  "type": "object",
+  "title": "Pric",
+  "properties": {
+    "pric": {
+      "$ref": "cdm-regulation-Pric.schema.json"
+    },
+    "bsisPts": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "pric",
+    "bsisPts"
+  ]
+}

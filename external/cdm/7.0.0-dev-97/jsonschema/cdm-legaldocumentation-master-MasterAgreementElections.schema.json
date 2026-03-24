@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "object",
+  "title": "MasterAgreementElections",
+  "description": "A representation of a master agreement extended from a base agreement of shared elections.",
+  "properties": {
+    "islaGmsla": {
+      "description": "The set of elections that define a GMSLA.",
+      "$ref": "cdm-legaldocumentation-master-isla-GlobalMasterSecuritiesLendingAgreement.schema.json"
+    },
+    "icmaGmra": {
+      "description": "The set of elections that define a GMRA.",
+      "$ref": "cdm-legaldocumentation-master-icma-GlobalMasterRepoAgreement.schema.json"
+    },
+    "isdaMaster": {
+      "description": "The set of elections that define an ISDA Master Agreement.",
+      "$ref": "cdm-legaldocumentation-master-isda-MasterAgreement.schema.json"
+    }
+  }
+}

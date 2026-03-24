@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.codelist",
+  "type": "object",
+  "title": "CodeValue",
+  "description": "A type to hold the value of the code in a codelist",
+  "properties": {
+    "value": {
+      "description": "The value of the code, e.g. USNY",
+      "type": "string"
+    },
+    "description": {
+      "description": "A description of the meaning of the code, e.g. New York City, USA",
+      "type": "string"
+    },
+    "source": {
+      "description": "Where the code was defined,e.g. ISDA, FpML, Bloomberg",
+      "type": "string"
+    },
+    "effectiveDate": {
+      "description": "When the code became/becomes effective",
+      "type": "string"
+    },
+    "deprecatedDate": {
+      "description": "When the code ceased to be valid for new uses",
+      "type": "string"
+    }
+  },
+  "required": [
+    "value"
+  ]
+}

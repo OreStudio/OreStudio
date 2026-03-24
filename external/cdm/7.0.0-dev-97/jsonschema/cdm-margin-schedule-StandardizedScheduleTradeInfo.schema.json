@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.margin.schedule",
+  "type": "object",
+  "title": "StandardizedScheduleTradeInfo",
+  "properties": {
+    "assetClass": {
+      "$ref": "cdm-margin-schedule-StandardizedScheduleAssetClassEnum.schema.json"
+    },
+    "productClass": {
+      "$ref": "cdm-margin-schedule-StandardizedScheduleProductClassEnum.schema.json"
+    },
+    "grossInitialMargin": {
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    },
+    "markToMarketValue": {
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  }
+}

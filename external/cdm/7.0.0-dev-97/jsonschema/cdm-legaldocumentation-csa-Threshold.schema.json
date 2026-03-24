@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "Threshold",
+  "description": "Represents the amount of unsecured risk that a party is willing to tolerate without holding any posted collateral provided by the other party.",
+  "properties": {
+    "partyElection": {
+      "description": "The party specific election for the threshold clause.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-ThresholdElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

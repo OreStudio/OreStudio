@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "EventCurrency",
+  "description": "Defines the currency referenced as such in any terms related to FX Disruption Events",
+  "properties": {
+    "eventCurrency": {
+      "description": "Defines the currency referenced as such in any terms related to FX Disruption Events",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "eventCurrentAmount": {
+      "description": "Defines the Event Currency Amount to be exchanged on the Settlement Date.",
+      "$ref": "cdm-base-math-Quantity.schema.json"
+    },
+    "eventCurrencyBuyerSeller": {
+      "description": "Unless otherwised specified, the Buyer is the party to which the Event Currency Amount is owed on the Settlement Date and the Seller is the party which owes the Event Currency Amount on the Settlement Date.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-BuyerSeller.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "eventCurrency"
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "CreditEvent",
+  "description": "Specifies the relevant data regarding a credit event.",
+  "properties": {
+    "creditEventType": {
+      "description": "The type of credit event taking place.",
+      "$ref": "cdm-event-common-CreditEventTypeEnum.schema.json"
+    },
+    "eventDeterminationDate": {
+      "description": "The date in which the credit event is determined by the Credit Derivatives Determinations Comitee.",
+      "type": "string"
+    },
+    "auctionDate": {
+      "description": "The date on which the auction is scheduled to occur.",
+      "type": "string"
+    },
+    "finalPrice": {
+      "description": "The final price resulting from the auction.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "recoveryPercent": {
+      "description": "The percentage of the original value of the asset affected by the credit event that can be recovered.",
+      "type": "number"
+    },
+    "publiclyAvailableInformation": {
+      "description": "A public information source, e.g. a particular newspaper or electronic news service, that may publish relevant information used in the determination of whether or not a credit event has occurred.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-Resource.schema.json"
+      },
+      "minItems": 0
+    },
+    "referenceInformation": {
+      "description": "The reference entity, part of a credit basket, impacted by the credit event.",
+      "$ref": "cdm-product-asset-ReferenceInformation.schema.json"
+    }
+  },
+  "required": [
+    "creditEventType",
+    "eventDeterminationDate",
+    "referenceInformation"
+  ]
+}

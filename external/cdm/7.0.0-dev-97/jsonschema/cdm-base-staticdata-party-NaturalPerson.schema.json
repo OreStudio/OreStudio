@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "NaturalPerson",
+  "description": "A class to represent the attributes that are specific to a natural person.",
+  "properties": {
+    "personId": {
+      "description": "The identifier associated with a person, e.g. the internal identification code.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-metafields-FieldWithMetaPersonIdentifier.schema.json"
+      },
+      "minItems": 0
+    },
+    "honorific": {
+      "description": "An honorific title, such as Mr., Ms., Dr. etc.",
+      "type": "string"
+    },
+    "firstName": {
+      "description": "The natural person's first name. It is optional in FpML.",
+      "type": "string"
+    },
+    "middleName": {
+      "description": "The natural person's middle name(s). If a middle name is provided then an initial should be absent.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "initial": {
+      "description": "The natural person's middle initial(s). If a middle initial is provided then a name should be absent.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "surname": {
+      "description": "The natural person's surname.",
+      "type": "string"
+    },
+    "suffix": {
+      "description": "Name suffix, such as Jr., III, etc.",
+      "type": "string"
+    },
+    "dateOfBirth": {
+      "description": "The natural person's date of birth.",
+      "type": "string"
+    },
+    "contactInformation": {
+      "description": "The contact information for such person, when different from the contact information associated with the party.",
+      "$ref": "cdm-base-staticdata-party-ContactInformation.schema.json"
+    }
+  }
+}

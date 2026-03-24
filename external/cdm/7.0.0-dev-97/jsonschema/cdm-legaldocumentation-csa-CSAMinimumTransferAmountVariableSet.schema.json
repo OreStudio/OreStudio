@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CSAMinimumTransferAmountVariableSet",
+  "description": "Defines a combination of Rating Agency, Rating Value, amount and Currency code.",
+  "properties": {
+    "name": {
+      "description": "The name of the Rating Agency.",
+      "$ref": "cdm-observable-asset-CreditRatingAgencyEnum.schema.json"
+    },
+    "value": {
+      "description": "The value assigned to the rating.",
+      "type": "string"
+    },
+    "amount": {
+      "description": "The Minimum Transfer Amount (MTA) applicable to the Rating.",
+      "type": "integer"
+    },
+    "amountIsInfinity": {
+      "description": "A flag that defines the Minimum Transfer Amount (MTA) as Infinity.",
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "object",
+  "title": "FeaturePayment",
+  "description": "Payment made following trigger occurrence.",
+  "properties": {
+    "payerReceiver": {
+      "description": "This attribute doesn't exist as part of the FpML construct, which makes use of the PayerReceiver.model group.",
+      "$ref": "cdm-base-staticdata-party-PartyReferencePayerReceiver.schema.json"
+    },
+    "levelPercentage": {
+      "description": "The trigger level percentage.",
+      "type": "number"
+    },
+    "amount": {
+      "description": "The monetary quantity in currency units.",
+      "type": "number"
+    },
+    "time": {
+      "description": "The feature payment time.",
+      "$ref": "cdm-observable-common-TimeTypeEnum.schema.json"
+    },
+    "currency": {
+      "description": "The currency in which an amount is denominated.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "paymentDate": {
+      "description": "The feature payment date.",
+      "$ref": "cdm-base-datetime-AdjustableOrRelativeDate.schema.json"
+    }
+  },
+  "required": [
+    "payerReceiver"
+  ]
+}

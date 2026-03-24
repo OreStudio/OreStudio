@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "Merger",
+  "description": "Defines the underlier for both the Purchaser Company and the Acquired Compagny involved in Merger corporate action, as well as th respective price observation for each.",
+  "properties": {
+    "purchaserSecurity": {
+      "description": "Defines the underlier for the Purchaser Company involved in Merger corporate action.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    },
+    "purchaserSecurityPrice": {
+      "description": "The price observation that relates to underlier for the Purchaser Company.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "acquiredSecurity": {
+      "description": "Defines the underlier for the Acquired Company involved in Merger corporate action.",
+      "$ref": "cdm-base-staticdata-asset-common-Security.schema.json"
+    },
+    "acquiredSecurityPrice": {
+      "description": "The price observation that relates to underlier for the Acquired Company.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    }
+  },
+  "required": [
+    "purchaserSecurity",
+    "purchaserSecurityPrice",
+    "acquiredSecurity",
+    "acquiredSecurityPrice"
+  ]
+}

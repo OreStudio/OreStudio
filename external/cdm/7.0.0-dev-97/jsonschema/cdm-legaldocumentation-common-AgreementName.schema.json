@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "AgreementName",
+  "description": "Specifies the agreement name through an agreement type and optional detailed sub agreement type.",
+  "properties": {
+    "agreementType": {
+      "description": "Specification of the legal agreement type.",
+      "$ref": "cdm-legaldocumentation-common-LegalAgreementTypeEnum.schema.json"
+    },
+    "creditSupportAgreementType": {
+      "description": "Specification of the credit support agreement type.",
+      "$ref": "cdm-product-collateral-metafields-FieldWithMetaCreditSupportAgreementTypeEnum.schema.json"
+    },
+    "creditSupportAgreementMarginType": {
+      "description": "specifies the type of margin for which a legal agreement is named.",
+      "$ref": "cdm-product-collateral-CollateralMarginTypeEnum.schema.json"
+    },
+    "contractualDefinitionsType": {
+      "description": "The definitions such as those published by ISDA that will define the terms of the trade.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-metafields-FieldWithMetaContractualDefinitionsEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "contractualTermsSupplement": {
+      "description": "A contractual supplement (such as those published by ISDA) that will apply to the trade.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-ContractualTermsSupplement.schema.json"
+      },
+      "minItems": 0
+    },
+    "contractualMatrix": {
+      "description": "A reference to a contractual matrix of elected terms/values (such as those published by ISDA) that shall be deemed to apply to the trade. The applicable matrix is identified by reference to a name and optionally a publication date. Depending on the structure of the matrix, an additional term (specified in the matrixTerm element) may be required to further identify a subset of applicable terms/values within the matrix.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-ContractualMatrix.schema.json"
+      },
+      "minItems": 0
+    },
+    "masterAgreementType": {
+      "description": "Specification of the master agreement type.",
+      "$ref": "cdm-legaldocumentation-master-metafields-FieldWithMetaMasterAgreementTypeEnum.schema.json"
+    },
+    "masterConfirmationType": {
+      "description": "The type of master confirmation executed between the parties.",
+      "$ref": "cdm-legaldocumentation-master-metafields-FieldWithMetaMasterConfirmationTypeEnum.schema.json"
+    },
+    "masterConfirmationAnnexType": {
+      "description": "The type of master confirmation annex executed between the parties.",
+      "$ref": "cdm-legaldocumentation-master-metafields-FieldWithMetaMasterConfirmationAnnexTypeEnum.schema.json"
+    },
+    "otherAgreement": {
+      "description": "Definition of an agreement that is not enumerated in the CDM.",
+      "type": "string"
+    },
+    "brokerConfirmationType": {
+      "$ref": "cdm-legaldocumentation-transaction-BrokerConfirmationTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "agreementType"
+  ]
+}

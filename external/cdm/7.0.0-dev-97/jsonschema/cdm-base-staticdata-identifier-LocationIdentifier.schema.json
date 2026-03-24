@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.identifier",
+  "type": "object",
+  "title": "LocationIdentifier",
+  "description": "Specifies a location identifier. An issuer and an identifier type can be associated with the actual identifier value as a way to properly qualify it.",
+  "properties": {
+    "issuerReference": {
+      "description": "The identifier issuer, when specified by reference to a party specified as part of the transaction.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "issuer": {
+      "description": "The identifier issuer, when specified explicitly alongside the identifier value (instead of being specified by reference to a party).",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "assignedIdentifier": {
+      "description": "The identifier value. This level of indirection between the issuer and the identifier and its version provides the ability to associate multiple identifiers to one issuer, consistently with the FpML PartyTradeIdentifier.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-identifier-AssignedIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "locationIdentifierType": {
+      "description": "Specifies the nature of a location identifier.",
+      "$ref": "cdm-base-staticdata-identifier-CommodityLocationIdentifierTypeEnum.schema.json"
+    }
+  }
+}

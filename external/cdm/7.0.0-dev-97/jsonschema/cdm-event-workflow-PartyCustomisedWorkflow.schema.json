@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "PartyCustomisedWorkflow",
+  "description": "A class to specify a party-related, non-standardized data in a generic form.",
+  "properties": {
+    "partyReference": {
+      "description": "Reference to the party to which the workflow pertains to.",
+      "$ref": "cdm-base-staticdata-party-metafields-ReferenceWithMetaParty.schema.json"
+    },
+    "partyName": {
+      "description": "The party name to which the workflow pertains to.",
+      "type": "string"
+    },
+    "customisedWorkflow": {
+      "description": "Non-standardized data in a generic form.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-workflow-CustomisedWorkflow.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ValuationTime",
+  "description": "Specifies the time by which the value of the collateral and obligations to transfer or return collateral are to be calculated relative to the Valuation Date.",
+  "properties": {
+    "day": {
+      "description": "The day in respect of which the Valuation Time is being specified. If not specified, addional language must be used to define the methodology.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationTimeDayEnum.schema.json"
+    },
+    "location": {
+      "description": "The location relevant to the timezone for the Valuation Time.",
+      "type": "array",
+      "items": {
+        "type": "BusinessCenter"
+      },
+      "minItems": 0
+    },
+    "time": {
+      "description": "The type of time specified for the Valuation Time.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationTimeEnum.schema.json"
+    },
+    "hourminutetime": {
+      "description": "A time specified in a 24-hour notation, e.g. 3pm would be represented as 15:00.",
+      "type": "string"
+    },
+    "timezone": {
+      "description": "Any relevant time zone where specified.",
+      "type": "BusinessCenter"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  }
+}

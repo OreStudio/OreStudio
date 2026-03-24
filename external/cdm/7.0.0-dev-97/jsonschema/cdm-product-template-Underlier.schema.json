@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "Underlier",
+  "description": "The underlying financial product that will be physically or cash settled, which can be of any type, eg an asset such as cash or a security, a product, or the cash settlement of an index rate.  Conditions are usually applied when used in a data type, such as a payout, to ensure this aligns with the use case.",
+  "properties": {
+    "Observable": {
+      "description": "Specifies the object to be observed for a price, it could be an asset or a reference.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaObservable.schema.json"
+    },
+    "Product": {
+      "description": "Enables either a TransferableProduct or a NonTransferableProduct to be used in an underlier.",
+      "$ref": "cdm-product-template-Product.schema.json"
+    }
+  }
+}

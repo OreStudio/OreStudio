@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "AveragingSchedule",
+  "description": "Class to representing a method for generating a series of dates.",
+  "properties": {
+    "startDate": {
+      "description": "Date on which this period begins.",
+      "type": "string"
+    },
+    "endDate": {
+      "description": "Date on which this period ends.",
+      "type": "string"
+    },
+    "averagingPeriodFrequency": {
+      "description": "The frequency at which averaging period occurs with the regular part of the valuation schedule and their roll date convention.",
+      "$ref": "cdm-base-datetime-CalculationPeriodFrequency.schema.json"
+    }
+  },
+  "required": [
+    "startDate",
+    "endDate",
+    "averagingPeriodFrequency"
+  ]
+}

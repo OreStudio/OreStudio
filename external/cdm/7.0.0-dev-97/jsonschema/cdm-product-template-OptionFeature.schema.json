@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "OptionFeature",
+  "description": "Defines additional optional features that can be included in an option contract.",
+  "properties": {
+    "fxFeature": {
+      "description": "Describes a quanto or composite FX feature.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-FxFeature.schema.json"
+      },
+      "minItems": 0
+    },
+    "strategyFeature": {
+      "description": "Defines a simple strategy feature.",
+      "$ref": "cdm-product-template-StrategyFeature.schema.json"
+    },
+    "averagingFeature": {
+      "description": "Defines an option feature in which an average market observation price is determined on valuation and compared to the strike to determine a settlement amount.",
+      "$ref": "cdm-product-template-AveragingFeature.schema.json"
+    },
+    "barrier": {
+      "description": "Specifies a barrier feature.",
+      "$ref": "cdm-product-template-Barrier.schema.json"
+    },
+    "passThrough": {
+      "description": "Specifies the rules for pass-through payments from the underlier, such as dividends.",
+      "$ref": "cdm-product-template-PassThrough.schema.json"
+    }
+  }
+}

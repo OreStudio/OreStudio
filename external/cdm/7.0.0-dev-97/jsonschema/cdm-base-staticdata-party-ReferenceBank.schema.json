@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "ReferenceBank",
+  "description": "A class to describe an institution (party) identified by means of a coding scheme and an optional name.",
+  "properties": {
+    "referenceBankId": {
+      "description": "An institution (party) identifier, e.g. a bank identifier code (BIC). FpML specifies a referenceBankIdScheme.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "referenceBankName": {
+      "description": "The name of the institution (party). A free format string. FpML does not define usage rules for the element.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "referenceBankId"
+  ]
+}

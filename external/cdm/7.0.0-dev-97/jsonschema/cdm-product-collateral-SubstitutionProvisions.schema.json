@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "SubstitutionProvisions",
+  "description": "Defines collateral substitution provisions such as how many and with how much notice are substitutions allowed.",
+  "properties": {
+    "numberOfSubstitutionsAllowed": {
+      "description": "Specifies if 1 or more substitutions are allowed.",
+      "type": "integer"
+    },
+    "noticeDeadlinePeriod": {
+      "description": "Defines the min period for notify of a substitution.",
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    },
+    "noticeDeadlineDateTime": {
+      "description": "A specific date and time for the notice deadline",
+      "type": "string"
+    }
+  }
+}

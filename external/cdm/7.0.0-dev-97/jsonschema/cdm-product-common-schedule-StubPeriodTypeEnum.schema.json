@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "string",
+  "title": "StubPeriodTypeEnum",
+  "description": "The enumerated values to specify how to deal with a non standard calculation period within a swap stream.",
+  "enum": [
+    "LongFinal",
+    "LongInitial",
+    "ShortFinal",
+    "ShortInitial"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "LongFinal"
+      ],
+      "title": "LongFinal",
+      "description": "If there is a non regular period remaining it is placed at the end of the stream and combined with the adjacent calculation period to give a long last calculation period."
+    },
+    
+    {
+      "enum": [
+        "LongInitial"
+      ],
+      "title": "LongInitial",
+      "description": "If there is a non regular period remaining it is placed at the start of the stream and combined with the adjacent calculation period to give a long first calculation period."
+    },
+    
+    {
+      "enum": [
+        "ShortFinal"
+      ],
+      "title": "ShortFinal",
+      "description": "If there is a non regular period remaining it is left shorter than the streams calculation period frequency and placed at the end of the stream."
+    },
+    
+    {
+      "enum": [
+        "ShortInitial"
+      ],
+      "title": "ShortInitial",
+      "description": "If there is a non regular period remaining it is left shorter than the streams calculation period frequency and placed at the start of the stream."
+    }
+  ]
+}

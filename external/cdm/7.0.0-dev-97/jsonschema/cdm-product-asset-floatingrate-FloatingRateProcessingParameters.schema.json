@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset.floatingrate",
+  "type": "object",
+  "title": "FloatingRateProcessingParameters",
+  "description": "Type to hold the processing parameters that should be or were used to calculate a floating amount.  These parameters can vary over a schedule so this type holds the acutal values applicable to this calculation.",
+  "properties": {
+    "initialRate": {
+      "description": "The rate to be applied for the initial period.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "multiplier": {
+      "description": "floating rate multiplier.",
+      "type": "number"
+    },
+    "spread": {
+      "description": "spread to be added to the floating rate.",
+      "type": "number"
+    },
+    "treatment": {
+      "description": "US rate treatment (Bond Equivalent Yield or Money Market Yield, if applicable.",
+      "$ref": "cdm-product-asset-RateTreatmentEnum.schema.json"
+    },
+    "capRate": {
+      "description": "capt to be applied to the floating rate.",
+      "type": "number"
+    },
+    "floorRate": {
+      "description": "floor to be applied to the floating rate.",
+      "type": "number"
+    },
+    "rounding": {
+      "description": "THe final rate rounding to be applied.",
+      "$ref": "cdm-base-math-Rounding.schema.json"
+    },
+    "negativeTreatment": {
+      "description": "How to handle negative interest rates.",
+      "$ref": "cdm-product-asset-NegativeInterestRateTreatmentEnum.schema.json"
+    }
+  }
+}

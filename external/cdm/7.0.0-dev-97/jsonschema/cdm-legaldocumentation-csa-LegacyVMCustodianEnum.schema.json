@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "LegacyVMCustodianEnum",
+  "description": "Details of how the Custodian is determined.",
+  "enum": [
+    "As advised by Party 1 to Party 2",
+    "As advised by Party 2 to Party 1",
+    "NamedEntity",
+    "NotApplicable",
+    "Party 1 will notify Party 2",
+    "Party 2 will notify Party 1"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "As advised by Party 1 to Party 2"
+      ],
+      "title": "AsAdvised1to2",
+      "description": "The Custodian as advised by Party 1 to Party 2."
+    },
+    
+    {
+      "enum": [
+        "As advised by Party 2 to Party 1"
+      ],
+      "title": "AsAdvised2to1",
+      "description": "The Custodian as advised by Party 2 to Party 1."
+    },
+    
+    {
+      "enum": [
+        "NamedEntity"
+      ],
+      "title": "NamedEntity",
+      "description": "A named entity is specified as the Custodian."
+    },
+    
+    {
+      "enum": [
+        "NotApplicable"
+      ],
+      "title": "NotApplicable",
+      "description": "Not Applicable."
+    },
+    
+    {
+      "enum": [
+        "Party 1 will notify Party 2"
+      ],
+      "title": "Party1toParty2",
+      "description": "Party 1 will notify Party 2 of the custodian."
+    },
+    
+    {
+      "enum": [
+        "Party 2 will notify Party 1"
+      ],
+      "title": "Party2toParty1",
+      "description": "Party 2 will notify Party 1 of the custodian."
+    }
+  ]
+}

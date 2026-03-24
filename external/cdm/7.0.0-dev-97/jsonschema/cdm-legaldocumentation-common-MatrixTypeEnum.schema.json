@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "MatrixTypeEnum",
+  "description": "The enumerated values to specify the identification the form of applicable matrix.",
+  "enum": [
+    "CreditDerivativesPhysicalSettlementMatrix",
+    "EquityDerivativesMatrix",
+    "SettlementMatrix"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CreditDerivativesPhysicalSettlementMatrix"
+      ],
+      "title": "CreditDerivativesPhysicalSettlementMatrix",
+      "description": "The ISDA-published Credit Derivatives Physical Settlement Matrix."
+    },
+    
+    {
+      "enum": [
+        "EquityDerivativesMatrix"
+      ],
+      "title": "EquityDerivativesMatrix",
+      "description": "The ISDA-published Equity Derivatives Matrix."
+    },
+    
+    {
+      "enum": [
+        "SettlementMatrix"
+      ],
+      "title": "SettlementMatrix",
+      "description": "The ISDA-published 2000 ISDA Definitions Settlement Matrix for Early Terminations and Swaptions."
+    }
+  ]
+}

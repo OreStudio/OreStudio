@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "RateTreatmentEnum",
+  "description": "The enumerated values to specify the methods for converting rates from one basis to another.",
+  "enum": [
+    "BondEquivalentYield",
+    "MoneyMarketYield"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "BondEquivalentYield"
+      ],
+      "title": "BondEquivalentYield",
+      "description": "Bond Equivalent Yield. Per Annex to the 2000 ISDA Definitions (June 2000 Version), Section 7.3. Certain General Definitions Relating to Floating Rate Options, paragraph (g)."
+    },
+    
+    {
+      "enum": [
+        "MoneyMarketYield"
+      ],
+      "title": "MoneyMarketYield",
+      "description": "Money Market Yield. Per Annex to the 2000 ISDA Definitions (June 2000 Version), Section 7.3. Certain General Definitions Relating to Floating Rate Options, paragraph (h)."
+    }
+  ]
+}

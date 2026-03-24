@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "PropertyTypeEnum",
+  "description": "Specifies different types of property.",
+  "enum": [
+    "Commercial",
+    "Residential"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Commercial"
+      ],
+      "title": "Commercial",
+      "description": "Commercial property."
+    },
+    
+    {
+      "enum": [
+        "Residential"
+      ],
+      "title": "Residential",
+      "description": "Residential property."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "SensitivitiesEnum",
+  "description": "Values to specify the methodology according to which sensitivities to (i) equity indices, funds and ETFs, and (ii) commodity indices are computed.",
+  "enum": [
+    "Alternative",
+    "Standard"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Alternative"
+      ],
+      "title": "Alternative",
+      "description": "The parties agree that in respect of the relevant sensitivities, the delta is allocated back to individual constituents."
+    },
+    
+    {
+      "enum": [
+        "Standard"
+      ],
+      "title": "Standard",
+      "description": "The relevant sensitivities are addressed by the standard preferred approach where the entire delta is put into the applicable asset class/category."
+    }
+  ]
+}

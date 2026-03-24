@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "object",
+  "title": "WorkflowState",
+  "description": "A class to specify workflow information, which is conceptually applicable to all lifecycle events.",
+  "properties": {
+    "workflowStatus": {
+      "description": "The workflow status indicator, e.g. Accepted, Rejected, ...",
+      "$ref": "cdm-event-workflow-WorkflowStatusEnum.schema.json"
+    },
+    "comment": {
+      "description": "A comment field to be associated with the workflow, e.g. to specify why a transaction event was rejected by a party.",
+      "type": "string"
+    },
+    "partyCustomisedWorkflow": {
+      "description": "Workflow data that is specific to certain market participants and is expressed as part of the CDM in a very generic manner, which can be party-specific. The initial use cases have been derived from the CME clearing and the DTCC TIW submissions.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-workflow-PartyCustomisedWorkflow.schema.json"
+      },
+      "minItems": 0
+    },
+    "warehouseIdentity": {
+      "description": "The identity of the warehouse, if any, that is executing that workflow step.",
+      "$ref": "cdm-event-workflow-WarehouseIdentityEnum.schema.json"
+    }
+  },
+  "required": [
+    "workflowStatus"
+  ]
+}

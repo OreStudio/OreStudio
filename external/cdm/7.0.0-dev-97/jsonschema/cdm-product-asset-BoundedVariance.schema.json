@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "BoundedVariance",
+  "properties": {
+    "realisedVarianceMethod": {
+      "description": "The contract specifies which price must satisfy the boundary condition.",
+      "$ref": "cdm-product-asset-RealisedVarianceMethodEnum.schema.json"
+    },
+    "daysInRangeAdjustment": {
+      "description": "The contract specifies whether the notional should be scaled by the Number of Days in Range divided by the Expected N. The number of Days in Ranges refers to the number of returns that contribute to the realized volatility.",
+      "type": "boolean"
+    },
+    "upperBarrier": {
+      "description": "All observations above this price level will be excluded from the variance calculation.",
+      "type": "number"
+    },
+    "lowerBarrier": {
+      "description": "All observations below this price level will be excluded from the variance calculation.",
+      "type": "number"
+    }
+  },
+  "required": [
+    "realisedVarianceMethod",
+    "daysInRangeAdjustment"
+  ]
+}

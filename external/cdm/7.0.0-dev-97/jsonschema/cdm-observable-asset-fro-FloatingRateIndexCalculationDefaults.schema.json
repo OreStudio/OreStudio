@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexCalculationDefaults",
+  "description": "This holds the rate calculation defaults applicable for a floating rate index.",
+  "properties": {
+    "category": {
+      "description": "The ISDA FRO category (e.g. screen rate or calculated rate).",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexCategoryEnum.schema.json"
+    },
+    "indexStyle": {
+      "description": "The ISDA FRO style (e.g. term rate, swap rate, etc).",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexStyleEnum.schema.json"
+    },
+    "method": {
+      "description": "The ISDA FRO calculation method (e.g. OIS Compounding).",
+      "$ref": "cdm-observable-asset-fro-FloatingRateIndexCalculationMethodEnum.schema.json"
+    },
+    "fixing": {
+      "description": "The default fixing details.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-asset-fro-FloatingRateIndexFixingDetails.schema.json"
+      },
+      "minItems": 0
+    },
+    "dayCountFraction": {
+      "description": "The default day count fraction.",
+      "$ref": "cdm-base-datetime-daycount-DayCountFractionEnum.schema.json"
+    },
+    "applicableBusinessDays": {
+      "description": "The default applicable business days.",
+      "$ref": "cdm-base-datetime-BusinessCenters.schema.json"
+    },
+    "publicationCalendar": {
+      "description": "Publication Calendar (e.g. EUR-ICESWAP)",
+      "type": "BusinessCenter"
+    }
+  }
+}

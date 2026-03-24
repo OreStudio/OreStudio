@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "string",
+  "title": "MarketDisruptionEnum",
+  "description": "The enumerated values to specify the handling of an averaging date market disruption for an equity derivative transaction.",
+  "enum": [
+    "ModifiedPostponement",
+    "Omission",
+    "Postponement"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ModifiedPostponement"
+      ],
+      "title": "ModifiedPostponement",
+      "description": "As defined in section 6.7 paragraph (c) sub-paragraph (iii) of the ISDA 2002 Equity Derivative definitions."
+    },
+    
+    {
+      "enum": [
+        "Omission"
+      ],
+      "title": "Omission",
+      "description": "As defined in section 6.7 paragraph (c) sub-paragraph (i) of the ISDA 2002 Equity Derivative definitions."
+    },
+    
+    {
+      "enum": [
+        "Postponement"
+      ],
+      "title": "Postponement",
+      "description": "As defined in section 6.7 paragraph (c) sub-paragraph (ii) of the ISDA 2002 Equity Derivative definitions."
+    }
+  ]
+}

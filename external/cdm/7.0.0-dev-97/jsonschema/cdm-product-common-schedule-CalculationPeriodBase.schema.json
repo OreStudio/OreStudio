@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.schedule",
+  "type": "object",
+  "title": "CalculationPeriodBase",
+  "description": "The calculation period adjusted start and end dates, which are the baseline arguments needed to compute an interest accrual calculation.",
+  "properties": {
+    "adjustedStartDate": {
+      "description": "The calculation period start date, adjusted according to any relevant business day convention.",
+      "type": "string"
+    },
+    "adjustedEndDate": {
+      "description": "The calculation period end date, adjusted according to any relevant business day convention.",
+      "type": "string"
+    }
+  }
+}

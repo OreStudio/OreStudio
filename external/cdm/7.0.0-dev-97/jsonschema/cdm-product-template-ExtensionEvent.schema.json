@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "ExtensionEvent",
+  "description": "A data to:  define the adjusted dates associated with an individual extension event.",
+  "properties": {
+    "adjustedExerciseDate": {
+      "description": "The date on which option exercise takes place. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    },
+    "adjustedExtendedTerminationDate": {
+      "description": "The termination date if an extendible provision is exercised. This date should already be adjusted for any applicable business day convention.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "adjustedExerciseDate",
+    "adjustedExtendedTerminationDate"
+  ]
+}

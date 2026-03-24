@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "Barrier",
+  "description": "As per ISDA 2002 Definitions.",
+  "properties": {
+    "knockIn": {
+      "description": "The option only becomes active when a predetermined trigger level is breached.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-event-TriggerEvent.schema.json"
+      },
+      "minItems": 0
+    },
+    "knockOut": {
+      "description": "The option becomes null and void when a predetermined trigger level is breached.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-event-TriggerEvent.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

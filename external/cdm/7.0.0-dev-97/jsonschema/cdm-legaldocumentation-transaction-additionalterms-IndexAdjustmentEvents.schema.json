@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "IndexAdjustmentEvents",
+  "description": "Defines the specification of the consequences of Index Events",
+  "properties": {
+    "indexModification": {
+      "description": "Consequence of index modification.",
+      "$ref": "cdm-observable-event-IndexEventConsequenceEnum.schema.json"
+    },
+    "indexCancellation": {
+      "description": "Consequence of index cancellation.",
+      "$ref": "cdm-observable-event-IndexEventConsequenceEnum.schema.json"
+    },
+    "indexDisruption": {
+      "description": "Consequence of index disruption.",
+      "$ref": "cdm-observable-event-IndexEventConsequenceEnum.schema.json"
+    }
+  },
+  "required": [
+    "indexModification",
+    "indexCancellation",
+    "indexDisruption"
+  ]
+}

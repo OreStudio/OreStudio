@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "InterestRateIndex",
+  "description": "An index based in interest rates or inflation rates in a certain market.",
+  "properties": {
+    "FloatingRateIndex": {
+      "description": "An interest rate index which can change over time, e.g. the SONIA (Sterling Overnight Index Average) in the UK.",
+      "$ref": "cdm-observable-asset-FloatingRateIndex.schema.json"
+    },
+    "InflationIndex": {
+      "description": "An index that measures inflation in a specific market, e.g. the US Consumer Price Index.",
+      "$ref": "cdm-observable-asset-InflationIndex.schema.json"
+    }
+  }
+}

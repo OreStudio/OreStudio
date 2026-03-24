@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "BillingInstruction",
+  "description": "Specifies the instructions for creation of a Security Lending billing invoice.",
+  "properties": {
+    "sendingParty": {
+      "description": "The party issuing the invoice",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "receivingParty": {
+      "description": "The party receiving the invoice",
+      "$ref": "cdm-base-staticdata-party-Party.schema.json"
+    },
+    "billingStartDate": {
+      "description": "The starting date of the period described by this invoice",
+      "type": "string"
+    },
+    "billingEndDate": {
+      "description": "The ending date of the period described by this invoice",
+      "type": "string"
+    },
+    "billingRecordInstruction": {
+      "description": "Instructions for creating the billing records contained within the invoice",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-BillingRecordInstruction.schema.json"
+      },
+      "minItems": 1
+    },
+    "billingSummary": {
+      "description": "The billing summaries contained within the invoice",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-BillingSummaryInstruction.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "sendingParty",
+    "receivingParty",
+    "billingStartDate",
+    "billingEndDate"
+  ]
+}

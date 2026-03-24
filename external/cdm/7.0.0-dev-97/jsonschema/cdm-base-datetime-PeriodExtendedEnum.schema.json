@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "string",
+  "title": "PeriodExtendedEnum",
+  "description": "The enumerated values to specify a time period containing the additional value of Term.",
+  "enum": [
+    "C",
+    "D",
+    "H",
+    "M",
+    "T",
+    "W",
+    "Y"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "C"
+      ],
+      "title": "C",
+      "description": "CalculationPeriod - the period corresponds to the calculation period   For example, used in the Commodity Markets to indicate that a reference contract is the one that corresponds to the period of the calculation period."
+    },
+    
+    {
+      "enum": [
+        "D"
+      ],
+      "title": "D",
+      "description": "Day"
+    },
+    
+    {
+      "enum": [
+        "H"
+      ],
+      "title": "H",
+      "description": "Hour"
+    },
+    
+    {
+      "enum": [
+        "M"
+      ],
+      "title": "M",
+      "description": "Month"
+    },
+    
+    {
+      "enum": [
+        "T"
+      ],
+      "title": "T",
+      "description": "Term. The period commencing on the effective date and ending on the termination date. The T period always appears in association with periodMultiplier = 1, and the notation is intended for use in contexts where the interval thus qualified (e.g. accrual period, payment period, reset period, ...) spans the entire term of the trade."
+    },
+    
+    {
+      "enum": [
+        "W"
+      ],
+      "title": "W",
+      "description": "Week"
+    },
+    
+    {
+      "enum": [
+        "Y"
+      ],
+      "title": "Y",
+      "description": "Year"
+    }
+  ]
+}

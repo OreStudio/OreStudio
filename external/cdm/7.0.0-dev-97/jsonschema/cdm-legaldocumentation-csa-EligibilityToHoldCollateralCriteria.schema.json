@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "EligibilityToHoldCollateralCriteria",
+  "description": "Defines a set of Criteria required by the party and its custodian to hold the other party's Posted Collateral.",
+  "properties": {
+    "AllEligibilityToHoldCollateralCriteria": {
+      "description": "Enables two or more Criteria to be combined using AND logic.",
+      "$ref": "cdm-legaldocumentation-csa-AllEligibilityToHoldCollateralCriteria.schema.json"
+    },
+    "AnyEligibilityToHoldCollateralCriteria": {
+      "description": "Enables two or more Criteria to be combined using OR logic.",
+      "$ref": "cdm-legaldocumentation-csa-AnyEligibilityToHoldCollateralCriteria.schema.json"
+    },
+    "RatingAgencyValue": {
+      "description": "A logical container designed to define a combination of Ratings based attributes. In this case, the minimum Rating Value, associated Rating Agency and Rating Type for the Party/Custodian to be entitled to hold Posted Collateral.",
+      "$ref": "cdm-legaldocumentation-csa-RatingAgencyValue.schema.json"
+    },
+    "AmountOfNetCapital": {
+      "description": "The minimum amount of net capital to be entitled to hold Posted Collateral.",
+      "$ref": "cdm-legaldocumentation-csa-AmountOfNetCapital.schema.json"
+    }
+  }
+}

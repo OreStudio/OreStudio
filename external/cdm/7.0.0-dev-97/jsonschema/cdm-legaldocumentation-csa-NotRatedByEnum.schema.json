@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "NotRatedByEnum",
+  "description": "The enumerated values applicable to define the what conditions apply to trigger a Not Rated condition.",
+  "enum": [
+    "All",
+    "One",
+    "Two"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "All"
+      ],
+      "title": "All",
+      "description": "No rating is available for the Party for any of the stated Rating Agencies."
+    },
+    
+    {
+      "enum": [
+        "One"
+      ],
+      "title": "One",
+      "description": "No rating is available for the Party for any one of the stated Rating Agencies."
+    },
+    
+    {
+      "enum": [
+        "Two"
+      ],
+      "title": "Two",
+      "description": "No rating is available for the Party for any two of the stated Rating Agencies."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexFixingOffset",
+  "description": "This type holds parameters defining the normal fixing offset for a floating rate index.",
+  "properties": {
+    "periodMultiplier": {
+      "description": "A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.",
+      "type": "integer"
+    },
+    "period": {
+      "description": "A time period, e.g. a day, week, month or year of the stream. If the periodMultiplier value is 0 (zero) then period must contain the value D (day).",
+      "$ref": "cdm-base-datetime-PeriodEnum.schema.json"
+    },
+    "businessCenters": {
+      "description": "The business centers for the offset.",
+      "$ref": "cdm-base-datetime-BusinessCenters.schema.json"
+    },
+    "fixingOffsetDefinition": {
+      "description": "Legal text that underlies the Fixing Offset. ISDA Fixing Offset Definition. (e.g. One day that is either a Sydney Business Day or a Melbourne Business Day following the Reset Date)",
+      "type": "string"
+    },
+    "fixingOffsetReason": {
+      "description": "Fixing Offset Reason",
+      "type": "string"
+    },
+    "designatedMaturity": {
+      "description": "Allows a reason to be specified for using the alternative fixing offset.",
+      "type": "string"
+    }
+  }
+}

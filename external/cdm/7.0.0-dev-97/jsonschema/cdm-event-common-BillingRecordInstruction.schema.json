@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "BillingRecordInstruction",
+  "description": "Specifies the instructions for creation of a billing record.",
+  "properties": {
+    "tradeState": {
+      "description": "The trade for the individual billing record.",
+      "$ref": "cdm-event-common-metafields-ReferenceWithMetaTradeState.schema.json"
+    },
+    "observation": {
+      "description": "The observations used to calculate the billing amount.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-observable-event-Observation.schema.json"
+      },
+      "minItems": 1
+    },
+    "recordStartDate": {
+      "description": "The starting date of the period described by this record",
+      "type": "string"
+    },
+    "recordEndDate": {
+      "description": "The ending date of the period described by this record",
+      "type": "string"
+    },
+    "settlementDate": {
+      "description": "The date for settlement of the transfer.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "tradeState",
+    "recordStartDate",
+    "recordEndDate",
+    "settlementDate"
+  ]
+}

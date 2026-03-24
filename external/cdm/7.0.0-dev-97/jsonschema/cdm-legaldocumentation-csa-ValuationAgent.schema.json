@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "ValuationAgent",
+  "description": "Details of the party valuating the collateral to be delivered or returned.",
+  "properties": {
+    "party": {
+      "description": "Specification of which party calculating the value of collateral to be delivered or returned.",
+      "$ref": "cdm-legaldocumentation-csa-CalculationValuationAgentPartyEnum.schema.json"
+    },
+    "valuationAgent": {
+      "description": "Specifies how the Valuation Agent is determined.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationAgentDeterminationEnum.schema.json"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "InstructionFunctionEnum",
+  "description": "The enumeration values indicating the BusinessEvent function associated input instructions.",
+  "enum": [
+    "Compression",
+    "ContractFormation",
+    "Execution",
+    "QuantityChange",
+    "Renegotiation"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Compression"
+      ],
+      "title": "Compression"
+    },
+    
+    {
+      "enum": [
+        "ContractFormation"
+      ],
+      "title": "ContractFormation"
+    },
+    
+    {
+      "enum": [
+        "Execution"
+      ],
+      "title": "Execution"
+    },
+    
+    {
+      "enum": [
+        "QuantityChange"
+      ],
+      "title": "QuantityChange"
+    },
+    
+    {
+      "enum": [
+        "Renegotiation"
+      ],
+      "title": "Renegotiation"
+    }
+  ]
+}

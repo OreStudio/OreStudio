@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AdditionalRepresentationElection",
+  "description": "A class to specify the parties' Additional Representation(s) election.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "isApplicable": {
+      "description": "The Additional Representation is applicable when True, and not applicable when False.",
+      "type": "boolean"
+    },
+    "additionalLanguage": {
+      "description": "Details of any Additional Representations given by the relevant parties in relation to the collateral arrangement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "isApplicable"
+  ]
+}

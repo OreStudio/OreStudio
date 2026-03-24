@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "OptionalEarlyTerminationAdjustedDates",
+  "description": "A data defining:  the adjusted dates associated with an optional early termination provision.",
+  "properties": {
+    "earlyTerminationEvent": {
+      "description": "The adjusted dates associated with an individual early termination date.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-EarlyTerminationEvent.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

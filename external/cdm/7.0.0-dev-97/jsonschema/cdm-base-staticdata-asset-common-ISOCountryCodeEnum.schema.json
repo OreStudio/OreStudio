@@ -1,0 +1,2251 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "ISOCountryCodeEnum",
+  "description": "The enumerated values to specify standard currency codes according to the International Standards Organization (ISO). The set of codes in this enumerated list is sourced from ISO Standard 3166 (ISO-3166-1alpha-2)(https://www.iso.org/iso-3166-country-codes.html) as at 14-Aug-23.",
+  "enum": [
+    "AD",
+    "AE",
+    "AF",
+    "AG",
+    "AI",
+    "AL",
+    "AM",
+    "AO",
+    "AQ",
+    "AR",
+    "AS",
+    "AT",
+    "AU",
+    "AW",
+    "AX",
+    "AZ",
+    "BA",
+    "BB",
+    "BD",
+    "BE",
+    "BF",
+    "BG",
+    "BH",
+    "BI",
+    "BJ",
+    "BL",
+    "BM",
+    "BN",
+    "BO",
+    "BQ",
+    "BR",
+    "BS",
+    "BT",
+    "BV",
+    "BW",
+    "BY",
+    "BZ",
+    "CA",
+    "CC",
+    "CD",
+    "CF",
+    "CG",
+    "CH",
+    "CI",
+    "CK",
+    "CL",
+    "CM",
+    "CN",
+    "CO",
+    "CR",
+    "CU",
+    "CV",
+    "CW",
+    "CX",
+    "CY",
+    "CZ",
+    "DE",
+    "DJ",
+    "DK",
+    "DM",
+    "DO",
+    "DZ",
+    "EC",
+    "EE",
+    "EG",
+    "EH",
+    "ER",
+    "ES",
+    "ET",
+    "FI",
+    "FJ",
+    "FK",
+    "FM",
+    "FO",
+    "FR",
+    "GA",
+    "GB",
+    "GD",
+    "GE",
+    "GF",
+    "GG",
+    "GH",
+    "GI",
+    "GL",
+    "GM",
+    "GN",
+    "GP",
+    "GQ",
+    "GR",
+    "GS",
+    "GT",
+    "GU",
+    "GW",
+    "GY",
+    "HK",
+    "HM",
+    "HN",
+    "HR",
+    "HT",
+    "HU",
+    "ID",
+    "IE",
+    "IL",
+    "IM",
+    "IN",
+    "IO",
+    "IQ",
+    "IR",
+    "IS",
+    "IT",
+    "JE",
+    "JM",
+    "JO",
+    "JP",
+    "KE",
+    "KG",
+    "KH",
+    "KI",
+    "KM",
+    "KN",
+    "KP",
+    "KR",
+    "KW",
+    "KY",
+    "KZ",
+    "LA",
+    "LB",
+    "LC",
+    "LI",
+    "LK",
+    "LR",
+    "LS",
+    "LT",
+    "LU",
+    "LV",
+    "LY",
+    "MA",
+    "MC",
+    "MD",
+    "ME",
+    "MF",
+    "MG",
+    "MH",
+    "MK",
+    "ML",
+    "MM",
+    "MN",
+    "MO",
+    "MP",
+    "MQ",
+    "MR",
+    "MS",
+    "MT",
+    "MU",
+    "MV",
+    "MW",
+    "MX",
+    "MY",
+    "MZ",
+    "NA",
+    "NC",
+    "NE",
+    "NF",
+    "NG",
+    "NI",
+    "NL",
+    "NO",
+    "NP",
+    "NR",
+    "NU",
+    "NZ",
+    "OM",
+    "PA",
+    "PE",
+    "PF",
+    "PG",
+    "PH",
+    "PK",
+    "PL",
+    "PM",
+    "PN",
+    "PR",
+    "PS",
+    "PT",
+    "PW",
+    "PY",
+    "QA",
+    "RE",
+    "RO",
+    "RS",
+    "RU",
+    "RW",
+    "SA",
+    "SB",
+    "SC",
+    "SD",
+    "SE",
+    "SG",
+    "SH",
+    "SI",
+    "SJ",
+    "SK",
+    "SL",
+    "SM",
+    "SN",
+    "SO",
+    "SR",
+    "SS",
+    "ST",
+    "SV",
+    "SX",
+    "SY",
+    "SZ",
+    "TC",
+    "TD",
+    "TF",
+    "TG",
+    "TH",
+    "TJ",
+    "TK",
+    "TL",
+    "TM",
+    "TN",
+    "TO",
+    "TR",
+    "TT",
+    "TV",
+    "TW",
+    "TZ",
+    "UA",
+    "UG",
+    "UM",
+    "US",
+    "UY",
+    "UZ",
+    "VA",
+    "VC",
+    "VE",
+    "VG",
+    "VI",
+    "VN",
+    "VU",
+    "WF",
+    "WS",
+    "YE",
+    "YT",
+    "ZA",
+    "ZM",
+    "ZW"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AD"
+      ],
+      "title": "AD",
+      "description": "Andorra"
+    },
+    
+    {
+      "enum": [
+        "AE"
+      ],
+      "title": "AE",
+      "description": "United Arab Emirates (the)"
+    },
+    
+    {
+      "enum": [
+        "AF"
+      ],
+      "title": "AF",
+      "description": "Afghanistan"
+    },
+    
+    {
+      "enum": [
+        "AG"
+      ],
+      "title": "AG",
+      "description": "Antigua and Barbuda"
+    },
+    
+    {
+      "enum": [
+        "AI"
+      ],
+      "title": "AI",
+      "description": "Anguilla"
+    },
+    
+    {
+      "enum": [
+        "AL"
+      ],
+      "title": "AL",
+      "description": "Albania"
+    },
+    
+    {
+      "enum": [
+        "AM"
+      ],
+      "title": "AM",
+      "description": "Armenia"
+    },
+    
+    {
+      "enum": [
+        "AO"
+      ],
+      "title": "AO",
+      "description": "Angola"
+    },
+    
+    {
+      "enum": [
+        "AQ"
+      ],
+      "title": "AQ",
+      "description": "Antarctica"
+    },
+    
+    {
+      "enum": [
+        "AR"
+      ],
+      "title": "AR",
+      "description": "Argentina"
+    },
+    
+    {
+      "enum": [
+        "AS"
+      ],
+      "title": "AS",
+      "description": "American Samoa"
+    },
+    
+    {
+      "enum": [
+        "AT"
+      ],
+      "title": "AT",
+      "description": "Austria"
+    },
+    
+    {
+      "enum": [
+        "AU"
+      ],
+      "title": "AU",
+      "description": "Australia"
+    },
+    
+    {
+      "enum": [
+        "AW"
+      ],
+      "title": "AW",
+      "description": "Aruba"
+    },
+    
+    {
+      "enum": [
+        "AX"
+      ],
+      "title": "AX",
+      "description": "Aland Islands"
+    },
+    
+    {
+      "enum": [
+        "AZ"
+      ],
+      "title": "AZ",
+      "description": "Azerbaijan"
+    },
+    
+    {
+      "enum": [
+        "BA"
+      ],
+      "title": "BA",
+      "description": "Bosnia and Herzegovina"
+    },
+    
+    {
+      "enum": [
+        "BB"
+      ],
+      "title": "BB",
+      "description": "Barbados"
+    },
+    
+    {
+      "enum": [
+        "BD"
+      ],
+      "title": "BD",
+      "description": "Bangladesh"
+    },
+    
+    {
+      "enum": [
+        "BE"
+      ],
+      "title": "BE",
+      "description": "Belgium"
+    },
+    
+    {
+      "enum": [
+        "BF"
+      ],
+      "title": "BF",
+      "description": "Burkina Faso"
+    },
+    
+    {
+      "enum": [
+        "BG"
+      ],
+      "title": "BG",
+      "description": "Bulgaria"
+    },
+    
+    {
+      "enum": [
+        "BH"
+      ],
+      "title": "BH",
+      "description": "Bahrain"
+    },
+    
+    {
+      "enum": [
+        "BI"
+      ],
+      "title": "BI",
+      "description": "Burundi"
+    },
+    
+    {
+      "enum": [
+        "BJ"
+      ],
+      "title": "BJ",
+      "description": "Benin"
+    },
+    
+    {
+      "enum": [
+        "BL"
+      ],
+      "title": "BL",
+      "description": "Saint Barthlemy"
+    },
+    
+    {
+      "enum": [
+        "BM"
+      ],
+      "title": "BM",
+      "description": "Bermuda"
+    },
+    
+    {
+      "enum": [
+        "BN"
+      ],
+      "title": "BN",
+      "description": "Brunei Darussalam"
+    },
+    
+    {
+      "enum": [
+        "BO"
+      ],
+      "title": "BO",
+      "description": "Bolivia (Plurinational State of)"
+    },
+    
+    {
+      "enum": [
+        "BQ"
+      ],
+      "title": "BQ",
+      "description": "Bonaire, Sint Eustatius and Saba"
+    },
+    
+    {
+      "enum": [
+        "BR"
+      ],
+      "title": "BR",
+      "description": "Brazil"
+    },
+    
+    {
+      "enum": [
+        "BS"
+      ],
+      "title": "BS",
+      "description": "Bahamas (the)"
+    },
+    
+    {
+      "enum": [
+        "BT"
+      ],
+      "title": "BT",
+      "description": "Bhutan"
+    },
+    
+    {
+      "enum": [
+        "BV"
+      ],
+      "title": "BV",
+      "description": "Bouvet Island"
+    },
+    
+    {
+      "enum": [
+        "BW"
+      ],
+      "title": "BW",
+      "description": "Botswana"
+    },
+    
+    {
+      "enum": [
+        "BY"
+      ],
+      "title": "BY",
+      "description": "Belarus"
+    },
+    
+    {
+      "enum": [
+        "BZ"
+      ],
+      "title": "BZ",
+      "description": "Belize"
+    },
+    
+    {
+      "enum": [
+        "CA"
+      ],
+      "title": "CA",
+      "description": "Canada"
+    },
+    
+    {
+      "enum": [
+        "CC"
+      ],
+      "title": "CC",
+      "description": "Cocos (Keeling) Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "CD"
+      ],
+      "title": "CD",
+      "description": "Congo (the Democratic Republic of the)"
+    },
+    
+    {
+      "enum": [
+        "CF"
+      ],
+      "title": "CF",
+      "description": "Central African Republic (the)"
+    },
+    
+    {
+      "enum": [
+        "CG"
+      ],
+      "title": "CG",
+      "description": "Congo (the)"
+    },
+    
+    {
+      "enum": [
+        "CH"
+      ],
+      "title": "CH",
+      "description": "Switzerland"
+    },
+    
+    {
+      "enum": [
+        "CI"
+      ],
+      "title": "CI",
+      "description": "Cte d'Ivoire"
+    },
+    
+    {
+      "enum": [
+        "CK"
+      ],
+      "title": "CK",
+      "description": "Cook Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "CL"
+      ],
+      "title": "CL",
+      "description": "Chile"
+    },
+    
+    {
+      "enum": [
+        "CM"
+      ],
+      "title": "CM",
+      "description": "Cameroon"
+    },
+    
+    {
+      "enum": [
+        "CN"
+      ],
+      "title": "CN",
+      "description": "China"
+    },
+    
+    {
+      "enum": [
+        "CO"
+      ],
+      "title": "CO",
+      "description": "Colombia"
+    },
+    
+    {
+      "enum": [
+        "CR"
+      ],
+      "title": "CR",
+      "description": "Costa Rica"
+    },
+    
+    {
+      "enum": [
+        "CU"
+      ],
+      "title": "CU",
+      "description": "Cuba"
+    },
+    
+    {
+      "enum": [
+        "CV"
+      ],
+      "title": "CV",
+      "description": "Cabo Verde"
+    },
+    
+    {
+      "enum": [
+        "CW"
+      ],
+      "title": "CW",
+      "description": "Curaao"
+    },
+    
+    {
+      "enum": [
+        "CX"
+      ],
+      "title": "CX",
+      "description": "Christmas Island"
+    },
+    
+    {
+      "enum": [
+        "CY"
+      ],
+      "title": "CY",
+      "description": "Cyprus"
+    },
+    
+    {
+      "enum": [
+        "CZ"
+      ],
+      "title": "CZ",
+      "description": "Czechia"
+    },
+    
+    {
+      "enum": [
+        "DE"
+      ],
+      "title": "DE",
+      "description": "Germany"
+    },
+    
+    {
+      "enum": [
+        "DJ"
+      ],
+      "title": "DJ",
+      "description": "Djibouti"
+    },
+    
+    {
+      "enum": [
+        "DK"
+      ],
+      "title": "DK",
+      "description": "Denmark"
+    },
+    
+    {
+      "enum": [
+        "DM"
+      ],
+      "title": "DM",
+      "description": "Dominica"
+    },
+    
+    {
+      "enum": [
+        "DO"
+      ],
+      "title": "DO",
+      "description": "Dominican Republic (the)"
+    },
+    
+    {
+      "enum": [
+        "DZ"
+      ],
+      "title": "DZ",
+      "description": "Algeria"
+    },
+    
+    {
+      "enum": [
+        "EC"
+      ],
+      "title": "EC",
+      "description": "Ecuador"
+    },
+    
+    {
+      "enum": [
+        "EE"
+      ],
+      "title": "EE",
+      "description": "Estonia"
+    },
+    
+    {
+      "enum": [
+        "EG"
+      ],
+      "title": "EG",
+      "description": "Egypt"
+    },
+    
+    {
+      "enum": [
+        "EH"
+      ],
+      "title": "EH",
+      "description": "Western Sahara*"
+    },
+    
+    {
+      "enum": [
+        "ER"
+      ],
+      "title": "ER",
+      "description": "Eritrea"
+    },
+    
+    {
+      "enum": [
+        "ES"
+      ],
+      "title": "ES",
+      "description": "Spain"
+    },
+    
+    {
+      "enum": [
+        "ET"
+      ],
+      "title": "ET",
+      "description": "Ethiopia"
+    },
+    
+    {
+      "enum": [
+        "FI"
+      ],
+      "title": "FI",
+      "description": "Finland"
+    },
+    
+    {
+      "enum": [
+        "FJ"
+      ],
+      "title": "FJ",
+      "description": "Fiji"
+    },
+    
+    {
+      "enum": [
+        "FK"
+      ],
+      "title": "FK",
+      "description": "Falkland Islands (the) [Malvinas]"
+    },
+    
+    {
+      "enum": [
+        "FM"
+      ],
+      "title": "FM",
+      "description": "Micronesia (Federated States of)"
+    },
+    
+    {
+      "enum": [
+        "FO"
+      ],
+      "title": "FO",
+      "description": "Faroe Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "FR"
+      ],
+      "title": "FR",
+      "description": "France"
+    },
+    
+    {
+      "enum": [
+        "GA"
+      ],
+      "title": "GA",
+      "description": "Gabon"
+    },
+    
+    {
+      "enum": [
+        "GB"
+      ],
+      "title": "GB",
+      "description": "United Kingdom of Great Britain and Northern Ireland (the)"
+    },
+    
+    {
+      "enum": [
+        "GD"
+      ],
+      "title": "GD",
+      "description": "Grenada"
+    },
+    
+    {
+      "enum": [
+        "GE"
+      ],
+      "title": "GE",
+      "description": "Georgia"
+    },
+    
+    {
+      "enum": [
+        "GF"
+      ],
+      "title": "GF",
+      "description": "French Guiana"
+    },
+    
+    {
+      "enum": [
+        "GG"
+      ],
+      "title": "GG",
+      "description": "Guernsey"
+    },
+    
+    {
+      "enum": [
+        "GH"
+      ],
+      "title": "GH",
+      "description": "Ghana"
+    },
+    
+    {
+      "enum": [
+        "GI"
+      ],
+      "title": "GI",
+      "description": "Gibraltar"
+    },
+    
+    {
+      "enum": [
+        "GL"
+      ],
+      "title": "GL",
+      "description": "Greenland"
+    },
+    
+    {
+      "enum": [
+        "GM"
+      ],
+      "title": "GM",
+      "description": "Gambia (the)"
+    },
+    
+    {
+      "enum": [
+        "GN"
+      ],
+      "title": "GN",
+      "description": "Guinea"
+    },
+    
+    {
+      "enum": [
+        "GP"
+      ],
+      "title": "GP",
+      "description": "Guadeloupe"
+    },
+    
+    {
+      "enum": [
+        "GQ"
+      ],
+      "title": "GQ",
+      "description": "Equatorial Guinea"
+    },
+    
+    {
+      "enum": [
+        "GR"
+      ],
+      "title": "GR",
+      "description": "Greece"
+    },
+    
+    {
+      "enum": [
+        "GS"
+      ],
+      "title": "GS",
+      "description": "South Georgia and the South Sandwich Islands"
+    },
+    
+    {
+      "enum": [
+        "GT"
+      ],
+      "title": "GT",
+      "description": "Guatemala"
+    },
+    
+    {
+      "enum": [
+        "GU"
+      ],
+      "title": "GU",
+      "description": "Guam"
+    },
+    
+    {
+      "enum": [
+        "GW"
+      ],
+      "title": "GW",
+      "description": "Guinea-Bissau"
+    },
+    
+    {
+      "enum": [
+        "GY"
+      ],
+      "title": "GY",
+      "description": "Guyana"
+    },
+    
+    {
+      "enum": [
+        "HK"
+      ],
+      "title": "HK",
+      "description": "Hong Kong"
+    },
+    
+    {
+      "enum": [
+        "HM"
+      ],
+      "title": "HM",
+      "description": "Heard Island and McDonald Islands"
+    },
+    
+    {
+      "enum": [
+        "HN"
+      ],
+      "title": "HN",
+      "description": "Honduras"
+    },
+    
+    {
+      "enum": [
+        "HR"
+      ],
+      "title": "HR",
+      "description": "Croatia"
+    },
+    
+    {
+      "enum": [
+        "HT"
+      ],
+      "title": "HT",
+      "description": "Haiti"
+    },
+    
+    {
+      "enum": [
+        "HU"
+      ],
+      "title": "HU",
+      "description": "Hungary"
+    },
+    
+    {
+      "enum": [
+        "ID"
+      ],
+      "title": "ID",
+      "description": "Indonesia"
+    },
+    
+    {
+      "enum": [
+        "IE"
+      ],
+      "title": "IE",
+      "description": "Ireland"
+    },
+    
+    {
+      "enum": [
+        "IL"
+      ],
+      "title": "IL",
+      "description": "Israel"
+    },
+    
+    {
+      "enum": [
+        "IM"
+      ],
+      "title": "IM",
+      "description": "Isle of Man"
+    },
+    
+    {
+      "enum": [
+        "IN"
+      ],
+      "title": "IN",
+      "description": "India"
+    },
+    
+    {
+      "enum": [
+        "IO"
+      ],
+      "title": "IO",
+      "description": "British Indian Ocean Territory (the)"
+    },
+    
+    {
+      "enum": [
+        "IQ"
+      ],
+      "title": "IQ",
+      "description": "Iraq"
+    },
+    
+    {
+      "enum": [
+        "IR"
+      ],
+      "title": "IR",
+      "description": "Iran (Islamic Republic of)"
+    },
+    
+    {
+      "enum": [
+        "IS"
+      ],
+      "title": "IS",
+      "description": "Iceland"
+    },
+    
+    {
+      "enum": [
+        "IT"
+      ],
+      "title": "IT",
+      "description": "Italy"
+    },
+    
+    {
+      "enum": [
+        "JE"
+      ],
+      "title": "JE",
+      "description": "Jersey"
+    },
+    
+    {
+      "enum": [
+        "JM"
+      ],
+      "title": "JM",
+      "description": "Jamaica"
+    },
+    
+    {
+      "enum": [
+        "JO"
+      ],
+      "title": "JO",
+      "description": "Jordan"
+    },
+    
+    {
+      "enum": [
+        "JP"
+      ],
+      "title": "JP",
+      "description": "Japan"
+    },
+    
+    {
+      "enum": [
+        "KE"
+      ],
+      "title": "KE",
+      "description": "Kenya"
+    },
+    
+    {
+      "enum": [
+        "KG"
+      ],
+      "title": "KG",
+      "description": "Kyrgyzstan"
+    },
+    
+    {
+      "enum": [
+        "KH"
+      ],
+      "title": "KH",
+      "description": "Cambodia"
+    },
+    
+    {
+      "enum": [
+        "KI"
+      ],
+      "title": "KI",
+      "description": "Kiribati"
+    },
+    
+    {
+      "enum": [
+        "KM"
+      ],
+      "title": "KM",
+      "description": "Comoros (the)"
+    },
+    
+    {
+      "enum": [
+        "KN"
+      ],
+      "title": "KN",
+      "description": "Saint Kitts and Nevis"
+    },
+    
+    {
+      "enum": [
+        "KP"
+      ],
+      "title": "KP",
+      "description": "Korea (the Democratic People's Republic of)"
+    },
+    
+    {
+      "enum": [
+        "KR"
+      ],
+      "title": "KR",
+      "description": "Korea (the Republic of)"
+    },
+    
+    {
+      "enum": [
+        "KW"
+      ],
+      "title": "KW",
+      "description": "Kuwait"
+    },
+    
+    {
+      "enum": [
+        "KY"
+      ],
+      "title": "KY",
+      "description": "Cayman Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "KZ"
+      ],
+      "title": "KZ",
+      "description": "Kazakhstan"
+    },
+    
+    {
+      "enum": [
+        "LA"
+      ],
+      "title": "LA",
+      "description": "Lao People's Democratic Republic (the)"
+    },
+    
+    {
+      "enum": [
+        "LB"
+      ],
+      "title": "LB",
+      "description": "Lebanon"
+    },
+    
+    {
+      "enum": [
+        "LC"
+      ],
+      "title": "LC",
+      "description": "Saint Lucia"
+    },
+    
+    {
+      "enum": [
+        "LI"
+      ],
+      "title": "LI",
+      "description": "Liechtenstein"
+    },
+    
+    {
+      "enum": [
+        "LK"
+      ],
+      "title": "LK",
+      "description": "Sri Lanka"
+    },
+    
+    {
+      "enum": [
+        "LR"
+      ],
+      "title": "LR",
+      "description": "Liberia"
+    },
+    
+    {
+      "enum": [
+        "LS"
+      ],
+      "title": "LS",
+      "description": "Lesotho"
+    },
+    
+    {
+      "enum": [
+        "LT"
+      ],
+      "title": "LT",
+      "description": "Lithuania"
+    },
+    
+    {
+      "enum": [
+        "LU"
+      ],
+      "title": "LU",
+      "description": "Luxembourg"
+    },
+    
+    {
+      "enum": [
+        "LV"
+      ],
+      "title": "LV",
+      "description": "Latvia"
+    },
+    
+    {
+      "enum": [
+        "LY"
+      ],
+      "title": "LY",
+      "description": "Libya"
+    },
+    
+    {
+      "enum": [
+        "MA"
+      ],
+      "title": "MA",
+      "description": "Morocco"
+    },
+    
+    {
+      "enum": [
+        "MC"
+      ],
+      "title": "MC",
+      "description": "Monaco"
+    },
+    
+    {
+      "enum": [
+        "MD"
+      ],
+      "title": "MD",
+      "description": "Moldova (the Republic of)"
+    },
+    
+    {
+      "enum": [
+        "ME"
+      ],
+      "title": "ME",
+      "description": "Montenegro"
+    },
+    
+    {
+      "enum": [
+        "MF"
+      ],
+      "title": "MF",
+      "description": "Saint Martin (French part)"
+    },
+    
+    {
+      "enum": [
+        "MG"
+      ],
+      "title": "MG",
+      "description": "Madagascar"
+    },
+    
+    {
+      "enum": [
+        "MH"
+      ],
+      "title": "MH",
+      "description": "Marshall Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "MK"
+      ],
+      "title": "MK",
+      "description": "North Macedonia"
+    },
+    
+    {
+      "enum": [
+        "ML"
+      ],
+      "title": "ML",
+      "description": "Mali"
+    },
+    
+    {
+      "enum": [
+        "MM"
+      ],
+      "title": "MM",
+      "description": "Myanmar"
+    },
+    
+    {
+      "enum": [
+        "MN"
+      ],
+      "title": "MN",
+      "description": "Mongolia"
+    },
+    
+    {
+      "enum": [
+        "MO"
+      ],
+      "title": "MO",
+      "description": "Macao"
+    },
+    
+    {
+      "enum": [
+        "MP"
+      ],
+      "title": "MP",
+      "description": "Northern Mariana Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "MQ"
+      ],
+      "title": "MQ",
+      "description": "Martinique"
+    },
+    
+    {
+      "enum": [
+        "MR"
+      ],
+      "title": "MR",
+      "description": "Mauritania"
+    },
+    
+    {
+      "enum": [
+        "MS"
+      ],
+      "title": "MS",
+      "description": "Montserrat"
+    },
+    
+    {
+      "enum": [
+        "MT"
+      ],
+      "title": "MT",
+      "description": "Malta"
+    },
+    
+    {
+      "enum": [
+        "MU"
+      ],
+      "title": "MU",
+      "description": "Mauritius"
+    },
+    
+    {
+      "enum": [
+        "MV"
+      ],
+      "title": "MV",
+      "description": "Maldives"
+    },
+    
+    {
+      "enum": [
+        "MW"
+      ],
+      "title": "MW",
+      "description": "Malawi"
+    },
+    
+    {
+      "enum": [
+        "MX"
+      ],
+      "title": "MX",
+      "description": "Mexico"
+    },
+    
+    {
+      "enum": [
+        "MY"
+      ],
+      "title": "MY",
+      "description": "Malaysia"
+    },
+    
+    {
+      "enum": [
+        "MZ"
+      ],
+      "title": "MZ",
+      "description": "Mozambique"
+    },
+    
+    {
+      "enum": [
+        "NA"
+      ],
+      "title": "NA",
+      "description": "Namibia"
+    },
+    
+    {
+      "enum": [
+        "NC"
+      ],
+      "title": "NC",
+      "description": "New Caledonia"
+    },
+    
+    {
+      "enum": [
+        "NE"
+      ],
+      "title": "NE",
+      "description": "Niger (the)"
+    },
+    
+    {
+      "enum": [
+        "NF"
+      ],
+      "title": "NF",
+      "description": "Norfolk Island"
+    },
+    
+    {
+      "enum": [
+        "NG"
+      ],
+      "title": "NG",
+      "description": "Nigeria"
+    },
+    
+    {
+      "enum": [
+        "NI"
+      ],
+      "title": "NI",
+      "description": "Nicaragua"
+    },
+    
+    {
+      "enum": [
+        "NL"
+      ],
+      "title": "NL",
+      "description": "Netherlands (Kingdom of the)"
+    },
+    
+    {
+      "enum": [
+        "NO"
+      ],
+      "title": "NO",
+      "description": "Norway"
+    },
+    
+    {
+      "enum": [
+        "NP"
+      ],
+      "title": "NP",
+      "description": "Nepal"
+    },
+    
+    {
+      "enum": [
+        "NR"
+      ],
+      "title": "NR",
+      "description": "Nauru"
+    },
+    
+    {
+      "enum": [
+        "NU"
+      ],
+      "title": "NU",
+      "description": "Niue"
+    },
+    
+    {
+      "enum": [
+        "NZ"
+      ],
+      "title": "NZ",
+      "description": "New Zealand"
+    },
+    
+    {
+      "enum": [
+        "OM"
+      ],
+      "title": "OM",
+      "description": "Oman"
+    },
+    
+    {
+      "enum": [
+        "PA"
+      ],
+      "title": "PA",
+      "description": "Panama"
+    },
+    
+    {
+      "enum": [
+        "PE"
+      ],
+      "title": "PE",
+      "description": "Peru"
+    },
+    
+    {
+      "enum": [
+        "PF"
+      ],
+      "title": "PF",
+      "description": "French Polynesia"
+    },
+    
+    {
+      "enum": [
+        "PG"
+      ],
+      "title": "PG",
+      "description": "Papua New Guinea"
+    },
+    
+    {
+      "enum": [
+        "PH"
+      ],
+      "title": "PH",
+      "description": "Philippines (the)"
+    },
+    
+    {
+      "enum": [
+        "PK"
+      ],
+      "title": "PK",
+      "description": "Pakistan"
+    },
+    
+    {
+      "enum": [
+        "PL"
+      ],
+      "title": "PL",
+      "description": "Poland"
+    },
+    
+    {
+      "enum": [
+        "PM"
+      ],
+      "title": "PM",
+      "description": "Saint Pierre and Miquelon"
+    },
+    
+    {
+      "enum": [
+        "PN"
+      ],
+      "title": "PN",
+      "description": "Pitcairn"
+    },
+    
+    {
+      "enum": [
+        "PR"
+      ],
+      "title": "PR",
+      "description": "Puerto Rico"
+    },
+    
+    {
+      "enum": [
+        "PS"
+      ],
+      "title": "PS",
+      "description": "Palestine, State of"
+    },
+    
+    {
+      "enum": [
+        "PT"
+      ],
+      "title": "PT",
+      "description": "Portugal"
+    },
+    
+    {
+      "enum": [
+        "PW"
+      ],
+      "title": "PW",
+      "description": "Palau"
+    },
+    
+    {
+      "enum": [
+        "PY"
+      ],
+      "title": "PY",
+      "description": "Paraguay"
+    },
+    
+    {
+      "enum": [
+        "QA"
+      ],
+      "title": "QA",
+      "description": "Qatar"
+    },
+    
+    {
+      "enum": [
+        "RE"
+      ],
+      "title": "RE",
+      "description": "Runion"
+    },
+    
+    {
+      "enum": [
+        "RO"
+      ],
+      "title": "RO",
+      "description": "Romania"
+    },
+    
+    {
+      "enum": [
+        "RS"
+      ],
+      "title": "RS",
+      "description": "Serbia"
+    },
+    
+    {
+      "enum": [
+        "RU"
+      ],
+      "title": "RU",
+      "description": "Russian Federation (the)"
+    },
+    
+    {
+      "enum": [
+        "RW"
+      ],
+      "title": "RW",
+      "description": "Rwanda"
+    },
+    
+    {
+      "enum": [
+        "SA"
+      ],
+      "title": "SA",
+      "description": "Saudi Arabia"
+    },
+    
+    {
+      "enum": [
+        "SB"
+      ],
+      "title": "SB",
+      "description": "Solomon Islands"
+    },
+    
+    {
+      "enum": [
+        "SC"
+      ],
+      "title": "SC",
+      "description": "Seychelles"
+    },
+    
+    {
+      "enum": [
+        "SD"
+      ],
+      "title": "SD",
+      "description": "Sudan (the)"
+    },
+    
+    {
+      "enum": [
+        "SE"
+      ],
+      "title": "SE",
+      "description": "Sweden"
+    },
+    
+    {
+      "enum": [
+        "SG"
+      ],
+      "title": "SG",
+      "description": "Singapore"
+    },
+    
+    {
+      "enum": [
+        "SH"
+      ],
+      "title": "SH",
+      "description": "Saint Helena, Ascension and Tristan da Cunha"
+    },
+    
+    {
+      "enum": [
+        "SI"
+      ],
+      "title": "SI",
+      "description": "Slovenia"
+    },
+    
+    {
+      "enum": [
+        "SJ"
+      ],
+      "title": "SJ",
+      "description": "Svalbard and Jan Mayen"
+    },
+    
+    {
+      "enum": [
+        "SK"
+      ],
+      "title": "SK",
+      "description": "Slovakia"
+    },
+    
+    {
+      "enum": [
+        "SL"
+      ],
+      "title": "SL",
+      "description": "Sierra Leone"
+    },
+    
+    {
+      "enum": [
+        "SM"
+      ],
+      "title": "SM",
+      "description": "San Marino"
+    },
+    
+    {
+      "enum": [
+        "SN"
+      ],
+      "title": "SN",
+      "description": "Senegal"
+    },
+    
+    {
+      "enum": [
+        "SO"
+      ],
+      "title": "SO",
+      "description": "Somalia"
+    },
+    
+    {
+      "enum": [
+        "SR"
+      ],
+      "title": "SR",
+      "description": "Suriname"
+    },
+    
+    {
+      "enum": [
+        "SS"
+      ],
+      "title": "SS",
+      "description": "South Sudan"
+    },
+    
+    {
+      "enum": [
+        "ST"
+      ],
+      "title": "ST",
+      "description": "Sao Tome and Principe"
+    },
+    
+    {
+      "enum": [
+        "SV"
+      ],
+      "title": "SV",
+      "description": "El Salvador"
+    },
+    
+    {
+      "enum": [
+        "SX"
+      ],
+      "title": "SX",
+      "description": "Sint Maarten (Dutch part)"
+    },
+    
+    {
+      "enum": [
+        "SY"
+      ],
+      "title": "SY",
+      "description": "Syrian Arab Republic (the)"
+    },
+    
+    {
+      "enum": [
+        "SZ"
+      ],
+      "title": "SZ",
+      "description": "Eswatini"
+    },
+    
+    {
+      "enum": [
+        "TC"
+      ],
+      "title": "TC",
+      "description": "Turks and Caicos Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "TD"
+      ],
+      "title": "TD",
+      "description": "Chad"
+    },
+    
+    {
+      "enum": [
+        "TF"
+      ],
+      "title": "TF",
+      "description": "French Southern Territories (the)"
+    },
+    
+    {
+      "enum": [
+        "TG"
+      ],
+      "title": "TG",
+      "description": "Togo"
+    },
+    
+    {
+      "enum": [
+        "TH"
+      ],
+      "title": "TH",
+      "description": "Thailand"
+    },
+    
+    {
+      "enum": [
+        "TJ"
+      ],
+      "title": "TJ",
+      "description": "Tajikistan"
+    },
+    
+    {
+      "enum": [
+        "TK"
+      ],
+      "title": "TK",
+      "description": "Tokelau"
+    },
+    
+    {
+      "enum": [
+        "TL"
+      ],
+      "title": "TL",
+      "description": "Timor-Leste"
+    },
+    
+    {
+      "enum": [
+        "TM"
+      ],
+      "title": "TM",
+      "description": "Turkmenistan"
+    },
+    
+    {
+      "enum": [
+        "TN"
+      ],
+      "title": "TN",
+      "description": "Tunisia"
+    },
+    
+    {
+      "enum": [
+        "TO"
+      ],
+      "title": "TO",
+      "description": "Tonga"
+    },
+    
+    {
+      "enum": [
+        "TR"
+      ],
+      "title": "TR",
+      "description": "Trkiye"
+    },
+    
+    {
+      "enum": [
+        "TT"
+      ],
+      "title": "TT",
+      "description": "Trinidad and Tobago"
+    },
+    
+    {
+      "enum": [
+        "TV"
+      ],
+      "title": "TV",
+      "description": "Tuvalu"
+    },
+    
+    {
+      "enum": [
+        "TW"
+      ],
+      "title": "TW",
+      "description": "Taiwan (Province of China)"
+    },
+    
+    {
+      "enum": [
+        "TZ"
+      ],
+      "title": "TZ",
+      "description": "Tanzania, the United Republic of"
+    },
+    
+    {
+      "enum": [
+        "UA"
+      ],
+      "title": "UA",
+      "description": "Ukraine"
+    },
+    
+    {
+      "enum": [
+        "UG"
+      ],
+      "title": "UG",
+      "description": "Uganda"
+    },
+    
+    {
+      "enum": [
+        "UM"
+      ],
+      "title": "UM",
+      "description": "United States Minor Outlying Islands (the)"
+    },
+    
+    {
+      "enum": [
+        "US"
+      ],
+      "title": "US",
+      "description": "United States of America (the)"
+    },
+    
+    {
+      "enum": [
+        "UY"
+      ],
+      "title": "UY",
+      "description": "Uruguay"
+    },
+    
+    {
+      "enum": [
+        "UZ"
+      ],
+      "title": "UZ",
+      "description": "Uzbekistan"
+    },
+    
+    {
+      "enum": [
+        "VA"
+      ],
+      "title": "VA",
+      "description": "Holy See (the)"
+    },
+    
+    {
+      "enum": [
+        "VC"
+      ],
+      "title": "VC",
+      "description": "Saint Vincent and the Grenadines"
+    },
+    
+    {
+      "enum": [
+        "VE"
+      ],
+      "title": "VE",
+      "description": "Venezuela (Bolivarian Republic of)"
+    },
+    
+    {
+      "enum": [
+        "VG"
+      ],
+      "title": "VG",
+      "description": "Virgin Islands (British)"
+    },
+    
+    {
+      "enum": [
+        "VI"
+      ],
+      "title": "VI",
+      "description": "Virgin Islands (U.S.)"
+    },
+    
+    {
+      "enum": [
+        "VN"
+      ],
+      "title": "VN",
+      "description": "Viet Nam"
+    },
+    
+    {
+      "enum": [
+        "VU"
+      ],
+      "title": "VU",
+      "description": "Vanuatu"
+    },
+    
+    {
+      "enum": [
+        "WF"
+      ],
+      "title": "WF",
+      "description": "Wallis and Futuna"
+    },
+    
+    {
+      "enum": [
+        "WS"
+      ],
+      "title": "WS",
+      "description": "Samoa"
+    },
+    
+    {
+      "enum": [
+        "YE"
+      ],
+      "title": "YE",
+      "description": "Yemen"
+    },
+    
+    {
+      "enum": [
+        "YT"
+      ],
+      "title": "YT",
+      "description": "Mayotte"
+    },
+    
+    {
+      "enum": [
+        "ZA"
+      ],
+      "title": "ZA",
+      "description": "South Africa"
+    },
+    
+    {
+      "enum": [
+        "ZM"
+      ],
+      "title": "ZM",
+      "description": "Zambia"
+    },
+    
+    {
+      "enum": [
+        "ZW"
+      ],
+      "title": "ZW",
+      "description": "Zimbabwe"
+    }
+  ]
+}

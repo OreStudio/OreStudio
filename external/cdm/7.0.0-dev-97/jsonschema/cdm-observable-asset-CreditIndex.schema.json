@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "CreditIndex",
+  "description": "Specification of an index based on credit risk, typically composed using corporate debt instruments in a region or industry sector, e.g. the iTraxx indices.",
+  "properties": {
+    "identifier": {
+      "description": "Asset Identifiers are used to uniquely identify an Asset, using a specified Asset Identifier Type.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-AssetIdentifier.schema.json"
+      },
+      "minItems": 1
+    },
+    "taxonomy": {
+      "description": "Defines the taxonomy of an object by combining a taxonomy source (i.e. the rules to classify the object) and a value (i.e. the output of those rules on the object.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-common-Taxonomy.schema.json"
+      },
+      "minItems": 0
+    },
+    "isExchangeListed": {
+      "description": "Defines whether the Asset is listed on a public exchange.",
+      "type": "boolean"
+    },
+    "exchange": {
+      "description": "If the Asset is listed, defines the public exchange of the listing.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "relatedExchange": {
+      "description": "Provides the related Exchanges, if applicable.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "assetType": {
+      "description": "Specifies the type of asset.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetTypeEnum.schema.json"
+    },
+    "name": {
+      "description": "A description of the Index.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "provider": {
+      "description": "The organisation that creates or maintains the Index.",
+      "$ref": "cdm-base-staticdata-party-LegalEntity.schema.json"
+    },
+    "assetClass": {
+      "description": "The Asset Class of the Index.",
+      "$ref": "cdm-base-staticdata-asset-common-AssetClassEnum.schema.json"
+    },
+    "indexSeries": {
+      "description": "A CDS index series identifier, e.g. 1, 2, 3 etc.",
+      "type": "integer"
+    },
+    "indexAnnexVersion": {
+      "description": "A CDS index series version identifier, e.g. 1, 2, 3 etc.",
+      "type": "integer"
+    },
+    "indexAnnexDate": {
+      "description": "A CDS index series annex date.",
+      "type": "string"
+    },
+    "indexAnnexSource": {
+      "description": "A CDS index series annex source.",
+      "$ref": "cdm-product-asset-metafields-FieldWithMetaIndexAnnexSourceEnum.schema.json"
+    },
+    "excludedReferenceEntity": {
+      "description": "Excluded reference entity.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-ReferenceInformation.schema.json"
+      },
+      "minItems": 0
+    },
+    "tranche": {
+      "description": "This element contains CDS tranche terms.",
+      "$ref": "cdm-product-asset-Tranche.schema.json"
+    },
+    "settledEntityMatrix": {
+      "description": "Used to specify the Relevant Settled Entity Matrix when there are settled entities at the time of the trade.",
+      "$ref": "cdm-product-asset-SettledEntityMatrix.schema.json"
+    },
+    "indexFactor": {
+      "description": "Index Factor is the index version factor or percent, expressed as an absolute decimal value between 0 and 1, that multiplied by the original notional amount yields the notional amount covered by the seller of protection.",
+      "type": "number"
+    },
+    "seniority": {
+      "description": "Seniority of debt instruments comprising the index.",
+      "$ref": "cdm-product-asset-CreditSeniorityEnum.schema.json"
+    }
+  }
+}

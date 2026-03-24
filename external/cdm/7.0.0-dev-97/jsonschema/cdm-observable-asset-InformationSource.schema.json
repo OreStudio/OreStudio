@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "InformationSource",
+  "description": "A class defining the source for a piece of information (e.g. a rate fix or an FX fixing). The attribute names have been adjusted from FpML to address the fact that the information is not limited to rates.",
+  "properties": {
+    "sourceProvider": {
+      "description": "An information source for obtaining a market data point. For example Bloomberg, Reuters, Telerate, etc.",
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaInformationProviderEnum.schema.json"
+    },
+    "sourcePage": {
+      "description": "A specific page for the source for obtaining a market data point. In FpML, this is specified as a scheme, rateSourcePageScheme, for which no coding Scheme or URI is specified.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "sourcePageHeading": {
+      "description": "The heading for the source on a given source page.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "sourceProvider"
+  ]
+}

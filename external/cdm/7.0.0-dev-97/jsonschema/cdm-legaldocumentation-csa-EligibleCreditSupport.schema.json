@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "EligibleCreditSupport",
+  "description": "Specifies the collateral posting obligations of the security provider or security providers as specified in the corresponding agreement",
+  "properties": {
+    "partyElection": {
+      "description": "The specification of the collateral posting obligations for the security provider party(ies)",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-EligibleCollateralElection.schema.json"
+      },
+      "minItems": 1,
+      "maxItems": 2
+    }
+  }
+}

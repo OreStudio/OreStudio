@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "DividendDateReference",
+  "description": "A class to specify the dividend date by reference to another date, with the ability to apply and offset. This class doesn't exist in FpML and is meant to simplify the choice constraint associated with the DividendPaymentDate class.",
+  "properties": {
+    "dateReference": {
+      "description": "Specification of the dividend date using an enumeration, with values such as the pay date, the ex-date or the record date.",
+      "$ref": "cdm-product-asset-DividendDateReferenceEnum.schema.json"
+    },
+    "paymentDateOffset": {
+      "description": "Only to be used when SharePayment has been specified in the dividendDateReference element. The number of Currency Business Days following the day on which the Issuer of the Shares pays the relevant dividend to holders of record of the Shares.",
+      "$ref": "cdm-base-datetime-Offset.schema.json"
+    }
+  },
+  "required": [
+    "dateReference"
+  ]
+}

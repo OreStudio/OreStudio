@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CollateralAccessBreach",
+  "description": "A class to specify Collateral Access Breach language.",
+  "properties": {
+    "isApplicable": {
+      "description": "Collateral Access Breach terms are applicable when True and not applicable when False.",
+      "type": "boolean"
+    },
+    "cabEndDateElection": {
+      "description": "Determination of whether the Collateral Access Breach end date is a number of days (True) or specified (False).",
+      "type": "boolean"
+    },
+    "cabEndDate": {
+      "description": "The business days following the related Collateral Access Breach when the additional terms end.",
+      "type": "number"
+    },
+    "cabEndDateTerms": {
+      "description": "Specific terms for when Collateral Access Breach terms end.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

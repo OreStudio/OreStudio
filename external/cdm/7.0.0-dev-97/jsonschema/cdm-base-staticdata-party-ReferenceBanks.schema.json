@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "object",
+  "title": "ReferenceBanks",
+  "description": "A class defining the list of reference institutions polled for relevant rates or prices when determining the cash settlement amount for a product where cash settlement is applicable.",
+  "properties": {
+    "referenceBank": {
+      "description": "An institution (party) identified by means of a coding scheme and an optional name.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-ReferenceBank.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

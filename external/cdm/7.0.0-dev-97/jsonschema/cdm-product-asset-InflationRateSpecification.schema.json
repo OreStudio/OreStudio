@@ -1,0 +1,99 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "InflationRateSpecification",
+  "description": "A data to:  specify the inflation rate.",
+  "properties": {
+    "rateOption": {
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaInterestRateIndex.schema.json"
+    },
+    "spreadSchedule": {
+      "description": "The ISDA Spread or a Spread schedule expressed as explicit spreads and dates. In the case of a schedule, the step dates may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments. The spread is a per annum rate, expressed as a decimal. For purposes of determining a calculation period amount, if positive the spread will be added to the floating rate and if negative the spread will be subtracted from the floating rate. A positive 10 basis point (0.1%) spread would be represented as 0.001.",
+      "$ref": "cdm-product-asset-SpreadSchedule.schema.json"
+    },
+    "capRateSchedule": {
+      "description": "The cap rate or cap rate schedule, if any, which applies to the floating rate. The cap rate (strike) is only required where the floating rate on a swap stream is capped at a certain level. A cap rate schedule is expressed as explicit cap rates and dates and the step dates may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments. The cap rate is assumed to be exclusive of any spread and is a per annum rate, expressed as a decimal. A cap rate of 5% would be represented as 0.05.",
+      "$ref": "cdm-product-template-StrikeSchedule.schema.json"
+    },
+    "floorRateSchedule": {
+      "description": "The floor rate or floor rate schedule, if any, which applies to the floating rate. The floor rate (strike) is only required where the floating rate on a swap stream is floored at a certain strike level. A floor rate schedule is expressed as explicit floor rates and dates and the step dates may be subject to adjustment in accordance with any adjustments specified in calculationPeriodDatesAdjustments. The floor rate is assumed to be exclusive of any spread and is a per annum rate, expressed as a decimal. A floor rate of 5% would be represented as 0.05.",
+      "$ref": "cdm-product-template-StrikeSchedule.schema.json"
+    },
+    "floatingRateMultiplierSchedule": {
+      "description": "A rate multiplier or multiplier schedule to apply to the floating rate. A multiplier schedule is expressed as explicit multipliers and dates. In the case of a schedule, the step dates may be subject to adjustment in accordance with any adjustments specified in the calculationPeriodDatesAdjustments. The multiplier can be a positive or negative decimal. This element should only be included if the multiplier is not equal to 1 (one) for the term of the stream.",
+      "$ref": "cdm-product-common-schedule-RateSchedule.schema.json"
+    },
+    "rateTreatment": {
+      "description": "The specification of any rate conversion which needs to be applied to the observed rate before being used in any calculations. The two common conversions are for securities quoted on a bank discount basis which will need to be converted to either a Money Market Yield or Bond Equivalent Yield. See the Annex to the 2000 ISDA Definitions, Section 7.3. Certain General Definitions Relating to Floating Rate Options, paragraphs (g) and (h) for definitions of these terms.",
+      "$ref": "cdm-product-asset-RateTreatmentEnum.schema.json"
+    },
+    "calculationParameters": {
+      "description": "Support for modular calculated rates, such such as lockout compound calculations.",
+      "$ref": "cdm-observable-asset-calculatedrate-FloatingRateCalculationParameters.schema.json"
+    },
+    "fallbackRate": {
+      "description": "Definition of any fallback rate that may be applicable.",
+      "$ref": "cdm-observable-asset-calculatedrate-FallbackRateParameters.schema.json"
+    },
+    "initialRate": {
+      "description": "The initial floating rate reset agreed between the principal parties involved in the trade. This is assumed to be the first required reset rate for the first regular calculation period. It should only be included when the rate is not equal to the rate published on the source implied by the floating rate index. An initial rate of 5% would be represented as 0.05.",
+      "$ref": "cdm-observable-asset-Price.schema.json"
+    },
+    "finalRateRounding": {
+      "description": "The rounding convention to apply to the final rate used in determination of a calculation period amount.",
+      "$ref": "cdm-base-math-Rounding.schema.json"
+    },
+    "averagingMethod": {
+      "description": "If averaging is applicable, this component specifies whether a weighted or unweighted average method of calculation is to be used. The component must only be included when averaging applies.",
+      "$ref": "cdm-base-math-AveragingWeightingMethodEnum.schema.json"
+    },
+    "negativeInterestRateTreatment": {
+      "description": "The specification of any provisions for calculating payment obligations when a floating rate is negative (either due to a quoted negative floating rate or by operation of a spread that is subtracted from the floating rate).",
+      "$ref": "cdm-product-asset-NegativeInterestRateTreatmentEnum.schema.json"
+    },
+    "inflationLag": {
+      "description": "An off-setting period from the payment date which determines the reference period for which the inflation index is observed.",
+      "$ref": "cdm-base-datetime-Offset.schema.json"
+    },
+    "indexSource": {
+      "description": "The reference source such as Reuters or Bloomberg. FpML specifies indexSource to be of type rateSourcePageScheme, but without specifying actual values.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "mainPublication": {
+      "description": "The current main publication source such as relevant web site or a government body. FpML specifies mainPublication to be of type mainPublicationSource, but without specifying actual values.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "interpolationMethod": {
+      "description": "The method used when calculating the Inflation Index Level from multiple points. The most common is Linear.",
+      "$ref": "cdm-observable-asset-metafields-FieldWithMetaInterpolationMethodEnum.schema.json"
+    },
+    "initialIndexLevel": {
+      "description": "Initial known index level for the first calculation period.",
+      "type": "number"
+    },
+    "fallbackBondApplicable": {
+      "description": "The applicability of a fallback bond as defined in the 2006 ISDA Inflation Derivatives Definitions, sections 1.3 and 1.8.",
+      "type": "boolean"
+    },
+    "calculationMethod": {
+      "description": "Indicates how to use the inflation index to calculate the payment (e.g. Ratio, Return, Spread). Added for Inflation Asset Swap",
+      "$ref": "cdm-observable-asset-calculatedrate-InflationCalculationMethodEnum.schema.json"
+    },
+    "calculationStyle": {
+      "description": "Indicates the style of how the inflation index calculates the payment (e.g. YearOnYear, ZeroCoupon).",
+      "$ref": "cdm-observable-asset-calculatedrate-InflationCalculationStyleEnum.schema.json"
+    },
+    "finalPrincipalExchangeCalculation": {
+      "description": "To be specified only for products that embed a redemption payment.",
+      "$ref": "cdm-product-asset-FinalPrincipalExchangeCalculationEnum.schema.json"
+    }
+  },
+  "required": [
+    "inflationLag",
+    "indexSource",
+    "mainPublication",
+    "interpolationMethod",
+    "fallbackBondApplicable"
+  ]
+}

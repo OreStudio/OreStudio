@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "string",
+  "title": "OptionExerciseStyleEnum",
+  "description": "The enumerated values to specify the option exercise style. i.e., European, Bermuda or American.",
+  "enum": [
+    "American",
+    "Bermuda",
+    "European"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "American"
+      ],
+      "title": "American",
+      "description": "Continuous exercise over a range of dates"
+    },
+    
+    {
+      "enum": [
+        "Bermuda"
+      ],
+      "title": "Bermuda",
+      "description": "Multiple specified exercise dates"
+    },
+    
+    {
+      "enum": [
+        "European"
+      ],
+      "title": "European",
+      "description": "Single Exercise"
+    }
+  ]
+}

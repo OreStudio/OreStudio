@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "IssuerAgencyRating",
+  "properties": {
+    "issuerAgencyRating": {
+      "description": "Represents an agency rating based on default risk and creditors claim in event of default associated with asset issuer.",
+      "$ref": "cdm-product-collateral-AgencyRatingCriteria.schema.json"
+    }
+  },
+  "required": [
+    "issuerAgencyRating"
+  ]
+}

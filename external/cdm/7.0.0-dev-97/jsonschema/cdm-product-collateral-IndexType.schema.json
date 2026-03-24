@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "IndexType",
+  "description": "Specification of an index.",
+  "properties": {
+    "equityIndex": {
+      "description": "An enumerated list for equity indices.",
+      "$ref": "cdm-base-staticdata-asset-equity-EquityIndexEnum.schema.json"
+    }
+  }
+}

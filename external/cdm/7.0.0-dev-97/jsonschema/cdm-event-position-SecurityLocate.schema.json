@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.position",
+  "type": "object",
+  "title": "SecurityLocate",
+  "description": "A locate is an approval from a broker that needs to be obtained prior to effecting a short sale in an equity security. Similar to security availability, a borrower can request a single or multiple securities, but at least one must be requested.",
+  "properties": {
+    "availableInventoryType": {
+      "description": "Defines the purpose of this inventory.",
+      "$ref": "cdm-event-position-AvailableInventoryTypeEnum.schema.json"
+    },
+    "messageInformation": {
+      "description": "Allows details related to the availability messaging use case to be defined",
+      "$ref": "cdm-event-workflow-MessageInformation.schema.json"
+    },
+    "party": {
+      "description": "Defines all parties involved for the list of inventory records in this set of inventory. For example, when used to describe securities lending availability, this could hold the sender of the availability, the intended recipient, the beneficial owner(s), the lender (which may differ from the sender as the lender may have the same piece of availability going through multiple agents), an agent or a venue.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-Party.schema.json"
+      },
+      "minItems": 0
+    },
+    "partyRole": {
+      "description": "Defines the role(s) that party(ies) may have in relation to the inventory.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+      },
+      "minItems": 0
+    },
+    "availableInventoryRecord": {
+      "description": "An array holding the list of inventory being described. Each element in the inventoryRecord array represents an individual piece of inventory i.e. a security.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-position-AvailableInventoryRecord.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

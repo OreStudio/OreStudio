@@ -1,0 +1,172 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "UK_EMIR_EligibleCollateralEnum",
+  "description": "Identifies United Kingdom Eligible Collateral Assets classification categories based on UK Onshored EMIR Uncleared Margin Rules. Eligible Collateral asset classes for both initial margin (IM) and variation margin (VM) posted and collected between specified entities. Please note: UK EMIR regulation will detail which eligible collateral assets classes apply to each type of entity pairing (counterparty) and which apply to posting of IM and VM.",
+  "enum": [
+    "UK_EMIRTypeA",
+    "UK_EMIRTypeB",
+    "UK_EMIRTypeC",
+    "UK_EMIRTypeD",
+    "UK_EMIRTypeE",
+    "UK_EMIRTypeF",
+    "UK_EMIRTypeG",
+    "UK_EMIRTypeH",
+    "UK_EMIRTypeI",
+    "UK_EMIRTypeJ",
+    "UK_EMIRTypeK",
+    "UK_EMIRTypeL",
+    "UK_EMIRTypeM",
+    "UK_EMIRTypeN",
+    "UK_EMIRTypeO",
+    "UK_EMIRTypeP",
+    "UK_EMIRTypeQ",
+    "UK_EMIRTypeR"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "UK_EMIRTypeA"
+      ],
+      "title": "UK_EMIRTypeA",
+      "description": "Denotes cash in the form of money credited to an account in any currency, or similar claims for the repayment of money, such as money market deposits."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeB"
+      ],
+      "title": "UK_EMIRTypeB",
+      "description": "Denotes gold in the form of allocated pure gold bullion of recognised good delivery."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeC"
+      ],
+      "title": "UK_EMIRTypeC",
+      "description": "Denotes debt securities issued by the central government of the United Kingdom or the Bank of England."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeD"
+      ],
+      "title": "UK_EMIRTypeD",
+      "description": "Denotes debt securities issued by United Kingdom regional governments or local authorities whose exposures are treated as exposures to the central government of the United Kingdom in accordance with Article 115(2) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeE"
+      ],
+      "title": "UK_EMIRTypeE",
+      "description": "Denotes debt securities issued by United Kingdom public sector entities whose exposures are treated as exposures to the central government, regional government or local authority of the United Kingdom in accordance with Article 116(4) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeF"
+      ],
+      "title": "UK_EMIRTypeF",
+      "description": "Denotes debt securities issued by United Kingdom regional governments or local authorities other than those referred to in (TypeD)."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeG"
+      ],
+      "title": "UK_EMIRTypeG",
+      "description": "Denotes debt securities issued by United Kingdom public sector entities other than those referred to in (TypeE)."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeH"
+      ],
+      "title": "UK_EMIRTypeH",
+      "description": "Denotes debt securities issued by multilateral development banks listed in Article 117(2) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeI"
+      ],
+      "title": "UK_EMIRTypeI",
+      "description": "Denotes debt securities issued by the international organisations listed in Article 118 of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeJ"
+      ],
+      "title": "UK_EMIRTypeJ",
+      "description": "Denotes debt securities issued by third countries' governments or central banks."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeK"
+      ],
+      "title": "UK_EMIRTypeK",
+      "description": "Denotes debt securities issued by third countries' regional governments or local authorities that meet the requirements of (TypeD) and (TypeE)."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeL"
+      ],
+      "title": "UK_EMIRTypeL",
+      "description": "Denotes debt securities issued by third countries' regional governments or local authorities other than those referred to in (TypeD) and (TypeE)."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeM"
+      ],
+      "title": "UK_EMIRTypeM",
+      "description": "Denotes debt securities issued by credit institutions or investment firms including bonds admitted to the register of regulated covered bonds maintained under Regulation 7(1)(b) of the Regulated Covered Bonds Regulations 2008 (SI 2008/346)."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeN"
+      ],
+      "title": "UK_EMIRTypeN",
+      "description": "Denotes corporate bonds."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeO"
+      ],
+      "title": "UK_EMIRTypeO",
+      "description": "Denotes the most senior tranche of a securitisation, as defined in Article 4(61) of Regulation (EU) No 575/2013, that is not a re-securitisation as defined in Article 4(63) of that Regulation."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeP"
+      ],
+      "title": "UK_EMIRTypeP",
+      "description": "Denotes convertible bonds provided that they can be converted only into equities which are included in an index specified pursuant to point (a) of Article 197 (8) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeQ"
+      ],
+      "title": "UK_EMIRTypeQ",
+      "description": "Denotes equities included in an index specified pursuant to point (a) of Article 197(8) of Regulation (EU) No 575/2013."
+    },
+    
+    {
+      "enum": [
+        "UK_EMIRTypeR"
+      ],
+      "title": "UK_EMIRTypeR",
+      "description": "Denotes shares or units in undertakings for UK UCITS, provided that the conditions set out in Article 5 of EU Regulation 2016/2251 (as modified by the Technical Standards (European Market Infrastructure) (EU Exit) (No. 3) Instrument 2019) are met."
+    }
+  ]
+}

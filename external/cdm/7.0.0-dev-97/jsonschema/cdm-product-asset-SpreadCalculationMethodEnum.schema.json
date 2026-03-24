@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "string",
+  "title": "SpreadCalculationMethodEnum",
+  "description": "Method by which spread is calculated. For example on an asset swap: 'ParPar' or 'Proceeds' may be the method indicated.",
+  "enum": [
+    "ParPar",
+    "Proceeds"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ParPar"
+      ],
+      "title": "ParPar"
+    },
+    
+    {
+      "enum": [
+        "Proceeds"
+      ],
+      "title": "Proceeds"
+    }
+  ]
+}

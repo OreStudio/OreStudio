@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "AdditionalRepresentations",
+  "description": "A class to specify Additional Representations that may be applicable to an agreement.",
+  "properties": {
+    "additionalRepresentation": {
+      "description": "The specification of the Additional Representation that may be applicable to the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-AdditionalRepresentation.schema.json"
+    },
+    "regulatoryComplianceRepresentation": {
+      "description": "The qualification of whether Additional Information related to Regulatory Compliance and Concentration Limits is applicable or not.",
+      "type": "boolean"
+    }
+  }
+}

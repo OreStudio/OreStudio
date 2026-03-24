@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "CancelableProvisionAdjustedDates",
+  "description": "A data to:  define the adjusted dates for a cancelable provision on a swap transaction.",
+  "properties": {
+    "cancellationEvent": {
+      "description": "The adjusted dates for an individual cancellation date.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-template-CancellationEvent.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

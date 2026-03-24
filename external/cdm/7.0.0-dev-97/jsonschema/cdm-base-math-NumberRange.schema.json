@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.math",
+  "type": "object",
+  "title": "NumberRange",
+  "description": "The number range defined as either a lower and upper number bound, or both.",
+  "properties": {
+    "lowerBound": {
+      "description": "The lower bound of a number range, e.g. greater than or equal to 5.",
+      "$ref": "cdm-base-math-NumberBound.schema.json"
+    },
+    "upperBound": {
+      "description": "The upper bound of a number range, e.g. less than 10.",
+      "$ref": "cdm-base-math-NumberBound.schema.json"
+    }
+  }
+}

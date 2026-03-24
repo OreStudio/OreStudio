@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "SpecifiedEntities",
+  "description": "A provision that allows each party to specify its Specified Entities for certain Events of Default and Termination Events.",
+  "properties": {
+    "specifiedEntityClause": {
+      "description": "The Event of Default or Termination event for which Specified Entities terms are being defined.",
+      "$ref": "cdm-legaldocumentation-common-SpecifiedEntityClauseEnum.schema.json"
+    },
+    "specifiedEntity": {
+      "description": "The party specific election of Specified Entities for the Event of Default or Termination Event specified.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-master-isda-SpecifiedEntity.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "specifiedEntityClause"
+  ]
+}

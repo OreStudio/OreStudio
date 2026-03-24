@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "TermsChangeInstruction",
+  "description": "Specifies instructions for terms change consisting of the new transaction terms, and the renegotiation fee.",
+  "properties": {
+    "product": {
+      "description": "product to be changed",
+      "$ref": "cdm-product-template-NonTransferableProduct.schema.json"
+    },
+    "ancillaryParty": {
+      "description": "ancillary party to be changed",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-AncillaryParty.schema.json"
+      },
+      "minItems": 0
+    },
+    "adjustment": {
+      "$ref": "cdm-product-common-NotionalAdjustmentEnum.schema.json"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "SpecificNonTransferability",
+  "properties": {
+    "specificNonTransferabilityIsApplicable": {
+      "type": "boolean"
+    },
+    "relevantClass": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 0
+    },
+    "localSubstituteProvisionType": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxSubstitutionProvisionTypeEnum.schema.json"
+    },
+    "maximumDaysOfDisruption": {
+      "$ref": "cdm-observable-asset-ValuationPostponement.schema.json"
+    },
+    "nonDeliverableSubstitute": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-NonDeliverableSubstitute.schema.json"
+    },
+    "escrowArrangement": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EscrowArrangement.schema.json"
+    }
+  },
+  "required": [
+    "specificNonTransferabilityIsApplicable"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "FxInconvertibilityOrNonTransferability",
+  "properties": {
+    "generalInconvertibility": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-GeneralInconvertibility.schema.json"
+    },
+    "generalNonTransferability": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-GeneralNonTransferability.schema.json"
+    },
+    "specificInconvertibility": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-SpecificInconvertibility.schema.json"
+    },
+    "specificNonTransferability": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-SpecificNonTransferability.schema.json"
+    }
+  }
+}

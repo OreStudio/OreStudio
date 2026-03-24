@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "OneWayProvisions",
+  "description": "A class to specify whether One Way Provisions apply.",
+  "properties": {
+    "isApplicable": {
+      "description": "The determination of whether the One Way Provisions are applicable (true) or not applicable (false).",
+      "type": "boolean"
+    },
+    "postingParty": {
+      "description": "The Posting Party for the purposes of One Way Provisions. It is specified in the case where the One Way Provision is deemed applicable.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    }
+  },
+  "required": [
+    "isApplicable"
+  ]
+}

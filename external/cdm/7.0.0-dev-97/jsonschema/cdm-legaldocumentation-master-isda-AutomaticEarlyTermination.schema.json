@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isda",
+  "type": "object",
+  "title": "AutomaticEarlyTermination",
+  "description": "A class to specify the Automatic Early Termination provision applicable to a Master Agreement.",
+  "properties": {
+    "fallbackAET": {
+      "description": "Specifies whether automatic termination applies in the event of certain bankruptcy events.",
+      "type": "boolean"
+    },
+    "indemnity": {
+      "description": "Specifies whether indemnity applies in the event AET is applicable to one or both of the parties.",
+      "type": "boolean"
+    },
+    "partyElection": {
+      "description": "The party election specific to the Automatic Early Termination Clause.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-master-isda-AutomaticEarlyTerminationElection.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "fallbackAET",
+    "indemnity"
+  ]
+}

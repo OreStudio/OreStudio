@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.event",
+  "type": "object",
+  "title": "DeterminationMethodology",
+  "description": "Specifies the method according to which an amount or a date is determined.",
+  "properties": {
+    "determinationMethod": {
+      "description": "Represents a more granular dimention of observation. Typically relevent for resolving a unique equity price, which can be expressed as trade-weighted or volume-weighted averages.",
+      "$ref": "cdm-observable-common-DeterminationMethodEnum.schema.json"
+    },
+    "averagingMethod": {
+      "description": "Specifies enumerations for the type of averaging calculation.",
+      "$ref": "cdm-base-math-AveragingCalculationMethodEnum.schema.json"
+    }
+  }
+}

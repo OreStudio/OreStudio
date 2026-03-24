@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "NaturalPersonRoleEnum",
+  "description": "The enumerated values for the natural person's role.",
+  "enum": [
+    "Broker",
+    "Buyer",
+    "DecisionMaker",
+    "ExecutionWithinFirm",
+    "InvestmentDecisionMaker",
+    "Seller",
+    "Trader"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Broker"
+      ],
+      "title": "Broker",
+      "description": "The person who arranged with a client to execute the trade."
+    },
+    
+    {
+      "enum": [
+        "Buyer"
+      ],
+      "title": "Buyer",
+      "description": "Acquirer of the legal title to the financial instrument."
+    },
+    
+    {
+      "enum": [
+        "DecisionMaker"
+      ],
+      "title": "DecisionMaker",
+      "description": "The party or person with legal responsibility for authorization of the execution of the transaction."
+    },
+    
+    {
+      "enum": [
+        "ExecutionWithinFirm"
+      ],
+      "title": "ExecutionWithinFirm",
+      "description": "Person within the firm who is responsible for execution of the transaction."
+    },
+    
+    {
+      "enum": [
+        "InvestmentDecisionMaker"
+      ],
+      "title": "InvestmentDecisionMaker",
+      "description": "Person who is responsible for making the investment decision."
+    },
+    
+    {
+      "enum": [
+        "Seller"
+      ],
+      "title": "Seller",
+      "description": "Seller of the legal title to the financial instrument."
+    },
+    
+    {
+      "enum": [
+        "Trader"
+      ],
+      "title": "Trader",
+      "description": "The person who executed the trade."
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "RatingTypeEnum",
+  "description": "The relevant rating type.",
+  "enum": [
+    "LongTerm",
+    "ShortTerm"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "LongTerm"
+      ],
+      "title": "LongTerm",
+      "description": "Long Term Ratings are applicable for the stated Rating Agency."
+    },
+    
+    {
+      "enum": [
+        "ShortTerm"
+      ],
+      "title": "ShortTerm",
+      "description": "Short Term Ratings are applicable for the stated Rating Agency."
+    }
+  ]
+}

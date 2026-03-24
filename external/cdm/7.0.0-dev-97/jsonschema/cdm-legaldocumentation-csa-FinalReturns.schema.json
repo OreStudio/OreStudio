@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "FinalReturns",
+  "description": "A clause providing that final return collateral is to be provided without consideration of any Minimum Transfer Amount and collateral haircut.",
+  "properties": {
+    "applicable": {
+      "description": "Defines if the clause is applicable to this agreement or any other exceptions.",
+      "type": "boolean"
+    },
+    "additionalLanguage": {
+      "description": "The additional language that might be specified by the parties to the legal agreement.",
+      "type": "string"
+    }
+  }
+}

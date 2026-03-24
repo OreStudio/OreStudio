@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "UmbrellaAgreement",
+  "description": "Specifies the set of agreements, the parties of which are set within UmbrellaAgreementSet, beyond the two contracting parties to that agreement.",
+  "properties": {
+    "agreementSet": {
+      "description": "The language associated with the umbrella agreement, and which applies to all the parties to the umbrella agreement.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-UmbrellaAgreementSet.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

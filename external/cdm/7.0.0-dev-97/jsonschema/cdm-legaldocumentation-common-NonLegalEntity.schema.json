@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "NonLegalEntity",
+  "description": "Specifies a non-legal entity that exists in the agreement with a defined relationship to a Legal entity to the agreement",
+  "properties": {
+    "identifier": {
+      "description": "Specifies the unique identifier value for a non-legal entity such as a sleeve, or sub account, that is a party to the agreement and has a relationship with a legal entity defined on the agreement.",
+      "type": "string"
+    },
+    "identifierType": {
+      "description": "Specifies the Identifier type for a non-Legal entity to the agreement, for example the use of an alert code to uniquely identify a non-Legal entity.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "identifier",
+    "identifierType"
+  ]
+}

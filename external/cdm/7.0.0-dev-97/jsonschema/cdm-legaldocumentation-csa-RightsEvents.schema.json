@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "RightsEvents",
+  "description": "A class to specify the rights of Security Taker and/or Security Provider when an Early Termination or Access Condition event has occurred.",
+  "properties": {
+    "securityTakerRightsEvent": {
+      "description": "The bespoke provisions that might be specified by the parties to the agreement applicable to a Security Taker Rights Event.",
+      "$ref": "cdm-legaldocumentation-csa-SecuredPartyRightsEvent.schema.json"
+    },
+    "controlAgreementNecEvent": {
+      "description": "The bespoke provisions that might be specified by the parties to the agreement applicable to a Notice of Exclusive Control Event.",
+      "$ref": "cdm-legaldocumentation-csa-ControlAgreementNecEvent.schema.json"
+    },
+    "securityProviderRightsEvent": {
+      "description": "The bespoke provisions that might be specified by the parties to the agreement applicable to a Security Provider Rights Event.",
+      "$ref": "cdm-legaldocumentation-csa-SecurityProviderRightsEvent.schema.json"
+    },
+    "deliveryInLieuRight": {
+      "description": "The specification of whether Delivery In Lieu language is applicable to the agreement (true) or not (false).",
+      "type": "boolean"
+    },
+    "additionalRightsEvent": {
+      "description": "The Additional Rights Event election.",
+      "$ref": "cdm-legaldocumentation-csa-AdditionalRightsEvent.schema.json"
+    }
+  },
+  "required": [
+    "securityTakerRightsEvent",
+    "securityProviderRightsEvent"
+  ]
+}

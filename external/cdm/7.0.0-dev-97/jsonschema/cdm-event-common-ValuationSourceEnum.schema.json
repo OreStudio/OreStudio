@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "ValuationSourceEnum",
+  "description": "Source for the valuation of the transaction by the valuation party.",
+  "enum": [
+    "CentralCounterparty"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "CentralCounterparty"
+      ],
+      "title": "CentralCounterparty",
+      "description": "Central Counterparty's Valuation"
+    }
+  ]
+}

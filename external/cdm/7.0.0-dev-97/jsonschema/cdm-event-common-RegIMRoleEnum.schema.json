@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "RegIMRoleEnum",
+  "description": "Represents the enumeration values to specify the role of the party in relation to a regulatory initial margin call.",
+  "enum": [
+    "Pledgor",
+    "Secured"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Pledgor"
+      ],
+      "title": "Pledgor",
+      "description": "Indicates 'Pledgor' party of initial margin call."
+    },
+    
+    {
+      "enum": [
+        "Secured"
+      ],
+      "title": "Secured",
+      "description": "Indicates 'Secured' party of initial margin call."
+    }
+  ]
+}

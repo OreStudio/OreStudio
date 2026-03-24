@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "Nationalization",
+  "properties": {
+    "nationalizationIsApplicable": {
+      "type": "boolean"
+    },
+    "relevantAffiliate": {
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-AncillaryEntity.schema.json"
+      },
+      "minItems": 0
+    },
+    "escrowArrangement": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EscrowArrangement.schema.json"
+    },
+    "assignmentOfClaim": {
+      "type": "boolean"
+    },
+    "maximumDaysOfDisruption": {
+      "$ref": "cdm-observable-asset-ValuationPostponement.schema.json"
+    }
+  },
+  "required": [
+    "nationalizationIsApplicable"
+  ]
+}

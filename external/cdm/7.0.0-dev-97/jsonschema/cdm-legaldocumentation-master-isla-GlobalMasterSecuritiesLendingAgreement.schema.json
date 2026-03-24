@@ -1,0 +1,9 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master.isla",
+  "type": "object",
+  "title": "GlobalMasterSecuritiesLendingAgreement",
+  "description": "The set of elections that define a GMSLA.",
+  "properties": {
+  }
+}

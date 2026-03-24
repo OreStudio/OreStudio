@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "EnforcementEvent",
+  "description": "A class to specify Enforcement Events specific to Security Agreements.",
+  "properties": {
+    "earlyTerminationDate": {
+      "description": "The early termination election.",
+      "type": "boolean"
+    },
+    "failureToPay": {
+      "description": "The failure to pay election.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "earlyTerminationDate"
+  ]
+}

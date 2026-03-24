@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "HoldingAndUsingPostedCollateralElection",
+  "description": "Specifies the parties' elections related to the holding and using of posted collateral.",
+  "properties": {
+    "party": {
+      "description": "The party to which the elections apply.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "eligibilityToHoldCollateral": {
+      "description": "The specification of the conditions under which a party and its custodian(s) are entitled to hold posted collateral.",
+      "$ref": "cdm-legaldocumentation-csa-EligibilityToHoldCollateral.schema.json"
+    },
+    "useOfPostedCollateral": {
+      "description": "Indicates whether the party has the right to reuse, rehypothecate, or otherwise make use of the posted collateral. 'True' if the party has the right,'False' if the party does not have the right.",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "party",
+    "eligibilityToHoldCollateral",
+    "useOfPostedCollateral"
+  ]
+}

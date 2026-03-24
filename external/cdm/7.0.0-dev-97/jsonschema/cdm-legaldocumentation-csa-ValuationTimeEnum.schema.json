@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "ValuationTimeEnum",
+  "description": "The type of time specified for the Valuation Time.",
+  "enum": [
+    "AsSelected",
+    "CloseOfBusiness",
+    "SpecificTime"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsSelected"
+      ],
+      "title": "AsSelected",
+      "description": "The valuation time should be as selected."
+    },
+    
+    {
+      "enum": [
+        "CloseOfBusiness"
+      ],
+      "title": "CloseOfBusiness",
+      "description": "The valuation time should be at close of business."
+    },
+    
+    {
+      "enum": [
+        "SpecificTime"
+      ],
+      "title": "SpecificTime",
+      "description": "The valuation time should be at a specific time."
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "PartyChangeInstruction",
+  "description": "Specifies instruction to change the party on a trade. This primitive instruction is used in a number of scenarios including: clearing, allocation and novation. The instrution must include a trade identifier, because a change of party effectively results in a different trade.",
+  "properties": {
+    "counterparty": {
+      "description": "The new counterparty who is stepping into the trade. The stepping out counterparty is inferred based on the counterparty role that is being updated.",
+      "$ref": "cdm-base-staticdata-party-Counterparty.schema.json"
+    },
+    "ancillaryParty": {
+      "description": "Specifies an ancillary party to be added onto the new transaction, e.g. the original executing party in an allocation.",
+      "$ref": "cdm-base-staticdata-party-AncillaryParty.schema.json"
+    },
+    "partyRole": {
+      "description": "Specifies an additional party roles to be added on to the new transaction.",
+      "$ref": "cdm-base-staticdata-party-PartyRole.schema.json"
+    },
+    "tradeId": {
+      "description": "The identifier to be assigned to the new trade post change of party.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-TradeIdentifier.schema.json"
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "counterparty"
+  ]
+}

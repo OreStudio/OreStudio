@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.master",
+  "type": "object",
+  "title": "MasterAgreementClauseVariant",
+  "description": "Sets the details for a specific variant associated to a clause in a Master Agreement.",
+  "properties": {
+    "identifier": {
+      "description": "Unique identifier for this variant.",
+      "$ref": "cdm-legaldocumentation-master-MasterAgreementVariantIdentifierEnum.schema.json"
+    },
+    "name": {
+      "description": "Optional textual description of the variant.",
+      "type": "string"
+    },
+    "counterparty": {
+      "description": "Optional counterparty role. This can be used where a clause needs to assign a different variant to the different parties on the agreement based upon their role i.e. Party A or Party B.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    },
+    "otherParty": {
+      "description": "Optional party. This can be used where a clause needs to assign different variants to different parties who may or may not be on the agreement.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-PartyRoleEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "variableSet": {
+      "description": "For some variants of some clauses additional details are required to work out what has been elected. This array can be used to define the name and value of these variables. Please refer to the agreement documentation for more details of the variables that are available for any clause.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-master-MasterAgreementVariableSet.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "identifier"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "EquityUnderlierProvisions",
+  "properties": {
+    "multipleExchangeIndexAnnexFallback": {
+      "description": "For an index option or swap transaction, a flag to indicate whether a relevant Multiple Exchange Index Annex is applicable to the transaction. This annex defines additional provisions which are applicable where an index is comprised of component securities that are traded on multiple exchanges.",
+      "type": "boolean"
+    },
+    "componentSecurityIndexAnnexFallback": {
+      "description": "For an index option or swap transaction, a flag to indicate whether a relevant Component Security Index Annex is applicable to the transaction.",
+      "type": "boolean"
+    },
+    "localJurisdiction": {
+      "description": "The ISO 3166 standard code for the country within which the postal address is located.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    },
+    "relevantJurisdiction": {
+      "description": "The ISO 3166 standard code for the country within which the postal address is located.",
+      "$ref": "com-rosetta-model-metafields-FieldWithMetaString.schema.json"
+    }
+  }
+}

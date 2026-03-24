@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "CalculationAndTimingLegacy",
+  "description": "Specification of the Calculation, Valuation and Timing terms specific to the Legacy (1994/95) Credit Support Annex.",
+  "properties": {
+    "notificationTime": {
+      "description": "The time by which a demand for the Transfer of Eligible Credit Support (IM) or Posted Credit Support (IM) needs to be made in order for the transfer to take place in accordance with the Transfer Timing provisions.",
+      "$ref": "cdm-legaldocumentation-csa-NotificationTime.schema.json"
+    },
+    "valuationDate": {
+      "description": "Details of the days on which calculations are to be made to determine the Delivery Amount and/or Return Amount.",
+      "$ref": "cdm-legaldocumentation-csa-CSAValuationDate.schema.json"
+    },
+    "valuationTime": {
+      "description": "Specifies the time on which the value of collateral or exposure are calculated in accordance with the agreement.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationTime.schema.json"
+    },
+    "valuationAgent": {
+      "description": "Details of the party calculating the value of collateral to be delivered or returned.",
+      "$ref": "cdm-legaldocumentation-csa-ValuationAgent.schema.json"
+    }
+  },
+  "required": [
+    "valuationDate",
+    "valuationTime",
+    "valuationAgent"
+  ]
+}

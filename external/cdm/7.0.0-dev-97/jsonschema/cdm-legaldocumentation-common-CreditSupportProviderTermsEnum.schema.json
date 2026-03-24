@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "CreditSupportProviderTermsEnum",
+  "description": "The enumerated values to specify the Credit Support Provider Terms",
+  "enum": [
+    "Any",
+    "None",
+    "Specified"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Any"
+      ],
+      "title": "Any",
+      "description": "Any party or parties who now or in the future may provide a Credit Support Document or other form of credit support."
+    },
+    
+    {
+      "enum": [
+        "None"
+      ],
+      "title": "None",
+      "description": "No Credit Support Provider is specified."
+    },
+    
+    {
+      "enum": [
+        "Specified"
+      ],
+      "title": "Specified",
+      "description": "A specified Credit Support Provider is provided"
+    }
+  ]
+}

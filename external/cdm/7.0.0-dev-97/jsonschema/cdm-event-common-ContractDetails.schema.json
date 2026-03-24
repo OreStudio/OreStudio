@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ContractDetails",
+  "description": "Defines specific attributes that relate to contractual details of trades.",
+  "properties": {
+    "documentation": {
+      "description": "Represents the legal document(s) that governs a trade and associated contractual product terms, either as a reference to such documents when specified as part of the CDM, or through identification of some of the key terms of those documents, such as the type of document, the document identifier, the publisher, the document vintage and the agreement date.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-common-LegalAgreement.schema.json"
+      },
+      "minItems": 0
+    },
+    "governingLaw": {
+      "description": "Represents the law governing the trade and associated contractual product terms.",
+      "$ref": "cdm-legaldocumentation-common-metafields-FieldWithMetaGoverningLawEnum.schema.json"
+    }
+  }
+}

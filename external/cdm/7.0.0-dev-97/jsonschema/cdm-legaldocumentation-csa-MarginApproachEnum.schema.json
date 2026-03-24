@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "string",
+  "title": "MarginApproachEnum",
+  "description": "Values to specify the margin approach specific to Initial Margin agreements.",
+  "enum": [
+    "Allocated",
+    "Distinct",
+    "GreaterOf"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Allocated"
+      ],
+      "title": "Allocated",
+      "description": "Allocated Margin Flow (IM/IA) Approach."
+    },
+    
+    {
+      "enum": [
+        "Distinct"
+      ],
+      "title": "Distinct",
+      "description": "Distinct Margin Flow (IM) Approach."
+    },
+    
+    {
+      "enum": [
+        "GreaterOf"
+      ],
+      "title": "GreaterOf",
+      "description": "Greater of Margin Flow (IM/IA) Approach."
+    }
+  ]
+}

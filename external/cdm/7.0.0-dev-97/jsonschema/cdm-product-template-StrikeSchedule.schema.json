@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "StrikeSchedule",
+  "description": "A class describing a schedule of cap or floor rates.",
+  "properties": {
+    "price": {
+      "description": "The initial rate. An initial rate of 5% would be represented as 0.05.",
+      "$ref": "cdm-observable-asset-metafields-ReferenceWithMetaPriceSchedule.schema.json"
+    },
+    "buyer": {
+      "description": "The buyer of the option.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiverEnum.schema.json"
+    },
+    "seller": {
+      "description": "The party that has sold.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiverEnum.schema.json"
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "US_CFTC_PR_EligibleCollateralEnum",
+  "description": "Identifies US Eligible Collateral Assets classification categories based on Uncleared Margin Rules published by the CFTC and the US Prudential Regulator. Note: While the same basic categories exist in the CFTC and US Prudential Regulators margin rules, the precise definitions or application of those rules could differ between the two rules.",
+  "enum": [
+    "US_CFTC_PRType1",
+    "US_CFTC_PRType2",
+    "US_CFTC_PRType3",
+    "US_CFTC_PRType4",
+    "US_CFTC_PRType5A",
+    "US_CFTC_PRType5B",
+    "US_CFTC_PRType6",
+    "US_CFTC_PRType7",
+    "US_CFTC_PRType8A",
+    "US_CFTC_PRType8B",
+    "US_CFTC_PRType8C",
+    "US_CFTC_PRType9",
+    "US_CTFC_PRType10"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "US_CFTC_PRType1"
+      ],
+      "title": "US_CFTC_PRType1",
+      "description": "Denotes immediately available cash funds denominated in USD, a major currency, a currency of settlement for the uncleared swap."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType2"
+      ],
+      "title": "US_CFTC_PRType2",
+      "description": "Denotes a security that is issued by, or unconditionally guaranteed as to the timely payment of principal and interest by, the U.S. Department of the Treasury."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType3"
+      ],
+      "title": "US_CFTC_PRType3",
+      "description": "Denotes a security that is issued by, or unconditionally guaranteed as to the timely payment of principal and interest by, a U.S. government agency (other than the U.S. Department of Treasury) whose obligations are fully guaranteed by the full faith and credit of the United States government."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType4"
+      ],
+      "title": "US_CFTC_PRType4",
+      "description": "Denotes a security that is issued by, or fully guaranteed as to the payment of principal and interest by, the European Central Bank or a sovereign entity that is assigned no higher than a 20 percent risk weight under the capital rules applicable to swap dealers subject to regulation by a prudential regulator."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType5A"
+      ],
+      "title": "US_CFTC_PRType5A",
+      "description": "Denotes a publicly traded debt security issued by, or an asset-backed security fully guaranteed as to the timely payment of principal and interest by, a U.S. Government-sponsored enterprise that is operating with capital support or another form of direct financial assistance received from the U.S. government that enables the repayments of the U.S. Government-sponsored enterprise's eligible securities."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType5B"
+      ],
+      "title": "US_CFTC_PRType5B",
+      "description": "Denotes a publicly traded debt security, but not an asset backed security, that is investment grade and issued by a U.S. Government-sponsored enterprise that is not operating with capital support or another form of direct financial assistance received from the U.S. government."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType6"
+      ],
+      "title": "US_CFTC_PRType6",
+      "description": "Denotes a security that is issued by, or fully guaranteed as to the payment of principal and interest by, the Bank for International Settlements, the International Monetary Fund, or a multilateral development bank."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType7"
+      ],
+      "title": "US_CFTC_PRType7",
+      "description": "Denotes publicly-traded debt, but not an asset backed security, that is investment grade and is not a debt security issued by a  U.S. Government-sponsored enterprise. This category excludes a security issued by a non-bank financial institution supervised by the board of governors of the Federal Reserve System under Title I of the Dodd-Frank Wall Street Reform and Consumer Protection Act. This category also excludes a security issued by any of the following entities, by a company that would be any of the following entities if it were the organized under the laws of the United States or any State, or in either case by an affiliate of such an entity: the party posting the collateral, a bank holding company, a savings and loan holding company, a U.S. intermediate holding company, a foreign bank, a depositary institution, a securities holding company, a broker, a dealer, a futures commission merchant, a swap dealer, or a security-based swap dealer."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType8A"
+      ],
+      "title": "US_CFTC_PRType8A",
+      "description": "Denotes a publicly traded common equity security that is included in the Standard & Poor's Composite 500 Index or related indexes. This category excludes a security issued by a non-bank financial institution supervised by the board of governors of the Federal Reserve System under Title I of the Dodd-Frank Wall Street Reform and Consumer Protection Act. This category also excludes a security issued by any of the following entities, by a company that would be any of the following entities if it were the organized under the laws of the United States or any State, or in either case by an affiliate of such an entity: the party posting the collateral, a bank holding company, a savings and loan holding company, a U.S. intermediate holding company, a foreign bank, a depositary institution, a securities holding company, a broker, a dealer, a futures commission merchant, a swap dealer, or a security-based swap dealer."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType8B"
+      ],
+      "title": "US_CFTC_PRType8B",
+      "description": " Denotes a publicly traded common equity security that is included in the Standard & Poor's Composite 1500 Index or related indexes. This category excludes a security issued by a non-bank financial institution supervised by the board of governors of the Federal Reserve System under Title I of the Dodd-Frank Wall Street Reform and Consumer Protection Act. This category also excludes a security issued by any of the following entities, by a company that would be any of the following entities if it were the organized under the laws of the United States or any State, or in either case by an affiliate of such an entity: the party posting the collateral, a bank holding company, a savings and loan holding company, a U.S. intermediate holding company, a foreign bank, a depositary institution, a securities holding company, a broker, a dealer, a futures commission merchant, a swap dealer, or a security-based swap dealer."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType8C"
+      ],
+      "title": "US_CFTC_PRType8C",
+      "description": "Denotes a publicly traded common equity security that is included in an index that a regulated swap entity's supervisor in a foreign jurisdiction recognizes for purposes of including publicly traded common equity as initial margin under applicable regulatory policy, if held in that foreign jurisdiction. This category excludes a security issued by a non-bank financial institution supervised by the board of governors of the Federal Reserve System under Title I of the Dodd-Frank Wall Street Reform and Consumer Protection Act. This category also excludes a security issued by any of the following entities, by a company that would be any of the following entities if it were the organized under the laws of the United States or any State, or in either case by an affiliate of such an entity: the party posting the collateral, a bank holding company, a savings and loan holding company, a U.S. intermediate holding company, a foreign bank, a depositary institution, a securities holding company, a broker, a dealer, a futures commission merchant, a swap dealer, or a security-based swap dealer."
+    },
+    
+    {
+      "enum": [
+        "US_CFTC_PRType9"
+      ],
+      "title": "US_CFTC_PRType9",
+      "description": "Denotes securities in the form of redeemable securities in a pooled investment fund representing the security-holder's proportional interest in the fund's net assets and that are issued and redeemed only on the basis of the market value of the fund's net assets prepared each business day after the security-holder makes its investment commitment or redemption request to the fund, if the fund's investments are limited to the following: (A) securities that are issued by, or unconditionally guaranteed as to the timely payment of principal and interest by, the U.S. Department of the Treasury, and immediately-available cash funds denominated in U.S. dollars; or (B) securities denominated in a common currency and issued by, or fully guaranteed as to the payment of principal and interest by, the European Central Bank or a sovereign entity that is assigned no higher than a 20 percent risk weight under the capital rules applicable to swap dealers subject to regulation by a prudential regulator, and immediately-available cash funds denominated in the same currency; and (C) assets of the fund may not be transferred through securities lending, securities borrowing, repurchase agreements, reverse repurchase agreements, or other means that involve the fund having rights to acquire the same or similar assets from the transferee."
+    },
+    
+    {
+      "enum": [
+        "US_CTFC_PRType10"
+      ],
+      "title": "US_CTFC_PRType10",
+      "description": "Denotes Gold."
+    }
+  ]
+}

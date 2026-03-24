@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "object",
+  "title": "LegalAgreementIdentification",
+  "description": "Specifies the type of legal agreement, identified via a set of composable attributes: agreementName, publisher, governing law and version, e.g. ISDA 2013 Standard Credit Support Annex English Law.",
+  "properties": {
+    "governingLaw": {
+      "description": "The law governing the legal agreement, e.g. English Law, New York Law or Japanese Law.",
+      "$ref": "cdm-legaldocumentation-common-GoverningLawEnum.schema.json"
+    },
+    "agreementName": {
+      "description": "The legal agreement name, e.g. Credit Support Annex for Variation Margin.",
+      "$ref": "cdm-legaldocumentation-common-AgreementName.schema.json"
+    },
+    "publisher": {
+      "description": "The legal agreement publisher, e.g. ISDA.",
+      "$ref": "cdm-legaldocumentation-common-LegalAgreementPublisherEnum.schema.json"
+    },
+    "vintage": {
+      "description": "In the case where successive definitions of the legal agreement have been developed, the vintage identification. This is typically (but not necessarily) done by referencing the year, e.g. 2013 in the case of the ISDA 2013 Standard Credit Support Annex.",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "agreementName"
+  ]
+}

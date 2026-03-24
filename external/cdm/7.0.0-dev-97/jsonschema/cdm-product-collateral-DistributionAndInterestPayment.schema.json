@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "object",
+  "title": "DistributionAndInterestPayment",
+  "description": "A class to specify the Distributions and Interest Payment provisions applicable to the collateral agreement.",
+  "properties": {
+    "interestParameters": {
+      "description": "Represents the interest parameters for the various currencies, margin types, posting parties.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-collateral-CollateralInterestParameters.schema.json"
+      },
+      "minItems": 0
+    }
+  }
+}

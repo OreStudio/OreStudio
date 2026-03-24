@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "Period",
+  "description": "A class to define recurring periods or time offsets.",
+  "properties": {
+    "periodMultiplier": {
+      "description": "A time period multiplier, e.g. 1, 2 or 3 etc. A negative value can be used when specifying an offset relative to another date, e.g. -2 days.",
+      "type": "integer"
+    },
+    "period": {
+      "description": "A time period, e.g. a day, week, month or year of the stream. If the periodMultiplier value is 0 (zero) then period must contain the value D (day).",
+      "$ref": "cdm-base-datetime-PeriodEnum.schema.json"
+    }
+  },
+  "required": [
+    "periodMultiplier",
+    "period"
+  ]
+}

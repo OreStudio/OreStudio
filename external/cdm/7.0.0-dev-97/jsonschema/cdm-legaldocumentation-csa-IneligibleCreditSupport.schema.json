@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "IneligibleCreditSupport",
+  "description": "Identifies collateral that has been designated as not meeting the eligibility criteria set out in the agreement.",
+  "properties": {
+    "totalIneligibilityDate": {
+      "description": "Specifies the date from which all credit support provided by a party is treated as ineligible under the agreement.",
+      "type": "string"
+    },
+    "transferIneligibilityDate": {
+      "description": "Specifies the date from which the transfer of credit support by a party is treated as ineligible under the agreement.",
+      "type": "string"
+    },
+    "specifiedParty": {
+      "description": "Identifies a party designated in the agreement for the purpose of applying particular rights, obligations, or elections.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+      },
+      "minItems": 0,
+      "maxItems": 2
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SensitivityToEquity",
+  "description": "Represents risk sensitivity calculated with respect to the value of an individual equity instrument.",
+  "properties": {
+    "sensitivityToIndices": {
+      "description": "Represents risk sensitivity calculated with respect to the level of an equity or market index.",
+      "$ref": "cdm-legaldocumentation-csa-SensitivityMethodology.schema.json"
+    },
+    "sensitivityToFunds": {
+      "description": "Represents risk sensitivity calculated with respect to the value of a fund, such as a mutual fund or collective investment vehicle.",
+      "$ref": "cdm-legaldocumentation-csa-SensitivityMethodology.schema.json"
+    },
+    "sensitivityToETFs": {
+      "description": "Represents risk sensitivity calculated with respect to the value of an exchange-traded fund (ETF).",
+      "$ref": "cdm-legaldocumentation-csa-SensitivityMethodology.schema.json"
+    }
+  },
+  "required": [
+    "sensitivityToIndices",
+    "sensitivityToFunds",
+    "sensitivityToETFs"
+  ]
+}

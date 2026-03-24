@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.datetime",
+  "type": "object",
+  "title": "DirectOrRelativeTime",
+  "description": "Represents a time definition that can be either an absolute (direct) time or a time calculated relative to another referenced time. Either one directTime or one relativeTime should be provided",
+  "properties": {
+    "directTime": {
+      "description": "An absolute time value expressed in a specific time zone.",
+      "$ref": "cdm-base-datetime-TimeZone.schema.json"
+    },
+    "relativeTime": {
+      "description": "A time value calculated relative to another reference time.",
+      "$ref": "cdm-base-datetime-RelativeTime.schema.json"
+    }
+  }
+}

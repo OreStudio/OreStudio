@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.party",
+  "type": "string",
+  "title": "EntityTypeEnum",
+  "description": "The enumerated values to specify the reference entity types corresponding to a list of types defined in the ISDA First to Default documentation.",
+  "enum": [
+    "Asian",
+    "AustralianAndNewZealand",
+    "EuropeanEmergingMarkets",
+    "Japanese",
+    "NorthAmericanHighYield",
+    "NorthAmericanInsurance",
+    "NorthAmericanInvestmentGrade",
+    "Singaporean",
+    "WesternEuropean",
+    "WesternEuropeanInsurance"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Asian"
+      ],
+      "title": "Asian",
+      "description": "Entity Type of Asian."
+    },
+    
+    {
+      "enum": [
+        "AustralianAndNewZealand"
+      ],
+      "title": "AustralianAndNewZealand",
+      "description": "Entity Type of Australian and New Zealand."
+    },
+    
+    {
+      "enum": [
+        "EuropeanEmergingMarkets"
+      ],
+      "title": "EuropeanEmergingMarkets",
+      "description": "Entity Type of European Emerging Markets."
+    },
+    
+    {
+      "enum": [
+        "Japanese"
+      ],
+      "title": "Japanese",
+      "description": "Entity Type of Japanese."
+    },
+    
+    {
+      "enum": [
+        "NorthAmericanHighYield"
+      ],
+      "title": "NorthAmericanHighYield",
+      "description": "Entity Type of North American High Yield."
+    },
+    
+    {
+      "enum": [
+        "NorthAmericanInsurance"
+      ],
+      "title": "NorthAmericanInsurance",
+      "description": "Entity Type of North American Insurance."
+    },
+    
+    {
+      "enum": [
+        "NorthAmericanInvestmentGrade"
+      ],
+      "title": "NorthAmericanInvestmentGrade",
+      "description": "Entity Type of North American Investment Grade."
+    },
+    
+    {
+      "enum": [
+        "Singaporean"
+      ],
+      "title": "Singaporean",
+      "description": "Entity Type of Singaporean."
+    },
+    
+    {
+      "enum": [
+        "WesternEuropean"
+      ],
+      "title": "WesternEuropean",
+      "description": "Entity Type of Western European."
+    },
+    
+    {
+      "enum": [
+        "WesternEuropeanInsurance"
+      ],
+      "title": "WesternEuropeanInsurance",
+      "description": "Entity Type of Western European Insurance."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "MinimumTransferAmount",
+  "description": "Represents the threshold specified in the agreement below which collateral need not be delivered, and represents the smallest incremental value of exposure that must be reached before the parties are obliged to transfer collateral.",
+  "properties": {
+    "partyElection": {
+      "description": "The party specific elections for the Minimum Transfer Amount clause.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-legaldocumentation-csa-MinimumTransferAmountElection.schema.json"
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  }
+}

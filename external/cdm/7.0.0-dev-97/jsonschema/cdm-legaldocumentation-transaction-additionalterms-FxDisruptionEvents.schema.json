@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.transaction.additionalterms",
+  "type": "object",
+  "title": "FxDisruptionEvents",
+  "description": "Additional Provisions for a Confirmation of an FX or Currency Option Transaction",
+  "properties": {
+    "illegalityOrImpossibility": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxIllegalityOrImpossibilityEnum.schema.json"
+    },
+    "forceMajeureOrActOfSState": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxForceMajeureOrActOfSStateEnum.schema.json"
+    },
+    "eventCurrency": {
+      "description": "Additional Provisions for a Confirmation of an FX or Currency Option Transaction.",
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-EventCurrency.schema.json"
+    },
+    "priceSourceDisruption": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxPriceSourceDisruption.schema.json"
+    },
+    "benchmarkObligationDefault": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxBenchmarkObligationDefault.schema.json"
+    },
+    "dualExchangeRate": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxDualExchangeRate.schema.json"
+    },
+    "inconvertibilityOrNonTransferability": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-FxInconvertibilityOrNonTransferability.schema.json"
+    },
+    "governmentalAuthorityDefault": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-GovernmentalAuthorityDefault.schema.json"
+    },
+    "illiquidity": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-Illiquidity.schema.json"
+    },
+    "materialChangeInCircumstance": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-MaterialChangeInCircumstance.schema.json"
+    },
+    "nationalization": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-Nationalization.schema.json"
+    },
+    "priceMateriality": {
+      "$ref": "cdm-legaldocumentation-transaction-additionalterms-PriceMateriality.schema.json"
+    },
+    "fallbackLanguageBespokeTerms": {
+      "description": "Where parties may optionaly describe any extra bespoke agreements about fallback procedure attached to a particular determination role.",
+      "$ref": "cdm-legaldocumentation-transaction-Clause.schema.json"
+    }
+  }
+}

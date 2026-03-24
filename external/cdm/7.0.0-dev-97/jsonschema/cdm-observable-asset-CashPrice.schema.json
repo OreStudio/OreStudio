@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset",
+  "type": "object",
+  "title": "CashPrice",
+  "description": "Specifies the nature of a cash price either as a fee type, cash price type, or premium expression.",
+  "properties": {
+    "priceSubType": {
+      "description": "Specifies the type of Cash Price.",
+      "$ref": "cdm-observable-asset-PriceSubTypeEnum.schema.json"
+    },
+    "premiumExpression": {
+      "description": "Specifies a premium when expressed in a way other than an amount, and any required forward starting price definition.",
+      "$ref": "cdm-observable-asset-PremiumExpression.schema.json"
+    },
+    "feeType": {
+      "description": "Specifies the event type associated with a fee.",
+      "$ref": "cdm-observable-asset-FeeTypeEnum.schema.json"
+    }
+  },
+  "required": [
+    "priceSubType"
+  ]
+}

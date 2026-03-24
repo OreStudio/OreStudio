@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "CreditDefaultPayout",
+  "description": " The credit default payout specification provides the details necessary for determining when a credit payout will be triggered as well as the parameters for calculating the payout and the settlement terms. The associated globalKey denotes the ability to associate a hash value to the CreditDefaultPayout instantiations for the purpose of model cross-referencing, in support of functionality such as the event effect and the lineage.",
+  "properties": {
+    "payerReceiver": {
+      "description": "Canonical representation of the payer and receiver parties applicable to each payout leg.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "priceQuantity": {
+      "description": "Each payout leg must implement the quantity concept as a 'resolvable' type, which allows for different payout legs to be linked to each other (e.g. in the case of cross-curreny products).",
+      "$ref": "cdm-product-common-settlement-ResolvablePriceQuantity.schema.json"
+    },
+    "principalPayment": {
+      "description": "The specification of the principal exchange. Optional as only applicable in the case of cross-currency or zero-coupon swaps with a final payment.",
+      "$ref": "cdm-product-common-settlement-PrincipalPayments.schema.json"
+    },
+    "settlementTerms": {
+      "description": "Each payout leg must specifies its settlement terms, including the delivery type (i.e. cash vs physical, and their respective terms), the transfer type (DvP etc.) and settlement date, if any.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "generalTerms": {
+      "description": "The specification of the non-monetary terms for the Credit Derivative Transaction, including the buyer and seller and selected items from the ISDA 2014 Credit Definition article II, such as the reference obligation and related terms.",
+      "$ref": "cdm-product-asset-GeneralTerms.schema.json"
+    },
+    "protectionTerms": {
+      "description": "Specifies the terms for calculating a payout to protect the buyer of the swap in the case of a qualified credit event. These terms include the applicable credit events, the reference obligation, and in the case of a CDS on mortgage-backed securities, the floatingAmountEvents.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-product-asset-ProtectionTerms.schema.json"
+      },
+      "minItems": 0
+    },
+    "transactedPrice": {
+      "description": "The qualification of the price at which the contract has been transacted, in terms of market fixed rate, initial points, market price and/or quotation style. In FpML, those attributes are positioned as part of the fee leg.",
+      "$ref": "cdm-observable-asset-TransactedPrice.schema.json"
+    }
+  },
+  "required": [
+    "generalTerms"
+  ]
+}

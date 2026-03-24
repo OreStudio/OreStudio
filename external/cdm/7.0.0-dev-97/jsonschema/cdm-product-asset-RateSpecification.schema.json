@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "RateSpecification",
+  "description": " A data type to specify the fixed interest rate, floating interest rate or inflation rate.",
+  "properties": {
+    "FixedRateSpecification": {
+      "description": "The fixed rate or fixed rate specification expressed as explicit fixed rates and dates.",
+      "$ref": "cdm-product-asset-FixedRateSpecification.schema.json"
+    },
+    "FloatingRateSpecification": {
+      "description": "The floating interest rate specification, which includes the definition of the floating rate index. the tenor, the initial value, and, when applicable, the spread, the rounding convention, the averaging method and the negative interest rate treatment.",
+      "$ref": "cdm-product-asset-FloatingRateSpecification.schema.json"
+    },
+    "InflationRateSpecification": {
+      "description": "An inflation rate calculation definition.",
+      "$ref": "cdm-product-asset-InflationRateSpecification.schema.json"
+    }
+  }
+}

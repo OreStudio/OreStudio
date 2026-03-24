@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "ContractualDefinitionsEnum",
+  "description": "The enumerated values to specify a set of standard contract definitions relevant to the transaction.",
+  "enum": [
+    "ISDA1991InterestRate",
+    "ISDA1993CommodityDerivatives",
+    "ISDA1996EquityDerivatives",
+    "ISDA1997Bullion",
+    "ISDA1997GovernmentBondOption",
+    "ISDA1998FxAndCurrencyOption",
+    "ISDA1999CreditDerivatives",
+    "ISDA2000",
+    "ISDA2002EquityDerivatives",
+    "ISDA2003CreditDerivatives",
+    "ISDA2004Novation",
+    "ISDA2005Commodity",
+    "ISDA2006",
+    "ISDA2006InflationDerivatives",
+    "ISDA2008InflationDerivatives",
+    "ISDA2011EquityDerivatives",
+    "ISDA2014CreditDerivatives",
+    "ISDA2021InterestRateDerivatives",
+    "ISDA2022VerifiedCarbonCredit",
+    "ISDA2023DigitalAssetDerivatives"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ISDA1991InterestRate"
+      ],
+      "title": "ISDA1991InterestRate",
+      "description": "ISDA 1991 Interest Rate Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA1993CommodityDerivatives"
+      ],
+      "title": "ISDA1993CommodityDerivatives",
+      "description": "ISDA 1993 Commodity Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA1996EquityDerivatives"
+      ],
+      "title": "ISDA1996EquityDerivatives",
+      "description": "ISDA 1996 Equity Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA1997Bullion"
+      ],
+      "title": "ISDA1997Bullion",
+      "description": "ISDA 1997 Bullion Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA1997GovernmentBondOption"
+      ],
+      "title": "ISDA1997GovernmentBondOption",
+      "description": "ISDA 1997 Government Bond Option Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA1998FxAndCurrencyOption"
+      ],
+      "title": "ISDA1998FxAndCurrencyOption",
+      "description": "ISDA 1998 FX and Currency Option Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA1999CreditDerivatives"
+      ],
+      "title": "ISDA1999CreditDerivatives",
+      "description": "ISDA 1999 Credit Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2000"
+      ],
+      "title": "ISDA2000",
+      "description": "ISDA 2000 Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2002EquityDerivatives"
+      ],
+      "title": "ISDA2002EquityDerivatives",
+      "description": "ISDA 2002 Equity Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2003CreditDerivatives"
+      ],
+      "title": "ISDA2003CreditDerivatives",
+      "description": "ISDA 2003 Credit Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2004Novation"
+      ],
+      "title": "ISDA2004Novation",
+      "description": "ISDA 2004 Novation Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2005Commodity"
+      ],
+      "title": "ISDA2005Commodity",
+      "description": "ISDA 2005 Commodity Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2006"
+      ],
+      "title": "ISDA2006",
+      "description": "ISDA 2006 Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2006InflationDerivatives"
+      ],
+      "title": "ISDA2006InflationDerivatives",
+      "description": "ISDA 2006 Inflation Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2008InflationDerivatives"
+      ],
+      "title": "ISDA2008InflationDerivatives",
+      "description": "ISDA 2008 Inflation Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2011EquityDerivatives"
+      ],
+      "title": "ISDA2011EquityDerivatives",
+      "description": "ISDA 2011 Equity Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2014CreditDerivatives"
+      ],
+      "title": "ISDA2014CreditDerivatives",
+      "description": "ISDA 2014 Credit Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2021InterestRateDerivatives"
+      ],
+      "title": "ISDA2021InterestRateDerivatives",
+      "description": "ISDA 2021 Interest Rate Derivatives Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2022VerifiedCarbonCredit"
+      ],
+      "title": "ISDA2022VerifiedCarbonCredit",
+      "description": "ISDA 2022 Verified Carbon Credit Transactions Definitions"
+    },
+    
+    {
+      "enum": [
+        "ISDA2023DigitalAssetDerivatives"
+      ],
+      "title": "ISDA2023DigitalAssetDerivatives",
+      "description": "ISDA 2023 Digital Asset Derivatives Definitions"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.asset",
+  "type": "object",
+  "title": "ForeignExchange",
+  "description": "From FpML: A type defining either a spot or forward FX transactions.",
+  "properties": {
+    "exchangedCurrency1": {
+      "description": "This is the first of the two currency flows that define a single leg of a standard foreign exchange transaction.",
+      "$ref": "cdm-product-common-settlement-Cashflow.schema.json"
+    },
+    "exchangedCurrency2": {
+      "description": "This is the second of the two currency flows that define a single leg of a standard foreign exchange transaction.",
+      "$ref": "cdm-product-common-settlement-Cashflow.schema.json"
+    },
+    "tenorPeriod": {
+      "description": "A tenor expressed as a period type and multiplier (e.g. 1D, 1Y, etc.)",
+      "$ref": "cdm-base-datetime-Period.schema.json"
+    }
+  },
+  "required": [
+    "exchangedCurrency1",
+    "exchangedCurrency2"
+  ]
+}

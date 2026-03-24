@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "CounterpartyPositionBusinessEvent",
+  "description": "A business event represents a life cycle event of a position. The combination of the state changes results in a qualifiable life cycle event.",
+  "properties": {
+    "intent": {
+      "description": "The intent attribute is meant to be specified when the event qualification cannot be programmatically inferred from the event features. As a result it is only associated with those primitives that can give way to such ambiguity, the quantityChange being one of those.",
+      "$ref": "cdm-event-common-PositionEventIntentEnum.schema.json"
+    },
+    "corporateActionIntent": {
+      "description": "The intent of a corporate action on the position.",
+      "$ref": "cdm-event-common-CorporateActionTypeEnum.schema.json"
+    },
+    "eventDate": {
+      "description": "Specifies the date on which the event is taking place. This date is equal to the trade date in the case of a simple execution.  However it can be different from the trade date, for example in the case of a partial termination.",
+      "type": "string"
+    },
+    "effectiveDate": {
+      "description": "The date on which the event contractually takes effect, when different from the event date.",
+      "type": "string"
+    },
+    "packageInformation": {
+      "description": "Specifies the package information in case the business event represents several trades executed as a package (hence this attribute is optional). The package information is only instantiated once at the business event level to preserve referential integrity, whereas individual trades make reference to it to identify that they are part of a package.",
+      "$ref": "cdm-base-staticdata-identifier-IdentifiedList.schema.json"
+    },
+    "after": {
+      "description": "Specifies the after position state(s) created.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-event-common-CounterpartyPositionState.schema.json"
+      },
+      "minItems": 0
+    }
+  },
+  "required": [
+    "intent"
+  ]
+}

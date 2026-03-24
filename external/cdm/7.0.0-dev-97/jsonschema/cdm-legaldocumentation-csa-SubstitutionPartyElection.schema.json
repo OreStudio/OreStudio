@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "SubstitutionPartyElection",
+  "description": "Party specific elections for substitution of posted collateral.",
+  "properties": {
+    "party": {
+      "description": "The party that is acting as the Pledgor/Obligor/Chargor/Security Provider.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "needsConsent": {
+      "description": "The election as to whether the Pledgor/Obligor/Chargor/Security Provider must obtain the Secured Partys consent for any collateral substitution.",
+      "type": "boolean"
+    },
+    "substitutionDateLanguage": {
+      "description": "Substitution Date has the meaning specified in Paragraph4(d)(ii), unless otherwise specified.",
+      "type": "string"
+    },
+    "specificConsentLanguage": {
+      "description": "Specific consent language might be specified by the parties.",
+      "type": "string"
+    },
+    "legacyConsent": {
+      "description": "The process for substituting/exchanging one form of collateral held by a party for a different form of collateral, used with legacy agreements.",
+      "$ref": "cdm-legaldocumentation-csa-LegacyConsentEnum.schema.json"
+    }
+  },
+  "required": [
+    "party",
+    "needsConsent"
+  ]
+}

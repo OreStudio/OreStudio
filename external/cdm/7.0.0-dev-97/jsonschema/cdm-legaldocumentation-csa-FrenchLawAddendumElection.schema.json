@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.csa",
+  "type": "object",
+  "title": "FrenchLawAddendumElection",
+  "description": "A class to specify party specific French Law Addendum language.",
+  "properties": {
+    "party": {
+      "description": "The elective party.",
+      "$ref": "cdm-base-staticdata-party-CounterpartyRoleEnum.schema.json"
+    },
+    "isApplicable": {
+      "description": "The qualification of whether the party elects specific language.",
+      "type": "boolean"
+    },
+    "addendumLanguage": {
+      "description": "The party specific language to be included in the agreement.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "party",
+    "isApplicable"
+  ]
+}

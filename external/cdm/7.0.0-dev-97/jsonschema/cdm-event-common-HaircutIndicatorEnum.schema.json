@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "string",
+  "title": "HaircutIndicatorEnum",
+  "description": "Represents the enumeration indicators to specify if an asset or group of assets valuation is based on any valuation treatment haircut.",
+  "enum": [
+    "PostHaircut",
+    "PreHaircut"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "PostHaircut"
+      ],
+      "title": "PostHaircut",
+      "description": "Indicates Post haircut value"
+    },
+    
+    {
+      "enum": [
+        "PreHaircut"
+      ],
+      "title": "PreHaircut",
+      "description": "Indicates Pre haircut value"
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.workflow",
+  "type": "string",
+  "title": "WorkflowStatusEnum",
+  "enum": [
+    "Accepted",
+    "Affirmed",
+    "Alleged",
+    "Amended",
+    "Cancelled",
+    "Certain",
+    "Cleared",
+    "Confirmed",
+    "Pending",
+    "Rejected",
+    "Submitted",
+    "Terminated",
+    "Uncertain",
+    "Unconfirmed"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Accepted"
+      ],
+      "title": "Accepted"
+    },
+    
+    {
+      "enum": [
+        "Affirmed"
+      ],
+      "title": "Affirmed"
+    },
+    
+    {
+      "enum": [
+        "Alleged"
+      ],
+      "title": "Alleged"
+    },
+    
+    {
+      "enum": [
+        "Amended"
+      ],
+      "title": "Amended"
+    },
+    
+    {
+      "enum": [
+        "Cancelled"
+      ],
+      "title": "Cancelled"
+    },
+    
+    {
+      "enum": [
+        "Certain"
+      ],
+      "title": "Certain"
+    },
+    
+    {
+      "enum": [
+        "Cleared"
+      ],
+      "title": "Cleared"
+    },
+    
+    {
+      "enum": [
+        "Confirmed"
+      ],
+      "title": "Confirmed"
+    },
+    
+    {
+      "enum": [
+        "Pending"
+      ],
+      "title": "Pending"
+    },
+    
+    {
+      "enum": [
+        "Rejected"
+      ],
+      "title": "Rejected"
+    },
+    
+    {
+      "enum": [
+        "Submitted"
+      ],
+      "title": "Submitted"
+    },
+    
+    {
+      "enum": [
+        "Terminated"
+      ],
+      "title": "Terminated"
+    },
+    
+    {
+      "enum": [
+        "Uncertain"
+      ],
+      "title": "Uncertain"
+    },
+    
+    {
+      "enum": [
+        "Unconfirmed"
+      ],
+      "title": "Unconfirmed"
+    }
+  ]
+}

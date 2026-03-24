@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "object",
+  "title": "OptionPayout",
+  "description": " The option payout specification terms. The associated globalKey denotes the ability to associate a hash value to the respective OptionPayout instantiation for the purpose of model cross-referencing, in support of functionality such as the event effect and the lineage.",
+  "properties": {
+    "payerReceiver": {
+      "description": "Canonical representation of the payer and receiver parties applicable to each payout leg.",
+      "$ref": "cdm-base-staticdata-party-PayerReceiver.schema.json"
+    },
+    "priceQuantity": {
+      "description": "Each payout leg must implement the quantity concept as a 'resolvable' type, which allows for different payout legs to be linked to each other (e.g. in the case of cross-curreny products).",
+      "$ref": "cdm-product-common-settlement-ResolvablePriceQuantity.schema.json"
+    },
+    "principalPayment": {
+      "description": "The specification of the principal exchange. Optional as only applicable in the case of cross-currency or zero-coupon swaps with a final payment.",
+      "$ref": "cdm-product-common-settlement-PrincipalPayments.schema.json"
+    },
+    "settlementTerms": {
+      "description": "Each payout leg must specifies its settlement terms, including the delivery type (i.e. cash vs physical, and their respective terms), the transfer type (DvP etc.) and settlement date, if any.",
+      "$ref": "cdm-product-common-settlement-SettlementTerms.schema.json"
+    },
+    "buyerSeller": {
+      "$ref": "cdm-base-staticdata-party-BuyerSeller.schema.json"
+    },
+    "feature": {
+      "description": "The option feature, such as quanto, Asian, barrier, knock.",
+      "$ref": "cdm-product-template-OptionFeature.schema.json"
+    },
+    "observationTerms": {
+      "description": "Class containing terms that are associated with observing a price/benchmark/index across either single or multple observations. To be used for option contracts that reference a benchmark price.",
+      "$ref": "cdm-product-common-schedule-ObservationTerms.schema.json"
+    },
+    "schedule": {
+      "description": "Allows the full representation of a payout by defining a set of schedule periods. It supports standard schedule customization by expressing all the dates, quantities, and pricing data in a non-parametric way.",
+      "$ref": "cdm-product-template-CalculationSchedule.schema.json"
+    },
+    "delivery": {
+      "description": "Contains the information relative to the delivery of the asset.",
+      "$ref": "cdm-product-asset-AssetDeliveryInformation.schema.json"
+    },
+    "underlier": {
+      "description": "The financial product underlying the option, which can be of any type including an Asset, Basket, Index or a NonTransferableProduct.",
+      "$ref": "cdm-product-template-Underlier.schema.json"
+    },
+    "optionType": {
+      "description": "The type of option transaction. From a usage standpoint, put/call is the default option type, while payer/receiver indicator is used for options on index credit default swaps, consistently with the industry practice. Straddle is used for the case of straddle strategy, that combine a call and a put with the same strike.",
+      "$ref": "cdm-product-template-OptionTypeEnum.schema.json"
+    },
+    "exerciseTerms": {
+      "description": "The terms for exercising the option, which include the option style (e.g. American style option), the exercise procedure (e.g. manual exercise) and the settlement terms (e.g. physical vs. cash).",
+      "$ref": "cdm-product-template-ExerciseTerms.schema.json"
+    },
+    "strike": {
+      "description": "Specifies the strike of the option",
+      "$ref": "cdm-product-template-OptionStrike.schema.json"
+    }
+  },
+  "required": [
+    "buyerSeller",
+    "underlier",
+    "exerciseTerms"
+  ]
+}

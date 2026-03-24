@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "string",
+  "title": "PutCallEnum",
+  "description": "The enumerated values to specify the types of listed derivative options.",
+  "enum": [
+    "Call",
+    "Put"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Call"
+      ],
+      "title": "Call",
+      "description": "A call option gives the holder the right to buy the underlying asset by a certain date for a certain price."
+    },
+    
+    {
+      "enum": [
+        "Put"
+      ],
+      "title": "Put",
+      "description": "A put option gives the holder the right to sell the underlying asset by a certain date for a certain price."
+    }
+  ]
+}

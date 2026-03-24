@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.common.settlement",
+  "type": "object",
+  "title": "PaymentDiscounting",
+  "description": "This class corresponds to the FpML PaymentDiscounting.model group for representing the discounting elements that can be associated with a payment.",
+  "properties": {
+    "discountFactor": {
+      "description": "The value representing the discount factor used to calculate the present value of the cash flow.",
+      "type": "number"
+    },
+    "presentValueAmount": {
+      "description": "The amount representing the present value of the forecast payment.",
+      "$ref": "cdm-observable-asset-Money.schema.json"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "TransferExpression",
+  "description": "Specifies a transfer expression (cash price, performance amount, scheduled payment amount, etc.) to define the nature of the transfer amount and its source.",
+  "properties": {
+    "scheduledTransfer": {
+      "description": "Specifies a transfer created from a scheduled or contingent event on a contract, e.g. Exercise, Performance, Credit Event",
+      "$ref": "cdm-event-common-ScheduledTransfer.schema.json"
+    },
+    "unscheduledTransfer": {
+      "description": "Specifies an ad-hoc transfer instigated by a party to the contract e.g. Recall, Return.",
+      "$ref": "cdm-event-common-UnscheduledTransfer.schema.json"
+    }
+  }
+}

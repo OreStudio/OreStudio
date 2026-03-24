@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.observable.asset.fro",
+  "type": "object",
+  "title": "FloatingRateIndexMap",
+  "description": "A map for a single FRO to or from an equivalent or similar FRO in a different contractual definitions version.",
+  "properties": {
+    "index": {
+      "description": " The FRO name that is being mapped to/from.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-staticdata-asset-rates-FloatingRateIndexEnum.schema.json"
+      },
+      "minItems": 0
+    },
+    "contractualDefinitionIdentifier": {
+      "description": "Contractual Definition to which the map applies. Includes Document Type and Document Version",
+      "$ref": "cdm-observable-asset-fro-ContractualDefinitionIdentifier.schema.json"
+    },
+    "identifier": {
+      "description": "Corresponds to the unique identifier of the Contractual Definition to which the map applies",
+      "$ref": "cdm-base-staticdata-identifier-Identifier.schema.json"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.template",
+  "type": "string",
+  "title": "ExerciseNoticeGiverEnum",
+  "description": "Defines the principal party to the trade that has the right to exercise.",
+  "enum": [
+    "AsSpecifiedInMasterAgreement",
+    "Both",
+    "Buyer",
+    "Seller"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "AsSpecifiedInMasterAgreement"
+      ],
+      "title": "AsSpecifiedInMasterAgreement",
+      "description": "Specifies that the Master Agreement defines the principal party to the trade that has the right to exercise."
+    },
+    
+    {
+      "enum": [
+        "Both"
+      ],
+      "title": "Both",
+      "description": "Specifies that both the option buyer and option seller has the right to exercise."
+    },
+    
+    {
+      "enum": [
+        "Buyer"
+      ],
+      "title": "Buyer",
+      "description": "Specifies that only the option buyer has the right to exercise."
+    },
+    
+    {
+      "enum": [
+        "Seller"
+      ],
+      "title": "Seller",
+      "description": "Specifies that only the option seller has the right to exercise."
+    }
+  ]
+}

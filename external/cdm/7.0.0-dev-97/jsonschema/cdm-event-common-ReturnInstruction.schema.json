@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.event.common",
+  "type": "object",
+  "title": "ReturnInstruction",
+  "description": "Specifies the information required to create the return of a Security Finance Transaction.",
+  "properties": {
+    "quantity": {
+      "description": "Specifies the quantity of shares and cash to be returned in a partial return event.",
+      "type": "array",
+      "items": {
+        "$ref": "cdm-base-math-Quantity.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

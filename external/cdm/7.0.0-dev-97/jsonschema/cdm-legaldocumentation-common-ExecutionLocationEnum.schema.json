@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.legaldocumentation.common",
+  "type": "string",
+  "title": "ExecutionLocationEnum",
+  "description": "The enumerated values to specify the Execution Location of a Security Agreement",
+  "enum": [
+    "ExecutedInBelgium",
+    "ExecutedOutsideBelgium",
+    "OtherLocation"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "ExecutedInBelgium"
+      ],
+      "title": "ExecutedInBelgium",
+      "description": "The Agreement was executed outside of Belgium"
+    },
+    
+    {
+      "enum": [
+        "ExecutedOutsideBelgium"
+      ],
+      "title": "ExecutedOutsideBelgium",
+      "description": "The Agreement was executed outside of Belgium"
+    },
+    
+    {
+      "enum": [
+        "OtherLocation"
+      ],
+      "title": "OtherLocation",
+      "description": "An alternative approach is described in the document as follows."
+    }
+  ]
+}

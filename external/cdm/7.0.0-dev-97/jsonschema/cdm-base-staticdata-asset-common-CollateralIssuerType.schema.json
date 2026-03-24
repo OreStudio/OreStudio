@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.asset.common",
+  "type": "object",
+  "title": "CollateralIssuerType",
+  "description": "Represents a class to allow specification of the type of entity issuing the collateral.",
+  "properties": {
+    "issuerType": {
+      "description": "Specifies the origin of entity issuing the collateral.",
+      "$ref": "cdm-base-staticdata-asset-common-CollateralEntityTypeEnum.schema.json"
+    },
+    "supraNationalType": {
+      "description": "Specifies debt issued by international organisations and multilateral banks.",
+      "$ref": "cdm-base-staticdata-asset-common-SupraNationalIssuerTypeEnum.schema.json"
+    },
+    "quasiGovernmentType": {
+      "description": "Specifies debt issues by institutions or bodies, typically constituted by statute, with a function mandated by the government and subject to government supervision inclusive of profit- and non-profit making bodies. Includes the US Agencies and GSEs and the EU concept of public sector entities. Excluding any entities which are also Regional Government.",
+      "$ref": "cdm-base-staticdata-asset-common-QuasiGovernmentIssuerType.schema.json"
+    },
+    "regionalGovernmentType": {
+      "description": "Specifies Regional government, local authority or municipal.",
+      "$ref": "cdm-base-staticdata-asset-common-RegionalGovernmentIssuerType.schema.json"
+    },
+    "specialPurposeVehicleType": {
+      "description": "Specifies a subsidiary company that is formed to undertake a specific business purpose of acquisition and financing of specific assets on a potentially limited recourse basis dependent of how it is designed. E.g. asset backed securities, including securitisations.",
+      "$ref": "cdm-base-staticdata-asset-common-SpecialPurposeVehicleIssuerType.schema.json"
+    }
+  },
+  "required": [
+    "issuerType"
+  ]
+}

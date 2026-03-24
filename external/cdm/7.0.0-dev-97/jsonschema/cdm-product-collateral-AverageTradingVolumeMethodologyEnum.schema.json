@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.product.collateral",
+  "type": "string",
+  "title": "AverageTradingVolumeMethodologyEnum",
+  "description": "Indicates the type of equity average trading volume (single) the highest amount on one exchange, or (consolidated) volumes across more than one exchange.",
+  "enum": [
+    "Consolidated",
+    "Single"
+  ],
+  "oneOf": [
+    {
+      "enum": [
+        "Consolidated"
+      ],
+      "title": "Consolidated",
+      "description": "Consolidated volume across more than one exchange."
+    },
+    
+    {
+      "enum": [
+        "Single"
+      ],
+      "title": "Single",
+      "description": "Single, the highest amount on one exchange."
+    }
+  ]
+}

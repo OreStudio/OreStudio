@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$anchor": "cdm.base.staticdata.codelist",
+  "type": "object",
+  "title": "FieldWithMetaBusinessCenter",
+  "properties": {
+    "value": {
+      "type": "BusinessCenter"
+    },
+    "meta": {
+      "$ref": "com-rosetta-model-metafields-MetaFields.schema.json"
+    }
+  }
+}

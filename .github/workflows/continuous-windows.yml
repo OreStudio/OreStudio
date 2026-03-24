@@ -61,7 +61,7 @@ jobs:
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
-          max-size: 1000M
+          max-size: 2000M
 
       - name: Install Clang
         uses: KyleMayes/install-llvm-action@v2
@@ -176,6 +176,10 @@ jobs:
           $preset="${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja"
           $cmake_args="build_group=Continuous,preset=$preset"
           ctest -VV --preset $preset --script "CTest.cmake,$cmake_args"
+
+      - name: Show sccache statistics
+        if: always()
+        run: sccache --show-stats
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7.0.0

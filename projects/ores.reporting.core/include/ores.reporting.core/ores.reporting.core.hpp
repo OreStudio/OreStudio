@@ -38,7 +38,7 @@
 #include "ores.reporting.core/service/report_instance_service.hpp"
 
 // Generators
-#include "ores.reporting.core/generators/report_type_generator.hpp"
-#include "ores.reporting.core/generators/concurrency_policy_generator.hpp"
-#include "ores.reporting.core/generators/report_definition_generator.hpp"
-#include "ores.reporting.core/generators/report_instance_generator.hpp"
+#include "ores.reporting.api/generators/report_type_generator.hpp"
+#include "ores.reporting.api/generators/concurrency_policy_generator.hpp"
+#include "ores.reporting.api/generators/report_definition_generator.hpp"
+#include "ores.reporting.api/generators/report_instance_generator.hpp"

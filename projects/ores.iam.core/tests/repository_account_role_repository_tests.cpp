@@ -30,9 +30,9 @@
 #include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/role_repository.hpp"
-#include "ores.iam.core/generators/account_generator.hpp"
-#include "ores.iam.core/generators/role_generator.hpp"
-#include "ores.iam.core/generators/account_role_generator.hpp"
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.api/generators/role_generator.hpp"
+#include "ores.iam.api/generators/account_role_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 

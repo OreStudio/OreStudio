@@ -27,7 +27,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/domain/account.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
-#include "ores.iam.core/generators/account_generator.hpp"
+#include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 

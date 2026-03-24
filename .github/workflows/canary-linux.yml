@@ -56,7 +56,8 @@ jobs:
         with:
           variant: sccache
           key: linux-gcc-debug-ninja
-          max-size: 1000M
+          max-size: 2000M
+          save: false
 
       - name: Install dev packages
         run: ./build/scripts/install_debian_packages.sh
@@ -147,3 +148,7 @@ jobs:
           export preset=linux-gcc-debug-ninja
           export cmake_args="build_group=Canary,preset=${preset},code_coverage=1"
           ctest -VV --preset ${preset} --script "CTest.cmake,${cmake_args}"
+
+      - name: Show sccache statistics
+        if: always()
+        run: sccache --show-stats

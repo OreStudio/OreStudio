@@ -21,8 +21,8 @@
 #define ORES_HTTP_CORE_ROUTES_VARIABILITY_ROUTES_HPP
 
 #include <memory>
-#include "ores.http/net/router.hpp"
-#include "ores.http/openapi/endpoint_registry.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"

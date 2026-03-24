@@ -25,7 +25,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.http/messaging/http_info_protocol.hpp"
+#include "ores.http.api/messaging/http_info_protocol.hpp"
 
 namespace ores::http_server::messaging {
 

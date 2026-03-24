@@ -23,7 +23,7 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
-#include "ores.http/net/http_server.hpp"
+#include "ores.http.api/net/http_server.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/service_accounts.hpp"

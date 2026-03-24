@@ -1,6 +1,6 @@
 # -*- mode: cmake; cmake-tab-width: 4; indent-tabs-mode: nil -*-
 #
-# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+# Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.http.core")
+set(name "ores.http.api")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -32,19 +32,20 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.http.core/include)
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
+
+find_package(Boost REQUIRED COMPONENTS json url)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.http.api.lib
-        ores.iam.core.lib
-        ores.refdata.core.lib
-        ores.assets.core.lib
-        ores.variability.core.lib
-        ores.geo.lib
-    PRIVATE
-        ores.utility.lib
         ores.security.lib
-        ores.database.lib)
+        ores.telemetry.lib
+        ores.utility.lib
+        Boost::boost
+        Boost::json
+        Boost::url
+    PRIVATE
+        OpenSSL::SSL)
+# Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

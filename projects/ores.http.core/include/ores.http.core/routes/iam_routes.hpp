@@ -24,8 +24,8 @@
 #include <expected>
 #include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
-#include "ores.http/net/router.hpp"
-#include "ores.http/openapi/endpoint_registry.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"

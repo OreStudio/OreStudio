@@ -1,0 +1,223 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_HTTP_NET_ROUTER_HPP
+#define ORES_HTTP_NET_ROUTER_HPP
+
+#include <vector>
+#include <memory>
+#include <optional>
+#include <functional>
+#include <rfl/json.hpp>
+#include "ores.http.api/domain/route.hpp"
+#include "ores.logging/make_logger.hpp"
+
+namespace ores::http::net {
+
+/**
+ * @brief Route builder for fluent route registration.
+ */
+class route_builder final {
+public:
+    route_builder(domain::http_method method, const std::string& pattern);
+
+    /**
+     * @brief Sets the handler for this route.
+     */
+    route_builder& handler(domain::request_handler h);
+
+    /**
+     * @brief Marks this route as requiring authentication.
+     */
+    route_builder& auth_required();
+
+    /**
+     * @brief Sets required roles for this route.
+     */
+    route_builder& roles(std::vector<std::string> r);
+
+    /**
+     * @brief Sets OpenAPI summary.
+     */
+    route_builder& summary(std::string s);
+
+    /**
+     * @brief Sets OpenAPI description.
+     */
+    route_builder& description(std::string d);
+
+    /**
+     * @brief Sets OpenAPI tags.
+     */
+    route_builder& tags(std::vector<std::string> t);
+
+    /**
+     * @brief Adds a query parameter for OpenAPI documentation.
+     */
+    route_builder& query_param(const std::string& name,
+        const std::string& type = "string",
+        const std::string& format = "",
+        bool required = false,
+        const std::string& desc = "",
+        const std::optional<std::string>& default_value = std::nullopt);
+
+    /**
+     * @brief Sets the request body schema from a C++ type using reflection.
+     *
+     * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically.
+     * Optionally accepts a generator function to create example data.
+     *
+     * @tparam T The request body type (must be rfl-serializable)
+     * @param example_generator Optional function that returns an example T
+     * @param required Whether the body is required (default: true)
+     * @param content_type Content type (default: application/json)
+     */
+    template<typename T>
+    route_builder& body(
+        std::function<T()> example_generator = nullptr,
+        bool required = true,
+        const std::string& content_type = "application/json") {
+
+        domain::request_body_schema schema;
+        schema.content_type = content_type;
+        schema.required = required;
+        schema.json_schema = rfl::json::to_schema<T>();
+
+        if (example_generator) {
+            schema.example_json = rfl::json::write(example_generator());
+        }
+
+        body_schema_ = schema;
+        return *this;
+    }
+
+    /**
+     * @brief Sets the response schema from a C++ type using reflection.
+     *
+     * Uses rfl::json::to_schema<T>() to generate the JSON schema automatically.
+     * Optionally accepts a generator function to create example data.
+     *
+     * @tparam T The response body type (must be rfl-serializable)
+     * @param example_generator Optional function that returns an example T
+     * @param description Description of the response (default: "Successful response")
+     * @param content_type Content type (default: application/json)
+     */
+    template<typename T>
+    route_builder& response(
+        std::function<T()> example_generator = nullptr,
+        const std::string& desc = "Successful response",
+        const std::string& content_type = "application/json") {
+
+        domain::response_schema schema;
+        schema.status_code = "200";
+        schema.description = desc;
+        schema.content_type = content_type;
+        schema.json_schema = rfl::json::to_schema<T>();
+
+        if (example_generator) {
+            schema.example_json = rfl::json::write(example_generator());
+        }
+
+        success_response_schema_ = schema;
+        return *this;
+    }
+
+    /**
+     * @brief Builds the route.
+     */
+    domain::route build() const;
+
+private:
+    domain::http_method method_;
+    std::string pattern_;
+    domain::request_handler handler_;
+    bool requires_auth_ = false;
+    std::vector<std::string> required_roles_;
+    std::string summary_;
+    std::string description_;
+    std::vector<std::string> tags_;
+    std::vector<domain::query_param> query_params_;
+    std::optional<domain::request_body_schema> body_schema_;
+    std::optional<domain::response_schema> success_response_schema_;
+};
+
+/**
+ * @brief HTTP request router that matches requests to handlers.
+ */
+class router final {
+public:
+    router();
+
+    /**
+     * @brief Registers a GET route.
+     */
+    route_builder get(const std::string& pattern);
+
+    /**
+     * @brief Registers a POST route.
+     */
+    route_builder post(const std::string& pattern);
+
+    /**
+     * @brief Registers a PUT route.
+     */
+    route_builder put(const std::string& pattern);
+
+    /**
+     * @brief Registers a PATCH route.
+     */
+    route_builder patch(const std::string& pattern);
+
+    /**
+     * @brief Registers a DELETE route.
+     */
+    route_builder delete_(const std::string& pattern);
+
+    /**
+     * @brief Adds a built route to the router.
+     */
+    void add_route(const domain::route& route);
+
+    /**
+     * @brief Attempts to match a request and returns the matching route.
+     */
+    std::optional<domain::route> match(domain::http_method method,
+        const std::string& path,
+        std::unordered_map<std::string, std::string>& path_params) const;
+
+    /**
+     * @brief Returns all registered routes (for OpenAPI generation).
+     */
+    const std::vector<domain::route>& routes() const { return routes_; }
+
+private:
+    inline static std::string_view logger_name = "ores.http.net.router";
+
+    static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
+    std::vector<domain::route> routes_;
+};
+
+}
+
+#endif

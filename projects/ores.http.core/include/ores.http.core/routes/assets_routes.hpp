@@ -21,8 +21,8 @@
 #define ORES_HTTP_CORE_ROUTES_ASSETS_ROUTES_HPP
 
 #include <memory>
-#include "ores.http/net/router.hpp"
-#include "ores.http/openapi/endpoint_registry.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"

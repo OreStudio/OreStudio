@@ -33,7 +33,7 @@
 #include "ores.iam.api/messaging/session_protocol.hpp"
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/account_protocol.hpp"
-#include "ores.http/messaging/http_info_protocol.hpp"
+#include "ores.http.api/messaging/http_info_protocol.hpp"
 
 namespace ores::qt {
 

@@ -29,8 +29,8 @@
 #include "ores.refdata.api/domain/party_currency_json_io.hpp" // IWYU pragma: keep.
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.refdata.core/repository/currency_repository.hpp"
-#include "ores.refdata.core/generators/party_generator.hpp"
-#include "ores.refdata.core/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 

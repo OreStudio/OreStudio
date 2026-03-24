@@ -27,7 +27,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/country.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/country_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/generators/country_generator.hpp"
+#include "ores.refdata.api/generators/country_generator.hpp"
 
 namespace {
 

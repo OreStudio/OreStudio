@@ -27,7 +27,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_status.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_status_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/generators/party_status_generator.hpp"
+#include "ores.refdata.api/generators/party_status_generator.hpp"
 
 namespace {
 

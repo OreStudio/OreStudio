@@ -28,8 +28,8 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_contact_information.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/party_contact_information_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/generators/party_contact_information_generator.hpp"
-#include "ores.refdata.core/generators/party_generator.hpp"
+#include "ores.refdata.api/generators/party_contact_information_generator.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 
 namespace {

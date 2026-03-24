@@ -28,8 +28,8 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_identifier.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/counterparty_identifier_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/generators/counterparty_identifier_generator.hpp"
-#include "ores.refdata.core/generators/counterparty_generator.hpp"
+#include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
+#include "ores.refdata.api/generators/counterparty_generator.hpp"
 #include "ores.refdata.core/repository/counterparty_repository.hpp"
 
 namespace {

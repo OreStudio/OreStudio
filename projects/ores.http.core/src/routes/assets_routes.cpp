@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/routes/assets_routes.hpp"
+#include "ores.http.core/routes/assets_routes.hpp"
 
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid_io.hpp>

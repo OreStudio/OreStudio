@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_SERVER_ROUTES_VARIABILITY_ROUTES_HPP
-#define ORES_HTTP_SERVER_ROUTES_VARIABILITY_ROUTES_HPP
+#ifndef ORES_HTTP_CORE_ROUTES_VARIABILITY_ROUTES_HPP
+#define ORES_HTTP_CORE_ROUTES_VARIABILITY_ROUTES_HPP
 
 #include <memory>
 #include "ores.http/net/router.hpp"
 #include "ores.http/openapi/endpoint_registry.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.iam.core/service/auth_session_service.hpp"
+#include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::http_server::routes {

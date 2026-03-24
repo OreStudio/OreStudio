@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_HTTP_SERVER_ROUTES_IAM_ROUTES_HPP
-#define ORES_HTTP_SERVER_ROUTES_IAM_ROUTES_HPP
+#ifndef ORES_HTTP_CORE_ROUTES_IAM_ROUTES_HPP
+#define ORES_HTTP_CORE_ROUTES_IAM_ROUTES_HPP
 
 #include <memory>
 #include <expected>
@@ -31,7 +31,7 @@
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.iam.core/service/auth_session_service.hpp"
+#include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.logging/make_logger.hpp"

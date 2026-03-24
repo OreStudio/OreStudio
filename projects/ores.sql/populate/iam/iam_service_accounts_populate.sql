@@ -25,135 +25,127 @@
  * Service accounts belong to the system tenant and cannot login with passwords.
  * They authenticate by creating sessions directly at startup.
  *
- * Account names match database user names from setup_user.sql for consistency.
+ * Account names match the environment-scoped database user names from
+ * setup_user.sql (e.g. ores_local2_iam_service).
+ *
+ * Required psql variables (set by setup_database.sh / recreate_database.sh):
+ *   :ddl_user, :cli_user, :wt_user, :comms_user, :http_user,
+ *   :test_ddl_user, :test_dml_user,
+ *   :iam_service_user, :refdata_service_user, :dq_service_user,
+ *   :variability_service_user, :assets_service_user,
+ *   :synthetic_service_user, :scheduler_service_user,
+ *   :reporting_service_user, :telemetry_service_user,
+ *   :trading_service_user, :compute_service_user
  *
  * This script is idempotent.
  */
 
 \echo '--- Service Accounts ---'
 
--- DDL user for schema migrations
 select ores_iam_service_accounts_upsert_fn(
-    'ores_ddl_user',
+    :'ddl_user',
     'ddl@system.ores',
     'System service account for DDL operations and schema migrations'
 );
 
--- CLI user for command-line operations
 select ores_iam_service_accounts_upsert_fn(
-    'ores_cli_user',
+    :'cli_user',
     'cli@system.ores',
     'System service account for CLI operations'
 );
 
--- Wt user for web application
 select ores_iam_service_accounts_upsert_fn(
-    'ores_wt_user',
+    :'wt_user',
     'wt@system.ores',
     'System service account for Wt web application'
 );
 
--- Comms user for binary protocol server
 select ores_iam_service_accounts_upsert_fn(
-    'ores_comms_user',
+    :'comms_user',
     'comms@system.ores',
     'System service account for binary protocol server'
 );
 
--- HTTP user for REST API server
 select ores_iam_service_accounts_upsert_fn(
-    'ores_http_user',
+    :'http_user',
     'http@system.ores',
     'System service account for HTTP REST API server'
 );
 
--- Test DDL user for test schema operations
 select ores_iam_service_accounts_upsert_fn(
-    'ores_test_ddl_user',
+    :'test_ddl_user',
     'test_ddl@system.ores',
     'System service account for test DDL operations'
 );
 
--- Test DML user for test data operations
 select ores_iam_service_accounts_upsert_fn(
-    'ores_test_dml_user',
+    :'test_dml_user',
     'test_dml@system.ores',
     'System service account for test DML operations'
 );
 
--- IAM domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_iam_service',
+    :'iam_service_user',
     'iam_service@system.ores',
     'System service account for IAM NATS domain service'
 );
 
--- Reference Data domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_refdata_service',
+    :'refdata_service_user',
     'refdata_service@system.ores',
     'System service account for Reference Data NATS domain service'
 );
 
--- Data Quality domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_dq_service',
+    :'dq_service_user',
     'dq_service@system.ores',
     'System service account for Data Quality NATS domain service'
 );
 
--- Variability domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_variability_service',
+    :'variability_service_user',
     'variability_service@system.ores',
     'System service account for Variability NATS domain service'
 );
 
--- Assets domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_assets_service',
+    :'assets_service_user',
     'assets_service@system.ores',
     'System service account for Assets NATS domain service'
 );
 
--- Synthetic domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_synthetic_service',
+    :'synthetic_service_user',
     'synthetic_service@system.ores',
     'System service account for Synthetic NATS domain service'
 );
 
--- Scheduler domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_scheduler_service',
+    :'scheduler_service_user',
     'scheduler_service@system.ores',
     'System service account for Scheduler NATS domain service'
 );
 
--- Reporting domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_reporting_service',
+    :'reporting_service_user',
     'reporting_service@system.ores',
     'System service account for Reporting NATS domain service'
 );
 
--- Telemetry domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_telemetry_service',
+    :'telemetry_service_user',
     'telemetry_service@system.ores',
     'System service account for Telemetry NATS domain service'
 );
 
--- Trading domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_trading_service',
+    :'trading_service_user',
     'trading_service@system.ores',
     'System service account for Trading NATS domain service'
 );
 
--- Compute domain service
 select ores_iam_service_accounts_upsert_fn(
-    'ores_compute_service',
+    :'compute_service_user',
     'compute_service@system.ores',
     'System service account for Compute Grid NATS domain service'
 );

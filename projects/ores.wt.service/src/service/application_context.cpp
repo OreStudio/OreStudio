@@ -19,7 +19,6 @@
  */
 #include "ores.wt.service/service/application_context.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/service/bootstrap_mode_service.hpp"
@@ -64,7 +63,7 @@ void application_context::initialize(const database::database_options& db_opts) 
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1,
-        .service_account = std::string(ores::database::service::service_accounts::wt)
+        .service_account = db_opts.user
     };
 
     db_context_ = std::make_unique<database::context>(

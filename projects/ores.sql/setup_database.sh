@@ -29,14 +29,29 @@
 # Usage:
 #   ./setup_database.sh <db_name> [--skip-validation]
 #
-# Environment variables:
+# Environment variables (read from .env or exported by caller):
 #   PGPASSWORD              Password for the postgres superuser (must be exported)
+#   ORES_DB_OWNER_ROLE      Owner group role name (env-prefixed)
+#   ORES_DB_RW_ROLE         Read-write group role name (env-prefixed)
+#   ORES_DB_RO_ROLE         Read-only group role name (env-prefixed)
+#   ORES_DB_DDL_USER        DDL database user name (env-prefixed)
 #   ORES_DB_DDL_PASSWORD    Password for the DDL database user
 #   ORES_BUILD_ENVIRONMENT  Build environment label (default: local)
+#   (plus all service user names — see init-environment.sh)
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CHECKOUT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# Source .env if present (provides role names and passwords)
+ENV_FILE="${CHECKOUT_ROOT}/.env"
+if [[ -f "${ENV_FILE}" ]]; then
+    set -o allexport
+    # shellcheck source=/dev/null
+    source "${ENV_FILE}"
+    set +o allexport
+fi
 
 DB_NAME="$1"
 SKIP_VALIDATION="off"
@@ -53,11 +68,28 @@ for arg in "${@:2}"; do
     esac
 done
 
+DDL_USER="${ORES_DB_DDL_USER:-}"
+if [[ -z "${DDL_USER}" ]]; then
+    echo "Error: ORES_DB_DDL_USER must be set" >&2
+    exit 1
+fi
+
 DDL_PASSWORD="${ORES_DB_DDL_PASSWORD:-}"
 if [[ -z "${DDL_PASSWORD}" ]]; then
     echo "Error: ORES_DB_DDL_PASSWORD must be set" >&2
     exit 1
 fi
+
+# Role names (required for GRANT statements in setup_schema.sql)
+OWNER_ROLE="${ORES_DB_OWNER_ROLE:-}"
+RW_ROLE="${ORES_DB_RW_ROLE:-}"
+RO_ROLE="${ORES_DB_RO_ROLE:-}"
+for var_name in OWNER_ROLE RW_ROLE RO_ROLE; do
+    if [[ -z "${!var_name}" ]]; then
+        echo "Error: ORES_DB_${var_name} must be set" >&2
+        exit 1
+    fi
+done
 
 # Phase 1: Create database, extensions, and schema grants (postgres superuser)
 echo "--- Phase 1: Creating database ${DB_NAME} ---"
@@ -66,16 +98,41 @@ psql \
     -U postgres \
     --set ON_ERROR_STOP=on \
     -v db_name="${DB_NAME}" \
+    -v owner_role="${OWNER_ROLE}" \
+    -v rw_role="${RW_ROLE}" \
+    -v ro_role="${RO_ROLE}" \
+    -v ddl_user="${DDL_USER}" \
     -f "${SCRIPT_DIR}/create_database.sql"
 
 # Phase 2: Create tables, populate seed data, grant permissions (DDL user)
 echo "--- Phase 2: Setting up schema ---"
 PGPASSWORD="${DDL_PASSWORD}" psql \
     -h localhost \
-    -U ores_ddl_user \
+    -U "${DDL_USER}" \
     -d "${DB_NAME}" \
     --set ON_ERROR_STOP=on \
     -v skip_validation="${SKIP_VALIDATION}" \
+    -v owner_role="${OWNER_ROLE}" \
+    -v rw_role="${RW_ROLE}" \
+    -v ro_role="${RO_ROLE}" \
+    -v ddl_user="${DDL_USER}" \
+    -v cli_user="${ORES_DB_CLI_USER:-}" \
+    -v wt_user="${ORES_DB_WT_USER:-}" \
+    -v comms_user="${ORES_DB_COMMS_USER:-}" \
+    -v http_user="${ORES_DB_HTTP_USER:-}" \
+    -v test_ddl_user="${ORES_TEST_DB_DDL_USER:-}" \
+    -v test_dml_user="${ORES_TEST_DB_USER:-}" \
+    -v iam_service_user="${ORES_IAM_SERVICE_DB_USER:-}" \
+    -v refdata_service_user="${ORES_REFDATA_SERVICE_DB_USER:-}" \
+    -v dq_service_user="${ORES_DQ_SERVICE_DB_USER:-}" \
+    -v variability_service_user="${ORES_VARIABILITY_SERVICE_DB_USER:-}" \
+    -v assets_service_user="${ORES_ASSETS_SERVICE_DB_USER:-}" \
+    -v synthetic_service_user="${ORES_SYNTHETIC_SERVICE_DB_USER:-}" \
+    -v scheduler_service_user="${ORES_SCHEDULER_SERVICE_DB_USER:-}" \
+    -v reporting_service_user="${ORES_REPORTING_SERVICE_DB_USER:-}" \
+    -v telemetry_service_user="${ORES_TELEMETRY_SERVICE_DB_USER:-}" \
+    -v trading_service_user="${ORES_TRADING_SERVICE_DB_USER:-}" \
+    -v compute_service_user="${ORES_COMPUTE_SERVICE_DB_USER:-}" \
     -f "${SCRIPT_DIR}/setup_schema.sql"
 
 # Phase 3: Insert database metadata (schema version, build info, git info)

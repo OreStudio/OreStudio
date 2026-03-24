@@ -42,6 +42,28 @@ Population scripts are automatically run as part of database recreation.
 
 Passwords are read from environment variables (set via .env or CI environment):
     PGPASSWORD                          Password for the postgres superuser
+    ORES_DB_OWNER_ROLE                  Owner group role name (env-prefixed)
+    ORES_DB_RW_ROLE                     Read-write group role name (env-prefixed)
+    ORES_DB_RO_ROLE                     Read-only group role name (env-prefixed)
+    ORES_DB_DDL_USER                    DDL database user name (env-prefixed)
+    ORES_DB_CLI_USER                    CLI database user name (env-prefixed)
+    ORES_DB_WT_USER                     Web Toolkit database user name (env-prefixed)
+    ORES_DB_COMMS_USER                  Communications database user name (env-prefixed)
+    ORES_DB_HTTP_USER                   HTTP database user name (env-prefixed)
+    ORES_DB_READONLY_USER               Read-only database user name (env-prefixed)
+    ORES_TEST_DB_DDL_USER               Test DDL database user name (env-prefixed)
+    ORES_TEST_DB_USER                   Test DML database user name (env-prefixed)
+    ORES_IAM_SERVICE_DB_USER            IAM domain service user name (env-prefixed)
+    ORES_REFDATA_SERVICE_DB_USER        Reference Data domain service user name
+    ORES_DQ_SERVICE_DB_USER             Data Quality domain service user name
+    ORES_VARIABILITY_SERVICE_DB_USER    Variability domain service user name
+    ORES_ASSETS_SERVICE_DB_USER         Assets domain service user name
+    ORES_SYNTHETIC_SERVICE_DB_USER      Synthetic domain service user name
+    ORES_SCHEDULER_SERVICE_DB_USER      Scheduler domain service user name
+    ORES_REPORTING_SERVICE_DB_USER      Reporting domain service user name
+    ORES_TELEMETRY_SERVICE_DB_USER      Telemetry domain service user name
+    ORES_TRADING_SERVICE_DB_USER        Trading domain service user name
+    ORES_COMPUTE_SERVICE_DB_USER        Compute domain service user name
     ORES_DB_DDL_PASSWORD                Password for the DDL database user
     ORES_DB_CLI_PASSWORD                Password for the CLI database user
     ORES_DB_WT_PASSWORD                 Password for the Web Toolkit database user
@@ -101,9 +123,31 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Validate required passwords are present in the environment
+# Validate required user names and passwords are present in the environment
 MISSING_PASSWORDS=()
 [[ -z "${PGPASSWORD:-}" ]] && MISSING_PASSWORDS+=("PGPASSWORD")
+[[ -z "${ORES_DB_OWNER_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_OWNER_ROLE")
+[[ -z "${ORES_DB_RW_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_RW_ROLE")
+[[ -z "${ORES_DB_RO_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_RO_ROLE")
+[[ -z "${ORES_DB_DDL_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_DDL_USER")
+[[ -z "${ORES_DB_CLI_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_CLI_USER")
+[[ -z "${ORES_DB_WT_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_WT_USER")
+[[ -z "${ORES_DB_COMMS_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_COMMS_USER")
+[[ -z "${ORES_DB_HTTP_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_HTTP_USER")
+[[ -z "${ORES_DB_READONLY_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_READONLY_USER")
+[[ -z "${ORES_TEST_DB_DDL_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_DDL_USER")
+[[ -z "${ORES_TEST_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_USER")
+[[ -z "${ORES_IAM_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_IAM_SERVICE_DB_USER")
+[[ -z "${ORES_REFDATA_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_REFDATA_SERVICE_DB_USER")
+[[ -z "${ORES_DQ_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DQ_SERVICE_DB_USER")
+[[ -z "${ORES_VARIABILITY_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_VARIABILITY_SERVICE_DB_USER")
+[[ -z "${ORES_ASSETS_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_ASSETS_SERVICE_DB_USER")
+[[ -z "${ORES_SYNTHETIC_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_SYNTHETIC_SERVICE_DB_USER")
+[[ -z "${ORES_SCHEDULER_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_SCHEDULER_SERVICE_DB_USER")
+[[ -z "${ORES_REPORTING_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_REPORTING_SERVICE_DB_USER")
+[[ -z "${ORES_TELEMETRY_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TELEMETRY_SERVICE_DB_USER")
+[[ -z "${ORES_TRADING_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TRADING_SERVICE_DB_USER")
+[[ -z "${ORES_COMPUTE_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_COMPUTE_SERVICE_DB_USER")
 [[ -z "${ORES_DB_DDL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_DDL_PASSWORD")
 [[ -z "${ORES_DB_CLI_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_CLI_PASSWORD")
 [[ -z "${ORES_DB_WT_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_WT_PASSWORD")
@@ -189,6 +233,28 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -h localhost \
     -f ./recreate_database.sql \
     -U postgres \
+    -v owner_role="${ORES_DB_OWNER_ROLE}" \
+    -v rw_role="${ORES_DB_RW_ROLE}" \
+    -v ro_role="${ORES_DB_RO_ROLE}" \
+    -v ddl_user="${ORES_DB_DDL_USER}" \
+    -v cli_user="${ORES_DB_CLI_USER}" \
+    -v wt_user="${ORES_DB_WT_USER}" \
+    -v comms_user="${ORES_DB_COMMS_USER}" \
+    -v http_user="${ORES_DB_HTTP_USER}" \
+    -v readonly_user="${ORES_DB_READONLY_USER}" \
+    -v test_ddl_user="${ORES_TEST_DB_DDL_USER}" \
+    -v test_dml_user="${ORES_TEST_DB_USER}" \
+    -v iam_service_user="${ORES_IAM_SERVICE_DB_USER}" \
+    -v refdata_service_user="${ORES_REFDATA_SERVICE_DB_USER}" \
+    -v dq_service_user="${ORES_DQ_SERVICE_DB_USER}" \
+    -v variability_service_user="${ORES_VARIABILITY_SERVICE_DB_USER}" \
+    -v assets_service_user="${ORES_ASSETS_SERVICE_DB_USER}" \
+    -v synthetic_service_user="${ORES_SYNTHETIC_SERVICE_DB_USER}" \
+    -v scheduler_service_user="${ORES_SCHEDULER_SERVICE_DB_USER}" \
+    -v reporting_service_user="${ORES_REPORTING_SERVICE_DB_USER}" \
+    -v telemetry_service_user="${ORES_TELEMETRY_SERVICE_DB_USER}" \
+    -v trading_service_user="${ORES_TRADING_SERVICE_DB_USER}" \
+    -v compute_service_user="${ORES_COMPUTE_SERVICE_DB_USER}" \
     -v ddl_password="${ORES_DB_DDL_PASSWORD}" \
     -v cli_password="${ORES_DB_CLI_PASSWORD}" \
     -v wt_password="${ORES_DB_WT_PASSWORD}" \

@@ -38,7 +38,7 @@ usage() {
 Usage: $(basename "$0") -e ENVIRONMENT [OPTIONS]
 
 Recreates an environment-specific database (ores_dev_<environment>).
-Uses two-phase creation: postgres creates the database, ores_ddl_user sets up schema.
+Uses two-phase creation: postgres creates the database, the DDL user sets up the schema.
 
 Required arguments:
     -e, --env ENVIRONMENT               Environment name (e.g., local1, local2, remote)
@@ -166,8 +166,9 @@ echo "=========================================="
 echo "  Recreation complete: ${DB_NAME}"
 echo "=========================================="
 echo ""
+CLI_USER="${ORES_DB_CLI_USER:-ores_cli_user}"
 echo "Connect with:"
-echo "  psql -U ores_cli_user -d ${DB_NAME}"
+echo "  psql -U ${CLI_USER} -d ${DB_NAME}"
 echo ""
 echo "Or set in your environment:"
 echo "  export ORES_DATABASE=${DB_NAME}"

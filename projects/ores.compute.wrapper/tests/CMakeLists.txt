@@ -41,7 +41,7 @@ target_link_libraries(${tests_target_name}
 
 add_custom_target(test_${tests_target_name}
     COMMENT "Testing ${tests_target_name}" VERBATIM
-    COMMAND $<TARGET_FILE:${tests_binary_name}>
+    COMMAND ${ORES_TEST_ENV_CMD} $<TARGET_FILE:${tests_binary_name}>
     WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     DEPENDS ${tests_target_name})
 

@@ -153,6 +153,11 @@ else()
     message(STATUS "Test logging: DISABLED (use -DORES_TEST_LOG_LEVEL=debug to enable)")
 endif()
 
+# Command prefix for add_custom_target test runners: injects the test
+# environment variables via "cmake -E env VAR=val ... --". This ensures
+# tests launched by "make rat" see the same credentials as CTest-based runs.
+set(ORES_TEST_ENV_CMD ${CMAKE_COMMAND} -E env ${ORES_TEST_ENV} --)
+
 #
 # c++ standard.
 #

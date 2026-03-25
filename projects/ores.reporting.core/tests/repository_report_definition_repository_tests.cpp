@@ -18,6 +18,7 @@
  *
  */
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.reporting.core/repository/report_type_repository.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -48,6 +49,19 @@ boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
     return parties.front().id;
 }
 
+/**
+ * @brief Fetches the first available report type code from the test database.
+ *
+ * report_definition.report_type is a FK to the report_types table so all
+ * writes need a real code that was seeded by the test infrastructure.
+ */
+std::string get_test_report_type(ores::testing::database_helper& h) {
+    ores::reporting::repository::report_type_repository rt_repo;
+    auto types = rt_repo.read_latest(h.context());
+    REQUIRE(!types.empty());
+    return types.front().code;
+}
+
 }
 
 using namespace ores::logging;
@@ -62,10 +76,12 @@ TEST_CASE("write_single_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
+    const auto report_type = get_test_report_type(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
     rd.party_id = party_id;
+    rd.report_type = report_type;
 
     BOOST_LOG_SEV(lg, debug) << "Report definition: " << rd;
     CHECK_NOTHROW(repo.write(h.context(), rd));
@@ -77,11 +93,14 @@ TEST_CASE("write_multiple_report_definitions", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
+    const auto report_type = get_test_report_type(h);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
-    for (auto& d : definitions)
+    for (auto& d : definitions) {
         d.party_id = party_id;
+        d.report_type = report_type;
+    }
     BOOST_LOG_SEV(lg, debug) << "Report definitions: " << definitions;
 
     CHECK_NOTHROW(repo.write(h.context(), definitions));
@@ -93,11 +112,14 @@ TEST_CASE("read_latest_report_definitions", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
+    const auto report_type = get_test_report_type(h);
 
     report_definition_repository repo;
     auto written = generate_synthetic_report_definitions(3, ctx);
-    for (auto& d : written)
+    for (auto& d : written) {
         d.party_id = party_id;
+        d.report_type = report_type;
+    }
     BOOST_LOG_SEV(lg, debug) << "Written definitions: " << written;
     repo.write(h.context(), written);
 
@@ -114,11 +136,14 @@ TEST_CASE("read_latest_report_definition_by_id", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
+    const auto report_type = get_test_report_type(h);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
-    for (auto& d : definitions)
+    for (auto& d : definitions) {
         d.party_id = party_id;
+        d.report_type = report_type;
+    }
     const auto target = definitions.front();
     BOOST_LOG_SEV(lg, debug) << "Written definitions: " << definitions;
     repo.write(h.context(), definitions);
@@ -137,10 +162,12 @@ TEST_CASE("read_all_versions_of_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
+    const auto report_type = get_test_report_type(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
     rd.party_id = party_id;
+    rd.report_type = report_type;
     repo.write(h.context(), rd);
 
     rd.version = 1;
@@ -159,10 +186,12 @@ TEST_CASE("remove_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
+    const auto report_type = get_test_report_type(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
     rd.party_id = party_id;
+    rd.report_type = report_type;
     repo.write(h.context(), rd);
 
     const auto rd_id = boost::uuids::to_string(rd.id);

@@ -50,7 +50,7 @@ TEST_CASE("concurrency_policy_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("concurrency_policy_generator_produces_multiple_instances", tags) {
@@ -78,7 +78,7 @@ TEST_CASE("report_type_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("report_type_generator_produces_multiple_instances", tags) {
@@ -106,7 +106,7 @@ TEST_CASE("report_definition_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("report_definition_generator_produces_multiple_instances", tags) {
@@ -134,7 +134,7 @@ TEST_CASE("report_instance_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("report_instance_generator_produces_multiple_instances", tags) {

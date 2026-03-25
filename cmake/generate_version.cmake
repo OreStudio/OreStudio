@@ -15,17 +15,19 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-# Called by add_custom_target on every build to stamp version.hpp with the
-# current timestamp. Uses copy_if_different so that files including version.hpp
-# are only recompiled when the timestamp string actually changes.
+# Called by add_custom_target on every build to stamp version.cpp with the
+# current git hash and wall-clock timestamp. Uses copy_if_different so that
+# the file's mtime (and therefore recompilation) is stable when nothing has
+# changed. Only version.cpp itself is recompiled per build; all other TUs
+# that include the stable version.hpp are unaffected.
 #
 # Required input variables (passed with -D):
-#   SOURCE_DIR                - project root (for git and .in file)
+#   SOURCE_DIR                - project root (for git commands)
 #   OreStudio_VERSION_MAJOR   - major version number
 #   OreStudio_VERSION_MINOR   - minor version number
 #   OreStudio_VERSION_PATCH   - patch version number
-#   INPUT_FILE                - path to version.hpp.in
-#   OUTPUT_FILE               - path to generated version.hpp
+#   INPUT_FILE                - path to version.cpp.in
+#   OUTPUT_FILE               - path to generated version.cpp
 
 cmake_minimum_required(VERSION 3.21)
 
@@ -42,9 +44,12 @@ if(DEFINED ENV{ORES_BUILD_PROVIDER} AND
     set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '$ENV{ORES_BUILD_TIMESTAMP}'")
 
 else()
-    # Local build: combine git commit (run at build time) with current clock.
-    string(TIMESTAMP NOW "%Y/%m/%d %H:%M:%S")
-
+    # Local build: embed git commit hash and dirty flag only. The wall-clock
+    # build time is read at runtime from the executable's own mtime so there
+    # is no reason to stamp it here. This keeps the generated content stable
+    # between commits, meaning copy_if_different below will skip the write
+    # (and therefore skip recompilation) on every build where git state has
+    # not changed.
     find_program(GIT_EXECUTABLE git)
     if(GIT_EXECUTABLE)
         execute_process(
@@ -66,12 +71,12 @@ else()
             if(NOT "${GIT_STATUS}" STREQUAL "")
                 set(GIT_COMMIT_SHORT "${GIT_COMMIT_SHORT}-dirty")
             endif()
-            set(ORES_BUILD_INFO "local ${GIT_COMMIT_SHORT} ${NOW}")
+            set(ORES_BUILD_INFO "local ${GIT_COMMIT_SHORT}")
         else()
-            set(ORES_BUILD_INFO "local ${NOW}")
+            set(ORES_BUILD_INFO "local unknown")
         endif()
     else()
-        set(ORES_BUILD_INFO "local ${NOW}")
+        set(ORES_BUILD_INFO "local unknown")
     endif()
 endif()
 

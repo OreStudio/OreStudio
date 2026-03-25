@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
     splash.show();
 
     const int splashDuration = 3000; // ms
-    const QString buildInfo = QString("v%1 %2").arg(ORES_VERSION).arg(ORES_BUILD_INFO);
+    const QString buildInfo = QString("v%1 %2").arg(ORES_VERSION).arg(ores::utility::version::build_info());
     splash.setMessage(buildInfo);
 
     ores::qt::MainWindow mainWindow;

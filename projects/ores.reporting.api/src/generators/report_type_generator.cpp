@@ -35,13 +35,13 @@ domain::report_type generate_synthetic_report_type(
 
     domain::report_type r;
     r.version = 1;
-    r.code = "report_type_" + std::to_string(++counter);
+    r.code = "gen_report_type_" + std::to_string(++counter);
     r.name = std::string(faker::word::adjective()) + " Report";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

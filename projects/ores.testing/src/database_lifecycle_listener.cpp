@@ -48,7 +48,7 @@ testRunStarting(Catch::TestRunInfo const& testRunInfo) {
 
         // Build human-readable description with version info
         std::ostringstream desc;
-        desc << "v" << ORES_VERSION << " (" << ORES_BUILD_INFO << ")";
+        desc << "v" << ORES_VERSION << " (" << ores::utility::version::build_info() << ")";
         const auto description = desc.str();
 
         // Provision the test tenant (copies refdata from system tenant)

@@ -57,7 +57,7 @@ TEST_CASE("trade_type_generator_produces_valid_instance", tags) {
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("trade_type_generator_produces_multiple_instances", tags) {
@@ -85,7 +85,7 @@ TEST_CASE("activity_type_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.code.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("activity_type_generator_produces_multiple_instances", tags) {
@@ -114,7 +114,7 @@ TEST_CASE("fpml_event_type_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("fpml_event_type_generator_produces_multiple_instances", tags) {
@@ -143,7 +143,7 @@ TEST_CASE("lifecycle_event_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("lifecycle_event_generator_produces_multiple_instances", tags) {
@@ -172,7 +172,7 @@ TEST_CASE("party_role_type_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("party_role_type_generator_produces_multiple_instances", tags) {
@@ -201,7 +201,7 @@ TEST_CASE("trade_id_type_generator_produces_valid_instance", tags) {
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("trade_id_type_generator_produces_multiple_instances", tags) {
@@ -230,7 +230,7 @@ TEST_CASE("trade_generator_produces_valid_instance", tags) {
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(!sut.performed_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("trade_generator_produces_multiple_instances", tags) {
@@ -259,7 +259,7 @@ TEST_CASE("trade_identifier_generator_produces_valid_instance", tags) {
     CHECK(!sut.id.is_nil());
     CHECK(!sut.id_value.empty());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("trade_identifier_generator_produces_multiple_instances", tags) {
@@ -287,7 +287,7 @@ TEST_CASE("trade_party_role_generator_produces_valid_instance", tags) {
     CHECK(sut.version == 1);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
-    CHECK(sut.change_reason_code == "system.new");
+    CHECK(sut.change_reason_code == "system.test");
 }
 
 TEST_CASE("trade_party_role_generator_produces_multiple_instances", tags) {

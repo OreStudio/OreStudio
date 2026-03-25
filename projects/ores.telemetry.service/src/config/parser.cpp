@@ -34,7 +34,7 @@ namespace {
 
 const std::string more_information("Try '--help' for more information.");
 const std::string product_version("ores.telemetry.service v" ORES_VERSION);
-const std::string build_info(ORES_BUILD_INFO);
+const std::string build_info(ores::utility::version::build_info());
 const std::string usage_error_msg("Usage error: ");
 const std::string help_arg("help");
 const std::string version_arg("version");

@@ -51,7 +51,7 @@ domain::trade generate_synthetic_trade(
     r.termination_date = std::string("2026-01-15");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
-    r.change_reason_code = "system.new";
+    r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
     r.recorded_at = ctx.past_timepoint();
     return r;

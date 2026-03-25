@@ -424,7 +424,7 @@ void LoginDialog::setupActions(QVBoxLayout* layout, QWidget* parent) {
 void LoginDialog::setupFooter(QVBoxLayout* layout, QWidget* parent) {
     QString versionText = QString("v%1  %2")
         .arg(ORES_VERSION)
-        .arg(QString::fromStdString(ORES_BUILD_INFO));
+        .arg(QString::fromStdString(ores::utility::version::build_info()));
     auto* versionLabel = new QLabel(versionText, parent);
     versionLabel->setStyleSheet(dialog_styles::version);
     layout->addWidget(versionLabel, 0, Qt::AlignCenter);

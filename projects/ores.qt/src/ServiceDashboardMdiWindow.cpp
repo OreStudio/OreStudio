@@ -20,6 +20,7 @@
 #include "ores.qt/ServiceDashboardMdiWindow.hpp"
 
 #include <chrono>
+#include <QDateTime>
 #include <QtConcurrent>
 #include <QFutureWatcher>
 #include <QPointer>
@@ -27,10 +28,12 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
+#include "ores.compute.api/messaging/telemetry_protocol.hpp"
 
 namespace ores::qt {
 
 using namespace ores::logging;
+namespace compute = ores::compute;
 
 namespace {
 
@@ -38,6 +41,11 @@ struct ServiceSamplesResult {
     bool success{false};
     QString error;
     std::vector<telemetry::domain::service_sample> samples;
+    // Grid stats for wrapper node row (optional — absent if compute service unavailable)
+    bool has_grid_stats{false};
+    int total_hosts{0};
+    int online_hosts{0};
+    std::chrono::system_clock::time_point grid_sampled_at;
 };
 
 }
@@ -146,6 +154,25 @@ void ServiceDashboardMdiWindow::loadSamples() {
             ServiceSamplesResult r;
             r.success = true;
             r.samples = resp->samples;
+
+            // Fetch grid stats for the wrapper node row (best-effort).
+            try {
+                auto grid = self->clientManager_->process_authenticated_request(
+                    compute::messaging::get_grid_stats_request{});
+                if (grid && grid->success) {
+                    r.has_grid_stats = true;
+                    r.total_hosts    = grid->total_hosts;
+                    r.online_hosts   = grid->online_hosts;
+                    const auto qdt = QDateTime::fromString(
+                        QString::fromStdString(grid->sampled_at), Qt::ISODate);
+                    if (qdt.isValid())
+                        r.grid_sampled_at = std::chrono::system_clock::from_time_t(
+                            qdt.toSecsSinceEpoch());
+                }
+            } catch (...) {
+                // Compute service unavailable — omit the wrapper row.
+            }
+
             return r;
         });
 
@@ -171,8 +198,10 @@ void ServiceDashboardMdiWindow::loadSamples() {
 
         const auto now = std::chrono::system_clock::now();
 
+        const int extra_rows = result.has_grid_stats ? 1 : 0;
         self->table_->setSortingEnabled(false);
-        self->table_->setRowCount(static_cast<int>(result.samples.size()));
+        self->table_->setRowCount(
+            static_cast<int>(result.samples.size()) + extra_rows);
 
         int row = 0;
         for (const auto& sample : result.samples) {
@@ -226,6 +255,58 @@ void ServiceDashboardMdiWindow::loadSamples() {
             self->table_->setItem(row, 4, makeItem(last_seen));
 
             ++row;
+        }
+
+        // Wrapper nodes row
+        if (result.has_grid_stats) {
+            using namespace std::chrono;
+            const auto age_secs = duration_cast<seconds>(
+                now - result.grid_sampled_at).count();
+
+            QString status_text;
+            QColor  status_color;
+            if (result.online_hosts > 0 && age_secs < 90) {
+                status_text  = tr("Green");
+                status_color = badge_colors::online;
+            } else if (result.total_hosts > 0) {
+                status_text  = tr("Amber");
+                status_color = badge_colors::old;
+            } else {
+                status_text  = tr("Red");
+                status_color = badge_colors::locked;
+            }
+
+            auto makeItem = [](const QString& text) {
+                auto* item = new QTableWidgetItem(text);
+                item->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+                return item;
+            };
+
+            auto* statusItem = new QTableWidgetItem(status_text);
+            statusItem->setTextAlignment(Qt::AlignCenter);
+            statusItem->setForeground(status_color);
+            QFont f = statusItem->font();
+            f.setBold(true);
+            statusItem->setFont(f);
+
+            const QString instance_text =
+                tr("%1 node(s), %2 online")
+                    .arg(result.total_hosts)
+                    .arg(result.online_hosts);
+
+            QString last_seen;
+            if (age_secs < 60)
+                last_seen = tr("%1s ago").arg(age_secs);
+            else if (age_secs < 3600)
+                last_seen = tr("%1m ago").arg(age_secs / 60);
+            else
+                last_seen = tr("%1h ago").arg(age_secs / 3600);
+
+            self->table_->setItem(row, 0, statusItem);
+            self->table_->setItem(row, 1, makeItem(tr("ores.compute.wrapper")));
+            self->table_->setItem(row, 2, makeItem(instance_text));
+            self->table_->setItem(row, 3, makeItem(tr("-")));
+            self->table_->setItem(row, 4, makeItem(last_seen));
         }
 
         self->table_->setSortingEnabled(true);

@@ -243,7 +243,8 @@ launch ores.http.server \
     --log-directory ../log \
     --port "$HTTP_PORT" \
     --nats-url "$NATS_URL" \
-    --nats-subject-prefix "$NATS_PREFIX"
+    --nats-subject-prefix "$NATS_PREFIX" \
+    --compute-storage-dir ../compute
 echo ""
 
 # 4. WT server

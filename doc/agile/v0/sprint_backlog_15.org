@@ -17,44 +17,43 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-24 Tue 22:42], for Tuesday, March 24, 2026.
-|       | <75>                                               |        |      |      |       |
-| Tags  | Headline                                           | Time   |      |      |     % |
-|-------+----------------------------------------------------+--------+------+------+-------|
-|       | *Total time*                                       | *1:40* |      |      | 100.0 |
-|-------+----------------------------------------------------+--------+------+------+-------|
-|       | Stories                                            | 1:40   |      |      | 100.0 |
-|       | Active                                             |        | 1:40 |      | 100.0 |
-| agile | Sprint and product backlog refinement              |        |      | 0:34 |  34.0 |
-| code  | Fix missing tenant_id in system settings tests     |        |      | 0:30 |  30.0 |
-| code  | Fix sccache cache bloat causing slow/cold builds   |        |      | 0:30 |  30.0 |
-| code  | Move generators to api layer and split http.server |        |      | 0:06 |   6.0 |
+#+CAPTION: Clock summary at [2026-03-25 Wed 17:04], for Wednesday, March 25, 2026.
+|      | <75>                                                    |        |      |      |       |
+| Tags | Headline                                                | Time   |      |      |     % |
+|------+---------------------------------------------------------+--------+------+------+-------|
+|      | *Total time*                                            | *3:23* |      |      | 100.0 |
+|------+---------------------------------------------------------+--------+------+------+-------|
+|      | Stories                                                 | 3:23   |      |      | 100.0 |
+|      | Active                                                  |        | 3:23 |      | 100.0 |
+| code | Move generators to api layer and split http.server      |        |      | 2:49 |  83.3 |
+| code | Implement full environment isolation for database roles |        |      | 0:34 |  16.7 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-24 Tue 22:42]
+#+CAPTION: Clock summary at [2026-03-25 Wed 17:04]
 |       | <75>                                                     |         |       |      |       |
 | Tags  | Headline                                                 | Time    |       |      |     % |
 |-------+----------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                             | *56:47* |       |      | 100.0 |
+|       | *Total time*                                             | *61:29* |       |      | 100.0 |
 |-------+----------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                  | 56:47   |       |      | 100.0 |
-|       | Active                                                   |         | 56:47 |      | 100.0 |
-| agile | Sprint and product backlog refinement                    |         |       | 0:54 |   1.6 |
-| code  | Add BOINC-inspired distributed compute grid              |         |       | 7:03 |  12.4 |
-| code  | Fix ORE import bugs                                      |         |       | 6:35 |  11.6 |
-| code  | Add loading indicator to all entity list windows         |         |       | 2:49 |   5.0 |
-| code  | Replace =feature_flags= with unified system_settings     |         |       | 5:59 |  10.5 |
-| code  | Implement JWT refresh                                    |         |       | 3:16 |   5.8 |
-| code  | Add compute grid telemetry pipeline                      |         |       | 2:10 |   3.8 |
-| code  | Add service dashboard with live RAG status               |         |       | 2:49 |   5.0 |
-| code  | E2E compute testing fixes and loading lifecycle refactor |         |       | 8:43 |  15.4 |
-| code  | Add NATS service discovery for HTTP base URL             |         |       | 7:10 |  12.6 |
-| code  | Extract API from main component                          |         |       | 8:13 |  14.5 |
-| code  | Fix missing tenant_id in system settings tests           |         |       | 0:30 |   0.9 |
-| code  | Fix sccache cache bloat causing slow/cold builds         |         |       | 0:30 |   0.9 |
-| code  | Move generators to api layer and split http.server       |         |       | 0:06 |   0.2 |
+|       | Stories                                                  | 61:29   |       |      | 100.0 |
+|       | Active                                                   |         | 61:29 |      | 100.0 |
+| agile | Sprint and product backlog refinement                    |         |       | 0:54 |   1.5 |
+| code  | Add BOINC-inspired distributed compute grid              |         |       | 7:03 |  11.5 |
+| code  | Fix ORE import bugs                                      |         |       | 6:35 |  10.7 |
+| code  | Add loading indicator to all entity list windows         |         |       | 2:49 |   4.6 |
+| code  | Replace =feature_flags= with unified system_settings     |         |       | 5:59 |   9.7 |
+| code  | Implement JWT refresh                                    |         |       | 3:16 |   5.3 |
+| code  | Add compute grid telemetry pipeline                      |         |       | 2:10 |   3.5 |
+| code  | Add service dashboard with live RAG status               |         |       | 2:49 |   4.6 |
+| code  | E2E compute testing fixes and loading lifecycle refactor |         |       | 8:43 |  14.2 |
+| code  | Add NATS service discovery for HTTP base URL             |         |       | 7:10 |  11.7 |
+| code  | Extract API from main component                          |         |       | 8:13 |  13.4 |
+| code  | Fix missing tenant_id in system settings tests           |         |       | 0:30 |   0.8 |
+| code  | Fix sccache cache bloat causing slow/cold builds         |         |       | 0:30 |   0.8 |
+| code  | Move generators to api layer and split http.server       |         |       | 2:55 |   4.7 |
+| code  | Implement full environment isolation for database roles  |         |       | 1:53 |   3.1 |
 #+end:
 
 *** STARTED Sprint and product backlog refinement                     :agile:
@@ -754,9 +753,10 @@ Step timings from a recent failed canary run (run 23465294275):
   GitHub's per-entry limits).
 #+end_quote
 
-*** STARTED Move generators to api layer and split http.server         :code:
+*** COMPLETED Move generators to api layer and split http.server       :code:
     :LOGBOOK:
     CLOCK: [2026-03-24 Tue 22:35]--[2026-03-24 Tue 22:41] =>  0:06
+    CLOCK: [2026-03-25 Wed 13:40]--[2026-03-25 Wed 16:29] =>  2:49
     :END:
 
 #+begin_quote
@@ -790,6 +790,45 @@ Highlights:
   component.
 - New Dependency: Added faker-cxx::faker-cxx as a private dependency to the
   CMakeLists of affected api libraries to support generator functionality.
+#+end_quote
+
+*** COMPLETED Implement full environment isolation for database roles  :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-25 Wed 16:30]--[2026-03-25 Wed 17:04] =>  0:34
+    CLOCK: [2026-03-24 Tue 22:41]--[2026-03-25 Wed 00:00] =>  1:19
+    :END:
+
+#+begin_quote
+This pull request significantly enhances the system's robustness and
+maintainability by introducing full environment isolation for PostgreSQL
+database roles and users. This change prevents cross-environment contamination
+during development and testing. Alongside this, the PR includes substantial
+architectural refactoring, moving data generators and core HTTP components to
+more appropriate API layers, and relocating a key authentication service. These
+structural improvements streamline development workflows and ensure more
+reliable testing across different environments.
+
+Highlights:
+
+- Full Database Environment Isolation: Implemented environment-prefixed
+  PostgreSQL roles and users, ensuring that database operations for one
+  environment (e.g., local1) do not interfere with others (e.g., local2).
+- PostgreSQL Scripting Enhancements: Resolved issues with psql variable
+  substitution within DO blocks by utilizing set_config and current_setting for
+  robust scripting.
+- Improved Test Environment Setup: Introduced ORES_TEST_ENV_CMD to correctly
+  pass environment variables to custom test runners (make rat), ensuring
+  consistent test execution.
+- Architectural Refactoring of Generators: Relocated various data generators
+  from core to api layers across multiple services (IAM, Refdata, Trading,
+  Reporting, Compute), promoting better modularity and dependency management.
+- HTTP Core Extraction: Created a new ores.http.core module to house
+  domain-layer HTTP route handlers, separating concerns from the ores.http.api
+  module.
+- Service Relocation: Moved the auth_session_service from iam.core to iam.api to
+  resolve cyclic dependencies and improve the IAM module's structure.
+- Test Fixes: Addressed variability core tests that were failing due to missing
+  system tenant UUIDs.
 #+end_quote
 
 * Footer

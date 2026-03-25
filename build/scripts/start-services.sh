@@ -5,11 +5,11 @@
 #   ./build/scripts/start-services.sh [--preset PRESET] [--log-level LEVEL]
 #
 # Options:
-#   --preset PRESET      CMake preset name (default: linux-clang-debug-ninja)
+#   --preset PRESET      CMake preset name (overrides ORES_PRESET from .env)
 #   --log-level LEVEL    Log level: trace|debug|info|warn|error (default: trace)
 #
-# Environment:
-#   ORES_PRESET          Overrides the default preset (--preset takes priority)
+# The build preset defaults to ORES_PRESET in .env (set by init-environment.sh).
+# Use --preset to switch presets without re-running init-environment.sh.
 #
 # Services are started in dependency order: IAM first (JWKS provider), then
 # all other domain services in parallel, then HTTP and WT servers.
@@ -21,38 +21,26 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # --- Defaults ---
-PRESET="${ORES_PRESET:-linux-clang-debug-ninja}"
+PRESET_ARG=""
 LOG_LEVEL="trace"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --preset)    PRESET="$2";    shift 2 ;;
-        --log-level) LOG_LEVEL="$2"; shift 2 ;;
+        --preset)    [[ -z "${2:-}" || "$2" == -* ]] && { echo "error: $1 requires a value" >&2; exit 1; }; PRESET_ARG="$2"; shift 2 ;;
+        --log-level) [[ -z "${2:-}" || "$2" == -* ]] && { echo "error: $1 requires a value" >&2; exit 1; }; LOG_LEVEL="$2";  shift 2 ;;
         -h|--help)
-            sed -n '/^# /s/^# \?//p' "$0" | head -15
+            sed -n '/^# /s/^# \?//p' "$0" | head -13
             exit 0
             ;;
         *) echo "error: unknown option: $1"; exit 1 ;;
     esac
 done
 
-# --- Paths ---
-BUILD_DIR="$PROJECT_DIR/build/output/$PRESET"
-BIN_DIR="$BUILD_DIR/publish/bin"
-LOG_DIR="$BUILD_DIR/publish/log"
-RUN_DIR="$BUILD_DIR/publish/run"
-
-if [[ ! -d "$BIN_DIR" ]]; then
-    echo "error: binary directory not found: $BIN_DIR"
-    echo "       cmake --build --preset $PRESET"
-    exit 1
-fi
-
 # --- Load environment ---
 ENV_FILE="$PROJECT_DIR/.env"
 if [[ ! -f "$ENV_FILE" ]]; then
     echo "error: .env not found at $ENV_FILE"
-    echo "       ./build/scripts/init-environment.sh"
+    echo "       run: ./build/scripts/init-environment.sh --preset <preset>"
     exit 1
 fi
 
@@ -65,11 +53,30 @@ set -a
 source "$ENV_FILE"
 set +a
 
+# --preset flag takes priority; fall back to ORES_PRESET from .env.
+PRESET="${PRESET_ARG:-${ORES_PRESET:-}}"
+if [[ -z "$PRESET" ]]; then
+    echo "error: no preset — pass --preset <preset> or set ORES_PRESET via init-environment.sh"
+    exit 1
+fi
+
 # Override the JWT signing key from the PEM file (real newlines, not '\n').
 KEY_FILE="$PROJECT_DIR/build/keys/iam-rsa-private.pem"
 if [[ -f "$KEY_FILE" ]]; then
     ORES_IAM_SERVICE_JWT_PRIVATE_KEY="$(cat "$KEY_FILE")"
     export ORES_IAM_SERVICE_JWT_PRIVATE_KEY
+fi
+
+# --- Paths ---
+BUILD_DIR="$PROJECT_DIR/build/output/$PRESET"
+BIN_DIR="$BUILD_DIR/publish/bin"
+LOG_DIR="$BUILD_DIR/publish/log"
+RUN_DIR="$BUILD_DIR/publish/run"
+
+if [[ ! -d "$BIN_DIR" ]]; then
+    echo "error: binary directory not found: $BIN_DIR"
+    echo "       cmake --build --preset $PRESET"
+    exit 1
 fi
 
 mkdir -p "$LOG_DIR" "$RUN_DIR"
@@ -264,4 +271,4 @@ if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
 fi
 
 echo "Logs : $LOG_DIR"
-echo "Stop : ./build/scripts/stop-services.sh --preset $PRESET"
+echo "Stop : ./build/scripts/stop-services.sh"

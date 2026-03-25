@@ -113,30 +113,6 @@ namespace roles {
     constexpr auto viewer = "Viewer";
 }
 
-/**
- * @brief Well-known service account usernames used throughout the system.
- *
- * These names match the entries in iam_service_accounts_populate.sql and are
- * used as the modified_by actor when services write to the database.
- */
-namespace service_accounts {
-    constexpr auto ddl          = "ores_ddl_user";
-    constexpr auto cli          = "ores_cli_user";
-    constexpr auto wt           = "ores_wt_user";
-    constexpr auto comms        = "ores_comms_user";
-    constexpr auto http         = "ores_http_user";
-    constexpr auto iam          = "ores_iam_service";
-    constexpr auto refdata      = "ores_refdata_service";
-    constexpr auto dq           = "ores_dq_service";
-    constexpr auto variability  = "ores_variability_service";
-    constexpr auto assets       = "ores_assets_service";
-    constexpr auto synthetic    = "ores_synthetic_service";
-    constexpr auto scheduler    = "ores_scheduler_service";
-    constexpr auto reporting    = "ores_reporting_service";
-    constexpr auto telemetry    = "ores_telemetry_service";
-    constexpr auto trading      = "ores_trading_service";
-}
-
 }
 
 #endif

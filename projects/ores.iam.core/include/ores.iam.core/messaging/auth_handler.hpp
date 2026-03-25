@@ -37,7 +37,6 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
-#include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
@@ -183,7 +182,6 @@ public:
     void signup(ores::nats::message msg) {
         using namespace ores::logging;
         BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
-        namespace svc_acct = ores::iam::domain::service_accounts;
         auto req = decode<signup_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(auth_handler_lg(), warn)
@@ -196,7 +194,7 @@ public:
                 std::make_shared<service::authorization_service>(ctx_);
             service::account_setup_service setup_svc(acct_svc, auth_svc);
             auto acct = setup_svc.create_account(
-                req->principal, req->email, req->password, svc_acct::iam);
+                req->principal, req->email, req->password, ctx_.service_account());
             BOOST_LOG_SEV(auth_handler_lg(), debug)
                 << "Completed " << msg.subject;
             record_auth_event(ctx_, "signup_success", [&](auto& ev_repo) {

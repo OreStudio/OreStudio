@@ -29,7 +29,6 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
-#include "ores.iam.api/domain/role.hpp"
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_party_service.hpp"
@@ -155,7 +154,6 @@ public:
         using namespace ores::logging;
         BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
             << "Handling " << msg.subject;
-        namespace svc_acct = ores::iam::domain::service_accounts;
         auto req = decode<provision_tenant_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
@@ -175,10 +173,12 @@ public:
             // account, not the new tenant admin (req->principal). The admin
             // username is not yet a known account at this point and would
             // fail the modified_by validation in the SQL trigger.
+            // Use ctx_.service_account() so the name is always env-scoped and
+            // matches what iam_service_accounts_populate.sql registered.
             const auto results = execute_parameterized_string_query(sys_ctx,
                 "SELECT ores_iam_provision_tenant_fn($1, $2, $3, $4, $5, $6)::text",
                 {req->type, req->code, req->name, req->hostname,
-                 req->description, std::string(svc_acct::iam)},
+                 req->description, ctx_.service_account()},
                 bootstrap_handler_lg(), "Provisioning tenant");
 
             if (results.empty()) {
@@ -198,7 +198,7 @@ public:
             service::account_service svc(tenant_ctx);
             auto acct = svc.create_account(
                 req->principal, req->email, req->password,
-                svc_acct::iam);
+                ctx_.service_account());
 
             // Associate the admin account with the system party.
             refdata::repository::party_repository party_repo(tenant_ctx);

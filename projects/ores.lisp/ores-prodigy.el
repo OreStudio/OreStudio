@@ -409,5 +409,12 @@ Uses BASE directly; build type and checkout are already visible as tags."
                         (memq ores/checkout-tag (plist-get svc :tags)))
                       prodigy-services)))
 
+;; Auto-register services for the preset configured in .env (set by
+;; init-environment.sh --preset <preset>).
+(let* ((dotenv (ores/load-dotenv-for-prodigy))
+       (preset (cdr (assoc "ORES_PRESET" dotenv))))
+  (when (and preset (not (string-empty-p preset)))
+    (ores/define-services-for-preset preset)))
+
 (provide 'ores-prodigy)
 ;;; ores-prodigy.el ends here

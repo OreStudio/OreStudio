@@ -141,7 +141,7 @@ public:
                         .package_uri    = package_uri,
                         .input_uri      = req->workunit.input_uri,
                         .config_uri     = req->workunit.config_uri,
-                        .output_uri     = "results/" + result_id_str + "/output"};
+                        .output_uri     = "api/v1/compute/results/" + result_id_str + "/output"};
                     const auto json = rfl::json::write(event);
                     const auto* p =
                         reinterpret_cast<const std::byte*>(json.data());

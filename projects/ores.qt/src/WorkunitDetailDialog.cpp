@@ -346,8 +346,8 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
     }
 
     const std::string id_str = boost::uuids::to_string(workunit_.id);
-    workunit_.input_uri = "workunits/" + id_str + "/input";
-    workunit_.config_uri = "workunits/" + id_str + "/config";
+    workunit_.input_uri = "api/v1/compute/workunits/" + id_str + "/input";
+    workunit_.config_uri = "api/v1/compute/workunits/" + id_str + "/config";
     workunit_.priority = ui_->prioritySpinBox->value();
     workunit_.target_redundancy = ui_->redundancySpinBox->value();
     workunit_.modified_by = username_;

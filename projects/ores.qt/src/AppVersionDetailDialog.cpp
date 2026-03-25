@@ -349,8 +349,8 @@ void AppVersionDetailDialog::updateVersionFromUi() {
                 item->data(Qt::UserRole).toString().toStdString());
     }
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
-    app_version_.package_uri = "packages/" +
-        boost::uuids::to_string(app_version_.id) + "/package";
+    app_version_.package_uri = "api/v1/compute/packages/" +
+        boost::uuids::to_string(app_version_.id);
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
 }
@@ -436,7 +436,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     }
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
-    const std::string url_str = httpBaseUrl_ + "/packages/" + id_str + "/package";
+    const std::string url_str = httpBaseUrl_ + "/api/v1/compute/packages/" + id_str;
     const QString url = QString::fromStdString(url_str);
 
     BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << url_str

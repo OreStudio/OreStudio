@@ -15,12 +15,13 @@
 # Dependencies: bash 3.2+, openssl
 #
 # Usage:
-#   ./build/scripts/init-environment.sh           # interactive (prompts for postgres pw)
-#   PGPASSWORD=secret ./build/scripts/init-environment.sh   # non-interactive
-#   ORES_DATABASE_NAME=ores_ci ./build/scripts/init-environment.sh -y  # CI mode
+#   ./build/scripts/init-environment.sh --preset linux-clang-debug-make
+#   PGPASSWORD=secret ./build/scripts/init-environment.sh --preset linux-clang-debug-make
+#   ORES_DATABASE_NAME=ores_ci ./build/scripts/init-environment.sh --preset linux-clang-release-ninja -y
 #
 # Flags:
 #   -y, --yes                     Skip the overwrite confirmation prompt
+#   --preset PRESET               Build preset name (required, e.g. linux-clang-debug-ninja)
 #   --enable-logging [level]      Enable test logging (level: trace/debug/info/warn/error, default: debug)
 #   --disable-logging             Disable test logging
 #
@@ -34,12 +35,14 @@ ENV_FILE="${CHECKOUT_ROOT}/.env"
 # Argument parsing
 # ---------------------------------------------------------------------------
 ASSUME_YES=0
+PRESET=""
 LOGGING_OP=""   # "enable" | "disable" | ""
 LOGGING_LEVEL="debug"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -y|--yes) ASSUME_YES=1 ;;
+        --preset) PRESET="$2"; shift ;;
         --enable-logging)
             LOGGING_OP="enable"
             if [[ -n "${2:-}" && "${2}" != -* ]]; then
@@ -82,6 +85,13 @@ if [[ -n "${LOGGING_OP}" ]]; then
     chmod 600 "${ENV_FILE}"
     echo "Re-run 'cmake --preset <preset>' to pick up the change."
     exit 0
+fi
+
+# --preset is required for a full initialisation.
+if [[ -z "${PRESET}" ]]; then
+    echo "Error: --preset is required." >&2
+    echo "  Example: ./build/scripts/init-environment.sh --preset linux-clang-debug-ninja" >&2
+    exit 1
 fi
 
 # ---------------------------------------------------------------------------
@@ -269,6 +279,7 @@ cat > "${ENV_FILE}" << EOF
 # Checkout identity
 # ---------------------------------------------------------------------------
 ORES_CHECKOUT_LABEL=${LABEL}
+ORES_PRESET=${PRESET}
 ORES_DATABASE_NAME=${DB_NAME}
 ORES_NATS_URL=${NATS_URL}
 ORES_NATS_SUBJECT_PREFIX=${NATS_PREFIX}
@@ -399,7 +410,7 @@ echo ""
 echo "  2. In Emacs, set up SQL connections:"
 echo "       M-x ores-db/setup-connections"
 echo ""
-echo "  3. Start services via prodigy — they will read .env automatically."
+echo "  3. Start services via prodigy — they read ORES_PRESET and credentials from .env."
 echo ""
 echo "Logging:"
 echo "  Enable:  ./build/scripts/init-environment.sh --enable-logging [level]"

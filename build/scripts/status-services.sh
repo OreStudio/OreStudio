@@ -5,10 +5,10 @@
 #   ./build/scripts/status-services.sh [--preset PRESET]
 #
 # Options:
-#   --preset PRESET   CMake preset name (default: linux-clang-debug-ninja)
+#   --preset PRESET   CMake preset name (overrides ORES_PRESET from .env)
 #
-# Environment:
-#   ORES_PRESET       Overrides the default preset (--preset takes priority)
+# The build preset defaults to ORES_PRESET in .env (set by init-environment.sh).
+# Use --preset to check a specific preset without re-running init-environment.sh.
 #
 # For each service tracked by a PID file, shows:
 #   running  - process is alive and log contains "Service ready"
@@ -21,29 +21,41 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-PRESET="${ORES_PRESET:-linux-clang-debug-ninja}"
+PRESET_ARG=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --preset) PRESET="$2"; shift 2 ;;
+        --preset) PRESET_ARG="$2"; shift 2 ;;
         -h|--help)
-            sed -n '/^# /s/^# \?//p' "$0" | head -15
+            sed -n '/^# /s/^# \?//p' "$0" | head -17
             exit 0
             ;;
         *) echo "error: unknown option: $1"; exit 1 ;;
     esac
 done
 
-BIN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/bin"
-LOG_DIR="$PROJECT_DIR/build/output/$PRESET/publish/log"
-RUN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/run"
-
 # Collect the expected service list from .env (mirrors start-services.sh logic).
 ENV_FILE="$PROJECT_DIR/.env"
 if [[ ! -f "$ENV_FILE" ]]; then
     echo "error: .env not found at $ENV_FILE" >&2
+    echo "       run: ./build/scripts/init-environment.sh --preset <preset>" >&2
     exit 1
 fi
+set -a
+# shellcheck disable=SC1090
+source "$ENV_FILE"
+set +a
+
+# --preset flag takes priority; fall back to ORES_PRESET from .env.
+PRESET="${PRESET_ARG:-${ORES_PRESET:-}}"
+if [[ -z "$PRESET" ]]; then
+    echo "error: no preset — pass --preset <preset> or set ORES_PRESET via init-environment.sh" >&2
+    exit 1
+fi
+
+BIN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/bin"
+LOG_DIR="$PROJECT_DIR/build/output/$PRESET/publish/log"
+RUN_DIR="$PROJECT_DIR/build/output/$PRESET/publish/run"
 
 declare -A EXPECTED_SERVICES
 EXPECTED_SERVICES["ores.iam.service"]=1
@@ -62,7 +74,6 @@ EXPECTED_SERVICES["ores.wt.service"]=1
 
 # Add compute wrapper nodes if the binary exists and host IDs are configured.
 if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
-    source "$ENV_FILE" 2>/dev/null || true
     for n in 1 2 3 4 5; do
         host_id_var="ORES_GRID_NODE_${n}_HOST_ID"
         if [[ -n "${!host_id_var:-}" ]]; then

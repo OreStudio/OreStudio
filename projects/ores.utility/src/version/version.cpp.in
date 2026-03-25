@@ -21,6 +21,7 @@
 #include "ores.utility/version/version.hpp"
 
 #include <sstream>
+#include "ores.platform/process/executable.hpp"
 
 namespace ores::utility::version {
 
@@ -31,7 +32,8 @@ const char* build_info() {
 std::string format_startup_message(const std::string& service_name) {
     std::ostringstream ss;
     ss << "Starting " << service_name << " v" ORES_VERSION
-       << " (" << build_info() << ")";
+       << " (" << build_info()
+       << " " << ores::platform::process::executable_build_time() << ")";
     return ss.str();
 }
 
@@ -40,7 +42,8 @@ std::string format_startup_message(const std::string& service_name,
     std::ostringstream ss;
     ss << "Starting " << service_name << " v" ORES_VERSION
        << " Protocol " << protocol_major << "." << protocol_minor
-       << " (" << build_info() << ")";
+       << " (" << build_info()
+       << " " << ores::platform::process::executable_build_time() << ")";
     return ss.str();
 }
 

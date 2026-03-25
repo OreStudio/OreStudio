@@ -44,9 +44,12 @@ if(DEFINED ENV{ORES_BUILD_PROVIDER} AND
     set(ORES_BUILD_INFO "${ORES_BUILD_INFO} Timestamp = '$ENV{ORES_BUILD_TIMESTAMP}'")
 
 else()
-    # Local build: combine git commit (run at build time) with current clock.
-    string(TIMESTAMP NOW "%Y/%m/%d %H:%M:%S")
-
+    # Local build: embed git commit hash and dirty flag only. The wall-clock
+    # build time is read at runtime from the executable's own mtime so there
+    # is no reason to stamp it here. This keeps the generated content stable
+    # between commits, meaning copy_if_different below will skip the write
+    # (and therefore skip recompilation) on every build where git state has
+    # not changed.
     find_program(GIT_EXECUTABLE git)
     if(GIT_EXECUTABLE)
         execute_process(
@@ -68,12 +71,12 @@ else()
             if(NOT "${GIT_STATUS}" STREQUAL "")
                 set(GIT_COMMIT_SHORT "${GIT_COMMIT_SHORT}-dirty")
             endif()
-            set(ORES_BUILD_INFO "local ${GIT_COMMIT_SHORT} ${NOW}")
+            set(ORES_BUILD_INFO "local ${GIT_COMMIT_SHORT}")
         else()
-            set(ORES_BUILD_INFO "local ${NOW}")
+            set(ORES_BUILD_INFO "local unknown")
         endif()
     else()
-        set(ORES_BUILD_INFO "local ${NOW}")
+        set(ORES_BUILD_INFO "local unknown")
     endif()
 endif()
 

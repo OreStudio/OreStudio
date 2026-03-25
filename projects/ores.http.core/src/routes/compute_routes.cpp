@@ -34,6 +34,11 @@ namespace fs = std::filesystem;
 compute_routes::compute_routes(std::string storage_dir)
     : storage_dir_(std::move(storage_dir)) {
     BOOST_LOG_SEV(lg(), debug) << "Compute routes storage dir: " << storage_dir_;
+    for (const auto& sub : {"packages", "workunits", "results"}) {
+        const auto dir = fs::path(storage_dir_) / sub;
+        fs::create_directories(dir);
+        BOOST_LOG_SEV(lg(), debug) << "Compute storage ready: " << dir.string();
+    }
 }
 
 void compute_routes::register_routes(std::shared_ptr<http::net::router> router,

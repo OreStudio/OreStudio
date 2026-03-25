@@ -474,10 +474,13 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
         self->ui_->uploadPackageButton->setText(tr("Upload Package"));
 
         if (reply->error() != QNetworkReply::NoError) {
+            const auto body = reply->readAll();
+            const auto detail = body.isEmpty()
+                ? reply->errorString()
+                : reply->errorString() + "\n" + QString::fromUtf8(body);
             BOOST_LOG_SEV(lg(), error) << "Package upload failed: "
-                                       << reply->errorString().toStdString();
-            MessageBoxHelper::critical(self, tr("Upload Failed"),
-                reply->errorString());
+                                       << detail.toStdString();
+            MessageBoxHelper::critical(self, tr("Upload Failed"), detail);
             return;
         }
 

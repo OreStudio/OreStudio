@@ -36,6 +36,7 @@
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/app_version_service.hpp"
 
@@ -128,7 +129,7 @@ public:
                     r.id = boost::uuids::random_generator()();
                     r.workunit_id = req->workunit.id;
                     r.server_state = 2; // Unsent
-                    r.change_reason_code = "system.dispatch";
+                    r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                     r.change_commentary = "Created on workunit dispatch";
                     stamp(r, ctx);
                     result_svc.save(r);

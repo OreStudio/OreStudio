@@ -36,6 +36,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/service/host_service.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 
@@ -100,7 +101,7 @@ public:
                 auto r = unsent.front();
                 r.host_id = host_uuid;
                 r.server_state = 4; // InProgress
-                r.change_reason_code = "system.pull";
+                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Assigned to host on work.pull";
                 stamp(r, ctx);
                 result_svc.save(r);
@@ -198,7 +199,7 @@ public:
 
                 r.host_id = boost::uuids::uuid{};
                 r.server_state = 2; // Unsent — back in the queue
-                r.change_reason_code = "system.reap";
+                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Host went stale; result re-queued";
                 stamp(r, ctx_);
                 result_svc.save(r);

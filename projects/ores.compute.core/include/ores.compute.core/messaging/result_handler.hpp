@@ -35,6 +35,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.core/service/result_service.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 
@@ -111,7 +112,7 @@ public:
                 r.output_uri = req->output_uri;
                 r.received_at = std::chrono::system_clock::now();
                 r.outcome = req->outcome;
-                r.change_reason_code = "system.submit";
+                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Output received from wrapper";
                 stamp(r, ctx);
                 result_svc.save(r);
@@ -131,7 +132,7 @@ public:
                     if (done >= wu_opt->target_redundancy) {
                         auto wu = *wu_opt;
                         wu.canonical_result_id = r.id;
-                        wu.change_reason_code = "system.validate";
+                        wu.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                         wu.change_commentary = "Canonical result accepted";
                         stamp(wu, ctx);
                         wu_svc.save(wu);
@@ -156,7 +157,7 @@ public:
                             if (batch_opt) {
                                 auto batch = *batch_opt;
                                 batch.status = "closed";
-                                batch.change_reason_code = "system.assimilate";
+                                batch.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                                 batch.change_commentary =
                                     "All workunits complete";
                                 stamp(batch, ctx);

@@ -36,10 +36,11 @@ domain::report_definition generate_synthetic_report_definition(
     const auto party_id_str = ctx.env().get_or(
         std::string(generation_keys::party_id), "");
 
+    const auto n = ++counter;
     domain::report_definition r;
     r.version = 1;
     r.id = ctx.generate_uuid();
-    r.name = std::string(faker::word::noun()) + "_report";
+    r.name = std::string(faker::word::noun()) + "_report_" + std::to_string(n);
     r.party_id = party_id_str.empty()
         ? ctx.generate_uuid()
         : boost::uuids::string_generator{}(party_id_str);

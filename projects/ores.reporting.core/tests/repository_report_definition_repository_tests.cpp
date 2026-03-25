@@ -27,6 +27,7 @@
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
+#include "ores.reporting.api/generators/report_type_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
@@ -50,18 +51,18 @@ boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
 }
 
 /**
- * @brief Returns a stable seeded report type code for use in FK-constrained writes.
+ * @brief Inserts a synthetic report type into the test tenant and returns its code.
  *
- * report_definition.report_type is a FK to the report_types table. We use a
- * specific seeded code (report_type_1) rather than reading from the table to
- * avoid race conditions with concurrent report_type tests that write and
- * remove their own synthetic codes.
+ * report_definition.report_type is FK-constrained to the report_types table
+ * for the same tenant. Since test tenants are created fresh per test run with
+ * no seeded report types, we insert one here to satisfy the constraint.
  */
-std::string get_test_report_type(ores::testing::database_helper& h) {
+std::string setup_test_report_type(ores::testing::database_helper& h,
+    ores::utility::generation::generation_context& ctx) {
     ores::reporting::repository::report_type_repository rt_repo;
-    auto types = rt_repo.read_latest(h.context(), "report_type_1");
-    REQUIRE(!types.empty());
-    return types.front().code;
+    auto rt = ores::reporting::generators::generate_synthetic_report_type(ctx);
+    rt_repo.write(h.context(), rt);
+    return rt.code;
 }
 
 }
@@ -78,7 +79,7 @@ TEST_CASE("write_single_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = get_test_report_type(h);
+    const auto report_type = setup_test_report_type(h, ctx);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
@@ -95,7 +96,7 @@ TEST_CASE("write_multiple_report_definitions", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = get_test_report_type(h);
+    const auto report_type = setup_test_report_type(h, ctx);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
@@ -114,7 +115,7 @@ TEST_CASE("read_latest_report_definitions", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = get_test_report_type(h);
+    const auto report_type = setup_test_report_type(h, ctx);
 
     report_definition_repository repo;
     auto written = generate_synthetic_report_definitions(3, ctx);
@@ -138,7 +139,7 @@ TEST_CASE("read_latest_report_definition_by_id", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = get_test_report_type(h);
+    const auto report_type = setup_test_report_type(h, ctx);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
@@ -164,7 +165,7 @@ TEST_CASE("read_all_versions_of_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = get_test_report_type(h);
+    const auto report_type = setup_test_report_type(h, ctx);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
@@ -188,7 +189,7 @@ TEST_CASE("remove_report_definition", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
     const auto party_id = get_test_party_id(h);
-    const auto report_type = get_test_report_type(h);
+    const auto report_type = setup_test_report_type(h, ctx);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);

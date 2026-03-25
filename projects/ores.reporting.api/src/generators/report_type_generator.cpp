@@ -35,7 +35,7 @@ domain::report_type generate_synthetic_report_type(
 
     domain::report_type r;
     r.version = 1;
-    r.code = "report_type_" + std::to_string(++counter);
+    r.code = "gen_report_type_" + std::to_string(++counter);
     r.name = std::string(faker::word::adjective()) + " Report";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);

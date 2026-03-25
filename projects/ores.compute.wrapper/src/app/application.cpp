@@ -87,6 +87,8 @@ public:
             thread_.join();
     }
 
+    ~node_stats_reporter() { stop(); }
+
     /**
      * @brief Record a successfully completed task.
      *
@@ -264,6 +266,8 @@ public:
         if (thread_.joinable())
             thread_.join();
     }
+
+    ~heartbeat_sender() { stop(); }
 
 private:
     void run() {

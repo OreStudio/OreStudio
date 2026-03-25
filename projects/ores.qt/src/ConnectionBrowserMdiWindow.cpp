@@ -69,7 +69,7 @@ void ConnectionBrowserMdiWindow::setTestCallback(TestConnectionCallback callback
 }
 
 void ConnectionBrowserMdiWindow::setMdiArea(QMdiArea* mdiArea, QMainWindow* mainWindow,
-                                             QList<DetachableMdiSubWindow*>* allDetachableWindows) {
+                                             QList<QPointer<DetachableMdiSubWindow>>* allDetachableWindows) {
     mdiArea_ = mdiArea;
     mainWindow_ = mainWindow;
     allDetachableWindows_ = allDetachableWindows;

@@ -1152,7 +1152,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     // Close all detachable windows first
     // Make a copy of the list since closing windows modifies the original list
     QList<QPointer<DetachableMdiSubWindow>> windowsCopy;
-    for (auto* window : allDetachableWindows_) {
+    for (const auto& window : allDetachableWindows_) {
         if (window)
             windowsCopy.append(window);
     }
@@ -2425,7 +2425,7 @@ void MainWindow::onMySessionsTriggered() {
 void MainWindow::onDetachAllTriggered() {
     BOOST_LOG_SEV(lg(), debug) << "Detach All triggered";
 
-    for (auto* detachableWindow : allDetachableWindows_) {
+    for (const auto& detachableWindow : allDetachableWindows_) {
         if (detachableWindow && !detachableWindow->isDetached()) {
             detachableWindow->detach();
         }
@@ -2464,7 +2464,7 @@ void MainWindow::onWindowMenuAboutToShow() {
         noWindowsAction->setEnabled(false);
     } else {
         for (int i = 0; i < allDetachableWindows_.size(); ++i) {
-            auto* detachableWindow = allDetachableWindows_[i];
+            const auto& detachableWindow = allDetachableWindows_[i];
             if (!detachableWindow)
                 continue;
             QString windowTitle = detachableWindow->windowTitle();

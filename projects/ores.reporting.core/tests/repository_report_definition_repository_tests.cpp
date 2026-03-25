@@ -26,6 +26,7 @@
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.reporting.api/domain/report_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.reporting.api/generators/report_definition_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 
@@ -33,6 +34,19 @@ namespace {
 
 const std::string_view test_suite("ores.reporting.tests");
 const std::string tags("[repository]");
+
+/**
+ * @brief Fetches the first available party id from the test database.
+ *
+ * report_definition.party_id is a FK to the parties table so all writes
+ * need a real party that was seeded by the test infrastructure.
+ */
+boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
+    ores::refdata::repository::party_repository party_repo(h.context());
+    auto parties = party_repo.read_latest();
+    REQUIRE(!parties.empty());
+    return parties.front().id;
+}
 
 }
 
@@ -47,9 +61,11 @@ TEST_CASE("write_single_report_definition", tags) {
 
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
+    const auto party_id = get_test_party_id(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
+    rd.party_id = party_id;
 
     BOOST_LOG_SEV(lg, debug) << "Report definition: " << rd;
     CHECK_NOTHROW(repo.write(h.context(), rd));
@@ -60,9 +76,12 @@ TEST_CASE("write_multiple_report_definitions", tags) {
 
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
+    const auto party_id = get_test_party_id(h);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
+    for (auto& d : definitions)
+        d.party_id = party_id;
     BOOST_LOG_SEV(lg, debug) << "Report definitions: " << definitions;
 
     CHECK_NOTHROW(repo.write(h.context(), definitions));
@@ -73,9 +92,12 @@ TEST_CASE("read_latest_report_definitions", tags) {
 
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
+    const auto party_id = get_test_party_id(h);
 
     report_definition_repository repo;
     auto written = generate_synthetic_report_definitions(3, ctx);
+    for (auto& d : written)
+        d.party_id = party_id;
     BOOST_LOG_SEV(lg, debug) << "Written definitions: " << written;
     repo.write(h.context(), written);
 
@@ -91,9 +113,12 @@ TEST_CASE("read_latest_report_definition_by_id", tags) {
 
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
+    const auto party_id = get_test_party_id(h);
 
     report_definition_repository repo;
     auto definitions = generate_synthetic_report_definitions(5, ctx);
+    for (auto& d : definitions)
+        d.party_id = party_id;
     const auto target = definitions.front();
     BOOST_LOG_SEV(lg, debug) << "Written definitions: " << definitions;
     repo.write(h.context(), definitions);
@@ -111,9 +136,11 @@ TEST_CASE("read_all_versions_of_report_definition", tags) {
 
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
+    const auto party_id = get_test_party_id(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
+    rd.party_id = party_id;
     repo.write(h.context(), rd);
 
     rd.version = 1;
@@ -131,9 +158,11 @@ TEST_CASE("remove_report_definition", tags) {
 
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
+    const auto party_id = get_test_party_id(h);
 
     report_definition_repository repo;
     auto rd = generate_synthetic_report_definition(ctx);
+    rd.party_id = party_id;
     repo.write(h.context(), rd);
 
     const auto rd_id = boost::uuids::to_string(rd.id);
@@ -153,7 +182,8 @@ TEST_CASE("read_nonexistent_report_definition", tags) {
     database_helper h;
 
     report_definition_repository repo;
-    const std::string nonexistent = "nonexistent-report-def-id-xyz-12345";
+    // Use a valid nil UUID — the column type is uuid so must be valid syntax.
+    const std::string nonexistent = "00000000-0000-0000-0000-000000000000";
     BOOST_LOG_SEV(lg, debug) << "Non-existent id: " << nonexistent;
 
     auto read = repo.read_latest(h.context(), nonexistent);

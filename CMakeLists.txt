@@ -121,6 +121,10 @@ set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
 if(NOT DEFINED ENV{CI})
     set(ORES_ENV_FILE "${CMAKE_SOURCE_DIR}/.env")
     if(EXISTS "${ORES_ENV_FILE}")
+        # Reset logging to defaults before reading .env so that absence of a
+        # variable (e.g. after --disable-logging) correctly maps to disabled.
+        set(ORES_TEST_LOG_LEVEL "OFF" CACHE STRING "" FORCE)
+        set(ORES_TEST_LOG_CONSOLE OFF CACHE BOOL "" FORCE)
         file(STRINGS "${ORES_ENV_FILE}" _ores_env_lines)
         foreach(_line ${_ores_env_lines})
             # Skip the JWT private key — it's long and tests don't need it

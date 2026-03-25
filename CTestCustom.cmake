@@ -64,6 +64,12 @@ set(CTEST_CUSTOM_COVERAGE_EXCLUDE
   "vcpkg_installed/.*"
 )
 
+# Tests with no test cases (generators moved to api layer; core tests pending)
+set(CTEST_CUSTOM_TESTS_IGNORE
+    ores.trading.core.tests
+    ores.reporting.core.tests
+)
+
 # error execptions:
 # get rid of boost warnings which are misinterpreted as errors
 # set(CTEST_CUSTOM_ERROR_EXCEPTION ${CTEST_CUSTOM_ERROR_EXCEPTION}

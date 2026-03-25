@@ -23,19 +23,18 @@
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include <boost/uuid/string_generator.hpp>
-#include "ores.http/net/http_server.hpp"
+#include "ores.http.api/net/http_server.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.variability.core/service/system_settings_service.hpp"
-#include "ores.iam.core/service/auth_session_service.hpp"
+#include "ores.iam.api/service/auth_session_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.http.server/routes/iam_routes.hpp"
-#include "ores.http.server/routes/risk_routes.hpp"
-#include "ores.http.server/routes/variability_routes.hpp"
-#include "ores.http.server/routes/assets_routes.hpp"
+#include "ores.http.core/routes/iam_routes.hpp"
+#include "ores.http.core/routes/risk_routes.hpp"
+#include "ores.http.core/routes/variability_routes.hpp"
+#include "ores.http.core/routes/assets_routes.hpp"
 #include "ores.http.server/routes/compute_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
@@ -78,7 +77,7 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1,
-        .service_account = std::string(ores::database::service::service_accounts::http)
+        .service_account = cfg.database.user
     };
     auto ctx = database::context_factory::make_context(db_cfg);
 

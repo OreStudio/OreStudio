@@ -22,18 +22,22 @@
  * Schema Setup (DDL User Phase)
  *
  * Creates the schema, populates data, and grants table-level permissions.
- * This script runs as ores_ddl_user (member of ores_owner role) and handles
+ * This script runs as the DDL user (member of the owner role) and handles
  * all operations that don't require superuser privileges.
  *
  * USAGE:
- *   psql -U ores_ddl_user -d <db_name> -f setup_schema.sql
+ *   psql -U <ddl_user> -d <db_name> \
+ *     -v owner_role=<owner_role> -v rw_role=<rw_role> -v ro_role=<ro_role> \
+ *     -v ddl_user=<ddl_user> -v cli_user=<cli_user> ... \
+ *     -f setup_schema.sql
  *
  *   -- With skip_validation (faster for development):
- *   psql -U ores_ddl_user -d <db_name> -v skip_validation='on' -f setup_schema.sql
+ *   psql ... -v skip_validation='on' -f setup_schema.sql
  *
  * PREREQUISITES:
  *   - Database must already exist (run create_database.sql as postgres first)
- *   - Connected as ores_ddl_user to the target database
+ *   - Connected as the DDL user to the target database
+ *   - Role name variables must be passed via -v flags (see setup_database.sh)
  */
 
 \set ON_ERROR_STOP on
@@ -66,26 +70,26 @@
 -- Grant table permissions to appropriate roles
 -- Note: TRUNCATE is included for test database cleanup
 -- Owner role gets full access
-grant select, insert, update, delete, truncate on all tables in schema public to ores_owner;
+grant select, insert, update, delete, truncate on all tables in schema public to :owner_role;
 
 -- RW role gets standard DML access
-grant select, insert, update, delete, truncate on all tables in schema public to ores_rw;
+grant select, insert, update, delete, truncate on all tables in schema public to :rw_role;
 
 -- RO role gets read-only access
-grant select on all tables in schema public to ores_ro;
+grant select on all tables in schema public to :ro_role;
 
 -- Grant sequence permissions to appropriate roles
-grant usage, select on all sequences in schema public to ores_owner, ores_rw;
+grant usage, select on all sequences in schema public to :owner_role, :rw_role;
 
--- Set default privileges for any future tables created by ores_ddl_user
+-- Set default privileges for any future tables created by the DDL user
 alter default privileges in schema public
-    grant select, insert, update, delete, truncate on tables to ores_rw;
-
-alter default privileges in schema public
-    grant select on tables to ores_ro;
+    grant select, insert, update, delete, truncate on tables to :rw_role;
 
 alter default privileges in schema public
-    grant usage, select on sequences to ores_rw;
+    grant select on tables to :ro_role;
+
+alter default privileges in schema public
+    grant usage, select on sequences to :rw_role;
 
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql

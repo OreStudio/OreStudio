@@ -27,7 +27,6 @@
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include "ores.platform/environment/environment.hpp"
 #include "ores.database/service/context_factory.hpp"
-#include "ores.database/service/service_accounts.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 
@@ -58,7 +57,7 @@ context test_database_manager::make_context() {
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1,
-        .service_account = std::string(ores::database::service::service_accounts::test_dml)
+        .service_account = opts.user
     };
 
     context ctx = context_factory::make_context(db_cfg);
@@ -74,16 +73,11 @@ database::database_options test_database_manager::make_database_options() {
     }
 
     return database::database_options {
-        .user = environment::environment::get_value_or_default(
-            prefix + "USER", std::string(database::service::service_accounts::test_dml)),
-        .password = environment::environment::get_value_or_default(
-            prefix + "PASSWORD", ""),
-        .host = environment::environment::get_value_or_default(
-            prefix + "HOST", "localhost"),
-        .database = environment::environment::get_value_or_default(
-            prefix + "DATABASE", "ores_default"),
-        .port = environment::environment::get_int_value_or_default(
-            prefix + "PORT", 5432),
+        .user = environment::environment::get_value_or_throw(prefix + "USER"),
+        .password = environment::environment::get_value_or_throw(prefix + "PASSWORD"),
+        .host = environment::environment::get_value_or_default(prefix + "HOST", "localhost"),
+        .database = environment::environment::get_value_or_default(prefix + "DATABASE", "ores_default"),
+        .port = environment::environment::get_int_value_or_default(prefix + "PORT", 5432),
         .tenant = tenant_id
     };
 }

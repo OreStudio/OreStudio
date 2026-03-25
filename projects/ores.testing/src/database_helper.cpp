@@ -67,7 +67,7 @@ void database_helper::seed_rbac() {
         R"SQL(
         INSERT INTO ores_iam_roles_tbl (id, version, name, description, modified_by,
             change_reason_code, change_commentary, valid_from, valid_to)
-        SELECT gen_random_uuid(), 1, 'Admin', 'Full administrative access', 'ores_test_dml_user',
+        SELECT gen_random_uuid(), 1, 'Admin', 'Full administrative access', current_user,
                'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (
@@ -79,7 +79,7 @@ void database_helper::seed_rbac() {
         R"SQL(
         INSERT INTO ores_iam_roles_tbl (id, version, name, description, modified_by,
             change_reason_code, change_commentary, valid_from, valid_to)
-        SELECT gen_random_uuid(), 1, 'Viewer', 'Default role for new accounts', 'ores_test_dml_user',
+        SELECT gen_random_uuid(), 1, 'Viewer', 'Default role for new accounts', current_user,
                'system.seed', 'Test RBAC seed data',
                current_timestamp, '9999-12-31 23:59:59'::timestamptz
         WHERE NOT EXISTS (

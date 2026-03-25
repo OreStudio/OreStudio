@@ -22,8 +22,8 @@
 
 #include <memory>
 #include <string>
-#include "ores.http/net/router.hpp"
-#include "ores.http/openapi/endpoint_registry.hpp"
+#include "ores.http.api/net/router.hpp"
+#include "ores.http.api/openapi/endpoint_registry.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::http_server::routes {

@@ -19,7 +19,7 @@
  */
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.http.server/messaging/http_info_handler.hpp"
-#include "ores.http/messaging/http_info_protocol.hpp"
+#include "ores.http.api/messaging/http_info_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace {

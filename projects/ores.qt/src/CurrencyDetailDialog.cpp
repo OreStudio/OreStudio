@@ -49,7 +49,7 @@
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_market_tier_protocol.hpp"
-#include "ores.refdata.core/generators/currency_generator.hpp"
+#include "ores.refdata.api/generators/currency_generator.hpp"
 #include "ores.eventing/domain/event_traits.hpp"
 #include "ores.variability.api/eventing/system_setting_changed_event.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"

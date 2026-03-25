@@ -53,7 +53,7 @@ public:
         /// Wait time between retry attempts.
         std::size_t wait_time_in_seconds;
         /// Service account name stamped as performed_by on all writes.
-        /// Should be one of the constants from service_accounts.hpp.
+        /// Must match the database username (read from ORES_<APP>_DB_USER env var).
         std::string service_account;
     };
 

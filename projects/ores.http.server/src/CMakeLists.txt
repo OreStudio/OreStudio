@@ -38,12 +38,8 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.http.lib
-        ores.iam.core.lib
-        ores.refdata.core.lib
-        ores.assets.core.lib
-        ores.variability.core.lib
-        ores.geo.lib
+        ores.http.api.lib
+        ores.http.core.lib
         ores.nats.lib
         ores.service.lib
         ores.telemetry.lib

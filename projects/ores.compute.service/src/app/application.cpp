@@ -23,7 +23,6 @@
 #include <memory>
 #include <rfl/json.hpp>
 #include "ores.database/service/context_factory.hpp"
-#include "ores.database/service/service_accounts.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.compute.service/app/application_exception.hpp"
@@ -59,7 +58,7 @@ ores::database::context application::make_context(
         .pool_size = 4,
         .num_attempts = 10,
         .wait_time_in_seconds = 1,
-        .service_account = std::string(ores::database::service::service_accounts::compute_service)
+        .service_account = db_opts.user
     };
 
     return context_factory::make_context(cfg);

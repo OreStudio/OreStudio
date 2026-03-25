@@ -28,10 +28,10 @@
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/domain/account_party_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/generators/account_generator.hpp"
-#include "ores.iam.core/generators/account_party_generator.hpp"
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.api/generators/account_party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
-#include "ores.refdata.core/generators/party_generator.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.testing/database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
 

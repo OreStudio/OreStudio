@@ -25,7 +25,7 @@
 #include <optional>
 #include "ores.logging/logging_options.hpp"
 #include "ores.database/domain/database_options.hpp"
-#include "ores.http/net/http_server_options.hpp"
+#include "ores.http.api/net/http_server_options.hpp"
 #include "ores.nats/config/nats_options.hpp"
 
 namespace ores::http_server::config {

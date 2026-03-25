@@ -59,6 +59,15 @@ public:
         int default_value);
 
     /**
+     * @brief Gets an environment variable value, throwing if not set.
+     *
+     * @param name Name of the environment variable.
+     * @return The value.
+     * @throws std::runtime_error if the variable is not set.
+     */
+    static std::string get_value_or_throw(const std::string& name);
+
+    /**
      * @brief Sets an environment variable value.
      *
      * @param name Name of the environment variable.

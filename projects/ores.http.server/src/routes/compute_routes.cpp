@@ -21,8 +21,8 @@
 
 #include <fstream>
 #include <filesystem>
-#include "ores.http/domain/http_request.hpp"
-#include "ores.http/domain/http_response.hpp"
+#include "ores.http.api/domain/http_request.hpp"
+#include "ores.http.api/domain/http_response.hpp"
 
 namespace ores::http_server::routes {
 

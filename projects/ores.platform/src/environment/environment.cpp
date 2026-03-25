@@ -22,6 +22,7 @@
 #include "ores.platform/environment/environment.hpp"
 
 #include <cstdlib>
+#include <stdexcept>
 #include <string>
 
 namespace ores::platform::environment {
@@ -51,6 +52,13 @@ get_int_value_or_default(const std::string& name, int default_value) {
     } catch(...) {
         return default_value;
     }
+}
+
+std::string environment::get_value_or_throw(const std::string& name) {
+    auto value = get_value(name);
+    if (!value.has_value())
+        throw std::runtime_error("Required environment variable not set: " + name);
+    return *value;
 }
 
 void environment::set_value(const std::string& name, const std::string& value) {

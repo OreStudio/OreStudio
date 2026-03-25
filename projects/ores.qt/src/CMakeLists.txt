@@ -32,7 +32,7 @@ qt_add_executable(${exe_binary_name} ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES}
 
 target_link_libraries(${exe_binary_name} PRIVATE
     ores.ore.lib
-    ores.http.lib
+    ores.http.api.lib
     ores.refdata.core.lib
     ores.trading.api.lib
     ores.compute.api.lib

@@ -27,7 +27,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/contact_type.hpp" // IWYU pragma: keep.
 #include "ores.refdata.api/domain/contact_type_json_io.hpp" // IWYU pragma: keep.
-#include "ores.refdata.core/generators/contact_type_generator.hpp"
+#include "ores.refdata.api/generators/contact_type_generator.hpp"
 
 namespace {
 

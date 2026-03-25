@@ -30,7 +30,7 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.testing/make_generation_context.hpp"
-#include "ores.iam.core/generators/account_generator.hpp"
+#include "ores.iam.api/generators/account_generator.hpp"
 #include "ores.iam.api/domain/account_json_io.hpp" // IWYU pragma: keep.
 
 namespace {

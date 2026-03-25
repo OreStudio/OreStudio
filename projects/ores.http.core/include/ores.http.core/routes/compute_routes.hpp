@@ -37,11 +37,10 @@ namespace ores::http_server::routes {
  * - POST /api/v1/compute/packages/{app_version_id}   upload package bundle
  * - GET  /api/v1/compute/packages/{app_version_id}   download package bundle
  *
- * Workunit input data (uploaded when workunit is created):
- * - POST /api/v1/compute/workunits/{workunit_id}/input   upload input
- * - GET  /api/v1/compute/workunits/{workunit_id}/input   download input
- * - POST /api/v1/compute/workunits/{workunit_id}/config  upload config
- * - GET  /api/v1/compute/workunits/{workunit_id}/config  download config
+ * Workunit artifacts (uploaded when workunit is created; {artifact} may
+ * include a file extension to preserve the original filename on disk):
+ * - POST /api/v1/compute/workunits/{workunit_id}/{artifact}  upload artifact
+ * - GET  /api/v1/compute/workunits/{workunit_id}/{artifact}  download artifact
  *
  * Result output (wrapper uploads when job finishes):
  * - PUT  /api/v1/compute/results/{result_id}/output   upload output
@@ -74,16 +73,10 @@ private:
     handle_post_package(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
-    handle_get_workunit_input(const http::domain::http_request& req);
+    handle_get_workunit_artifact(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
-    handle_post_workunit_input(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_get_workunit_config(const http::domain::http_request& req);
-
-    boost::asio::awaitable<http::domain::http_response>
-    handle_post_workunit_config(const http::domain::http_request& req);
+    handle_post_workunit_artifact(const http::domain::http_request& req);
 
     boost::asio::awaitable<http::domain::http_response>
     handle_put_result_output(const http::domain::http_request& req);

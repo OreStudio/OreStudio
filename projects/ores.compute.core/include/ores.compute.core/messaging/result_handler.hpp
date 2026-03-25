@@ -90,13 +90,9 @@ public:
     void submit(ores::nats::message msg) {
         BOOST_LOG_SEV(result_handler_lg(), debug)
             << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
+        // submit_result is called by trusted wrapper nodes without a JWT;
+        // use the service context directly (same pattern as heartbeat handler).
+        const auto& ctx = ctx_;
         if (auto req = decode<submit_result_request>(msg)) {
             try {
                 service::result_service result_svc(ctx);

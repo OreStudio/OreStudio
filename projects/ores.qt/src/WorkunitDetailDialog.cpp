@@ -20,6 +20,7 @@
 #include "ores.qt/WorkunitDetailDialog.hpp"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QtConcurrent>
@@ -346,10 +347,25 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
     }
 
     const std::string id_str = boost::uuids::to_string(workunit_.id);
-    workunit_.input_uri = "api/v1/compute/workunits/" + id_str + "/input";
-    workunit_.config_uri = selectedConfigFilePath_.isEmpty()
-        ? std::string{}
-        : "api/v1/compute/workunits/" + id_str + "/config";
+    {
+        // Preserve the full extension (e.g. ".csv") for local inspection.
+        const std::string base = "api/v1/compute/workunits/" + id_str + "/input";
+        if (!selectedInputFilePath_.isEmpty()) {
+            const std::string ext =
+                QFileInfo(selectedInputFilePath_).completeSuffix().toStdString();
+            workunit_.input_uri = base + (ext.empty() ? "" : "." + ext);
+        } else if (workunit_.input_uri.empty()) {
+            workunit_.input_uri = base;
+        }
+    }
+    if (!selectedConfigFilePath_.isEmpty()) {
+        const std::string base = "api/v1/compute/workunits/" + id_str + "/config";
+        const std::string ext =
+            QFileInfo(selectedConfigFilePath_).completeSuffix().toStdString();
+        workunit_.config_uri = base + (ext.empty() ? "" : "." + ext);
+    } else if (workunit_.config_uri.empty()) {
+        workunit_.config_uri = std::string{};
+    }
     workunit_.priority = ui_->prioritySpinBox->value();
     workunit_.target_redundancy = ui_->redundancySpinBox->value();
     workunit_.modified_by = username_;
@@ -447,8 +463,11 @@ void WorkunitDetailDialog::onSaveClicked() {
 
     // Phase 1: upload input file
     if (!selectedInputFilePath_.isEmpty()) {
+        const std::string input_uri = workunit_.input_uri.empty()
+            ? ("api/v1/compute/workunits/" + id_str + "/input")
+            : workunit_.input_uri;
         const QString inputUrl = QString::fromStdString(
-            httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/input");
+            httpBaseUrl_ + "/" + input_uri);
 
         auto* inputFile = new QFile(selectedInputFilePath_, this);
         if (!inputFile->open(QIODevice::ReadOnly)) {
@@ -498,8 +517,11 @@ void WorkunitDetailDialog::onSaveClicked() {
 
             // Phase 2: upload config file
             if (!self->selectedConfigFilePath_.isEmpty()) {
+                const std::string config_uri = self->workunit_.config_uri.empty()
+                    ? ("api/v1/compute/workunits/" + id_str + "/config")
+                    : self->workunit_.config_uri;
                 const QString configUrl = QString::fromStdString(
-                    self->httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/config");
+                    self->httpBaseUrl_ + "/" + config_uri);
 
                 auto* configFile = new QFile(self->selectedConfigFilePath_, self);
                 if (!configFile->open(QIODevice::ReadOnly)) {

@@ -20,6 +20,7 @@
 #include "ores.qt/AppVersionDetailDialog.hpp"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QtConcurrent>
@@ -349,8 +350,18 @@ void AppVersionDetailDialog::updateVersionFromUi() {
                 item->data(Qt::UserRole).toString().toStdString());
     }
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
-    app_version_.package_uri = "api/v1/compute/packages/" +
-        boost::uuids::to_string(app_version_.id);
+    {
+        const std::string base_uri = "api/v1/compute/packages/" +
+            boost::uuids::to_string(app_version_.id);
+        if (!selectedPackageFilePath_.isEmpty()) {
+            // Preserve the full extension (e.g. ".tar.gz") for local inspection.
+            const std::string ext =
+                QFileInfo(selectedPackageFilePath_).completeSuffix().toStdString();
+            app_version_.package_uri = base_uri + (ext.empty() ? "" : "." + ext);
+        } else if (app_version_.package_uri.empty()) {
+            app_version_.package_uri = base_uri;
+        }
+    }
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
 }
@@ -436,7 +447,11 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     }
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
-    const std::string url_str = httpBaseUrl_ + "/api/v1/compute/packages/" + id_str;
+    // Use the extension-aware URI if already set; fall back to bare UUID.
+    const std::string uri = app_version_.package_uri.empty()
+        ? ("api/v1/compute/packages/" + id_str)
+        : app_version_.package_uri;
+    const std::string url_str = httpBaseUrl_ + "/" + uri;
     const QString url = QString::fromStdString(url_str);
 
     BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << url_str

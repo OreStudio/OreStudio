@@ -50,14 +50,16 @@ boost::uuids::uuid get_test_party_id(ores::testing::database_helper& h) {
 }
 
 /**
- * @brief Fetches the first available report type code from the test database.
+ * @brief Returns a stable seeded report type code for use in FK-constrained writes.
  *
- * report_definition.report_type is a FK to the report_types table so all
- * writes need a real code that was seeded by the test infrastructure.
+ * report_definition.report_type is a FK to the report_types table. We use a
+ * specific seeded code (report_type_1) rather than reading from the table to
+ * avoid race conditions with concurrent report_type tests that write and
+ * remove their own synthetic codes.
  */
 std::string get_test_report_type(ores::testing::database_helper& h) {
     ores::reporting::repository::report_type_repository rt_repo;
-    auto types = rt_repo.read_latest(h.context());
+    auto types = rt_repo.read_latest(h.context(), "report_type_1");
     REQUIRE(!types.empty());
     return types.front().code;
 }

@@ -18,6 +18,7 @@
  */
 #include "ores.platform/process/executable.hpp"
 
+#include <array>
 #include <chrono>
 #include <ctime>
 #include <filesystem>

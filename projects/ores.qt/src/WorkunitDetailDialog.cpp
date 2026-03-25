@@ -447,7 +447,7 @@ void WorkunitDetailDialog::onSaveClicked() {
     // Phase 1: upload input file
     if (!selectedInputFilePath_.isEmpty()) {
         const QString inputUrl = QString::fromStdString(
-            httpBaseUrl_ + "/workunits/" + id_str + "/input");
+            httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/input");
 
         auto* inputFile = new QFile(selectedInputFilePath_, this);
         if (!inputFile->open(QIODevice::ReadOnly)) {
@@ -481,10 +481,13 @@ void WorkunitDetailDialog::onSaveClicked() {
             nm->deleteLater();
 
             if (inputReply->error() != QNetworkReply::NoError) {
+                const auto body = inputReply->readAll();
+                const auto detail = body.isEmpty()
+                    ? inputReply->errorString()
+                    : inputReply->errorString() + "\n" + QString::fromUtf8(body);
                 BOOST_LOG_SEV(lg(), error) << "Input file upload failed: "
-                    << inputReply->errorString().toStdString();
-                MessageBoxHelper::critical(self, tr("Upload Failed"),
-                    inputReply->errorString());
+                    << detail.toStdString();
+                MessageBoxHelper::critical(self, tr("Upload Failed"), detail);
                 self->ui_->saveButton->setEnabled(true);
                 return;
             }
@@ -495,7 +498,7 @@ void WorkunitDetailDialog::onSaveClicked() {
             // Phase 2: upload config file
             if (!self->selectedConfigFilePath_.isEmpty()) {
                 const QString configUrl = QString::fromStdString(
-                    self->httpBaseUrl_ + "/workunits/" + id_str + "/config");
+                    self->httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/config");
 
                 auto* configFile = new QFile(self->selectedConfigFilePath_, self);
                 if (!configFile->open(QIODevice::ReadOnly)) {
@@ -528,10 +531,13 @@ void WorkunitDetailDialog::onSaveClicked() {
                     nm2->deleteLater();
 
                     if (configReply->error() != QNetworkReply::NoError) {
+                        const auto body = configReply->readAll();
+                        const auto detail = body.isEmpty()
+                            ? configReply->errorString()
+                            : configReply->errorString() + "\n" + QString::fromUtf8(body);
                         BOOST_LOG_SEV(lg(), error) << "Config file upload failed: "
-                            << configReply->errorString().toStdString();
-                        MessageBoxHelper::critical(self, tr("Upload Failed"),
-                            configReply->errorString());
+                            << detail.toStdString();
+                        MessageBoxHelper::critical(self, tr("Upload Failed"), detail);
                         self->ui_->saveButton->setEnabled(true);
                         return;
                     }

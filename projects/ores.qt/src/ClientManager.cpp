@@ -403,7 +403,7 @@ void ClientManager::unsubscribeFromEvent(const std::string& subject) {
 void ClientManager::disconnect() {
     BOOST_LOG_SEV(lg(), info) << "Disconnecting";
     if (refresh_timer_)
-        refresh_timer_->stop();
+        QMetaObject::invokeMethod(refresh_timer_, &QTimer::stop, Qt::QueuedConnection);
     nats_subscriptions_.clear();
     if (session_.is_logged_in()) {
         logout();
@@ -554,9 +554,11 @@ ClientManager::getSessionSamples(const boost::uuids::uuid& sessionId) {
 void ClientManager::arm_refresh_timer(int lifetime_s) {
     if (!refresh_timer_) return;
     const int fire_ms = static_cast<int>(lifetime_s * refresh_lifetime_ratio * 1000);
-    refresh_timer_->stop();
-    refresh_timer_->start(fire_ms);
     BOOST_LOG_SEV(lg(), debug) << "Refresh timer armed for " << (fire_ms / 1000) << "s";
+    QMetaObject::invokeMethod(refresh_timer_, [this, fire_ms]() {
+        refresh_timer_->stop();
+        refresh_timer_->start(fire_ms);
+    }, Qt::QueuedConnection);
 }
 
 void ClientManager::onRefreshTimer() {

@@ -540,9 +540,12 @@ void process_assignment(ores::nats::service::client& nats,
         const fs::path config_path = job_dir / "config";
         const fs::path output_path = job_dir / "output";
 
-        BOOST_LOG_SEV(lg, info) << "Downloading input and config";
+        BOOST_LOG_SEV(lg, info) << "Downloading input";
         net::http_client::download(make_url(cfg.http_base_url, evt.input_uri), input_path);
-        net::http_client::download(make_url(cfg.http_base_url, evt.config_uri), config_path);
+        if (!evt.config_uri.empty()) {
+            BOOST_LOG_SEV(lg, info) << "Downloading config";
+            net::http_client::download(make_url(cfg.http_base_url, evt.config_uri), config_path);
+        }
 
         // Measure downloaded input bytes for telemetry.
         if (fs::exists(input_path))
@@ -629,13 +632,14 @@ application::run(boost::asio::io_context& io_ctx,
             << cfg.telemetry_interval_seconds << "s interval).";
     }
 
-    // Subscribe to work assignments for our tenant.
-    // Uses a durable queue consumer so multiple wrapper instances on the same
-    // tenant share the load and survive restarts.
-    const std::string work_subject =
-        "compute.v1.work.assignments." + cfg.tenant_id;
+    // Subscribe to all work assignments in this environment.
+    // The NATS subject prefix already scopes assignments per environment
+    // (checkout), so a wildcard here is safe. Dispatcher publishes to
+    // compute.v1.work.assignments.{tenant_uuid} and wrappers consume all.
+    const std::string work_subject = "compute.v1.work.assignments.>";
 
-    // NATS consumer (durable) names cannot contain dots; replace with hyphens.
+    // Durable consumer name is based on the tenant (NATS prefix) to avoid
+    // collisions across checkouts. Dots replaced with hyphens for NATS.
     std::string sanitised_tenant = cfg.tenant_id;
     std::replace(sanitised_tenant.begin(), sanitised_tenant.end(), '.', '-');
     const std::string durable_name = "ores-compute-wrapper-" + sanitised_tenant;

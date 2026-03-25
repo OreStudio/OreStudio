@@ -41,7 +41,7 @@ using namespace ores::logging;
 
 namespace {
 constexpr std::string_view service_name = "ores.scheduler.service";
-constexpr std::string_view service_version = "1.0";
+constexpr std::string_view service_version = ORES_VERSION;
 }
 
 ores::database::context application::make_context(

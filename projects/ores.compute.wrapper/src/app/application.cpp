@@ -626,6 +626,12 @@ application::run(boost::asio::io_context& io_ctx,
     nats.connect();
     BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url;
 
+    // Idle heartbeat — keeps last_rpc_time current even when no job is running.
+    heartbeat_sender idle_hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, nullptr);
+    idle_hb.start();
+    BOOST_LOG_SEV(lg(), info) << "Idle heartbeat sender started ("
+        << cfg.heartbeat_interval_seconds << "s interval).";
+
     // Start telemetry reporter if enabled.
     std::unique_ptr<node_stats_reporter> reporter;
     if (cfg.telemetry_interval_seconds > 0) {
@@ -679,12 +685,15 @@ application::run(boost::asio::io_context& io_ctx,
     co_await signals.async_wait(boost::asio::use_awaitable);
 
     BOOST_LOG_SEV(lg(), info) << "Shutdown signal received. Draining...";
-    nats.drain();
+
+    idle_hb.stop();
 
     if (reporter) {
         reporter->stop();
         BOOST_LOG_SEV(lg(), info) << "Node telemetry reporter stopped.";
     }
+
+    nats.drain();
 
     BOOST_LOG_SEV(lg(), info) << "Service stopped.";
 

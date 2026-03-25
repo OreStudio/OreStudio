@@ -91,6 +91,9 @@ running=0
 starting=0
 stopped_count=0
 missing=0
+nodes_running=0
+nodes_stopped=0
+nodes_missing=0
 
 shopt -s nullglob
 
@@ -98,9 +101,12 @@ for svc in $(printf '%s\n' "${!EXPECTED_SERVICES[@]}" | sort); do
     pid_file="$RUN_DIR/$svc.pid"
     log_file="$LOG_DIR/$svc.log"
 
+    is_node=false
+    [[ "$svc" == ores.compute.wrapper.node* ]] && is_node=true
+
     if [[ ! -f "$pid_file" ]]; then
         printf "  %-10s %-38s %s\n" "missing" "$svc" "(no PID file)"
-        missing=$((missing + 1))
+        if $is_node; then nodes_missing=$((nodes_missing + 1)); else missing=$((missing + 1)); fi
         continue
     fi
 
@@ -108,7 +114,7 @@ for svc in $(printf '%s\n' "${!EXPECTED_SERVICES[@]}" | sort); do
 
     if ! kill -0 "$pid" 2>/dev/null; then
         printf "  %-10s %-38s %s\n" "stopped" "$svc" "PID $pid (dead)"
-        stopped_count=$((stopped_count + 1))
+        if $is_node; then nodes_stopped=$((nodes_stopped + 1)); else stopped_count=$((stopped_count + 1)); fi
         continue
     fi
 
@@ -119,7 +125,7 @@ for svc in $(printf '%s\n' "${!EXPECTED_SERVICES[@]}" | sort); do
     # Process is alive — check whether it logged the readiness marker.
     if [[ -f "$log_file" ]] && grep -q "$ready_pattern" "$log_file" 2>/dev/null; then
         printf "  %-10s %-38s %s\n" "running" "$svc" "PID $pid"
-        running=$((running + 1))
+        if $is_node; then nodes_running=$((nodes_running + 1)); else running=$((running + 1)); fi
     else
         # Show the last log line as a hint (strip timestamp prefix for brevity).
         last_line=""
@@ -129,10 +135,11 @@ for svc in $(printf '%s\n' "${!EXPECTED_SERVICES[@]}" | sort); do
             last_line="${last_line##*\"] }"
         fi
         printf "  %-10s %-38s %s\n" "starting" "$svc" "PID $pid  ${last_line:+(${last_line:0:60})}"
-        starting=$((starting + 1))
+        if $is_node; then nodes_running=$((nodes_running + 1)); else starting=$((starting + 1)); fi
     fi
 done
 
 echo ""
-echo "running=$running  starting=$starting  stopped=$stopped_count  missing=$missing"
+echo "services: running=$running  starting=$starting  stopped=$stopped_count  missing=$missing"
+echo "nodes:    running=$nodes_running  stopped=$nodes_stopped  missing=$nodes_missing"
 echo ""

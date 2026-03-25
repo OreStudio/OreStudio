@@ -209,18 +209,18 @@ void ServiceDashboardMdiWindow::loadSamples() {
             const auto age_secs = duration_cast<seconds>(
                 now - sample.sampled_at).count();
 
-            // RAG status
+            // RAG status: Green=recent, Amber=slightly stale, Offline=stopped
             QString status_text;
             QColor  status_color;
             if (age_secs < 30) {
                 status_text  = tr("Green");
                 status_color = badge_colors::online;
-            } else if (age_secs < 90) {
+            } else if (age_secs < 120) {
                 status_text  = tr("Amber");
                 status_color = badge_colors::old;
             } else {
-                status_text  = tr("Red");
-                status_color = badge_colors::locked;
+                status_text  = tr("Offline");
+                status_color = badge_colors::unlocked;
             }
 
             auto makeItem = [](const QString& text) {

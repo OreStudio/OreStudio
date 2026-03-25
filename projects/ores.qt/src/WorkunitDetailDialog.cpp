@@ -347,7 +347,9 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
 
     const std::string id_str = boost::uuids::to_string(workunit_.id);
     workunit_.input_uri = "api/v1/compute/workunits/" + id_str + "/input";
-    workunit_.config_uri = "api/v1/compute/workunits/" + id_str + "/config";
+    workunit_.config_uri = selectedConfigFilePath_.isEmpty()
+        ? std::string{}
+        : "api/v1/compute/workunits/" + id_str + "/config";
     workunit_.priority = ui_->prioritySpinBox->value();
     workunit_.target_redundancy = ui_->redundancySpinBox->value();
     workunit_.modified_by = username_;
@@ -358,7 +360,7 @@ void WorkunitDetailDialog::onBrowseInputClicked() {
     const QString path = QFileDialog::getOpenFileName(
         this, tr("Select Input File"),
         QString(),
-        tr("Zip Files (*.zip);;All Files (*)"));
+        tr("Archive Files (*.zip *.tar.gz *.tgz);;All Files (*)"));
 
     if (!path.isEmpty()) {
         selectedInputFilePath_ = path;
@@ -399,9 +401,9 @@ bool WorkunitDetailDialog::validateInput() {
     if (batch_id.isEmpty() || app_version_id.isEmpty())
         return false;
 
-    // Files required for create mode
+    // Input file required for create mode; config is optional
     if (createMode_) {
-        if (selectedInputFilePath_.isEmpty() || selectedConfigFilePath_.isEmpty())
+        if (selectedInputFilePath_.isEmpty())
             return false;
     }
 
@@ -417,8 +419,7 @@ void WorkunitDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in Batch ID and App Version ID (valid UUIDs), "
-            "and select input and config files.");
+            "Please select a Batch, an App Version, and an input file.");
         return;
     }
 

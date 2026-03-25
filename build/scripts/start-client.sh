@@ -29,10 +29,10 @@ LOG_LEVEL="debug"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --preset)         PRESET_ARG="$2";    shift 2 ;;
-        --colour|--color) COLOUR="$2";        shift 2 ;;
-        --name)           INSTANCE_NAME="$2"; shift 2 ;;
-        --log-level)      LOG_LEVEL="$2";     shift 2 ;;
+        --preset)         [[ -z "${2:-}" || "$2" == -* ]] && { echo "error: $1 requires a value" >&2; exit 1; }; PRESET_ARG="$2";    shift 2 ;;
+        --colour|--color) [[ -z "${2:-}" || "$2" == -* ]] && { echo "error: $1 requires a value" >&2; exit 1; }; COLOUR="$2";        shift 2 ;;
+        --name)           [[ -z "${2:-}" || "$2" == -* ]] && { echo "error: $1 requires a value" >&2; exit 1; }; INSTANCE_NAME="$2"; shift 2 ;;
+        --log-level)      [[ -z "${2:-}" || "$2" == -* ]] && { echo "error: $1 requires a value" >&2; exit 1; }; LOG_LEVEL="$2";     shift 2 ;;
         -h|--help)
             sed -n '/^# /s/^# \?//p' "$0" | head -17
             exit 0
@@ -132,7 +132,6 @@ ARGS=(
     --log-level "$LOG_LEVEL"
     --log-directory ../log
     --log-filename "$LOG_FILE"
-    --compression-enabled
 )
 
 if [[ -n "$INSTANCE_NAME" ]]; then

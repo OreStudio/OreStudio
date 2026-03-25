@@ -25,7 +25,7 @@ PRESET_ARG=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --preset) PRESET_ARG="$2"; shift 2 ;;
+        --preset) [[ -z "${2:-}" || "$2" == -* ]] && { echo "error: $1 requires a value" >&2; exit 1; }; PRESET_ARG="$2"; shift 2 ;;
         -h|--help)
             sed -n '/^# /s/^# \?//p' "$0" | head -17
             exit 0

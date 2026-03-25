@@ -42,7 +42,12 @@ LOGGING_LEVEL="debug"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -y|--yes) ASSUME_YES=1 ;;
-        --preset) PRESET="$2"; shift ;;
+        --preset)
+            if [[ -z "${2:-}" || "${2}" == -* ]]; then
+                echo "Error: --preset requires a value." >&2
+                exit 1
+            fi
+            PRESET="$2"; shift ;;
         --enable-logging)
             LOGGING_OP="enable"
             if [[ -n "${2:-}" && "${2}" != -* ]]; then
@@ -87,8 +92,8 @@ if [[ -n "${LOGGING_OP}" ]]; then
     exit 0
 fi
 
-# --preset is required for a full initialisation.
-if [[ -z "${PRESET}" ]]; then
+# --preset is required for local runs; in CI the preset comes from the workflow.
+if [[ -z "${PRESET}" && -z "${CI:-}" ]]; then
     echo "Error: --preset is required." >&2
     echo "  Example: ./build/scripts/init-environment.sh --preset linux-clang-debug-ninja" >&2
     exit 1
@@ -279,7 +284,12 @@ cat > "${ENV_FILE}" << EOF
 # Checkout identity
 # ---------------------------------------------------------------------------
 ORES_CHECKOUT_LABEL=${LABEL}
-ORES_PRESET=${PRESET}
+EOF
+# Only write ORES_PRESET when a preset was provided (not in CI).
+if [[ -n "${PRESET}" ]]; then
+    echo "ORES_PRESET=${PRESET}" >> "${ENV_FILE}"
+fi
+cat >> "${ENV_FILE}" << EOF
 ORES_DATABASE_NAME=${DB_NAME}
 ORES_NATS_URL=${NATS_URL}
 ORES_NATS_SUBJECT_PREFIX=${NATS_PREFIX}

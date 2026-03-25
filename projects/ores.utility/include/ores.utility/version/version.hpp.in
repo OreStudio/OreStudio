@@ -20,46 +20,34 @@
 #define ORES_UTILITY_VERSION_VERSION_HPP
 
 #include <string>
-#include <sstream>
 #include <cstdint>
 
 #define ORES_VERSION_MAJOR @OreStudio_VERSION_MAJOR@
 #define ORES_VERSION_MINOR @OreStudio_VERSION_MINOR@
 #define ORES_VERSION_PATCH @OreStudio_VERSION_PATCH@
 #define ORES_VERSION "@OreStudio_VERSION_MAJOR@.@OreStudio_VERSION_MINOR@.@OreStudio_VERSION_PATCH@"
-#define ORES_BUILD_INFO "@ORES_BUILD_INFO@"
 
 namespace ores::utility::version {
 
 /**
- * @brief Formats a startup message with version and build info.
+ * @brief Returns the build info string stamped at build time.
  *
- * @param service_name Name of the service (e.g., "ORE Studio Web")
- * @return Formatted startup string
+ * Contains the git commit hash, dirty flag, and wall-clock timestamp for
+ * local builds, or CI provider/number/commit/timestamp for CI builds.
+ * Implemented in a generated .cpp so only that one TU recompiles per build.
  */
-inline std::string format_startup_message(const std::string& service_name) {
-    std::ostringstream ss;
-    ss << "Starting " << service_name << " v" << ORES_VERSION
-       << " (" << ORES_BUILD_INFO << ")";
-    return ss.str();
-}
+const char* build_info();
+
+/**
+ * @brief Formats a startup message with version and build info.
+ */
+std::string format_startup_message(const std::string& service_name);
 
 /**
  * @brief Formats a startup message with version, protocol, and build info.
- *
- * @param service_name Name of the service (e.g., "ORE Studio Service")
- * @param protocol_major Protocol major version
- * @param protocol_minor Protocol minor version
- * @return Formatted startup string
  */
-inline std::string format_startup_message(const std::string& service_name,
-    std::uint16_t protocol_major, std::uint16_t protocol_minor) {
-    std::ostringstream ss;
-    ss << "Starting " << service_name << " v" << ORES_VERSION
-       << " Protocol " << protocol_major << "." << protocol_minor
-       << " (" << ORES_BUILD_INFO << ")";
-    return ss.str();
-}
+std::string format_startup_message(const std::string& service_name,
+    std::uint16_t protocol_major, std::uint16_t protocol_minor);
 
 }
 

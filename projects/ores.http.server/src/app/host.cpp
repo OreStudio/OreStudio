@@ -62,7 +62,7 @@ host::execute(const std::vector<std::string>& args, std::ostream& std_output,
      * Log the configuration and command line arguments.
      */
     BOOST_LOG_SEV(lg(), info) << "ORES HTTP Server v" << ORES_VERSION
-                              << " starting (" << ORES_BUILD_INFO << ")...";
+                              << " starting (" << ores::utility::version::build_info() << ")...";
     BOOST_LOG_SEV(lg(), info) << "Command line arguments: " << args;
     BOOST_LOG_SEV(lg(), debug) << "Configuration: " << cfg;
 

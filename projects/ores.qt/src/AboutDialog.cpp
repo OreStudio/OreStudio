@@ -74,7 +74,7 @@ void AboutDialog::showEvent(QShowEvent* e) {
 
         const QString text = QString("v%1 %2")
                                  .arg(ORES_VERSION)
-                                 .arg(ORES_BUILD_INFO);
+                                 .arg(ores::utility::version::build_info());
         logoLabel_->setTextOverlay(text);
 
         BOOST_LOG_SEV(lg(), debug) << "Scaled successfully.";
@@ -110,7 +110,7 @@ void AboutDialog::populateSystemInfo() {
         item->setText(0, "Client");
         item->setText(1, QString("v%1 (%2)")
             .arg(ORES_VERSION)
-            .arg(ORES_BUILD_INFO));
+            .arg(ores::utility::version::build_info()));
     }
 
     // Shrink the Component column to its content; Version gets the rest

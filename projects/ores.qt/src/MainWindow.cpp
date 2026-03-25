@@ -1056,17 +1056,19 @@ MainWindow::MainWindow(QWidget* parent) :
         BOOST_LOG_SEV(lg(), warn) << "System tray is not available on this system";
     }
 
-    // Set window size and center on screen
-    resize(1400, 900);
-
-    // Center window on screen
-    if (auto* screen = QApplication::primaryScreen()) {
-        const QRect screenGeometry = screen->geometry();
-        const int x = (screenGeometry.width() - width()) / 2;
-        const int y = (screenGeometry.height() - height()) / 2;
-        move(x, y);
-        BOOST_LOG_SEV(lg(), debug) << "Window centered at ("
-                                   << x << ", " << y << ")";
+    // Restore saved geometry, or fall back to 1400x900 centred on screen
+    QSettings settings;
+    if (settings.contains("mainwindow/geometry")) {
+        restoreGeometry(settings.value("mainwindow/geometry").toByteArray());
+        BOOST_LOG_SEV(lg(), debug) << "Restored saved window geometry";
+    } else {
+        resize(1400, 900);
+        if (auto* screen = QApplication::primaryScreen()) {
+            const QRect screenGeometry = screen->geometry();
+            move((screenGeometry.width() - width()) / 2,
+                 (screenGeometry.height() - height()) / 2);
+            BOOST_LOG_SEV(lg(), debug) << "No saved geometry; centred window on screen";
+        }
     }
 
     // Set initial window title (version only, no connection info yet)
@@ -1143,6 +1145,9 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     }
 
     BOOST_LOG_SEV(lg(), debug) << "User confirmed exit, closing application";
+
+    QSettings settings;
+    settings.setValue("mainwindow/geometry", saveGeometry());
 
     // Close all detachable windows first
     // Make a copy of the list since closing windows modifies the original list

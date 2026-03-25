@@ -71,7 +71,7 @@ if [[ -n "${LOGGING_OP}" ]]; then
     sed -i 's/[[:space:]]*$//' "${tmp}"
 
     if [[ "${LOGGING_OP}" == "enable" ]]; then
-        printf '\n# Test logging\nORES_TEST_LOG_LEVEL=%s\nORES_TEST_LOG_CONSOLE=true\n' \
+        printf '\n# Test logging\nORES_TEST_LOG_ENABLED=true\nORES_TEST_LOG_LEVEL=%s\nORES_TEST_LOG_CONSOLE=true\n' \
             "${LOGGING_LEVEL}" >> "${tmp}"
         echo "Test logging enabled (level=${LOGGING_LEVEL})."
     else

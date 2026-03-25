@@ -92,69 +92,37 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 option(WITH_WT "Build the Wt web interface (requires Wt library)" ON)
 
 #
-# Test logging configuration.
-# ORES_TEST_LOG_LEVEL: Set to a log level (trace, debug, info, warn, error) to
-#                      enable test logging. Default is OFF (logging disabled).
-# ORES_TEST_LOG_CONSOLE: Set to ON to also output logs to console.
-# ORES_TEST_LOG_DATABASE: Set to ON to also write logs to the telemetry database.
-#
-# Example usage:
-#   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug
-#   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=trace -DORES_TEST_LOG_CONSOLE=ON
-#   cmake --preset linux-clang-debug -DORES_TEST_LOG_LEVEL=debug -DORES_TEST_LOG_DATABASE=ON
-#
-set(ORES_TEST_LOG_LEVEL "OFF" CACHE STRING "Test log level (OFF, trace, debug, info, warn, error)")
-set_property(CACHE ORES_TEST_LOG_LEVEL PROPERTY STRINGS OFF trace debug info warn error)
-option(ORES_TEST_LOG_CONSOLE "Enable console output for test logs" OFF)
-option(ORES_TEST_LOG_DATABASE "Enable database output for test logs" OFF)
-
-#
 # Test environment variables: applied to all test targets.
-# ORES_TEST_PASSWORD_FAST: Use fast scrypt parameters (16x faster) for tests.
-# ORES_TEST_DB_*: Database credentials loaded from .env for local development.
-#                 In CI these are already in the process environment via $GITHUB_ENV.
+# All variables from .env are forwarded verbatim to test processes (except the
+# JWT private key which is multi-line encoded and not needed by tests). In CI
+# the process environment already contains the required variables so .env is
+# not read. ORES_TEST_PASSWORD_FAST enables fast scrypt parameters for tests.
 #
 set(ORES_TEST_ENV "ORES_TEST_PASSWORD_FAST=1")
 
-# Load ORES_TEST_DB_* credentials and logging settings from .env for local
-# development. Skipped in CI environments where variables are already exported.
+# Load all variables from .env for local development. Skipped in CI
+# environments where variables are already exported into the process env.
+# .env is registered as a configure-time dependency so any change triggers
+# an automatic re-configure on the next make/cmake --build invocation.
 if(NOT DEFINED ENV{CI})
-    set(ORES_ENV_FILE "${CMAKE_SOURCE_DIR}/.env")
-    if(EXISTS "${ORES_ENV_FILE}")
-        # Reset logging to defaults before reading .env so that absence of a
-        # variable (e.g. after --disable-logging) correctly maps to disabled.
-        set(ORES_TEST_LOG_LEVEL "OFF" CACHE STRING "" FORCE)
-        set(ORES_TEST_LOG_CONSOLE OFF CACHE BOOL "" FORCE)
-        file(STRINGS "${ORES_ENV_FILE}" _ores_env_lines)
+    set(_ores_env_file "${CMAKE_SOURCE_DIR}/.env")
+    if(EXISTS "${_ores_env_file}")
+        set_property(DIRECTORY APPEND PROPERTY
+            CMAKE_CONFIGURE_DEPENDS "${_ores_env_file}")
+        file(STRINGS "${_ores_env_file}" _ores_env_lines)
         foreach(_line ${_ores_env_lines})
-            # Skip the JWT private key — it's long and tests don't need it
+            # Only process KEY=value lines; skip comments and blank lines
+            if(NOT _line MATCHES "^[A-Za-z_][A-Za-z0-9_]*=")
+                continue()
+            endif()
+            # Skip the JWT private key — too long and tests don't need it
             if(_line MATCHES "^ORES_IAM_SERVICE_JWT_PRIVATE_KEY")
                 continue()
-            elseif(_line MATCHES "^ORES_TEST_LOG_LEVEL=(.+)")
-                set(ORES_TEST_LOG_LEVEL "${CMAKE_MATCH_1}" CACHE STRING "" FORCE)
-            elseif(_line MATCHES "^ORES_TEST_LOG_CONSOLE=true")
-                set(ORES_TEST_LOG_CONSOLE ON CACHE BOOL "" FORCE)
-            elseif(_line MATCHES "^ORES_")
-                string(APPEND ORES_TEST_ENV ";${_line}")
             endif()
+            string(APPEND ORES_TEST_ENV ";${_line}")
         endforeach()
-        message(STATUS "Loaded test credentials and logging settings from .env")
+        message(STATUS "Loaded .env into test environment")
     endif()
-endif()
-
-# Add logging environment variables if logging is enabled
-if(NOT ORES_TEST_LOG_LEVEL STREQUAL "OFF")
-    string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_ENABLED=true")
-    string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_LEVEL=${ORES_TEST_LOG_LEVEL}")
-    if(ORES_TEST_LOG_CONSOLE)
-        string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_CONSOLE=true")
-    endif()
-    if(ORES_TEST_LOG_DATABASE)
-        string(APPEND ORES_TEST_ENV ";ORES_TEST_LOG_DATABASE=true")
-    endif()
-    message(STATUS "Test logging: ENABLED (level=${ORES_TEST_LOG_LEVEL}, console=${ORES_TEST_LOG_CONSOLE}, database=${ORES_TEST_LOG_DATABASE})")
-else()
-    message(STATUS "Test logging: DISABLED (use -DORES_TEST_LOG_LEVEL=debug to enable)")
 endif()
 
 # Command prefix for add_custom_target test runners: injects the test

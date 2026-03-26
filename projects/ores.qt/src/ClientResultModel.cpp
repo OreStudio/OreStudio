@@ -24,6 +24,7 @@
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/HostDisplayNameCache.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -104,10 +105,13 @@ QVariant ClientResultModel::data(
         case WorkunitId:
             return QString::fromStdString(boost::uuids::to_string(result.workunit_id));
         case HostId: {
-            const auto uid = boost::uuids::to_string(result.host_id);
-            return uid == "00000000-0000-0000-0000-000000000000"
-                ? QString{}
-                : QString::fromStdString(uid);
+            if (result.host_id == boost::uuids::uuid{})
+                return QString{};
+            const auto quuid = QString::fromStdString(
+                boost::uuids::to_string(result.host_id));
+            return host_name_cache_
+                ? host_name_cache_->display_name_for(quuid)
+                : quuid;
         }
         case ServerState:
             return format_state(result.server_state);
@@ -130,10 +134,19 @@ QVariant ClientResultModel::data(
         }
     }
 
+    if (role == Qt::ToolTipRole && index.column() == HostId
+            && host_name_cache_ && result.host_id != boost::uuids::uuid{}) {
+        return QString::fromStdString(boost::uuids::to_string(result.host_id));
+    }
+
     if (role == Qt::ForegroundRole)
         return recency_foreground_color(result.modified_by);
 
     return {};
+}
+
+void ClientResultModel::set_host_name_cache(HostDisplayNameCache* cache) {
+    host_name_cache_ = cache;
 }
 
 QVariant ClientResultModel::headerData(
@@ -145,7 +158,7 @@ QVariant ClientResultModel::headerData(
     case WorkunitId:
         return tr("Workunit ID");
     case HostId:
-        return tr("Host ID");
+        return tr("Host");
     case ServerState:
         return tr("State");
     case Outcome:

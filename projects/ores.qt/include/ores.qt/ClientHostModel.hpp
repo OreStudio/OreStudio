@@ -56,6 +56,7 @@ public:
      * @brief Enumeration of table columns for type-safe column access.
      */
     enum Column {
+        DisplayName,  ///< Whimsical name; UUID in Qt::ToolTipRole
         ExternalId,
         Location,
         CpuCount,

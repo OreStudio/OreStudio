@@ -25,6 +25,7 @@
 #include <QAbstractTableModel>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.qt/HostDisplayNameCache.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -70,6 +71,13 @@ public:
 
     explicit ClientResultModel(ClientManager* clientManager,
                                        QObject* parent = nullptr);
+
+    /**
+     * @brief Sets the host display-name cache used to render the Host column.
+     *
+     * The cache is not owned by this model. Pass nullptr to revert to raw UUID.
+     */
+    void set_host_name_cache(HostDisplayNameCache* cache);
     ~ClientResultModel() override = default;
 
     // QAbstractTableModel interface
@@ -140,6 +148,7 @@ private:
     void fetch_results(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
+    HostDisplayNameCache* host_name_cache_{nullptr}; // not owned
     std::vector<compute::domain::result> results_;
     QFutureWatcher<FetchResult>* watcher_;
     std::uint32_t page_size_{100};

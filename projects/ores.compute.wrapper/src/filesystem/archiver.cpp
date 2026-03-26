@@ -126,13 +126,15 @@ void archiver::extract(const fs::path& archive_path,
             throw std::runtime_error(std::string("archive read error: ")
                 + archive_error_string(a.get()));
 
+        const char* raw = archive_entry_pathname(entry);
+        if (!raw)
+            throw std::runtime_error("archive entry has no pathname");
+
 #ifdef _WIN32
-        const fs::path rel(reinterpret_cast<const char8_t*>(
-            archive_entry_pathname(entry)));
+        const fs::path rel(reinterpret_cast<const char8_t*>(raw));
         archive_entry_copy_pathname_w(entry, (dest_dir / rel).c_str());
 #else
-        archive_entry_set_pathname(entry,
-            (dest_dir / archive_entry_pathname(entry)).c_str());
+        archive_entry_set_pathname(entry, (dest_dir / raw).c_str());
 #endif
 
         if (archive_write_header(out.get(), entry) < ARCHIVE_OK)

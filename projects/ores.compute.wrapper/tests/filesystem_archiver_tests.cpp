@@ -180,9 +180,11 @@ TEST_CASE("pack_and_extract_binary_content_roundtrip", tags) {
     REQUIRE(fs::exists(extracted));
     REQUIRE(fs::file_size(extracted) == original.size());
 
-    std::ifstream f(extracted, std::ios::binary);
-    const std::vector<char> actual(
-        std::istreambuf_iterator<char>(f), {});
+    std::vector<char> actual;
+    {
+        std::ifstream f(extracted, std::ios::binary);
+        actual.assign(std::istreambuf_iterator<char>(f), {});
+    }
     CHECK(actual == original);
 
     fs::remove_all(scratch);

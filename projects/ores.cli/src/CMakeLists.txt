@@ -51,6 +51,7 @@ target_link_libraries(${lib_target_name}
         ores.variability.core.lib
         ores.security.lib
         ores.compute.core.lib
+        ores.trading.core.lib
         magic_enum::magic_enum
         cli::cli)
 

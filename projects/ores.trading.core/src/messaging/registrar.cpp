@@ -19,6 +19,7 @@
  */
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/trade_handler.hpp"
+#include "ores.trading.core/messaging/instrument_ref_handler.hpp"
 
 namespace ores::trading::messaging {
 
@@ -62,6 +63,151 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             trade_handler h(nats, ctx, verifier);
             h.history(std::move(msg));
+        }));
+
+    // Instrument reference data — day count fraction types
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_day_count_fraction_types_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.list_day_count_fraction_types(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_day_count_fraction_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.save_day_count_fraction_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_day_count_fraction_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.delete_day_count_fraction_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_day_count_fraction_type_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.history_day_count_fraction_type(std::move(msg));
+        }));
+
+    // Instrument reference data — business day convention types
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_business_day_convention_types_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.list_business_day_convention_types(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_business_day_convention_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.save_business_day_convention_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_business_day_convention_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.delete_business_day_convention_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_business_day_convention_type_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.history_business_day_convention_type(std::move(msg));
+        }));
+
+    // Instrument reference data — floating index types
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_floating_index_types_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.list_floating_index_types(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_floating_index_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.save_floating_index_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_floating_index_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.delete_floating_index_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_floating_index_type_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.history_floating_index_type(std::move(msg));
+        }));
+
+    // Instrument reference data — payment frequency types
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_payment_frequency_types_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.list_payment_frequency_types(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_payment_frequency_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.save_payment_frequency_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_payment_frequency_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.delete_payment_frequency_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_payment_frequency_type_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.history_payment_frequency_type(std::move(msg));
+        }));
+
+    // Instrument reference data — leg types
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_leg_types_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.list_leg_types(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_leg_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.save_leg_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_leg_type_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.delete_leg_type(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_leg_type_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_ref_handler h(nats, ctx, verifier);
+            h.history_leg_type(std::move(msg));
         }));
 
     return subs;

@@ -42,6 +42,22 @@
 \ir ./trading_trade_id_types_create.sql
 \ir ./trading_trade_id_types_notify_trigger_create.sql
 
+-- Instrument reference data
+\ir ./trading_day_count_fraction_types_create.sql
+\ir ./trading_day_count_fraction_types_notify_trigger_create.sql
+
+\ir ./trading_business_day_convention_types_create.sql
+\ir ./trading_business_day_convention_types_notify_trigger_create.sql
+
+\ir ./trading_floating_index_types_create.sql
+\ir ./trading_floating_index_types_notify_trigger_create.sql
+
+\ir ./trading_payment_frequency_types_create.sql
+\ir ./trading_payment_frequency_types_notify_trigger_create.sql
+
+\ir ./trading_leg_types_create.sql
+\ir ./trading_leg_types_notify_trigger_create.sql
+
 -- Trades (depends on reference data above)
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql

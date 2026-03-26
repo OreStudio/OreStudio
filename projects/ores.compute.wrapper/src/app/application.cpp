@@ -31,10 +31,16 @@
 #include <sstream>
 #include <span>
 #include <thread>
+#include <boost/asio/connect_pipe.hpp>
+#include <boost/asio/read.hpp>
+#include <boost/asio/readable_pipe.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/writable_pipe.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/process/v2/process.hpp>
+#include <boost/process/v2/start_dir.hpp>
+#include <boost/process/v2/stdio.hpp>
 #include <archive.h>
 #include <archive_entry.h>
 #include <rfl/json.hpp>
@@ -319,6 +325,7 @@ void submit_result(ores::nats::service::client& nats,
     const std::string& host_id,
     const std::string& output_uri,
     int outcome,
+    const std::string& error_message,
     auto& lg) {
 
     compute::messaging::submit_result_request req;
@@ -326,6 +333,7 @@ void submit_result(ores::nats::service::client& nats,
     req.host_id = host_id;
     req.output_uri = output_uri;
     req.outcome = outcome;
+    req.error_message = error_message;
 
     const auto json = rfl::json::write(req);
     const auto* p = reinterpret_cast<const std::byte*>(json.data());
@@ -386,6 +394,38 @@ manifest read_manifest(const fs::path& package_dir) {
     if (!m)
         throw std::runtime_error("Failed to parse manifest.json: " + m.error().what());
     return *m;
+}
+
+/**
+ * @brief Format a command line as a shell-pasteable string for diagnostics.
+ *
+ * Each token is single-quoted so the output can be pasted verbatim into a
+ * shell even if paths contain spaces.
+ */
+std::string format_cmdline(const std::string& exe,
+    const std::vector<std::string>& args) {
+    std::string s = "'" + exe + "'";
+    for (const auto& a : args)
+        s += " '" + a + "'";
+    return s;
+}
+
+/**
+ * @brief Read up to max_lines from a text file, returning them joined by '\n'.
+ */
+std::string tail_file(const fs::path& path, int max_lines = 50) {
+    std::ifstream f(path);
+    if (!f) return {};
+    std::vector<std::string> lines;
+    std::string line;
+    while (std::getline(f, line))
+        lines.push_back(std::move(line));
+    const int start = static_cast<int>(lines.size()) > max_lines
+        ? static_cast<int>(lines.size()) - max_lines : 0;
+    std::string out;
+    for (int i = start; i < static_cast<int>(lines.size()); ++i)
+        out += lines[i] + "\n";
+    return out;
 }
 
 /**
@@ -518,6 +558,7 @@ void process_assignment(ores::nats::service::client& nats,
     // Start with ClientError; success path will set it to 1.
     int outcome = 3;
     std::string output_uri = evt.output_uri;
+    std::string error_message;
     std::int64_t input_bytes = 0;
     std::int64_t output_bytes = 0;
     std::int64_t duration_ms = 0;
@@ -564,23 +605,82 @@ void process_assignment(ores::nats::service::client& nats,
         const auto args = substitute_args(mf.args,
             input_path.string(), config_path.string(), output_path.string());
 
-        BOOST_LOG_SEV(lg, info) << "Launching engine: " << exe.string();
+        // Log exact command line so it can be reproduced manually.
+        const fs::path engine_log_path = job_dir / "engine.log";
+        BOOST_LOG_SEV(lg, info) << "Engine command: "
+            << format_cmdline(exe.string(), args);
+        BOOST_LOG_SEV(lg, info) << "Engine log:     " << engine_log_path.string();
+        BOOST_LOG_SEV(lg, info) << "Job directory:  " << job_dir.string();
+        BOOST_LOG_SEV(lg, info) << "Working dir:    " << fs::current_path().string();
+        BOOST_LOG_SEV(lg, info) << "ORE log:        " << (job_dir / "log.txt").string();
+
         namespace bp2 = boost::process::v2;
         boost::asio::io_context proc_ioc;
+
+        // Redirect engine stdout+stderr to engine.log via pipes (cross-platform).
+        boost::asio::readable_pipe out_r(proc_ioc), err_r(proc_ioc);
+        boost::asio::writable_pipe out_w(proc_ioc), err_w(proc_ioc);
+        boost::asio::connect_pipe(out_r, out_w);
+        boost::asio::connect_pipe(err_r, err_w);
 
         const auto engine_start = std::chrono::steady_clock::now();
         bp2::process engine_proc(
             boost::asio::any_io_executor(proc_ioc.get_executor()),
-            boost::filesystem::path(exe.string()), args);
+            boost::filesystem::path(exe.string()), args,
+            bp2::process_start_dir(job_dir.string()),
+            bp2::process_stdio{.in = nullptr, .out = out_w, .err = err_w});
+
+        // Close write ends so readers see EOF when the process exits.
+        out_w.close();
+        err_w.close();
+
+        // Drain stdout and stderr concurrently to avoid pipe-buffer deadlock.
+        std::string out_buf, err_buf;
+        boost::system::error_code out_ec, err_ec;
+        std::thread t_out([&] {
+            boost::asio::read(out_r, boost::asio::dynamic_buffer(out_buf), out_ec);
+        });
+        std::thread t_err([&] {
+            boost::asio::read(err_r, boost::asio::dynamic_buffer(err_buf), err_ec);
+        });
+        t_out.join();
+        t_err.join();
+
         engine_proc.wait();
         const auto engine_end = std::chrono::steady_clock::now();
         duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             engine_end - engine_start).count();
 
+        // Write combined output to engine.log.
+        {
+            std::ofstream engine_log(engine_log_path,
+                std::ios::out | std::ios::trunc);
+            if (engine_log) {
+                if (!out_buf.empty()) engine_log << out_buf;
+                if (!err_buf.empty()) engine_log << err_buf;
+            } else {
+                BOOST_LOG_SEV(lg, warn) << "Cannot open engine log: "
+                    << engine_log_path.string();
+            }
+        }
+
         const int exit_code = engine_proc.exit_code();
 
         if (exit_code != 0) {
+            // Include ORE's own log (log.txt) in the error — it has more
+            // detail than stdout/stderr. Fall back to engine.log (our pipe
+            // capture) if log.txt wasn't produced.
+            const fs::path ore_log_path = job_dir / "log.txt";
+            const auto ore_log = fs::exists(ore_log_path)
+                ? tail_file(ore_log_path) : std::string{};
+            const auto engine_output = ore_log.empty()
+                ? tail_file(engine_log_path) : ore_log;
+            error_message = "Engine exited with code "
+                + std::to_string(exit_code)
+                + (engine_output.empty() ? "" : "\n" + engine_output);
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
+            if (!engine_output.empty())
+                BOOST_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;
             outcome = 3; // ClientError
         } else {
             // 4. Upload output
@@ -592,6 +692,7 @@ void process_assignment(ores::nats::service::client& nats,
             outcome = 1; // Success
         }
     } catch (const std::exception& e) {
+        error_message = e.what();
         BOOST_LOG_SEV(lg, error) << "Job failed: " << e.what();
         outcome = 3; // ClientError
     }
@@ -606,7 +707,7 @@ void process_assignment(ores::nats::service::client& nats,
             reporter->record_task_failed();
     }
 
-    submit_result(nats, evt.result_id, cfg.host_id, output_uri, outcome, lg);
+    submit_result(nats, evt.result_id, cfg.host_id, output_uri, outcome, error_message, lg);
 }
 
 } // namespace

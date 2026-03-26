@@ -477,7 +477,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     auto* reply = networkManager->post(request, file);
 
     connect(reply, &QNetworkReply::finished, this,
-            [self, reply, file, networkManager]() {
+            [self, reply, file, networkManager, ext]() {
         if (!self) { reply->deleteLater(); file->deleteLater();
                      networkManager->deleteLater(); return; }
 
@@ -501,6 +501,15 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
 
         BOOST_LOG_SEV(lg(), info) << "Package uploaded successfully for app_version: "
                                   << boost::uuids::to_string(self->app_version_.id);
+
+        // Update in-memory package_uri with the extension-bearing path so that
+        // any subsequent save will persist the correct URI.
+        const std::string new_uri = "api/v1/compute/packages/"
+            + boost::uuids::to_string(self->app_version_.id)
+            + (ext.isEmpty() ? std::string{} : "." + ext.toStdString());
+        self->app_version_.package_uri = new_uri;
+        BOOST_LOG_SEV(lg(), info) << "Updated in-memory package_uri: " << new_uri;
+
         emit self->statusMessage(tr("Package uploaded successfully"));
         MessageBoxHelper::information(self, tr("Upload Complete"),
             tr("Package uploaded successfully."));

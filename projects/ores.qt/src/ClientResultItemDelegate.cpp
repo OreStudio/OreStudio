@@ -106,6 +106,12 @@ void ClientResultItemDelegate::paint(QPainter* painter,
         opt.font = monospaceFont_;
         opt.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
         break;
+    case Column::ErrorMessage: {
+        const QString text = index.data(Qt::DisplayRole).toString();
+        if (!text.isEmpty())
+            opt.palette.setColor(QPalette::Text, QColor(239, 68, 68)); // red
+        break;
+    }
     case Column::Version:
         opt.font = monospaceFont_;
         opt.displayAlignment = Qt::AlignCenter;

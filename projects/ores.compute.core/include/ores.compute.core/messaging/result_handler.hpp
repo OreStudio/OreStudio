@@ -116,7 +116,9 @@ public:
                     } catch (...) {}
                 }
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                r.change_commentary = "Output received from wrapper";
+                r.change_commentary = req->error_message.empty()
+                    ? "Output received from wrapper"
+                    : req->error_message;
                 stamp(r, ctx);
                 result_svc.save(r);
 

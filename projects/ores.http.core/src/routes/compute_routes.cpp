@@ -124,14 +124,34 @@ compute_routes::handle_get_package(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "GET package: " << id;
 
     try {
-        const auto path = storage_dir_ + "/packages/" + id;
-        auto data = read_file(path);
-        http_response resp;
-        resp.status = http_status::ok;
-        resp.content_type = "application/octet-stream";
-        resp.body = std::move(data);
-        co_return resp;
-    } catch (const std::runtime_error&) {
+        // Try exact path first (id already contains extension, e.g. "{uuid}.tar.gz").
+        const auto exact = storage_dir_ + "/packages/" + id;
+        if (fs::exists(exact)) {
+            auto data = read_file(exact);
+            http_response resp;
+            resp.status = http_status::ok;
+            resp.content_type = "application/octet-stream";
+            resp.body = std::move(data);
+            co_return resp;
+        }
+
+        // Fall back: scan for any file whose name starts with the given id.
+        // This handles the case where package_uri was saved without extension.
+        const auto pkg_dir = fs::path(storage_dir_) / "packages";
+        for (const auto& entry : fs::directory_iterator(pkg_dir)) {
+            if (!entry.is_regular_file()) continue;
+            if (entry.path().filename().string().starts_with(id)) {
+                BOOST_LOG_SEV(lg(), debug) << "GET package: resolved "
+                    << id << " -> " << entry.path().filename().string();
+                auto data = read_file(entry.path().string());
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "application/octet-stream";
+                resp.body = std::move(data);
+                co_return resp;
+            }
+        }
+
         co_return http_response::not_found("Package not found: " + id);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "GET package error: " << e.what();

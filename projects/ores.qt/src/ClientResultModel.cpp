@@ -113,6 +113,10 @@ QVariant ClientResultModel::data(
             return format_state(result.server_state);
         case Outcome:
             return format_outcome(result.outcome);
+        case ErrorMessage:
+            return result.outcome != 1 && !result.change_commentary.empty()
+                ? QString::fromStdString(result.change_commentary)
+                : QString{};
         case OutputUri:
             return QString::fromStdString(result.output_uri);
         case ReceivedAt:
@@ -146,6 +150,8 @@ QVariant ClientResultModel::headerData(
         return tr("State");
     case Outcome:
         return tr("Outcome");
+    case ErrorMessage:
+        return tr("Error");
     case OutputUri:
         return tr("Output URI");
     case ReceivedAt:

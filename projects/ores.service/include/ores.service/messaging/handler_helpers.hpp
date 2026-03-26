@@ -48,7 +48,9 @@ namespace change_reasons {
  * Fields stamped (where present on the object):
  *  - tenant_id: always overwritten from ctx.tenant_id() — never trusted
  *    from the client, as it is a security boundary enforced by RLS.
- *  - modified_by: overwritten from ctx.actor() (the authenticated user).
+ *  - modified_by: overwritten from ctx.actor() (the authenticated user), or
+ *    falls back to ctx.service_account() for system-initiated writes where
+ *    there is no authenticated actor.
  *  - performed_by: overwritten from ctx.service_account().
  *  - change_reason_code: set to @p change_reason only if the object left
  *    it empty; a client-supplied code is preserved.
@@ -75,11 +77,13 @@ void stamp(T& obj, const ores::database::context& ctx,
             obj.tenant_id = ctx.tenant_id();
     }
     const auto& actor = ctx.actor();
-    if (!actor.empty()) {
-        if constexpr (requires { obj.modified_by; })
-            obj.modified_by = actor;
-    }
     const auto& svc = ctx.service_account();
+    if constexpr (requires { obj.modified_by; }) {
+        if (!actor.empty())
+            obj.modified_by = actor;
+        else if (!svc.empty())
+            obj.modified_by = svc;
+    }
     if (!svc.empty()) {
         if constexpr (requires { obj.performed_by; })
             obj.performed_by = svc;

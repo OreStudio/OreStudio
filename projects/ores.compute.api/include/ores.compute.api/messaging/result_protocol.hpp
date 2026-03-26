@@ -48,6 +48,7 @@ struct submit_result_request {
     std::string host_id;   // UUID string of the wrapper node that ran the job
     std::string output_uri;
     int outcome = 0;
+    std::string error_message; // Human-readable failure reason; empty on success
 };
 
 struct submit_result_response {

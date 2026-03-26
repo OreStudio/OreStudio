@@ -33,6 +33,13 @@
 \ir ./trading_identifiers_notify_trigger_drop.sql
 \ir ./trading_identifiers_drop.sql
 
+-- Rates instruments (depend on reference data, drop before reference data)
+\ir ./trading_swap_legs_notify_trigger_drop.sql
+\ir ./trading_swap_legs_drop.sql
+
+\ir ./trading_instruments_notify_trigger_drop.sql
+\ir ./trading_instruments_drop.sql
+
 -- Trades (depends on reference data, drop after junction tables)
 \ir ./trading_trades_notify_trigger_drop.sql
 \ir ./trading_trades_drop.sql

@@ -90,11 +90,11 @@ void archiver::extract(const fs::path& archive_path,
         a, archive_path.c_str(), 16384);
 #endif
     if (open_rc != ARCHIVE_OK) {
+        const std::string msg = "Failed to open archive: " +
+            archive_path.string() + " — " + archive_error_string(a);
         archive_read_free(a);
         archive_write_free(out);
-        throw std::runtime_error(
-            "Failed to open archive: " + archive_path.string() +
-            " — " + archive_error_string(a));
+        throw std::runtime_error(msg);
     }
 
     struct archive_entry* entry = nullptr;

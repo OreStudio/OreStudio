@@ -831,6 +831,38 @@ Highlights:
   system tenant UUIDs.
 #+end_quote
 
+*** COMPLETED Add ORES_PRESET to .env; add start-client.sh             :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-25 Wed 21:00]--[2026-03-25 Wed 21:30] =>  0:30
+    :END:
+
+#+begin_quote
+This pull request significantly refines the development environment setup by
+centralizing the build preset configuration within the .env file, ensuring
+consistency across various operational scripts. It also introduces a new,
+flexible script for launching the Qt client, enhancing the developer experience
+with customizable instance colors and names. These changes collectively improve
+the robustness and usability of the build and runtime environment for ORE
+Studio.
+
+Highlights:
+
+- Centralized Preset Configuration: The init-environment.sh script now requires
+  a --preset argument, which is then stored as ORES_PRESET in the .env file,
+  establishing a single source of truth for the build preset across all tools.
+- Service Script Enhancements: The start-services.sh, stop-services.sh, and
+  status-services.sh scripts have been updated to source the ORES_PRESET from
+  the .env file by default, with an option to override it via a command-line
+  argument for ad-hoc use, removing hardcoded defaults.
+- New Qt Client Launch Script: A new start-client.sh script has been added to
+  launch the ORE Studio Qt client, offering options for specifying the build
+  preset, custom instance colors (named or hex), and display names, enabling
+  multiple colored instances to run simultaneously.
+- Emacs Lisp Integration: The ores-prodigy.el Emacs Lisp file now automatically
+  registers services based on the ORES_PRESET value loaded from the .env file,
+  streamlining the setup process for Emacs users.
+#+end_quote
+
 *** Add =publication_params_schema= to artefact types                  :code:
 
 The GLEIF librarian integration plan (=2026-02-08=) requires artefact types to
@@ -879,6 +911,36 @@ Tasks:
 - [ ] Update the counterparty repository =write= path to stamp =party_id=.
 - [ ] Add =LeiCounterpartyConfigPage= to =PublishBundleWizard= (or extend the
   existing =LeiPartyConfigPage=) with a party picker for =target_party_ids=.
+
+*** Unify compute wrapper nodes as replicated services               :code:
+
+Currently compute wrapper nodes are a special case: hardcoded instance names
+(=node1=, =node2=, ...), pattern-matched separately in =status-services.sh=,
+and given a dedicated "nodes" section in the service dashboard. All other
+services are singletons and need no such handling.
+
+The goal is a uniform service model where any service type has a
+=replica_count= (defaulting to 1). Wrappers set theirs to N. Scripts and the
+dashboard treat all services identically — showing =running/desired= — with no
+special-casing for nodes.
+
+The one non-trivial aspect is =--host-id= assignment: each wrapper replica
+needs a stable, unique UUID for heartbeat tracking and telemetry. Options are
+static UUIDs assigned per replica slot in a config file, or UUIDs generated
+once at first start and persisted to a state file.
+
+Tasks:
+
+- [ ] Define a service manifest format (e.g. =services.toml=) with a
+  =replicas= field per service type.
+- [ ] Rewrite =start-services.sh= and =status-services.sh= to drive from the
+  manifest rather than hardcoded names; remove =*node*= pattern matching.
+- [ ] Generate or persist per-replica =host-id= values so restarts reuse the
+  same UUID (avoids host churn in =ores_compute_hosts_tbl=).
+- [ ] Update the service dashboard to show =running/desired= uniformly for all
+  service types; remove the separate "nodes" counter.
+- [ ] Remove the =nodes_running= / =nodes_stopped= special cases from the
+  summary output.
 
 * Footer
 

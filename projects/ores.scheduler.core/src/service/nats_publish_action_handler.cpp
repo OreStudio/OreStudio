@@ -36,8 +36,18 @@ auto& lg() {
     return instance;
 }
 
+// Fields read from job_definition.action_payload.
 struct nats_publish_payload {
     std::string subject;
+    std::optional<std::string> report_definition_id;
+    std::optional<std::string> tenant_id;
+};
+
+// Body published to the NATS subject on each job firing.
+struct nats_trigger_body {
+    std::int64_t job_instance_id = 0;
+    std::optional<std::string> report_definition_id;
+    std::optional<std::string> tenant_id;
 };
 
 } // anonymous namespace
@@ -68,7 +78,14 @@ nats_publish_action_handler::execute(const action_context& ctx) {
             co_return std::unexpected(msg);
         }
 
-        nats_.publish(subject, std::span<const std::byte>{});
+        const nats_trigger_body body{
+            .job_instance_id = ctx.inst_id,
+            .report_definition_id = parsed->report_definition_id,
+            .tenant_id = parsed->tenant_id
+        };
+        const auto body_json = rfl::json::write(body);
+        const auto* p = reinterpret_cast<const std::byte*>(body_json.data());
+        nats_.publish(subject, std::span<const std::byte>(p, body_json.size()));
         BOOST_LOG_SEV(lg(), info) << "NATS publish action succeeded for job: "
                                   << ctx.job.job_name
                                   << " (subject: " << subject << ")";

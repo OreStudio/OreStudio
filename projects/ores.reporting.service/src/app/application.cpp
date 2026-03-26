@@ -24,6 +24,7 @@
 #include "ores.reporting.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
+#include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
 #include "ores.service/service/domain_service_runner.hpp"
@@ -69,13 +70,22 @@ application::run(boost::asio::io_context& io_ctx,
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
 
+    auto db_ctx = make_context(cfg.database);
+
     co_await ores::service::service::run(
-        io_ctx, nats, make_context(cfg.database), "ores.reporting.service",
+        io_ctx, nats, db_ctx, "ores.reporting.service",
         [](auto& n, auto c, auto v) {
             return ores::reporting::messaging::registrar::register_handlers(
                 n, std::move(c), std::move(v));
         },
-        [&nats](boost::asio::io_context& ioc) {
+        [&nats, db_ctx](boost::asio::io_context& ioc) {
+            // Reconcile scheduler jobs for all unscheduled report definitions.
+            auto reconciler = std::make_shared<
+                ores::reporting::service::report_scheduling_service>(db_ctx, nats);
+            boost::asio::co_spawn(ioc,
+                [reconciler]() { return reconciler->reconcile(); },
+                boost::asio::detached);
+
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc,

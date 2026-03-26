@@ -120,7 +120,7 @@ scheduler_loop::fire_job(const domain::job_definition& job) {
         co_return;
     }
 
-    action_context actx{.job = job, .db_ctx = system_ctx_};
+    action_context actx{.job = job, .db_ctx = system_ctx_, .inst_id = inst_id};
     auto result = co_await chosen->execute(actx);
     if (result) {
         // Handler executed successfully.

@@ -94,6 +94,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         get_report_instance_history_request::nats_subject, "ores.reporting.service",
         [rih](ores::nats::message msg) { rih->history(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        trigger_report_instance_message::nats_subject, "ores.reporting.service",
+        [rih](ores::nats::message msg) { rih->trigger(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Concurrency policies

@@ -682,24 +682,48 @@ void process_assignment(ores::nats::service::client& nats,
             outcome = 3; // ClientError
         } else {
             // 4. Upload output.
-            // Convention: ORE writes its output under job_dir/output/ as
-            // specified in ore.xml. We upload the first regular file found
-            // there; future work can pack the whole directory into an archive.
-            const fs::path output_dir = job_dir / "output";
-            fs::path output_path;
-            if (fs::exists(output_dir)) {
-                for (const auto& e : fs::directory_iterator(output_dir)) {
-                    if (e.is_regular_file()) { output_path = e.path(); break; }
-                }
-            }
-            if (output_path.empty()) {
-                BOOST_LOG_SEV(lg, warn) << "No output file found in: "
+            // ORE writes multiple files to Output/ as specified in ore.xml.
+            // Pack the whole directory into a tar.gz and upload it as one blob.
+            const fs::path output_dir = job_dir / "Output";
+            if (!fs::exists(output_dir) || fs::is_empty(output_dir)) {
+                BOOST_LOG_SEV(lg, warn) << "No output found in: "
                     << output_dir.string();
             } else {
-                output_bytes = static_cast<std::int64_t>(fs::file_size(output_path));
-                BOOST_LOG_SEV(lg, debug) << "Uploading output: " << output_path.string();
+                const fs::path output_archive = job_dir / "output.tar.gz";
+                // Build archive from Output/ contents.
+                struct archive* a = archive_write_new();
+                archive_write_add_filter_gzip(a);
+                archive_write_set_format_pax_restricted(a);
+                archive_write_open_filename(a, output_archive.c_str());
+                for (const auto& e :
+                     fs::recursive_directory_iterator(output_dir)) {
+                    if (!e.is_regular_file()) continue;
+                    const auto rel = fs::relative(e.path(), output_dir);
+                    struct archive_entry* entry = archive_entry_new();
+                    archive_entry_set_pathname(entry, rel.c_str());
+                    archive_entry_set_size(entry,
+                        static_cast<la_int64_t>(fs::file_size(e.path())));
+                    archive_entry_set_filetype(entry, AE_IFREG);
+                    archive_entry_set_perm(entry, 0644);
+                    archive_write_header(a, entry);
+                    std::ifstream in(e.path(), std::ios::binary);
+                    char buf[16384];
+                    while (in.read(buf, sizeof(buf)) || in.gcount())
+                        archive_write_data(a, buf,
+                            static_cast<std::size_t>(in.gcount()));
+                    archive_entry_free(entry);
+                }
+                archive_write_close(a);
+                archive_write_free(a);
+
+                output_bytes = static_cast<std::int64_t>(
+                    fs::file_size(output_archive));
+                BOOST_LOG_SEV(lg, debug) << "Uploading output archive: "
+                    << output_archive.string()
+                    << " (" << output_bytes << " bytes)";
                 net::http_client::upload(
-                    make_url(cfg.http_base_url, evt.output_uri), output_path);
+                    make_url(cfg.http_base_url, evt.output_uri),
+                    output_archive);
             }
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
             outcome = 1; // Success

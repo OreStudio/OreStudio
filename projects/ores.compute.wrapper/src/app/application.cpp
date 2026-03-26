@@ -547,9 +547,9 @@ void process_assignment(ores::nats::service::client& nats,
     node_stats_reporter* reporter,
     auto& lg) {
 
-    BOOST_LOG_SEV(lg, info) << "Processing assignment: result=" << evt.result_id
-                             << " workunit=" << evt.workunit_id
-                             << " app_version=" << evt.app_version_id;
+    BOOST_LOG_SEV(lg, debug) << "Processing assignment: result=" << evt.result_id
+                              << " workunit=" << evt.workunit_id
+                              << " app_version=" << evt.app_version_id;
 
     heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
     hb.start();
@@ -568,7 +568,7 @@ void process_assignment(ores::nats::service::client& nats,
         const fs::path pkg_cache_dir =
             fs::path(cfg.work_dir) / "packages" / evt.app_version_id;
         if (!fs::exists(pkg_cache_dir / "manifest.json")) {
-            BOOST_LOG_SEV(lg, info) << "Downloading package: " << evt.app_version_id;
+            BOOST_LOG_SEV(lg, debug) << "Downloading package: " << evt.app_version_id;
             const fs::path pkg_archive =
                 pkg_cache_dir.parent_path() / (evt.app_version_id + ".tar.gz");
             net::http_client::download(make_url(cfg.http_base_url, evt.package_uri),
@@ -580,39 +580,37 @@ void process_assignment(ores::nats::service::client& nats,
 
         const auto mf = read_manifest(pkg_cache_dir);
 
-        // 2. Per-job scratch directory
+        // 2. Per-job scratch directory — input archive is extracted here.
+        //    ORE runs with job_dir as its working directory so that relative
+        //    paths in ore.xml (inputs, outputs, log.txt) resolve correctly.
         const fs::path job_dir =
             fs::path(cfg.work_dir) / "jobs" / evt.result_id;
         fs::create_directories(job_dir);
 
-        const fs::path input_path  = job_dir / "input";
-        const fs::path config_path = job_dir / "config";
-        const fs::path output_path = job_dir / "output";
-
-        BOOST_LOG_SEV(lg, info) << "Downloading input";
-        net::http_client::download(make_url(cfg.http_base_url, evt.input_uri), input_path);
-        if (!evt.config_uri.empty()) {
-            BOOST_LOG_SEV(lg, info) << "Downloading config";
-            net::http_client::download(make_url(cfg.http_base_url, evt.config_uri), config_path);
-        }
-
-        // Measure downloaded input bytes for telemetry.
-        if (fs::exists(input_path))
-            input_bytes = static_cast<std::int64_t>(fs::file_size(input_path));
+        // Download input archive and unpack into job_dir.
+        const fs::path input_archive = job_dir / "input.tar.gz";
+        BOOST_LOG_SEV(lg, debug) << "Downloading input";
+        net::http_client::download(make_url(cfg.http_base_url, evt.input_uri),
+            input_archive);
+        input_bytes = static_cast<std::int64_t>(fs::file_size(input_archive));
+        BOOST_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
+            << " to: " << job_dir.string();
+        extract_tar_gz(input_archive, job_dir);
 
         // 3. Spawn engine using Boost.Process to avoid shell injection.
+        //    Args in the manifest are passed verbatim; no placeholder substitution
+        //    is needed for engines (like ORE) whose config is fully self-contained
+        //    inside the input archive.
         const fs::path exe = pkg_cache_dir / mf.executable;
-        const auto args = substitute_args(mf.args,
-            input_path.string(), config_path.string(), output_path.string());
+        const auto& args = mf.args;
 
         // Log exact command line so it can be reproduced manually.
         const fs::path engine_log_path = job_dir / "engine.log";
-        BOOST_LOG_SEV(lg, info) << "Engine command: "
+        BOOST_LOG_SEV(lg, debug) << "Engine command: "
             << format_cmdline(exe.string(), args);
-        BOOST_LOG_SEV(lg, info) << "Engine log:     " << engine_log_path.string();
-        BOOST_LOG_SEV(lg, info) << "Job directory:  " << job_dir.string();
-        BOOST_LOG_SEV(lg, info) << "Working dir:    " << fs::current_path().string();
-        BOOST_LOG_SEV(lg, info) << "ORE log:        " << (job_dir / "log.txt").string();
+        BOOST_LOG_SEV(lg, debug) << "Engine log:     " << engine_log_path.string();
+        BOOST_LOG_SEV(lg, debug) << "Input dir:      " << job_dir.string();
+        BOOST_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "log.txt").string();
 
         namespace bp2 = boost::process::v2;
         boost::asio::io_context proc_ioc;
@@ -683,11 +681,26 @@ void process_assignment(ores::nats::service::client& nats,
                 BOOST_LOG_SEV(lg, error) << "Engine output:\n" << engine_output;
             outcome = 3; // ClientError
         } else {
-            // 4. Upload output
-            BOOST_LOG_SEV(lg, info) << "Uploading output: " << evt.result_id;
-            if (fs::exists(output_path))
+            // 4. Upload output.
+            // Convention: ORE writes its output under job_dir/output/ as
+            // specified in ore.xml. We upload the first regular file found
+            // there; future work can pack the whole directory into an archive.
+            const fs::path output_dir = job_dir / "output";
+            fs::path output_path;
+            if (fs::exists(output_dir)) {
+                for (const auto& e : fs::directory_iterator(output_dir)) {
+                    if (e.is_regular_file()) { output_path = e.path(); break; }
+                }
+            }
+            if (output_path.empty()) {
+                BOOST_LOG_SEV(lg, warn) << "No output file found in: "
+                    << output_dir.string();
+            } else {
                 output_bytes = static_cast<std::int64_t>(fs::file_size(output_path));
-            net::http_client::upload(make_url(cfg.http_base_url, evt.output_uri), output_path);
+                BOOST_LOG_SEV(lg, debug) << "Uploading output: " << output_path.string();
+                net::http_client::upload(
+                    make_url(cfg.http_base_url, evt.output_uri), output_path);
+            }
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
             outcome = 1; // Success
         }

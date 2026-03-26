@@ -131,6 +131,7 @@
     <addaction name="ActionOrgExplorer"/>
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
+    <addaction name="ActionInstruments"/>
     <addaction name="separator"/>
     <addaction name="ActionDayCountFractionTypes"/>
     <addaction name="ActionBusinessDayConventionTypes"/>
@@ -681,6 +682,14 @@
    </property>
    <property name="toolTip">
     <string>Manage leg type reference data</string>
+   </property>
+  </action>
+  <action name="ActionInstruments">
+   <property name="text">
+    <string>&amp;Instruments</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage rates instruments</string>
    </property>
   </action>
   <action name="ActionJobDefinitions">

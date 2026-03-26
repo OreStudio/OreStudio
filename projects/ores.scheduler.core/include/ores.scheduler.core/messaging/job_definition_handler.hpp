@@ -23,6 +23,7 @@
 #include <optional>
 #include <stdexcept>
 #include <rfl/json.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -117,6 +118,42 @@ public:
                 reply(nats_, msg, schedule_job_response{
                     .success = false, .message = e.what()});
             }
+        } else {
+            BOOST_LOG_SEV(job_definition_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
+    void schedule_batch(ores::nats::message msg) {
+        BOOST_LOG_SEV(job_definition_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (auto req = decode<schedule_jobs_batch_request>(msg)) {
+            service::job_definition_service svc(ctx);
+            schedule_jobs_batch_response resp;
+            resp.success = true;
+            for (auto& def : req->definitions) {
+                try {
+                    stamp(def, ctx);
+                    svc.save_definition(def);
+                    ++resp.scheduled_count;
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(job_definition_handler_lg(), error)
+                        << "Failed to schedule job " << def.job_name
+                        << ": " << e.what();
+                    resp.failed_ids.push_back(
+                        boost::uuids::to_string(def.id));
+                }
+            }
+            reply(nats_, msg, resp);
         } else {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;

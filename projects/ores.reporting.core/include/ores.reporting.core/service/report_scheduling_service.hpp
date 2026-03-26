@@ -21,12 +21,15 @@
 #define ORES_REPORTING_SERVICE_REPORT_SCHEDULING_SERVICE_HPP
 
 #include <string>
+#include <optional>
 #include <vector>
 #include <boost/asio/awaitable.hpp>
+#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.scheduler.api/domain/job_definition.hpp"
 
 namespace ores::reporting::service {
 
@@ -103,6 +106,21 @@ private:
      * @return true on success.
      */
     bool send_schedule_request(const domain::report_definition& def,
+        const boost::uuids::uuid& job_id,
+        const std::string& performed_by);
+
+    /**
+     * @brief Build a scheduler job_definition for a report definition.
+     *
+     * Used by both schedule_one and the batch reconciliation path.
+     *
+     * @param def     The report definition.
+     * @param job_id  Pre-allocated UUID to use as the job's primary key.
+     * @param performed_by  Actor name for audit fields.
+     * @return A populated job_definition, or nullopt if the cron is invalid.
+     */
+    std::optional<ores::scheduler::domain::job_definition>
+    build_job_definition(const domain::report_definition& def,
         const boost::uuids::uuid& job_id,
         const std::string& performed_by);
 

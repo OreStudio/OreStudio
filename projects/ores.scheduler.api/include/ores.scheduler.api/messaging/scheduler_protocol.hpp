@@ -69,6 +69,22 @@ struct unschedule_job_response {
     std::string message;
 };
 
+struct schedule_jobs_batch_request {
+    using response_type = struct schedule_jobs_batch_response;
+    static constexpr std::string_view nats_subject =
+        "scheduler.v1.job-definitions.schedule-batch";
+    std::vector<ores::scheduler::domain::job_definition> definitions;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct schedule_jobs_batch_response {
+    bool success = false;
+    std::string message;
+    int scheduled_count = 0;
+    std::vector<std::string> failed_ids;
+};
+
 struct get_job_history_request {
     using response_type = struct get_job_history_response;
     static constexpr std::string_view nats_subject =

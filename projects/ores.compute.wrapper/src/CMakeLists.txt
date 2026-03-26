@@ -42,6 +42,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         ores.compute.api.lib
         ores.nats.lib
+        ores.ore.lib
         ores.utility.lib
         ores.telemetry.lib
         Boost::boost

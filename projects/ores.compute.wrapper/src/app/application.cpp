@@ -49,6 +49,7 @@
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.wrapper/net/http_client.hpp"
+#include "ores.compute.wrapper/app/log_publisher.hpp"
 
 namespace ores::compute::wrapper::app {
 
@@ -637,6 +638,13 @@ void process_assignment(ores::nats::service::client& nats,
     }
 
     hb.stop();
+
+    {
+        const fs::path log_job_dir =
+            fs::path(cfg.work_dir) / "jobs" / evt.result_id;
+        publish_ore_logs(nats, evt.result_id, log_job_dir);
+        publish_engine_logs(nats, evt.result_id, log_job_dir);
+    }
 
     // Record outcome in the telemetry reporter.
     if (reporter) {

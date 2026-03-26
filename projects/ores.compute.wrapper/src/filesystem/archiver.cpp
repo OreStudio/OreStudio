@@ -80,12 +80,18 @@ void archiver::pack(const fs::path& source_dir,
             static_cast<la_int64_t>(fs::file_size(e.path())));
         archive_entry_set_filetype(entry.get(), AE_IFREG);
         archive_entry_set_perm(entry.get(), 0644);
-        archive_write_header(a.get(), entry.get());
+        if (archive_write_header(a.get(), entry.get()) < ARCHIVE_OK)
+            throw std::runtime_error(std::string("archive write header error: ")
+                + archive_error_string(a.get()));
         std::ifstream in(e.path(), std::ios::binary);
         std::array<char, 16384> buf{};
-        while (in.read(buf.data(), buf.size()) || in.gcount())
-            archive_write_data(a.get(), buf.data(),
-                static_cast<std::size_t>(in.gcount()));
+        while (in.read(buf.data(), buf.size()) || in.gcount()) {
+            if (archive_write_data(a.get(), buf.data(),
+                    static_cast<std::size_t>(in.gcount())) < ARCHIVE_OK)
+                throw std::runtime_error(
+                    std::string("archive write data error: ")
+                    + archive_error_string(a.get()));
+        }
     }
 }
 
@@ -120,9 +126,13 @@ void archiver::extract(const fs::path& archive_path,
             throw std::runtime_error(std::string("archive read error: ")
                 + archive_error_string(a.get()));
 
-        const std::string entry_path =
-            (dest_dir / archive_entry_pathname(entry)).string();
-        archive_entry_set_pathname(entry, entry_path.c_str());
+#ifdef _WIN32
+        const fs::path rel = fs::u8path(archive_entry_pathname(entry));
+        archive_entry_set_pathname_w(entry, (dest_dir / rel).c_str());
+#else
+        archive_entry_set_pathname(entry,
+            (dest_dir / archive_entry_pathname(entry)).c_str());
+#endif
 
         if (archive_write_header(out.get(), entry) < ARCHIVE_OK)
             throw std::runtime_error(std::string("archive write header error: ")

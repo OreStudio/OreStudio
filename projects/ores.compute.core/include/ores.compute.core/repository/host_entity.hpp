@@ -39,6 +39,7 @@ struct host_entity {
     std::string tenant_id;
     int version = 0;
     std::string external_id;
+    std::optional<std::string> display_name;
     std::optional<std::string> location;
     int cpu_count;
     std::int64_t ram_mb;

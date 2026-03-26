@@ -30,13 +30,13 @@ std::string convert_to_table(const std::vector<host>& v) {
     table.set_border_style(FT_BASIC_STYLE);
 
     table << fort::header
-          << "ID" << "External ID" << "Location" << "CPU Count"
+          << "ID" << "External ID" << "Display Name" << "Location" << "CPU Count"
           << "RAM (MB)" << "GPU Type" << "Last RPC Time" << "Credit Total"
           << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& h : v) {
         table << boost::uuids::to_string(h.id)
-              << h.external_id << h.location << h.cpu_count
+              << h.external_id << h.display_name << h.location << h.cpu_count
               << h.ram_mb << h.gpu_type << h.last_rpc_time << h.credit_total
               << h.modified_by << h.recorded_at << fort::endr;
     }

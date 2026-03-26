@@ -39,6 +39,7 @@ create table if not exists "ores_compute_results_tbl" (
     "server_state" integer not null default 1,
     "outcome" integer null,
     "output_uri" text null,
+    "error_message" text null,
     "received_at" timestamp with time zone null,
     "modified_by" text not null,
     "performed_by" text not null,

@@ -55,6 +55,12 @@ struct host final {
     std::string external_id;
 
     /**
+     * @brief Whimsical adjective+animal display name assigned on first registration.
+     * Display-only; never used as a key.
+     */
+    std::string display_name;
+
+    /**
      * @brief Physical site or region identifier.
      */
     std::string location;

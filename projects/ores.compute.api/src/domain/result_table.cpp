@@ -31,14 +31,14 @@ std::string convert_to_table(const std::vector<result>& v) {
 
     table << fort::header
           << "ID" << "Workunit ID" << "Host ID" << "Server State"
-          << "Outcome" << "Output URI" << "Received At"
+          << "Outcome" << "Output URI" << "Error Message" << "Received At"
           << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& r : v) {
         table << boost::uuids::to_string(r.id)
               << boost::uuids::to_string(r.workunit_id)
               << boost::uuids::to_string(r.host_id)
-              << r.server_state << r.outcome << r.output_uri
+              << r.server_state << r.outcome << r.output_uri << r.error_message
               << r.received_at
               << r.modified_by << r.recorded_at << fort::endr;
     }

@@ -119,6 +119,7 @@ public:
                             << req->host_id << " (" << e.what() << ")";
                     }
                 }
+                r.error_message = req->error_message;
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = req->error_message.empty()
                     ? "Output received from wrapper"

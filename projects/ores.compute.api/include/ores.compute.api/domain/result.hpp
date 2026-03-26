@@ -82,6 +82,11 @@ struct result final {
     std::string output_uri;
 
     /**
+     * @brief Human-readable error description from the wrapper; empty on success.
+     */
+    std::string error_message;
+
+    /**
      * @brief Timestamp when the output was received by the server pool.
      */
     std::chrono::system_clock::time_point received_at;

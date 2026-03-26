@@ -31,11 +31,13 @@ ComputeConsoleController::ComputeConsoleController(
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
+    ChangeReasonCache* changeReasonCache,
     QObject* parent)
     : QObject(parent),
       mainWindow_(mainWindow),
       mdiArea_(mdiArea),
-      clientManager_(clientManager) {
+      clientManager_(clientManager),
+      changeReasonCache_(changeReasonCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "ComputeConsoleController created";
 }
@@ -48,7 +50,8 @@ void ComputeConsoleController::showConsole() {
 
     BOOST_LOG_SEV(lg(), info) << "Opening compute console";
 
-    consoleWindow_ = new ComputeConsoleWindow(clientManager_);
+    consoleWindow_ = new ComputeConsoleWindow(clientManager_, changeReasonCache_);
+    consoleWindow_->setHttpBaseUrl(http_base_url_);
 
     connect(consoleWindow_, &ComputeConsoleWindow::statusChanged,
             this, [self = QPointer<ComputeConsoleController>(this)](
@@ -82,6 +85,12 @@ void ComputeConsoleController::showConsole() {
     subWindow_->show();
 
     emit detachableWindowCreated(subWindow_);
+}
+
+void ComputeConsoleController::setHttpBaseUrl(const std::string& url) {
+    http_base_url_ = url;
+    if (consoleWindow_)
+        consoleWindow_->setHttpBaseUrl(url);
 }
 
 void ComputeConsoleController::closeAllWindows() {

@@ -2153,7 +2153,9 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     computeConsoleController_ = std::make_unique<ComputeConsoleController>(
-        this, mdiArea_, clientManager_, this);
+        this, mdiArea_, clientManager_, changeReasonCache_, this);
+    if (!httpBaseUrl_.empty())
+        computeConsoleController_->setHttpBaseUrl(httpBaseUrl_);
     connect(computeConsoleController_.get(),
             &ComputeConsoleController::statusMessage,
             this, [this](const QString& message) {
@@ -2671,6 +2673,8 @@ void MainWindow::setHttpBaseUrl(const std::string& url) {
 
     if (appVersionController_)
         appVersionController_->setHttpBaseUrl(url);
+    if (computeConsoleController_)
+        computeConsoleController_->setHttpBaseUrl(url);
 }
 
 void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {

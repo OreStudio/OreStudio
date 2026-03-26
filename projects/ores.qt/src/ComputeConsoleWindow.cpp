@@ -22,7 +22,12 @@
 #include <QtConcurrent>
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QToolBar>
 #include <QPointer>
+#include "ores.qt/AppProvisionerWizard.hpp"
+#include "ores.qt/BatchCreateDialog.hpp"
+#include "ores.qt/WorkunitCreateDialog.hpp"
+#include "ores.qt/OreLogViewerWidget.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/TransferProgressDelegate.hpp"
@@ -34,9 +39,11 @@ namespace ores::qt {
 using namespace ores::logging;
 
 ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
+                                           ChangeReasonCache* changeReasonCache,
                                            QWidget* parent)
     : QWidget(parent),
       client_manager_(clientManager),
+      change_reason_cache_(changeReasonCache),
       host_cache_(new HostDisplayNameCache(this)),
       task_model_(std::make_unique<ComputeTaskViewModel>(clientManager, this)),
       app_model_(std::make_unique<ClientAppModel>(clientManager, this)),
@@ -137,15 +144,42 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
             &QItemSelectionModel::selectionChanged,
             this, &ComputeConsoleWindow::on_task_selection_changed);
 
-    log_viewer_ = new OreLogViewerWidget(client_manager_, this);
+    auto* toolbar = new QToolBar(this);
+    toolbar->setMovable(false);
+    toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
-    auto* splitter = new QSplitter(Qt::Vertical, this);
-    splitter->addWidget(task_view_);
-    splitter->addWidget(log_viewer_);
-    splitter->setStretchFactor(0, 3);
-    splitter->setStretchFactor(1, 2);
+    auto* new_batch_action = new QAction(
+        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
+        tr("Batch"), this);
+    connect(new_batch_action, &QAction::triggered,
+            this, &ComputeConsoleWindow::on_new_batch);
+    toolbar->addAction(new_batch_action);
 
-    return splitter;
+    auto* new_wu_action = new QAction(
+        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
+        tr("Work Unit"), this);
+    connect(new_wu_action, &QAction::triggered,
+            this, &ComputeConsoleWindow::on_new_work_unit);
+    toolbar->addAction(new_wu_action);
+
+    toolbar->addSeparator();
+
+    logs_action_ = new QAction(
+        IconUtils::createRecoloredIcon(Icon::DocumentCode,
+            color_constants::icon_color),
+        tr("Logs"), this);
+    logs_action_->setEnabled(false);
+    connect(logs_action_, &QAction::triggered,
+            this, &ComputeConsoleWindow::on_show_logs);
+    toolbar->addAction(logs_action_);
+
+    auto* container = new QWidget(this);
+    auto* layout = new QVBoxLayout(container);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    layout->addWidget(toolbar);
+    layout->addWidget(task_view_);
+    return container;
 }
 
 QWidget* ComputeConsoleWindow::make_apps_tab() {
@@ -164,7 +198,24 @@ QWidget* ComputeConsoleWindow::make_apps_tab() {
     app_view_->horizontalHeader()->setSectionResizeMode(
         ClientAppModel::Name, QHeaderView::ResizeToContents);
 
-    return app_view_;
+    auto* toolbar = new QToolBar(this);
+    toolbar->setMovable(false);
+    toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+
+    auto* new_app_action = new QAction(
+        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
+        tr("Application"), this);
+    connect(new_app_action, &QAction::triggered,
+            this, &ComputeConsoleWindow::on_new_application);
+    toolbar->addAction(new_app_action);
+
+    auto* container = new QWidget(this);
+    auto* layout = new QVBoxLayout(container);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    layout->addWidget(toolbar);
+    layout->addWidget(app_view_);
+    return container;
 }
 
 QWidget* ComputeConsoleWindow::make_app_versions_tab() {
@@ -301,7 +352,8 @@ void ComputeConsoleWindow::on_tasks_error(
 void ComputeConsoleWindow::on_task_selection_changed() {
     const auto selected = task_view_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
-        log_viewer_->clear();
+        selected_result_id_.clear();
+        logs_action_->setEnabled(false);
         return;
     }
 
@@ -309,12 +361,53 @@ void ComputeConsoleWindow::on_task_selection_changed() {
     const auto* task = task_model_->get_task(src.row());
     if (!task) return;
 
-    const auto result_id = QString::fromStdString(
+    selected_result_id_ = QString::fromStdString(
         boost::uuids::to_string(task->result.id));
-    log_viewer_->load_result(result_id);
+    logs_action_->setEnabled(true);
 }
 
 void ComputeConsoleWindow::on_tab_changed(int /*index*/) {}
+
+void ComputeConsoleWindow::on_new_application() {
+    auto* wizard = new AppProvisionerWizard(
+        client_manager_, change_reason_cache_, http_base_url_, this);
+    wizard->setAttribute(Qt::WA_DeleteOnClose);
+    connect(wizard, &AppProvisionerWizard::provisioned, this, [this]() {
+        app_model_->refresh();
+        app_version_model_->refresh();
+    });
+    wizard->open();
+}
+
+void ComputeConsoleWindow::on_new_batch() {
+    auto* dlg = new BatchCreateDialog(
+        client_manager_, change_reason_cache_, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dlg, &BatchCreateDialog::batchCreated,
+            this, &ComputeConsoleWindow::refresh);
+    dlg->open();
+}
+
+void ComputeConsoleWindow::on_new_work_unit() {
+    auto* dlg = new WorkunitCreateDialog(
+        client_manager_, change_reason_cache_, this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dlg, &WorkunitCreateDialog::workunitCreated,
+            this, &ComputeConsoleWindow::refresh);
+    dlg->open();
+}
+
+void ComputeConsoleWindow::on_show_logs() {
+    if (selected_result_id_.isEmpty()) return;
+
+    auto* viewer = new OreLogViewerWidget(client_manager_, this);
+    viewer->setAttribute(Qt::WA_DeleteOnClose);
+    viewer->setWindowTitle(tr("Logs — %1").arg(selected_result_id_));
+    viewer->setWindowFlags(Qt::Dialog);
+    viewer->resize(900, 600);
+    viewer->load_result(selected_result_id_);
+    viewer->show();
+}
 
 void ComputeConsoleWindow::on_auto_refresh_toggled(bool checked) {
     if (checked) {

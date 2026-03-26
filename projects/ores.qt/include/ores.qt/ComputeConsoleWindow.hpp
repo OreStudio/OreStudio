@@ -21,15 +21,16 @@
 #define ORES_QT_COMPUTE_CONSOLE_WINDOW_HPP
 
 #include <memory>
+#include <string>
 #include <QTimer>
 #include <QWidget>
 #include <QAction>
-#include <QSplitter>
 #include <QTabWidget>
 #include <QTableView>
 #include <QToolBar>
 #include <QSortFilterProxyModel>
 #include <QFutureWatcher>
+#include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/HostDisplayNameCache.hpp"
 #include "ores.qt/ComputeTaskViewModel.hpp"
@@ -37,7 +38,6 @@
 #include "ores.qt/ClientAppModel.hpp"
 #include "ores.qt/ClientAppVersionModel.hpp"
 #include "ores.qt/ClientHostModel.hpp"
-#include "ores.qt/OreLogViewerWidget.hpp"
 #include "ores.compute.api/domain/host.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -48,14 +48,15 @@ namespace ores::qt {
  *
  * A top-level tab bar selects the active view:
  *
- *   Tasks        — joined result/workunit/batch table (top) with a per-task
- *                  ORE log sub-pane below (driven by row selection).
+ *   Tasks        — joined result/workunit/batch table with a per-task tab
+ *                  toolbar (New Batch, New Work Unit, View Logs).
  *   Apps         — registered compute applications.
  *   App Versions — available app version packages per platform.
  *   Hosts        — flat host table; also feeds the HostDisplayNameCache.
  *   Transfers    — live file transfer progress with a custom progress delegate.
  *
  * A toolbar with Refresh and Auto-refresh actions spans all tabs.
+ * Logs for a selected task open in a separate non-modal dialog.
  */
 class ComputeConsoleWindow : public QWidget {
     Q_OBJECT
@@ -72,6 +73,7 @@ private:
 
 public:
     explicit ComputeConsoleWindow(ClientManager* clientManager,
+                                  ChangeReasonCache* changeReasonCache,
                                   QWidget* parent = nullptr);
 
     /**
@@ -79,6 +81,8 @@ public:
      *        can call add_transfer / update_progress / etc.
      */
     ComputeTransferModel* transfer_model() const { return transfer_model_.get(); }
+
+    void setHttpBaseUrl(const std::string& url) { http_base_url_ = url; }
 
     QSize sizeHint() const override { return {1200, 720}; }
 
@@ -98,6 +102,10 @@ private slots:
     void on_task_selection_changed();
     void on_tab_changed(int index);
     void on_auto_refresh_toggled(bool checked);
+    void on_new_application();
+    void on_new_batch();
+    void on_new_work_unit();
+    void on_show_logs();
 
 private:
     void setup_ui();
@@ -115,21 +123,23 @@ private:
     static constexpr int kHostsTab       = 3;
     static constexpr int kTransfersTab   = 4;
 
-    ClientManager* client_manager_;
+    ClientManager*     client_manager_;
+    ChangeReasonCache* change_reason_cache_;
+    std::string        http_base_url_;
 
     // Models
-    HostDisplayNameCache*              host_cache_{nullptr};  // owned by this
-    std::unique_ptr<ComputeTaskViewModel> task_model_;
-    std::unique_ptr<ClientAppModel>       app_model_;
+    HostDisplayNameCache*                  host_cache_{nullptr};  // owned by this
+    std::unique_ptr<ComputeTaskViewModel>  task_model_;
+    std::unique_ptr<ClientAppModel>        app_model_;
     std::unique_ptr<ClientAppVersionModel> app_version_model_;
-    std::unique_ptr<ClientHostModel>      host_model_;
-    std::unique_ptr<ComputeTransferModel> transfer_model_;
+    std::unique_ptr<ClientHostModel>       host_model_;
+    std::unique_ptr<ComputeTransferModel>  transfer_model_;
 
     // Host fetch watcher (also populates host_cache_)
     using HostList = std::vector<compute::domain::host>;
     QFutureWatcher<HostList>* host_watcher_{nullptr};
 
-    // Toolbar
+    // Global toolbar (spans all tabs)
     QToolBar* toolbar_{nullptr};
     QAction*  refresh_action_{nullptr};
     QAction*  auto_refresh_action_{nullptr};
@@ -137,10 +147,11 @@ private:
     // Top-level tab bar
     QTabWidget* main_tabs_{nullptr};
 
-    // Tasks tab widgets
+    // Tasks tab
     QTableView*            task_view_{nullptr};
     QSortFilterProxyModel* task_proxy_{nullptr};
-    OreLogViewerWidget*    log_viewer_{nullptr};
+    QAction*               logs_action_{nullptr};      // enabled when task selected
+    QString                selected_result_id_;
 
     // Apps tab
     QTableView*            app_view_{nullptr};

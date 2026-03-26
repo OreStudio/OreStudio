@@ -24,12 +24,14 @@
 #include <QPointer>
 #include <QMdiArea>
 #include <QMainWindow>
+#include <string>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.logging/make_logger.hpp"
 
 namespace ores::qt {
 
+class ChangeReasonCache;
 class ComputeConsoleWindow;
 
 /**
@@ -56,10 +58,12 @@ public:
         QMainWindow* mainWindow,
         QMdiArea* mdiArea,
         ClientManager* clientManager,
+        ChangeReasonCache* changeReasonCache,
         QObject* parent = nullptr);
 
     void showConsole();
     void closeAllWindows();
+    void setHttpBaseUrl(const std::string& url);
 
 signals:
     void statusMessage(const QString& message);
@@ -68,11 +72,13 @@ signals:
     void detachableWindowDestroyed(DetachableMdiSubWindow* window);
 
 private:
-    QMainWindow* mainWindow_;
-    QMdiArea* mdiArea_;
-    ClientManager* clientManager_;
+    QMainWindow*       mainWindow_;
+    QMdiArea*          mdiArea_;
+    ClientManager*     clientManager_;
+    ChangeReasonCache* changeReasonCache_;
+    std::string        http_base_url_;
 
-    QPointer<ComputeConsoleWindow> consoleWindow_;
+    QPointer<ComputeConsoleWindow>   consoleWindow_;
     QPointer<DetachableMdiSubWindow> subWindow_;
 };
 

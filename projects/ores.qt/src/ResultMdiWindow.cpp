@@ -29,6 +29,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/ClientResultItemDelegate.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
 
 namespace ores::qt {
@@ -152,6 +153,7 @@ void ResultMdiWindow::setupTable() {
     proxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     tableView_ = new QTableView(this);
+    tableView_->setItemDelegate(new ClientResultItemDelegate(this));
     tableView_->setModel(proxyModel_);
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::SingleSelection);

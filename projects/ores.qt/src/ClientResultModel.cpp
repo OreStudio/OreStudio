@@ -56,22 +56,6 @@ QString format_outcome(int o) {
     }
 }
 
-QColor state_color(int s) {
-    switch (s) {
-    case 5: return badge_colors::online;      // Done — green
-    case 4: return badge_colors::old;         // In Progress — amber
-    default: return badge_colors::unlocked;   // Inactive/Unsent — gray
-    }
-}
-
-QColor outcome_color(int o) {
-    switch (o) {
-    case 1: return badge_colors::online;      // Success — green
-    case 3: return badge_colors::locked;      // Client Error — red
-    case 4: return badge_colors::locked;      // No Reply — red
-    default: return badge_colors::unlocked;   // Pending — gray
-    }
-}
 
 } // namespace
 
@@ -142,13 +126,8 @@ QVariant ClientResultModel::data(
         }
     }
 
-    if (role == Qt::ForegroundRole) {
-        if (index.column() == ServerState)
-            return state_color(result.server_state);
-        if (index.column() == Outcome)
-            return outcome_color(result.outcome);
+    if (role == Qt::ForegroundRole)
         return recency_foreground_color(result.modified_by);
-    }
 
     return {};
 }

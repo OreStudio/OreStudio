@@ -34,6 +34,7 @@
 #include "ores.qt/HostDisplayNameCache.hpp"
 #include "ores.qt/ComputeTaskViewModel.hpp"
 #include "ores.qt/ComputeTransferModel.hpp"
+#include "ores.qt/ClientHostModel.hpp"
 #include "ores.qt/OreLogViewerWidget.hpp"
 #include "ores.compute.api/domain/host.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -41,18 +42,16 @@
 namespace ores::qt {
 
 /**
- * @brief Unified compute console: task list, live transfer progress, and
- *        per-result ORE engine log viewer.
+ * @brief Unified compute console modelled on the BOINC manager UI.
  *
- * The top pane shows all compute tasks (joined result/workunit/batch rows)
- * via ComputeTaskViewModel.  Selecting a task populates the bottom tab:
+ * A top-level tab bar selects the active view:
  *
- *   - "ORE Logs"   — OreLogViewerWidget filtered to the selected result UUID.
- *   - "Transfers"  — ComputeTransferModel showing in-flight upload/download
- *                    progress for any active transfers.
+ *   Tasks      — joined result/workunit/batch table (top) with a per-task
+ *                ORE log sub-pane below (driven by row selection).
+ *   Hosts      — flat host table; also feeds the HostDisplayNameCache.
+ *   Transfers  — live file transfer progress with a custom progress delegate.
  *
- * A HostDisplayNameCache is owned here and populated from a list-hosts fetch
- * on each refresh, providing whimsical names in the Host column.
+ * A toolbar with Refresh and Auto-refresh actions spans all tabs.
  */
 class ComputeConsoleWindow : public QWidget {
     Q_OBJECT
@@ -72,12 +71,12 @@ public:
                                   QWidget* parent = nullptr);
 
     /**
-     * @brief Exposes the transfer model so external code (upload/download
-     *        helpers) can call add_transfer / update_progress / etc.
+     * @brief Exposes the transfer model so external upload/download helpers
+     *        can call add_transfer / update_progress / etc.
      */
     ComputeTransferModel* transfer_model() const { return transfer_model_.get(); }
 
-    QSize sizeHint() const override { return {1200, 700}; }
+    QSize sizeHint() const override { return {1200, 720}; }
 
 public slots:
     void refresh();
@@ -87,42 +86,50 @@ signals:
     void errorOccurred(const QString& error);
 
 private slots:
-    void on_host_cache_loaded();
+    void on_hosts_loaded();
     void on_tasks_loaded();
     void on_tasks_error(const QString& message, const QString& details);
     void on_task_selection_changed();
+    void on_tab_changed(int index);
     void on_auto_refresh_toggled(bool checked);
 
 private:
     void setup_ui();
     void setup_toolbar();
-    void setup_task_table();
-    void setup_bottom_tabs();
-    void fetch_host_cache();
+    QWidget* make_tasks_tab();
+    QWidget* make_hosts_tab();
+    QWidget* make_transfers_tab();
 
     ClientManager* client_manager_;
 
-    // Data
-    HostDisplayNameCache* host_cache_{nullptr};          // owned by this
+    // Models
+    HostDisplayNameCache* host_cache_{nullptr};        // owned by this
     std::unique_ptr<ComputeTaskViewModel> task_model_;
+    std::unique_ptr<ClientHostModel>      host_model_;
     std::unique_ptr<ComputeTransferModel> transfer_model_;
 
-    // Host cache fetch
+    // Host fetch watcher (also populates host_cache_)
     using HostList = std::vector<compute::domain::host>;
     QFutureWatcher<HostList>* host_watcher_{nullptr};
 
-    // UI
+    // Toolbar
     QToolBar* toolbar_{nullptr};
-    QAction* refresh_action_{nullptr};
-    QAction* auto_refresh_action_{nullptr};
+    QAction*  refresh_action_{nullptr};
+    QAction*  auto_refresh_action_{nullptr};
 
-    QSplitter* splitter_{nullptr};
+    // Top-level tab bar
+    QTabWidget* main_tabs_{nullptr};
 
-    QTableView* task_view_{nullptr};
+    // Tasks tab widgets
+    QTableView*           task_view_{nullptr};
     QSortFilterProxyModel* task_proxy_{nullptr};
+    OreLogViewerWidget*   log_viewer_{nullptr};
 
-    QTabWidget* bottom_tabs_{nullptr};
-    OreLogViewerWidget* log_viewer_{nullptr};
+    // Hosts tab
+    QTableView*           host_view_{nullptr};
+    QSortFilterProxyModel* host_proxy_{nullptr};
+
+    // Transfers tab
     QTableView* transfer_view_{nullptr};
 
     QTimer* auto_refresh_timer_{nullptr};

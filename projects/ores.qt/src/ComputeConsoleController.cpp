@@ -68,7 +68,7 @@ void ComputeConsoleController::showConsole() {
     subWindow_->setWidget(consoleWindow_);
     subWindow_->setWindowTitle(tr("Compute Console"));
     subWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Terminal, IconUtils::DefaultIconColor));
+        Icon::ServerLink, IconUtils::DefaultIconColor));
 
     connect(subWindow_, &QObject::destroyed, this,
             [self = QPointer<ComputeConsoleController>(this)]() {

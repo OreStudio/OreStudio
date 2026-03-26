@@ -39,6 +39,7 @@ ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
       client_manager_(clientManager),
       host_cache_(new HostDisplayNameCache(this)),
       task_model_(std::make_unique<ComputeTaskViewModel>(clientManager, this)),
+      host_model_(std::make_unique<ClientHostModel>(clientManager, this)),
       transfer_model_(std::make_unique<ComputeTransferModel>(this)),
       host_watcher_(new QFutureWatcher<HostList>(this)),
       auto_refresh_timer_(new QTimer(this)) {
@@ -50,7 +51,7 @@ ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
     connect(task_model_.get(), &ComputeTaskViewModel::loadError,
             this, &ComputeConsoleWindow::on_tasks_error);
     connect(host_watcher_, &QFutureWatcher<HostList>::finished,
-            this, &ComputeConsoleWindow::on_host_cache_loaded);
+            this, &ComputeConsoleWindow::on_hosts_loaded);
 
     auto_refresh_timer_->setInterval(15000);
     connect(auto_refresh_timer_, &QTimer::timeout,
@@ -62,23 +63,25 @@ ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
         QTimer::singleShot(0, this, &ComputeConsoleWindow::refresh);
 }
 
+// ── UI setup ──────────────────────────────────────────────────────────────────
+
 void ComputeConsoleWindow::setup_ui() {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
 
     setup_toolbar();
     layout->addWidget(toolbar_);
 
-    splitter_ = new QSplitter(Qt::Vertical, this);
-    setup_task_table();
-    setup_bottom_tabs();
+    main_tabs_ = new QTabWidget(this);
+    main_tabs_->addTab(make_tasks_tab(),     tr("Tasks"));
+    main_tabs_->addTab(make_hosts_tab(),     tr("Hosts"));
+    main_tabs_->addTab(make_transfers_tab(), tr("Transfers"));
 
-    splitter_->addWidget(task_view_);
-    splitter_->addWidget(bottom_tabs_);
-    splitter_->setStretchFactor(0, 3);
-    splitter_->setStretchFactor(1, 2);
+    connect(main_tabs_, &QTabWidget::currentChanged,
+            this, &ComputeConsoleWindow::on_tab_changed);
 
-    layout->addWidget(splitter_);
+    layout->addWidget(main_tabs_);
 }
 
 void ComputeConsoleWindow::setup_toolbar() {
@@ -106,10 +109,9 @@ void ComputeConsoleWindow::setup_toolbar() {
     toolbar_->addAction(auto_refresh_action_);
 }
 
-void ComputeConsoleWindow::setup_task_table() {
+QWidget* ComputeConsoleWindow::make_tasks_tab() {
     task_proxy_ = new QSortFilterProxyModel(this);
     task_proxy_->setSourceModel(task_model_.get());
-    task_proxy_->setSortRole(Qt::DisplayRole);
 
     task_view_ = new QTableView(this);
     task_view_->setModel(task_proxy_);
@@ -126,16 +128,38 @@ void ComputeConsoleWindow::setup_task_table() {
     connect(task_view_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this, &ComputeConsoleWindow::on_task_selection_changed);
+
+    log_viewer_ = new OreLogViewerWidget(client_manager_, this);
+
+    auto* splitter = new QSplitter(Qt::Vertical, this);
+    splitter->addWidget(task_view_);
+    splitter->addWidget(log_viewer_);
+    splitter->setStretchFactor(0, 3);
+    splitter->setStretchFactor(1, 2);
+
+    return splitter;
 }
 
-void ComputeConsoleWindow::setup_bottom_tabs() {
-    bottom_tabs_ = new QTabWidget(this);
+QWidget* ComputeConsoleWindow::make_hosts_tab() {
+    host_proxy_ = new QSortFilterProxyModel(this);
+    host_proxy_->setSourceModel(host_model_.get());
 
-    // ORE Logs tab
-    log_viewer_ = new OreLogViewerWidget(client_manager_, this);
-    bottom_tabs_->addTab(log_viewer_, tr("ORE Logs"));
+    host_view_ = new QTableView(this);
+    host_view_->setModel(host_proxy_);
+    host_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    host_view_->setSelectionMode(QAbstractItemView::SingleSelection);
+    host_view_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    host_view_->setAlternatingRowColors(true);
+    host_view_->setSortingEnabled(true);
+    host_view_->verticalHeader()->setVisible(false);
+    host_view_->horizontalHeader()->setStretchLastSection(true);
+    host_view_->horizontalHeader()->setSectionResizeMode(
+        ClientHostModel::DisplayName, QHeaderView::ResizeToContents);
 
-    // Transfers tab
+    return host_view_;
+}
+
+QWidget* ComputeConsoleWindow::make_transfers_tab() {
     transfer_view_ = new QTableView(this);
     transfer_view_->setModel(transfer_model_.get());
     transfer_view_->setItemDelegateForColumn(
@@ -149,22 +173,22 @@ void ComputeConsoleWindow::setup_bottom_tabs() {
     transfer_view_->horizontalHeader()->setStretchLastSection(true);
     transfer_view_->horizontalHeader()->setSectionResizeMode(
         ComputeTransferModel::Filename, QHeaderView::Stretch);
-    bottom_tabs_->addTab(transfer_view_, tr("Transfers"));
+
+    return transfer_view_;
 }
+
+// ── Data loading ──────────────────────────────────────────────────────────────
 
 void ComputeConsoleWindow::refresh() {
     BOOST_LOG_SEV(lg(), debug) << "Refreshing compute console.";
     emit statusChanged(tr("Refreshing…"));
-    fetch_host_cache();
-}
 
-void ComputeConsoleWindow::fetch_host_cache() {
     if (!client_manager_ || !client_manager_->isConnected()) {
-        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh: disconnected.";
         emit errorOccurred(tr("Not connected to server"));
         return;
     }
 
+    // Fetch hosts first; on_hosts_loaded() triggers the task refresh.
     QPointer<ComputeConsoleWindow> self = this;
     host_watcher_->setFuture(QtConcurrent::run([self]() -> HostList {
         if (!self || !self->client_manager_) return {};
@@ -175,27 +199,31 @@ void ComputeConsoleWindow::fetch_host_cache() {
 
         if (!resp) {
             BOOST_LOG_SEV(lg(), warn)
-                << "Failed to fetch hosts for name cache: " << resp.error();
+                << "Host fetch failed: " << resp.error();
             return {};
         }
         return std::move(resp->hosts);
     }));
 }
 
-void ComputeConsoleWindow::on_host_cache_loaded() {
+void ComputeConsoleWindow::on_hosts_loaded() {
     const auto hosts = host_watcher_->result();
     host_cache_->populate_from(hosts);
-    BOOST_LOG_SEV(lg(), debug)
-        << "Host cache populated with " << hosts.size() << " hosts.";
+    host_model_->refresh();
 
-    // Now load tasks; host names will be available when rows render.
+    BOOST_LOG_SEV(lg(), debug) << "Hosts loaded: " << hosts.size();
     task_model_->refresh();
 }
 
 void ComputeConsoleWindow::on_tasks_loaded() {
     const int n = task_model_->rowCount();
-    emit statusChanged(tr("%1 tasks").arg(n));
-    BOOST_LOG_SEV(lg(), info) << "Compute console loaded " << n << " tasks.";
+    const int h = host_model_->rowCount();
+    emit statusChanged(tr("%1 tasks, %2 hosts").arg(n).arg(h));
+    BOOST_LOG_SEV(lg(), info) << "Console loaded " << n << " tasks, "
+                              << h << " hosts.";
+
+    main_tabs_->setTabText(0, tr("Tasks (%1)").arg(n));
+    main_tabs_->setTabText(1, tr("Hosts (%1)").arg(h));
 }
 
 void ComputeConsoleWindow::on_tasks_error(
@@ -205,6 +233,8 @@ void ComputeConsoleWindow::on_tasks_error(
     emit statusChanged(tr("Error: %1").arg(message));
 }
 
+// ── Interaction ───────────────────────────────────────────────────────────────
+
 void ComputeConsoleWindow::on_task_selection_changed() {
     const auto selected = task_view_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
@@ -212,29 +242,24 @@ void ComputeConsoleWindow::on_task_selection_changed() {
         return;
     }
 
-    // Map proxy index back to source row
-    const QModelIndex proxy_idx = selected.first();
-    const QModelIndex src_idx = task_proxy_->mapToSource(proxy_idx);
-    const auto* task = task_model_->get_task(src_idx.row());
+    const QModelIndex src = task_proxy_->mapToSource(selected.first());
+    const auto* task = task_model_->get_task(src.row());
     if (!task) return;
 
     const auto result_id = QString::fromStdString(
         boost::uuids::to_string(task->result.id));
-
     log_viewer_->load_result(result_id);
-
-    // Switch to the ORE Logs tab so the user sees something immediately.
-    bottom_tabs_->setCurrentWidget(log_viewer_);
 }
+
+void ComputeConsoleWindow::on_tab_changed(int /*index*/) {}
 
 void ComputeConsoleWindow::on_auto_refresh_toggled(bool checked) {
     if (checked) {
         auto_refresh_timer_->start();
-        BOOST_LOG_SEV(lg(), debug) << "Auto-refresh enabled (15 s).";
     } else {
         auto_refresh_timer_->stop();
-        BOOST_LOG_SEV(lg(), debug) << "Auto-refresh disabled.";
     }
+    BOOST_LOG_SEV(lg(), debug) << "Auto-refresh " << (checked ? "on" : "off");
 }
 
 } // namespace ores::qt

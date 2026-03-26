@@ -80,6 +80,8 @@ class BusinessCentreController;
 class BusinessUnitController;
 class BusinessUnitTypeController;
 class JobDefinitionController;
+class AppController;
+class AppVersionController;
 class ComputeDashboardController;
 class ComputeConsoleController;
 class ServiceDashboardController;
@@ -657,6 +659,8 @@ private:
     std::unique_ptr<PaymentFrequencyTypeController> paymentFrequencyTypeController_;
     std::unique_ptr<LegTypeController> legTypeController_;
     std::unique_ptr<JobDefinitionController> jobDefinitionController_;
+    std::unique_ptr<AppController> appController_;
+    std::unique_ptr<AppVersionController> appVersionController_;
     std::unique_ptr<ComputeDashboardController> computeDashboardController_;
     std::unique_ptr<ComputeConsoleController> computeConsoleController_;
     std::unique_ptr<ServiceDashboardController> serviceDashboardController_;

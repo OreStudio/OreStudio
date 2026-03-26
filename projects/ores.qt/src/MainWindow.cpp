@@ -92,6 +92,8 @@
 #include "ores.qt/PaymentFrequencyTypeController.hpp"
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
+#include "ores.qt/AppController.hpp"
+#include "ores.qt/AppVersionController.hpp"
 #include "ores.qt/ComputeDashboardController.hpp"
 #include "ores.qt/ComputeConsoleController.hpp"
 #include "ores.qt/ServiceDashboardController.hpp"
@@ -825,14 +827,27 @@ MainWindow::MainWindow(QWidget* parent) :
         IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
         tr("Dashboard"));
     auto* actionConsole = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor),
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor),
         tr("Console"));
+    computeMenu->addSeparator();
+    auto* actionApps = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor),
+        tr("Apps"));
+    auto* actionAppVersions = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor),
+        tr("App Versions"));
 
     connect(actionDashboard, &QAction::triggered, this, [this]() {
         if (computeDashboardController_) computeDashboardController_->showDashboard();
     });
     connect(actionConsole, &QAction::triggered, this, [this]() {
         if (computeConsoleController_) computeConsoleController_->showConsole();
+    });
+    connect(actionApps, &QAction::triggered, this, [this]() {
+        if (appController_) appController_->showListWindow();
+    });
+    connect(actionAppVersions, &QAction::triggered, this, [this]() {
+        if (appVersionController_) appVersionController_->showListWindow();
     });
 
     // Connect Reporting actions to controllers
@@ -2084,6 +2099,40 @@ void MainWindow::createControllers() {
     connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
+    appController_ = std::make_unique<AppController>(
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
+    connect(appController_.get(), &AppController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appController_.get(), &AppController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appController_.get(), &AppController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(appController_.get(), &AppController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    appVersionController_ = std::make_unique<AppVersionController>(
+        this, mdiArea_, clientManager_, changeReasonCache_,
+        QString::fromStdString(username_), this);
+    if (!httpBaseUrl_.empty())
+        appVersionController_->setHttpBaseUrl(httpBaseUrl_);
+    connect(appVersionController_.get(), &AppVersionController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appVersionController_.get(), &AppVersionController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(appVersionController_.get(), &AppVersionController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(appVersionController_.get(), &AppVersionController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         this, mdiArea_, clientManager_, this);
     connect(computeDashboardController_.get(),
@@ -2620,6 +2669,8 @@ void MainWindow::setHttpBaseUrl(const std::string& url) {
     httpBaseUrl_ = url;
     BOOST_LOG_SEV(lg(), info) << "HTTP base URL set: " << url;
 
+    if (appVersionController_)
+        appVersionController_->setHttpBaseUrl(url);
 }
 
 void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {

@@ -986,7 +986,7 @@ temporal tables: =ores_trading_instruments_tbl= and
 Story is BLOCKED pending PR review. All implementation is complete except CLI
 commands which are deferred to a follow-up story. Builds cleanly.
 
-Pull Request: pending push
+Pull Request: OreStudio/OreStudio#569
 
 *** TODO Refactor trading reference type boilerplate into shared templates :code:
 

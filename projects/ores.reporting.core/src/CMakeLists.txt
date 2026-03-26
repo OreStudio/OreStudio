@@ -43,6 +43,7 @@ target_link_libraries(${lib_target_name}
         ores.nats.lib
         ores.scheduler.api.lib
     PRIVATE
+        ores.iam.api.lib
         ores.service.lib
         ores.utility.lib
         ores.security.lib

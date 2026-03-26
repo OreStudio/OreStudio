@@ -58,10 +58,10 @@ public:
     read_all(context ctx, const std::string& id);
 
     /**
-     * @brief Returns all current report definitions that have no scheduler_job_id,
-     *        across all tenants. Used during startup reconciliation.
+     * @brief Returns current report definitions for this tenant that have no
+     *        scheduler_job_id. Used during per-tenant startup reconciliation.
      */
-    std::vector<domain::report_definition> read_all_unscheduled(context ctx);
+    std::vector<domain::report_definition> read_latest_unscheduled(context ctx);
 
     void remove(context ctx, const std::string& id);
 };

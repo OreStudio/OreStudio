@@ -28,6 +28,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include "ores.utility/rfl/reflectors.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
+#include "ores.iam.api/messaging/tenant_protocol.hpp"
 #include "ores.scheduler.api/rfl/reflectors.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
@@ -228,111 +231,177 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     BOOST_LOG_SEV(lg(), info)
         << "Starting scheduler reconciliation for report definitions.";
 
-    repository::report_definition_repository repo;
-    const auto unscheduled = repo.read_all_unscheduled(ctx_);
-
-    BOOST_LOG_SEV(lg(), info)
-        << "Found " << unscheduled.size() << " unscheduled report definition(s).";
-
-    if (unscheduled.empty()) {
-        BOOST_LOG_SEV(lg(), info) << "Reconciliation complete. Nothing to do.";
-        co_return;
-    }
-
     const auto& performed_by = ctx_.service_account();
 
-    // Build job definitions and keep a map from job_id string → definition.
-    // We generate the job IDs here so we can correlate results after the
-    // batch call without relying on anything the scheduler returns.
-    struct pending_entry {
-        boost::uuids::uuid job_id;
-        const domain::report_definition* def;
-    };
-    std::vector<pending_entry> pending;
-    ores::scheduler::messaging::schedule_jobs_batch_request batch_req;
-    batch_req.change_reason_code = "system.report_scheduled";
-    batch_req.change_commentary = "Startup reconciliation by reporting service";
-
-    for (const auto& def : unscheduled) {
-        const auto job_id = gen_uuid();
-        auto job = build_job_definition(def, job_id, performed_by);
-        if (!job) {
-            // Invalid cron — skip this definition (warning already logged).
-            continue;
-        }
-        batch_req.definitions.push_back(std::move(*job));
-        pending.push_back({job_id, &def});
-    }
-
-    if (pending.empty()) {
-        BOOST_LOG_SEV(lg(), info)
-            << "Reconciliation complete. All definitions had invalid cron expressions.";
-        co_return;
-    }
-
-    // Send a single batch request to the scheduler.
-    const auto req_json = rfl::json::write(batch_req);
-    const auto* p = reinterpret_cast<const std::byte*>(req_json.data());
-
-    std::unordered_set<std::string> failed_ids;
+    // Step 1: ask the IAM service for all active tenants.
+    BOOST_LOG_SEV(lg(), debug) << "Requesting active tenant list from IAM.";
+    std::vector<ores::iam::domain::tenant> tenants;
     try {
+        const ores::iam::messaging::get_tenants_request tenant_req{
+            .include_deleted = false
+        };
+        const auto req_json = rfl::json::write(tenant_req);
+        const auto* p = reinterpret_cast<const std::byte*>(req_json.data());
         const auto reply_msg = nats_.request_sync(
-            ores::scheduler::messaging::schedule_jobs_batch_request::nats_subject,
+            ores::iam::messaging::get_tenants_request::nats_subject,
             std::span<const std::byte>(p, req_json.size()));
 
         const std::string_view sv(
             reinterpret_cast<const char*>(reply_msg.data.data()),
             reply_msg.data.size());
-        auto resp = rfl::json::read<
-            ores::scheduler::messaging::schedule_jobs_batch_response>(sv);
+        auto resp = rfl::json::read<ores::iam::messaging::get_tenants_response>(sv);
         if (!resp) {
             BOOST_LOG_SEV(lg(), error)
-                << "Failed to parse batch schedule response; "
-                << "no definitions will be marked as scheduled.";
+                << "Failed to parse tenant list response; aborting reconciliation.";
             co_return;
         }
-        for (const auto& fid : resp->failed_ids)
-            failed_ids.insert(fid);
-
-        BOOST_LOG_SEV(lg(), info)
-            << "Scheduler accepted " << resp->scheduled_count
-            << " job(s), " << resp->failed_ids.size() << " failed.";
+        tenants = std::move(resp->tenants);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
-            << "Batch schedule NATS call failed: " << e.what();
+            << "Failed to retrieve tenant list from IAM: " << e.what();
         co_return;
     }
 
-    // Update the definitions that the scheduler accepted.
-    int updated = 0;
-    for (const auto& entry : pending) {
-        const auto job_id_str = boost::uuids::to_string(entry.job_id);
-        if (failed_ids.count(job_id_str))
-            continue;
+    BOOST_LOG_SEV(lg(), debug)
+        << "Received " << tenants.size() << " active tenant(s) from IAM.";
 
-        auto def_updated = *entry.def;
-        def_updated.scheduler_job_id = entry.job_id;
-        def_updated.modified_by = performed_by;
-        def_updated.performed_by = performed_by;
-        def_updated.change_reason_code = "system.report_scheduled";
-        def_updated.change_commentary = "Linked to scheduler job by reconciliation";
+    if (tenants.empty()) {
+        BOOST_LOG_SEV(lg(), info) << "Reconciliation complete. No active tenants.";
+        co_return;
+    }
 
+    // Step 2: for each tenant, query unscheduled definitions and schedule them.
+    int total_scheduled = 0;
+    int total_failed = 0;
+
+    for (const auto& tenant : tenants) {
+        const auto tenant_id = utility::uuid::tenant_id::from_uuid(tenant.id);
+        const auto tenant_id_str = tenant_id.to_string();
+        BOOST_LOG_SEV(lg(), debug)
+            << "Reconciling tenant: " << tenant_id_str
+            << " [" << tenant.name << "]";
+
+        const auto tenant_ctx = ctx_.with_tenant(tenant_id, performed_by);
+
+        repository::report_definition_repository repo;
+        std::vector<domain::report_definition> unscheduled;
         try {
-            const auto tenant_ctx = ctx_.with_tenant(
-                entry.def->tenant_id, performed_by);
-            report_definition_service svc(tenant_ctx);
-            svc.save_definition(def_updated);
-            ++updated;
+            unscheduled = repo.read_latest_unscheduled(tenant_ctx);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
-                << "Failed to persist scheduler_job_id for definition "
-                << entry.def->id << ": " << e.what();
+                << "Failed to read unscheduled definitions for tenant "
+                << tenant_id_str << ": " << e.what();
+            continue;
+        }
+
+        BOOST_LOG_SEV(lg(), debug) << "Found " << unscheduled.size()
+            << " unscheduled definition(s) for tenant: " << tenant_id_str;
+
+        if (unscheduled.empty())
+            continue;
+
+        // Build a batch request for this tenant's unscheduled definitions.
+        struct pending_entry {
+            boost::uuids::uuid job_id;
+            const domain::report_definition* def;
+        };
+        std::vector<pending_entry> pending;
+        ores::scheduler::messaging::schedule_jobs_batch_request batch_req;
+        batch_req.change_reason_code = "system.report_scheduled";
+        batch_req.change_commentary = "Startup reconciliation by reporting service";
+
+        for (const auto& def : unscheduled) {
+            const auto job_id = gen_uuid();
+            auto job = build_job_definition(def, job_id, performed_by);
+            if (!job) {
+                // Invalid cron — warning already logged in build_job_definition.
+                ++total_failed;
+                continue;
+            }
+            batch_req.definitions.push_back(std::move(*job));
+            pending.push_back({job_id, &def});
+        }
+
+        if (pending.empty()) {
+            BOOST_LOG_SEV(lg(), debug)
+                << "No schedulable definitions for tenant: " << tenant_id_str;
+            continue;
+        }
+
+        // Send the batch request to the scheduler.
+        BOOST_LOG_SEV(lg(), debug) << "Sending batch of " << pending.size()
+            << " job(s) to scheduler for tenant: " << tenant_id_str;
+        const auto req_json = rfl::json::write(batch_req);
+        const auto* p = reinterpret_cast<const std::byte*>(req_json.data());
+
+        std::unordered_set<std::string> failed_ids;
+        try {
+            const auto reply_msg = nats_.request_sync(
+                ores::scheduler::messaging::schedule_jobs_batch_request::nats_subject,
+                std::span<const std::byte>(p, req_json.size()));
+
+            const std::string_view sv(
+                reinterpret_cast<const char*>(reply_msg.data.data()),
+                reply_msg.data.size());
+            auto resp = rfl::json::read<
+                ores::scheduler::messaging::schedule_jobs_batch_response>(sv);
+            if (!resp) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to parse batch schedule response for tenant "
+                    << tenant_id_str << "; skipping.";
+                total_failed += static_cast<int>(pending.size());
+                continue;
+            }
+            for (const auto& fid : resp->failed_ids)
+                failed_ids.insert(fid);
+
+            BOOST_LOG_SEV(lg(), debug)
+                << "Scheduler accepted " << resp->scheduled_count
+                << " job(s), " << resp->failed_ids.size()
+                << " failed for tenant: " << tenant_id_str;
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Batch schedule NATS call failed for tenant "
+                << tenant_id_str << ": " << e.what();
+            total_failed += static_cast<int>(pending.size());
+            continue;
+        }
+
+        // Persist the scheduler_job_id on each accepted definition.
+        for (const auto& entry : pending) {
+            const auto job_id_str = boost::uuids::to_string(entry.job_id);
+            if (failed_ids.count(job_id_str)) {
+                ++total_failed;
+                continue;
+            }
+
+            auto def_updated = *entry.def;
+            def_updated.scheduler_job_id = entry.job_id;
+            def_updated.modified_by = performed_by;
+            def_updated.performed_by = performed_by;
+            def_updated.change_reason_code = "system.report_scheduled";
+            def_updated.change_commentary = "Linked to scheduler job by reconciliation";
+
+            try {
+                report_definition_service svc(tenant_ctx);
+                svc.save_definition(def_updated);
+                ++total_scheduled;
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Persisted scheduler_job_id " << job_id_str
+                    << " for definition: " << entry.def->id;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to persist scheduler_job_id for definition "
+                    << entry.def->id << ": " << e.what();
+                ++total_failed;
+            }
         }
     }
 
     BOOST_LOG_SEV(lg(), info)
-        << "Reconciliation complete. Scheduled and persisted: " << updated
-        << ", failed: " << failed_ids.size() << ".";
+        << "Reconciliation complete. Tenants processed: " << tenants.size()
+        << ", scheduled: " << total_scheduled
+        << ", failed: " << total_failed << ".";
     co_return;
 }
 

@@ -33,48 +33,6 @@ using namespace sqlgen::literals;
 using namespace ores::logging;
 using namespace ores::database::repository;
 
-namespace {
-
-// Columns selected for cross-tenant raw queries (no sqlgen ORM).
-constexpr std::string_view SELECT_COLS =
-    "SELECT id::text, tenant_id::text, version, name, party_id::text, "
-    "       description, report_type, fsm_state_id::text, schedule_expression, "
-    "       concurrency_policy, scheduler_job_id::text, "
-    "       modified_by, performed_by, change_reason_code, change_commentary, "
-    "       valid_from::text, valid_to::text "
-    "FROM ores_reporting_report_definitions_tbl ";
-
-std::vector<domain::report_definition> parse_rows(
-    const std::vector<std::vector<std::optional<std::string>>>& rows) {
-    std::vector<domain::report_definition> result;
-    result.reserve(rows.size());
-    for (const auto& row : rows) {
-        if (row.size() < 17) continue;
-        report_definition_entity entity;
-        if (row[0]) entity.id = *row[0];
-        if (row[1]) entity.tenant_id = *row[1];
-        if (row[2]) entity.version = std::stoi(*row[2]);
-        if (row[3]) entity.name = *row[3];
-        if (row[4]) entity.party_id = *row[4];
-        if (row[5]) entity.description = *row[5];
-        if (row[6]) entity.report_type = *row[6];
-        entity.fsm_state_id = row[7];
-        if (row[8]) entity.schedule_expression = *row[8];
-        if (row[9]) entity.concurrency_policy = *row[9];
-        entity.scheduler_job_id = row[10];
-        if (row[11]) entity.modified_by = *row[11];
-        if (row[12]) entity.performed_by = *row[12];
-        if (row[13]) entity.change_reason_code = *row[13];
-        if (row[14]) entity.change_commentary = *row[14];
-        if (row[15]) entity.valid_from = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">(*row[15]);
-        if (row[16]) entity.valid_to = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">(*row[16]);
-        result.push_back(report_definition_mapper::map(entity));
-    }
-    return result;
-}
-
-} // anonymous namespace
-
 std::string report_definition_repository::sql() {
     return generate_create_table_sql<report_definition_entity>(lg());
 }
@@ -135,18 +93,24 @@ report_definition_repository::read_all(context ctx, const std::string& id) {
 }
 
 std::vector<domain::report_definition>
-report_definition_repository::read_all_unscheduled(context ctx) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all unscheduled report definitions.";
-    const std::string sql = std::string(SELECT_COLS) +
-        "WHERE scheduler_job_id IS NULL "
-        "  AND valid_to = ores_utility_infinity_timestamp_fn() "
-        "ORDER BY tenant_id, id";
+report_definition_repository::read_latest_unscheduled(context ctx) {
+    const auto tid = ctx.tenant_id().to_string();
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading unscheduled report definitions for tenant: " << tid;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<report_definition_entity>> |
+        where("tenant_id"_c == tid &&
+              "scheduler_job_id"_c.is_null() &&
+              "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
-    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(),
-        "Reading all unscheduled report definitions.");
-    const auto result = parse_rows(rows);
-    BOOST_LOG_SEV(lg(), debug) << "Retrieved " << result.size()
-        << " unscheduled report definitions.";
+    const auto result =
+        execute_read_query<report_definition_entity, domain::report_definition>(
+            ctx, query,
+            [](const auto& entities) { return report_definition_mapper::map(entities); },
+            lg(), "Reading unscheduled report definitions.");
+    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
+        << " unscheduled definition(s) for tenant: " << tid;
     return result;
 }
 

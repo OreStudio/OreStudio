@@ -41,9 +41,8 @@
 #include <boost/process/v2/process.hpp>
 #include <boost/process/v2/start_dir.hpp>
 #include <boost/process/v2/stdio.hpp>
-#include <archive.h>
-#include <archive_entry.h>
 #include <rfl/json.hpp>
+#include "ores.compute.wrapper/filesystem/archiver.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
@@ -456,82 +455,6 @@ std::vector<std::string> substitute_args(const std::vector<std::string>& tmpl,
 }
 
 /**
- * @brief Extract a .tar.gz archive to a destination directory using libarchive.
- *
- * Throws std::runtime_error on failure.
- */
-void extract_tar_gz(const fs::path& archive_path, const fs::path& dest_dir) {
-    struct archive* a = archive_read_new();
-    archive_read_support_filter_gzip(a);
-    archive_read_support_format_tar(a);
-
-    struct archive* out = archive_write_disk_new();
-    archive_write_disk_set_options(out,
-        ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM |
-        ARCHIVE_EXTRACT_ACL  | ARCHIVE_EXTRACT_FFLAGS);
-    archive_write_disk_set_standard_lookup(out);
-
-#ifdef _WIN32
-    const int open_rc = archive_read_open_filename_w(
-        a, archive_path.c_str(), 16384);
-#else
-    const int open_rc = archive_read_open_filename(
-        a, archive_path.c_str(), 16384);
-#endif
-    if (open_rc != ARCHIVE_OK) {
-        archive_read_free(a);
-        archive_write_free(out);
-        throw std::runtime_error(
-            "Failed to open archive: " + archive_path.string() +
-            " — " + archive_error_string(a));
-    }
-
-    struct archive_entry* entry = nullptr;
-    while (true) {
-        const int r = archive_read_next_header(a, &entry);
-        if (r == ARCHIVE_EOF) break;
-        if (r < ARCHIVE_OK)
-            throw std::runtime_error(
-                std::string("archive read error: ") + archive_error_string(a));
-
-        // Rebase entry path under dest_dir
-        const std::string entry_path =
-            (dest_dir / archive_entry_pathname(entry)).string();
-        archive_entry_set_pathname(entry, entry_path.c_str());
-
-        const int wh = archive_write_header(out, entry);
-        if (wh < ARCHIVE_OK)
-            throw std::runtime_error(
-                std::string("archive write header error: ") +
-                archive_error_string(out));
-
-        if (archive_entry_size(entry) > 0) {
-            const void* buff = nullptr;
-            std::size_t size = 0;
-            la_int64_t offset = 0;
-            while (true) {
-                const int rd = archive_read_data_block(a, &buff, &size, &offset);
-                if (rd == ARCHIVE_EOF) break;
-                if (rd < ARCHIVE_OK)
-                    throw std::runtime_error(
-                        std::string("archive data read error: ") +
-                        archive_error_string(a));
-                if (archive_write_data_block(out, buff, size, offset) < ARCHIVE_OK)
-                    throw std::runtime_error(
-                        std::string("archive data write error: ") +
-                        archive_error_string(out));
-            }
-        }
-        archive_write_finish_entry(out);
-    }
-
-    archive_read_close(a);
-    archive_read_free(a);
-    archive_write_close(out);
-    archive_write_free(out);
-}
-
-/**
  * @brief Process one work assignment.
  *
  * 1. Download and cache the engine package (if not already cached).
@@ -575,7 +498,8 @@ void process_assignment(ores::nats::service::client& nats,
                 pkg_archive);
 
             fs::create_directories(pkg_cache_dir);
-            extract_tar_gz(pkg_archive, pkg_cache_dir);
+            ores::compute::wrapper::filesystem::archiver::extract(
+                pkg_archive, pkg_cache_dir);
         }
 
         const auto mf = read_manifest(pkg_cache_dir);
@@ -595,7 +519,8 @@ void process_assignment(ores::nats::service::client& nats,
         input_bytes = static_cast<std::int64_t>(fs::file_size(input_archive));
         BOOST_LOG_SEV(lg, debug) << "Extracting input (" << input_bytes << " bytes)"
             << " to: " << job_dir.string();
-        extract_tar_gz(input_archive, job_dir);
+        ores::compute::wrapper::filesystem::archiver::extract(
+            input_archive, job_dir);
 
         // 3. Spawn engine using Boost.Process to avoid shell injection.
         //    Args in the manifest are passed verbatim; no placeholder substitution
@@ -690,31 +615,8 @@ void process_assignment(ores::nats::service::client& nats,
                     << output_dir.string();
             } else {
                 const fs::path output_archive = job_dir / "output.tar.gz";
-                // Build archive from Output/ contents.
-                struct archive* a = archive_write_new();
-                archive_write_add_filter_gzip(a);
-                archive_write_set_format_pax_restricted(a);
-                archive_write_open_filename(a, output_archive.c_str());
-                for (const auto& e :
-                     fs::recursive_directory_iterator(output_dir)) {
-                    if (!e.is_regular_file()) continue;
-                    const auto rel = fs::relative(e.path(), output_dir);
-                    struct archive_entry* entry = archive_entry_new();
-                    archive_entry_set_pathname(entry, rel.c_str());
-                    archive_entry_set_size(entry,
-                        static_cast<la_int64_t>(fs::file_size(e.path())));
-                    archive_entry_set_filetype(entry, AE_IFREG);
-                    archive_entry_set_perm(entry, 0644);
-                    archive_write_header(a, entry);
-                    std::ifstream in(e.path(), std::ios::binary);
-                    char buf[16384];
-                    while (in.read(buf, sizeof(buf)) || in.gcount())
-                        archive_write_data(a, buf,
-                            static_cast<std::size_t>(in.gcount()));
-                    archive_entry_free(entry);
-                }
-                archive_write_close(a);
-                archive_write_free(a);
+                ores::compute::wrapper::filesystem::archiver::pack(
+                    output_dir, output_archive);
 
                 output_bytes = static_cast<std::int64_t>(
                     fs::file_size(output_archive));

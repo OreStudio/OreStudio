@@ -136,6 +136,20 @@ public:
     void set_message_filter(const std::optional<std::string>& text);
 
     /**
+     * @brief Set the tag filter (exact match).
+     *
+     * @param tag Tag value to filter by; nullopt to disable.
+     */
+    void set_tag_filter(const std::optional<std::string>& tag);
+
+    /**
+     * @brief Set the component prefix filter.
+     *
+     * @param component Component prefix to filter by; nullopt to disable.
+     */
+    void set_component_filter(const std::optional<std::string>& component);
+
+    /**
      * @brief Get the currently filtered session ID.
      */
     std::optional<boost::uuids::uuid> current_session_id() const {
@@ -167,6 +181,8 @@ private:
     std::chrono::system_clock::time_point end_time_;
     std::optional<std::string> min_level_;
     std::optional<std::string> message_filter_;
+    std::optional<std::string> tag_filter_;
+    std::optional<std::string> component_filter_;
 
     std::uint32_t page_size_{100};
     std::uint32_t current_offset_{0};

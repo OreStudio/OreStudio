@@ -172,6 +172,16 @@ set_message_filter(const std::optional<std::string>& text) {
     message_filter_ = text;
 }
 
+void ClientTelemetryLogModel::
+set_tag_filter(const std::optional<std::string>& tag) {
+    tag_filter_ = tag;
+}
+
+void ClientTelemetryLogModel::
+set_component_filter(const std::optional<std::string>& component) {
+    component_filter_ = component;
+}
+
 void ClientTelemetryLogModel::fetch_logs() {
     if (is_fetching_) {
         BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress.";
@@ -191,12 +201,15 @@ void ClientTelemetryLogModel::fetch_logs() {
     auto end = end_time_;
     auto min_level = min_level_;
     auto msg_filter = message_filter_;
+    auto tag_filter = tag_filter_;
+    auto component_filter = component_filter_;
     auto offset = current_offset_;
     auto limit = page_size_;
 
     QFuture<FetchResult> future =
         QtConcurrent::run([self, session_id, start, end, min_level,
-                          msg_filter, offset, limit]() -> FetchResult {
+                          msg_filter, tag_filter, component_filter,
+                          offset, limit]() -> FetchResult {
             return exception_helper::wrap_async_fetch<FetchResult>([&]() -> FetchResult {
                 if (!self || !self->clientManager_) {
                     return {.success = false, .entries = {}, .total_count = 0,
@@ -210,6 +223,8 @@ void ClientTelemetryLogModel::fetch_logs() {
                 request.query.session_id = session_id;
                 request.query.min_level = min_level;
                 request.query.message_contains = msg_filter;
+                request.query.tag = tag_filter;
+                request.query.component = component_filter;
                 request.query.offset = offset;
                 request.query.limit = limit;
 

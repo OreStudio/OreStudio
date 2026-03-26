@@ -254,9 +254,7 @@ void WorkunitDetailDialog::setUsername(const std::string& username) {
 }
 
 void WorkunitDetailDialog::setHttpBaseUrl(const std::string& url) {
-    httpBaseUrl_ = url;
-    if (!httpBaseUrl_.empty() && httpBaseUrl_.back() == '/')
-        httpBaseUrl_.pop_back();
+    httpBaseUrl_ = QUrl(QString::fromStdString(url));
 }
 
 void WorkunitDetailDialog::setWorkunit(
@@ -441,7 +439,7 @@ void WorkunitDetailDialog::onSaveClicked() {
         return;
     }
 
-    if (httpBaseUrl_.empty()) {
+    if (!httpBaseUrl_.isValid() || httpBaseUrl_.isEmpty()) {
         MessageBoxHelper::warning(this, "No Server URL",
             "HTTP base URL is not configured. Cannot upload files.");
         return;
@@ -465,11 +463,11 @@ void WorkunitDetailDialog::onSaveClicked() {
 
     // Phase 1: upload input file
     if (!selectedInputFilePath_.isEmpty()) {
-        const std::string ext_in =
-            QFileInfo(selectedInputFilePath_).completeSuffix().toStdString();
-        const QString inputUrl = QString::fromStdString(
-            httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/input"
-            + (ext_in.empty() ? "" : "." + ext_in));
+        const QString ext_in = QFileInfo(selectedInputFilePath_).completeSuffix();
+        QUrl inputUrl = httpBaseUrl_;
+        inputUrl.setPath("/api/v1/compute/workunits/"
+            + QString::fromStdString(id_str) + "/input"
+            + (ext_in.isEmpty() ? QString{} : "." + ext_in));
 
         auto* inputFile = new QFile(selectedInputFilePath_, this);
         if (!inputFile->open(QIODevice::ReadOnly)) {
@@ -482,7 +480,7 @@ void WorkunitDetailDialog::onSaveClicked() {
         ui_->saveButton->setEnabled(false);
 
         auto* nm = new QNetworkAccessManager(this);
-        QNetworkRequest req{QUrl(inputUrl)};
+        QNetworkRequest req{inputUrl};
         req.setHeader(QNetworkRequest::ContentTypeHeader,
                       QByteArray("application/octet-stream"));
 
@@ -519,11 +517,12 @@ void WorkunitDetailDialog::onSaveClicked() {
 
             // Phase 2: upload config file
             if (!self->selectedConfigFilePath_.isEmpty()) {
-                const std::string ext_cfg =
-                    QFileInfo(self->selectedConfigFilePath_).completeSuffix().toStdString();
-                const QString configUrl = QString::fromStdString(
-                    self->httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/config"
-                    + (ext_cfg.empty() ? "" : "." + ext_cfg));
+                const QString ext_cfg =
+                    QFileInfo(self->selectedConfigFilePath_).completeSuffix();
+                QUrl configUrl = self->httpBaseUrl_;
+                configUrl.setPath("/api/v1/compute/workunits/"
+                    + QString::fromStdString(id_str) + "/config"
+                    + (ext_cfg.isEmpty() ? QString{} : "." + ext_cfg));
 
                 auto* configFile = new QFile(self->selectedConfigFilePath_, self);
                 if (!configFile->open(QIODevice::ReadOnly)) {
@@ -536,7 +535,7 @@ void WorkunitDetailDialog::onSaveClicked() {
                 }
 
                 auto* nm2 = new QNetworkAccessManager(self);
-                QNetworkRequest req2{QUrl(configUrl)};
+                QNetworkRequest req2{configUrl};
                 req2.setHeader(QNetworkRequest::ContentTypeHeader,
                                QByteArray("application/octet-stream"));
 

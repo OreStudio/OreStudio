@@ -262,9 +262,7 @@ void AppVersionDetailDialog::setUsername(const std::string& username) {
 }
 
 void AppVersionDetailDialog::setHttpBaseUrl(const std::string& url) {
-    httpBaseUrl_ = url;
-    if (!httpBaseUrl_.empty() && httpBaseUrl_.back() == '/')
-        httpBaseUrl_.pop_back();
+    httpBaseUrl_ = QUrl(QString::fromStdString(url));
 }
 
 void AppVersionDetailDialog::setVersion(
@@ -442,21 +440,21 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
         return;
     }
 
-    if (httpBaseUrl_.empty()) {
+    if (!httpBaseUrl_.isValid() || httpBaseUrl_.isEmpty()) {
         MessageBoxHelper::warning(this, "No Server URL",
             "HTTP base URL is not configured. Cannot upload package.");
         return;
     }
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
-    // Build upload URL from the selected filename extension (if any).
-    const std::string ext =
-        QFileInfo(selectedPackageFilePath_).completeSuffix().toStdString();
-    const std::string url_str = httpBaseUrl_ + "/api/v1/compute/packages/" + id_str
-        + (ext.empty() ? "" : "." + ext);
-    const QString url = QString::fromStdString(url_str);
+    const QString ext = QFileInfo(selectedPackageFilePath_).completeSuffix();
+    const QString path = "/api/v1/compute/packages/"
+        + QString::fromStdString(id_str)
+        + (ext.isEmpty() ? QString{} : "." + ext);
+    QUrl uploadUrl = httpBaseUrl_;
+    uploadUrl.setPath(path);
 
-    BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << url_str
+    BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << uploadUrl.toString().toStdString()
                               << " file: " << selectedPackageFilePath_.toStdString();
 
     auto* file = new QFile(selectedPackageFilePath_, this);
@@ -471,7 +469,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     ui_->uploadPackageButton->setText(tr("Uploading..."));
 
     auto* networkManager = new QNetworkAccessManager(this);
-    QNetworkRequest request{QUrl(url)};
+    QNetworkRequest request{uploadUrl};
     request.setHeader(QNetworkRequest::ContentTypeHeader,
                       QByteArray("application/octet-stream"));
 

@@ -86,6 +86,11 @@
 #include "ores.qt/MonetaryNatureController.hpp"
 #include "ores.qt/CurrencyMarketTierController.hpp"
 #include "ores.qt/TradeController.hpp"
+#include "ores.qt/DayCountFractionTypeController.hpp"
+#include "ores.qt/BusinessDayConventionTypeController.hpp"
+#include "ores.qt/FloatingIndexTypeController.hpp"
+#include "ores.qt/PaymentFrequencyTypeController.hpp"
+#include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/HostController.hpp"
 #include "ores.qt/AppController.hpp"
@@ -243,6 +248,11 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBusinessUnits->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionBusinessUnitTypes->setIcon(IconUtils::createRecoloredIcon(Icon::PeopleTeam, IconUtils::DefaultIconColor));
     ui_->ActionTrades->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
+    ui_->ActionDayCountFractionTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionBusinessDayConventionTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionFloatingIndexTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionPaymentFrequencyTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
+    ui_->ActionLegTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
@@ -787,6 +797,26 @@ MainWindow::MainWindow(QWidget* parent) :
         if (tradeController_)
             tradeController_->showListWindow();
     });
+    connect(ui_->ActionDayCountFractionTypes, &QAction::triggered, this, [this]() {
+        if (dayCountFractionTypeController_)
+            dayCountFractionTypeController_->showListWindow();
+    });
+    connect(ui_->ActionBusinessDayConventionTypes, &QAction::triggered, this, [this]() {
+        if (businessDayConventionTypeController_)
+            businessDayConventionTypeController_->showListWindow();
+    });
+    connect(ui_->ActionFloatingIndexTypes, &QAction::triggered, this, [this]() {
+        if (floatingIndexTypeController_)
+            floatingIndexTypeController_->showListWindow();
+    });
+    connect(ui_->ActionPaymentFrequencyTypes, &QAction::triggered, this, [this]() {
+        if (paymentFrequencyTypeController_)
+            paymentFrequencyTypeController_->showListWindow();
+    });
+    connect(ui_->ActionLegTypes, &QAction::triggered, this, [this]() {
+        if (legTypeController_)
+            legTypeController_->showListWindow();
+    });
 
     // Connect Job Definitions action to controller
     connect(ui_->ActionJobDefinitions, &QAction::triggered, this, [this]() {
@@ -1236,6 +1266,11 @@ void MainWindow::updateMenuState() {
     ui_->ActionMonetaryNatures->setEnabled(isLoggedIn);
     ui_->ActionCurrencyMarketTiers->setEnabled(isLoggedIn);
     ui_->ActionTrades->setEnabled(isLoggedIn);
+    ui_->ActionDayCountFractionTypes->setEnabled(isLoggedIn);
+    ui_->ActionBusinessDayConventionTypes->setEnabled(isLoggedIn);
+    ui_->ActionFloatingIndexTypes->setEnabled(isLoggedIn);
+    ui_->ActionPaymentFrequencyTypes->setEnabled(isLoggedIn);
+    ui_->ActionLegTypes->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
     ui_->ActionImportOreData->setEnabled(isLoggedIn);
@@ -1981,6 +2016,91 @@ void MainWindow::createControllers() {
     connect(tradeController_.get(), &TradeController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(tradeController_.get(), &TradeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    dayCountFractionTypeController_ = std::make_unique<DayCountFractionTypeController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(dayCountFractionTypeController_.get(), &DayCountFractionTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(dayCountFractionTypeController_.get(), &DayCountFractionTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(dayCountFractionTypeController_.get(), &DayCountFractionTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(dayCountFractionTypeController_.get(), &DayCountFractionTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    businessDayConventionTypeController_ = std::make_unique<BusinessDayConventionTypeController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(businessDayConventionTypeController_.get(), &BusinessDayConventionTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessDayConventionTypeController_.get(), &BusinessDayConventionTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(businessDayConventionTypeController_.get(), &BusinessDayConventionTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(businessDayConventionTypeController_.get(), &BusinessDayConventionTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    floatingIndexTypeController_ = std::make_unique<FloatingIndexTypeController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(floatingIndexTypeController_.get(), &FloatingIndexTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(floatingIndexTypeController_.get(), &FloatingIndexTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(floatingIndexTypeController_.get(), &FloatingIndexTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(floatingIndexTypeController_.get(), &FloatingIndexTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    paymentFrequencyTypeController_ = std::make_unique<PaymentFrequencyTypeController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(paymentFrequencyTypeController_.get(), &PaymentFrequencyTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(paymentFrequencyTypeController_.get(), &PaymentFrequencyTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(paymentFrequencyTypeController_.get(), &PaymentFrequencyTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(paymentFrequencyTypeController_.get(), &PaymentFrequencyTypeController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    legTypeController_ = std::make_unique<LegTypeController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(legTypeController_.get(), &LegTypeController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(legTypeController_.get(), &LegTypeController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(legTypeController_.get(), &LegTypeController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(legTypeController_.get(), &LegTypeController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(

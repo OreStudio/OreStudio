@@ -1,0 +1,86 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "trading",
+    "entity_singular": "leg_type",
+    "entity_plural": "leg_types",
+    "entity_title": "Leg Type",
+    "has_tenant_id": true,
+    "generator_facet_name": "generator",
+    "brief": "ORE leg type code (e.g. Fixed, Floating, OIS, CMS, CPI).",
+    "description": "Reference data table defining valid leg types used in instrument leg definitions.\nValues are sourced from ORE ore_types.xsd LegType enumeration.",
+
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique leg type code.",
+      "detail": "Examples: 'Fixed', 'Floating', 'OIS', 'CMS', 'CMSSpread', 'CPI', 'YoY'.",
+      "generator_expr": "std::string(faker::word::noun()) + \"_leg_\" + std::to_string(++counter)"
+    },
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Human-readable description of the leg type.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_trading_leg_types_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "type",
+      "entity_plural_short": "types",
+      "entity_singular_words": "leg type",
+      "entity_plural_words": "leg types"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"]
+      },
+      "iterator_var": "t"
+    },
+
+    "qt": {
+      "domain_include": "ores.trading.api/domain/leg_type.hpp",
+      "domain_class": "trading::domain::leg_type",
+      "protocol_include": "ores.trading.api/messaging/leg_type_protocol.hpp",
+      "collection_name": "types",
+      "item_var": "type",
+      "key_field": "code",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "trading::messaging::get_leg_types_request",
+      "get_response_class": "trading::messaging::get_leg_types_response",
+      "get_message_type": "get_leg_types_request",
+      "save_request_class": "trading::messaging::save_leg_type_request",
+      "save_response_class": "trading::messaging::save_leg_type_response",
+      "save_message_type": "save_leg_type_request",
+      "delete_request_class": "trading::messaging::delete_leg_type_request",
+      "delete_response_class": "trading::messaging::delete_leg_type_response",
+      "delete_message_type": "delete_leg_type_request",
+      "history_request_class": "trading::messaging::get_leg_type_history_request",
+      "history_response_class": "trading::messaging::get_leg_type_history_response",
+      "history_message_type": "get_leg_type_history_request",
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 350},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "LegTypeListWindow",
+      "window_title": "Leg Types",
+      "icon": "Tag"
+    }
+  }
+}

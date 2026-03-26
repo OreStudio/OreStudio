@@ -106,6 +106,26 @@
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
 #include "ores.cli/config/add_compute_workunit_options.hpp"
+#include "ores.trading.api/domain/day_count_fraction_type_json_io.hpp"
+#include "ores.trading.api/domain/day_count_fraction_type_table_io.hpp"
+#include "ores.trading.core/repository/day_count_fraction_type_repository.hpp"
+#include "ores.trading.api/domain/business_day_convention_type_json_io.hpp"
+#include "ores.trading.api/domain/business_day_convention_type_table_io.hpp"
+#include "ores.trading.core/repository/business_day_convention_type_repository.hpp"
+#include "ores.trading.api/domain/floating_index_type_json_io.hpp"
+#include "ores.trading.api/domain/floating_index_type_table_io.hpp"
+#include "ores.trading.core/repository/floating_index_type_repository.hpp"
+#include "ores.trading.api/domain/payment_frequency_type_json_io.hpp"
+#include "ores.trading.api/domain/payment_frequency_type_table_io.hpp"
+#include "ores.trading.core/repository/payment_frequency_type_repository.hpp"
+#include "ores.trading.api/domain/leg_type_json_io.hpp"
+#include "ores.trading.api/domain/leg_type_table_io.hpp"
+#include "ores.trading.core/repository/leg_type_repository.hpp"
+#include "ores.cli/config/add_day_count_fraction_type_options.hpp"
+#include "ores.cli/config/add_business_day_convention_type_options.hpp"
+#include "ores.cli/config/add_floating_index_type_options.hpp"
+#include "ores.cli/config/add_payment_frequency_type_options.hpp"
+#include "ores.cli/config/add_leg_type_options.hpp"
 #include "ores.cli/app/application_exception.hpp"
 
 namespace ores::cli::app {
@@ -677,6 +697,166 @@ export_compute_results(const config::export_options& cfg) const {
 }
 
 void application::
+export_day_count_fraction_types(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting day count fraction types.";
+
+    trading::repository::day_count_fraction_type_repository repo;
+    std::vector<trading::domain::day_count_fraction_type> items;
+
+    if (!cfg.key.empty()) {
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
+                                 : repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << "[";
+        const char* sep = "";
+        for (const auto& item : items) {
+            output_stream_ << sep << item;
+            sep = ",";
+        }
+        output_stream_ << "]" << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for day count fraction types"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " day count fraction type(s).";
+}
+
+void application::
+export_business_day_convention_types(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting business day convention types.";
+
+    trading::repository::business_day_convention_type_repository repo;
+    std::vector<trading::domain::business_day_convention_type> items;
+
+    if (!cfg.key.empty()) {
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
+                                 : repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << "[";
+        const char* sep = "";
+        for (const auto& item : items) {
+            output_stream_ << sep << item;
+            sep = ",";
+        }
+        output_stream_ << "]" << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for business day convention types"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " business day convention type(s).";
+}
+
+void application::
+export_floating_index_types(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting floating index types.";
+
+    trading::repository::floating_index_type_repository repo;
+    std::vector<trading::domain::floating_index_type> items;
+
+    if (!cfg.key.empty()) {
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
+                                 : repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << "[";
+        const char* sep = "";
+        for (const auto& item : items) {
+            output_stream_ << sep << item;
+            sep = ",";
+        }
+        output_stream_ << "]" << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for floating index types"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " floating index type(s).";
+}
+
+void application::
+export_payment_frequency_types(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting payment frequency types.";
+
+    trading::repository::payment_frequency_type_repository repo;
+    std::vector<trading::domain::payment_frequency_type> items;
+
+    if (!cfg.key.empty()) {
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
+                                 : repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << "[";
+        const char* sep = "";
+        for (const auto& item : items) {
+            output_stream_ << sep << item;
+            sep = ",";
+        }
+        output_stream_ << "]" << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for payment frequency types"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " payment frequency type(s).";
+}
+
+void application::
+export_leg_types(const config::export_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Exporting leg types.";
+
+    trading::repository::leg_type_repository repo;
+    std::vector<trading::domain::leg_type> items;
+
+    if (!cfg.key.empty()) {
+        items = cfg.all_versions ? repo.read_all(context_, cfg.key)
+                                 : repo.read_latest(context_, cfg.key);
+    } else {
+        items = repo.read_latest(context_);
+    }
+
+    if (cfg.target_format == config::format::json) {
+        output_stream_ << "[";
+        const char* sep = "";
+        for (const auto& item : items) {
+            output_stream_ << sep << item;
+            sep = ",";
+        }
+        output_stream_ << "]" << std::endl;
+    } else if (cfg.target_format == config::format::table) {
+        output_stream_ << items << std::endl;
+    } else {
+        BOOST_THROW_EXCEPTION(application_exception(
+            "Only JSON and table formats are supported for leg types"));
+    }
+
+    BOOST_LOG_SEV(lg(), debug) << "Exported " << items.size() << " leg type(s).";
+}
+
+void application::
 export_data(const std::optional<config::export_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No dumping configuration found.";
@@ -733,6 +913,21 @@ export_data(const std::optional<config::export_options>& ocfg) const {
         case config::entity::feature_flags:
             BOOST_THROW_EXCEPTION(
                 application_exception("Export is not yet supported for feature flags."));
+        case config::entity::day_count_fraction_types:
+            export_day_count_fraction_types(cfg);
+            break;
+        case config::entity::business_day_convention_types:
+            export_business_day_convention_types(cfg);
+            break;
+        case config::entity::floating_index_types:
+            export_floating_index_types(cfg);
+            break;
+        case config::entity::payment_frequency_types:
+            export_payment_frequency_types(cfg);
+            break;
+        case config::entity::leg_types:
+            export_leg_types(cfg);
+            break;
     }
 }
 
@@ -945,7 +1140,67 @@ delete_data(const std::optional<config::delete_options>& ocfg) const {
         case config::entity::feature_flags:
             BOOST_THROW_EXCEPTION(
                 application_exception("Delete is not yet supported for feature flags."));
+        case config::entity::day_count_fraction_types:
+            delete_day_count_fraction_type(cfg);
+            break;
+        case config::entity::business_day_convention_types:
+            delete_business_day_convention_type(cfg);
+            break;
+        case config::entity::floating_index_types:
+            delete_floating_index_type(cfg);
+            break;
+        case config::entity::payment_frequency_types:
+            delete_payment_frequency_type(cfg);
+            break;
+        case config::entity::leg_types:
+            delete_leg_type(cfg);
+            break;
     }
+}
+
+void application::
+delete_day_count_fraction_type(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting day count fraction type: " << cfg.key;
+    trading::repository::day_count_fraction_type_repository repo;
+    repo.remove(context_, cfg.key);
+    output_stream_ << "Day count fraction type deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted day count fraction type: " << cfg.key;
+}
+
+void application::
+delete_business_day_convention_type(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting business day convention type: " << cfg.key;
+    trading::repository::business_day_convention_type_repository repo;
+    repo.remove(context_, cfg.key);
+    output_stream_ << "Business day convention type deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted business day convention type: " << cfg.key;
+}
+
+void application::
+delete_floating_index_type(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting floating index type: " << cfg.key;
+    trading::repository::floating_index_type_repository repo;
+    repo.remove(context_, cfg.key);
+    output_stream_ << "Floating index type deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted floating index type: " << cfg.key;
+}
+
+void application::
+delete_payment_frequency_type(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting payment frequency type: " << cfg.key;
+    trading::repository::payment_frequency_type_repository repo;
+    repo.remove(context_, cfg.key);
+    output_stream_ << "Payment frequency type deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted payment frequency type: " << cfg.key;
+}
+
+void application::
+delete_leg_type(const config::delete_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Deleting leg type: " << cfg.key;
+    trading::repository::leg_type_repository repo;
+    repo.remove(context_, cfg.key);
+    output_stream_ << "Leg type deleted successfully: " << cfg.key << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Deleted leg type: " << cfg.key;
 }
 
 void application::
@@ -1366,6 +1621,101 @@ add_compute_workunit(const config::add_compute_workunit_options& cfg) const {
 }
 
 void application::
+add_day_count_fraction_type(const config::add_day_count_fraction_type_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding day count fraction type: " << cfg.code;
+
+    trading::domain::day_count_fraction_type record;
+    record.code = cfg.code;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+    record.recorded_at = std::chrono::system_clock::now();
+    if (cfg.description)
+        record.description = *cfg.description;
+
+    trading::repository::day_count_fraction_type_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added day count fraction type: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added day count fraction type: " << cfg.code;
+}
+
+void application::
+add_business_day_convention_type(const config::add_business_day_convention_type_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding business day convention type: " << cfg.code;
+
+    trading::domain::business_day_convention_type record;
+    record.code = cfg.code;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+    record.recorded_at = std::chrono::system_clock::now();
+    if (cfg.description)
+        record.description = *cfg.description;
+
+    trading::repository::business_day_convention_type_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added business day convention type: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added business day convention type: " << cfg.code;
+}
+
+void application::
+add_floating_index_type(const config::add_floating_index_type_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding floating index type: " << cfg.code;
+
+    trading::domain::floating_index_type record;
+    record.code = cfg.code;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+    record.recorded_at = std::chrono::system_clock::now();
+    if (cfg.description)
+        record.description = *cfg.description;
+
+    trading::repository::floating_index_type_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added floating index type: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added floating index type: " << cfg.code;
+}
+
+void application::
+add_payment_frequency_type(const config::add_payment_frequency_type_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding payment frequency type: " << cfg.code;
+
+    trading::domain::payment_frequency_type record;
+    record.code = cfg.code;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+    record.recorded_at = std::chrono::system_clock::now();
+    if (cfg.description)
+        record.description = *cfg.description;
+
+    trading::repository::payment_frequency_type_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added payment frequency type: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added payment frequency type: " << cfg.code;
+}
+
+void application::
+add_leg_type(const config::add_leg_type_options& cfg) const {
+    BOOST_LOG_SEV(lg(), debug) << "Adding leg type: " << cfg.code;
+
+    trading::domain::leg_type record;
+    record.code = cfg.code;
+    record.modified_by = cfg.modified_by;
+    record.performed_by = cfg.modified_by;
+    record.recorded_at = std::chrono::system_clock::now();
+    if (cfg.description)
+        record.description = *cfg.description;
+
+    trading::repository::leg_type_repository repo;
+    repo.write(context_, record);
+
+    output_stream_ << "Successfully added leg type: " << cfg.code << std::endl;
+    BOOST_LOG_SEV(lg(), info) << "Added leg type: " << cfg.code;
+}
+
+void application::
 add_data(const std::optional<config::add_options>& ocfg) const {
     if (!ocfg.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "No add configuration found.";
@@ -1403,6 +1753,16 @@ add_data(const std::optional<config::add_options>& ocfg) const {
             add_compute_batch(opts);
         } else if constexpr (std::is_same_v<T, config::add_compute_workunit_options>) {
             add_compute_workunit(opts);
+        } else if constexpr (std::is_same_v<T, config::add_day_count_fraction_type_options>) {
+            add_day_count_fraction_type(opts);
+        } else if constexpr (std::is_same_v<T, config::add_business_day_convention_type_options>) {
+            add_business_day_convention_type(opts);
+        } else if constexpr (std::is_same_v<T, config::add_floating_index_type_options>) {
+            add_floating_index_type(opts);
+        } else if constexpr (std::is_same_v<T, config::add_payment_frequency_type_options>) {
+            add_payment_frequency_type(opts);
+        } else if constexpr (std::is_same_v<T, config::add_leg_type_options>) {
+            add_leg_type(opts);
         } else {
             []<bool flag = false>() {
                 static_assert(flag, "unhandled type in std::visit for add_data");

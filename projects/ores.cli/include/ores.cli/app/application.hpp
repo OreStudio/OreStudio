@@ -45,6 +45,11 @@
 #include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_compute_batch_options.hpp"
 #include "ores.cli/config/add_compute_workunit_options.hpp"
+#include "ores.cli/config/add_day_count_fraction_type_options.hpp"
+#include "ores.cli/config/add_business_day_convention_type_options.hpp"
+#include "ores.cli/config/add_floating_index_type_options.hpp"
+#include "ores.cli/config/add_payment_frequency_type_options.hpp"
+#include "ores.cli/config/add_leg_type_options.hpp"
 
 namespace ores::cli::app {
 
@@ -127,6 +132,24 @@ private:
     void add_compute_batch(const config::add_compute_batch_options& cfg) const;
     void add_compute_workunit(const config::add_compute_workunit_options& cfg) const;
     void add_data(const std::optional<config::add_options>& ocfg) const;
+
+    void export_day_count_fraction_types(const config::export_options& cfg) const;
+    void export_business_day_convention_types(const config::export_options& cfg) const;
+    void export_floating_index_types(const config::export_options& cfg) const;
+    void export_payment_frequency_types(const config::export_options& cfg) const;
+    void export_leg_types(const config::export_options& cfg) const;
+
+    void delete_day_count_fraction_type(const config::delete_options& cfg) const;
+    void delete_business_day_convention_type(const config::delete_options& cfg) const;
+    void delete_floating_index_type(const config::delete_options& cfg) const;
+    void delete_payment_frequency_type(const config::delete_options& cfg) const;
+    void delete_leg_type(const config::delete_options& cfg) const;
+
+    void add_day_count_fraction_type(const config::add_day_count_fraction_type_options& cfg) const;
+    void add_business_day_convention_type(const config::add_business_day_convention_type_options& cfg) const;
+    void add_floating_index_type(const config::add_floating_index_type_options& cfg) const;
+    void add_payment_frequency_type(const config::add_payment_frequency_type_options& cfg) const;
+    void add_leg_type(const config::add_leg_type_options& cfg) const;
 
 public:
     /**

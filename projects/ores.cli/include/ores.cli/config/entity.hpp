@@ -46,7 +46,13 @@ namespace ores::cli::config {
         compute_app_versions,
         compute_batches,
         compute_workunits,
-        compute_results
+        compute_results,
+        // trading
+        day_count_fraction_types,
+        business_day_convention_types,
+        floating_index_types,
+        payment_frequency_types,
+        leg_types
     };
 
 }

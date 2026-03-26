@@ -132,6 +132,12 @@
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
     <addaction name="separator"/>
+    <addaction name="ActionDayCountFractionTypes"/>
+    <addaction name="ActionBusinessDayConventionTypes"/>
+    <addaction name="ActionFloatingIndexTypes"/>
+    <addaction name="ActionPaymentFrequencyTypes"/>
+    <addaction name="ActionLegTypes"/>
+    <addaction name="separator"/>
     <addaction name="ActionImportOreData"/>
    </widget>
    <widget class="QMenu" name="menuReporting">
@@ -635,6 +641,46 @@
    </property>
    <property name="toolTip">
     <string>Manage trades</string>
+   </property>
+  </action>
+  <action name="ActionDayCountFractionTypes">
+   <property name="text">
+    <string>&amp;Day Count Fraction Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage day count fraction type reference data</string>
+   </property>
+  </action>
+  <action name="ActionBusinessDayConventionTypes">
+   <property name="text">
+    <string>&amp;Business Day Convention Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage business day convention type reference data</string>
+   </property>
+  </action>
+  <action name="ActionFloatingIndexTypes">
+   <property name="text">
+    <string>&amp;Floating Index Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage floating index type reference data</string>
+   </property>
+  </action>
+  <action name="ActionPaymentFrequencyTypes">
+   <property name="text">
+    <string>&amp;Payment Frequency Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage payment frequency type reference data</string>
+   </property>
+  </action>
+  <action name="ActionLegTypes">
+   <property name="text">
+    <string>&amp;Leg Types</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage leg type reference data</string>
    </property>
   </action>
   <action name="ActionJobDefinitions">

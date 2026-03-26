@@ -952,7 +952,39 @@ the samples, send it to the grid and retrieve the results.
     CLOCK: [2026-03-26 Thu 00:00]--[2026-03-26 Thu 02:23] =>  2:23
     :END:
 
+*** TODO Refactor trading reference type boilerplate into shared templates :code:
+
+The five new trading instrument reference data types (DayCountFractionType,
+BusinessDayConventionType, FloatingIndexType, PaymentFrequencyType, LegType)
+introduced in Phase 0 of the CDM instrument domain model follow the established
+per-type file convention used throughout the codebase. However, because all five
+types share the same structure (code + description + provenance), there is an
+opportunity to reduce boilerplate in several layers without changing the
+established pattern elsewhere.
+
+Acceptance criteria:
+
+- CLI =add_*_options= structs: Replace the five identical
+  =add_*_type_options= structs and their =operator<<=  implementations with a
+  single =add_trading_ref_type_options= struct shared across all five types,
+  reducing 10 files to 1.
+
+- CLI =application.cpp= template helpers: Extract the repeated =export_*=,
+  =delete_*=, and =add_*= function bodies into private template helpers
+  (=export_trading_ref_type=, =delete_trading_ref_type=,
+  =add_trading_ref_type=) so each of the 15 per-type methods becomes a
+  one-line call.
+
+- Repository entity structs: Replace the five identical =*_entity= structs in
+  =ores.trading.core= with a single =trading_ref_type_entity= base struct, and
+  type-alias or inherit per type.
+
+Scope: =ores.cli= and =ores.trading.core= only. The Qt UI layer (Controllers,
+MdiWindows, DetailDialogs, HistoryDialogs, ClientModels) follows the same
+per-type pattern as all other entity types in =ores.qt= and is out of scope for
+this story.
 
 * Footer
+
 
 | Previous: [[id:93CE19DF-1501-11F1-8EF4-40B0768014EB][Sprint Backlog 14]] | Next: TBD |

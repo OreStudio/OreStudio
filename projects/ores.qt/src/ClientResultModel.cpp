@@ -40,7 +40,7 @@ QString format_state(int s) {
     switch (s) {
     case 1: return QObject::tr("Inactive");
     case 2: return QObject::tr("Unsent");
-    case 4: return QObject::tr("In Progress");
+    case 4: return QObject::tr("Running");
     case 5: return QObject::tr("Done");
     default: return QString::number(s);
     }
@@ -50,7 +50,7 @@ QString format_outcome(int o) {
     switch (o) {
     case 0: return QObject::tr("Pending");
     case 1: return QObject::tr("Success");
-    case 3: return QObject::tr("Client Error");
+    case 3: return QObject::tr("Failed");
     case 4: return QObject::tr("No Reply");
     default: return QString::number(o);
     }

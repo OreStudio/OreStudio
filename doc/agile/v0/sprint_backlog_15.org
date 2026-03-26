@@ -887,7 +887,7 @@ Tasks:
 - [ ] Update =LeiPartyConfigPage= in =PublishBundleWizard= to read the schema
   and drive its UI from it rather than hard-coding the fields.
 
-*** Add counterparty party scoping (librarian Phase 2)                :code:
+*** Add counterparty party scoping (librarian Phase 2)                 :code:
 
 Phase 2 of the librarian party/counterparty publication plan
 (=2026-02-11=). Phase 1 (dataset dependencies, optional bundle members, party
@@ -912,7 +912,7 @@ Tasks:
 - [ ] Add =LeiCounterpartyConfigPage= to =PublishBundleWizard= (or extend the
   existing =LeiPartyConfigPage=) with a party picker for =target_party_ids=.
 
-*** Unify compute wrapper nodes as replicated services               :code:
+*** Unify compute wrapper nodes as replicated services                 :code:
 
 Currently compute wrapper nodes are a special case: hardcoded instance names
 (=node1=, =node2=, ...), pattern-matched separately in =status-services.sh=,
@@ -941,6 +941,17 @@ Tasks:
   service types; remove the separate "nodes" counter.
 - [ ] Remove the =nodes_running= / =nodes_stopped= special cases from the
   summary output.
+
+*** Add support for running ORE samples                                :code:
+
+It would be nice to point to a ORE directory and have ORES automatically pack
+the samples, send it to the grid and retrieve the results.
+
+*** End to end fixes for grid work                                     :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-26 Thu 00:00]--[2026-03-26 Thu 02:23] =>  2:23
+    :END:
+
 
 * Footer
 

@@ -20,6 +20,7 @@
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/trade_handler.hpp"
 #include "ores.trading.core/messaging/instrument_ref_handler.hpp"
+#include "ores.trading.core/messaging/instrument_handler.hpp"
 
 namespace ores::trading::messaging {
 
@@ -208,6 +209,42 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             instrument_ref_handler h(nats, ctx, verifier);
             h.history_leg_type(std::move(msg));
+        }));
+
+    // Instruments
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_instruments_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_handler h(nats, ctx, verifier);
+            h.list(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_handler h(nats, ctx, verifier);
+            h.save(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_handler h(nats, ctx, verifier);
+            h.remove(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_instrument_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_handler h(nats, ctx, verifier);
+            h.history(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_swap_legs_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_handler h(nats, ctx, verifier);
+            h.list_legs(std::move(msg));
         }));
 
     return subs;

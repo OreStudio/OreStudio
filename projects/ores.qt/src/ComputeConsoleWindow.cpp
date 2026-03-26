@@ -39,6 +39,8 @@ ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
       client_manager_(clientManager),
       host_cache_(new HostDisplayNameCache(this)),
       task_model_(std::make_unique<ComputeTaskViewModel>(clientManager, this)),
+      app_model_(std::make_unique<ClientAppModel>(clientManager, this)),
+      app_version_model_(std::make_unique<ClientAppVersionModel>(clientManager, this)),
       host_model_(std::make_unique<ClientHostModel>(clientManager, this)),
       transfer_model_(std::make_unique<ComputeTransferModel>(this)),
       host_watcher_(new QFutureWatcher<HostList>(this)),
@@ -50,6 +52,10 @@ ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
             this, &ComputeConsoleWindow::on_tasks_loaded);
     connect(task_model_.get(), &ComputeTaskViewModel::loadError,
             this, &ComputeConsoleWindow::on_tasks_error);
+    connect(app_model_.get(), &ClientAppModel::dataLoaded,
+            this, &ComputeConsoleWindow::on_apps_loaded);
+    connect(app_version_model_.get(), &ClientAppVersionModel::dataLoaded,
+            this, &ComputeConsoleWindow::on_app_versions_loaded);
     connect(host_watcher_, &QFutureWatcher<HostList>::finished,
             this, &ComputeConsoleWindow::on_hosts_loaded);
 
@@ -74,9 +80,11 @@ void ComputeConsoleWindow::setup_ui() {
     layout->addWidget(toolbar_);
 
     main_tabs_ = new QTabWidget(this);
-    main_tabs_->addTab(make_tasks_tab(),     tr("Tasks"));
-    main_tabs_->addTab(make_hosts_tab(),     tr("Hosts"));
-    main_tabs_->addTab(make_transfers_tab(), tr("Transfers"));
+    main_tabs_->addTab(make_tasks_tab(),        tr("Tasks"));
+    main_tabs_->addTab(make_apps_tab(),         tr("Apps"));
+    main_tabs_->addTab(make_app_versions_tab(), tr("App Versions"));
+    main_tabs_->addTab(make_hosts_tab(),        tr("Hosts"));
+    main_tabs_->addTab(make_transfers_tab(),    tr("Transfers"));
 
     connect(main_tabs_, &QTabWidget::currentChanged,
             this, &ComputeConsoleWindow::on_tab_changed);
@@ -140,6 +148,44 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
     return splitter;
 }
 
+QWidget* ComputeConsoleWindow::make_apps_tab() {
+    app_proxy_ = new QSortFilterProxyModel(this);
+    app_proxy_->setSourceModel(app_model_.get());
+
+    app_view_ = new QTableView(this);
+    app_view_->setModel(app_proxy_);
+    app_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    app_view_->setSelectionMode(QAbstractItemView::SingleSelection);
+    app_view_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    app_view_->setAlternatingRowColors(true);
+    app_view_->setSortingEnabled(true);
+    app_view_->verticalHeader()->setVisible(false);
+    app_view_->horizontalHeader()->setStretchLastSection(true);
+    app_view_->horizontalHeader()->setSectionResizeMode(
+        ClientAppModel::Name, QHeaderView::ResizeToContents);
+
+    return app_view_;
+}
+
+QWidget* ComputeConsoleWindow::make_app_versions_tab() {
+    app_version_proxy_ = new QSortFilterProxyModel(this);
+    app_version_proxy_->setSourceModel(app_version_model_.get());
+
+    app_version_view_ = new QTableView(this);
+    app_version_view_->setModel(app_version_proxy_);
+    app_version_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
+    app_version_view_->setSelectionMode(QAbstractItemView::SingleSelection);
+    app_version_view_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    app_version_view_->setAlternatingRowColors(true);
+    app_version_view_->setSortingEnabled(true);
+    app_version_view_->verticalHeader()->setVisible(false);
+    app_version_view_->horizontalHeader()->setStretchLastSection(true);
+    app_version_view_->horizontalHeader()->setSectionResizeMode(
+        ClientAppVersionModel::AppId, QHeaderView::ResizeToContents);
+
+    return app_version_view_;
+}
+
 QWidget* ComputeConsoleWindow::make_hosts_tab() {
     host_proxy_ = new QSortFilterProxyModel(this);
     host_proxy_->setSourceModel(host_model_.get());
@@ -188,7 +234,12 @@ void ComputeConsoleWindow::refresh() {
         return;
     }
 
-    // Fetch hosts first; on_hosts_loaded() triggers the task refresh.
+    // Apps and app versions are independent — fetch immediately.
+    app_model_->refresh();
+    app_version_model_->refresh();
+
+    // Fetch hosts first; on_hosts_loaded() populates the cache then
+    // triggers the task refresh.
     QPointer<ComputeConsoleWindow> self = this;
     host_watcher_->setFuture(QtConcurrent::run([self]() -> HostList {
         if (!self || !self->client_manager_) return {};
@@ -222,8 +273,20 @@ void ComputeConsoleWindow::on_tasks_loaded() {
     BOOST_LOG_SEV(lg(), info) << "Console loaded " << n << " tasks, "
                               << h << " hosts.";
 
-    main_tabs_->setTabText(0, tr("Tasks (%1)").arg(n));
-    main_tabs_->setTabText(1, tr("Hosts (%1)").arg(h));
+    main_tabs_->setTabText(kTasksTab, tr("Tasks (%1)").arg(n));
+    main_tabs_->setTabText(kHostsTab, tr("Hosts (%1)").arg(h));
+}
+
+void ComputeConsoleWindow::on_apps_loaded() {
+    const int n = app_model_->rowCount();
+    BOOST_LOG_SEV(lg(), debug) << "Apps loaded: " << n;
+    main_tabs_->setTabText(kAppsTab, tr("Apps (%1)").arg(n));
+}
+
+void ComputeConsoleWindow::on_app_versions_loaded() {
+    const int n = app_version_model_->rowCount();
+    BOOST_LOG_SEV(lg(), debug) << "App versions loaded: " << n;
+    main_tabs_->setTabText(kAppVersionsTab, tr("App Versions (%1)").arg(n));
 }
 
 void ComputeConsoleWindow::on_tasks_error(

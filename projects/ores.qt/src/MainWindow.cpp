@@ -99,6 +99,7 @@
 #include "ores.qt/WorkunitController.hpp"
 #include "ores.qt/ResultController.hpp"
 #include "ores.qt/ComputeDashboardController.hpp"
+#include "ores.qt/ComputeConsoleController.hpp"
 #include "ores.qt/ServiceDashboardController.hpp"
 #include "ores.qt/ReportTypeController.hpp"
 #include "ores.qt/ConcurrencyPolicyController.hpp"
@@ -829,6 +830,9 @@ MainWindow::MainWindow(QWidget* parent) :
     auto* actionDashboard = computeMenu->addAction(
         IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
         tr("Dashboard"));
+    auto* actionConsole = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Terminal, IconUtils::DefaultIconColor),
+        tr("Console"));
     computeMenu->addSeparator();
     auto* actionHosts = computeMenu->addAction(
         IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor),
@@ -851,6 +855,9 @@ MainWindow::MainWindow(QWidget* parent) :
 
     connect(actionDashboard, &QAction::triggered, this, [this]() {
         if (computeDashboardController_) computeDashboardController_->showDashboard();
+    });
+    connect(actionConsole, &QAction::triggered, this, [this]() {
+        if (computeConsoleController_) computeConsoleController_->showConsole();
     });
     connect(actionHosts, &QAction::triggered, this, [this]() {
         if (hostController_) hostController_->showListWindow();
@@ -2238,6 +2245,25 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(computeDashboardController_.get(),
             &ComputeDashboardController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    computeConsoleController_ = std::make_unique<ComputeConsoleController>(
+        this, mdiArea_, clientManager_, this);
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     serviceDashboardController_ = std::make_unique<ServiceDashboardController>(

@@ -87,6 +87,7 @@ class BatchController;
 class WorkunitController;
 class ResultController;
 class ComputeDashboardController;
+class ComputeConsoleController;
 class ServiceDashboardController;
 class ReportTypeController;
 class ConcurrencyPolicyController;
@@ -669,6 +670,7 @@ private:
     std::unique_ptr<WorkunitController> workunitController_;
     std::unique_ptr<ResultController> resultController_;
     std::unique_ptr<ComputeDashboardController> computeDashboardController_;
+    std::unique_ptr<ComputeConsoleController> computeConsoleController_;
     std::unique_ptr<ServiceDashboardController> serviceDashboardController_;
     std::unique_ptr<ReportTypeController> reportTypeController_;
     std::unique_ptr<ConcurrencyPolicyController> concurrencyPolicyController_;

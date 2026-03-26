@@ -72,7 +72,7 @@ void archiver::pack(const fs::path& source_dir,
         const auto rel = fs::relative(e.path(), source_dir);
         archive_entry_ptr entry(archive_entry_new());
 #ifdef _WIN32
-        archive_entry_set_pathname_w(entry.get(), rel.c_str());
+        archive_entry_copy_pathname_w(entry.get(), rel.c_str());
 #else
         archive_entry_set_pathname(entry.get(), rel.c_str());
 #endif
@@ -127,8 +127,9 @@ void archiver::extract(const fs::path& archive_path,
                 + archive_error_string(a.get()));
 
 #ifdef _WIN32
-        const fs::path rel = fs::u8path(archive_entry_pathname(entry));
-        archive_entry_set_pathname_w(entry, (dest_dir / rel).c_str());
+        const fs::path rel(reinterpret_cast<const char8_t*>(
+            archive_entry_pathname(entry)));
+        archive_entry_copy_pathname_w(entry, (dest_dir / rel).c_str());
 #else
         archive_entry_set_pathname(entry,
             (dest_dir / archive_entry_pathname(entry)).c_str());

@@ -255,6 +255,8 @@ void WorkunitDetailDialog::setUsername(const std::string& username) {
 
 void WorkunitDetailDialog::setHttpBaseUrl(const std::string& url) {
     httpBaseUrl_ = url;
+    if (!httpBaseUrl_.empty() && httpBaseUrl_.back() == '/')
+        httpBaseUrl_.pop_back();
 }
 
 void WorkunitDetailDialog::setWorkunit(
@@ -463,11 +465,11 @@ void WorkunitDetailDialog::onSaveClicked() {
 
     // Phase 1: upload input file
     if (!selectedInputFilePath_.isEmpty()) {
-        const std::string input_uri = workunit_.input_uri.empty()
-            ? ("api/v1/compute/workunits/" + id_str + "/input")
-            : workunit_.input_uri;
+        const std::string ext_in =
+            QFileInfo(selectedInputFilePath_).completeSuffix().toStdString();
         const QString inputUrl = QString::fromStdString(
-            httpBaseUrl_ + "/" + input_uri);
+            httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/input"
+            + (ext_in.empty() ? "" : "." + ext_in));
 
         auto* inputFile = new QFile(selectedInputFilePath_, this);
         if (!inputFile->open(QIODevice::ReadOnly)) {
@@ -517,11 +519,11 @@ void WorkunitDetailDialog::onSaveClicked() {
 
             // Phase 2: upload config file
             if (!self->selectedConfigFilePath_.isEmpty()) {
-                const std::string config_uri = self->workunit_.config_uri.empty()
-                    ? ("api/v1/compute/workunits/" + id_str + "/config")
-                    : self->workunit_.config_uri;
+                const std::string ext_cfg =
+                    QFileInfo(self->selectedConfigFilePath_).completeSuffix().toStdString();
                 const QString configUrl = QString::fromStdString(
-                    self->httpBaseUrl_ + "/" + config_uri);
+                    self->httpBaseUrl_ + "/api/v1/compute/workunits/" + id_str + "/config"
+                    + (ext_cfg.empty() ? "" : "." + ext_cfg));
 
                 auto* configFile = new QFile(self->selectedConfigFilePath_, self);
                 if (!configFile->open(QIODevice::ReadOnly)) {

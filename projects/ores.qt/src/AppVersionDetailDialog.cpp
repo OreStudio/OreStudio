@@ -263,6 +263,8 @@ void AppVersionDetailDialog::setUsername(const std::string& username) {
 
 void AppVersionDetailDialog::setHttpBaseUrl(const std::string& url) {
     httpBaseUrl_ = url;
+    if (!httpBaseUrl_.empty() && httpBaseUrl_.back() == '/')
+        httpBaseUrl_.pop_back();
 }
 
 void AppVersionDetailDialog::setVersion(

@@ -41,9 +41,9 @@ target_link_libraries(${lib_target_name}
         ores.database.lib
         ores.logging.lib
         ores.nats.lib
+        ores.scheduler.api.lib
     PRIVATE
         ores.service.lib
-        ores.scheduler.api.lib
         ores.utility.lib
         ores.security.lib
         sqlgen::sqlgen

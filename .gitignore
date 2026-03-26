@@ -16,7 +16,6 @@ Thumbs.db
 build/output
 
 # .Net ignores
-packages
 *.userprefs
 test-results
 obj

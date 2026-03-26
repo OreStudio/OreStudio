@@ -92,6 +92,7 @@ starting=0
 stopped_count=0
 missing=0
 nodes_running=0
+nodes_starting=0
 nodes_stopped=0
 nodes_missing=0
 
@@ -135,11 +136,11 @@ for svc in $(printf '%s\n' "${!EXPECTED_SERVICES[@]}" | sort); do
             last_line="${last_line##*\"] }"
         fi
         printf "  %-10s %-38s %s\n" "starting" "$svc" "PID $pid  ${last_line:+(${last_line:0:60})}"
-        if $is_node; then nodes_running=$((nodes_running + 1)); else starting=$((starting + 1)); fi
+        if $is_node; then nodes_starting=$((nodes_starting + 1)); else starting=$((starting + 1)); fi
     fi
 done
 
 echo ""
 echo "services: running=$running  starting=$starting  stopped=$stopped_count  missing=$missing"
-echo "nodes:    running=$nodes_running  stopped=$nodes_stopped  missing=$nodes_missing"
+echo "nodes:    running=$nodes_running  starting=$nodes_starting  stopped=$nodes_stopped  missing=$nodes_missing"
 echo ""

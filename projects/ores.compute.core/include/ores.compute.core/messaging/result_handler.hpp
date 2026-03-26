@@ -113,7 +113,11 @@ public:
                     try {
                         r.host_id = boost::lexical_cast<boost::uuids::uuid>(
                             req->host_id);
-                    } catch (...) {}
+                    } catch (const boost::bad_lexical_cast& e) {
+                        BOOST_LOG_SEV(result_handler_lg(), warn)
+                            << "Invalid host_id in submit_result_request: "
+                            << req->host_id << " (" << e.what() << ")";
+                    }
                 }
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = req->error_message.empty()

@@ -160,9 +160,10 @@ public:
                     domain::host h;
                     try {
                         h.id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
-                    } catch (...) {
+                    } catch (const boost::bad_lexical_cast& e) {
                         BOOST_LOG_SEV(work_handler_lg(), warn)
-                            << "Invalid host_id in heartbeat: " << req->host_id;
+                            << "Invalid host_id in heartbeat: " << req->host_id
+                            << " (" << e.what() << ")";
                         return;
                     }
                     h.external_id = req->host_id;

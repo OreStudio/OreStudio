@@ -26,6 +26,7 @@
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -108,6 +109,12 @@ public:
                 r.output_uri = req->output_uri;
                 r.received_at = std::chrono::system_clock::now();
                 r.outcome = req->outcome;
+                if (!req->host_id.empty()) {
+                    try {
+                        r.host_id = boost::lexical_cast<boost::uuids::uuid>(
+                            req->host_id);
+                    } catch (...) {}
+                }
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Output received from wrapper";
                 stamp(r, ctx);

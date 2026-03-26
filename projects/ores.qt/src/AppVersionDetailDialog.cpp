@@ -447,11 +447,11 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     }
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
-    // Use the extension-aware URI if already set; fall back to bare UUID.
-    const std::string uri = app_version_.package_uri.empty()
-        ? ("api/v1/compute/packages/" + id_str)
-        : app_version_.package_uri;
-    const std::string url_str = httpBaseUrl_ + "/" + uri;
+    // Build upload URL from the selected filename extension (if any).
+    const std::string ext =
+        QFileInfo(selectedPackageFilePath_).completeSuffix().toStdString();
+    const std::string url_str = httpBaseUrl_ + "/api/v1/compute/packages/" + id_str
+        + (ext.empty() ? "" : "." + ext);
     const QString url = QString::fromStdString(url_str);
 
     BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << url_str

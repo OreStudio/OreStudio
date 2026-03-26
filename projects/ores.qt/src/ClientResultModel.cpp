@@ -31,10 +31,49 @@ namespace ores::qt {
 using namespace ores::logging;
 
 namespace {
-    std::string result_key_extractor(const compute::domain::result& e) {
-        return e.modified_by;
+
+std::string result_key_extractor(const compute::domain::result& e) {
+    return e.modified_by;
+}
+
+QString format_state(int s) {
+    switch (s) {
+    case 1: return QObject::tr("Inactive");
+    case 2: return QObject::tr("Unsent");
+    case 4: return QObject::tr("In Progress");
+    case 5: return QObject::tr("Done");
+    default: return QString::number(s);
     }
 }
+
+QString format_outcome(int o) {
+    switch (o) {
+    case 0: return QObject::tr("Pending");
+    case 1: return QObject::tr("Success");
+    case 3: return QObject::tr("Client Error");
+    case 4: return QObject::tr("No Reply");
+    default: return QString::number(o);
+    }
+}
+
+QColor state_color(int s) {
+    switch (s) {
+    case 5: return badge_colors::online;      // Done — green
+    case 4: return badge_colors::old;         // In Progress — amber
+    default: return badge_colors::unlocked;   // Inactive/Unsent — gray
+    }
+}
+
+QColor outcome_color(int o) {
+    switch (o) {
+    case 1: return badge_colors::online;      // Success — green
+    case 3: return badge_colors::locked;      // Client Error — red
+    case 4: return badge_colors::locked;      // No Reply — red
+    default: return badge_colors::unlocked;   // Pending — gray
+    }
+}
+
+} // namespace
 
 ClientResultModel::ClientResultModel(
     ClientManager* clientManager, QObject* parent)
@@ -80,12 +119,16 @@ QVariant ClientResultModel::data(
         switch (index.column()) {
         case WorkunitId:
             return QString::fromStdString(boost::uuids::to_string(result.workunit_id));
-        case HostId:
-            return QString::fromStdString(boost::uuids::to_string(result.host_id));
+        case HostId: {
+            const auto uid = boost::uuids::to_string(result.host_id);
+            return uid == "00000000-0000-0000-0000-000000000000"
+                ? QString{}
+                : QString::fromStdString(uid);
+        }
         case ServerState:
-            return static_cast<qlonglong>(result.server_state);
+            return format_state(result.server_state);
         case Outcome:
-            return static_cast<qlonglong>(result.outcome);
+            return format_outcome(result.outcome);
         case OutputUri:
             return QString::fromStdString(result.output_uri);
         case ReceivedAt:
@@ -100,6 +143,10 @@ QVariant ClientResultModel::data(
     }
 
     if (role == Qt::ForegroundRole) {
+        if (index.column() == ServerState)
+            return state_color(result.server_state);
+        if (index.column() == Outcome)
+            return outcome_color(result.outcome);
         return recency_foreground_color(result.modified_by);
     }
 

@@ -316,12 +316,14 @@ private:
  */
 void submit_result(ores::nats::service::client& nats,
     const std::string& result_id,
+    const std::string& host_id,
     const std::string& output_uri,
     int outcome,
     auto& lg) {
 
     compute::messaging::submit_result_request req;
     req.result_id = result_id;
+    req.host_id = host_id;
     req.output_uri = output_uri;
     req.outcome = outcome;
 
@@ -512,7 +514,9 @@ void process_assignment(ores::nats::service::client& nats,
     heartbeat_sender hb(nats, cfg.host_id, cfg.heartbeat_interval_seconds, reporter);
     hb.start();
 
-    int outcome = 0;
+    // Outcome codes match the domain: 1=Success, 3=ClientError.
+    // Start with ClientError; success path will set it to 1.
+    int outcome = 3;
     std::string output_uri = evt.output_uri;
     std::int64_t input_bytes = 0;
     std::int64_t output_bytes = 0;
@@ -577,7 +581,7 @@ void process_assignment(ores::nats::service::client& nats,
 
         if (exit_code != 0) {
             BOOST_LOG_SEV(lg, error) << "Engine exited with code " << exit_code;
-            outcome = 1;
+            outcome = 3; // ClientError
         } else {
             // 4. Upload output
             BOOST_LOG_SEV(lg, info) << "Uploading output: " << evt.result_id;
@@ -585,23 +589,24 @@ void process_assignment(ores::nats::service::client& nats,
                 output_bytes = static_cast<std::int64_t>(fs::file_size(output_path));
             net::http_client::upload(make_url(cfg.http_base_url, evt.output_uri), output_path);
             BOOST_LOG_SEV(lg, info) << "Job complete: " << evt.result_id;
+            outcome = 1; // Success
         }
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg, error) << "Job failed: " << e.what();
-        outcome = 1;
+        outcome = 3; // ClientError
     }
 
     hb.stop();
 
     // Record outcome in the telemetry reporter.
     if (reporter) {
-        if (outcome == 0)
+        if (outcome == 1)
             reporter->record_task_completed(duration_ms, input_bytes, output_bytes);
         else
             reporter->record_task_failed();
     }
 
-    submit_result(nats, evt.result_id, output_uri, outcome, lg);
+    submit_result(nats, evt.result_id, cfg.host_id, output_uri, outcome, lg);
 }
 
 } // namespace

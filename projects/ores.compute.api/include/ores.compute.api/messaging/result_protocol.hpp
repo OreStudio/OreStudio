@@ -45,6 +45,7 @@ struct submit_result_request {
     static constexpr std::string_view nats_subject =
         "compute.v1.results.submit";
     std::string result_id;
+    std::string host_id;   // UUID string of the wrapper node that ran the job
     std::string output_uri;
     int outcome = 0;
 };

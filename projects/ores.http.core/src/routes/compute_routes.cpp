@@ -34,6 +34,11 @@ namespace fs = std::filesystem;
 compute_routes::compute_routes(std::string storage_dir)
     : storage_dir_(std::move(storage_dir)) {
     BOOST_LOG_SEV(lg(), debug) << "Compute routes storage dir: " << storage_dir_;
+    for (const auto& sub : {"packages", "workunits", "results"}) {
+        const auto dir = fs::path(storage_dir_) / sub;
+        fs::create_directories(dir);
+        BOOST_LOG_SEV(lg(), debug) << "Compute storage ready: " << dir.string();
+    }
 }
 
 void compute_routes::register_routes(std::shared_ptr<http::net::router> router,
@@ -58,38 +63,23 @@ void compute_routes::register_routes(std::shared_ptr<http::net::router> router,
             return handle_post_package(req);
         }).build());
 
-    // Workunit input routes
-    router->add_route(router->get("/api/v1/compute/workunits/{workunit_id}/input")
-        .summary("Download workunit input")
-        .description("Download the input data bundle for a workunit")
+    // Workunit artifact routes (input, config — {artifact} may include an
+    // extension, e.g. "input.csv" or "config.json", preserving the original
+    // filename for easier local inspection).
+    router->add_route(router->get("/api/v1/compute/workunits/{workunit_id}/{artifact}")
+        .summary("Download workunit artifact")
+        .description("Download a workunit artifact (input or config), optionally with extension")
         .tags({"compute"})
         .handler([this](const http_request& req) {
-            return handle_get_workunit_input(req);
+            return handle_get_workunit_artifact(req);
         }).build());
 
-    router->add_route(router->post("/api/v1/compute/workunits/{workunit_id}/input")
-        .summary("Upload workunit input")
-        .description("Upload the input data bundle for a workunit")
+    router->add_route(router->post("/api/v1/compute/workunits/{workunit_id}/{artifact}")
+        .summary("Upload workunit artifact")
+        .description("Upload a workunit artifact (input or config), optionally with extension")
         .tags({"compute"})
         .handler([this](const http_request& req) {
-            return handle_post_workunit_input(req);
-        }).build());
-
-    // Workunit config routes
-    router->add_route(router->get("/api/v1/compute/workunits/{workunit_id}/config")
-        .summary("Download workunit config")
-        .description("Download the engine config file for a workunit")
-        .tags({"compute"})
-        .handler([this](const http_request& req) {
-            return handle_get_workunit_config(req);
-        }).build());
-
-    router->add_route(router->post("/api/v1/compute/workunits/{workunit_id}/config")
-        .summary("Upload workunit config")
-        .description("Upload the engine config file for a workunit")
-        .tags({"compute"})
-        .handler([this](const http_request& req) {
-            return handle_post_workunit_config(req);
+            return handle_post_workunit_artifact(req);
         }).build());
 
     // Result output routes
@@ -109,7 +99,7 @@ void compute_routes::register_routes(std::shared_ptr<http::net::router> router,
             return handle_get_result_output(req);
         }).build());
 
-    BOOST_LOG_SEV(lg(), info) << "Compute routes registered: 8 endpoints";
+    BOOST_LOG_SEV(lg(), info) << "Compute routes registered: 6 endpoints";
 }
 
 std::string compute_routes::read_file(const std::string& path) {
@@ -134,14 +124,34 @@ compute_routes::handle_get_package(const http_request& req) {
     BOOST_LOG_SEV(lg(), debug) << "GET package: " << id;
 
     try {
-        const auto path = storage_dir_ + "/packages/" + id;
-        auto data = read_file(path);
-        http_response resp;
-        resp.status = http_status::ok;
-        resp.content_type = "application/octet-stream";
-        resp.body = std::move(data);
-        co_return resp;
-    } catch (const std::runtime_error&) {
+        // Try exact path first (id already contains extension, e.g. "{uuid}.tar.gz").
+        const auto exact = storage_dir_ + "/packages/" + id;
+        if (fs::exists(exact)) {
+            auto data = read_file(exact);
+            http_response resp;
+            resp.status = http_status::ok;
+            resp.content_type = "application/octet-stream";
+            resp.body = std::move(data);
+            co_return resp;
+        }
+
+        // Fall back: scan for any file whose name starts with the given id.
+        // This handles the case where package_uri was saved without extension.
+        const auto pkg_dir = fs::path(storage_dir_) / "packages";
+        for (const auto& entry : fs::directory_iterator(pkg_dir)) {
+            if (!entry.is_regular_file()) continue;
+            if (entry.path().filename().string().starts_with(id)) {
+                BOOST_LOG_SEV(lg(), debug) << "GET package: resolved "
+                    << id << " -> " << entry.path().filename().string();
+                auto data = read_file(entry.path().string());
+                http_response resp;
+                resp.status = http_status::ok;
+                resp.content_type = "application/octet-stream";
+                resp.body = std::move(data);
+                co_return resp;
+            }
+        }
+
         co_return http_response::not_found("Package not found: " + id);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "GET package error: " << e.what();
@@ -165,12 +175,13 @@ compute_routes::handle_post_package(const http_request& req) {
 }
 
 asio::awaitable<http_response>
-compute_routes::handle_get_workunit_input(const http_request& req) {
-    const auto id = req.get_path_param("workunit_id");
-    BOOST_LOG_SEV(lg(), debug) << "GET workunit input: " << id;
+compute_routes::handle_get_workunit_artifact(const http_request& req) {
+    const auto id       = req.get_path_param("workunit_id");
+    const auto artifact = req.get_path_param("artifact");
+    BOOST_LOG_SEV(lg(), debug) << "GET workunit artifact: " << id << "/" << artifact;
 
     try {
-        const auto path = storage_dir_ + "/workunits/" + id + "/input";
+        const auto path = storage_dir_ + "/workunits/" + id + "/" + artifact;
         auto data = read_file(path);
         http_response resp;
         resp.status = http_status::ok;
@@ -178,60 +189,26 @@ compute_routes::handle_get_workunit_input(const http_request& req) {
         resp.body = std::move(data);
         co_return resp;
     } catch (const std::runtime_error&) {
-        co_return http_response::not_found("Input not found for workunit: " + id);
+        co_return http_response::not_found(
+            "Artifact not found: " + id + "/" + artifact);
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "GET workunit input error: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "GET workunit artifact error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
 }
 
 asio::awaitable<http_response>
-compute_routes::handle_post_workunit_input(const http_request& req) {
-    const auto id = req.get_path_param("workunit_id");
-    BOOST_LOG_SEV(lg(), debug) << "POST workunit input: " << id;
+compute_routes::handle_post_workunit_artifact(const http_request& req) {
+    const auto id       = req.get_path_param("workunit_id");
+    const auto artifact = req.get_path_param("artifact");
+    BOOST_LOG_SEV(lg(), debug) << "POST workunit artifact: " << id << "/" << artifact;
 
     try {
-        const auto path = storage_dir_ + "/workunits/" + id + "/input";
+        const auto path = storage_dir_ + "/workunits/" + id + "/" + artifact;
         write_file(path, req.body);
         co_return http_response::json(R"({"success":true})");
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "POST workunit input error: " << e.what();
-        co_return http_response::internal_error(e.what());
-    }
-}
-
-asio::awaitable<http_response>
-compute_routes::handle_get_workunit_config(const http_request& req) {
-    const auto id = req.get_path_param("workunit_id");
-    BOOST_LOG_SEV(lg(), debug) << "GET workunit config: " << id;
-
-    try {
-        const auto path = storage_dir_ + "/workunits/" + id + "/config";
-        auto data = read_file(path);
-        http_response resp;
-        resp.status = http_status::ok;
-        resp.content_type = "application/octet-stream";
-        resp.body = std::move(data);
-        co_return resp;
-    } catch (const std::runtime_error&) {
-        co_return http_response::not_found("Config not found for workunit: " + id);
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "GET workunit config error: " << e.what();
-        co_return http_response::internal_error(e.what());
-    }
-}
-
-asio::awaitable<http_response>
-compute_routes::handle_post_workunit_config(const http_request& req) {
-    const auto id = req.get_path_param("workunit_id");
-    BOOST_LOG_SEV(lg(), debug) << "POST workunit config: " << id;
-
-    try {
-        const auto path = storage_dir_ + "/workunits/" + id + "/config";
-        write_file(path, req.body);
-        co_return http_response::json(R"({"success":true})");
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "POST workunit config error: " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "POST workunit artifact error: " << e.what();
         co_return http_response::internal_error(e.what());
     }
 }

@@ -22,11 +22,9 @@
 
 #include <vector>
 #include <chrono>
-#include <iomanip>
-#include <sstream>
-#include <format>
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 
 namespace ores::database::repository {
 
@@ -77,8 +75,7 @@ std::vector<Dest> map_vector(
 /**
  * @brief Converts a timestamp string to a std::chrono::system_clock::time_point.
  *
- * Parses a timestamp string in the format "%Y-%m-%d %H:%M:%S" and converts
- * it to a C++ chrono time_point for easier time manipulation.
+ * Parses a UTC timestamp string in the format "%Y-%m-%d %H:%M:%S".
  *
  * @param timestamp_str The timestamp string to convert
  * @return A system_clock::time_point representing the same instant in time
@@ -88,17 +85,14 @@ std::vector<Dest> map_vector(
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(std::string_view timestamp_str) {
-    std::tm tm = {};
-    std::istringstream ss{std::string{timestamp_str}};
-    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    return platform::time::datetime::parse_time_point_utc(
+        std::string{timestamp_str});
 }
 
 /**
  * @brief Converts a sqlgen Timestamp to a std::chrono::system_clock::time_point.
  *
- * Parses a timestamp string in the format "%Y-%m-%d %H:%M:%S" and converts
- * it to a C++ chrono time_point for easier time manipulation.
+ * Parses a UTC timestamp in the format "%Y-%m-%d %H:%M:%S".
  *
  * @param ts The sqlgen Timestamp to convert
  * @return A system_clock::time_point representing the same instant in time
@@ -108,14 +102,13 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
-    const std::string str = ts.str();
-    return timestamp_to_timepoint(std::string_view{str});
+    return timestamp_to_timepoint(std::string_view{ts.str()});
 }
 
 /**
  * @brief Converts a std::chrono::system_clock::time_point to a sqlgen Timestamp.
  *
- * Formats a C++ chrono time_point as a timestamp string in the format
+ * Formats a C++ chrono time_point as a UTC timestamp string in the format
  * "%Y-%m-%d %H:%M:%S" suitable for database storage.
  *
  * @param tp The time_point to convert
@@ -130,7 +123,7 @@ timepoint_to_timestamp(const std::chrono::system_clock::time_point& tp,
     logging::logger_t& lg) {
     using namespace ores::logging;
 
-    const auto s = std::format("{:%Y-%m-%d %H:%M:%S}", tp);
+    const auto s = platform::time::datetime::format_time_point_utc(tp);
     const auto r = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">::from_string(s);
     if (!r) {
         BOOST_LOG_SEV(lg, error) << "Error converting timepoint to timestamp";

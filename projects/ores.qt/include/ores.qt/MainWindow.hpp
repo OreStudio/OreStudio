@@ -22,6 +22,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QPointer>
 #include <QTimer>
 #include <QSystemTrayIcon>
 #include <QMenu>
@@ -462,7 +463,7 @@ private:
      * Shared across all entity controllers so they can track their windows for
      * the Window menu and detach/reattach operations.
      */
-    QList<DetachableMdiSubWindow*> allDetachableWindows_;
+    QList<QPointer<DetachableMdiSubWindow>> allDetachableWindows_;
 
     /** @brief Icon displayed in status bar when connected to server */
     QIcon connectedIcon_;

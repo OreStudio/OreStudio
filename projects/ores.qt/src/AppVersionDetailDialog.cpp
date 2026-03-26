@@ -20,6 +20,7 @@
 #include "ores.qt/AppVersionDetailDialog.hpp"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QtConcurrent>
@@ -261,7 +262,7 @@ void AppVersionDetailDialog::setUsername(const std::string& username) {
 }
 
 void AppVersionDetailDialog::setHttpBaseUrl(const std::string& url) {
-    httpBaseUrl_ = url;
+    httpBaseUrl_ = QUrl(QString::fromStdString(url));
 }
 
 void AppVersionDetailDialog::setVersion(
@@ -349,8 +350,18 @@ void AppVersionDetailDialog::updateVersionFromUi() {
                 item->data(Qt::UserRole).toString().toStdString());
     }
     app_version_.min_ram_mb = ui_->minRamSpinBox->value();
-    app_version_.package_uri = "packages/" +
-        boost::uuids::to_string(app_version_.id) + "/package";
+    {
+        const std::string base_uri = "api/v1/compute/packages/" +
+            boost::uuids::to_string(app_version_.id);
+        if (!selectedPackageFilePath_.isEmpty()) {
+            // Preserve the full extension (e.g. ".tar.gz") for local inspection.
+            const std::string ext =
+                QFileInfo(selectedPackageFilePath_).completeSuffix().toStdString();
+            app_version_.package_uri = base_uri + (ext.empty() ? "" : "." + ext);
+        } else if (app_version_.package_uri.empty()) {
+            app_version_.package_uri = base_uri;
+        }
+    }
     app_version_.modified_by = username_;
     app_version_.performed_by = username_;
 }
@@ -429,17 +440,21 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
         return;
     }
 
-    if (httpBaseUrl_.empty()) {
+    if (!httpBaseUrl_.isValid() || httpBaseUrl_.isEmpty()) {
         MessageBoxHelper::warning(this, "No Server URL",
             "HTTP base URL is not configured. Cannot upload package.");
         return;
     }
 
     const std::string id_str = boost::uuids::to_string(app_version_.id);
-    const std::string url_str = httpBaseUrl_ + "/packages/" + id_str + "/package";
-    const QString url = QString::fromStdString(url_str);
+    const QString ext = QFileInfo(selectedPackageFilePath_).completeSuffix();
+    const QString path = "/api/v1/compute/packages/"
+        + QString::fromStdString(id_str)
+        + (ext.isEmpty() ? QString{} : "." + ext);
+    QUrl uploadUrl = httpBaseUrl_;
+    uploadUrl.setPath(path);
 
-    BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << url_str
+    BOOST_LOG_SEV(lg(), info) << "Uploading package to: " << uploadUrl.toString().toStdString()
                               << " file: " << selectedPackageFilePath_.toStdString();
 
     auto* file = new QFile(selectedPackageFilePath_, this);
@@ -454,7 +469,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     ui_->uploadPackageButton->setText(tr("Uploading..."));
 
     auto* networkManager = new QNetworkAccessManager(this);
-    QNetworkRequest request{QUrl(url)};
+    QNetworkRequest request{uploadUrl};
     request.setHeader(QNetworkRequest::ContentTypeHeader,
                       QByteArray("application/octet-stream"));
 
@@ -462,7 +477,7 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
     auto* reply = networkManager->post(request, file);
 
     connect(reply, &QNetworkReply::finished, this,
-            [self, reply, file, networkManager]() {
+            [self, reply, file, networkManager, ext]() {
         if (!self) { reply->deleteLater(); file->deleteLater();
                      networkManager->deleteLater(); return; }
 
@@ -474,15 +489,27 @@ void AppVersionDetailDialog::onUploadPackageClicked() {
         self->ui_->uploadPackageButton->setText(tr("Upload Package"));
 
         if (reply->error() != QNetworkReply::NoError) {
+            const auto body = reply->readAll();
+            const auto detail = body.isEmpty()
+                ? reply->errorString()
+                : reply->errorString() + "\n" + QString::fromUtf8(body);
             BOOST_LOG_SEV(lg(), error) << "Package upload failed: "
-                                       << reply->errorString().toStdString();
-            MessageBoxHelper::critical(self, tr("Upload Failed"),
-                reply->errorString());
+                                       << detail.toStdString();
+            MessageBoxHelper::critical(self, tr("Upload Failed"), detail);
             return;
         }
 
         BOOST_LOG_SEV(lg(), info) << "Package uploaded successfully for app_version: "
                                   << boost::uuids::to_string(self->app_version_.id);
+
+        // Update in-memory package_uri with the extension-bearing path so that
+        // any subsequent save will persist the correct URI.
+        const std::string new_uri = "api/v1/compute/packages/"
+            + boost::uuids::to_string(self->app_version_.id)
+            + (ext.isEmpty() ? std::string{} : "." + ext.toStdString());
+        self->app_version_.package_uri = new_uri;
+        BOOST_LOG_SEV(lg(), info) << "Updated in-memory package_uri: " << new_uri;
+
         emit self->statusMessage(tr("Package uploaded successfully"));
         MessageBoxHelper::information(self, tr("Upload Complete"),
             tr("Package uploaded successfully."));

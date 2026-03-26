@@ -29,6 +29,7 @@
 #include <QMdiArea>
 #include <QMainWindow>
 #include <QList>
+#include <QPointer>
 #include <QSize>
 #include <QCloseEvent>
 #include <memory>
@@ -82,7 +83,7 @@ public:
      * @brief Set MDI area and main window for creating sub-windows.
      */
     void setMdiArea(QMdiArea* mdiArea, QMainWindow* mainWindow,
-                    QList<DetachableMdiSubWindow*>* allDetachableWindows);
+                    QList<QPointer<DetachableMdiSubWindow>>* allDetachableWindows);
 
 signals:
     void statusChanged(const QString& message);
@@ -155,7 +156,7 @@ private:
 
     QMdiArea* mdiArea_;
     QMainWindow* mainWindow_;
-    QList<DetachableMdiSubWindow*>* allDetachableWindows_;
+    QList<QPointer<DetachableMdiSubWindow>>* allDetachableWindows_;
 
     QSize savedWindowSize_;
 

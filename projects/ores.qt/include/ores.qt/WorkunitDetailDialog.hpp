@@ -20,6 +20,7 @@
 #ifndef ORES_QT_WORKUNIT_DETAIL_DIALOG_HPP
 #define ORES_QT_WORKUNIT_DETAIL_DIALOG_HPP
 
+#include <QUrl>
 #include <QString>
 #include <vector>
 #include "ores.qt/ClientManager.hpp"
@@ -104,7 +105,7 @@ private:
     Ui::WorkunitDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    std::string httpBaseUrl_;
+    QUrl httpBaseUrl_;
     compute::domain::workunit workunit_;
     std::vector<IdEntry> batchEntries_;
     std::vector<IdEntry> appVersionEntries_;

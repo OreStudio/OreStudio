@@ -20,6 +20,7 @@
 #ifndef ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 #define ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 
+#include <QUrl>
 #include <QString>
 #include <vector>
 #include "ores.qt/ClientManager.hpp"
@@ -112,7 +113,7 @@ private:
     Ui::AppVersionDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    std::string httpBaseUrl_;
+    QUrl httpBaseUrl_;
     compute::domain::app_version app_version_;
     std::vector<AppEntry> appEntries_;
     std::vector<PlatformEntry> availablePlatforms_;

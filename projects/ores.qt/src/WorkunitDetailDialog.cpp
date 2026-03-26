@@ -20,6 +20,7 @@
 #include "ores.qt/WorkunitDetailDialog.hpp"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QtConcurrent>
@@ -253,7 +254,7 @@ void WorkunitDetailDialog::setUsername(const std::string& username) {
 }
 
 void WorkunitDetailDialog::setHttpBaseUrl(const std::string& url) {
-    httpBaseUrl_ = url;
+    httpBaseUrl_ = QUrl(QString::fromStdString(url));
 }
 
 void WorkunitDetailDialog::setWorkunit(
@@ -346,8 +347,25 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
     }
 
     const std::string id_str = boost::uuids::to_string(workunit_.id);
-    workunit_.input_uri = "workunits/" + id_str + "/input";
-    workunit_.config_uri = "workunits/" + id_str + "/config";
+    {
+        // Preserve the full extension (e.g. ".csv") for local inspection.
+        const std::string base = "api/v1/compute/workunits/" + id_str + "/input";
+        if (!selectedInputFilePath_.isEmpty()) {
+            const std::string ext =
+                QFileInfo(selectedInputFilePath_).completeSuffix().toStdString();
+            workunit_.input_uri = base + (ext.empty() ? "" : "." + ext);
+        } else if (workunit_.input_uri.empty()) {
+            workunit_.input_uri = base;
+        }
+    }
+    if (!selectedConfigFilePath_.isEmpty()) {
+        const std::string base = "api/v1/compute/workunits/" + id_str + "/config";
+        const std::string ext =
+            QFileInfo(selectedConfigFilePath_).completeSuffix().toStdString();
+        workunit_.config_uri = base + (ext.empty() ? "" : "." + ext);
+    } else if (workunit_.config_uri.empty()) {
+        workunit_.config_uri = std::string{};
+    }
     workunit_.priority = ui_->prioritySpinBox->value();
     workunit_.target_redundancy = ui_->redundancySpinBox->value();
     workunit_.modified_by = username_;
@@ -358,7 +376,7 @@ void WorkunitDetailDialog::onBrowseInputClicked() {
     const QString path = QFileDialog::getOpenFileName(
         this, tr("Select Input File"),
         QString(),
-        tr("Zip Files (*.zip);;All Files (*)"));
+        tr("Archive Files (*.zip *.tar.gz *.tgz);;All Files (*)"));
 
     if (!path.isEmpty()) {
         selectedInputFilePath_ = path;
@@ -399,9 +417,9 @@ bool WorkunitDetailDialog::validateInput() {
     if (batch_id.isEmpty() || app_version_id.isEmpty())
         return false;
 
-    // Files required for create mode
+    // Input file required for create mode; config is optional
     if (createMode_) {
-        if (selectedInputFilePath_.isEmpty() || selectedConfigFilePath_.isEmpty())
+        if (selectedInputFilePath_.isEmpty())
             return false;
     }
 
@@ -417,12 +435,11 @@ void WorkunitDetailDialog::onSaveClicked() {
 
     if (!validateInput()) {
         MessageBoxHelper::warning(this, "Invalid Input",
-            "Please fill in Batch ID and App Version ID (valid UUIDs), "
-            "and select input and config files.");
+            "Please select a Batch, an App Version, and an input file.");
         return;
     }
 
-    if (httpBaseUrl_.empty()) {
+    if (!httpBaseUrl_.isValid() || httpBaseUrl_.isEmpty()) {
         MessageBoxHelper::warning(this, "No Server URL",
             "HTTP base URL is not configured. Cannot upload files.");
         return;
@@ -446,8 +463,11 @@ void WorkunitDetailDialog::onSaveClicked() {
 
     // Phase 1: upload input file
     if (!selectedInputFilePath_.isEmpty()) {
-        const QString inputUrl = QString::fromStdString(
-            httpBaseUrl_ + "/workunits/" + id_str + "/input");
+        const QString ext_in = QFileInfo(selectedInputFilePath_).completeSuffix();
+        QUrl inputUrl = httpBaseUrl_;
+        inputUrl.setPath("/api/v1/compute/workunits/"
+            + QString::fromStdString(id_str) + "/input"
+            + (ext_in.isEmpty() ? QString{} : "." + ext_in));
 
         auto* inputFile = new QFile(selectedInputFilePath_, this);
         if (!inputFile->open(QIODevice::ReadOnly)) {
@@ -460,7 +480,7 @@ void WorkunitDetailDialog::onSaveClicked() {
         ui_->saveButton->setEnabled(false);
 
         auto* nm = new QNetworkAccessManager(this);
-        QNetworkRequest req{QUrl(inputUrl)};
+        QNetworkRequest req{inputUrl};
         req.setHeader(QNetworkRequest::ContentTypeHeader,
                       QByteArray("application/octet-stream"));
 
@@ -481,10 +501,13 @@ void WorkunitDetailDialog::onSaveClicked() {
             nm->deleteLater();
 
             if (inputReply->error() != QNetworkReply::NoError) {
+                const auto body = inputReply->readAll();
+                const auto detail = body.isEmpty()
+                    ? inputReply->errorString()
+                    : inputReply->errorString() + "\n" + QString::fromUtf8(body);
                 BOOST_LOG_SEV(lg(), error) << "Input file upload failed: "
-                    << inputReply->errorString().toStdString();
-                MessageBoxHelper::critical(self, tr("Upload Failed"),
-                    inputReply->errorString());
+                    << detail.toStdString();
+                MessageBoxHelper::critical(self, tr("Upload Failed"), detail);
                 self->ui_->saveButton->setEnabled(true);
                 return;
             }
@@ -494,8 +517,12 @@ void WorkunitDetailDialog::onSaveClicked() {
 
             // Phase 2: upload config file
             if (!self->selectedConfigFilePath_.isEmpty()) {
-                const QString configUrl = QString::fromStdString(
-                    self->httpBaseUrl_ + "/workunits/" + id_str + "/config");
+                const QString ext_cfg =
+                    QFileInfo(self->selectedConfigFilePath_).completeSuffix();
+                QUrl configUrl = self->httpBaseUrl_;
+                configUrl.setPath("/api/v1/compute/workunits/"
+                    + QString::fromStdString(id_str) + "/config"
+                    + (ext_cfg.isEmpty() ? QString{} : "." + ext_cfg));
 
                 auto* configFile = new QFile(self->selectedConfigFilePath_, self);
                 if (!configFile->open(QIODevice::ReadOnly)) {
@@ -508,7 +535,7 @@ void WorkunitDetailDialog::onSaveClicked() {
                 }
 
                 auto* nm2 = new QNetworkAccessManager(self);
-                QNetworkRequest req2{QUrl(configUrl)};
+                QNetworkRequest req2{configUrl};
                 req2.setHeader(QNetworkRequest::ContentTypeHeader,
                                QByteArray("application/octet-stream"));
 
@@ -528,10 +555,13 @@ void WorkunitDetailDialog::onSaveClicked() {
                     nm2->deleteLater();
 
                     if (configReply->error() != QNetworkReply::NoError) {
+                        const auto body = configReply->readAll();
+                        const auto detail = body.isEmpty()
+                            ? configReply->errorString()
+                            : configReply->errorString() + "\n" + QString::fromUtf8(body);
                         BOOST_LOG_SEV(lg(), error) << "Config file upload failed: "
-                            << configReply->errorString().toStdString();
-                        MessageBoxHelper::critical(self, tr("Upload Failed"),
-                            configReply->errorString());
+                            << detail.toStdString();
+                        MessageBoxHelper::critical(self, tr("Upload Failed"), detail);
                         self->ui_->saveButton->setEnabled(true);
                         return;
                     }

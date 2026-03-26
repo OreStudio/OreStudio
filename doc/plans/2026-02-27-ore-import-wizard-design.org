@@ -5,6 +5,7 @@
 #+author: Marco Craveiro
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
 #+startup: inlineimages
+#+status: COMPLETED
 
 * Overview
 

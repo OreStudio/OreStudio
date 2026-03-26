@@ -213,69 +213,8 @@ compute_telemetry_repository::compute_grid_stats(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Computing grid stats via SQL aggregations";
     const auto tid = ctx.tenant_id().to_string();
 
-    // Single CTE query to aggregate all stats without loading full tables.
-    const std::string sql = R"(
-        WITH
-          host_stats AS (
-            SELECT
-              COUNT(*)                                                          AS total_hosts,
-              COUNT(*) FILTER (WHERE last_rpc_time > NOW() - INTERVAL '5 minutes') AS online_hosts
-            FROM ores_compute_hosts_tbl
-            WHERE tenant_id = $1
-          ),
-          result_stats AS (
-            SELECT
-              COUNT(*) FILTER (WHERE server_state = 1)  AS results_inactive,
-              COUNT(*) FILTER (WHERE server_state = 2)  AS results_unsent,
-              COUNT(*) FILTER (WHERE server_state = 4)  AS results_in_progress,
-              COUNT(*) FILTER (WHERE server_state = 5)  AS results_done,
-              COUNT(DISTINCT host_id) FILTER (WHERE server_state = 4) AS busy_hosts,
-              COUNT(*) FILTER (WHERE server_state = 5
-                AND received_at > NOW() - INTERVAL '24 hours'
-                AND outcome = 1) AS outcomes_success,
-              COUNT(*) FILTER (WHERE server_state = 5
-                AND received_at > NOW() - INTERVAL '24 hours'
-                AND outcome = 3) AS outcomes_client_error,
-              COUNT(*) FILTER (WHERE server_state = 5
-                AND received_at > NOW() - INTERVAL '24 hours'
-                AND outcome = 4) AS outcomes_no_reply
-            FROM ores_compute_results_tbl
-            WHERE tenant_id = $1
-          ),
-          workunit_count AS (
-            SELECT COUNT(*) AS total_workunits
-            FROM ores_compute_workunits_tbl
-            WHERE tenant_id = $1
-          ),
-          batch_stats AS (
-            SELECT COUNT(*) AS total_batches
-            FROM ores_compute_batches_tbl
-            WHERE tenant_id = $1
-          ),
-          active_batches AS (
-            SELECT COUNT(DISTINCT wu.batch_id) AS active_batches
-            FROM ores_compute_results_tbl r
-            JOIN ores_compute_workunits_tbl wu
-              ON r.workunit_id = wu.id AND wu.tenant_id = $1
-            WHERE r.tenant_id = $1 AND r.server_state = 4
-          )
-        SELECT
-          h.total_hosts,
-          h.online_hosts,
-          GREATEST(h.online_hosts - r.busy_hosts, 0) AS idle_hosts,
-          r.results_inactive,
-          r.results_unsent,
-          r.results_in_progress,
-          r.results_done,
-          r.outcomes_success,
-          r.outcomes_client_error,
-          r.outcomes_no_reply,
-          w.total_workunits,
-          b.total_batches,
-          a.active_batches
-        FROM host_stats h, result_stats r, workunit_count w,
-             batch_stats b, active_batches a
-    )";
+    static const std::string sql =
+        "SELECT * FROM ores_compute_grid_stats_fn($1::uuid)";
 
     const auto rows = execute_parameterized_multi_column_query(
         ctx, sql, {tid}, lg(), "computing grid stats");

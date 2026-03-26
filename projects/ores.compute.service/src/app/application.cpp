@@ -69,7 +69,7 @@ application::application() = default;
 namespace {
 
 constexpr std::string_view service_name = "ores.compute.service";
-constexpr std::string_view service_version = "1.0";
+constexpr std::string_view service_version = ORES_VERSION;
 
 auto& pub_lg() {
     static auto instance = make_logger("ores.compute.service.app");

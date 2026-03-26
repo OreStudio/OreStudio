@@ -126,17 +126,23 @@ struct change_reason final {
 
 /**
  * @brief Well-known reason codes used throughout the system.
+ *
+ * These must match the codes seeded in ores_dq_change_reasons_tbl.
  */
 namespace change_reasons {
     // System reasons
-    constexpr auto system_new = "system.new";
-    constexpr auto system_migration = "system.migration";
+    constexpr auto system_initial_load        = "system.initial_load";
+    constexpr auto system_new_record          = "system.new_record";
+    constexpr auto system_external_data_import = "system.external_data_import";
+    constexpr auto system_import              = "system.import";
+    constexpr auto system_test                = "system.test";
+    constexpr auto system_tenant_terminated   = "system.tenant_terminated";
 
     // Static data reasons
     constexpr auto static_data_front_office_error = "static_data.front_office_error";
-    constexpr auto static_data_back_office_error = "static_data.back_office_error";
-    constexpr auto static_data_regulatory_change = "static_data.regulatory_change";
-    constexpr auto static_data_corporate_action = "static_data.corporate_action";
+    constexpr auto static_data_back_office_error  = "static_data.back_office_error";
+    constexpr auto static_data_regulatory_change  = "static_data.regulatory_change";
+    constexpr auto static_data_corporate_action   = "static_data.corporate_action";
 }
 
 }

@@ -60,6 +60,7 @@ public:
         HostId,
         ServerState,
         Outcome,
+        ErrorMessage,
         OutputUri,
         ReceivedAt,
         Version,

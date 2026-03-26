@@ -26,6 +26,7 @@
 #include <rfl/json.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/lexical_cast.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -35,6 +36,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.core/service/result_service.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.compute.core/service/batch_service.hpp"
 
@@ -89,13 +91,9 @@ public:
     void submit(ores::nats::message msg) {
         BOOST_LOG_SEV(result_handler_lg(), debug)
             << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
+        // submit_result is called by trusted wrapper nodes without a JWT;
+        // use the service context directly (same pattern as heartbeat handler).
+        const auto& ctx = ctx_;
         if (auto req = decode<submit_result_request>(msg)) {
             try {
                 service::result_service result_svc(ctx);
@@ -111,8 +109,20 @@ public:
                 r.output_uri = req->output_uri;
                 r.received_at = std::chrono::system_clock::now();
                 r.outcome = req->outcome;
-                r.change_reason_code = "system.submit";
-                r.change_commentary = "Output received from wrapper";
+                if (!req->host_id.empty()) {
+                    try {
+                        r.host_id = boost::lexical_cast<boost::uuids::uuid>(
+                            req->host_id);
+                    } catch (const boost::bad_lexical_cast& e) {
+                        BOOST_LOG_SEV(result_handler_lg(), warn)
+                            << "Invalid host_id in submit_result_request: "
+                            << req->host_id << " (" << e.what() << ")";
+                    }
+                }
+                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
+                r.change_commentary = req->error_message.empty()
+                    ? "Output received from wrapper"
+                    : req->error_message;
                 stamp(r, ctx);
                 result_svc.save(r);
 
@@ -131,7 +141,7 @@ public:
                     if (done >= wu_opt->target_redundancy) {
                         auto wu = *wu_opt;
                         wu.canonical_result_id = r.id;
-                        wu.change_reason_code = "system.validate";
+                        wu.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                         wu.change_commentary = "Canonical result accepted";
                         stamp(wu, ctx);
                         wu_svc.save(wu);
@@ -156,7 +166,7 @@ public:
                             if (batch_opt) {
                                 auto batch = *batch_opt;
                                 batch.status = "closed";
-                                batch.change_reason_code = "system.assimilate";
+                                batch.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                                 batch.change_commentary =
                                     "All workunits complete";
                                 stamp(batch, ctx);

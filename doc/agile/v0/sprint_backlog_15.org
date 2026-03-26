@@ -831,6 +831,128 @@ Highlights:
   system tenant UUIDs.
 #+end_quote
 
+*** COMPLETED Add ORES_PRESET to .env; add start-client.sh             :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-25 Wed 21:00]--[2026-03-25 Wed 21:30] =>  0:30
+    :END:
+
+#+begin_quote
+This pull request significantly refines the development environment setup by
+centralizing the build preset configuration within the .env file, ensuring
+consistency across various operational scripts. It also introduces a new,
+flexible script for launching the Qt client, enhancing the developer experience
+with customizable instance colors and names. These changes collectively improve
+the robustness and usability of the build and runtime environment for ORE
+Studio.
+
+Highlights:
+
+- Centralized Preset Configuration: The init-environment.sh script now requires
+  a --preset argument, which is then stored as ORES_PRESET in the .env file,
+  establishing a single source of truth for the build preset across all tools.
+- Service Script Enhancements: The start-services.sh, stop-services.sh, and
+  status-services.sh scripts have been updated to source the ORES_PRESET from
+  the .env file by default, with an option to override it via a command-line
+  argument for ad-hoc use, removing hardcoded defaults.
+- New Qt Client Launch Script: A new start-client.sh script has been added to
+  launch the ORE Studio Qt client, offering options for specifying the build
+  preset, custom instance colors (named or hex), and display names, enabling
+  multiple colored instances to run simultaneously.
+- Emacs Lisp Integration: The ores-prodigy.el Emacs Lisp file now automatically
+  registers services based on the ORES_PRESET value loaded from the .env file,
+  streamlining the setup process for Emacs users.
+#+end_quote
+
+*** Add =publication_params_schema= to artefact types                  :code:
+
+The GLEIF librarian integration plan (=2026-02-08=) requires artefact types to
+declare what parameters they accept so that the publish wizard can render
+per-dataset configuration pages dynamically. The =PublishBundleWizard= and its
+=LeiPartyConfigPage= are already in place, but the database column that drives
+them is missing.
+
+Tasks:
+
+- [ ] Add =publication_params_schema jsonb= nullable column to
+  =ores_dq_artefact_types_tbl= (new migration/alter script under
+  =projects/ores.sql/create/dq/=).
+- [ ] Populate the column for the two LEI artefact types
+  (=gleif.lei_parties.small= and =gleif.lei_counterparties.small=) in
+  =projects/ores.sql/populate/= with the JSON schema describing their accepted
+  parameters (e.g. =target_party_ids= for counterparties).
+- [ ] Update the =artefact_type= domain type and IO in =ores.dq.api= to include
+  the new nullable field.
+- [ ] Expose the schema via the =dq.v1.artefact_types.list= response so the Qt
+  client can read it.
+- [ ] Update =LeiPartyConfigPage= in =PublishBundleWizard= to read the schema
+  and drive its UI from it rather than hard-coding the fields.
+
+*** Add counterparty party scoping (librarian Phase 2)                 :code:
+
+Phase 2 of the librarian party/counterparty publication plan
+(=2026-02-11=). Phase 1 (dataset dependencies, optional bundle members, party
+RLS on =party_counterparties_tbl=) is complete. Phase 2 scopes counterparties
+to the publishing party, enabling per-party counterparty namespaces.
+
+Prerequisite: the =publication_params_schema= story above must be merged first.
+
+Tasks:
+
+- [ ] Add =party_id uuid NOT NULL= column to =ores_refdata_counterparties_tbl=
+  (migration script; back-fill existing rows with the tenant root party).
+- [ ] Update =counterparty= domain type codegen model and regenerate
+  =counterparty.hpp= / IO helpers to include =party_id=.
+- [ ] Add party-scoped RLS policy on =counterparties_tbl= using
+  =ores_iam_visible_party_ids_fn()=.
+- [ ] Update =ores_dq_lei_counterparties_publish_fn()= to accept and use
+  =target_party_ids= from the =p_params= argument.
+- [ ] Populate =publication_params_schema= for =gleif.lei_counterparties.small=
+  with the =target_party_ids= parameter definition.
+- [ ] Update the counterparty repository =write= path to stamp =party_id=.
+- [ ] Add =LeiCounterpartyConfigPage= to =PublishBundleWizard= (or extend the
+  existing =LeiPartyConfigPage=) with a party picker for =target_party_ids=.
+
+*** Unify compute wrapper nodes as replicated services                 :code:
+
+Currently compute wrapper nodes are a special case: hardcoded instance names
+(=node1=, =node2=, ...), pattern-matched separately in =status-services.sh=,
+and given a dedicated "nodes" section in the service dashboard. All other
+services are singletons and need no such handling.
+
+The goal is a uniform service model where any service type has a
+=replica_count= (defaulting to 1). Wrappers set theirs to N. Scripts and the
+dashboard treat all services identically — showing =running/desired= — with no
+special-casing for nodes.
+
+The one non-trivial aspect is =--host-id= assignment: each wrapper replica
+needs a stable, unique UUID for heartbeat tracking and telemetry. Options are
+static UUIDs assigned per replica slot in a config file, or UUIDs generated
+once at first start and persisted to a state file.
+
+Tasks:
+
+- [ ] Define a service manifest format (e.g. =services.toml=) with a
+  =replicas= field per service type.
+- [ ] Rewrite =start-services.sh= and =status-services.sh= to drive from the
+  manifest rather than hardcoded names; remove =*node*= pattern matching.
+- [ ] Generate or persist per-replica =host-id= values so restarts reuse the
+  same UUID (avoids host churn in =ores_compute_hosts_tbl=).
+- [ ] Update the service dashboard to show =running/desired= uniformly for all
+  service types; remove the separate "nodes" counter.
+- [ ] Remove the =nodes_running= / =nodes_stopped= special cases from the
+  summary output.
+
+*** Add support for running ORE samples                                :code:
+
+It would be nice to point to a ORE directory and have ORES automatically pack
+the samples, send it to the grid and retrieve the results.
+
+*** End to end fixes for grid work                                     :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-26 Thu 00:00]--[2026-03-26 Thu 02:23] =>  2:23
+    :END:
+
+
 * Footer
 
 | Previous: [[id:93CE19DF-1501-11F1-8EF4-40B0768014EB][Sprint Backlog 14]] | Next: TBD |

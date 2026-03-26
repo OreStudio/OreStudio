@@ -36,6 +36,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.core/service/host_service.hpp"
+#include "ores.dq.api/domain/change_reason.hpp"
 #include "ores.compute.core/service/result_service.hpp"
 #include "ores.compute.core/service/workunit_service.hpp"
 
@@ -100,7 +101,7 @@ public:
                 auto r = unsent.front();
                 r.host_id = host_uuid;
                 r.server_state = 4; // InProgress
-                r.change_reason_code = "system.pull";
+                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Assigned to host on work.pull";
                 stamp(r, ctx);
                 result_svc.save(r);
@@ -140,25 +141,37 @@ public:
     void heartbeat(ores::nats::message msg) {
         BOOST_LOG_SEV(work_handler_lg(), debug)
             << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
+        // Heartbeats are unauthenticated fire-and-forget publishes from wrapper
+        // nodes — use the service context directly (no JWT required).
         if (auto req = decode<heartbeat_message>(msg)) {
             try {
-                service::host_service svc(ctx);
+                service::host_service svc(ctx_);
                 auto existing = svc.find(req->host_id);
                 if (existing) {
                     auto h = *existing;
                     h.last_rpc_time = std::chrono::system_clock::now();
-                    stamp(h, ctx);
+                    h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
+                    stamp(h, ctx_);
                     svc.save(h);
                 } else {
-                    BOOST_LOG_SEV(work_handler_lg(), warn)
-                        << "Heartbeat for unknown host: " << req->host_id;
+                    // Auto-register the host on first heartbeat.
+                    BOOST_LOG_SEV(work_handler_lg(), info)
+                        << "Auto-registering new host from heartbeat: " << req->host_id;
+                    domain::host h;
+                    try {
+                        h.id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
+                    } catch (const boost::bad_lexical_cast& e) {
+                        BOOST_LOG_SEV(work_handler_lg(), warn)
+                            << "Invalid host_id in heartbeat: " << req->host_id
+                            << " (" << e.what() << ")";
+                        return;
+                    }
+                    h.external_id = req->host_id;
+                    h.last_rpc_time = std::chrono::system_clock::now();
+                    h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
+                    h.change_commentary = "Auto-registered on first heartbeat";
+                    stamp(h, ctx_);
+                    svc.save(h);
                 }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(work_handler_lg(), error)
@@ -198,7 +211,7 @@ public:
 
                 r.host_id = boost::uuids::uuid{};
                 r.server_state = 2; // Unsent — back in the queue
-                r.change_reason_code = "system.reap";
+                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Host went stale; result re-queued";
                 stamp(r, ctx_);
                 result_svc.save(r);

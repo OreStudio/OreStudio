@@ -38,6 +38,7 @@ target_link_libraries(${lib_target_name}
     PUBLIC
         sqlgen::sqlgen
         ores.logging.lib
+        ores.platform.lib
     PRIVATE
         ores.utility.lib)
 

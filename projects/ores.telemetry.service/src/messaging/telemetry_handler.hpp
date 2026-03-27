@@ -69,15 +69,31 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        // No telemetry query service implemented yet; return empty.
-        if (decode<get_telemetry_logs_request>(msg)) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_telemetry_logs_response{.success = true});
+        get_telemetry_logs_response resp;
+        if (auto req = decode<get_telemetry_logs_request>(msg)) {
+            try {
+                database::repository::telemetry_repository repo;
+                resp.entries = repo.query(ctx, req->query);
+                resp.total_count = repo.count(ctx, req->query);
+                resp.success = true;
+                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                    << "Returning " << resp.entries.size()
+                    << " log entries (total=" << resp.total_count << ")";
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to query logs: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
         } else {
             BOOST_LOG_SEV(telemetry_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            resp.success = false;
+            resp.message = "Failed to decode request";
         }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            << "Completed " << msg.subject;
     }
 
     void nats_server_samples_list(ores::nats::message msg) {

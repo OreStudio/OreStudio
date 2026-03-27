@@ -52,7 +52,7 @@ struct report_trigger_action_payload {
 };
 
 boost::uuids::uuid gen_uuid() {
-    static boost::uuids::random_generator rg;
+    boost::uuids::random_generator rg;
     return rg();
 }
 

@@ -178,20 +178,24 @@ public:
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, nats_);
             int scheduled_count = 0;
-            try {
-                for (const auto& id : req->ids) {
+            std::vector<std::string> failed_ids;
+            for (const auto& id : req->ids) {
+                try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
                     if (scheduler.schedule_one(*def, req->performed_by))
                         ++scheduled_count;
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(report_definition_handler_lg(), error)
+                        << "Failed to schedule definition " << id
+                        << ": " << e.what();
+                    failed_ids.push_back(id);
                 }
-                reply(nats_, msg, schedule_report_definitions_response{
-                    .success = true,
-                    .scheduled_count = scheduled_count});
-            } catch (const std::exception& e) {
-                reply(nats_, msg, schedule_report_definitions_response{
-                    .success = false, .message = e.what()});
             }
+            reply(nats_, msg, schedule_report_definitions_response{
+                .success = failed_ids.empty(),
+                .scheduled_count = scheduled_count,
+                .failed_ids = std::move(failed_ids)});
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
@@ -214,20 +218,24 @@ public:
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, nats_);
             int unscheduled_count = 0;
-            try {
-                for (const auto& id : req->ids) {
+            std::vector<std::string> failed_ids;
+            for (const auto& id : req->ids) {
+                try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
                     if (scheduler.unschedule_one(*def, req->performed_by))
                         ++unscheduled_count;
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(report_definition_handler_lg(), error)
+                        << "Failed to unschedule definition " << id
+                        << ": " << e.what();
+                    failed_ids.push_back(id);
                 }
-                reply(nats_, msg, unschedule_report_definitions_response{
-                    .success = true,
-                    .unscheduled_count = unscheduled_count});
-            } catch (const std::exception& e) {
-                reply(nats_, msg, unschedule_report_definitions_response{
-                    .success = false, .message = e.what()});
             }
+            reply(nats_, msg, unschedule_report_definitions_response{
+                .success = failed_ids.empty(),
+                .unscheduled_count = unscheduled_count,
+                .failed_ids = std::move(failed_ids)});
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;

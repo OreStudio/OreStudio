@@ -209,7 +209,7 @@ public:
             }
 
             // Create and save the report instance.
-            static boost::uuids::random_generator rg;
+            boost::uuids::random_generator rg;
             domain::report_instance inst;
             inst.id = rg();
             inst.tenant_id = def->tenant_id;

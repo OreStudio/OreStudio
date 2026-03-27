@@ -19,6 +19,7 @@
  */
 #include <memory>
 #include "ores.dq.core/messaging/registrar.hpp"
+#include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.dq.api/messaging/change_management_protocol.hpp"
 #include "ores.dq.api/messaging/data_organization_protocol.hpp"
 #include "ores.dq.api/messaging/dataset_protocol.hpp"
@@ -29,6 +30,7 @@
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.dq.api/messaging/coding_scheme_protocol.hpp"
 #include "ores.dq.api/messaging/lei_entity_summary_protocol.hpp"
+#include "ores.dq.core/messaging/fsm_handler.hpp"
 #include "ores.dq.core/messaging/change_management_handler.hpp"
 #include "ores.dq.core/messaging/data_organization_handler.hpp"
 #include "ores.dq.core/messaging/dimension_handler.hpp"
@@ -53,6 +55,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
     std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
+
+    // =========================================================================
+    // FSM States
+    // =========================================================================
+
+    auto fsm = std::make_shared<fsm_handler>(nats, ctx, verifier);
+
+    subs.push_back(nats.queue_subscribe(
+        get_fsm_states_request::nats_subject, queue_group,
+        [fsm](ores::nats::message msg) { fsm->list(std::move(msg)); }));
 
     // =========================================================================
     // Change Management

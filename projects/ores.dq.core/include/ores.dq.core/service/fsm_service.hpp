@@ -17,26 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_REPORTING_SERVICE_REPORT_DEFINITION_SERVICE_HPP
-#define ORES_REPORTING_SERVICE_REPORT_DEFINITION_SERVICE_HPP
+#ifndef ORES_DQ_CORE_SERVICE_FSM_SERVICE_HPP
+#define ORES_DQ_CORE_SERVICE_FSM_SERVICE_HPP
 
 #include <string>
 #include <vector>
-#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.reporting.api/domain/report_definition.hpp"
-#include "ores.reporting.core/repository/report_definition_repository.hpp"
+#include "ores.dq.api/domain/fsm_state.hpp"
 
-namespace ores::reporting::service {
+namespace ores::dq::service {
 
 /**
- * @brief Service for managing report definitions.
+ * @brief Read-only service for FSM states.
+ *
+ * FSM states and machines are system-level reference data seeded at
+ * provisioning time. This service always queries the system tenant.
  */
-class report_definition_service {
+class fsm_service {
 private:
-    inline static std::string_view logger_name =
-        "ores.reporting.service.report_definition_service";
+    inline static std::string_view logger_name = "ores.dq.service.fsm_service";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -47,23 +47,24 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit report_definition_service(context ctx);
+    explicit fsm_service(context ctx);
 
-    std::vector<domain::report_definition> list_definitions();
+    /**
+     * @brief Lists all current FSM states for the named machine.
+     *
+     * @param machine_name The machine name (e.g. "report_definition_lifecycle").
+     * @return States ordered by name. Empty if the machine is not found.
+     */
+    std::vector<domain::fsm_state>
+    list_states_for_machine(const std::string& machine_name);
 
-    std::optional<domain::report_definition>
-    find_definition(const std::string& id);
-
-    void save_definition(domain::report_definition v);
-
-    void remove_definition(const std::string& id);
-
-    std::vector<domain::report_definition>
-    get_definition_history(const std::string& id);
+    /**
+     * @brief Lists all current FSM states across all machines.
+     */
+    std::vector<domain::fsm_state> list_all_states();
 
 private:
     context ctx_;
-    repository::report_definition_repository repo_;
 };
 
 }

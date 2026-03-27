@@ -20,10 +20,32 @@
 #include "ores.reporting.core/service/report_definition_service.hpp"
 
 #include <stdexcept>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::reporting::service {
 
 using namespace ores::logging;
+using ores::database::repository::execute_parameterized_string_query;
+
+namespace {
+
+// Returns the UUID of the initial (draft) FSM state for the
+// report_definition_lifecycle machine via the dedicated Postgres helper.
+std::optional<boost::uuids::uuid>
+find_draft_state_id(const ores::database::context& ctx, logging::logger_t& log) {
+    const auto rows = execute_parameterized_string_query(
+        ctx, "SELECT ores_reporting_initial_definition_state_fn()::text",
+        {}, log, "Looking up report_definition_lifecycle initial state");
+    if (rows.empty() || rows.front().empty()) {
+        BOOST_LOG_SEV(log, warn) << "Initial report definition FSM state not found";
+        return std::nullopt;
+    }
+    return boost::lexical_cast<boost::uuids::uuid>(rows.front());
+}
+
+} // namespace
 
 report_definition_service::report_definition_service(context ctx)
     : ctx_(std::move(ctx)) {}
@@ -41,9 +63,13 @@ report_definition_service::find_definition(const std::string& id) {
     return results.front();
 }
 
-void report_definition_service::save_definition(const domain::report_definition& v) {
+void report_definition_service::save_definition(domain::report_definition v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Report Definition id cannot be empty.");
+    // On first creation, assign the initial (draft) FSM state so the record
+    // enters the lifecycle machine in the correct state.
+    if (!v.fsm_state_id)
+        v.fsm_state_id = find_draft_state_id(ctx_, lg());
     BOOST_LOG_SEV(lg(), debug) << "Saving report definition: " << v.id;
     repo_.write(ctx_, v);
     BOOST_LOG_SEV(lg(), info) << "Saved report definition: " << v.id;

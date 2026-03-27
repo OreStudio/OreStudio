@@ -101,17 +101,9 @@ public:
     void schedule(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
         if (auto req = decode<schedule_job_request>(msg)) {
             try {
-                service::job_definition_service svc(ctx);
-                stamp(req->definition, ctx);
+                service::job_definition_service svc(ctx_);
                 svc.save_definition(req->definition);
                 reply(nats_, msg, schedule_job_response{.success = true});
             } catch (const std::exception& e) {
@@ -121,6 +113,8 @@ public:
         } else {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, schedule_job_response{
+                .success = false, .message = "Failed to decode request"});
         }
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Completed " << msg.subject;
@@ -129,20 +123,12 @@ public:
     void schedule_batch(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
         if (auto req = decode<schedule_jobs_batch_request>(msg)) {
-            service::job_definition_service svc(ctx);
+            service::job_definition_service svc(ctx_);
             schedule_jobs_batch_response resp;
             resp.success = true;
             for (auto& def : req->definitions) {
                 try {
-                    stamp(def, ctx);
                     svc.save_definition(def);
                     ++resp.scheduled_count;
                 } catch (const std::exception& e) {
@@ -157,6 +143,10 @@ public:
         } else {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            schedule_jobs_batch_response resp;
+            resp.success = false;
+            resp.message = "Failed to decode request";
+            reply(nats_, msg, resp);
         }
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Completed " << msg.subject;
@@ -165,16 +155,9 @@ public:
     void unschedule(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(
-            ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
         if (auto req = decode<unschedule_job_request>(msg)) {
             try {
-                service::job_definition_service svc(ctx);
+                service::job_definition_service svc(ctx_);
                 svc.remove_definition(req->job_definition_id);
                 reply(nats_, msg, unschedule_job_response{.success = true});
             } catch (const std::exception& e) {
@@ -184,6 +167,8 @@ public:
         } else {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, unschedule_job_response{
+                .success = false, .message = "Failed to decode request"});
         }
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Completed " << msg.subject;

@@ -21,6 +21,8 @@
 #define ORES_QT_CLIENT_REPORT_DEFINITION_MODEL_HPP
 
 #include <vector>
+#include <QHash>
+#include <QString>
 #include <QFutureWatcher>
 #include <QAbstractTableModel>
 #include "ores.qt/AbstractClientModel.hpp"
@@ -84,6 +86,14 @@ public:
     void refresh();
 
     /**
+     * @brief Load FSM states for the report_definition_lifecycle machine.
+     *
+     * Called once after connection. The states are used to display the
+     * lifecycle state name in the Status column.
+     */
+    void load_fsm_states();
+
+    /**
      * @brief Get report definition at the specified row.
      *
      * @param row The row index.
@@ -122,11 +132,14 @@ signals:
 
 private slots:
     void onDefinitionsLoaded();
+    void onFsmStatesLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 
 private:
     QVariant recency_foreground_color(const std::string& code) const;
+    QString resolve_fsm_state_name(
+        const std::optional<boost::uuids::uuid>& state_id) const;
 
     struct FetchResult {
         bool success;
@@ -136,14 +149,24 @@ private:
         QString error_details;
     };
 
+    struct FsmStateFetchResult {
+        bool success;
+        // Maps UUID string → state name (e.g. "draft", "active")
+        QHash<QString, QString> state_map;
+    };
+
     void fetch_definitions(std::uint32_t offset, std::uint32_t limit);
 
     ClientManager* clientManager_;
     std::vector<reporting::domain::report_definition> definitions_;
     QFutureWatcher<FetchResult>* watcher_;
+    QFutureWatcher<FsmStateFetchResult>* fsm_watcher_;
     std::uint32_t page_size_{100};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
+
+    // UUID string → state name, populated once from the DQ service
+    QHash<QString, QString> fsm_state_map_;
 
     using ReportDefinitionKeyExtractor = std::string(*)(const reporting::domain::report_definition&);
     RecencyTracker<reporting::domain::report_definition, ReportDefinitionKeyExtractor> recencyTracker_;

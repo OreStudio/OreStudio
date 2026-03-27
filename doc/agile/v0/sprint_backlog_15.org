@@ -1045,6 +1045,12 @@ MdiWindows, DetailDialogs, HistoryDialogs, ClientModels) follows the same
 per-type pattern as all other entity types in =ores.qt= and is out of scope for
 this story.
 
+*** Move badges to database                                            :code:
+
+At present we did some hackery to use badges on Qt UI. ideally we want the
+database to have some meta-data about badges and then use that to drive the UI
+so we can reuse it for Wt.
+
 * Footer
 
 

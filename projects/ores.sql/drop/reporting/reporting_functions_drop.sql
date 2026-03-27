@@ -18,18 +18,6 @@
  *
  */
 
--- Drop RLS policies first, then notify triggers, then tables (reverse dependency order)
-\ir ./reporting_rls_policies_drop.sql
-\ir ./reporting_report_instances_notify_trigger_drop.sql
-\ir ./reporting_report_instances_drop.sql
-\ir ./reporting_risk_report_config_books_drop.sql
-\ir ./reporting_risk_report_config_portfolios_drop.sql
-\ir ./reporting_risk_report_configs_notify_trigger_drop.sql
-\ir ./reporting_risk_report_configs_drop.sql
-\ir ./reporting_report_definitions_notify_trigger_drop.sql
-\ir ./reporting_report_definitions_drop.sql
-\ir ./reporting_concurrency_policies_notify_trigger_drop.sql
-\ir ./reporting_concurrency_policies_drop.sql
-\ir ./reporting_report_types_notify_trigger_drop.sql
-\ir ./reporting_report_types_drop.sql
-\ir ./reporting_functions_drop.sql
+drop function if exists ores_reporting_initial_definition_state_fn();
+drop function if exists ores_reporting_active_definition_state_fn();
+drop function if exists ores_reporting_suspended_definition_state_fn();

@@ -25,6 +25,9 @@
 -- Risk report configuration is stored in a dedicated table with analytics flags
 -- derived from the ORE ore.xml structure.
 
+-- Helper functions (depend on DQ FSM tables, which are created before reporting)
+\ir ./reporting_functions_create.sql
+
 -- Enum tables (must precede report_definitions which validates against them)
 \ir ./reporting_report_types_create.sql
 \ir ./reporting_report_types_notify_trigger_create.sql

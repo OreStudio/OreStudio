@@ -19,20 +19,26 @@
  */
 #include "ores.reporting.service/app/application.hpp"
 
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/post.hpp>
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
-#include "ores.reporting.service/app/application_exception.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
-#include <boost/asio/co_spawn.hpp>
-#include <boost/asio/detached.hpp>
+#include "ores.eventing/service/event_bus.hpp"
+#include "ores.eventing/service/postgres_event_source.hpp"
+#include "ores.eventing/service/registrar.hpp"
+#include "ores.reporting.api/eventing/report_definition_changed_event.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 
 namespace ores::reporting::service::app {
 
 using namespace ores::logging;
+namespace ev   = ores::eventing;
+namespace rdev = ores::reporting::eventing;
 
 namespace {
 constexpr std::string_view service_name = "ores.reporting.service";
@@ -72,6 +78,29 @@ application::run(boost::asio::io_context& io_ctx,
 
     auto db_ctx = make_context(cfg.database);
 
+    // Listen for report definition changes so that definitions created or
+    // activated after service startup are scheduled without a service restart.
+    ev::service::event_bus event_bus;
+    ev::service::postgres_event_source event_source(
+        make_context(cfg.database), event_bus);
+    ev::service::registrar::register_mapping<rdev::report_definition_changed_event>(
+        event_source, "ores.reporting.report_definition",
+        "ores_reporting_report_definitions");
+
+    auto def_changed_sub = event_bus.subscribe<rdev::report_definition_changed_event>(
+        [&io_ctx, db_ctx, &nats](const rdev::report_definition_changed_event&) {
+            // Post a reconcile task to the io_context so it runs in the
+            // coroutine executor rather than the postgres listener thread.
+            auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, nats);
+            boost::asio::post(io_ctx, [reconciler, &io_ctx]() {
+                boost::asio::co_spawn(io_ctx,
+                    [reconciler]() { return reconciler->reconcile(); },
+                    boost::asio::detached);
+            });
+        });
+
+    event_source.start();
+
     co_await ores::service::service::run(
         io_ctx, nats, db_ctx, "ores.reporting.service",
         [](auto& n, auto c, auto v) {
@@ -80,8 +109,7 @@ application::run(boost::asio::io_context& io_ctx,
         },
         [&nats, db_ctx](boost::asio::io_context& ioc) {
             // Reconcile scheduler jobs for all unscheduled report definitions.
-            auto reconciler = std::make_shared<
-                ores::reporting::service::report_scheduling_service>(db_ctx, nats);
+            auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, nats);
             boost::asio::co_spawn(ioc,
                 [reconciler]() { return reconciler->reconcile(); },
                 boost::asio::detached);
@@ -92,6 +120,8 @@ application::run(boost::asio::io_context& io_ctx,
                 [hb]() { return hb->run(); },
                 boost::asio::detached);
         });
+
+    event_source.stop();
     co_return;
 }
 

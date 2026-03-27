@@ -952,6 +952,42 @@ the samples, send it to the grid and retrieve the results.
     CLOCK: [2026-03-26 Thu 00:00]--[2026-03-26 Thu 02:23] =>  2:23
     :END:
 
+*** BLOCKED CDM Phase 1: Rates instrument domain model                 :code:
+CLOSED: [2026-03-26 Thu 20:00]
+    :LOGBOOK:
+    CLOCK: [2026-03-26 Thu 15:00]--[2026-03-26 Thu 20:00] =>  5:00
+    :END:
+
+Implement the rates instrument domain model (Phase 1 of the CDM-inspired
+instrument design). See [[file:../../plans/2026-03-26-cdm-instrument-domain-model.org][plan]] for architecture.
+
+Covers Swap, CrossCurrencySwap, CapFloor, and Swaption, backed by two new
+temporal tables: =ores_trading_instruments_tbl= and
+=ores_trading_swap_legs_tbl=.
+
+***** Tasks
+
+- [X] SQL: =ores_trading_instruments_tbl= + notify trigger + drop files
+- [X] SQL: =ores_trading_swap_legs_tbl= + notify trigger + drop files
+- [X] SQL: Register in =trading_create.sql=, =drop_trading.sql=,
+  =populate_trading.sql= + seed data
+- [X] Domain: =instrument= struct, JSON I/O, table I/O, generator, protocol
+- [X] Domain: =swap_leg= struct, JSON I/O, table I/O, generator, protocol
+- [X] Repository: =instrument= entity, mapper, repository, service
+- [X] Repository: =swap_leg= entity, mapper, repository, service
+- [X] Server: messaging handler + registrar registration
+- [X] Qt UI: =ClientInstrumentModel=, =InstrumentMdiWindow=,
+  =InstrumentDetailDialog=, =InstrumentHistoryDialog=, =InstrumentController=,
+  =MainWindow= integration
+- [ ] CLI: =instruments list=, =instruments add=, =instruments delete= (deferred to follow-up)
+
+***** Notes
+
+Story is BLOCKED pending PR review. All implementation is complete except CLI
+commands which are deferred to a follow-up story. Builds cleanly.
+
+Pull Request: OreStudio/OreStudio#569
+
 *** TODO Refactor trading reference type boilerplate into shared templates :code:
 
 The five new trading instrument reference data types (DayCountFractionType,

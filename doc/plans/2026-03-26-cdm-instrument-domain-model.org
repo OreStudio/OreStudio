@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: A3F2C1D0-AB12-11F1-8E4A-40B0768014EB
+:END:
+#+title: CDM-Inspired Instrument Domain Model
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+This plan describes the incremental design and implementation of a
+CDM-inspired instrument domain model for =ores.trading=. It is based on an
+analysis of CDM 7.0.0-dev-97 (1,134 JSON schema files) and ORE's 160+ product
+types, adapted to the ORE Studio conventions.
+
+The guiding principle is that =trade= is already the envelope. A new
+=instrument= record holds the product economics, discriminated by asset class,
+with FK references back to the Phase 0 reference tables.
+
+* Architecture
+
+** Trade-as-Envelope
+
+#+begin_src
+trade (existing envelope)
+  └── instrument_id → instrument (new: one row per trade, typed)
+                         └── trade_type_code discriminates the asset class
+#+end_src
+
+Rather than 160 tables (one per ORE type) or one giant polymorphic blob, the
+right granularity is *per asset class* — matching CDM's module structure and
+ORE's natural product groupings. Within each asset-class table, a
+=sub_type_code= FK back to =trade_type= discriminates the exact ORE product
+(e.g. =FxBarrierOption= vs =FxForward= within =fx_instrument=). Fields not
+applicable to a sub-type are =NULL=.
+
+** Asset Class Tables
+
+| Table                | ORE types covered                                      |
+|----------------------+--------------------------------------------------------|
+| =swap_instrument=    | Swap, CrossCurrencySwap, InflationSwap, FlexiSwap      |
+| =fx_instrument=      | FxForward, FxSwap, FxOption, FxDigitalOption, ...      |
+| =bond_instrument=    | Bond, ForwardBond, CallableBond, ConvertibleBond        |
+| =credit_instrument=  | CreditDefaultSwap, CDS index, SyntheticCDO             |
+| =equity_instrument=  | EquityOption, EquityForward, EquitySwap, ...           |
+| =commodity_instrument= | CommoditySwap, CommodityForward, CommodityOption     |
+| =option_instrument=  | Cross-asset vanilla options not covered above          |
+
+** Reference Data Foundation (Phase 0 — complete)
+
+Five reference tables, each with code + description + provenance, all FK
+targets for instrument tables:
+
+- =ores_trading_day_count_fraction_types_tbl= — Act360, Act365F, ActAct, 30/360, etc.
+- =ores_trading_business_day_convention_types_tbl= — FOLLOWING, MODFOLLOWING, etc.
+- =ores_trading_floating_index_types_tbl= — EURIBOR6M, SOFR, LIBOR3M, etc.
+- =ores_trading_payment_frequency_types_tbl= — Annual, Semiannual, Quarterly, etc.
+- =ores_trading_leg_types_tbl= — Fixed, Floating, CMS, OIS, etc.
+
+* Phases
+
+** Phase 0 — Reference Data Tables (complete)
+
+Merged in PR #563. Delivers the five reference tables above with full stack
+coverage: SQL, domain types, protocol, repository, service, Qt UI, CLI.
+
+** Phase 1 — Rates Instruments
+
+The highest-priority asset class. Covers the four most common rate products:
+
+1. =Swap= — plain IRS with fixed vs floating legs
+2. =CrossCurrencySwap= — extends Swap with currency exchange
+3. =CapFloor= — interest rate cap or floor
+4. =Swaption= — option to enter a swap
+
+*** Database Schema
+
+New tables:
+
+- =ores_trading_instruments_tbl= — parent instrument record (trade_type_code,
+  sub_type_code, notional, currency, start_date, maturity_date)
+- =ores_trading_swap_legs_tbl= — one row per leg (instrument_id, leg_type_code,
+  day_count_code, convention_code, floating_index_code, frequency_code,
+  spread, fixed_rate)
+
+FKs to Phase 0 reference tables where applicable.
+
+*** Domain Layer (=ores.trading.api=)
+
+- =instrument= struct (id, trade_type_code, sub_type_code, notional, currency,
+  start_date, maturity_date, provenance)
+- =swap_leg= struct (instrument_id, leg_type_code, day_count_code,
+  convention_code, floating_index_code, frequency_code, spread, fixed_rate)
+- JSON I/O, table I/O, generator, CRUD protocol per type
+
+*** Repository + Service (=ores.trading.core=)
+
+- Entity, mapper, repository, service per type following Phase 0 pattern
+
+*** Qt UI (=ores.qt=)
+
+- =InstrumentMdiWindow= — list view of all instruments
+- =SwapDetailDialog= — edit dialog with leg sub-table
+- =InstrumentHistoryDialog=
+- =InstrumentController=
+- =ClientInstrumentModel=
+
+*** CLI (=ores.cli=)
+
+- =ores trading instruments list=
+- =ores trading instruments add= (swap sub-command)
+- =ores trading instruments delete=
+
+** Phase 2 — FX Instruments
+
+5. =FxForward=
+6. =FxSwap=
+7. =FxOption=
+
+New table: =ores_trading_fx_instruments_tbl= (bought/sold CCY, amounts,
+value_date, option fields where applicable).
+
+** Phase 3 — Fixed Income
+
+8. =Bond=
+9. =BondRepo=
+
+New table: =ores_trading_bond_instruments_tbl= (issuer, coupon, maturity,
+face_value, day_count_code, frequency_code).
+
+** Phase 4 — Credit
+
+10. =CreditDefaultSwap=
+
+New table: =ores_trading_credit_instruments_tbl= (reference_entity,
+spread, recovery_rate, tenor).
+
+* Key Design Decisions
+
+** No Inheritance
+
+CDM uses composition exclusively (confirmed: no =allOf= in schema). This
+matches ORE Studio conventions. All instrument tables are flat structs; the
+=trade_type_code= + =sub_type_code= pair acts as the discriminator.
+
+** Enums as Reference Tables
+
+CDM's rich enums map to the existing ORE Studio pattern of DB-backed reference
+tables (e.g. =trade_type=, =activity_type=). Phase 0 delivered the five most
+commonly referenced enums. Further enums (=compounding_type=,
+=stub_convention_type=, etc.) will be added as needed per phase.
+
+** Payout Polymorphism → Typed Tables
+
+Rather than a generic =Payout= discriminated union, each asset class gets its
+own table. Fields not applicable to a sub-type are =NULL=. This avoids the
+complexity of =std::variant= serialisation while keeping the schema legible.
+
+** Seed Data from ORE
+
+All reference table seed values are sourced from ORE's =ore_types.xsd=,
+ensuring alignment with the ORE analytics engine from day one.

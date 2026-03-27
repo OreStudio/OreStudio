@@ -58,6 +58,13 @@
 \ir ./trading_leg_types_create.sql
 \ir ./trading_leg_types_notify_trigger_create.sql
 
+-- Rates instruments (depends on reference data above)
+\ir ./trading_instruments_create.sql
+\ir ./trading_instruments_notify_trigger_create.sql
+
+\ir ./trading_swap_legs_create.sql
+\ir ./trading_swap_legs_notify_trigger_create.sql
+
 -- Trades (depends on reference data above)
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql

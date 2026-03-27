@@ -18,6 +18,7 @@
  *
  */
 #include "ores.ore/log/ore_log_parser.hpp"
+#include "ores.platform/time/time_utils.hpp"
 
 #include <chrono>
 #include <ctime>
@@ -41,7 +42,7 @@ std::chrono::system_clock::time_point make_utc(
     tm.tm_min   = min;
     tm.tm_sec   = sec;
     tm.tm_isdst = 0;
-    const std::time_t t = timegm(&tm);
+    const std::time_t t = ores::platform::time::time_utils::timegm_safe(&tm);
     return std::chrono::system_clock::from_time_t(t)
         + std::chrono::microseconds(microseconds);
 }

@@ -92,6 +92,28 @@ report_definition_repository::read_all(context ctx, const std::string& id) {
         lg(), "Reading all report definition versions by id.");
 }
 
+std::vector<domain::report_definition>
+report_definition_repository::read_latest_unscheduled(context ctx) {
+    const auto tid = ctx.tenant_id().to_string();
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reading unscheduled report definitions for tenant: " << tid;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<report_definition_entity>> |
+        where("tenant_id"_c == tid &&
+              "scheduler_job_id"_c.is_null() &&
+              "valid_to"_c == max.value()) |
+        order_by("id"_c);
+
+    const auto result =
+        execute_read_query<report_definition_entity, domain::report_definition>(
+            ctx, query,
+            [](const auto& entities) { return report_definition_mapper::map(entities); },
+            lg(), "Reading unscheduled report definitions.");
+    BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
+        << " unscheduled definition(s) for tenant: " << tid;
+    return result;
+}
+
 void report_definition_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing report definition: " << id;
     static auto max(make_timestamp(MAX_TIMESTAMP, lg()));

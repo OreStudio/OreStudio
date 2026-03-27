@@ -30,6 +30,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
+#include "ores.reporting.core/service/report_scheduling_service.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -166,10 +167,35 @@ public:
     void schedule(ores::nats::message msg) {
         BOOST_LOG_SEV(report_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
+            service::report_definition_service svc(ctx);
+            service::report_scheduling_service scheduler(ctx_, nats_);
+            int scheduled_count = 0;
+            std::vector<std::string> failed_ids;
+            for (const auto& id : req->ids) {
+                try {
+                    auto def = svc.find_definition(id);
+                    if (!def) continue;
+                    if (scheduler.schedule_one(*def, req->performed_by))
+                        ++scheduled_count;
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(report_definition_handler_lg(), error)
+                        << "Failed to schedule definition " << id
+                        << ": " << e.what();
+                    failed_ids.push_back(id);
+                }
+            }
             reply(nats_, msg, schedule_report_definitions_response{
-                .success = false,
-                .message = "schedule not yet implemented"});
+                .success = failed_ids.empty(),
+                .scheduled_count = scheduled_count,
+                .failed_ids = std::move(failed_ids)});
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
@@ -181,10 +207,35 @@ public:
     void unschedule(ores::nats::message msg) {
         BOOST_LOG_SEV(report_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
+            service::report_definition_service svc(ctx);
+            service::report_scheduling_service scheduler(ctx_, nats_);
+            int unscheduled_count = 0;
+            std::vector<std::string> failed_ids;
+            for (const auto& id : req->ids) {
+                try {
+                    auto def = svc.find_definition(id);
+                    if (!def) continue;
+                    if (scheduler.unschedule_one(*def, req->performed_by))
+                        ++unscheduled_count;
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(report_definition_handler_lg(), error)
+                        << "Failed to unschedule definition " << id
+                        << ": " << e.what();
+                    failed_ids.push_back(id);
+                }
+            }
             reply(nats_, msg, unschedule_report_definitions_response{
-                .success = false,
-                .message = "unschedule not yet implemented"});
+                .success = failed_ids.empty(),
+                .unscheduled_count = unscheduled_count,
+                .failed_ids = std::move(failed_ids)});
         } else {
             BOOST_LOG_SEV(report_definition_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;

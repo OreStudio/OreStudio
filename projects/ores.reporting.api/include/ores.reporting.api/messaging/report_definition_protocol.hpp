@@ -89,6 +89,7 @@ struct schedule_report_definitions_response {
     bool success = false;
     std::string message;
     int scheduled_count = 0;
+    std::vector<std::string> failed_ids;
 };
 
 struct unschedule_report_definitions_request {
@@ -103,6 +104,7 @@ struct unschedule_report_definitions_response {
     bool success = false;
     std::string message;
     int unscheduled_count = 0;
+    std::vector<std::string> failed_ids;
 };
 
 }

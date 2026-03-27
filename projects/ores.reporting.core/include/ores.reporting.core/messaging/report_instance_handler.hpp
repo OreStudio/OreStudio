@@ -26,10 +26,14 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/random_generator.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.reporting.core/service/report_instance_service.hpp"
+#include "ores.reporting.core/service/report_definition_service.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -158,6 +162,77 @@ public:
         } else {
             BOOST_LOG_SEV(report_instance_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+        }
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Completed " << msg.subject;
+    }
+
+    /**
+     * @brief Fire-and-forget handler for scheduler trigger messages.
+     *
+     * Receives a trigger_report_instance_message published by the scheduler
+     * when a report job fires. Looks up the report definition and creates a
+     * new report_instance. No reply is sent (publish, not request/reply).
+     */
+    void trigger(ores::nats::message msg) {
+        BOOST_LOG_SEV(report_instance_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        const auto trigger_msg = decode<trigger_report_instance_message>(msg);
+        if (!trigger_msg) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), warn)
+                << "Failed to decode trigger message on: " << msg.subject;
+            return;
+        }
+
+        try {
+            // Create a tenant-specific context from the tenant_id in the message.
+            const auto tid_result = ores::utility::uuid::tenant_id::from_string(
+                trigger_msg->tenant_id);
+            if (!tid_result) {
+                BOOST_LOG_SEV(report_instance_handler_lg(), error)
+                    << "Invalid tenant_id in trigger message: "
+                    << trigger_msg->tenant_id;
+                return;
+            }
+            const auto tenant_ctx = ctx_.with_tenant(*tid_result,
+                ctx_.service_account());
+
+            // Look up the report definition.
+            service::report_definition_service def_svc(tenant_ctx);
+            const auto def = def_svc.find_definition(
+                trigger_msg->report_definition_id);
+            if (!def) {
+                BOOST_LOG_SEV(report_instance_handler_lg(), error)
+                    << "Report definition not found: "
+                    << trigger_msg->report_definition_id;
+                return;
+            }
+
+            // Create and save the report instance.
+            boost::uuids::random_generator rg;
+            domain::report_instance inst;
+            inst.id = rg();
+            inst.tenant_id = def->tenant_id;
+            inst.party_id = def->party_id;
+            inst.definition_id = def->id;
+            inst.name = def->name;
+            inst.description = def->description;
+            inst.trigger_run_id = trigger_msg->job_instance_id;
+            inst.modified_by = ctx_.service_account();
+            inst.performed_by = ctx_.service_account();
+            inst.change_reason_code = "system.scheduler_trigger";
+            inst.change_commentary = "Created by scheduler trigger";
+
+            service::report_instance_service inst_svc(tenant_ctx);
+            inst_svc.save_instance(inst);
+
+            BOOST_LOG_SEV(report_instance_handler_lg(), info)
+                << "Created report instance " << inst.id
+                << " for definition " << def->id
+                << " (job_instance_id=" << trigger_msg->job_instance_id << ")";
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(report_instance_handler_lg(), error)
+                << "Failed to create report instance for trigger: " << e.what();
         }
         BOOST_LOG_SEV(report_instance_handler_lg(), debug)
             << "Completed " << msg.subject;

@@ -43,6 +43,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         schedule_job_request::nats_subject, "ores.scheduler.service",
         [jdh](ores::nats::message msg) { jdh->schedule(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(
+        schedule_jobs_batch_request::nats_subject, "ores.scheduler.service",
+        [jdh](ores::nats::message msg) { jdh->schedule_batch(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
         unschedule_job_request::nats_subject, "ores.scheduler.service",
         [jdh](ores::nats::message msg) { jdh->unschedule(std::move(msg)); }));
     subs.push_back(nats.queue_subscribe(

@@ -33,6 +33,7 @@ namespace ores::scheduler::service {
 struct action_context {
     const domain::job_definition& job;
     database::context db_ctx;
+    std::int64_t inst_id = 0;
 };
 
 /**

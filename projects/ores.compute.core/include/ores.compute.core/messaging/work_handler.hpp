@@ -20,6 +20,8 @@
 #ifndef ORES_COMPUTE_MESSAGING_WORK_HANDLER_HPP
 #define ORES_COMPUTE_MESSAGING_WORK_HANDLER_HPP
 
+#include <array>
+#include <cstdint>
 #include <optional>
 #include <stdexcept>
 #include <chrono>
@@ -48,6 +50,37 @@ inline auto& work_handler_lg() {
         "ores.compute.messaging.work_handler");
     return instance;
 }
+
+/**
+ * @brief Generates a whimsical adjective-animal display name from a UUID.
+ *
+ * Uses the first four bytes of the UUID as a seed so the name is
+ * deterministic for a given host ID (same name every restart).
+ */
+inline std::string make_display_name(const boost::uuids::uuid& id) {
+    static constexpr std::array adjectives = {
+        "amber", "bold", "brave", "bumbling", "calm", "clever", "daring",
+        "dazzling", "eager", "fierce", "frantic", "gentle", "graceful",
+        "happy", "humble", "idle", "jolly", "kind", "lively", "merry",
+        "nimble", "outgoing", "plucky", "quiet", "rowdy", "rusty", "swift",
+        "timid", "upbeat", "vibrant", "witty", "zany"
+    };
+    static constexpr std::array animals = {
+        "armadillo", "badger", "bison", "capybara", "caracal", "dhole",
+        "dingo", "echidna", "ermine", "falcon", "gecko", "hamster",
+        "iguana", "jackal", "koala", "lemur", "marmot", "narwhal",
+        "orca", "pangolin", "quokka", "raccoon", "salamander", "tapir",
+        "uakari", "viper", "walrus", "xerus", "yak", "zorilla"
+    };
+    const std::uint32_t seed =
+        (static_cast<std::uint32_t>(id.data[0]) << 24) |
+        (static_cast<std::uint32_t>(id.data[1]) << 16) |
+        (static_cast<std::uint32_t>(id.data[2]) << 8)  |
+         static_cast<std::uint32_t>(id.data[3]);
+    return std::string(adjectives[seed % adjectives.size()]) + "-" +
+           std::string(animals[(seed >> 8) % animals.size()]);
+}
+
 } // namespace
 
 using ores::service::messaging::reply;
@@ -167,9 +200,12 @@ public:
                         return;
                     }
                     h.external_id = req->host_id;
+                    h.display_name = make_display_name(h.id);
                     h.last_rpc_time = std::chrono::system_clock::now();
                     h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                     h.change_commentary = "Auto-registered on first heartbeat";
+                    BOOST_LOG_SEV(work_handler_lg(), info)
+                        << "Assigned display name: " << h.display_name;
                     stamp(h, ctx_);
                     svc.save(h);
                 }

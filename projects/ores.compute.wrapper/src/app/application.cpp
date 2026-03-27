@@ -49,6 +49,7 @@
 #include "ores.compute.api/messaging/result_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.wrapper/net/http_client.hpp"
+#include "ores.compute.wrapper/app/log_publisher.hpp"
 
 namespace ores::compute::wrapper::app {
 
@@ -535,7 +536,7 @@ void process_assignment(ores::nats::service::client& nats,
             << format_cmdline(exe.string(), args);
         BOOST_LOG_SEV(lg, debug) << "Engine log:     " << engine_log_path.string();
         BOOST_LOG_SEV(lg, debug) << "Input dir:      " << job_dir.string();
-        BOOST_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "log.txt").string();
+        BOOST_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "Output" / "log.txt").string();
 
         namespace bp2 = boost::process::v2;
         boost::asio::io_context proc_ioc;
@@ -593,7 +594,7 @@ void process_assignment(ores::nats::service::client& nats,
             // Include ORE's own log (log.txt) in the error — it has more
             // detail than stdout/stderr. Fall back to engine.log (our pipe
             // capture) if log.txt wasn't produced.
-            const fs::path ore_log_path = job_dir / "log.txt";
+            const fs::path ore_log_path = job_dir / "Output" / "log.txt";
             const auto ore_log = fs::exists(ore_log_path)
                 ? tail_file(ore_log_path) : std::string{};
             const auto engine_output = ore_log.empty()
@@ -637,6 +638,13 @@ void process_assignment(ores::nats::service::client& nats,
     }
 
     hb.stop();
+
+    {
+        const fs::path log_job_dir =
+            fs::path(cfg.work_dir) / "jobs" / evt.result_id;
+        publish_ore_logs(nats, evt.result_id, log_job_dir);
+        publish_engine_logs(nats, evt.result_id, log_job_dir);
+    }
 
     // Record outcome in the telemetry reporter.
     if (reporter) {

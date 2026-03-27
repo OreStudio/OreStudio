@@ -38,6 +38,7 @@ host_mapper::map(const host_entity& v) {
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.external_id = v.external_id;
+    r.display_name = v.display_name.value_or("");
     r.location = v.location.value_or("");
     r.cpu_count = v.cpu_count;
     r.ram_mb = v.ram_mb;
@@ -68,6 +69,7 @@ host_mapper::map(const domain::host& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.external_id = v.external_id;
+    r.display_name = v.display_name.empty() ? std::nullopt : std::optional(v.display_name);
     r.location = v.location.empty() ? std::nullopt : std::optional(v.location);
     r.cpu_count = v.cpu_count;
     r.ram_mb = v.ram_mb;

@@ -23,6 +23,7 @@
 #include <chrono>
 #include <optional>
 #include <stdexcept>
+#include <boost/uuid/random_generator.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -34,6 +35,7 @@
 #include "ores.telemetry/messaging/nats_samples_protocol.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
 #include "ores.telemetry.database/repository/telemetry_repository.hpp"
+#include "ores.telemetry/domain/telemetry_batch.hpp"
 
 namespace ores::telemetry::messaging {
 
@@ -67,15 +69,31 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        // No telemetry query service implemented yet; return empty.
-        if (decode<get_telemetry_logs_request>(msg)) {
-            BOOST_LOG_SEV(telemetry_handler_lg(), debug)
-                << "Completed " << msg.subject;
-            reply(nats_, msg, get_telemetry_logs_response{.success = true});
+        get_telemetry_logs_response resp;
+        if (auto req = decode<get_telemetry_logs_request>(msg)) {
+            try {
+                database::repository::telemetry_repository repo;
+                resp.entries = repo.query(ctx, req->query);
+                resp.total_count = repo.count(ctx, req->query);
+                resp.success = true;
+                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                    << "Returning " << resp.entries.size()
+                    << " log entries (total=" << resp.total_count << ")";
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to query logs: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
         } else {
             BOOST_LOG_SEV(telemetry_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            resp.success = false;
+            resp.message = "Failed to decode request";
         }
+        reply(nats_, msg, resp);
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            << "Completed " << msg.subject;
     }
 
     void nats_server_samples_list(ores::nats::message msg) {
@@ -156,6 +174,48 @@ public:
         }
         BOOST_LOG_SEV(telemetry_handler_lg(), debug)
             << "Completed " << msg.subject;
+    }
+
+    /**
+     * @brief Receives a fire-and-forget batch of log entries and persists them.
+     *
+     * Published by wrapper nodes to ingest ORE engine logs. No reply is sent.
+     */
+    void logs_publish(ores::nats::message msg) {
+        BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        if (auto req = decode<publish_log_entries_request>(msg)) {
+            try {
+                database::repository::telemetry_repository repo;
+                domain::telemetry_batch batch;
+                batch.source      = domain::telemetry_source::server;
+                batch.source_name = req->source_name;
+                boost::uuids::random_generator rng;
+                for (const auto& item : req->entries) {
+                    domain::telemetry_log_entry entry;
+                    entry.id          = rng();
+                    entry.timestamp   = std::chrono::system_clock::time_point(
+                        std::chrono::milliseconds(item.timestamp_ms));
+                    entry.source      = domain::telemetry_source::server;
+                    entry.source_name = req->source_name;
+                    entry.level       = item.level;
+                    entry.component   = item.component;
+                    entry.message     = item.message;
+                    entry.tag         = req->tag;
+                    batch.entries.push_back(std::move(entry));
+                }
+                repo.create_batch(ctx_, batch);
+                BOOST_LOG_SEV(telemetry_handler_lg(), debug)
+                    << "Stored " << batch.size() << " log entries from "
+                    << req->source_name;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(telemetry_handler_lg(), error)
+                    << "Failed to persist log batch: " << e.what();
+            }
+        } else {
+            BOOST_LOG_SEV(telemetry_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
     }
 
     void nats_stream_samples_list(ores::nats::message msg) {

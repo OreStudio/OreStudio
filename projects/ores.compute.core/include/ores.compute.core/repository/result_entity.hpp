@@ -44,6 +44,7 @@ struct result_entity {
     int server_state;
     std::optional<int> outcome;
     std::optional<std::string> output_uri;
+    std::optional<std::string> error_message;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> received_at;
     std::string modified_by;
     std::string performed_by;

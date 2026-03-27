@@ -70,6 +70,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.service_samples_list(std::move(msg));
         }));
 
+    // Fire-and-forget log ingestion from wrapper nodes.
+    subs.push_back(nats.queue_subscribe(
+        std::string(publish_log_entries_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            telemetry_handler h(nats, ctx, verifier);
+            h.logs_publish(std::move(msg));
+        }));
+
     return subs;
 }
 

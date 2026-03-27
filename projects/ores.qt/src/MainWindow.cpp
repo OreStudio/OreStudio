@@ -93,13 +93,10 @@
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/InstrumentController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
-#include "ores.qt/HostController.hpp"
 #include "ores.qt/AppController.hpp"
 #include "ores.qt/AppVersionController.hpp"
-#include "ores.qt/BatchController.hpp"
-#include "ores.qt/WorkunitController.hpp"
-#include "ores.qt/ResultController.hpp"
 #include "ores.qt/ComputeDashboardController.hpp"
+#include "ores.qt/ComputeConsoleController.hpp"
 #include "ores.qt/ServiceDashboardController.hpp"
 #include "ores.qt/ReportTypeController.hpp"
 #include "ores.qt/ConcurrencyPolicyController.hpp"
@@ -835,46 +832,28 @@ MainWindow::MainWindow(QWidget* parent) :
     auto* actionDashboard = computeMenu->addAction(
         IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
         tr("Dashboard"));
+    auto* actionConsole = computeMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor),
+        tr("Console"));
     computeMenu->addSeparator();
-    auto* actionHosts = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::Server, IconUtils::DefaultIconColor),
-        tr("Hosts"));
     auto* actionApps = computeMenu->addAction(
         IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor),
         tr("Apps"));
     auto* actionAppVersions = computeMenu->addAction(
         IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor),
         tr("App Versions"));
-    auto* actionBatches = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::Table, IconUtils::DefaultIconColor),
-        tr("Batches"));
-    auto* actionWorkunits = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::DocumentCode, IconUtils::DefaultIconColor),
-        tr("Workunits"));
-    auto* actionResults = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor),
-        tr("Results"));
 
     connect(actionDashboard, &QAction::triggered, this, [this]() {
         if (computeDashboardController_) computeDashboardController_->showDashboard();
     });
-    connect(actionHosts, &QAction::triggered, this, [this]() {
-        if (hostController_) hostController_->showListWindow();
+    connect(actionConsole, &QAction::triggered, this, [this]() {
+        if (computeConsoleController_) computeConsoleController_->showConsole();
     });
     connect(actionApps, &QAction::triggered, this, [this]() {
         if (appController_) appController_->showListWindow();
     });
     connect(actionAppVersions, &QAction::triggered, this, [this]() {
         if (appVersionController_) appVersionController_->showListWindow();
-    });
-    connect(actionBatches, &QAction::triggered, this, [this]() {
-        if (batchController_) batchController_->showListWindow();
-    });
-    connect(actionWorkunits, &QAction::triggered, this, [this]() {
-        if (workunitController_) workunitController_->showListWindow();
-    });
-    connect(actionResults, &QAction::triggered, this, [this]() {
-        if (resultController_) resultController_->showListWindow();
     });
 
     // Connect Reporting actions to controllers
@@ -2144,23 +2123,6 @@ void MainWindow::createControllers() {
     connect(jobDefinitionController_.get(), &JobDefinitionController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
-    // Create compute grid controllers
-    hostController_ = std::make_unique<HostController>(
-        this, mdiArea_, clientManager_, changeReasonCache_,
-        QString::fromStdString(username_), this);
-    connect(hostController_.get(), &HostController::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(hostController_.get(), &HostController::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(hostController_.get(), &HostController::detachableWindowCreated,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(hostController_.get(), &HostController::detachableWindowDestroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
     appController_ = std::make_unique<AppController>(
         this, mdiArea_, clientManager_, changeReasonCache_,
         QString::fromStdString(username_), this);
@@ -2195,56 +2157,6 @@ void MainWindow::createControllers() {
     connect(appVersionController_.get(), &AppVersionController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
-    batchController_ = std::make_unique<BatchController>(
-        this, mdiArea_, clientManager_, changeReasonCache_,
-        QString::fromStdString(username_), this);
-    connect(batchController_.get(), &BatchController::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(batchController_.get(), &BatchController::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(batchController_.get(), &BatchController::detachableWindowCreated,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(batchController_.get(), &BatchController::detachableWindowDestroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    workunitController_ = std::make_unique<WorkunitController>(
-        this, mdiArea_, clientManager_, changeReasonCache_,
-        QString::fromStdString(username_), this);
-    if (!httpBaseUrl_.empty())
-        workunitController_->setHttpBaseUrl(httpBaseUrl_);
-    connect(workunitController_.get(), &WorkunitController::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(workunitController_.get(), &WorkunitController::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(workunitController_.get(), &WorkunitController::detachableWindowCreated,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(workunitController_.get(), &WorkunitController::detachableWindowDestroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
-    resultController_ = std::make_unique<ResultController>(
-        this, mdiArea_, clientManager_, changeReasonCache_,
-        QString::fromStdString(username_), this);
-    connect(resultController_.get(), &ResultController::statusMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(resultController_.get(), &ResultController::errorMessage,
-            this, [this](const QString& message) {
-        ui_->statusbar->showMessage(message);
-    });
-    connect(resultController_.get(), &ResultController::detachableWindowCreated,
-            this, &MainWindow::onDetachableWindowCreated);
-    connect(resultController_.get(), &ResultController::detachableWindowDestroyed,
-            this, &MainWindow::onDetachableWindowDestroyed);
-
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(
         this, mdiArea_, clientManager_, this);
     connect(computeDashboardController_.get(),
@@ -2262,6 +2174,27 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(computeDashboardController_.get(),
             &ComputeDashboardController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    computeConsoleController_ = std::make_unique<ComputeConsoleController>(
+        this, mdiArea_, clientManager_, changeReasonCache_, this);
+    if (!httpBaseUrl_.empty())
+        computeConsoleController_->setHttpBaseUrl(httpBaseUrl_);
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(computeConsoleController_.get(),
+            &ComputeConsoleController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     serviceDashboardController_ = std::make_unique<ServiceDashboardController>(
@@ -2764,8 +2697,8 @@ void MainWindow::setHttpBaseUrl(const std::string& url) {
 
     if (appVersionController_)
         appVersionController_->setHttpBaseUrl(url);
-    if (workunitController_)
-        workunitController_->setHttpBaseUrl(url);
+    if (computeConsoleController_)
+        computeConsoleController_->setHttpBaseUrl(url);
 }
 
 void MainWindow::setInstanceInfo(const QString& name, const QColor& color) {

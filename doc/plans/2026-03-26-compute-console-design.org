@@ -1,0 +1,275 @@
+#+TITLE: Compute Console UI Refactor
+#+DATE: 2026-03-26
+#+AUTHOR: Marco Craveiro
+
+* Overview
+
+Replace the 6 fragmented compute MDI windows with a single unified
+=ComputeConsoleWindow= styled after BOINC Manager / DataSynapse Grid
+Console.  The refactor also wires ORE engine logs into the existing
+telemetry infrastructure so they are queryable and viewable with
+error-level highlighting inside the console.
+
+* Architecture Summary
+
+#+begin_src
+ComputeConsoleWindow
+  ├── Sidebar (QTabWidget West)
+  │     ├── Overview   — grid health stats, active batches, recent failures
+  │     ├── Batches    — hierarchical tree (Batch → Workunit → Task)
+  │     ├── Tasks      — flat live list of all results with human context
+  │     ├── Hosts      — nodes with display names, status, last-seen age
+  │     ├── Transfers  — upload/download progress bars
+  │     └── Messages   — recent system log events
+  └── Detail panel (right splitter, collapsible)
+        ├── Status / outcome badges
+        ├── Host display name
+        ├── Error message (full text)
+        ├── [Download Output]  [View Logs]
+        └── OreLogViewerWidget (ORE Log | Engine Output tabs)
+#+end_src
+
+Key decisions:
+- ORE engine logs are NOT uploaded as files; the wrapper parses =log.txt=
+  post-run and publishes entries to the telemetry infrastructure via NATS,
+  tagged with =result_id= as the =trace_id=.  The viewer queries
+  =telemetry.v1.logs.list= filtered by tag.
+- Hosts receive whimsical adjective+animal display names
+  (e.g. =bumbling-badger=) on first heartbeat registration.
+- "Task" is the user-facing term for a result shown with its batch /
+  workunit / host context.
+
+* Phase 1 — Domain & Database (display_name, error_message)
+
+** Goal
+Add two missing storage fields that all later phases depend on.
+Changes are purely additive; no existing code breaks.
+
+** Files to modify
+
+| File | Change |
+|------|--------|
+| =ores.compute.api/domain/host.hpp= | Add =std::string display_name= |
+| =ores.compute.api/domain/result.hpp= | Add =std::string error_message= |
+| =ores.compute.api/…/host_table.*= | Register =display_name= in ORM |
+| =ores.compute.api/…/result_table.*= | Register =error_message= in ORM |
+| =ores.compute.api/…/host_json_io.*= | Round-trip =display_name= |
+| =ores.compute.api/…/result_json_io.*= | Round-trip =error_message= |
+| =ores.sql/create/compute/compute_hosts_create.sql= | Add =display_name text null= column |
+| =ores.sql/create/compute/compute_results_create.sql= | Add =error_message text null= column |
+| =ores.compute.service/src/app/application.cpp= | Persist both fields from inbound messages |
+
+** Tasks
+1. Add =display_name= to =host= struct and ORM layer.
+2. Add =error_message= to =result= struct and ORM layer.
+3. Update SQL DDL files.
+4. Update =result_handler.hpp= to copy =submit_result_request::error_message=
+   into the saved result record.
+
+* Phase 2 — Wrapper: ORE Log Ingestion via Telemetry
+
+** Goal
+After each engine run, the wrapper parses =log.txt= (ORE format) and
+=engine.log= and publishes =telemetry_log_entry= records via NATS tagged
+with =result_id= so the Qt side can query them.
+
+** ORE log format
+#+begin_src
+LEVEL    [YYYY-Mon-DD HH:MM:SS.microseconds]    (source/file.cpp:line) : message
+#+end_src
+
+** Level mapping
+| ORE level | Telemetry severity |
+|-----------|--------------------|
+| DATA      | debug              |
+| NOTICE    | info               |
+| WARNING   | warn               |
+| ERROR     | error              |
+| ALERT     | error              |
+
+** Tag convention
+- =tag= field = =result_id= UUID string
+- =component= = ="ores.compute.ore_log"= for ORE's =log.txt=
+- =component= = ="ores.compute.wrapper"= for =engine.log= lines
+
+** Files to modify
+| File | Change |
+|------|--------|
+| =ores.telemetry/messaging/telemetry_protocol.hpp= | Add =publish_log_entries_request= (fire-and-forget batch publish on =telemetry.v1.logs.publish=) |
+| =ores.telemetry.service/…/telemetry_handler.*= | Add handler for =telemetry.v1.logs.publish= |
+| =ores.compute.wrapper/src/app/application.cpp= | Call =publish_ore_logs= and =publish_engine_logs= after engine exits |
+
+** New files to create
+| File | Purpose |
+|------|---------|
+| =ores.compute.wrapper/src/app/log_publisher.hpp= | =parse_ore_log_line=, =publish_ore_logs=, =publish_engine_logs= |
+| =ores.compute.wrapper/src/app/log_publisher.cpp= | Implementation; batches up to 200 entries per NATS publish |
+
+** Tasks
+1. Add =publish_log_entries_request= to telemetry protocol.
+2. Write ORE log line parser with unit tests (all 5 levels + malformed lines).
+3. Wire into wrapper job completion path (success AND failure branches).
+4. Add server-side batch-insert handler in =ores.telemetry.service=.
+
+* Phase 3 — Qt: display_name in Models
+
+** Goal
+Hosts show whimsical names everywhere. A shared =HostDisplayNameCache=
+avoids duplicate list-hosts requests across the console.
+
+** Files to modify
+| File | Change |
+|------|--------|
+| =work_handler.hpp= (server-side) | On first host registration, assign =display_name= using faker adjective + hardcoded animal array |
+| =ClientHostModel.hpp/.cpp= | Show =display_name= as primary column; UUID in =Qt::ToolTipRole= |
+| =ClientResultModel.hpp/.cpp= | Resolve host UUID → display name via =HostDisplayNameCache= |
+
+** New files to create
+| File | Purpose |
+|------|---------|
+| =ores.qt/include/ores.qt/HostDisplayNameCache.hpp= | =QObject= holding =QHash<QString,QString>= uuid→name |
+| =ores.qt/src/HostDisplayNameCache.cpp= | =display_name_for(uuid)= with 8-char fallback; =populate_from(hosts)= |
+
+* Phase 4 — Qt: ComputeTaskViewModel + ComputeTransferModel
+
+** Goal
+Introduce the task view model (result + context) and transfer progress
+tracking.
+
+** ComputeTaskViewModel
+- Joins batches + workunits + results client-side (three async NATS requests).
+- One row per result; label = ="Batch #N / Task M — {workunit} on {host}"=.
+- Columns: Label, State (badge), Outcome, Host, Duration, Batch, Received.
+
+** ComputeTransferModel
+- Pure Qt model, no NATS; driven by upload/download progress signals.
+- Columns: Direction (↑/↓), Filename, Progress (progress bar delegate), Speed, Status.
+- Methods: =add_transfer=, =update_progress=, =complete_transfer=, =fail_transfer=.
+
+** New files to create
+| File | Purpose |
+|------|---------|
+| =ComputeTaskViewModel.hpp/.cpp= | Three-way async join model |
+| =ComputeTransferModel.hpp/.cpp= | Local transfer progress model |
+| =TransferProgressDelegate.hpp/.cpp= | Progress bar cell renderer |
+
+* Phase 5 — Qt: OreLogViewerWidget
+
+** Goal
+A self-contained widget that fetches and displays telemetry log entries
+for a given =result_id= with level-based colour coding and error navigation.
+
+** Widget structure
+#+begin_src
+OreLogViewerWidget
+  ├── QTabBar: [ORE Log] [Engine Output]
+  ├── Summary bar: "247 notices  8 warnings  2 errors"  [filter buttons]
+  ├── QTableView (ClientTelemetryLogModel, filtered by tag + component)
+  │     — OreLogItemDelegate for row background tinting
+  ├── Jump buttons [∧ Prev Error] [∨ Next Error]
+  └── QTextEdit (read-only, shows full message for selected row)
+#+end_src
+
+** Files to modify
+| File | Change |
+|------|--------|
+| =ClientTelemetryLogModel.hpp/.cpp= | Add =set_tag_filter(optional<string>)= method |
+| =telemetry_query= struct | Ensure =tag= filter field is wired through to the SQL query |
+
+** New files to create
+| File | Purpose |
+|------|---------|
+| =OreLogViewerWidget.hpp/.cpp= | Unified log viewer; drives two =ClientTelemetryLogModel= instances |
+| =OreLogItemDelegate.hpp/.cpp= | Extends =TelemetryLogDelegate= with row background tinting |
+
+* Phase 6 — Qt: ComputeConsoleWindow Assembly
+
+** Goal
+Build the unified window and wire all Phase 3–5 components together.
+
+** Window layout
+#+begin_src
+QSplitter (horizontal)
+  ├── Left QTabWidget (West tabs, ~220px)
+  │     ├── Overview — stat boxes from ComputeDashboardMdiWindow
+  │     ├── Batches  — QTreeView on ComputeBatchTreeModel
+  │     ├── Tasks    — QTableView on ComputeTaskViewModel
+  │     ├── Hosts    — QTableView on ClientHostModel
+  │     ├── Transfers — QTableView on ComputeTransferModel
+  │     └── Messages — QTableView on ClientTelemetryLogModel (unfiltered)
+  └── Right QSplitter (vertical)
+        ├── QStackedWidget (mirrors left tab selection)
+        └── ComputeTaskDetailPanel (hidden when no selection)
+#+end_src
+
+** ComputeTaskDetailPanel
+- Status + outcome badges
+- Host display name (UUID in tooltip)
+- Error message (=QTextEdit=, read-only, failure only)
+- =[Download Output]= button → adds download to =ComputeTransferModel=
+- =[View Logs]= button → expands =OreLogViewerWidget=
+
+** New files to create
+| File | Purpose |
+|------|---------|
+| =ComputeConsoleWindow.hpp/.cpp= | Unified window; owns all models and sub-widgets |
+| =ComputeConsoleController.hpp/.cpp= | Follows =ComputeDashboardController= pattern |
+| =ComputeTaskDetailPanel.hpp/.cpp= | Right-side detail panel |
+| =ComputeBatchTreeModel.hpp/.cpp= | Hierarchical batch → workunit → task tree model |
+
+** Files to modify
+| File | Change |
+|------|--------|
+| =MainWindow.hpp/.cpp= | Add =ComputeConsoleController=; add "Compute Console" menu action |
+| =ores.qt/src/CMakeLists.txt= | Add all new Phase 3–6 source files |
+
+* Phase 7 — Remove Legacy MDI Windows
+
+** Goal
+Delete the 6 now-redundant MDI windows and their controllers.
+
+** Files to delete
+- =AppVersionMdiWindow.hpp/.cpp=
+- =BatchMdiWindow.hpp/.cpp=
+- =WorkunitMdiWindow.hpp/.cpp=
+- =ResultMdiWindow.hpp/.cpp=
+- =HostMdiWindow.hpp/.cpp=
+- =ComputeDashboardMdiWindow.hpp/.cpp=
+- =AppVersionController.hpp/.cpp=
+- =BatchController.hpp/.cpp=
+- =WorkunitController.hpp/.cpp=
+- =ResultController.hpp/.cpp=
+- =HostController.hpp/.cpp=
+- =ComputeDashboardController.hpp/.cpp=
+
+** Files to keep
+Detail dialogs (=BatchDetailDialog=, =WorkunitDetailDialog=, etc.) are
+retained as edit dialogs launched from the console's context menus.
+Client models (=ClientBatchModel=, =ClientResultModel=, etc.) are
+retained and used by the new console models.
+
+* Phase Summary
+
+| Phase | Goal | Depends on |
+|-------|------|------------|
+| 1 | Domain + DB additions | — |
+| 2 | ORE log ingestion | 1 |
+| 3 | display_name in Qt models | 1 |
+| 4 | Task and Transfer models | 3 |
+| 5 | OreLogViewerWidget | 2, 4 |
+| 6 | ComputeConsoleWindow | 3, 4, 5 |
+| 7 | Remove legacy windows | 6 |
+
+* Cross-cutting Notes
+
+- *Short IDs*: =TextUtils::short_id(uuid)= returns first 8 hex chars.
+  Used as fallback when =display_name= is empty.
+- *telemetry_query tag filter*: Phase 5 adds =set_tag_filter= to
+  =ClientTelemetryLogModel=; =OreLogViewerWidget= sets tag =  result_id.
+- *Auto-refresh*: Overview tab refreshes on a 30s =QTimer=.
+  Tasks and Hosts tabs have explicit Reload buttons.
+- *Transfer integration*: Upload dialogs emit progress signals; wired
+  to =ComputeTransferModel= through the controller in =MainWindow=.
+- *Reference implementation*: =TelemetryMdiWindow= is the closest
+  existing example for the filter-buttons + log table + detail panel
+  pattern that =OreLogViewerWidget= follows.

@@ -43,6 +43,7 @@ result_mapper::map(const result_entity& v) {
     r.server_state = v.server_state;
     r.outcome = v.outcome.value_or(0);
     r.output_uri = v.output_uri.value_or("");
+    r.error_message = v.error_message.value_or("");
     r.received_at = v.received_at ? timestamp_to_timepoint(*v.received_at) : std::chrono::system_clock::time_point{};
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -70,6 +71,7 @@ result_mapper::map(const domain::result& v) {
     r.server_state = v.server_state;
     r.outcome = v.outcome == 0 ? std::nullopt : std::optional(v.outcome);
     r.output_uri = v.output_uri.empty() ? std::nullopt : std::optional(v.output_uri);
+    r.error_message = v.error_message.empty() ? std::nullopt : std::optional(v.error_message);
     r.received_at = (v.received_at == std::chrono::system_clock::time_point{}) ? std::nullopt : std::optional(timepoint_to_timestamp(v.received_at, lg()));
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

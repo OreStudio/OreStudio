@@ -17,33 +17,36 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.compute.api/domain/host_table.hpp"
+#include "ores.qt/HostDisplayNameCache.hpp"
 
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
 
-namespace ores::compute::domain {
+namespace ores::qt {
 
-std::string convert_to_table(const std::vector<host>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+HostDisplayNameCache::HostDisplayNameCache(QObject* parent)
+    : QObject(parent) {}
 
-    table << fort::header
-          << "ID" << "External ID" << "Display Name" << "Location" << "CPU Count"
-          << "RAM (MB)" << "GPU Type" << "Last RPC Time" << "Credit Total"
-          << "Modified By" << "Recorded At" << fort::endr;
+QString HostDisplayNameCache::display_name_for(const QString& uuid) const {
+    const auto it = cache_.find(uuid);
+    if (it != cache_.end() && !it->isEmpty())
+        return *it;
+    // Short-ID fallback: first 8 hex characters (before the first '-').
+    return uuid.left(8);
+}
 
-    for (const auto& h : v) {
-        table << boost::uuids::to_string(h.id)
-              << h.external_id << h.display_name << h.location << h.cpu_count
-              << h.ram_mb << h.gpu_type << h.last_rpc_time << h.credit_total
-              << h.modified_by << h.recorded_at << fort::endr;
+void HostDisplayNameCache::populate_from(
+    const std::vector<compute::domain::host>& hosts)
+{
+    for (const auto& h : hosts) {
+        const auto uuid = QString::fromStdString(
+            boost::uuids::to_string(h.id));
+        if (!h.display_name.empty())
+            cache_.insert(uuid, QString::fromStdString(h.display_name));
     }
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
 }
 
+void HostDisplayNameCache::clear() {
+    cache_.clear();
 }
+
+} // namespace ores::qt

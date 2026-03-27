@@ -96,6 +96,7 @@ static IconDef getIconDef(Icon icon) {
         case Icon::LockClosed: return {"ic_fluent_lock_closed_20", "lock-password.svg"};
         case Icon::LockOpen: return {"ic_fluent_lock_unlocked_20", "lock-unlocked.svg"};
         case Icon::NoteEdit: return {"ic_fluent_note_edit_20", "notes-minimalistic.svg"};
+        case Icon::Notepad:  return {"ic_fluent_notepad_20",   "solar_notepad.svg"};
         case Icon::Open: return {"ic_fluent_open_20", "folder-open.svg"};
         case Icon::Organization: return {"ic_fluent_organization_20", "buildings-2.svg"};
         case Icon::PasswordReset: return {"ic_fluent_password_reset_48", "lock-password-unlocked.svg"};

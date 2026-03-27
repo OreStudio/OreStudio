@@ -75,6 +75,32 @@ inline badge_color_pair resolve_book_badge_color(const QString& value) {
     return resolve_status_badge_color(value);
 }
 
+/**
+ * @brief Badge colour resolver for compute task State and Outcome columns.
+ */
+inline badge_color_pair resolve_compute_task_badge_color(const QString& value) {
+    const auto upper = value.toUpper();
+    // Outcome values
+    if (upper == "SUCCESS")
+        return {badge_colors::online,    badge_colors::text};  // Green
+    if (upper == "FAILED")
+        return {badge_colors::locked,    badge_colors::text};  // Red
+    if (upper == "NO REPLY")
+        return {badge_colors::old,       badge_colors::text};  // Amber
+    if (upper == "PENDING")
+        return {badge_colors::recent,    badge_colors::text};  // Blue
+    // State values
+    if (upper == "RUNNING")
+        return {badge_colors::treatment_cleaned, badge_colors::text};  // Sky blue
+    if (upper == "UNSENT")
+        return {badge_colors::recent,    badge_colors::text};  // Blue
+    if (upper == "DONE")
+        return {badge_colors::default_bg, badge_colors::text}; // Gray
+    if (upper == "INACTIVE")
+        return {badge_colors::disabled,  badge_colors::text};  // Gray
+    return {badge_colors::default_bg, badge_colors::text};     // Default gray
+}
+
 }
 
 #endif

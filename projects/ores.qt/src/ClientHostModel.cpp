@@ -78,6 +78,12 @@ QVariant ClientHostModel::data(
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
+        case DisplayName: {
+            if (!host.display_name.empty())
+                return QString::fromStdString(host.display_name);
+            // Short-ID fallback: first 8 hex chars of the UUID.
+            return QString::fromStdString(host.external_id).left(8);
+        }
         case ExternalId:
             return QString::fromStdString(host.external_id);
         case Location:
@@ -101,6 +107,10 @@ QVariant ClientHostModel::data(
         }
     }
 
+    if (role == Qt::ToolTipRole && index.column() == DisplayName) {
+        return QString::fromStdString(host.external_id);
+    }
+
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(host.external_id);
     }
@@ -114,6 +124,8 @@ QVariant ClientHostModel::headerData(
         return {};
 
     switch (section) {
+    case DisplayName:
+        return tr("Name");
     case ExternalId:
         return tr("Host ID");
     case Location:

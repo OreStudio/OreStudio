@@ -43,6 +43,32 @@ struct get_telemetry_logs_response {
     std::uint64_t total_count = 0;
 };
 
+/**
+ * @brief A single log entry item for the fire-and-forget publish protocol.
+ *
+ * Uses primitive types only to avoid rfl serialisation issues with
+ * boost::uuids::uuid and std::chrono::time_point.
+ */
+struct publish_log_entry_item {
+    std::string level;
+    std::int64_t timestamp_ms = 0;
+    std::string component;
+    std::string message;
+};
+
+/**
+ * @brief Request to publish a batch of log entries (fire-and-forget).
+ *
+ * Published by wrapper nodes to ingest ORE engine logs into the telemetry
+ * store. No reply is expected.
+ */
+struct publish_log_entries_request {
+    static constexpr std::string_view nats_subject = "telemetry.v1.logs.publish";
+    std::string source_name;
+    std::string tag;
+    std::vector<publish_log_entry_item> entries;
+};
+
 }
 
 #endif

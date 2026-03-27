@@ -37,6 +37,7 @@ create table if not exists "ores_compute_hosts_tbl" (
     "cpu_count" integer not null default 0,
     "ram_mb" bigint not null default 0,
     "gpu_type" text null,
+    "display_name" text null,
     "last_rpc_time" timestamp with time zone null,
     "credit_total" numeric not null default 0,
     "modified_by" text not null,

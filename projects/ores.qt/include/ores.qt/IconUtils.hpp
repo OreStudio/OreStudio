@@ -93,6 +93,7 @@ enum class Icon {
     LockClosed,
     LockOpen,
     NoteEdit,
+    Notepad,
     Open,
     Organization,
     PasswordReset,

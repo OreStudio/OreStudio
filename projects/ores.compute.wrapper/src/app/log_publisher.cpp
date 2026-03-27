@@ -117,7 +117,9 @@ void publish_engine_logs(ores::nats::service::client& nats,
     req.source_name = "ores.compute.wrapper";
     req.tag         = result_id;
 
-    const auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+    // Base timestamp at job completion time; each line gets +1ms so that
+    // relative ordering is preserved in the viewer.
+    const auto base_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()).count();
 
     std::size_t count = 0;
@@ -127,7 +129,7 @@ void publish_engine_logs(ores::nats::service::client& nats,
             continue;
         ores::telemetry::messaging::publish_log_entry_item item;
         item.level        = "info";
-        item.timestamp_ms = now_ms;
+        item.timestamp_ms = base_ms + static_cast<std::int64_t>(count);
         item.component    = "ores.compute.wrapper";
         item.message      = line;
         req.entries.push_back(std::move(item));

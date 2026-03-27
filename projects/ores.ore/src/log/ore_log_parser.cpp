@@ -22,6 +22,7 @@
 #include <array>
 #include <cstring>
 #include <ctime>
+#include <clocale>
 #include <string>
 
 namespace ores::ore::log {
@@ -90,10 +91,13 @@ std::optional<ore_log_line> parse_ore_log_line(std::string_view line) {
 
         std::tm tm = {};
         const std::string dt_str(dt_part);
-        // %b matches abbreviated month names (Jan, Feb, …) via current locale;
-        // ORE always uses English abbreviations so this is correct on all
-        // standard Linux systems.
-        if (strptime(dt_str.c_str(), "%Y-%b-%d %H:%M:%S", &tm) == nullptr)
+        // Force C locale for strptime so %b always matches English month
+        // abbreviations (Jan, Feb, …) regardless of the system locale.
+        const locale_t c_locale = newlocale(LC_ALL_MASK, "C", nullptr);
+        const char* end = strptime_l(dt_str.c_str(), "%Y-%b-%d %H:%M:%S",
+                                     &tm, c_locale);
+        freelocale(c_locale);
+        if (end == nullptr)
             return std::nullopt;
 
         tm.tm_isdst = 0;

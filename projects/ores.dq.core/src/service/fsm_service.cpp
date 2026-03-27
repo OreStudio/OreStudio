@@ -74,8 +74,14 @@ fsm_service::list_states_for_machine(const std::string& machine_name) {
         lg(), "Listing FSM states for machine: " + machine_name);
     std::vector<domain::fsm_state> result;
     result.reserve(rows.size());
-    for (const auto& row : rows)
-        result.push_back(row_to_state(row));
+    for (const auto& row : rows) {
+        try {
+            result.push_back(row_to_state(row));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to parse FSM state row: " << e.what();
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size()
         << " states for machine: " << machine_name;
     return result;
@@ -98,8 +104,14 @@ std::vector<domain::fsm_state> fsm_service::list_all_states() {
         lg(), "Listing all FSM states");
     std::vector<domain::fsm_state> result;
     result.reserve(rows.size());
-    for (const auto& row : rows)
-        result.push_back(row_to_state(row));
+    for (const auto& row : rows) {
+        try {
+            result.push_back(row_to_state(row));
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to parse FSM state row: " << e.what();
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Found " << result.size() << " FSM states";
     return result;
 }

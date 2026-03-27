@@ -332,7 +332,7 @@ void ClientReportDefinitionModel::load_fsm_states() {
             request.machine_name = "report_definition_lifecycle";
             auto result = self->clientManager_->process_authenticated_request(
                 std::move(request));
-            if (!result)
+            if (!result || !result->success)
                 return {false, {}};
 
             QHash<QString, QString> map;
@@ -373,7 +373,7 @@ QString ClientReportDefinitionModel::resolve_fsm_state_name(
         const auto& name = it.value();
         return name.left(1).toUpper() + name.mid(1);
     }
-    return tr("Draft");
+    return tr("Unknown");
 }
 
 }

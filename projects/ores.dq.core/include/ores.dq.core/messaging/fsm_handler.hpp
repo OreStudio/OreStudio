@@ -60,6 +60,8 @@ public:
         if (!req) {
             BOOST_LOG_SEV(fsm_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, get_fsm_states_response{
+                .success = false, .message = "Failed to decode request"});
             return;
         }
         auto ctx_expected = ores::service::service::make_request_context(
@@ -75,10 +77,13 @@ public:
                 resp.states = svc.list_all_states();
             else
                 resp.states = svc.list_states_for_machine(req->machine_name);
+            resp.success = true;
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(fsm_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_fsm_states_response{
+                .success = false, .message = e.what()});
         }
         BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Completed " << msg.subject;
     }

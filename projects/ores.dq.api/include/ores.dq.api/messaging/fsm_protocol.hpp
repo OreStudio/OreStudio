@@ -48,6 +48,8 @@ struct get_fsm_states_request {
 };
 
 struct get_fsm_states_response {
+    bool success{false};
+    std::string message;
     std::vector<ores::dq::domain::fsm_state> states;
 };
 

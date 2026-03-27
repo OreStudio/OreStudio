@@ -988,6 +988,31 @@ commands which are deferred to a follow-up story. Builds cleanly.
 
 Pull Request: OreStudio/OreStudio#569
 
+*** DONE CDM Phase 2: FX instrument domain model                       :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-27 Fri 10:00]--[2026-03-27 Fri 18:00] =>  8:00
+    :END:
+
+Implement the FX instrument domain model (Phase 2 of the CDM-inspired
+instrument design). See [[file:../../plans/2026-03-26-cdm-instrument-domain-model.org][plan]] for architecture.
+
+Covers FxForward, FxSwap, and FxOption, backed by one new temporal table:
+=ores_trading_fx_instruments_tbl= (bought/sold currencies and amounts,
+value_date, settlement, and option fields for FxOption).
+
+***** Tasks
+
+- [X] SQL: =ores_trading_fx_instruments_tbl= + notify trigger + drop files
+- [X] SQL: Register in =trading_create.sql=, =drop_trading.sql=
+- [X] Domain: =fx_instrument= struct, JSON I/O, table I/O, generator, protocol
+- [X] Repository: =fx_instrument= entity, mapper, repository
+- [X] Service: =fx_instrument_service=
+- [X] Server: messaging handler + registrar registration
+- [X] Qt UI: =ClientFxInstrumentModel=, =FxInstrumentMdiWindow=,
+  =FxInstrumentDetailDialog=, =FxInstrumentHistoryDialog=,
+  =FxInstrumentController=, =MainWindow= integration
+- [ ] Database: recreate to pick up new table
+
 *** TODO Refactor trading reference type boilerplate into shared templates :code:
 
 The five new trading instrument reference data types (DayCountFractionType,

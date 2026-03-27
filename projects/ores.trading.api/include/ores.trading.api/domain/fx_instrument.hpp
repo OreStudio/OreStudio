@@ -1,0 +1,135 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#ifndef ORES_TRADING_DOMAIN_FX_INSTRUMENT_HPP
+#define ORES_TRADING_DOMAIN_FX_INSTRUMENT_HPP
+
+#include <chrono>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#include "ores.utility/uuid/tenant_id.hpp"
+
+namespace ores::trading::domain {
+
+/**
+ * @brief FX instrument economics for FxForward, FxSwap, and FxOption trades.
+ *
+ * Discriminated by trade_type_code. Option-specific fields (option_type,
+ * strike_price, expiry_date) are empty/zero for non-option products.
+ */
+struct fx_instrument final {
+    /**
+     * @brief Version number for optimistic locking and change tracking.
+     */
+    int version = 0;
+
+    /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief UUID uniquely identifying this FX instrument.
+     */
+    boost::uuids::uuid id;
+
+    /**
+     * @brief ORE product type code (FxForward, FxSwap, FxOption).
+     */
+    std::string trade_type_code;
+
+    /**
+     * @brief ISO 4217 currency code of the bought leg (e.g. EUR).
+     */
+    std::string bought_currency;
+
+    /**
+     * @brief Amount bought in bought_currency.
+     */
+    double bought_amount = 0.0;
+
+    /**
+     * @brief ISO 4217 currency code of the sold leg (e.g. USD).
+     */
+    std::string sold_currency;
+
+    /**
+     * @brief Amount sold in sold_currency.
+     */
+    double sold_amount = 0.0;
+
+    /**
+     * @brief Settlement/value date (ISO 8601 date string, e.g. 2026-06-30).
+     */
+    std::string value_date;
+
+    /**
+     * @brief Optional settlement method (e.g. Cash, Physical).
+     */
+    std::string settlement;
+
+    /**
+     * @brief Option type: 'Call' or 'Put'. Empty for non-option products.
+     */
+    std::string option_type;
+
+    /**
+     * @brief Option strike price. Zero for non-option products.
+     */
+    double strike_price = 0.0;
+
+    /**
+     * @brief Option expiry date (ISO 8601). Empty for non-option products.
+     */
+    std::string expiry_date;
+
+    /**
+     * @brief Optional free-text description.
+     */
+    std::string description;
+
+    /**
+     * @brief Username of the person who last modified this record.
+     */
+    std::string modified_by;
+
+    /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
+     * @brief Code identifying the reason for the change.
+     */
+    std::string change_reason_code;
+
+    /**
+     * @brief Free-text commentary explaining the change.
+     */
+    std::string change_commentary;
+
+    /**
+     * @brief Timestamp when this version of the record was recorded.
+     */
+    std::chrono::system_clock::time_point recorded_at;
+};
+
+}
+
+#endif

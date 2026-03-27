@@ -40,6 +40,10 @@
 \ir ./trading_instruments_notify_trigger_drop.sql
 \ir ./trading_instruments_drop.sql
 
+-- FX instruments (depend on reference data, drop before reference data)
+\ir ./trading_fx_instruments_notify_trigger_drop.sql
+\ir ./trading_fx_instruments_drop.sql
+
 -- Trades (depends on reference data, drop after junction tables)
 \ir ./trading_trades_notify_trigger_drop.sql
 \ir ./trading_trades_drop.sql

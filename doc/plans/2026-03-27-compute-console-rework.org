@@ -1,0 +1,113 @@
+#+TITLE: Compute Console Rework
+#+DATE: 2026-03-27
+#+AUTHOR: Marco Craveiro
+
+* Overview
+
+Iterative rework of ComputeConsoleWindow based on UX review. Covers toolbar
+consolidation, Apps/AppVersions master-detail split, resurrection of removed
+detail dialogs, double-click navigation, and platform-package clarification.
+
+* Items
+
+** 1 — Remove global toolbar; each tab owns its toolbar
+:PROPERTIES:
+:STATUS: todo
+:END:
+
+The global QToolBar above the tab widget is removed. Each tab gets its own
+toolbar inside the tab content widget. Refresh and Auto-refresh move into
+every tab's toolbar. Members =toolbar_=, =refresh_action_=,
+=auto_refresh_action_= and =setup_toolbar()= are deleted from
+ComputeConsoleWindow.
+
+Complexity: Low.
+
+** 2 — Apps tab: master-detail split (App → App Versions)
+:PROPERTIES:
+:STATUS: todo
+:END:
+
+The Apps tab becomes a vertical QSplitter:
+
+- Top pane :: Apps table + toolbar (Add App, Refresh, Edit on selection).
+- Bottom pane :: App Versions filtered to the selected app + toolbar
+  (Add App Version, Refresh, Edit on selection).
+
+Filtering uses =QSortFilterProxyModel::setFilterFixedString(app_uuid)= on the
+=AppId= column of =app_version_proxy_=. When no app is selected the bottom
+pane is empty.
+
+The standalone App Versions tab is removed (folded into the Apps tab).
+
+=ClientAppVersionModel= stores =app_id= as a displayable UUID string on column
+=AppId= so the proxy filter requires no model changes.
+
+Complexity: Medium.
+
+** 3 — Button label: "App" not "Application"
+:PROPERTIES:
+:STATUS: todo
+:END:
+
+=tr("Application")= → =tr("App")= in the Apps tab toolbar.
+
+Complexity: Trivial.
+
+** 4 — Double-click → detail dialogs; resurrect removed dialogs
+:PROPERTIES:
+:STATUS: todo
+:END:
+
+Restore the four detail dialogs removed in commit =cc39d3d0f= (full restore of
+=.hpp=, =.cpp=, and =.ui=):
+
+| Dialog                  | Trigger                                              |
+|-------------------------+------------------------------------------------------|
+| AppDetailDialog         | Double-click row in Apps (top pane)                  |
+| AppVersionDetailDialog  | Double-click row in App Versions (bottom pane)       |
+| BatchDetailDialog       | Double-click in Tasks tab; also "New Batch" button   |
+| WorkunitDetailDialog    | Double-click in Tasks tab; also "New Work Unit" btn  |
+
+These dialogs use =DetailDialogBase=: provenance widget,
+=promptChangeReason()=, async NATS save, signals triggering refresh.  Restore
+as-is, then wire =doubleClicked= on each table view.
+
+The simple =BatchCreateDialog= and =WorkunitCreateDialog= added in the
+previous session are deleted — superseded by the resurrected dialogs.
+
+Complexity: Medium-high (git restore of ~8 files × 4 dialogs, mostly
+mechanical).
+
+** 5 — Multi-platform packages (design clarification, no code change)
+:PROPERTIES:
+:STATUS: resolved
+:END:
+
+The =platforms: vector<string>= field on =app_version= declares which platform
+identifiers this one package binary runs on. This supports the
+manifest/wrapper model where a single zip contains a cross-platform runner
+plus the engine.
+
+For separate Windows/macOS binaries: create one =app_version= record per
+target platform — same =wrapper_version= + =engine_version=, different
+=package_uri=, e.g. =platforms = ["x86_64-pc-windows-msvc"]= vs
+=platforms = ["x86_64-apple-darwin"]=. This is the BOINC approach. No domain
+or schema changes required.
+
+The =AppProvisionerWizard= platform dual-list is correct for the manifest
+case. For the multi-binary case users register separate app_versions.
+
+* Execution Order
+
+1. Resurrect =BatchDetailDialog=, =WorkunitDetailDialog=, =AppDetailDialog=,
+   =AppVersionDetailDialog= from git (item 4, foundation).
+2. Delete =BatchCreateDialog= and =WorkunitCreateDialog= (superseded).
+3. Remove global toolbar; add per-tab toolbars with Refresh/Auto-refresh
+   (item 1).
+4. Restructure Apps tab into master-detail split; remove App Versions tab
+   (item 2).
+5. Fix button label "App" (item 3).
+6. Wire =doubleClicked= on all four tables → open detail dialog (view mode).
+7. Wire New Batch / New Work Unit buttons → open dialogs in create mode.
+8. Build, test, commit.

@@ -22,11 +22,14 @@
 #include <QtConcurrent>
 #include <QVBoxLayout>
 #include <QHeaderView>
+#include <QSplitter>
 #include <QToolBar>
 #include <QPointer>
 #include "ores.qt/AppProvisionerWizard.hpp"
-#include "ores.qt/BatchCreateDialog.hpp"
-#include "ores.qt/WorkunitCreateDialog.hpp"
+#include "ores.qt/AppDetailDialog.hpp"
+#include "ores.qt/AppVersionDetailDialog.hpp"
+#include "ores.qt/BatchDetailDialog.hpp"
+#include "ores.qt/WorkunitDetailDialog.hpp"
 #include "ores.qt/OreLogViewerWidget.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -78,50 +81,28 @@ ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
 
 // ── UI setup ──────────────────────────────────────────────────────────────────
 
+QToolBar* ComputeConsoleWindow::make_tab_toolbar(Qt::ToolButtonStyle style) {
+    auto* tb = new QToolBar(this);
+    tb->setMovable(false);
+    tb->setToolButtonStyle(style);
+    return tb;
+}
+
 void ComputeConsoleWindow::setup_ui() {
     auto* layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    setup_toolbar();
-    layout->addWidget(toolbar_);
-
     main_tabs_ = new QTabWidget(this);
-    main_tabs_->addTab(make_tasks_tab(),        tr("Tasks"));
-    main_tabs_->addTab(make_apps_tab(),         tr("Apps"));
-    main_tabs_->addTab(make_app_versions_tab(), tr("App Versions"));
-    main_tabs_->addTab(make_hosts_tab(),        tr("Hosts"));
-    main_tabs_->addTab(make_transfers_tab(),    tr("Transfers"));
+    main_tabs_->addTab(make_tasks_tab(),     tr("Tasks"));
+    main_tabs_->addTab(make_apps_tab(),      tr("Apps"));
+    main_tabs_->addTab(make_hosts_tab(),     tr("Hosts"));
+    main_tabs_->addTab(make_transfers_tab(), tr("Transfers"));
 
     connect(main_tabs_, &QTabWidget::currentChanged,
             this, &ComputeConsoleWindow::on_tab_changed);
 
     layout->addWidget(main_tabs_);
-}
-
-void ComputeConsoleWindow::setup_toolbar() {
-    toolbar_ = new QToolBar(this);
-    toolbar_->setMovable(false);
-    toolbar_->setToolButtonStyle(Qt::ToolButtonIconOnly);
-
-    refresh_action_ = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
-            color_constants::icon_color),
-        tr("Refresh"), this);
-    connect(refresh_action_, &QAction::triggered,
-            this, &ComputeConsoleWindow::refresh);
-    toolbar_->addAction(refresh_action_);
-
-    toolbar_->addSeparator();
-
-    auto_refresh_action_ = new QAction(
-        IconUtils::createRecoloredIcon(Icon::ArrowSync,
-            color_constants::icon_color),
-        tr("Auto-refresh every 15 s"), this);
-    auto_refresh_action_->setCheckable(true);
-    connect(auto_refresh_action_, &QAction::toggled,
-            this, &ComputeConsoleWindow::on_auto_refresh_toggled);
-    toolbar_->addAction(auto_refresh_action_);
 }
 
 QWidget* ComputeConsoleWindow::make_tasks_tab() {
@@ -143,10 +124,10 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
     connect(task_view_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this, &ComputeConsoleWindow::on_task_selection_changed);
+    connect(task_view_, &QTableView::doubleClicked,
+            this, &ComputeConsoleWindow::on_task_double_clicked);
 
-    auto* toolbar = new QToolBar(this);
-    toolbar->setMovable(false);
-    toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    auto* toolbar = make_tab_toolbar();
 
     auto* new_batch_action = new QAction(
         IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
@@ -173,16 +154,36 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
             this, &ComputeConsoleWindow::on_show_logs);
     toolbar->addAction(logs_action_);
 
+    toolbar->addSeparator();
+
+    auto* refresh_action = new QAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
+            color_constants::icon_color),
+        tr("Refresh"), this);
+    connect(refresh_action, &QAction::triggered,
+            this, &ComputeConsoleWindow::refresh);
+    toolbar->addAction(refresh_action);
+
+    auto* auto_refresh_action = new QAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowSync,
+            color_constants::icon_color),
+        tr("Auto-refresh"), this);
+    auto_refresh_action->setCheckable(true);
+    connect(auto_refresh_action, &QAction::toggled,
+            this, &ComputeConsoleWindow::on_auto_refresh_toggled);
+    toolbar->addAction(auto_refresh_action);
+
     auto* container = new QWidget(this);
-    auto* layout = new QVBoxLayout(container);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-    layout->addWidget(toolbar);
-    layout->addWidget(task_view_);
+    auto* vl = new QVBoxLayout(container);
+    vl->setContentsMargins(0, 0, 0, 0);
+    vl->setSpacing(0);
+    vl->addWidget(toolbar);
+    vl->addWidget(task_view_);
     return container;
 }
 
 QWidget* ComputeConsoleWindow::make_apps_tab() {
+    // ── top pane: apps ────────────────────────────────────────────────────────
     app_proxy_ = new QSortFilterProxyModel(this);
     app_proxy_->setSourceModel(app_model_.get());
 
@@ -198,29 +199,44 @@ QWidget* ComputeConsoleWindow::make_apps_tab() {
     app_view_->horizontalHeader()->setSectionResizeMode(
         ClientAppModel::Name, QHeaderView::ResizeToContents);
 
-    auto* toolbar = new QToolBar(this);
-    toolbar->setMovable(false);
-    toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    connect(app_view_->selectionModel(),
+            &QItemSelectionModel::selectionChanged,
+            this, &ComputeConsoleWindow::on_app_selection_changed);
+    connect(app_view_, &QTableView::doubleClicked,
+            this, &ComputeConsoleWindow::on_app_double_clicked);
+
+    auto* app_toolbar = make_tab_toolbar();
 
     auto* new_app_action = new QAction(
         IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
-        tr("Application"), this);
+        tr("App"), this);
     connect(new_app_action, &QAction::triggered,
             this, &ComputeConsoleWindow::on_new_application);
-    toolbar->addAction(new_app_action);
+    app_toolbar->addAction(new_app_action);
 
-    auto* container = new QWidget(this);
-    auto* layout = new QVBoxLayout(container);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->setSpacing(0);
-    layout->addWidget(toolbar);
-    layout->addWidget(app_view_);
-    return container;
-}
+    app_toolbar->addSeparator();
 
-QWidget* ComputeConsoleWindow::make_app_versions_tab() {
+    auto* refresh_apps = new QAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
+            color_constants::icon_color),
+        tr("Refresh"), this);
+    connect(refresh_apps, &QAction::triggered, this, [this]() {
+        app_model_->refresh();
+        app_version_model_->refresh();
+    });
+    app_toolbar->addAction(refresh_apps);
+
+    auto* top_pane = new QWidget(this);
+    auto* top_vl = new QVBoxLayout(top_pane);
+    top_vl->setContentsMargins(0, 0, 0, 0);
+    top_vl->setSpacing(0);
+    top_vl->addWidget(app_toolbar);
+    top_vl->addWidget(app_view_);
+
+    // ── bottom pane: app versions filtered by selected app ────────────────────
     app_version_proxy_ = new QSortFilterProxyModel(this);
     app_version_proxy_->setSourceModel(app_version_model_.get());
+    app_version_proxy_->setFilterKeyColumn(ClientAppVersionModel::AppId);
 
     app_version_view_ = new QTableView(this);
     app_version_view_->setModel(app_version_proxy_);
@@ -234,7 +250,33 @@ QWidget* ComputeConsoleWindow::make_app_versions_tab() {
     app_version_view_->horizontalHeader()->setSectionResizeMode(
         ClientAppVersionModel::AppId, QHeaderView::ResizeToContents);
 
-    return app_version_view_;
+    connect(app_version_view_, &QTableView::doubleClicked,
+            this, &ComputeConsoleWindow::on_app_version_double_clicked);
+
+    auto* av_toolbar = make_tab_toolbar();
+
+    new_app_version_action_ = new QAction(
+        IconUtils::createRecoloredIcon(Icon::Add, color_constants::icon_color),
+        tr("App Version"), this);
+    new_app_version_action_->setEnabled(false);
+    connect(new_app_version_action_, &QAction::triggered,
+            this, &ComputeConsoleWindow::on_new_app_version);
+    av_toolbar->addAction(new_app_version_action_);
+
+    auto* bottom_pane = new QWidget(this);
+    auto* bot_vl = new QVBoxLayout(bottom_pane);
+    bot_vl->setContentsMargins(0, 0, 0, 0);
+    bot_vl->setSpacing(0);
+    bot_vl->addWidget(av_toolbar);
+    bot_vl->addWidget(app_version_view_);
+
+    // ── splitter ──────────────────────────────────────────────────────────────
+    auto* splitter = new QSplitter(Qt::Vertical, this);
+    splitter->addWidget(top_pane);
+    splitter->addWidget(bottom_pane);
+    splitter->setStretchFactor(0, 2);
+    splitter->setStretchFactor(1, 1);
+    return splitter;
 }
 
 QWidget* ComputeConsoleWindow::make_hosts_tab() {
@@ -253,7 +295,24 @@ QWidget* ComputeConsoleWindow::make_hosts_tab() {
     host_view_->horizontalHeader()->setSectionResizeMode(
         ClientHostModel::DisplayName, QHeaderView::ResizeToContents);
 
-    return host_view_;
+    auto* toolbar = make_tab_toolbar();
+
+    auto* refresh_action = new QAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowClockwise,
+            color_constants::icon_color),
+        tr("Refresh"), this);
+    connect(refresh_action, &QAction::triggered, this, [this]() {
+        host_model_->refresh();
+    });
+    toolbar->addAction(refresh_action);
+
+    auto* container = new QWidget(this);
+    auto* vl = new QVBoxLayout(container);
+    vl->setContentsMargins(0, 0, 0, 0);
+    vl->setSpacing(0);
+    vl->addWidget(toolbar);
+    vl->addWidget(host_view_);
+    return container;
 }
 
 QWidget* ComputeConsoleWindow::make_transfers_tab() {
@@ -337,7 +396,6 @@ void ComputeConsoleWindow::on_apps_loaded() {
 void ComputeConsoleWindow::on_app_versions_loaded() {
     const int n = app_version_model_->rowCount();
     BOOST_LOG_SEV(lg(), debug) << "App versions loaded: " << n;
-    main_tabs_->setTabText(kAppVersionsTab, tr("App Versions (%1)").arg(n));
 }
 
 void ComputeConsoleWindow::on_tasks_error(
@@ -366,6 +424,24 @@ void ComputeConsoleWindow::on_task_selection_changed() {
     logs_action_->setEnabled(true);
 }
 
+void ComputeConsoleWindow::on_app_selection_changed() {
+    const auto selected = app_view_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        app_version_proxy_->setFilterFixedString({});
+        new_app_version_action_->setEnabled(false);
+        return;
+    }
+
+    const QModelIndex src = app_proxy_->mapToSource(selected.first());
+    const auto* app = app_model_->getApp(src.row());
+    if (!app) return;
+
+    const auto uuid_str = boost::uuids::to_string(app->id);
+    app_version_proxy_->setFilterFixedString(
+        QString::fromStdString(uuid_str));
+    new_app_version_action_->setEnabled(true);
+}
+
 void ComputeConsoleWindow::on_tab_changed(int /*index*/) {}
 
 void ComputeConsoleWindow::on_new_application() {
@@ -379,22 +455,56 @@ void ComputeConsoleWindow::on_new_application() {
     wizard->open();
 }
 
-void ComputeConsoleWindow::on_new_batch() {
-    auto* dlg = new BatchCreateDialog(
-        client_manager_, change_reason_cache_, this);
+void ComputeConsoleWindow::on_new_app_version() {
+    const auto selected = app_view_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) return;
+
+    const QModelIndex src = app_proxy_->mapToSource(selected.first());
+    const auto* app = app_model_->getApp(src.row());
+    if (!app) return;
+
+    compute::domain::app_version version;
+    version.app_id = app->id;
+
+    auto* dlg = new AppVersionDetailDialog(this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
-    connect(dlg, &BatchCreateDialog::batchCreated,
-            this, &ComputeConsoleWindow::refresh);
-    dlg->open();
+    dlg->setClientManager(client_manager_);
+    dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
+    dlg->setChangeReasonCache(change_reason_cache_);
+    dlg->setHttpBaseUrl(http_base_url_);
+    dlg->setVersion(version);
+    dlg->setCreateMode(true);
+    connect(dlg, &AppVersionDetailDialog::app_versionSaved, this, [this](const QString&) {
+        app_version_model_->refresh();
+    });
+    dlg->show();
+}
+
+void ComputeConsoleWindow::on_new_batch() {
+    auto* dlg = new BatchDetailDialog(this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setClientManager(client_manager_);
+    dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
+    dlg->setChangeReasonCache(change_reason_cache_);
+    dlg->setCreateMode(true);
+    connect(dlg, &BatchDetailDialog::batchSaved, this, [this](const QString&) {
+        refresh();
+    });
+    dlg->show();
 }
 
 void ComputeConsoleWindow::on_new_work_unit() {
-    auto* dlg = new WorkunitCreateDialog(
-        client_manager_, change_reason_cache_, this);
+    auto* dlg = new WorkunitDetailDialog(this);
     dlg->setAttribute(Qt::WA_DeleteOnClose);
-    connect(dlg, &WorkunitCreateDialog::workunitCreated,
-            this, &ComputeConsoleWindow::refresh);
-    dlg->open();
+    dlg->setClientManager(client_manager_);
+    dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
+    dlg->setChangeReasonCache(change_reason_cache_);
+    dlg->setHttpBaseUrl(http_base_url_);
+    dlg->setCreateMode(true);
+    connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) {
+        refresh();
+    });
+    dlg->show();
 }
 
 void ComputeConsoleWindow::on_show_logs() {
@@ -407,6 +517,68 @@ void ComputeConsoleWindow::on_show_logs() {
     viewer->resize(900, 600);
     viewer->load_result(selected_result_id_);
     viewer->show();
+}
+
+void ComputeConsoleWindow::on_task_double_clicked(const QModelIndex& index) {
+    if (!index.isValid()) return;
+
+    const QModelIndex src = task_proxy_->mapToSource(index);
+    const auto* task = task_model_->get_task(src.row());
+    if (!task) return;
+
+    auto* dlg = new WorkunitDetailDialog(this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setClientManager(client_manager_);
+    dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
+    dlg->setChangeReasonCache(change_reason_cache_);
+    dlg->setHttpBaseUrl(http_base_url_);
+    dlg->setWorkunit(task->workunit);
+    dlg->setCreateMode(false);
+    connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) {
+        refresh();
+    });
+    dlg->show();
+}
+
+void ComputeConsoleWindow::on_app_double_clicked(const QModelIndex& index) {
+    if (!index.isValid()) return;
+
+    const QModelIndex src = app_proxy_->mapToSource(index);
+    const auto* app = app_model_->getApp(src.row());
+    if (!app) return;
+
+    auto* dlg = new AppDetailDialog(this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setClientManager(client_manager_);
+    dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
+    dlg->setChangeReasonCache(change_reason_cache_);
+    dlg->setApp(*app);
+    dlg->setCreateMode(false);
+    connect(dlg, &AppDetailDialog::appSaved, this, [this](const QString&) {
+        app_model_->refresh();
+    });
+    dlg->show();
+}
+
+void ComputeConsoleWindow::on_app_version_double_clicked(const QModelIndex& index) {
+    if (!index.isValid()) return;
+
+    const QModelIndex src = app_version_proxy_->mapToSource(index);
+    const auto* version = app_version_model_->getVersion(src.row());
+    if (!version) return;
+
+    auto* dlg = new AppVersionDetailDialog(this);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    dlg->setClientManager(client_manager_);
+    dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
+    dlg->setChangeReasonCache(change_reason_cache_);
+    dlg->setHttpBaseUrl(http_base_url_);
+    dlg->setVersion(*version);
+    dlg->setCreateMode(false);
+    connect(dlg, &AppVersionDetailDialog::app_versionSaved, this, [this](const QString&) {
+        app_version_model_->refresh();
+    });
+    dlg->show();
 }
 
 void ComputeConsoleWindow::on_auto_refresh_toggled(bool checked) {

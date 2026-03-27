@@ -25,6 +25,7 @@
 #include <QTimer>
 #include <QWidget>
 #include <QAction>
+#include <QSplitter>
 #include <QTabWidget>
 #include <QTableView>
 #include <QToolBar>
@@ -48,15 +49,16 @@ namespace ores::qt {
  *
  * A top-level tab bar selects the active view:
  *
- *   Tasks        — joined result/workunit/batch table with a per-task tab
- *                  toolbar (New Batch, New Work Unit, View Logs).
- *   Apps         — registered compute applications.
- *   App Versions — available app version packages per platform.
- *   Hosts        — flat host table; also feeds the HostDisplayNameCache.
- *   Transfers    — live file transfer progress with a custom progress delegate.
+ *   Tasks     — joined result/workunit/batch table with a per-tab toolbar
+ *               (New Batch, New Work Unit, Logs). Double-click opens the
+ *               relevant detail dialog.
+ *   Apps      — master-detail split: top pane lists apps; bottom pane shows
+ *               app versions for the selected app. Double-click on either
+ *               pane opens the detail dialog.
+ *   Hosts     — flat host table; also feeds the HostDisplayNameCache.
+ *   Transfers — live file transfer progress with a custom progress delegate.
  *
- * A toolbar with Refresh and Auto-refresh actions spans all tabs.
- * Logs for a selected task open in a separate non-modal dialog.
+ * Each tab has its own toolbar (no global toolbar above the tab widget).
  */
 class ComputeConsoleWindow : public QWidget {
     Q_OBJECT
@@ -100,28 +102,32 @@ private slots:
     void on_apps_loaded();
     void on_app_versions_loaded();
     void on_task_selection_changed();
+    void on_app_selection_changed();
     void on_tab_changed(int index);
     void on_auto_refresh_toggled(bool checked);
     void on_new_application();
+    void on_new_app_version();
     void on_new_batch();
     void on_new_work_unit();
     void on_show_logs();
+    void on_task_double_clicked(const QModelIndex& index);
+    void on_app_double_clicked(const QModelIndex& index);
+    void on_app_version_double_clicked(const QModelIndex& index);
 
 private:
     void setup_ui();
-    void setup_toolbar();
     QWidget* make_tasks_tab();
     QWidget* make_apps_tab();
-    QWidget* make_app_versions_tab();
     QWidget* make_hosts_tab();
     QWidget* make_transfers_tab();
 
-    // Tab indices
-    static constexpr int kTasksTab       = 0;
-    static constexpr int kAppsTab        = 1;
-    static constexpr int kAppVersionsTab = 2;
-    static constexpr int kHostsTab       = 3;
-    static constexpr int kTransfersTab   = 4;
+    QToolBar* make_tab_toolbar(Qt::ToolButtonStyle style = Qt::ToolButtonTextBesideIcon);
+
+    // Tab indices (App Versions is now embedded in the Apps tab, not a top tab)
+    static constexpr int kTasksTab     = 0;
+    static constexpr int kAppsTab      = 1;
+    static constexpr int kHostsTab     = 2;
+    static constexpr int kTransfersTab = 3;
 
     ClientManager*     client_manager_;
     ChangeReasonCache* change_reason_cache_;
@@ -139,27 +145,21 @@ private:
     using HostList = std::vector<compute::domain::host>;
     QFutureWatcher<HostList>* host_watcher_{nullptr};
 
-    // Global toolbar (spans all tabs)
-    QToolBar* toolbar_{nullptr};
-    QAction*  refresh_action_{nullptr};
-    QAction*  auto_refresh_action_{nullptr};
-
     // Top-level tab bar
     QTabWidget* main_tabs_{nullptr};
 
     // Tasks tab
     QTableView*            task_view_{nullptr};
     QSortFilterProxyModel* task_proxy_{nullptr};
-    QAction*               logs_action_{nullptr};      // enabled when task selected
+    QAction*               logs_action_{nullptr};
     QString                selected_result_id_;
 
-    // Apps tab
+    // Apps tab — master-detail split
     QTableView*            app_view_{nullptr};
     QSortFilterProxyModel* app_proxy_{nullptr};
-
-    // App Versions tab
     QTableView*            app_version_view_{nullptr};
     QSortFilterProxyModel* app_version_proxy_{nullptr};
+    QAction*               new_app_version_action_{nullptr};  // enabled when app selected
 
     // Hosts tab
     QTableView*            host_view_{nullptr};

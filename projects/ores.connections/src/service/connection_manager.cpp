@@ -299,6 +299,7 @@ connection_manager::resolved_connection connection_manager::resolve_connection(
         result.host = env->host;
         result.port = env->port;
         result.http_port = env->http_port;
+        result.subject_prefix = env->subject_prefix;
         result.environment_name = env->name;
     } else {
         // Use host/port stored directly on the connection

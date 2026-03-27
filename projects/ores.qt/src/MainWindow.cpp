@@ -3483,6 +3483,10 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
                             auto resolved = connectionManager_->resolve_connection(conn.id);
                             loginWidget->setServer(QString::fromStdString(resolved.host));
                             loginWidget->setPort(resolved.port);
+                            if (!resolved.subject_prefix.empty()) {
+                                loginWidget->setSubjectPrefix(
+                                    QString::fromStdString(resolved.subject_prefix));
+                            }
                             loginWidget->setUsername(
                                 QString::fromStdString(resolved.username));
                             if (!resolved.password.empty()) {

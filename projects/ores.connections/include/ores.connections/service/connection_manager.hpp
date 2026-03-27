@@ -65,6 +65,7 @@ public:
         std::string username;
         std::string password;    ///< decrypted
         std::string name;
+        std::string subject_prefix;
         std::optional<boost::uuids::uuid> environment_id;
         std::optional<std::string> environment_name;
     };

@@ -165,7 +165,7 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
     toolbar->addSeparator();
 
     logs_action_ = new QAction(
-        IconUtils::createRecoloredIcon(Icon::DocumentCode,
+        IconUtils::createRecoloredIcon(Icon::Notepad,
             color_constants::icon_color),
         tr("Logs"), this);
     logs_action_->setEnabled(false);

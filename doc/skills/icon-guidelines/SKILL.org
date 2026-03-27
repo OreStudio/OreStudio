@@ -515,6 +515,19 @@ Source code, script, technical document.
 
 *Usage*: Code files, scripts, configuration files.
 
+*** Notepad
+Log viewers, text output panes, ORE log content.
+
+- Fluent Regular: ic_fluent_notepad_20_regular.svg
+- Fluent Filled: ic_fluent_notepad_20_filled.svg
+- Solar Linear: solar_notepad.svg  (mapped from document-text.svg)
+- Solar Bold: solar_notepad.svg    (mapped from document-text.svg)
+
+*Usage*: "Logs" toolbar button in the Compute Console Tasks tab and any other
+action that opens a log or text-output viewer. Distinct from Terminal
+(interactive shell), DocumentCode (source code), and DocumentTable (tabular
+data).
+
 ** Organisation & Entities
 
 Icons representing organisational structure and business entities.
@@ -810,6 +823,7 @@ Text validation, spell check, language processing.
 | Export ORE           | arrow_upload_ore_20              | Default | Active |
 | Publish              | arrow_upload_20                  | Default | Active |
 | Terminal             | window_console_20                | Default | Active |
+| Notepad (Log Viewer) | notepad_20                       | Default | Active |
 
 * Adding New Icons
 

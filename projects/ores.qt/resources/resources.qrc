@@ -63,6 +63,7 @@
     <file>icons/fluentui/filled/ic_fluent_lock_closed_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_lock_open_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_note_edit_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_notepad_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_organization_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_password_reset_48_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_people_team_20_filled.svg</file>
@@ -144,6 +145,7 @@
     <file>icons/fluentui/regular/ic_fluent_lock_closed_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_lock_open_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_note_edit_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_notepad_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_organization_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_password_reset_48_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_people_team_20_regular.svg</file>
@@ -216,6 +218,7 @@
     <file>icons/solarized/Bold/lock-unlocked.svg</file>
     <file>icons/solarized/Bold/magic-stick-3.svg</file>
     <file>icons/solarized/Bold/notes-minimalistic.svg</file>
+    <file>icons/solarized/Bold/solar_notepad.svg</file>
     <file>icons/solarized/Bold/pen-new-square.svg</file>
     <file>icons/solarized/Bold/plug-circle.svg</file>
     <file>icons/solarized/Bold/presentation-graph.svg</file>
@@ -287,6 +290,7 @@
     <file>icons/solarized/Linear/lock-unlocked.svg</file>
     <file>icons/solarized/Linear/magic-stick-3.svg</file>
     <file>icons/solarized/Linear/notes-minimalistic.svg</file>
+    <file>icons/solarized/Linear/solar_notepad.svg</file>
     <file>icons/solarized/Linear/pen-new-square.svg</file>
     <file>icons/solarized/Linear/plug-circle.svg</file>
     <file>icons/solarized/Linear/presentation-graph.svg</file>

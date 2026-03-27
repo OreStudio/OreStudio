@@ -275,7 +275,15 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     int total_failed = 0;
 
     for (const auto& tenant : tenants) {
-        const auto tenant_id = utility::uuid::tenant_id::from_uuid(tenant.id);
+        const auto tenant_id_result = utility::uuid::tenant_id::from_uuid(tenant.id);
+        if (!tenant_id_result) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Skipping tenant '" << tenant.name
+                << "': invalid UUID: " << tenant_id_result.error();
+            ++total_failed;
+            continue;
+        }
+        const auto& tenant_id = *tenant_id_result;
         const auto tenant_id_str = tenant_id.to_string();
         BOOST_LOG_SEV(lg(), debug)
             << "Reconciling tenant: " << tenant_id_str

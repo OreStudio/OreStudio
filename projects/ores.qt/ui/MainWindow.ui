@@ -132,6 +132,7 @@
     <addaction name="separator"/>
     <addaction name="ActionTrades"/>
     <addaction name="ActionInstruments"/>
+    <addaction name="ActionFxInstruments"/>
     <addaction name="separator"/>
     <addaction name="ActionDayCountFractionTypes"/>
     <addaction name="ActionBusinessDayConventionTypes"/>
@@ -690,6 +691,14 @@
    </property>
    <property name="toolTip">
     <string>Manage rates instruments</string>
+   </property>
+  </action>
+  <action name="ActionFxInstruments">
+   <property name="text">
+    <string>&amp;FX Instruments</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage FX instruments</string>
    </property>
   </action>
   <action name="ActionJobDefinitions">

@@ -47,8 +47,7 @@ auto& lg() {
 grid_sample_entity to_entity(const domain::grid_sample& s,
                               const std::string& tid) {
     grid_sample_entity e;
-    e.sampled_at = Timestamp<"%Y-%m-%d %H:%M:%S">{
-        timepoint_to_timestamp(s.sampled_at, lg()).value()};
+    e.sampled_at = timepoint_to_timestamp(s.sampled_at, lg());
     e.tenant_id           = tid;
     e.total_hosts         = s.total_hosts;
     e.online_hosts        = s.online_hosts;
@@ -89,8 +88,7 @@ domain::grid_sample from_entity(const grid_sample_entity& e) {
 node_sample_entity to_entity(const domain::node_sample& s,
                               const std::string& tid) {
     node_sample_entity e;
-    e.sampled_at = Timestamp<"%Y-%m-%d %H:%M:%S">{
-        timepoint_to_timestamp(s.sampled_at, lg()).value()};
+    e.sampled_at = timepoint_to_timestamp(s.sampled_at, lg());
     e.tenant_id            = tid;
     e.host_id              = boost::uuids::to_string(s.host_id);
     e.tasks_completed      = s.tasks_completed;

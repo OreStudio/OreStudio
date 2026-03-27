@@ -110,6 +110,8 @@ private slots:
     void on_new_batch();
     void on_new_work_unit();
     void on_show_logs();
+    void on_download_input();
+    void on_download_output();
     void on_task_double_clicked(const QModelIndex& index);
     void on_app_double_clicked(const QModelIndex& index);
     void on_app_version_double_clicked(const QModelIndex& index);
@@ -152,7 +154,10 @@ private:
     QTableView*            task_view_{nullptr};
     QSortFilterProxyModel* task_proxy_{nullptr};
     QAction*               logs_action_{nullptr};
+    QAction*               download_input_action_{nullptr};
+    QAction*               download_output_action_{nullptr};
     QString                selected_result_id_;
+    const compute_task*    selected_task_{nullptr};
 
     // Apps tab — master-detail split
     QTableView*            app_view_{nullptr};

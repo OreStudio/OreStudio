@@ -19,6 +19,7 @@
  */
 #include "ores.qt/OreLogViewerWidget.hpp"
 
+#include <chrono>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -144,7 +145,10 @@ void OreLogViewerWidget::load_result(const QString& result_id) {
     current_result_id_ = result_id;
     model_->set_tag_filter(result_id.toStdString());
     status_label_->setText(tr("Loading…"));
-    model_->load_page(0, 500);
+    // Refresh the end_time to now so logs from jobs run after the model was
+    // constructed are included in the query window.
+    const auto now = std::chrono::system_clock::now();
+    model_->load_logs(now - std::chrono::hours(24), now);
 }
 
 void OreLogViewerWidget::clear() {

@@ -25,12 +25,22 @@
 #include <QSplitter>
 #include <QToolBar>
 #include <QPointer>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QUrl>
 #include "ores.qt/AppProvisionerWizard.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/BadgeColors.hpp"
 #include "ores.qt/AppDetailDialog.hpp"
 #include "ores.qt/AppVersionDetailDialog.hpp"
 #include "ores.qt/BatchDetailDialog.hpp"
 #include "ores.qt/WorkunitDetailDialog.hpp"
+#include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/OreLogViewerWidget.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -122,6 +132,19 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
     task_view_->horizontalHeader()->setSectionResizeMode(
         ComputeTaskViewModel::Label, QHeaderView::ResizeToContents);
 
+    using cs = column_style;
+    auto* task_delegate = new EntityItemDelegate({
+        cs::text_left,      // Label
+        cs::badge_centered, // State
+        cs::badge_centered, // Outcome
+        cs::text_left,      // Host
+        cs::mono_center,    // Duration
+        cs::text_left,      // Batch
+        cs::text_left,      // Received
+    }, task_view_);
+    task_delegate->set_badge_color_resolver(resolve_compute_task_badge_color);
+    task_view_->setItemDelegate(task_delegate);
+
     connect(task_view_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this, &ComputeConsoleWindow::on_task_selection_changed);
@@ -154,6 +177,26 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
     connect(logs_action_, &QAction::triggered,
             this, &ComputeConsoleWindow::on_show_logs);
     toolbar->addAction(logs_action_);
+
+    download_input_action_ = new QAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowDownload,
+            color_constants::icon_color),
+        tr("Input"), this);
+    download_input_action_->setToolTip(tr("Download input archive"));
+    download_input_action_->setEnabled(false);
+    connect(download_input_action_, &QAction::triggered,
+            this, &ComputeConsoleWindow::on_download_input);
+    toolbar->addAction(download_input_action_);
+
+    download_output_action_ = new QAction(
+        IconUtils::createRecoloredIcon(Icon::ArrowDownload,
+            color_constants::icon_color),
+        tr("Output"), this);
+    download_output_action_->setToolTip(tr("Download output archive"));
+    download_output_action_->setEnabled(false);
+    connect(download_output_action_, &QAction::triggered,
+            this, &ComputeConsoleWindow::on_download_output);
+    toolbar->addAction(download_output_action_);
 
     toolbar->addSeparator();
 
@@ -431,7 +474,10 @@ void ComputeConsoleWindow::on_task_selection_changed() {
     const auto selected = task_view_->selectionModel()->selectedRows();
     if (selected.isEmpty()) {
         selected_result_id_.clear();
+        selected_task_ = nullptr;
         logs_action_->setEnabled(false);
+        download_input_action_->setEnabled(false);
+        download_output_action_->setEnabled(false);
         return;
     }
 
@@ -439,9 +485,14 @@ void ComputeConsoleWindow::on_task_selection_changed() {
     const auto* task = task_model_->get_task(src.row());
     if (!task) return;
 
+    selected_task_ = task;
     selected_result_id_ = QString::fromStdString(
         boost::uuids::to_string(task->result.id));
     logs_action_->setEnabled(true);
+    download_input_action_->setEnabled(!task->workunit.input_uri.empty());
+    // Output only available when job completed successfully (state=5, outcome=1)
+    download_output_action_->setEnabled(
+        task->result.server_state == 5 && task->result.outcome == 1);
 }
 
 void ComputeConsoleWindow::on_app_selection_changed() {
@@ -530,10 +581,82 @@ void ComputeConsoleWindow::on_show_logs() {
     auto* viewer = new OreLogViewerWidget(client_manager_, this);
     viewer->setAttribute(Qt::WA_DeleteOnClose);
     viewer->setWindowTitle(tr("Logs — %1").arg(selected_result_id_));
-    viewer->setWindowFlags(Qt::Dialog);
+    viewer->setWindowFlags(Qt::Window);
     viewer->resize(900, 600);
     viewer->load_result(selected_result_id_);
     viewer->show();
+}
+
+void ComputeConsoleWindow::on_download_input() {
+    if (!selected_task_ || selected_task_->workunit.input_uri.empty()) return;
+
+    const auto uri = QString::fromStdString(selected_task_->workunit.input_uri);
+    const QString default_name = QFileInfo(uri).fileName();
+    const QString save_path = QFileDialog::getSaveFileName(
+        this, tr("Save Input Archive"), default_name,
+        tr("Archives (*.tar.gz *.zip);;All Files (*)"));
+    if (save_path.isEmpty()) return;
+
+    const QUrl url = QUrl(QString::fromStdString(http_base_url_) + "/" + uri);
+    auto* nam = new QNetworkAccessManager(this);
+    auto* reply = nam->get(QNetworkRequest(url));
+    QPointer<ComputeConsoleWindow> self = this;
+    connect(reply, &QNetworkReply::finished, this,
+        [self, reply, nam, save_path]() {
+            reply->deleteLater();
+            nam->deleteLater();
+            if (!self) return;
+            if (reply->error() != QNetworkReply::NoError) {
+                MessageBoxHelper::critical(self, tr("Download Failed"),
+                    reply->errorString());
+                return;
+            }
+            QFile f(save_path);
+            if (f.open(QIODevice::WriteOnly)) {
+                f.write(reply->readAll());
+                f.close();
+            } else {
+                MessageBoxHelper::critical(self, tr("Save Failed"),
+                    tr("Cannot write to: %1").arg(save_path));
+            }
+        });
+}
+
+void ComputeConsoleWindow::on_download_output() {
+    if (selected_result_id_.isEmpty()) return;
+
+    const QString default_name =
+        "output_" + selected_result_id_.left(8) + ".tar.gz";
+    const QString save_path = QFileDialog::getSaveFileName(
+        this, tr("Save Output Archive"), default_name,
+        tr("Archives (*.tar.gz);;All Files (*)"));
+    if (save_path.isEmpty()) return;
+
+    const QUrl url = QUrl(
+        QString::fromStdString(http_base_url_) +
+        "/api/v1/compute/results/" + selected_result_id_ + "/output");
+    auto* nam = new QNetworkAccessManager(this);
+    auto* reply = nam->get(QNetworkRequest(url));
+    QPointer<ComputeConsoleWindow> self = this;
+    connect(reply, &QNetworkReply::finished, this,
+        [self, reply, nam, save_path]() {
+            reply->deleteLater();
+            nam->deleteLater();
+            if (!self) return;
+            if (reply->error() != QNetworkReply::NoError) {
+                MessageBoxHelper::critical(self, tr("Download Failed"),
+                    reply->errorString());
+                return;
+            }
+            QFile f(save_path);
+            if (f.open(QIODevice::WriteOnly)) {
+                f.write(reply->readAll());
+                f.close();
+            } else {
+                MessageBoxHelper::critical(self, tr("Save Failed"),
+                    tr("Cannot write to: %1").arg(save_path));
+            }
+        });
 }
 
 void ComputeConsoleWindow::on_task_double_clicked(const QModelIndex& index) {

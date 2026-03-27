@@ -269,7 +269,6 @@ void FxInstrumentMdiWindow::deleteSelected() {
         std::vector<std::pair<std::string, std::pair<bool, std::string>>>;
 
     auto task = [self, ids]() -> DeleteResult {
-        DeleteResult results;
         if (!self) return {};
 
         trading::messaging::delete_fx_instrument_request request;
@@ -278,15 +277,14 @@ void FxInstrumentMdiWindow::deleteSelected() {
         auto response_result = self->clientManager_->
             process_authenticated_request(std::move(request));
 
-        for (const auto& id : ids) {
-            if (!response_result) {
-                results.push_back({id, {false, "Failed to communicate"}});
-            } else {
-                results.push_back({id, {response_result->success,
-                    response_result->message}});
-            }
+        if (!response_result) {
+            DeleteResult results;
+            for (const auto& id : ids)
+                results.push_back({id, {false, "Failed to communicate with server"}});
+            return results;
         }
-        return results;
+
+        return response_result->results;
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

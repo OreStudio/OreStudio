@@ -128,6 +128,7 @@ struct delete_fx_instrument_request {
 struct delete_fx_instrument_response {
     bool success = false;
     std::string message;
+    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
 };
 
 struct get_fx_instrument_history_request {

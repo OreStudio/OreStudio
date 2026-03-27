@@ -273,6 +273,16 @@ void FxInstrumentHistoryDialog::updateChangesTable(int currentVersionIndex) {
             QString::fromStdString(previous.option_type),
             QString::fromStdString(current.option_type));
 
+    if (current.strike_price != previous.strike_price)
+        addChange("Strike Price",
+            QString::number(previous.strike_price, 'f', 6),
+            QString::number(current.strike_price, 'f', 6));
+
+    if (current.expiry_date != previous.expiry_date)
+        addChange("Expiry Date",
+            QString::fromStdString(previous.expiry_date),
+            QString::fromStdString(current.expiry_date));
+
     if (current.description != previous.description)
         addChange("Description",
             QString::fromStdString(previous.description),

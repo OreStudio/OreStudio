@@ -127,19 +127,24 @@ public:
         const auto& ctx = *ctx_expected;
         service::fx_instrument_service svc(ctx);
         if (auto req = decode<delete_fx_instrument_request>(msg)) {
-            try {
-                for (const auto& id : req->ids)
+            delete_fx_instrument_response resp;
+            resp.success = true;
+            for (const auto& id : req->ids) {
+                try {
                     svc.remove_fx_instrument(id);
-                BOOST_LOG_SEV(fx_instrument_handler_lg(), debug)
-                    << "Completed " << msg.subject;
-                reply(nats_, msg,
-                    delete_fx_instrument_response{.success = true});
-            } catch (const std::exception& e) {
-                BOOST_LOG_SEV(fx_instrument_handler_lg(), error)
-                    << msg.subject << " failed: " << e.what();
-                reply(nats_, msg, delete_fx_instrument_response{
-                    .success = false, .message = e.what()});
+                    resp.results.push_back({id, {true, ""}});
+                } catch (const std::exception& e) {
+                    BOOST_LOG_SEV(fx_instrument_handler_lg(), error)
+                        << "Failed to delete fx_instrument " << id
+                        << ": " << e.what();
+                    resp.results.push_back({id, {false, e.what()}});
+                    resp.success = false;
+                    resp.message = "One or more deletions failed";
+                }
             }
+            BOOST_LOG_SEV(fx_instrument_handler_lg(), debug)
+                << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
         } else {
             BOOST_LOG_SEV(fx_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;

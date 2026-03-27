@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QPointer>
 #include "ores.qt/AppProvisionerWizard.hpp"
+#include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/AppDetailDialog.hpp"
 #include "ores.qt/AppVersionDetailDialog.hpp"
 #include "ores.qt/BatchDetailDialog.hpp"
@@ -405,6 +406,25 @@ void ComputeConsoleWindow::on_tasks_error(
     emit statusChanged(tr("Error: %1").arg(message));
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+/**
+ * Open a DetailDialogBase-derived widget as a proper top-level window.
+ *
+ * DetailDialogBase is a QWidget (not a QDialog), designed to live inside a
+ * DetachableMdiSubWindow.  When opened directly from ComputeConsoleWindow we
+ * have no MDI area, so we set Qt::Window to get a real window frame and
+ * connect closeRequested → close() so the "Close" button works.
+ */
+static void show_detail_as_window(DetailDialogBase* dlg, const QString& title) {
+    dlg->setWindowFlags(Qt::Window);
+    dlg->setWindowTitle(title);
+    dlg->setAttribute(Qt::WA_DeleteOnClose);
+    QObject::connect(dlg, &DetailDialogBase::closeRequested,
+                     dlg, &QWidget::close);
+    dlg->show();
+}
+
 // ── Interaction ───────────────────────────────────────────────────────────────
 
 void ComputeConsoleWindow::on_task_selection_changed() {
@@ -467,7 +487,6 @@ void ComputeConsoleWindow::on_new_app_version() {
     version.app_id = app->id;
 
     auto* dlg = new AppVersionDetailDialog(this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
@@ -477,12 +496,11 @@ void ComputeConsoleWindow::on_new_app_version() {
     connect(dlg, &AppVersionDetailDialog::app_versionSaved, this, [this](const QString&) {
         app_version_model_->refresh();
     });
-    dlg->show();
+    show_detail_as_window(dlg, tr("New App Version"));
 }
 
 void ComputeConsoleWindow::on_new_batch() {
     auto* dlg = new BatchDetailDialog(this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
@@ -490,12 +508,11 @@ void ComputeConsoleWindow::on_new_batch() {
     connect(dlg, &BatchDetailDialog::batchSaved, this, [this](const QString&) {
         refresh();
     });
-    dlg->show();
+    show_detail_as_window(dlg, tr("New Batch"));
 }
 
 void ComputeConsoleWindow::on_new_work_unit() {
     auto* dlg = new WorkunitDetailDialog(this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
@@ -504,7 +521,7 @@ void ComputeConsoleWindow::on_new_work_unit() {
     connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) {
         refresh();
     });
-    dlg->show();
+    show_detail_as_window(dlg, tr("New Work Unit"));
 }
 
 void ComputeConsoleWindow::on_show_logs() {
@@ -527,7 +544,6 @@ void ComputeConsoleWindow::on_task_double_clicked(const QModelIndex& index) {
     if (!task) return;
 
     auto* dlg = new WorkunitDetailDialog(this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
@@ -537,7 +553,7 @@ void ComputeConsoleWindow::on_task_double_clicked(const QModelIndex& index) {
     connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) {
         refresh();
     });
-    dlg->show();
+    show_detail_as_window(dlg, tr("Work Unit"));
 }
 
 void ComputeConsoleWindow::on_app_double_clicked(const QModelIndex& index) {
@@ -548,7 +564,6 @@ void ComputeConsoleWindow::on_app_double_clicked(const QModelIndex& index) {
     if (!app) return;
 
     auto* dlg = new AppDetailDialog(this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
@@ -557,7 +572,7 @@ void ComputeConsoleWindow::on_app_double_clicked(const QModelIndex& index) {
     connect(dlg, &AppDetailDialog::appSaved, this, [this](const QString&) {
         app_model_->refresh();
     });
-    dlg->show();
+    show_detail_as_window(dlg, QString::fromStdString(app->name));
 }
 
 void ComputeConsoleWindow::on_app_version_double_clicked(const QModelIndex& index) {
@@ -568,7 +583,6 @@ void ComputeConsoleWindow::on_app_version_double_clicked(const QModelIndex& inde
     if (!version) return;
 
     auto* dlg = new AppVersionDetailDialog(this);
-    dlg->setAttribute(Qt::WA_DeleteOnClose);
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
@@ -578,7 +592,7 @@ void ComputeConsoleWindow::on_app_version_double_clicked(const QModelIndex& inde
     connect(dlg, &AppVersionDetailDialog::app_versionSaved, this, [this](const QString&) {
         app_version_model_->refresh();
     });
-    dlg->show();
+    show_detail_as_window(dlg, tr("App Version"));
 }
 
 void ComputeConsoleWindow::on_auto_refresh_toggled(bool checked) {

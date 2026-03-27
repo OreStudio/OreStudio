@@ -35,6 +35,7 @@
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
 
@@ -54,6 +55,22 @@ struct report_trigger_action_payload {
 boost::uuids::uuid gen_uuid() {
     boost::uuids::random_generator rg;
     return rg();
+}
+
+std::optional<boost::uuids::uuid>
+find_fsm_state_id(const ores::database::context& ctx, logging::logger_t& log,
+    const std::string& state_name, const std::string& fn_name) {
+    using ores::database::repository::execute_parameterized_string_query;
+    const auto sql = "SELECT " + fn_name + "()::text";
+    const auto rows = execute_parameterized_string_query(
+        ctx, sql, {}, log,
+        "Looking up report_definition_lifecycle " + state_name + " state");
+    if (rows.empty() || rows.front().empty()) {
+        BOOST_LOG_SEV(log, warn) << "report_definition_lifecycle " << state_name
+                                 << " FSM state not found";
+        return std::nullopt;
+    }
+    return boost::lexical_cast<boost::uuids::uuid>(rows.front());
 }
 
 } // anonymous namespace
@@ -154,9 +171,14 @@ bool report_scheduling_service::schedule_one(
     if (!send_schedule_request(def, job_id, performed_by))
         return false;
 
-    // Update the definition with the new scheduler_job_id.
+    // Resolve the "active" FSM state UUID once from the system context.
+    const auto active_state = find_fsm_state_id(
+        ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
+
+    // Update the definition with the new scheduler_job_id and active state.
     auto updated = def;
     updated.scheduler_job_id = job_id;
+    updated.fsm_state_id = active_state;
     updated.modified_by = performed_by;
     updated.performed_by = performed_by;
     updated.change_reason_code = "system.report_scheduled";
@@ -211,9 +233,14 @@ bool report_scheduling_service::unschedule_one(
         return false;
     }
 
-    // Clear scheduler_job_id on the definition.
+    // Resolve the "suspended" FSM state UUID from the system context.
+    const auto suspended_state = find_fsm_state_id(
+        ctx_, lg(), "suspended", "ores_reporting_suspended_definition_state_fn");
+
+    // Clear scheduler_job_id and transition to suspended state.
     auto updated = def;
     updated.scheduler_job_id = std::nullopt;
+    updated.fsm_state_id = suspended_state;
     updated.modified_by = performed_by;
     updated.performed_by = performed_by;
     updated.change_reason_code = "system.report_unscheduled";
@@ -375,6 +402,10 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             continue;
         }
 
+        // Resolve "active" state once per tenant batch (avoids repeated DB calls).
+        const auto active_state = find_fsm_state_id(
+            ctx_, lg(), "active", "ores_reporting_active_definition_state_fn");
+
         // Persist the scheduler_job_id on each accepted definition.
         for (const auto& entry : pending) {
             const auto job_id_str = boost::uuids::to_string(entry.job_id);
@@ -385,6 +416,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
 
             auto def_updated = *entry.def;
             def_updated.scheduler_job_id = entry.job_id;
+            def_updated.fsm_state_id = active_state;
             def_updated.modified_by = performed_by;
             def_updated.performed_by = performed_by;
             def_updated.change_reason_code = "system.report_scheduled";

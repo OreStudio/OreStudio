@@ -23,11 +23,11 @@
 #include <QColor>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.platform/time/datetime.hpp"
+#include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -44,11 +44,14 @@ ClientReportDefinitionModel::ClientReportDefinitionModel(
     : AbstractClientModel(parent),
       clientManager_(clientManager),
       watcher_(new QFutureWatcher<FetchResult>(this)),
+      fsm_watcher_(new QFutureWatcher<FsmStateFetchResult>(this)),
       recencyTracker_(report_definition_key_extractor),
       pulseManager_(new RecencyPulseManager(this)) {
 
     connect(watcher_, &QFutureWatcher<FetchResult>::finished,
             this, &ClientReportDefinitionModel::onDefinitionsLoaded);
+    connect(fsm_watcher_, &QFutureWatcher<FsmStateFetchResult>::finished,
+            this, &ClientReportDefinitionModel::onFsmStatesLoaded);
 
     connect(pulseManager_, &RecencyPulseManager::pulse_state_changed,
             this, &ClientReportDefinitionModel::onPulseStateChanged);
@@ -90,7 +93,7 @@ QVariant ClientReportDefinitionModel::data(
         case ConcurrencyPolicy:
             return QString::fromStdString(definition.concurrency_policy);
         case Status:
-            return definition.scheduler_job_id.has_value() ? tr("Active") : tr("Inactive");
+            return resolve_fsm_state_name(definition.fsm_state_id);
         case NextFire: {
             if (!definition.scheduler_job_id.has_value() || definition.schedule_expression.empty())
                 return tr("—");
@@ -111,13 +114,6 @@ QVariant ClientReportDefinitionModel::data(
     }
 
     if (role == Qt::ForegroundRole) {
-        if (index.column() == Status) {
-            if (definition.scheduler_job_id.has_value()) {
-                return QColor(0x22, 0x8B, 0x22); // Forest green for Active
-            } else {
-                return QColor(Qt::gray);
-            }
-        }
         return recency_foreground_color(definition.name);
     }
 
@@ -320,6 +316,64 @@ void ClientReportDefinitionModel::onPulseStateChanged(bool /*isOn*/) {
 void ClientReportDefinitionModel::onPulsingComplete() {
     BOOST_LOG_SEV(lg(), debug) << "Recency highlight pulsing complete";
     recencyTracker_.clear();
+}
+
+void ClientReportDefinitionModel::load_fsm_states() {
+    if (!clientManager_ || !clientManager_->isConnected())
+        return;
+
+    QPointer<ClientReportDefinitionModel> self = this;
+    QFuture<FsmStateFetchResult> future =
+        QtConcurrent::run([self]() -> FsmStateFetchResult {
+            if (!self || !self->clientManager_)
+                return {false, {}};
+
+            dq::messaging::get_fsm_states_request request;
+            request.machine_name = "report_definition_lifecycle";
+            auto result = self->clientManager_->process_authenticated_request(
+                std::move(request));
+            if (!result || !result->success)
+                return {false, {}};
+
+            QHash<QString, QString> map;
+            for (const auto& s : result->states) {
+                const auto id = QString::fromStdString(
+                    boost::uuids::to_string(s.id));
+                map[id] = QString::fromStdString(s.name);
+            }
+            return {true, std::move(map)};
+        });
+    fsm_watcher_->setFuture(future);
+}
+
+void ClientReportDefinitionModel::onFsmStatesLoaded() {
+    const auto result = fsm_watcher_->result();
+    if (!result.success || result.state_map.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Failed to load FSM states for report definitions";
+        return;
+    }
+    fsm_state_map_ = result.state_map;
+    BOOST_LOG_SEV(lg(), debug) << "Loaded " << fsm_state_map_.size()
+                               << " FSM states for report_definition_lifecycle";
+    // Refresh Status column display if definitions are already loaded
+    if (!definitions_.empty()) {
+        const auto status_col = static_cast<int>(Status);
+        emit dataChanged(index(0, status_col),
+            index(rowCount() - 1, status_col), {Qt::DisplayRole});
+    }
+}
+
+QString ClientReportDefinitionModel::resolve_fsm_state_name(
+    const std::optional<boost::uuids::uuid>& state_id) const {
+    if (!state_id)
+        return tr("Draft");
+    const auto key = QString::fromStdString(
+        boost::uuids::to_string(*state_id));
+    if (const auto it = fsm_state_map_.find(key); it != fsm_state_map_.end()) {
+        const auto& name = it.value();
+        return name.left(1).toUpper() + name.mid(1);
+    }
+    return tr("Unknown");
 }
 
 }

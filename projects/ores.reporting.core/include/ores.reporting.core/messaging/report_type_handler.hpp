@@ -28,6 +28,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.database/service/tenant_context.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.core/service/report_type_service.hpp"
 
@@ -63,8 +64,11 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::report_type_service svc(ctx);
+        // Report types are system-level reference data seeded in the system
+        // tenant; query there rather than the caller's tenant.
+        const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(
+            *ctx_expected);
+        service::report_type_service svc(sys_ctx);
         get_report_types_response resp;
         try {
             resp.types = svc.list_types();

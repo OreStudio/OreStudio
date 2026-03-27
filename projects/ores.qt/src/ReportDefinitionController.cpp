@@ -488,7 +488,7 @@ void ReportDefinitionController::onScheduleRequested(
             BOOST_LOG_SEV(lg(), info) << "Scheduled " << result.count << " report definitions";
             emit self->statusMessage(tr("Scheduled %1 report definition(s).").arg(result.count));
             if (self->listWindow_)
-                self->listWindow_->reload();
+                self->listWindow_->markAsStale();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Schedule failed: " << result.message;
             emit self->errorMessage(QString::fromStdString(result.message));
@@ -541,7 +541,7 @@ void ReportDefinitionController::onUnscheduleRequested(
             emit self->statusMessage(
                 tr("Unscheduled %1 report definition(s).").arg(result.count));
             if (self->listWindow_)
-                self->listWindow_->reload();
+                self->listWindow_->markAsStale();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Unschedule failed: " << result.message;
             emit self->errorMessage(QString::fromStdString(result.message));

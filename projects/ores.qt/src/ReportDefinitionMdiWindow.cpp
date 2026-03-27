@@ -26,6 +26,8 @@
 #include <QFutureWatcher>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/EntityItemDelegate.hpp"
+#include "ores.qt/BadgeColors.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
@@ -56,6 +58,9 @@ ReportDefinitionMdiWindow::ReportDefinitionMdiWindow(
 
     setupUi();
     setupConnections();
+
+    // Load FSM states once (used to resolve lifecycle state names in the list)
+    model_->load_fsm_states();
 
     // Initial load
     reload();
@@ -159,6 +164,29 @@ void ReportDefinitionMdiWindow::setupTable() {
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setSortingEnabled(true);
+
+    using cs = column_style;
+    auto* delegate = new EntityItemDelegate({
+        cs::text_left,      // Name
+        cs::text_left,      // ReportType
+        cs::text_left,      // ScheduleExpression
+        cs::badge_centered, // ConcurrencyPolicy
+        cs::badge_centered, // Status (FSM lifecycle state)
+        cs::text_left,      // NextFire
+        cs::mono_center,    // Version
+        cs::text_left,      // ModifiedBy
+    }, tableView_);
+    // Lifecycle states (draft/active/suspended/archived) and concurrency
+    // policies (skip/queue/fail) have non-overlapping values, so a single
+    // combined resolver works for both badge columns.
+    delegate->set_badge_color_resolver([](const QString& v) -> badge_color_pair {
+        const auto u = v.toUpper();
+        if (u == "SKIP" || u == "QUEUE" || u == "FAIL")
+            return resolve_concurrency_policy_badge_color(v);
+        return resolve_report_definition_badge_color(v);
+    });
+    tableView_->setItemDelegate(delegate);
+
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 

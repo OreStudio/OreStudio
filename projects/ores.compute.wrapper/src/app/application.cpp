@@ -536,7 +536,7 @@ void process_assignment(ores::nats::service::client& nats,
             << format_cmdline(exe.string(), args);
         BOOST_LOG_SEV(lg, debug) << "Engine log:     " << engine_log_path.string();
         BOOST_LOG_SEV(lg, debug) << "Input dir:      " << job_dir.string();
-        BOOST_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "log.txt").string();
+        BOOST_LOG_SEV(lg, debug) << "ORE log:        " << (job_dir / "Output" / "log.txt").string();
 
         namespace bp2 = boost::process::v2;
         boost::asio::io_context proc_ioc;
@@ -594,7 +594,7 @@ void process_assignment(ores::nats::service::client& nats,
             // Include ORE's own log (log.txt) in the error — it has more
             // detail than stdout/stderr. Fall back to engine.log (our pipe
             // capture) if log.txt wasn't produced.
-            const fs::path ore_log_path = job_dir / "log.txt";
+            const fs::path ore_log_path = job_dir / "Output" / "log.txt";
             const auto ore_log = fs::exists(ore_log_path)
                 ? tail_file(ore_log_path) : std::string{};
             const auto engine_output = ore_log.empty()

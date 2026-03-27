@@ -61,7 +61,7 @@ void publish_ore_logs(ores::nats::service::client& nats,
     const std::string& result_id,
     const std::filesystem::path& job_dir)
 {
-    const auto log_path = job_dir / "log.txt";
+    const auto log_path = job_dir / "Output" / "log.txt";
     std::ifstream f(log_path);
     if (!f.is_open()) {
         BOOST_LOG_SEV(log_publisher_lg(), debug)

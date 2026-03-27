@@ -37,6 +37,8 @@ struct get_instruments_request {
 struct get_instruments_response {
     std::vector<ores::trading::domain::instrument> instruments;
     int total_available_count = 0;
+    bool success = true;
+    std::string message;
 };
 
 struct save_instrument_request {
@@ -82,6 +84,8 @@ struct get_swap_legs_request {
 
 struct get_swap_legs_response {
     std::vector<ores::trading::domain::swap_leg> legs;
+    bool success = true;
+    std::string message;
 };
 
 }

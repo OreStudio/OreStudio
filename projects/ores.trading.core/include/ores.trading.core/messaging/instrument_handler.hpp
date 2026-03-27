@@ -75,7 +75,12 @@ public:
                 resp.total_available_count =
                     static_cast<int>(svc.count_instruments());
             }
-        } catch (...) {}
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(instrument_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
         BOOST_LOG_SEV(instrument_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -187,7 +192,12 @@ public:
             if (auto req = decode<get_swap_legs_request>(msg)) {
                 resp.legs = svc.get_legs(req->instrument_id);
             }
-        } catch (...) {}
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(instrument_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
         BOOST_LOG_SEV(instrument_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, resp);

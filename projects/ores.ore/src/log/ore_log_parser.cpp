@@ -21,7 +21,9 @@
 
 #include <array>
 #include <chrono>
+#include <cstdlib>
 #include <cstring>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include "ores.platform/time/datetime.hpp"

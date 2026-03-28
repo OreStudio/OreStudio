@@ -43,6 +43,8 @@ SERVICES=(
     ores.telemetry.service
     ores.trading.service
     ores.compute.service
+    ores.http.server
+    ores.wt.service
 )
 
 CA_DAYS=365

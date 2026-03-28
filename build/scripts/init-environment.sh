@@ -113,6 +113,9 @@ fi
 DB_NAME="${ORES_DATABASE_NAME:-ores_dev_${LABEL}}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.${LABEL}}"
 NATS_URL="nats://localhost:4222"
+NATS_CERTS_DIR="${CHECKOUT_ROOT}/build/keys/nats"
+NATS_TLS_CA=""
+[[ -f "${NATS_CERTS_DIR}/ca.crt" ]] && NATS_TLS_CA="${NATS_CERTS_DIR}/ca.crt"
 
 # Sanitise LABEL for Postgres identifier use (lowercase, hyphens/dots → underscores)
 LABEL_LOWER="$(echo "${LABEL}" | tr '[:upper:]' '[:lower:]' | tr '.-' '__')"
@@ -294,9 +297,9 @@ cat >> "${ENV_FILE}" << EOF
 ORES_DATABASE_NAME=${DB_NAME}
 ORES_NATS_URL=${NATS_URL}
 ORES_NATS_SUBJECT_PREFIX=${NATS_PREFIX}
-# mTLS: set ORES_NATS_TLS_CA to enable; leave empty for plain TCP (default).
-# Run build/scripts/generate_nats_certs.sh first to generate the certificates.
-ORES_NATS_TLS_CA=
+# mTLS: auto-enabled when certificates exist in build/keys/nats/.
+# Run build/scripts/generate_nats_certs.sh to generate them.
+ORES_NATS_TLS_CA=${NATS_TLS_CA}
 
 # ---------------------------------------------------------------------------
 # Database admin (postgres superuser — for recreate_database.sh and psql)

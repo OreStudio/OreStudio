@@ -27,6 +27,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.logging/logging_configuration.hpp"
 #include "ores.database/config/database_configuration.hpp"
+#include "ores.nats/config/nats_configuration.hpp"
 #include "ores.utility/program_options/environment_mapper_factory.hpp"
 
 namespace {
@@ -49,8 +50,6 @@ const std::string server_disable_cors_arg("disable-cors");
 const std::string server_cors_origins_arg("cors-origins");
 const std::string server_identifier_arg("identifier");
 const std::string compute_storage_dir_arg("compute-storage-dir");
-const std::string nats_url_arg("nats-url");
-const std::string nats_subject_prefix_arg("nats-subject-prefix");
 const std::string http_base_url_arg("http-base-url");
 
 using boost::program_options::value;
@@ -68,6 +67,7 @@ using ores::http_server::config::parser_exception;
 options_description make_options_description() {
     using ores::database::database_configuration;
     using ores::logging::logging_configuration;
+    using ores::nats::config::nats_configuration;
 
     options_description god("General");
     god.add_options()
@@ -104,23 +104,18 @@ options_description make_options_description() {
             value<std::string>()->default_value("/var/ores/http-server/compute"),
             "Root directory for compute grid file storage (packages, inputs, outputs).");
 
-    options_description nod("NATS");
+    options_description nod("HTTP service discovery");
     nod.add_options()
-        (nats_url_arg.c_str(),
-            value<std::string>()->default_value("nats://localhost:4222"),
-            "NATS server URL. Defaults to 'nats://localhost:4222'.")
-        (nats_subject_prefix_arg.c_str(),
-            value<std::string>()->default_value(""),
-            "NATS subject prefix (e.g. 'ores.dev.local1'). Defaults to empty.")
         (http_base_url_arg.c_str(),
             value<std::string>()->default_value(""),
             "HTTP base URL advertised via service discovery. "
             "Defaults to 'http://localhost:{port}'.");
 
+    const auto natsd(nats_configuration::make_options_description());
     const auto dod(database_configuration::make_options_description());
 
     options_description r;
-    r.add(god).add(lod).add(sod).add(nod).add(cod).add(dod);
+    r.add(god).add(lod).add(sod).add(nod).add(natsd).add(cod).add(dod);
     return r;
 }
 
@@ -210,13 +205,13 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
 
     // Parse configuration
     using ores::logging::logging_configuration;
+    using ores::nats::config::nats_configuration;
 
     options r;
     r.logging = logging_configuration::read_options(vm);
     r.server = read_server_configuration(vm);
     r.database = database_configuration::read_options(vm);
-    r.nats.url = vm[nats_url_arg].as<std::string>();
-    r.nats.subject_prefix = vm[nats_subject_prefix_arg].as<std::string>();
+    r.nats = nats_configuration::read_options(vm);
     r.http_base_url = vm[http_base_url_arg].as<std::string>();
     r.compute_storage_dir = vm[compute_storage_dir_arg].as<std::string>();
 

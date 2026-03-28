@@ -252,6 +252,14 @@ echo ""
 
 # 3. HTTP server
 echo "[HTTP server]"
+http_tls_args=()
+if [[ -n "$NATS_TLS_CA" ]]; then
+    http_tls_args+=(
+        --nats-tls-ca   "$KEYS_DIR/ca.crt"
+        --nats-tls-cert "$KEYS_DIR/ores.http.server.crt"
+        --nats-tls-key  "$KEYS_DIR/ores.http.server.key"
+    )
+fi
 launch ores.http.server \
     --log-enabled \
     --log-level "$LOG_LEVEL" \
@@ -259,15 +267,25 @@ launch ores.http.server \
     --port "$HTTP_PORT" \
     --nats-url "$NATS_URL" \
     --nats-subject-prefix "$NATS_PREFIX" \
-    --compute-storage-dir ../compute
+    --compute-storage-dir ../compute \
+    "${http_tls_args[@]}"
 echo ""
 
 # 4. WT server
 echo "[WT server]"
+wt_tls_args=()
+if [[ -n "$NATS_TLS_CA" ]]; then
+    wt_tls_args+=(
+        --nats-tls-ca   "$KEYS_DIR/ca.crt"
+        --nats-tls-cert "$KEYS_DIR/ores.wt.service.crt"
+        --nats-tls-key  "$KEYS_DIR/ores.wt.service.key"
+    )
+fi
 launch ores.wt.service \
     --log-enabled \
     --log-level "$LOG_LEVEL" \
     --log-directory ../log \
+    "${wt_tls_args[@]}" \
     -- \
     --http-address 0.0.0.0 \
     --docroot . \
@@ -277,7 +295,9 @@ echo ""
 # 5. Compute wrapper nodes (test environment grid)
 if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
     # Provision JetStream streams before launching nodes.
-    "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX"
+    provision_tls_args=()
+    [[ -n "$NATS_TLS_CA" ]] && provision_tls_args+=(--nats-tls-ca "$NATS_TLS_CA")
+    "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX" "${provision_tls_args[@]}"
 
     echo "[Compute wrapper nodes]"
     for n in 1 2 3 4 5; do

@@ -45,6 +45,8 @@
 -- Capture service DB passwords from the environment so they are never stored
 -- in plaintext in committed SQL. The backtick syntax runs a shell command at
 -- psql execution time; the result is bound to the named variable.
+\set wt_service_pw          `echo "$ORES_WT_DB_PASSWORD"`
+\set http_service_pw        `echo "$ORES_HTTP_SERVER_DB_PASSWORD"`
 \set iam_service_pw         `echo "$ORES_IAM_SERVICE_DB_PASSWORD"`
 \set refdata_service_pw     `echo "$ORES_REFDATA_SERVICE_DB_PASSWORD"`
 \set dq_service_pw          `echo "$ORES_DQ_SERVICE_DB_PASSWORD"`
@@ -72,7 +74,8 @@ select ores_iam_service_accounts_upsert_fn(
 select ores_iam_service_accounts_upsert_fn(
     :'wt_user',
     'wt@system.ores',
-    'System service account for Wt web application'
+    'System service account for Wt web application',
+    :'wt_service_pw'
 );
 
 select ores_iam_service_accounts_upsert_fn(
@@ -84,7 +87,8 @@ select ores_iam_service_accounts_upsert_fn(
 select ores_iam_service_accounts_upsert_fn(
     :'http_user',
     'http@system.ores',
-    'System service account for HTTP REST API server'
+    'System service account for HTTP REST API server',
+    :'http_service_pw'
 );
 
 select ores_iam_service_accounts_upsert_fn(

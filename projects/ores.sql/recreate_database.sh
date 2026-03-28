@@ -45,6 +45,7 @@ Passwords are read from environment variables (set via .env or CI environment):
     ORES_DB_OWNER_ROLE                  Owner group role name (env-prefixed)
     ORES_DB_RW_ROLE                     Read-write group role name (env-prefixed)
     ORES_DB_RO_ROLE                     Read-only group role name (env-prefixed)
+    ORES_DB_SERVICE_ROLE                Domain service group role name (env-prefixed)
     ORES_DB_DDL_USER                    DDL database user name (env-prefixed)
     ORES_DB_CLI_USER                    CLI database user name (env-prefixed)
     ORES_DB_WT_USER                     Web Toolkit database user name (env-prefixed)
@@ -129,6 +130,7 @@ MISSING_PASSWORDS=()
 [[ -z "${ORES_DB_OWNER_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_OWNER_ROLE")
 [[ -z "${ORES_DB_RW_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_RW_ROLE")
 [[ -z "${ORES_DB_RO_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_RO_ROLE")
+[[ -z "${ORES_DB_SERVICE_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_SERVICE_ROLE")
 [[ -z "${ORES_DB_DDL_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_DDL_USER")
 [[ -z "${ORES_DB_CLI_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_CLI_USER")
 [[ -z "${ORES_DB_WT_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_WT_USER")
@@ -236,6 +238,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v owner_role="${ORES_DB_OWNER_ROLE}" \
     -v rw_role="${ORES_DB_RW_ROLE}" \
     -v ro_role="${ORES_DB_RO_ROLE}" \
+    -v service_role="${ORES_DB_SERVICE_ROLE}" \
     -v ddl_user="${ORES_DB_DDL_USER}" \
     -v cli_user="${ORES_DB_CLI_USER}" \
     -v wt_user="${ORES_DB_WT_USER}" \

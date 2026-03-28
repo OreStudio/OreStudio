@@ -28,7 +28,7 @@
  * USAGE: Typically called via recreate_database.sh.
  *
  * Variables (role names + passwords):
- *   :owner_role, :rw_role, :ro_role
+ *   :owner_role, :rw_role, :ro_role, :service_role
  *   :ddl_user, :cli_user, :wt_user, :comms_user, :http_user
  *   :test_ddl_user, :test_dml_user, :readonly_user
  *   :iam_service_user, :refdata_service_user, :dq_service_user,
@@ -65,15 +65,17 @@ drop database if exists :db_name;
 
 -- Pass role names via session config so they're readable inside DO blocks
 -- (psql does not substitute :variables inside $$-quoted strings)
-select set_config('ores.owner_role', :'owner_role', false);
-select set_config('ores.rw_role',    :'rw_role',    false);
-select set_config('ores.ro_role',    :'ro_role',    false);
+select set_config('ores.owner_role',   :'owner_role',   false);
+select set_config('ores.rw_role',      :'rw_role',      false);
+select set_config('ores.ro_role',      :'ro_role',      false);
+select set_config('ores.service_role', :'service_role', false);
 
 do $$
 declare
-    v_owner text := current_setting('ores.owner_role');
-    v_rw    text := current_setting('ores.rw_role');
-    v_ro    text := current_setting('ores.ro_role');
+    v_owner   text := current_setting('ores.owner_role');
+    v_rw      text := current_setting('ores.rw_role');
+    v_ro      text := current_setting('ores.ro_role');
+    v_service text := current_setting('ores.service_role');
 begin
     if not exists (select 1 from pg_roles where rolname = v_owner) then
         execute format('create role %I nologin', v_owner);
@@ -83,6 +85,9 @@ begin
     end if;
     if not exists (select 1 from pg_roles where rolname = v_ro) then
         execute format('create role %I nologin', v_ro);
+    end if;
+    if not exists (select 1 from pg_roles where rolname = v_service) then
+        execute format('create role %I nologin', v_service);
     end if;
 end $$;
 
@@ -143,7 +148,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :iam_service_user with password :'iam_service_password';
-grant :rw_role to :iam_service_user;
+grant :service_role to :iam_service_user;
 alter  role :iam_service_user set search_path to public;
 
 -- Reference Data domain service
@@ -152,7 +157,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :refdata_service_user with password :'refdata_service_password';
-grant :rw_role to :refdata_service_user;
+grant :service_role to :refdata_service_user;
 alter  role :refdata_service_user set search_path to public;
 
 -- Data Quality domain service
@@ -161,7 +166,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :dq_service_user with password :'dq_service_password';
-grant :rw_role to :dq_service_user;
+grant :service_role to :dq_service_user;
 alter  role :dq_service_user set search_path to public;
 
 -- Variability domain service
@@ -170,7 +175,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :variability_service_user with password :'variability_service_password';
-grant :rw_role to :variability_service_user;
+grant :service_role to :variability_service_user;
 alter  role :variability_service_user set search_path to public;
 
 -- Assets domain service
@@ -179,7 +184,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :assets_service_user with password :'assets_service_password';
-grant :rw_role to :assets_service_user;
+grant :service_role to :assets_service_user;
 alter  role :assets_service_user set search_path to public;
 
 -- Synthetic domain service
@@ -188,7 +193,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :synthetic_service_user with password :'synthetic_service_password';
-grant :rw_role to :synthetic_service_user;
+grant :service_role to :synthetic_service_user;
 alter  role :synthetic_service_user set search_path to public;
 
 -- Scheduler domain service
@@ -197,7 +202,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :scheduler_service_user with password :'scheduler_service_password';
-grant :rw_role to :scheduler_service_user;
+grant :service_role to :scheduler_service_user;
 alter  role :scheduler_service_user set search_path to public;
 
 -- Reporting domain service
@@ -206,7 +211,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :reporting_service_user with password :'reporting_service_password';
-grant :rw_role to :reporting_service_user;
+grant :service_role to :reporting_service_user;
 alter  role :reporting_service_user set search_path to public;
 
 -- Telemetry domain service
@@ -215,7 +220,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :telemetry_service_user with password :'telemetry_service_password';
-grant :rw_role to :telemetry_service_user;
+grant :service_role to :telemetry_service_user;
 alter  role :telemetry_service_user set search_path to public;
 
 -- Trading domain service
@@ -224,7 +229,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :trading_service_user with password :'trading_service_password';
-grant :rw_role to :trading_service_user;
+grant :service_role to :trading_service_user;
 alter  role :trading_service_user set search_path to public;
 
 -- Compute domain service
@@ -233,7 +238,7 @@ do $$ begin
     if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
         execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
 alter  user :compute_service_user with password :'compute_service_password';
-grant :rw_role to :compute_service_user;
+grant :service_role to :compute_service_user;
 alter  role :compute_service_user set search_path to public;
 
 -- HTTP user

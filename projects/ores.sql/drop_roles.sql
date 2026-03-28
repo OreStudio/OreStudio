@@ -47,12 +47,14 @@ declare
     v_owner   text;
     v_rw      text;
     v_ro      text;
+    v_service text;
     v_users   text[];
     v_role    text;
 begin
-    v_owner := 'ores_' || v_label || '_owner';
-    v_rw    := 'ores_' || v_label || '_rw';
-    v_ro    := 'ores_' || v_label || '_ro';
+    v_owner   := 'ores_' || v_label || '_owner';
+    v_rw      := 'ores_' || v_label || '_rw';
+    v_ro      := 'ores_' || v_label || '_ro';
+    v_service := 'ores_' || v_label || '_service';
 
     v_users := array[
         'ores_' || v_label || '_ddl_user',
@@ -80,9 +82,10 @@ begin
     foreach v_role in array v_users loop
         if exists (select 1 from pg_roles where rolname = v_role) then
             -- Revoke from all group roles (no-op if not a member)
-            execute format('revoke %I from %I', v_owner, v_role);
-            execute format('revoke %I from %I', v_rw,    v_role);
-            execute format('revoke %I from %I', v_ro,    v_role);
+            execute format('revoke %I from %I', v_owner,   v_role);
+            execute format('revoke %I from %I', v_rw,      v_role);
+            execute format('revoke %I from %I', v_ro,      v_role);
+            execute format('revoke %I from %I', v_service, v_role);
             execute format('drop role %I', v_role);
             raise notice 'Dropped role: %', v_role;
         else
@@ -91,7 +94,7 @@ begin
     end loop;
 
     -- Drop group roles (after all members are removed)
-    foreach v_role in array array[v_owner, v_rw, v_ro] loop
+    foreach v_role in array array[v_owner, v_rw, v_ro, v_service] loop
         if exists (select 1 from pg_roles where rolname = v_role) then
             execute format('drop role %I', v_role);
             raise notice 'Dropped role: %', v_role;

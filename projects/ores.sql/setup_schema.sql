@@ -91,6 +91,9 @@ alter default privileges in schema public
 alter default privileges in schema public
     grant usage, select on sequences to :rw_role;
 
+-- Grant per-service least-privilege table access
+\ir ./create/iam/iam_service_db_grants_create.sql
+
 -- Initialize instance-specific feature flags
 \ir ./instance/init_instance.sql
 

@@ -30,6 +30,7 @@
  *     -v owner_role='ores_local2_owner' \
  *     -v rw_role='ores_local2_rw' \
  *     -v ro_role='ores_local2_ro' \
+ *     -v service_role='ores_local2_service' \
  *     -v ddl_user='ores_local2_ddl_user' \
  *     -v cli_user='ores_local2_cli_user' \
  *     -v wt_user='ores_local2_wt_user' \
@@ -84,6 +85,12 @@
 \if :{?ro_role}
 \else
     \echo 'ERROR: ro_role variable is required.'
+    \quit
+\endif
+
+\if :{?service_role}
+\else
+    \echo 'ERROR: service_role variable is required.'
     \quit
 \endif
 
@@ -317,27 +324,48 @@
 
 -- 1. Create group roles (no login)
 -- These act as permission templates
-create role :owner_role nologin;
-create role :rw_role    nologin;
-create role :ro_role    nologin;
+create role :owner_role   nologin;
+create role :rw_role      nologin;
+create role :ro_role      nologin;
+-- service_role: infrastructure-level group for all domain service users.
+-- Grants CONNECT on the database and USAGE on the public schema; individual
+-- table-level DML is handled by iam_service_db_grants_create.sql.
+create role :service_role nologin;
 
 -- 2. Create service users (with login)
+-- Application-layer users retain broad rw_role access.
 create user :ddl_user      with password :'ddl_password'      in role :owner_role;
 create user :cli_user      with password :'cli_password'      in role :rw_role;
 create user :wt_user       with password :'wt_password'       in role :rw_role;
 create user :comms_user    with password :'comms_password'    in role :rw_role;
-create user :iam_service_user         with password :'iam_service_password'         in role :rw_role;
-create user :refdata_service_user     with password :'refdata_service_password'     in role :rw_role;
-create user :dq_service_user          with password :'dq_service_password'          in role :rw_role;
-create user :variability_service_user with password :'variability_service_password' in role :rw_role;
-create user :assets_service_user      with password :'assets_service_password'      in role :rw_role;
-create user :synthetic_service_user   with password :'synthetic_service_password'   in role :rw_role;
-create user :scheduler_service_user   with password :'scheduler_service_password'   in role :rw_role;
-create user :reporting_service_user   with password :'reporting_service_password'   in role :rw_role;
-create user :telemetry_service_user   with password :'telemetry_service_password'   in role :rw_role;
-create user :trading_service_user     with password :'trading_service_password'     in role :rw_role;
-create user :compute_service_user     with password :'compute_service_password'     in role :rw_role;
 create user :http_user     with password :'http_password'     in role :rw_role;
+-- Domain service users: no broad role — specific table GRANTs applied in
+-- setup_schema.sql via create/iam/iam_service_db_grants_create.sql.
+create user :iam_service_user         with password :'iam_service_password';
+create user :refdata_service_user     with password :'refdata_service_password';
+create user :dq_service_user          with password :'dq_service_password';
+create user :variability_service_user with password :'variability_service_password';
+create user :assets_service_user      with password :'assets_service_password';
+create user :synthetic_service_user   with password :'synthetic_service_password';
+create user :scheduler_service_user   with password :'scheduler_service_password';
+create user :reporting_service_user   with password :'reporting_service_password';
+create user :telemetry_service_user   with password :'telemetry_service_password';
+create user :trading_service_user     with password :'trading_service_password';
+create user :compute_service_user     with password :'compute_service_password';
+
+-- Add all domain service users to service_role for infrastructure-level grants
+grant :service_role to
+    :iam_service_user,
+    :refdata_service_user,
+    :dq_service_user,
+    :variability_service_user,
+    :assets_service_user,
+    :synthetic_service_user,
+    :scheduler_service_user,
+    :reporting_service_user,
+    :telemetry_service_user,
+    :trading_service_user,
+    :compute_service_user;
 create user :test_ddl_user with password :'test_ddl_password' in role :owner_role createdb;
 create user :test_dml_user with password :'test_dml_password' in role :rw_role;
 create user :readonly_user with password :'ro_password'       in role :ro_role;

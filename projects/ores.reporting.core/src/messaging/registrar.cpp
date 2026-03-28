@@ -21,6 +21,7 @@
 
 #include <memory>
 #include <optional>
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/messaging/report_type_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
@@ -35,7 +36,8 @@ namespace ores::reporting::messaging {
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
     ores::database::context ctx,
-    std::optional<ores::security::jwt::jwt_authenticator> verifier) {
+    std::optional<ores::security::jwt::jwt_authenticator> verifier,
+    ores::nats::service::nats_client& svc_nats) {
     std::vector<ores::nats::service::subscription> subs;
 
     // ----------------------------------------------------------------
@@ -58,7 +60,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // ----------------------------------------------------------------
     // Report definitions
     // ----------------------------------------------------------------
-    auto rdh = std::make_shared<report_definition_handler>(nats, ctx, verifier);
+    auto rdh = std::make_shared<report_definition_handler>(nats, ctx, verifier, svc_nats);
     subs.push_back(nats.queue_subscribe(
         get_report_definitions_request::nats_subject, "ores.reporting.service",
         [rdh](ores::nats::message msg) { rdh->list(std::move(msg)); }));

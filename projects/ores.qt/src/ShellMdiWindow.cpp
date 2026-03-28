@@ -220,7 +220,7 @@ void ShellMdiWindow::start_shell() {
             shell_session_.disconnect();
             return;
         }
-        shell_session_.set_auth(shell::service::nats_session::login_info{
+        shell_session_.set_auth(ores::nats::service::nats_client::login_info{
             .jwt         = resp->token,
             .username    = resp->username,
             .tenant_id   = resp->tenant_id,

@@ -19,7 +19,6 @@
  */
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 
-#include <span>
 #include <unordered_set>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -27,6 +26,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include "ores.nats/domain/message.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
@@ -76,8 +76,8 @@ find_fsm_state_id(const ores::database::context& ctx, logging::logger_t& log,
 } // anonymous namespace
 
 report_scheduling_service::report_scheduling_service(
-    context ctx, ores::nats::service::client& nats)
-    : ctx_(std::move(ctx)), nats_(nats) {}
+    context ctx, ores::nats::service::nats_client& svc_nats)
+    : ctx_(std::move(ctx)), svc_nats_(svc_nats) {}
 
 std::optional<ores::scheduler::domain::job_definition>
 report_scheduling_service::build_job_definition(
@@ -133,11 +133,10 @@ bool report_scheduling_service::send_schedule_request(
     };
 
     const auto req_json = rfl::json::write(req);
-    const auto* p = reinterpret_cast<const std::byte*>(req_json.data());
     try {
-        const auto reply_msg = nats_.request_sync(
+        const auto reply_msg = svc_nats_.authenticated_request(
             ores::scheduler::messaging::schedule_job_request::nats_subject,
-            std::span<const std::byte>(p, req_json.size()));
+            ores::nats::as_bytes(req_json));
 
         const std::string_view sv(
             reinterpret_cast<const char*>(reply_msg.data.data()),
@@ -210,11 +209,10 @@ bool report_scheduling_service::unschedule_one(
     };
 
     const auto req_json = rfl::json::write(req);
-    const auto* p = reinterpret_cast<const std::byte*>(req_json.data());
     try {
-        const auto reply_msg = nats_.request_sync(
+        const auto reply_msg = svc_nats_.authenticated_request(
             ores::scheduler::messaging::unschedule_job_request::nats_subject,
-            std::span<const std::byte>(p, req_json.size()));
+            ores::nats::as_bytes(req_json));
 
         const std::string_view sv(
             reinterpret_cast<const char*>(reply_msg.data.data()),
@@ -268,10 +266,9 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             .include_deleted = false
         };
         const auto req_json = rfl::json::write(tenant_req);
-        const auto* p = reinterpret_cast<const std::byte*>(req_json.data());
-        const auto reply_msg = nats_.request_sync(
+        const auto reply_msg = svc_nats_.authenticated_request(
             ores::iam::messaging::get_tenants_request::nats_subject,
-            std::span<const std::byte>(p, req_json.size()));
+            ores::nats::as_bytes(req_json));
 
         const std::string_view sv(
             reinterpret_cast<const char*>(reply_msg.data.data()),
@@ -367,13 +364,12 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         BOOST_LOG_SEV(lg(), debug) << "Sending batch of " << pending.size()
             << " job(s) to scheduler for tenant: " << tenant_id_str;
         const auto req_json = rfl::json::write(batch_req);
-        const auto* p = reinterpret_cast<const std::byte*>(req_json.data());
 
         std::unordered_set<std::string> failed_ids;
         try {
-            const auto reply_msg = nats_.request_sync(
+            const auto reply_msg = svc_nats_.authenticated_request(
                 ores::scheduler::messaging::schedule_jobs_batch_request::nats_subject,
-                std::span<const std::byte>(p, req_json.size()));
+                ores::nats::as_bytes(req_json));
 
             const std::string_view sv(
                 reinterpret_cast<const char*>(reply_msg.data.data()),

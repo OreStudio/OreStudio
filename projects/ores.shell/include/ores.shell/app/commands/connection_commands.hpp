@@ -22,7 +22,7 @@
 
 #include <string>
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 
 namespace cli {
 
@@ -56,7 +56,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void register_commands(cli::Menu& root,
-        service::nats_session& session);
+        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a connection request.
@@ -71,7 +71,7 @@ public:
      * @param identifier New client identifier (empty to keep current).
      */
     static void process_connect(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string host, std::string port, std::string identifier);
 
     /**
@@ -83,7 +83,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_disconnect(std::ostream& out,
-        service::nats_session& session);
+        ores::nats::service::nats_client& session);
 };
 
 }

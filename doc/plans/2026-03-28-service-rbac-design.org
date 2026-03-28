@@ -1,0 +1,356 @@
+#+TITLE: Service Account RBAC Design
+#+DATE: 2026-03-28
+#+AUTHOR: ORE Studio Team
+#+STATUS: DRAFT
+
+* Context
+
+The service-to-service authentication PR (#574) established the JWT plumbing:
+each backend service now authenticates with IAM at startup, receives a JWT, and
+attaches it as a Bearer token to every outbound NATS request.
+
+However, the receiving side performs only cryptographic validation (RS256
+signature + expiry).  Any service holding a valid JWT can call any NATS subject.
+This plan adds fine-grained RBAC at two orthogonal levels:
+
+1. *PostgreSQL GRANTs* — each service runs as a dedicated DB user; PostgreSQL
+   enforces which tables that user may read or write directly.
+
+2. *NATS RBAC* — each service account carries a role in its JWT; handlers
+   enforce which subjects (cross-service calls) the caller is authorised to
+   invoke.
+
+These two layers are complementary, not duplicated.  DB GRANTs protect direct
+database access (a compromised service cannot `UPDATE` a table it only reads).
+NATS RBAC protects the service mesh (a compromised service cannot trigger
+operations in other services it has no business calling).
+
+** Guiding Principles
+
+1. *One role per service.*  Each service account gets a dedicated role
+   (=role_iam_service=, =role_reporting_service=, etc.) containing exactly the
+   permissions that service needs.  No shared wildcard roles.
+
+2. *Principle of least privilege.*  A service gets =read= on tables it reads,
+   =write= on tables it owns, =delete= only where it genuinely deletes records.
+   Cross-service calls grant only the specific subjects called, not a broad
+   component wildcard.
+
+3. *No backwards compatibility.*  The existing permission seed data is replaced
+   wholesale.  All permission codes, roles, and assignments are re-seeded from
+   scratch.
+
+4. *Same validation path for humans and services.*  No special-casing in
+   handlers.  A =check_permission()= call in the handler body works identically
+   for both.
+
+5. *Roles travel in the JWT.*  The =service_login= response already returns a
+   JWT; we add the account's roles to =claims.roles= so handlers can validate
+   permissions without an extra database round-trip per request.
+
+6. *Short-lived service tokens.*  Service account JWTs use the same short TTL
+   as user tokens and the same reactive refresh mechanism.  There is no special
+   long-lived service token.
+
+* Phase 1 — PostgreSQL GRANT-Level Permissioning
+
+** Model
+
+Each service has a dedicated PostgreSQL role/user (e.g. =ores_reporting=,
+=ores_scheduler=).  PostgreSQL GRANTs are the enforcement mechanism: the DB
+kernel rejects any DML that exceeds the GRANT, independent of the application.
+
+The DB user is the service's =database.user= config value (already used for
+connection pooling).
+
+** GRANT matrix
+
+The table below lists the minimum GRANTs each service requires.  "Own
+component" means full SELECT/INSERT/UPDATE/DELETE on all tables in that schema.
+"Shared read" means SELECT only on specific tables owned by another service.
+
+| Service DB user      | Own schema(s)        | Shared SELECT                                           |
+|----------------------+----------------------+---------------------------------------------------------|
+| =ores_iam=           | =iam=                | —                                                       |
+| =ores_refdata=       | =refdata=            | =iam.tenants=                                           |
+| =ores_dq=            | =dq=                 | =iam.tenants=                                           |
+| =ores_variability=   | =variability=        | =iam.tenants=                                           |
+| =ores_assets=        | =assets=             | =iam.tenants=                                           |
+| =ores_scheduler=     | =scheduler=          | =iam.tenants=, =dq.change_reasons=                      |
+| =ores_reporting=     | =reporting=          | =iam.tenants=, =dq.change_reasons=                      |
+| =ores_trading=       | =trading=            | =iam.tenants=, =refdata.*=, =dq.change_reasons=         |
+| =ores_compute=       | =compute=            | =iam.tenants=, =refdata.parties=                        |
+| =ores_telemetry=     | =telemetry=          | =iam.tenants=                                           |
+| =ores_synthetic=     | =synthetic=          | =iam.tenants=, read on most schemas                     |
+
+** Implementation Steps
+
+*** Step 1a — Create per-service DB users
+
+New script: =ores.sql/create/iam/iam_service_db_users_create.sql=
+
+Creates one PostgreSQL role per service (=ores_iam=, =ores_refdata=, …).
+Idempotent: =CREATE ROLE IF NOT EXISTS=.
+
+*** Step 1b — GRANT scripts
+
+New script: =ores.sql/create/iam/iam_service_db_grants_create.sql=
+
+Encodes the GRANT matrix above.  Uses =GRANT SELECT, INSERT, UPDATE, DELETE ON
+ALL TABLES IN SCHEMA <schema> TO <role>= for owned schemas, and explicit
+=GRANT SELECT ON <schema>.<table> TO <role>= for shared reads.
+
+*** Step 1c — Update service configs
+
+Each service's database config points =database.user= to its dedicated DB user.
+This is an env/config change, not a code change.
+
+* Phase 2 — NATS RBAC
+
+** Permission Scheme
+
+Permissions follow the pattern =component:resource:action= where action is one
+of =read=, =write=, =delete=.  A wildcard =component:*= grants all actions on
+all resources within a component (used only for the component's own service
+account).
+
+*** IAM
+
+| Permission code          | Meaning                                  |
+|--------------------------+------------------------------------------|
+| =iam:accounts:read=      | List / fetch accounts                    |
+| =iam:accounts:write=     | Create / update accounts                 |
+| =iam:accounts:delete=    | Delete accounts                          |
+| =iam:roles:read=         | List / fetch roles                       |
+| =iam:roles:write=        | Create / update roles                    |
+| =iam:roles:delete=       | Delete roles                             |
+| =iam:permissions:read=   | List / fetch permissions                 |
+| =iam:permissions:write=  | Create / update permissions              |
+| =iam:permissions:delete= | Delete permissions                       |
+| =iam:tenants:read=       | List / fetch tenants (used by all svcs)  |
+| =iam:tenants:write=      | Create / update tenants                  |
+| =iam:tenants:delete=     | Delete tenants                           |
+| =iam:sessions:read=      | List / fetch sessions                    |
+| =iam:sessions:write=     | Create sessions (login / service-login)  |
+
+*** Reference Data
+
+| =refdata:countries:read=       | =refdata:countries:write=       | =refdata:countries:delete=       |
+| =refdata:currencies:read=      | =refdata:currencies:write=      | =refdata:currencies:delete=      |
+| =refdata:parties:read=         | =refdata:parties:write=         | =refdata:parties:delete=         |
+| =refdata:counterparties:read=  | =refdata:counterparties:write=  | =refdata:counterparties:delete=  |
+| =refdata:books:read=           | =refdata:books:write=           | =refdata:books:delete=           |
+| =refdata:portfolios:read=      | =refdata:portfolios:write=      | =refdata:portfolios:delete=      |
+| =refdata:business-units:read=  | =refdata:business-units:write=  | =refdata:business-units:delete=  |
+| (all other refdata resources follow the same pattern)                                              |
+
+*** Scheduler
+
+| =scheduler:job-definitions:read=   | List / fetch job definitions |
+| =scheduler:job-definitions:write=  | Schedule / update jobs       |
+| =scheduler:job-definitions:delete= | Unschedule jobs              |
+
+*** Reporting
+
+| =reporting:report-definitions:read=      | =:write=  | =:delete=  |
+| =reporting:report-instances:read=        | =:write=  | =:delete=  |
+| =reporting:report-types:read=            | =:write=  | =:delete=  |
+| =reporting:concurrency-policies:read=    | =:write=  | =:delete=  |
+
+*** Data Quality
+
+| =dq:change-reasons:read=  | =:write=  | =:delete=  |
+| =dq:datasets:read=        | =:write=  | =:delete=  |
+| (all other dq resources follow the same pattern)  |
+
+*** Other Components
+
+| Component      | Permission pattern                         |
+|----------------+--------------------------------------------|
+| Variability    | =variability:settings:read/write/delete=   |
+| Assets         | =assets:images:read/write/delete=          |
+| Trading        | =trading:instruments:read/write/delete=    |
+|                | =trading:trades:read/write/delete=         |
+| Compute        | =compute:apps:read/write/delete=           |
+|                | =compute:batches:read/write/delete=        |
+|                | =compute:hosts:read/write=                 |
+| Telemetry      | =telemetry:logs:write=                     |
+|                | =telemetry:samples:write=                  |
+| Synthetic      | =synthetic:*= (wildcard; generates data)   |
+
+** Role → Permission Assignment
+
+Each service gets one role.  The role contains:
+- A =component:*= wildcard for the component the service owns
+- Individual =read= permissions for shared/cross-cutting data it reads
+- Individual permissions for specific outbound NATS subjects it calls
+
+| Service account         | Role                       | Own component       | Shared reads                                          | Outbound call permissions                                                              |
+|-------------------------+----------------------------+---------------------+-------------------------------------------------------+----------------------------------------------------------------------------------------|
+| =iam_service=           | =role_iam_service=         | =iam:*=             | —                                                     | —                                                                                      |
+| =refdata_service=       | =role_refdata_service=     | =refdata:*=         | =iam:tenants:read=                                    | —                                                                                      |
+| =dq_service=            | =role_dq_service=          | =dq:*=              | =iam:tenants:read=                                    | —                                                                                      |
+| =variability_service=   | =role_variability_service= | =variability:*=     | =iam:tenants:read=                                    | —                                                                                      |
+| =assets_service=        | =role_assets_service=      | =assets:*=          | =iam:tenants:read=                                    | —                                                                                      |
+| =scheduler_service=     | =role_scheduler_service=   | =scheduler:*=       | =iam:tenants:read=, =dq:change-reasons:read=          | —                                                                                      |
+| =reporting_service=     | =role_reporting_service=   | =reporting:*=       | =iam:tenants:read=, =dq:change-reasons:read=          | =iam:tenants:read=, =scheduler:job-definitions:write=, =scheduler:job-definitions:delete= |
+| =trading_service=       | =role_trading_service=     | =trading:*=         | =iam:tenants:read=, =refdata:*:read=, =dq:change-reasons:read= | —                                                                               |
+| =compute_service=       | =role_compute_service=     | =compute:*=         | =iam:tenants:read=, =refdata:parties:read=            | —                                                                                      |
+| =telemetry_service=     | =role_telemetry_service=   | =telemetry:*=       | =iam:tenants:read=                                    | —                                                                                      |
+| =synthetic_service=     | =role_synthetic_service=   | =synthetic:*=       | =iam:tenants:read=, most components =:read=           | most services =:read=                                                                  |
+
+** Implementation Steps
+
+*** Step 2a — SQL: permissions, roles, assignments
+
+New populate scripts (replacing existing permission seed data):
+
+- =iam_permissions_populate.sql= :: Drop all existing permission rows and
+  re-seed using the full =component:resource:action= scheme above.
+
+- =iam_roles_populate.sql= :: Drop all existing roles and re-seed one role per
+  service (=role_iam_service=, =role_refdata_service=, …).
+
+- =iam_role_permissions_populate.sql= :: Assign permissions to roles per the
+  matrix above.
+
+- =iam_service_account_roles_populate.sql= :: Assign each service account its
+  role.  This script runs after =iam_service_accounts_populate.sql=.
+
+All scripts are idempotent (upsert / on conflict do nothing).
+
+*** Step 2b — =service_login= JWT includes roles
+
+*File:* =projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp=
+
+After =start_service_session()= succeeds, fetch the account's roles:
+
+#+begin_src cpp
+auto roles = authz_svc.get_account_roles(sess->account_id);
+std::vector<std::string> role_names;
+for (const auto& r : roles)
+    role_names.push_back(r.name);
+claims.roles = std::move(role_names);
+#+end_src
+
+The interactive =login= handler already does this in the HTTP layer; mirror the
+pattern here.  No schema change required — =jwt_claims.roles= already exists.
+
+*** Step 2c — =request_context= exposes roles
+
+*File:* =projects/ores.service/src/service/request_context.cpp=
+
+The context currently extracts =tenant_id=, =username=, =party_id= from the
+JWT.  Extend it to also extract =claims.roles= and store them so handlers can
+read them without re-parsing the token.
+
+*File:* =projects/ores.service/include/ores.service/service/request_context.hpp=
+
+Add a =roles= field (=std::vector<std::string>=) to the context struct.
+
+*** Step 2d — =check_permission()= helper in handler_helpers
+
+*File:* =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp=
+
+Add a helper that takes the =request_context= and a required permission code,
+calls =authorization_service::check_permission()=, and returns an error reply if
+the check fails.  Signature sketch:
+
+#+begin_src cpp
+[[nodiscard]] bool require_permission(
+    const request_context& ctx,
+    std::string_view permission,
+    ores::nats::service::client& nats,
+    const ores::nats::message& msg);
+#+end_src
+
+Returns =true= if the caller has the permission; otherwise sends an
+=error_reply= with =error_code::forbidden= and returns =false=, so the handler
+can early-return cleanly.
+
+*** Step 2e — Add permission checks to NATS handlers
+
+For each handler that writes (=save=, =delete=, =trigger=, etc.), add a
+=require_permission()= call at the top of the handler body, before any business
+logic.  Read handlers can be gated too but are lower priority.
+
+Start with the handlers that service accounts actually call:
+- =scheduler= write handlers (called by =reporting_service=)
+- =iam= =tenants.list= (called by =reporting_service=)
+- =reporting= handlers (called by the scheduler trigger subject)
+
+Roll out to remaining handlers in a follow-up.
+
+*** Step 2f — Short-lived service tokens with reactive refresh
+
+Service account tokens must use the same short TTL as user tokens (not a
+long-lived 13-hour token).  The =make_service_token_provider= in
+=ores.iam.client= already supports proactive refresh via =refresh_if_needed()=;
+this step ensures:
+
+1. IAM issues service tokens with the standard user token TTL (configurable,
+   default ~15 minutes).
+2. =service_token_provider= detects expiry (via =X-Error: token_expired= on the
+   NATS response) and re-authenticates reactively, mirroring the interactive
+   path in =nats_client=.
+3. The proactive background refresh margin is tuned to refresh well before
+   expiry (e.g. at 80% of TTL).
+
+This ensures a compromised service token has the same limited validity window
+as a user token.
+
+* Files Changed
+
+| File                                                                              | Change                                           |
+|-----------------------------------------------------------------------------------+--------------------------------------------------|
+| =projects/ores.sql/create/iam/iam_service_db_users_create.sql=                    | New — one PostgreSQL role per service            |
+| =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=                   | New — GRANT matrix per Phase 1                   |
+| =projects/ores.sql/populate/iam/iam_permissions_populate.sql=                     | Replace with full permission scheme              |
+| =projects/ores.sql/populate/iam/iam_roles_populate.sql=                           | New — one role per service                       |
+| =projects/ores.sql/populate/iam/iam_role_permissions_populate.sql=                | New — role → permission assignments              |
+| =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=           | New — service account → role assignments         |
+| =projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp=         | Add roles to =service_login= JWT claims          |
+| =projects/ores.service/include/ores.service/service/request_context.hpp=          | Add =roles= field                                |
+| =projects/ores.service/src/service/request_context.cpp=                           | Extract =roles= from JWT claims                  |
+| =projects/ores.service/include/ores.service/messaging/handler_helpers.hpp=        | Add =require_permission()= helper                |
+| =projects/ores.iam.client/src/client/service_token_provider.cpp=                  | Reactive re-auth on =token_expired=; short TTL   |
+| =projects/ores.*.core/include/.../messaging/*_handler.hpp= (write handlers)       | Add =require_permission()= calls                 |
+
+* Open Questions
+
+1. *Wildcard matching in =check_permission()=.*  The existing implementation
+   may support only a literal =*= permission (grants everything) but not prefix
+   wildcards like =refdata:*= matching =refdata:currencies:read=.  This needs
+   investigation before =component:*= roles are useful at the NATS layer.  If
+   prefix wildcards are not supported, the =authorization_service= must be
+   extended.
+
+2. *HTTP server single-account blast radius.*  The HTTP server currently runs
+   as a single service account that fronts all user-facing API calls.  Under the
+   new permission scheme, this account would need to hold every permission that
+   any human user could exercise — effectively a super-account with a very large
+   blast radius.  Several options exist:
+
+   a. *Keep a single HTTP account with all permissions.*  Simple to implement
+      but a compromised HTTP layer has full access to every service.  Acceptable
+      only if the HTTP layer is fully trusted (e.g., in a private network behind
+      a gateway).
+
+   b. *Pass-through caller identity.*  The HTTP server forwards the human
+      user's JWT (or a derived token carrying the user's roles) into the NATS
+      request rather than substituting its own identity.  Handlers then check the
+      forwarded identity.  Cleaner blast-radius model but requires protocol
+      changes.
+
+   c. *Dedicated per-endpoint HTTP sub-accounts.*  Heavy operational overhead;
+      unlikely to be worth it.
+
+   The recommended approach is (b), but it requires more design work.  For the
+   initial implementation, option (a) is acceptable as a stepping stone provided
+   it is explicitly documented and the HTTP account is treated as high-privilege.
+
+3. *Roles in refresh JWT.*  Roles are embedded at login time and persist until
+   the token expires.  If a service account's role is changed mid-session, the
+   in-flight JWT still carries the old roles until the next reactive refresh.
+   With short-lived tokens this window is small (~15 minutes).  Acceptable;
+   document the assumption explicitly.

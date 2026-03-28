@@ -22,7 +22,7 @@ Use this skill immediately after a PR has been created and pushed, when you want
 2.  Run this skill, passing the PR number if not on the current branch.
 3.  The skill will execute the watch-and-fix loop until CI is green.
 
-See [Detailed Instructions](#org9e1aeda) for the full loop behaviour.
+See [Detailed Instructions](#org1ac353d) for the full loop behaviour.
 
 
 # Detailed Instructions
@@ -38,24 +38,37 @@ Accept any value in minutes. Use 10 minutes if the user does not specify. Conver
 
 The skill then runs a loop at that interval:
 
-1.  Wait the chosen interval for CI and reviewers to produce initial feedback.
-2.  Fetch and address all open review comments.
-3.  Check CI status.
+1.  Check CI status immediately — if the build is already red, fix it before waiting.
+2.  Wait the chosen interval for CI and reviewers to produce additional feedback.
+3.  Fetch and address all open review comments.
+4.  Check CI status again.
     -   **Green**: loop exits — PR is ready.
-    -   **Still running**: wait another interval and repeat from step 2.
+    -   **Still running**: wait another interval and repeat from step 3.
     -   **Red**: investigate failures, apply fixes, push, then wait and repeat.
 
 
-## Step 1: Wait for Initial Feedback
+## Step 1: Check CI Before Sleeping
 
-After the PR is created, pause for the chosen interval before checking anything. This gives CI time to start and reviewers time to post early comments.
+Before the first sleep, check whether CI is already red. A push can immediately trigger a pre-existing failure (e.g. a broken dependency or a lint check that fires on the new code). Do not silently wait through a known-broken build.
+
+```sh
+gh pr checks
+```
+
+-   If any check has already **failed**, go directly to [Step 5](#org3c6923a) and fix it before sleeping.
+-   If checks are pending or all green, proceed to Step 2.
+
+
+## Step 2: Wait for Additional Feedback
+
+After confirming CI is not already red, pause for the chosen interval to allow CI to complete and reviewers to post comments.
 
 ```sh
 sleep <interval_in_seconds>
 ```
 
 
-## Step 2: Fetch and Address Review Comments
+## Step 3: Fetch and Address Review Comments
 
 Retrieve all unresolved review comments on the PR:
 
@@ -83,14 +96,14 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git push
 ```
 
-1.  Reply to each review comment on GitHub, referencing the fix commit:
+1.  **Required**: reply to each review comment on GitHub, referencing the fix commit. Do not skip this step — the reviewer must be able to see what changed and in which commit.
 
 ```sh
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
   -X POST -f body="Fixed in commit <sha> — <brief description of what was changed>."
 ```
 
-1.  Resolve each review thread on GitHub using the GraphQL API. First, get the thread IDs:
+1.  **Required**: resolve each review thread on GitHub using the GraphQL API. Threads must be marked resolved so the PR dashboard shows no outstanding comments. First, get the thread IDs:
 
 ```sh
 gh api graphql -f query='
@@ -122,7 +135,7 @@ gh api graphql -f query="mutation {
 **Important**: never amend existing commits — always create new commits for fixes. This preserves the review history.
 
 
-## Step 3: Check CI Status
+## Step 4: Check CI Status
 
 Query the current state of all CI checks on the PR:
 
@@ -135,11 +148,11 @@ Interpret the result:
 | Outcome          | Action                                           |
 |---------------- |------------------------------------------------ |
 | All green (pass) | Loop exits. PR is ready to merge.                |
-| Pending/queued   | Wait the chosen interval, then return to Step 2. |
-| Any failure      | Investigate and fix (see Step 4), then repeat.   |
+| Pending/queued   | Wait the chosen interval, then return to Step 3. |
+| Any failure      | Investigate and fix (see Step 5), then repeat.   |
 
 
-## Step 4: Fix CI Failures
+## Step 5: Fix CI Failures
 
 When one or more checks are red:
 
@@ -166,7 +179,7 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git push
 ```
 
-1.  Return to Step 1 (wait the chosen interval) and repeat the loop.
+1.  Return to Step 2 (wait the chosen interval) and repeat the loop.
 
 
 ## Loop Termination

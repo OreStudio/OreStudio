@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_COUNTRIES_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -53,7 +53,7 @@ public:
      * Creates the countries submenu and adds country operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         pagination_context& pagination);
 
     /**
@@ -66,7 +66,7 @@ public:
      * @param pagination Pagination context for state management.
      */
     static void process_get_countries(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         pagination_context& pagination);
 
     /**
@@ -86,7 +86,7 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_country(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string alpha2_code, std::string alpha3_code,
         std::string numeric_code, std::string name,
         std::string official_name, std::string change_reason_code,
@@ -102,7 +102,7 @@ public:
      * @param alpha2_code ISO 3166-1 alpha-2 code of the country to delete
      */
     static void process_delete_country(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string alpha2_code);
 
     /**
@@ -115,7 +115,7 @@ public:
      * @param alpha2_code ISO 3166-1 alpha-2 code of the country
      */
     static void process_get_country_history(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string alpha2_code);
 };
 

@@ -32,6 +32,7 @@ create table if not exists ores_iam_accounts_tbl (
     "username" text not null,
     "password_hash" text not null,
     "password_salt" text not null,
+    "service_password_hash" text null,
     "totp_secret" text not null,
     "email" text not null,
     "modified_by" text not null,

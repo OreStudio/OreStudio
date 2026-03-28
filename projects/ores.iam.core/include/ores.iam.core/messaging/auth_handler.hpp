@@ -32,13 +32,13 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.security/jwt/jwt_claims.hpp"
-#include <span>
 #include <rfl/json.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -49,6 +49,8 @@
 #include "ores.variability.core/service/system_settings_service.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
+#include "ores.iam.core/service/service_session_service.hpp"
+#include "ores.database/repository/bitemporal_operations.hpp"
 
 namespace ores::iam::messaging {
 
@@ -413,9 +415,7 @@ public:
                     "the key, then restart the IAM service.");
             const auto json =
                 std::string("{\"public_key\":") + rfl::json::write(pub_key) + "}";
-            const auto* p = reinterpret_cast<const std::byte*>(json.data());
-            nats_.publish(msg.reply_subject,
-                std::span<const std::byte>(p, json.size()));
+            nats_.publish(msg.reply_subject, ores::nats::as_bytes(json));
             BOOST_LOG_SEV(auth_handler_lg(), debug)
                 << "Completed " << msg.subject;
         } catch (const std::exception& e) {
@@ -576,6 +576,72 @@ public:
             BOOST_LOG_SEV(auth_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, refresh_response{
+                .success = false, .message = e.what()});
+        }
+    }
+
+    void service_login(ores::nats::message msg) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req = decode<service_login_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(auth_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, service_login_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+        try {
+            repository::account_repository account_repo(ctx_);
+            const auto account_id = account_repo.check_service_credentials(
+                req->username, req->password);
+            if (!account_id) {
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Service login failed: invalid credentials for " << req->username;
+                reply(nats_, msg, service_login_response{
+                    .success = false, .message = "Invalid credentials"});
+                return;
+            }
+
+            service::service_session_service sess_svc(ctx_);
+            auto sess = sess_svc.start_service_session(
+                req->username, "ores.service.binary");
+            if (!sess) {
+                BOOST_LOG_SEV(auth_handler_lg(), error)
+                    << "Failed to start service session for " << req->username;
+                reply(nats_, msg, service_login_response{
+                    .success = false, .message = "Failed to create session"});
+                return;
+            }
+
+            const auto now = std::chrono::system_clock::now();
+            security::jwt::jwt_claims claims;
+            claims.subject          = boost::uuids::to_string(sess->account_id);
+            claims.issued_at        = now;
+            claims.expires_at       = now + std::chrono::seconds(
+                                        token_settings_.access_lifetime_s);
+            claims.username         = req->username;
+            claims.tenant_id        = sess->tenant_id.to_string();
+            claims.session_id       = boost::uuids::to_string(sess->id);
+            claims.session_start_time = sess->start_time;
+
+            auto token = signer_.create_token(claims).value_or("");
+            if (token.empty()) {
+                reply(nats_, msg, service_login_response{
+                    .success = false, .message = "Token creation failed"});
+                return;
+            }
+
+            BOOST_LOG_SEV(auth_handler_lg(), info)
+                << "Service login successful for " << req->username;
+            reply(nats_, msg, service_login_response{
+                .success = true,
+                .token = std::move(token),
+                .access_lifetime_s = token_settings_.access_lifetime_s});
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(auth_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, service_login_response{
                 .success = false, .message = e.what()});
         }
     }

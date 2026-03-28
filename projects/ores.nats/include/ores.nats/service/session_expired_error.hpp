@@ -17,19 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_SHELL_SERVICE_SESSION_EXPIRED_ERROR_HPP
-#define ORES_SHELL_SERVICE_SESSION_EXPIRED_ERROR_HPP
+#ifndef ORES_NATS_SERVICE_SESSION_EXPIRED_ERROR_HPP
+#define ORES_NATS_SERVICE_SESSION_EXPIRED_ERROR_HPP
 
 #include <stdexcept>
 
-namespace ores::shell::service {
+namespace ores::nats::service {
 
 /**
  * @brief Thrown when a session reaches its maximum allowed duration.
  *
- * Raised by nats_session::refresh() and nats_session::authenticated_request()
- * when the server returns max_session_exceeded. Catching this specific type
- * allows callers to distinguish a session expiry from other transport errors.
+ * Raised by nats_client::authenticated_request() when the server returns
+ * max_session_exceeded. Catching this specific type allows callers to
+ * distinguish a session expiry from other transport errors.
  */
 class session_expired_error : public std::runtime_error {
 public:

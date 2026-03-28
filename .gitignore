@@ -63,3 +63,7 @@ external/lei/*-golden-copy.csv
 .env
 build/keys/*.pem
 build/keys/*.key
+
+# Transient local files (logs, scratch)
+/tmp/*
+!/tmp/.gitkeep

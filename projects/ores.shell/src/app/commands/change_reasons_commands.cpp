@@ -30,12 +30,12 @@
 namespace ores::shell::app::commands {
 
 using namespace logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
 template<typename Response>
-std::optional<Response> do_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.request(subject, body);
@@ -54,7 +54,7 @@ std::optional<Response> do_request(std::ostream& out, nats_session& session,
 }
 
 template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
@@ -75,7 +75,7 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_session& session
 } // anonymous namespace
 
 void change_reasons_commands::
-register_commands(cli::Menu& root_menu, nats_session& session,
+register_commands(cli::Menu& root_menu, nats_client& session,
                   pagination_context& /*pagination*/) {
     auto menu = std::make_unique<cli::Menu>("change-reasons");
 
@@ -105,7 +105,7 @@ register_commands(cli::Menu& root_menu, nats_session& session,
 }
 
 void change_reasons_commands::
-process_get_change_reasons(std::ostream& out, nats_session& session) {
+process_get_change_reasons(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reasons request.";
 
     auto result = do_request<dq::messaging::get_change_reasons_response>(
@@ -119,7 +119,7 @@ process_get_change_reasons(std::ostream& out, nats_session& session) {
 }
 
 void change_reasons_commands::
-process_add_change_reason(std::ostream& out, nats_session& session,
+process_add_change_reason(std::ostream& out, nats_client& session,
     std::string code, std::string description,
     std::string category_code, std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add change reason request for: "
@@ -162,7 +162,7 @@ process_add_change_reason(std::ostream& out, nats_session& session,
 }
 
 void change_reasons_commands::
-process_delete_change_reason(std::ostream& out, nats_session& session,
+process_delete_change_reason(std::ostream& out, nats_client& session,
     std::string code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete change reason request for: "
                                << code;
@@ -190,7 +190,7 @@ process_delete_change_reason(std::ostream& out, nats_session& session,
 }
 
 void change_reasons_commands::
-process_get_change_reason_history(std::ostream& out, nats_session& session,
+process_get_change_reason_history(std::ostream& out, nats_client& session,
     std::string code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reason history for: "
                                << code;

@@ -35,7 +35,7 @@
 namespace ores::shell::app::commands {
 
 using namespace ores::logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
@@ -83,7 +83,7 @@ void format_string_list(std::ostream& out, std::string_view title,
 }
 
 template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
@@ -104,7 +104,7 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_session& session
 } // anonymous namespace
 
 void rbac_commands::
-register_commands(cli::Menu& root_menu, nats_session& session,
+register_commands(cli::Menu& root_menu, nats_client& session,
                   pagination_context& /*pagination*/) {
     // =========================================================================
     // Permissions submenu
@@ -142,7 +142,7 @@ register_commands(cli::Menu& root_menu, nats_session& session,
 }
 
 void rbac_commands::
-process_list_permissions(std::ostream& out, nats_session& session) {
+process_list_permissions(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list permissions request.";
 
     auto result = do_auth_request<iam::messaging::list_permissions_response>(
@@ -156,7 +156,7 @@ process_list_permissions(std::ostream& out, nats_session& session) {
 }
 
 void rbac_commands::
-process_list_roles(std::ostream& out, nats_session& session) {
+process_list_roles(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list roles request.";
 
     auto result = do_auth_request<iam::messaging::list_roles_response>(
@@ -170,7 +170,7 @@ process_list_roles(std::ostream& out, nats_session& session) {
 }
 
 void rbac_commands::
-process_get_role(std::ostream& out, nats_session& session,
+process_get_role(std::ostream& out, nats_client& session,
     std::string role_identifier) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get role request for: "
                                << role_identifier;
@@ -212,7 +212,7 @@ process_get_role(std::ostream& out, nats_session& session,
 }
 
 void rbac_commands::
-process_assign_role(std::ostream& out, nats_session& session,
+process_assign_role(std::ostream& out, nats_client& session,
     std::string account_id_or_principal, std::string role_id_or_name) {
     auto parsed_account_id = parse_uuid_quiet(account_id_or_principal);
     auto parsed_role_id = parse_uuid_quiet(role_id_or_name);
@@ -261,7 +261,7 @@ process_assign_role(std::ostream& out, nats_session& session,
 }
 
 void rbac_commands::
-process_revoke_role(std::ostream& out, nats_session& session,
+process_revoke_role(std::ostream& out, nats_client& session,
     std::string account_id_or_principal, std::string role_id_or_name) {
     auto parsed_account_id = parse_uuid_quiet(account_id_or_principal);
     auto parsed_role_id = parse_uuid_quiet(role_id_or_name);
@@ -310,7 +310,7 @@ process_revoke_role(std::ostream& out, nats_session& session,
 }
 
 void rbac_commands::
-process_get_account_roles(std::ostream& out, nats_session& session,
+process_get_account_roles(std::ostream& out, nats_client& session,
     std::string account_id) {
     auto parsed_account_id = parse_uuid(out, account_id, "account ID");
     if (!parsed_account_id) {
@@ -336,7 +336,7 @@ process_get_account_roles(std::ostream& out, nats_session& session,
 }
 
 void rbac_commands::
-process_get_account_permissions(std::ostream& out, nats_session& session,
+process_get_account_permissions(std::ostream& out, nats_client& session,
     std::string account_id) {
     auto parsed_account_id = parse_uuid(out, account_id, "account ID");
     if (!parsed_account_id) {
@@ -361,7 +361,7 @@ process_get_account_permissions(std::ostream& out, nats_session& session,
 }
 
 void rbac_commands::
-process_suggest_role_commands(std::ostream& out, nats_session& session,
+process_suggest_role_commands(std::ostream& out, nats_client& session,
     std::string username, std::string identifier) {
     BOOST_LOG_SEV(lg(), debug) << "Generating role commands for: "
                                << username << "@" << identifier;

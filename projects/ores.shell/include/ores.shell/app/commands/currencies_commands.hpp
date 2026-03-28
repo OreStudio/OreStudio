@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_CURRENCIES_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -53,7 +53,7 @@ public:
      * Creates the currencies submenu and adds currency operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         pagination_context& pagination);
 
     /**
@@ -66,7 +66,7 @@ public:
      * @param pagination Pagination context for state management.
      */
     static void process_get_currencies(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         pagination_context& pagination);
 
     /**
@@ -86,7 +86,7 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_currency(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string iso_code, std::string name,
         std::string numeric_code, std::string symbol,
         std::string fractions_per_unit, std::string change_reason_code,
@@ -102,7 +102,7 @@ public:
      * @param iso_code ISO 4217 code of the currency to delete
      */
     static void process_delete_currency(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string iso_code);
 
     /**
@@ -115,7 +115,7 @@ public:
      * @param iso_code ISO 4217 code of the currency
      */
     static void process_get_currency_history(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string iso_code);
 };
 

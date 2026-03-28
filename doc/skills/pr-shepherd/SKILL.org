@@ -31,9 +31,41 @@ want to:
 
 * How to Use This Skill
 
-1. Ensure the PR has been pushed and created (e.g. via =gh pr create=).
-2. Run this skill, passing the PR number if not on the current branch.
-3. The skill will execute the watch-and-fix loop until CI is green.
+The preferred approach is the =pr-watch= background script, which polls GitHub
+cheaply using only the =gh= CLI and invokes Claude only when there is something
+actionable.  This avoids wasting Claude resources on idle polling.
+
+** Using pr-watch (recommended)
+
+Start the watcher immediately after the PR is created.  The script
+self-backgrounds, writes a log under =tmp/=, and exits once CI is green and all
+review threads are resolved.
+
+#+BEGIN_SRC sh
+./build/scripts/pr-watch.sh <PR_NUMBER>
+# e.g.
+./build/scripts/pr-watch.sh 574
+./build/scripts/pr-watch.sh 574 --interval 10   # poll every 10 minutes
+#+END_SRC
+
+Monitor progress:
+
+#+BEGIN_SRC sh
+tail -f tmp/pr-watch-<PR_NUMBER>.log
+#+END_SRC
+
+The script invokes =claude -p= with structured context whenever:
+
+- A CI check-run fails (logs included in the prompt).
+- A new unresolved review thread appears from an external reviewer.
+
+It exits cleanly and logs =PR #NNN is ready= when all checks pass and all
+threads are resolved.
+
+** Manual loop (fallback)
+
+If =pr-watch= is not suitable, run this skill directly and follow the
+[[*Detailed Instructions][Detailed Instructions]] below.
 
 See [[*Detailed Instructions][Detailed Instructions]] for the full loop behaviour.
 
@@ -52,24 +84,40 @@ Convert to seconds for =sleep= (e.g. 5 minutes → =sleep 300=).
 
 The skill then runs a loop at that interval:
 
-1. Wait the chosen interval for CI and reviewers to produce initial feedback.
-2. Fetch and address all open review comments.
-3. Check CI status.
+1. Check CI status immediately — if the build is already red, fix it before
+   waiting.
+2. Wait the chosen interval for CI and reviewers to produce additional feedback.
+3. Fetch and address all open review comments.
+4. Check CI status again.
    - *Green*: loop exits — PR is ready.
-   - *Still running*: wait another interval and repeat from step 2.
+   - *Still running*: wait another interval and repeat from step 3.
    - *Red*: investigate failures, apply fixes, push, then wait and repeat.
 
-** Step 1: Wait for Initial Feedback
+** Step 1: Check CI Before Sleeping
 
-After the PR is created, pause for the chosen interval before checking
-anything. This gives CI time to start and reviewers time to post early
-comments.
+Before the first sleep, check whether CI is already red.  A push can
+immediately trigger a pre-existing failure (e.g. a broken dependency or a
+lint check that fires on the new code).  Do not silently wait through a
+known-broken build.
+
+#+BEGIN_SRC sh
+gh pr checks
+#+END_SRC
+
+- If any check has already *failed*, go directly to [[*Step 5: Fix CI Failures][Step 5]] and fix it before
+  sleeping.
+- If checks are pending or all green, proceed to Step 2.
+
+** Step 2: Wait for Additional Feedback
+
+After confirming CI is not already red, pause for the chosen interval to allow
+CI to complete and reviewers to post comments.
 
 #+BEGIN_SRC sh
 sleep <interval_in_seconds>
 #+END_SRC
 
-** Step 2: Fetch and Address Review Comments
+** Step 3: Fetch and Address Review Comments
 
 Retrieve all unresolved review comments on the PR:
 
@@ -98,14 +146,18 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git push
 #+END_SRC
 
-5. Reply to each review comment on GitHub, referencing the fix commit:
+5. *Required*: reply to each review comment on GitHub, referencing the fix
+   commit.  Do not skip this step — the reviewer must be able to see what
+   changed and in which commit.
 
 #+BEGIN_SRC sh
 gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
   -X POST -f body="Fixed in commit <sha> — <brief description of what was changed>."
 #+END_SRC
 
-6. Resolve each review thread on GitHub using the GraphQL API.
+6. *Required*: resolve each review thread on GitHub using the GraphQL API.
+   Threads must be marked resolved so the PR dashboard shows no outstanding
+   comments.
    First, get the thread IDs:
 
 #+BEGIN_SRC sh
@@ -138,7 +190,7 @@ gh api graphql -f query="mutation {
 *Important*: never amend existing commits — always create new commits for
 fixes. This preserves the review history.
 
-** Step 3: Check CI Status
+** Step 4: Check CI Status
 
 Query the current state of all CI checks on the PR:
 
@@ -151,10 +203,10 @@ Interpret the result:
 | Outcome          | Action                                         |
 |------------------+------------------------------------------------|
 | All green (pass) | Loop exits. PR is ready to merge.              |
-| Pending/queued   | Wait the chosen interval, then return to Step 2. |
-| Any failure      | Investigate and fix (see Step 4), then repeat. |
+| Pending/queued   | Wait the chosen interval, then return to Step 3. |
+| Any failure      | Investigate and fix (see Step 5), then repeat. |
 
-** Step 4: Fix CI Failures
+** Step 5: Fix CI Failures
 
 When one or more checks are red:
 
@@ -182,7 +234,7 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 git push
 #+END_SRC
 
-4. Return to Step 1 (wait the chosen interval) and repeat the loop.
+4. Return to Step 2 (wait the chosen interval) and repeat the loop.
 
 ** Loop Termination
 

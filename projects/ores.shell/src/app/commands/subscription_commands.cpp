@@ -25,10 +25,10 @@
 
 namespace ores::shell::app::commands {
 
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 void subscription_commands::
-register_commands(cli::Menu& root_menu, nats_session& session) {
+register_commands(cli::Menu& root_menu, nats_client& session) {
     auto events_menu = std::make_unique<cli::Menu>("events");
 
     events_menu->Insert("channels", [&session](std::ostream& out) {
@@ -59,34 +59,34 @@ register_commands(cli::Menu& root_menu, nats_session& session) {
 }
 
 void subscription_commands::
-process_channels(std::ostream& out, nats_session& /*session*/) {
+process_channels(std::ostream& out, nats_client& /*session*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_listen(std::ostream& out, nats_session& /*session*/,
+process_listen(std::ostream& out, nats_client& /*session*/,
     std::string /*event_type*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_unlisten(std::ostream& out, nats_session& /*session*/,
+process_unlisten(std::ostream& out, nats_client& /*session*/,
     std::string /*event_type*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_subscriptions(std::ostream& out, nats_session& /*session*/) {
+process_subscriptions(std::ostream& out, nats_client& /*session*/) {
     out << "Event subscriptions are not available in NATS mode." << std::endl;
 }
 
 void subscription_commands::
-process_notifications(std::ostream& out, nats_session& /*session*/) {
+process_notifications(std::ostream& out, nats_client& /*session*/) {
     out << "No pending notifications." << std::endl;
 }
 
 std::size_t subscription_commands::
-display_pending_notifications(std::ostream& /*out*/, nats_session& /*session*/) {
+display_pending_notifications(std::ostream& /*out*/, nats_client& /*session*/) {
     return 0;
 }
 

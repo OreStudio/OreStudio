@@ -30,12 +30,12 @@
 namespace ores::shell::app::commands {
 
 using namespace logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
 template<typename Response>
-std::optional<Response> do_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.request(subject, body);
@@ -54,7 +54,7 @@ std::optional<Response> do_request(std::ostream& out, nats_session& session,
 }
 
 template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
@@ -75,7 +75,7 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_session& session
 } // anonymous namespace
 
 void change_reason_categories_commands::
-register_commands(cli::Menu& root_menu, nats_session& session) {
+register_commands(cli::Menu& root_menu, nats_client& session) {
     auto menu = std::make_unique<cli::Menu>("change-reason-categories");
 
     menu->Insert("get", [&session](std::ostream& out) {
@@ -104,7 +104,7 @@ register_commands(cli::Menu& root_menu, nats_session& session) {
 }
 
 void change_reason_categories_commands::
-process_get_categories(std::ostream& out, nats_session& session) {
+process_get_categories(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get change reason categories request.";
 
     auto result = do_request<dq::messaging::get_change_reason_categories_response>(
@@ -118,7 +118,7 @@ process_get_categories(std::ostream& out, nats_session& session) {
 }
 
 void change_reason_categories_commands::
-process_add_category(std::ostream& out, nats_session& session,
+process_add_category(std::ostream& out, nats_client& session,
     std::string code, std::string description, std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add change reason category for: "
                                << code;
@@ -155,7 +155,7 @@ process_add_category(std::ostream& out, nats_session& session,
 }
 
 void change_reason_categories_commands::
-process_delete_category(std::ostream& out, nats_session& session,
+process_delete_category(std::ostream& out, nats_client& session,
     std::string code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete category request for: "
                                << code;
@@ -183,7 +183,7 @@ process_delete_category(std::ostream& out, nats_session& session,
 }
 
 void change_reason_categories_commands::
-process_get_category_history(std::ostream& out, nats_session& session,
+process_get_category_history(std::ostream& out, nats_client& session,
     std::string code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get category history for: "
                                << code;

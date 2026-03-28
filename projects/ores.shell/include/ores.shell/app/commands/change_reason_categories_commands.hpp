@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_CHANGE_REASON_CATEGORIES_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 
 namespace cli {
 
@@ -52,7 +52,7 @@ public:
      * Creates the change-reason-categories submenu and adds operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        service::nats_session& session);
+        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a get change reason categories request.
@@ -63,7 +63,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_get_categories(std::ostream& out,
-        service::nats_session& session);
+        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process an add change reason category request.
@@ -77,7 +77,7 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_category(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string code, std::string description,
         std::string change_commentary);
 
@@ -91,7 +91,7 @@ public:
      * @param code Code of the category to delete
      */
     static void process_delete_category(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string code);
 
     /**
@@ -104,7 +104,7 @@ public:
      * @param code Code of the category
      */
     static void process_get_category_history(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string code);
 };
 

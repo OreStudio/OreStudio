@@ -30,12 +30,12 @@
 namespace ores::shell::app::commands {
 
 using namespace logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
 template<typename Response>
-std::optional<Response> do_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.request(subject, body);
@@ -54,7 +54,7 @@ std::optional<Response> do_request(std::ostream& out, nats_session& session,
 }
 
 template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
@@ -75,7 +75,7 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_session& session
 } // anonymous namespace
 
 void countries_commands::
-register_commands(cli::Menu& root_menu, nats_session& session,
+register_commands(cli::Menu& root_menu, nats_client& session,
                   pagination_context& pagination) {
     auto countries_menu =
         std::make_unique<cli::Menu>("countries");
@@ -119,7 +119,7 @@ register_commands(cli::Menu& root_menu, nats_session& session,
 }
 
 void countries_commands::
-process_get_countries(std::ostream& out, nats_session& session,
+process_get_countries(std::ostream& out, nats_client& session,
                       pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get countries request.";
 
@@ -151,7 +151,7 @@ process_get_countries(std::ostream& out, nats_session& session,
 }
 
 void countries_commands::
-process_add_country(std::ostream& out, nats_session& session,
+process_add_country(std::ostream& out, nats_client& session,
     std::string alpha2_code, std::string alpha3_code,
     std::string numeric_code, std::string name,
     std::string official_name, std::string change_reason_code,
@@ -196,7 +196,7 @@ process_add_country(std::ostream& out, nats_session& session,
 }
 
 void countries_commands::
-process_delete_country(std::ostream& out, nats_session& session,
+process_delete_country(std::ostream& out, nats_client& session,
     std::string alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete country request for: "
                                << alpha2_code;
@@ -224,7 +224,7 @@ process_delete_country(std::ostream& out, nats_session& session,
 }
 
 void countries_commands::
-process_get_country_history(std::ostream& out, nats_session& session,
+process_get_country_history(std::ostream& out, nats_client& session,
     std::string alpha2_code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get country history for: "
                                << alpha2_code;

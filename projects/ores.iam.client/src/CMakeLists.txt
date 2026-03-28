@@ -16,7 +16,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.reporting.service")
+set(name "ores.iam.client")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -26,8 +26,6 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 set(lib_files ${files})
-list(FILTER lib_files EXCLUDE REGEX "main.cpp")
-
 add_library(${lib_target_name} ${lib_files})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
@@ -39,32 +37,11 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.service.lib
-        ores.security.lib
-        ores.reporting.core.lib
-        ores.eventing.lib
         ores.nats.lib
-        ores.iam.client.lib
-        ores.database.lib
+        ores.iam.api.lib
+    PRIVATE
+        ores.logging.lib
         ores.utility.lib
-        ores.telemetry.lib)
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
-
-set(exe_binary_name ${name})
-set(exe_target_name ${name}.exe)
-
-set(exe_files ${files})
-list(FILTER exe_files INCLUDE REGEX "main.cpp")
-
-add_executable(${exe_target_name} ${exe_files})
-set_target_properties(${exe_target_name} PROPERTIES
-    OUTPUT_NAME ${exe_binary_name})
-
-target_link_libraries(${exe_target_name}
-    PRIVATE
-        ${lib_target_name}
-        ores.openssl_cleanup
-        ${CMAKE_THREAD_LIBS_INIT})
-
-install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

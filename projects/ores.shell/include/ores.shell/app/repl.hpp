@@ -23,7 +23,7 @@
 #include <iosfwd>
 #include <memory>
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -57,9 +57,9 @@ public:
     /**
      * @brief Construct a REPL instance with a NATS session.
      *
-     * @param session Reference to a nats_session.
+     * @param session Reference to a nats_client.
      */
-    explicit repl(service::nats_session& session);
+    explicit repl(ores::nats::service::nats_client& session);
 
     repl(const repl&) = delete;
     repl& operator=(const repl&) = delete;
@@ -95,7 +95,7 @@ private:
      */
     void cleanup();
 
-    service::nats_session& session_;
+    ores::nats::service::nats_client& session_;
     pagination_context pagination_;
     ::cli::CliSession* active_session_{nullptr};
 };

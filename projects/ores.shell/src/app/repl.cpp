@@ -44,7 +44,7 @@ namespace ores::shell::app {
 
 using namespace ores::logging;
 
-repl::repl(service::nats_session& session)
+repl::repl(ores::nats::service::nats_client& session)
     : session_(session) {
     BOOST_LOG_SEV(lg(), info) << "REPL created.";
 }

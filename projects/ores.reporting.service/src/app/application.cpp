@@ -25,6 +25,8 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.utility/version/version.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.iam.client/client/service_token_provider.hpp"
 #include "ores.reporting.core/messaging/registrar.hpp"
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -76,6 +78,10 @@ application::run(boost::asio::io_context& io_ctx,
                               << (cfg.nats.subject_prefix.empty() ? "(none)" : cfg.nats.subject_prefix)
                               << "')";
 
+    ores::nats::service::nats_client svc_nats(nats,
+        ores::iam::client::make_service_token_provider(
+            nats, cfg.database.user, cfg.database.password()));
+
     auto db_ctx = make_context(cfg.database);
 
     // Listen for report definition changes so that definitions created or
@@ -88,10 +94,10 @@ application::run(boost::asio::io_context& io_ctx,
         "ores_reporting_report_definitions");
 
     auto def_changed_sub = event_bus.subscribe<rdev::report_definition_changed_event>(
-        [&io_ctx, db_ctx, &nats](const rdev::report_definition_changed_event&) {
+        [&io_ctx, db_ctx, &svc_nats](const rdev::report_definition_changed_event&) {
             // Post a reconcile task to the io_context so it runs in the
             // coroutine executor rather than the postgres listener thread.
-            auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, nats);
+            auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, svc_nats);
             boost::asio::post(io_ctx, [reconciler, &io_ctx]() {
                 boost::asio::co_spawn(io_ctx,
                     [reconciler]() { return reconciler->reconcile(); },
@@ -103,13 +109,13 @@ application::run(boost::asio::io_context& io_ctx,
 
     co_await ores::service::service::run(
         io_ctx, nats, db_ctx, "ores.reporting.service",
-        [](auto& n, auto c, auto v) {
+        [&svc_nats](auto& n, auto c, auto v) {
             return ores::reporting::messaging::registrar::register_handlers(
-                n, std::move(c), std::move(v));
+                n, std::move(c), std::move(v), svc_nats);
         },
-        [&nats, db_ctx](boost::asio::io_context& ioc) {
+        [&nats, &svc_nats, db_ctx](boost::asio::io_context& ioc) {
             // Reconcile scheduler jobs for all unscheduled report definitions.
-            auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, nats);
+            auto reconciler = std::make_shared<report_scheduling_service>(db_ctx, svc_nats);
             boost::asio::co_spawn(ioc,
                 [reconciler]() { return reconciler->reconcile(); },
                 boost::asio::detached);

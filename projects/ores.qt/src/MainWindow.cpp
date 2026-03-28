@@ -93,6 +93,7 @@
 #include "ores.qt/LegTypeController.hpp"
 #include "ores.qt/InstrumentController.hpp"
 #include "ores.qt/FxInstrumentController.hpp"
+#include "ores.qt/BondInstrumentController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/AppController.hpp"
 #include "ores.qt/AppVersionController.hpp"
@@ -254,6 +255,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionLegTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Tag, IconUtils::DefaultIconColor));
     ui_->ActionInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionFxInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::Currency, IconUtils::DefaultIconColor));
+    ui_->ActionBondInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
@@ -826,6 +828,10 @@ MainWindow::MainWindow(QWidget* parent) :
         if (fxInstrumentController_)
             fxInstrumentController_->showListWindow();
     });
+    connect(ui_->ActionBondInstruments, &QAction::triggered, this, [this]() {
+        if (bondInstrumentController_)
+            bondInstrumentController_->showListWindow();
+    });
 
     // Connect Job Definitions action to controller
     connect(ui_->ActionJobDefinitions, &QAction::triggered, this, [this]() {
@@ -1264,6 +1270,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionLegTypes->setEnabled(isLoggedIn);
     ui_->ActionInstruments->setEnabled(isLoggedIn);
     ui_->ActionFxInstruments->setEnabled(isLoggedIn);
+    ui_->ActionBondInstruments->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
     ui_->ActionImportOreData->setEnabled(isLoggedIn);
@@ -2128,6 +2135,23 @@ void MainWindow::createControllers() {
     connect(fxInstrumentController_.get(), &FxInstrumentController::detachableWindowCreated,
             this, &MainWindow::onDetachableWindowCreated);
     connect(fxInstrumentController_.get(), &FxInstrumentController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    bondInstrumentController_ = std::make_unique<BondInstrumentController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(bondInstrumentController_.get(), &BondInstrumentController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(bondInstrumentController_.get(), &BondInstrumentController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(bondInstrumentController_.get(), &BondInstrumentController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(bondInstrumentController_.get(), &BondInstrumentController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(

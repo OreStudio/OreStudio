@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BondInstrumentDetailDialog</class>
+ <widget class="QWidget" name="BondInstrumentDetailDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>680</width>
+    <height>660</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>680</width>
+    <height>660</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Bond Instrument Details</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="detailsTab">
+      <attribute name="title"><string>Details</string></attribute>
+      <layout class="QVBoxLayout" name="detailsLayout">
+       <item>
+        <widget class="QGroupBox" name="bondEconomicsGroup">
+         <property name="title">
+          <string>Bond Economics</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelTradeTypeCode">
+            <property name="text"><string>Trade Type:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="tradeTypeCodeCombo">
+            <item><property name="text"><string>Bond</string></property></item>
+            <item><property name="text"><string>ForwardBond</string></property></item>
+            <item><property name="text"><string>CallableBond</string></property></item>
+            <item><property name="text"><string>ConvertibleBond</string></property></item>
+            <item><property name="text"><string>BondRepo</string></property></item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelIssuer">
+            <property name="text"><string>Issuer:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="issuerEdit">
+            <property name="placeholderText">
+             <string>Bond issuer name</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelCurrency">
+            <property name="text"><string>Currency:</string></property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="currencyEdit">
+            <property name="placeholderText">
+             <string>ISO 4217 (e.g. USD)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelFaceValue">
+            <property name="text"><string>Face Value:</string></property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QDoubleSpinBox" name="faceValueSpinBox">
+            <property name="decimals"><number>2</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999999999.000000000000000</double></property>
+            <property name="singleStep"><double>1000.000000000000000</double></property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="labelCouponRate">
+            <property name="text"><string>Coupon Rate:</string></property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QDoubleSpinBox" name="couponRateSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>1.000000000000000</double></property>
+            <property name="singleStep"><double>0.001000000000000</double></property>
+            <property name="toolTip"><string>Annual coupon rate as decimal (e.g. 0.05 for 5%)</string></property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="labelCouponFrequencyCode">
+            <property name="text"><string>Coupon Frequency:</string></property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="couponFrequencyCodeCombo">
+            <item><property name="text"><string>Annual</string></property></item>
+            <item><property name="text"><string>Semiannual</string></property></item>
+            <item><property name="text"><string>Quarterly</string></property></item>
+            <item><property name="text"><string>Monthly</string></property></item>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="labelDayCountCode">
+            <property name="text"><string>Day Count:</string></property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QComboBox" name="dayCountCodeCombo">
+            <item><property name="text"><string>Actual/365 (Fixed)</string></property></item>
+            <item><property name="text"><string>Actual/360</string></property></item>
+            <item><property name="text"><string>Actual/Actual (ISDA)</string></property></item>
+            <item><property name="text"><string>30/360</string></property></item>
+            <item><property name="text"><string>30E/360</string></property></item>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="labelIssueDate">
+            <property name="text"><string>Issue Date:</string></property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="issueDateEdit">
+            <property name="placeholderText">
+             <string>ISO 8601 date (e.g. 2026-01-15)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="labelMaturityDate">
+            <property name="text"><string>Maturity Date:</string></property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="maturityDateEdit">
+            <property name="placeholderText">
+             <string>ISO 8601 date (e.g. 2036-01-15)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="optionalGroup">
+         <property name="title">
+          <string>Optional Fields</string>
+         </property>
+         <layout class="QFormLayout" name="optionalFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="labelSettlementDays">
+            <property name="text"><string>Settlement Days:</string></property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="settlementDaysSpinBox">
+            <property name="minimum"><number>0</number></property>
+            <property name="maximum"><number>30</number></property>
+            <property name="toolTip"><string>Number of settlement days (0 = not specified)</string></property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="labelCallDate">
+            <property name="text"><string>Call Date:</string></property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="callDateEdit">
+            <property name="placeholderText">
+             <string>ISO 8601 date (leave blank for non-callable)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="labelConversionRatio">
+            <property name="text"><string>Conversion Ratio:</string></property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QDoubleSpinBox" name="conversionRatioSpinBox">
+            <property name="decimals"><number>6</number></property>
+            <property name="minimum"><double>0.000000000000000</double></property>
+            <property name="maximum"><double>999999.000000000000000</double></property>
+            <property name="singleStep"><double>0.000100000000000</double></property>
+            <property name="toolTip"><string>Conversion ratio for convertible bonds (0 = not applicable)</string></property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="labelDescription">
+            <property name="text"><string>Description:</string></property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPlainTextEdit" name="descriptionEdit">
+            <property name="minimumSize">
+             <size><width>0</width><height>60</height></size>
+            </property>
+            <property name="maximumSize">
+             <size><width>16777215</width><height>120</height></size>
+            </property>
+            <property name="placeholderText">
+             <string>Enter a description (optional)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation"><enum>Qt::Vertical</enum></property>
+         <property name="sizeHint" stdset="0">
+          <size><width>20</width><height>20</height></size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="provenanceTab">
+      <attribute name="title"><string>Provenance</string></attribute>
+      <layout class="QVBoxLayout" name="provenanceTabLayout">
+       <item>
+        <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+       <property name="sizeHint" stdset="0">
+        <size><width>40</width><height>20</height></size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteButton">
+       <property name="text"><string>Delete</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text"><string>Close</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text"><string>Save</string></property>
+       <property name="default"><bool>true</bool></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ores::qt::ProvenanceWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

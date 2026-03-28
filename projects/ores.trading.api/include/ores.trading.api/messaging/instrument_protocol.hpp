@@ -25,6 +25,7 @@
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/fx_instrument.hpp"
+#include "ores.trading.api/domain/bond_instrument.hpp"
 
 namespace ores::trading::messaging {
 
@@ -142,6 +143,61 @@ struct get_fx_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::fx_instrument> history;
+};
+
+// ---- Bond instrument protocol ----
+
+struct get_bond_instruments_request {
+    using response_type = struct get_bond_instruments_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.bond_instruments.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+struct get_bond_instruments_response {
+    std::vector<ores::trading::domain::bond_instrument> instruments;
+    int total_available_count = 0;
+    bool success = true;
+    std::string message;
+};
+
+struct save_bond_instrument_request {
+    using response_type = struct save_bond_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.bond_instruments.save";
+    ores::trading::domain::bond_instrument data;
+};
+
+struct save_bond_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_bond_instrument_request {
+    using response_type = struct delete_bond_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.bond_instruments.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_bond_instrument_response {
+    bool success = false;
+    std::string message;
+    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
+};
+
+struct get_bond_instrument_history_request {
+    using response_type = struct get_bond_instrument_history_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.bond_instruments.history";
+    std::string id;
+};
+
+struct get_bond_instrument_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::trading::domain::bond_instrument> history;
 };
 
 }

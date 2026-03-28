@@ -19,6 +19,7 @@
  */
 #include "ores.qt/BondInstrumentDetailDialog.hpp"
 
+#include <QDate>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -230,8 +231,10 @@ bool BondInstrumentDetailDialog::validateInput() {
            ui_->faceValueSpinBox->value() > 0 &&
            !ui_->couponFrequencyCodeCombo->currentText().trimmed().isEmpty() &&
            !ui_->dayCountCodeCombo->currentText().trimmed().isEmpty() &&
-           !ui_->issueDateEdit->text().trimmed().isEmpty() &&
-           !ui_->maturityDateEdit->text().trimmed().isEmpty();
+           QDate::fromString(ui_->issueDateEdit->text().trimmed(),
+               "yyyy-MM-dd").isValid() &&
+           QDate::fromString(ui_->maturityDateEdit->text().trimmed(),
+               "yyyy-MM-dd").isValid();
 }
 
 void BondInstrumentDetailDialog::onSaveClicked() {

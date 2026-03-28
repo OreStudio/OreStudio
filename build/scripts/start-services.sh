@@ -206,10 +206,18 @@ launch_wrapper_node() {
 wait_for_ready() {
     local name="$1"
     local log_file="$LOG_DIR/$name.log"
+    # Snapshot size before launch. If the service recreates (truncates) its log,
+    # the new size will be smaller — reset to 0 so we search from the beginning.
+    local start_pos=0
+    [[ -f "$log_file" ]] && start_pos=$(wc -c < "$log_file")
     printf "  wait    %s" "$name"
     local i
     for i in $(seq 1 60); do
-        if grep -q "Service ready" "$log_file" 2>/dev/null; then
+        # Detect log truncation (service recreated file on startup)
+        local cur_size=0
+        [[ -f "$log_file" ]] && cur_size=$(wc -c < "$log_file")
+        [[ "$cur_size" -lt "$start_pos" ]] && start_pos=0
+        if tail -c "+$((start_pos + 1))" "$log_file" 2>/dev/null | grep -q "Service ready"; then
             echo " ... ready"
             return 0
         fi

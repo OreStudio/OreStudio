@@ -625,6 +625,18 @@ public:
             claims.session_id       = boost::uuids::to_string(sess->id);
             claims.session_start_time = sess->start_time;
 
+            // Embed effective permission codes so handlers can enforce
+            // permissions without a round-trip to the database.
+            try {
+                service::authorization_service auth_svc(ctx_);
+                claims.roles =
+                    auth_svc.get_effective_permissions(sess->account_id);
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(auth_handler_lg(), warn)
+                    << "Failed to load permissions for service account "
+                    << req->username << ": " << e.what();
+            }
+
             auto token = signer_.create_token(claims).value_or("");
             if (token.empty()) {
                 reply(nats_, msg, service_login_response{

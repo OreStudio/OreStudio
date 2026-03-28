@@ -106,15 +106,54 @@ void reply(ores::nats::service::client& nats,
     nats.publish(msg.reply_subject, std::span<const std::byte>(p, json.size()));
 }
 
+/**
+ * @brief Checks whether the request context carries a required permission.
+ *
+ * Returns true when:
+ * - The context's permission list is empty (token predates RBAC enforcement;
+ *   treated as pass-through to preserve backward compatibility with existing
+ *   user sessions and un-migrated callers), OR
+ * - The list contains @p required_permission exactly, OR
+ * - The list contains the component-level wildcard that covers the permission
+ *   (e.g. "iam::*" satisfies any "iam::…" permission).
+ *
+ * Usage in a write handler:
+ * @code
+ *   if (!has_permission(ctx, "iam::accounts:create")) {
+ *       error_reply(nats_, msg, ores::service::error_code::forbidden);
+ *       return;
+ *   }
+ * @endcode
+ */
+inline bool has_permission(const ores::database::context& ctx,
+    std::string_view required_permission) {
+    const auto& perms = ctx.roles();
+    // Empty list: token predates RBAC — allow to preserve backward compat.
+    if (perms.empty()) return true;
+    // Exact match or component-level wildcard
+    for (const auto& p : perms) {
+        if (p == required_permission) return true;
+        // Component-level wildcard: "iam::*" satisfies "iam::accounts:create"
+        if (p.size() >= 2 && p.ends_with("::*")) {
+            const auto prefix = std::string_view(p).substr(0, p.size() - 1);
+            if (required_permission.starts_with(prefix)) return true;
+        }
+    }
+    return false;
+}
+
 // Publish an error reply with an X-Error header.
 // The reply subject is used if present; no-op otherwise.
 inline void error_reply(ores::nats::service::client& nats,
     const ores::nats::message& msg,
     ores::service::error_code code) {
     if (msg.reply_subject.empty()) return;
-    const std::string_view error_str =
-        (code == ores::service::error_code::token_expired)
-        ? "token_expired" : "unauthorized";
+    std::string_view error_str;
+    switch (code) {
+        case ores::service::error_code::token_expired: error_str = "token_expired"; break;
+        case ores::service::error_code::forbidden:     error_str = "forbidden";     break;
+        default:                                       error_str = "unauthorized";  break;
+    }
     nats.publish(msg.reply_subject, std::span<const std::byte>{},
         {{"X-Error", std::string(error_str)}});
 }

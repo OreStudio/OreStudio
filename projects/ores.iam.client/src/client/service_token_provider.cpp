@@ -79,9 +79,13 @@ struct token_state {
         access_lifetime_s = resp->access_lifetime_s;
         expires_at = std::chrono::system_clock::now() +
                      std::chrono::seconds(access_lifetime_s);
+        // Tune proactive refresh margin to 20% of the actual TTL so the token
+        // is renewed at ~80% of its lifetime, regardless of the configured TTL.
+        refresh_margin = std::chrono::seconds(access_lifetime_s / 5);
         BOOST_LOG_SEV(lg(), info)
             << "Service authentication successful for " << username
-            << " (lifetime=" << access_lifetime_s << "s)";
+            << " (lifetime=" << access_lifetime_s << "s"
+            << ", refresh_margin=" << refresh_margin.count() << "s)";
     }
 
     void refresh() {

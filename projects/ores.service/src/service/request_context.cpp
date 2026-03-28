@@ -73,7 +73,8 @@ make_request_context(
         return std::unexpected(ores::service::error_code::unauthorized);
 
     if (!claims->party_id || claims->party_id->empty())
-        return base_ctx.with_tenant(*tid_result, claims->username.value_or(""));
+        return base_ctx.with_tenant(*tid_result, claims->username.value_or(""))
+                       .with_roles(claims->roles);
 
     try {
         boost::uuids::string_generator sg;
@@ -82,10 +83,12 @@ make_request_context(
         for (const auto& pid_str : claims->visible_party_ids)
             visible_ids.push_back(sg(pid_str));
         return base_ctx.with_party(*tid_result, party_id,
-            std::move(visible_ids), claims->username.value_or(""));
+            std::move(visible_ids), claims->username.value_or(""))
+                       .with_roles(claims->roles);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), warn) << "Failed to parse party UUIDs from JWT: " << e.what();
-        return base_ctx.with_tenant(*tid_result, claims->username.value_or(""));
+        return base_ctx.with_tenant(*tid_result, claims->username.value_or(""))
+                       .with_roles(claims->roles);
     }
 }
 

@@ -47,6 +47,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class report_definition_handler {
@@ -90,6 +91,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "reporting::report_definitions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<save_report_definition_request>(msg)) {
             service::report_definition_service svc(ctx);
             try {
@@ -119,6 +124,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "reporting::report_definitions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<delete_report_definition_request>(msg)) {
             service::report_definition_service svc(ctx);
             try {
@@ -177,6 +186,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "reporting::report_definitions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, svc_nats_);
@@ -217,6 +230,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "reporting::report_definitions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, svc_nats_);

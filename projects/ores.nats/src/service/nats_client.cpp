@@ -95,9 +95,23 @@ message nats_client::do_authenticated_request(std::string_view subject,
 
     // Service path: token_provider owns acquisition and proactive refresh.
     if (token_provider_) {
-        const std::unordered_map<std::string, std::string> headers{
-            {"Authorization", "Bearer " + token_provider_()}};
-        return active_client().request_sync(subject, body, headers, timeout);
+        const auto make_headers = [&]() {
+            return std::unordered_map<std::string, std::string>{
+                {"Authorization", "Bearer " + token_provider_()}};
+        };
+        const auto reply = active_client().request_sync(
+            subject, body, make_headers(), timeout);
+        // Reactive re-auth: if the token was rejected as expired (e.g. clock
+        // skew between proactive refresh intervals), call the provider again —
+        // it will detect expiry and re-authenticate — then retry once.
+        const auto x_err = reply.headers.find("X-Error");
+        if (x_err != reply.headers.end() && x_err->second == "token_expired") {
+            BOOST_LOG_SEV(lg(), info)
+                << "Service token expired on " << subject << "; re-authenticating";
+            return active_client().request_sync(
+                subject, body, make_headers(), timeout);
+        }
+        return reply;
     }
 
     // Interactive path: reactive — throw on server-signalled expiry.

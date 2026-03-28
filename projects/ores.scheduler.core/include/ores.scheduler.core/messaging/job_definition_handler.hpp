@@ -65,6 +65,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class job_definition_handler {
@@ -101,9 +102,20 @@ public:
     void schedule(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "scheduler::job_definitions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<schedule_job_request>(msg)) {
             try {
-                service::job_definition_service svc(ctx_);
+                service::job_definition_service svc(ctx);
                 svc.save_definition(req->definition);
                 reply(nats_, msg, schedule_job_response{.success = true});
             } catch (const std::exception& e) {
@@ -123,8 +135,19 @@ public:
     void schedule_batch(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "scheduler::job_definitions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<schedule_jobs_batch_request>(msg)) {
-            service::job_definition_service svc(ctx_);
+            service::job_definition_service svc(ctx);
             schedule_jobs_batch_response resp;
             resp.success = true;
             for (auto& def : req->definitions) {
@@ -155,9 +178,20 @@ public:
     void unschedule(ores::nats::message msg) {
         BOOST_LOG_SEV(job_definition_handler_lg(), debug)
             << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "scheduler::job_definitions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<unschedule_job_request>(msg)) {
             try {
-                service::job_definition_service svc(ctx_);
+                service::job_definition_service svc(ctx);
                 svc.remove_definition(req->job_definition_id);
                 reply(nats_, msg, unschedule_job_response{.success = true});
             } catch (const std::exception& e) {

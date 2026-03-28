@@ -56,9 +56,6 @@ Examples:
     $(basename "$0") 574 --repo OreStudio/OreStudio --interval 3
     $(basename "$0") 574 --ignore-logins mcraveiro,bot
 
-To run in background:
-    $(basename "$0") 574 &
-
 EOF
     exit 0
 }
@@ -83,5 +80,7 @@ mkdir -p "${PROJECT_ROOT}/tmp"
 
 LOG_FILE="${PROJECT_ROOT}/tmp/pr-watch-${PR_NUMBER}.log"
 
-echo "Watching PR #${PR_NUMBER} — log: ${LOG_FILE}"
-exec python3 "${SCRIPT_DIR}/pr_watch.py" "$@" >> "${LOG_FILE}" 2>&1
+# Self-background: re-exec under nohup if not already detached, so the
+# watcher survives terminal/shell exit without the caller needing to use nohup.
+nohup python3 "${SCRIPT_DIR}/pr_watch.py" "$@" >> "${LOG_FILE}" 2>&1 &
+echo "Watching PR #${PR_NUMBER} (PID $!) — log: ${LOG_FILE}"

@@ -1,0 +1,327 @@
+#+TITLE: Service-to-Service Authentication Design
+#+DATE: 2026-03-27
+#+AUTHOR: ORE Studio Team
+#+STATUS: DRAFT
+
+* Context
+
+All NATS write handlers in the system require a valid RS256 JWT in the
+=Authorization: Bearer <token>= header.  The =make_request_context()= helper
+validates the token and stamps domain objects with =tenant_id= / =modified_by=
+from the claims, providing an auditable chain of custody.
+
+Until now, only the Qt shell client authenticates before making NATS calls.
+When one backend service calls another (e.g. the reporting service scheduling a
+job via the scheduler service) no JWT is attached, so the receiving handler
+returns an =error_reply= with an empty body instead of a typed response.  The
+caller cannot parse an empty body as the expected response type and logs a
+"parse error".
+
+The temporary workaround on branch =feature/compute-reporting= removed JWT
+validation from the scheduler's write handlers.  This plan replaces that
+workaround with a proper service-to-service authentication mechanism.
+
+** Guiding Principles
+
+1. *Reuse existing infrastructure.*  Service accounts are already seeded in
+   =ores_iam_accounts_tbl=.  The RS256 JWT signer already lives in the IAM
+   service.  The =service_session_service= already creates sessions for
+   non-user accounts.  We build on top of this, not beside it.
+
+2. *No privileged short-circuit paths.*  Every NATS write goes through the same
+   =make_request_context()= / JWT validation path, regardless of whether the
+   caller is a human or a service.  The scheduler does not know or care that
+   its caller is the reporting service.
+
+3. *Credentials from the environment.*  Each service already has a dedicated
+   Postgres DB user and password in =.env=.  We use the DB password as the
+   shared secret that proves a service's identity to IAM.  This avoids a
+   separate credential management system.
+
+4. *Token refresh, not re-login.*  Services acquire a JWT at startup and refresh
+   it before it expires using the existing =iam.v1.auth.refresh= endpoint,
+   exactly as the shell client does.
+
+* Architecture Overview
+
+#+BEGIN_SRC
+  Service (e.g. reporting)           IAM Service
+  ──────────────────────────         ────────────
+  startup:
+    send iam.v1.auth.service-login ──► validate DB password hash
+    (username, db_password)            start_service_session()
+    ◄── JWT token ──────────────────── sign + return JWT
+
+  every outbound NATS call:
+    request_sync(subject, body,
+      {"Authorization": "Bearer <jwt>"})
+
+  before token expires:
+    send iam.v1.auth.refresh ────────► validate (allow-expired)
+    ◄── new JWT ─────────────────────── re-sign
+#+END_SRC
+
+** Why DB password as credential?
+
+Each service already connects to Postgres with a dedicated user and password
+(=ORES_REPORTING_SERVICE_DB_USER= / =ORES_REPORTING_SERVICE_DB_PASSWORD=,
+etc.).  The password is already rotatable, stored in =.env=, and different per
+environment.  Rather than inventing a new secret store, we store a bcrypt hash
+of the DB password in the corresponding IAM service account row during database
+population.  The service presents the plaintext password at startup; IAM checks
+the bcrypt hash.
+
+* Infrastructure Already in Place
+
+| Component | Location | Status |
+|---|---|---|
+| Service accounts seeded | =ores.sql/populate/iam/iam_service_accounts_populate.sql= | ✅ 18 accounts |
+| =service_session_service= | =ores.iam.core/service/service_session_service= | ✅ Implemented |
+| RS256 JWT signer | =ores.security/jwt/jwt_authenticator= | ✅ Implemented |
+| JWT refresh endpoint | =iam.v1.auth.refresh= | ✅ Implemented |
+| =authenticated_request()= helper | =ores.shell/src/service/nats_session.cpp= | ✅ Used by Qt |
+| Service DB passwords | =.env= | ✅ Defined |
+
+* What Needs to Be Built
+
+** Phase 1 — IAM: service-login endpoint
+
+*** 1.1  Add =service_password_hash= column to service accounts
+
+Add a nullable =service_password_hash text= column to
+=ores_iam_accounts_tbl=.  Only populated for =account_type = 'service'=.
+
+The population script currently calls =ores_iam_service_accounts_upsert_fn()=
+without a password.  Extend the function to accept an optional password, bcrypt
+it, and store the hash:
+
+#+BEGIN_SRC sql
+create or replace function ores_iam_service_accounts_upsert_fn(
+    p_db_user    text,
+    p_username   text,
+    p_description text,
+    p_password   text default null  -- ← new
+) returns void ...
+#+END_SRC
+
+*** 1.2  Populate hashes from .env
+
+Update =iam_service_accounts_populate.sql= to pass the DB password from a psql
+variable:
+
+#+BEGIN_SRC sql
+\set reporting_pw `echo $ORES_REPORTING_SERVICE_DB_PASSWORD`
+
+select ores_iam_service_accounts_upsert_fn(
+    :'reporting_service_user',
+    'reporting_service@system.ores',
+    'System service account for Reporting NATS domain service',
+    :'reporting_pw'
+);
+#+END_SRC
+
+The psql =`echo $VAR`= back-tick syntax expands the shell variable at execution
+time, so the password never appears in a committed SQL file.
+
+*** 1.3  Add =iam.v1.auth.service-login= NATS subject
+
+Add to =ores.iam.api/messaging/login_protocol.hpp=:
+
+#+BEGIN_SRC cpp
+struct service_login_request {
+    static constexpr std::string_view nats_subject =
+        "iam.v1.auth.service-login";
+    std::string username;   // e.g. "reporting_service@system.ores"
+    std::string password;   // plaintext DB password (only over loopback/NATS)
+};
+
+struct service_login_response {
+    bool success = false;
+    std::string token;      // JWT on success
+    std::string message;    // error description on failure
+};
+#+END_SRC
+
+*** 1.4  Implement handler method =auth_handler::service_login()=
+
+In =ores.iam.core/messaging/auth_handler.hpp=:
+
+1. Decode =service_login_request=.
+2. Look up account by username; verify =account_type != 'user'=.
+3. Check =bcrypt_verify(req.password, account.service_password_hash)=.
+4. Call =service_session_service::start_service_session(account.id, "ores.service.binary")=.
+5. Build =jwt_claims= from the session (same fields as human login but roles
+   reflect the service account's assigned roles).
+6. Call =signer_.create_token(claims)= and return =service_login_response{.token = jwt}=.
+
+Register in =registrar.cpp=:
+#+BEGIN_SRC cpp
+nats_.subscribe("iam.v1.auth.service-login",
+    [this](auto msg) { handler_.service_login(std::move(msg)); });
+#+END_SRC
+
+** Phase 2 — Shared helper: =service_nats_client=
+
+Create =ores.service/include/ores.service/messaging/service_nats_client.hpp= (a
+thin RAII wrapper that every backend service can use):
+
+#+BEGIN_SRC cpp
+class service_nats_client {
+public:
+    service_nats_client(
+        ores::nats::service::client& nats,
+        std::string username,       // e.g. "reporting_service@system.ores"
+        std::string password,       // DB password from env
+        std::chrono::seconds refresh_margin = std::chrono::seconds(60));
+
+    // Blocking call at startup; throws on failure.
+    void authenticate();
+
+    // Attach Bearer header and call request_sync.
+    ores::nats::message authenticated_request(
+        std::string_view subject,
+        std::span<const std::byte> body,
+        std::chrono::milliseconds timeout = std::chrono::seconds(5));
+
+private:
+    void refresh_if_needed();
+
+    ores::nats::service::client& nats_;
+    std::string username_;
+    std::string password_;
+    std::string jwt_;
+    std::chrono::system_clock::time_point expires_at_;
+    std::chrono::seconds refresh_margin_;
+};
+#+END_SRC
+
+=authenticate()= sends =iam.v1.auth.service-login= and stores the returned JWT.
+
+=authenticated_request()= calls =refresh_if_needed()= (which fires
+=iam.v1.auth.refresh= if within the margin window) then calls
+=nats_.request_sync(subject, body, {{"Authorization", "Bearer " + jwt_}})=.
+
+** Phase 3 — Wire into outbound-calling services
+
+Services that make authenticated NATS calls to other services hold a
+=service_nats_client= instead of a raw =ores::nats::service::client&= for
+inter-service calls.
+
+*** Example: reporting service
+
+In =application.cpp=:
+
+#+BEGIN_SRC cpp
+auto svc_client = ores::service::messaging::service_nats_client(
+    nats,
+    cfg.service_username,   // "reporting_service@system.ores"
+    cfg.service_password);  // ORES_REPORTING_SERVICE_DB_PASSWORD
+svc_client.authenticate();
+#+END_SRC
+
+Pass =svc_client= to =report_scheduling_service= instead of the raw
+=nats::service::client=.  Inside =schedule_one()= replace:
+
+#+BEGIN_SRC cpp
+// before
+const auto reply_msg = nats_.request_sync(
+    schedule_job_request::nats_subject, body);
+
+// after
+const auto reply_msg = svc_nats_.authenticated_request(
+    schedule_job_request::nats_subject, body);
+#+END_SRC
+
+*** Services with outbound calls to update
+
+| Calling Service | Callee | Handler to update |
+|---|---|---|
+| =ores.reporting= | =ores.scheduler= | =report_scheduling_service= |
+| _(future)_ Any service calling another | | |
+
+** Phase 4 — Restore JWT validation in scheduler write handlers
+
+Revert the temporary workaround in
+=ores.scheduler.core/messaging/job_definition_handler.hpp=: re-add
+=make_request_context()= calls to =schedule()=, =schedule_batch()=, and
+=unschedule()=.
+
+The reporting service will now supply a valid JWT, so those handlers will
+authenticate successfully and =stamp()= will set =tenant_id= / =modified_by=
+from the claims.
+
+* Configuration Changes
+
+** New environment variables
+
+No new variables needed.  Re-use existing:
+- =ORES_REPORTING_SERVICE_DB_USER= + =ORES_REPORTING_SERVICE_DB_PASSWORD=
+- (future services follow the same pattern)
+
+** New config fields in service configuration structs
+
+Add to each outbound-calling service's config:
+
+#+BEGIN_SRC cpp
+std::string service_username;  // e.g. "reporting_service@system.ores"
+std::string service_password;  // DB password
+#+END_SRC
+
+Read from environment in =application.cpp= alongside the existing DB options.
+
+* Security Considerations
+
+- The DB password is sent as plaintext inside a NATS message.  NATS operates
+  over TLS in production (=nats://= → =tls://=) and over loopback-only
+  connections in development.  This is acceptable for service-to-service calls
+  on the same host or encrypted transport.
+- The hash stored in IAM is bcrypt with cost ≥ 12.  A compromised IAM DB row
+  does not immediately expose the credential.
+- JWTs are short-lived (default 1800 s, same as user tokens).  Compromised
+  tokens expire quickly.
+- =service_password_hash= is only set for =account_type != 'user'= accounts.
+  The human login path is unchanged.
+- A service account JWT carries the same claims structure as a human JWT.
+  Downstream handlers apply the same RBAC rules.  Service accounts must be
+  assigned appropriate roles during seeding.
+
+* Roles for Service Accounts
+
+Service accounts need roles to pass RBAC checks in downstream handlers.
+For the initial implementation:
+
+| Service Account | Minimum Role |
+|---|---|
+| =reporting_service@system.ores= | =system_service= (read + write own domain) |
+| =scheduler_service@system.ores= | =system_service= |
+| _(others)_ | =system_service= |
+
+Add role assignments to =iam_service_accounts_populate.sql=.
+
+* Rollout Order
+
+1. *IAM first*: Implement Phase 1 (service-login endpoint + password hash).
+   Deploy IAM.  Verify with a manual NATS call.
+2. *Shared helper*: Implement Phase 2 (=service_nats_client=) with unit tests.
+3. *Outbound callers*: Implement Phase 3 service by service, starting with
+   =ores.reporting=.
+4. *Restore guards*: Once all callers supply JWTs, revert Phase 4.
+
+* Affected Files
+
+** New files
+
+- =projects/ores.service/include/ores.service/messaging/service_nats_client.hpp=
+- =projects/ores.service/src/messaging/service_nats_client.cpp=
+- =projects/ores.service/tests/service_nats_client_tests.cpp=
+
+** Modified files
+
+- =projects/ores.iam.api/include/ores.iam.api/messaging/login_protocol.hpp= — add =service_login_request= / =service_login_response=
+- =projects/ores.iam.core/include/ores.iam.core/messaging/auth_handler.hpp= — add =service_login()= method
+- =projects/ores.iam.core/src/messaging/registrar.cpp= — register =iam.v1.auth.service-login=
+- =projects/ores.sql/create/iam/iam_functions_create.sql= — extend =ores_iam_service_accounts_upsert_fn()=
+- =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql= — pass passwords
+- =projects/ores.reporting.service/src/app/application.cpp= — create =service_nats_client=, pass to scheduling service
+- =projects/ores.reporting.core/src/service/report_scheduling_service.cpp= — use =authenticated_request()=
+- =projects/ores.scheduler.core/include/ores.scheduler.core/messaging/job_definition_handler.hpp= — restore =make_request_context()= in write handlers

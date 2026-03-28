@@ -1,0 +1,460 @@
+:PROPERTIES:
+:ID: B7E4D2A1-CD23-11F1-9F1E-40B0768014EB
+:END:
+#+title: CDM-Inspired Instrument Domain Model — Phase 2 (Equity, Commodity, Extensions)
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+This plan is a continuation of
+[[file:2026-03-26-cdm-instrument-domain-model.org][2026-03-26-cdm-instrument-domain-model.org]], which delivered
+Phases 0–4 (reference data, rates/swap, FX, bond, credit). That work
+established the asset-class-per-table pattern, the bitemporal SQL convention,
+and the full stack from SQL through NATS messaging to the Qt UI.
+
+This plan covers the remaining asset classes in the 164-type ORE product
+inventory: equity, commodity, positions, extended options across asset classes
+already delivered, and composite/scripted instruments.
+
+* ORE Product Inventory — Coverage Analysis
+
+As of the completion of Phase 0–4, coverage is as follows.
+
+** Already Covered
+
+| Asset Class | Table                        | ORE Types Covered                                         |
+|-------------+------------------------------+-----------------------------------------------------------|
+| Rates       | instruments + swap_legs      | Swap, CrossCurrencySwap, CapFloor, Swaption, FlexiSwap    |
+| FX          | fx_instruments               | FxForward, FxSwap, FxOption, FxDigitalOption, and exotics |
+| Fixed Income| bond_instruments             | Bond, ForwardBond, CallableBond, ConvertibleBond, BondRepo |
+| Credit      | credit_instruments           | CreditDefaultSwap, IndexCreditDefaultSwap, SyntheticCDO   |
+
+** Not Yet Covered (69 ORE types)
+
+*** Equity (30 types)
+
+All equity types are new; none are handled by an existing table.
+
+| Category         | Types                                                                                |
+|------------------+--------------------------------------------------------------------------------------|
+| Vanilla options  | EquityOption, EquityFutureOption, EquityDigitalOption                                |
+| Asian options    | EquityAsianOption                                                                    |
+| Barrier options  | EquityBarrierOption, EquityDoubleBarrierOption, EquityEuropeanBarrierOption,         |
+|                  | EquityWindowBarrierOption, EquityGenericBarrierOption                                |
+| Touch options    | EquityTouchOption, EquityDoubleTouchOption                                           |
+| Variance swaps   | EquityVarianceSwap, EquityPairwiseVarianceSwap, EquityBasketVarianceSwap             |
+| Structured       | EquityCliquetOption, EquityAccumulator, EquityTaRF                                  |
+| Basket/Rainbow   | EquityWorstOfBasketSwap, EquityBestEntryOption, EquityBasketOption,                  |
+|                  | EquityRainbowOption, EquityOutperformanceOption, EquityStrikeResettableOption        |
+| Forwards/swaps   | EquityForward, EquitySwap, TotalReturnSwap, ContractForDifference                   |
+| Positions        | EquityPosition, EquityOptionPosition                                                 |
+
+*** Commodity (28 types)
+
+| Category         | Types                                                                                |
+|------------------+--------------------------------------------------------------------------------------|
+| Vanilla options  | CommodityOption, CommodityDigitalOption                                              |
+| Asian/Average    | CommodityAsianOption, CommodityAveragePriceOption,                                  |
+|                  | CommodityDigitalAveragePriceOption                                                   |
+| Spread/Basket    | CommoditySpreadOption, CommodityBasketOption, CommodityRainbowOption                |
+| Strip/Structured | CommodityOptionStrip, CommodityAccumulator, CommodityTaRF,                          |
+|                  | CommodityWorstOfBasketSwap, CommodityBestEntryOption                                |
+| Variance swaps   | CommodityVarianceSwap, CommodityPairwiseVarianceSwap, CommodityBasketVarianceSwap   |
+| Barrier options  | CommodityWindowBarrierOption, CommodityGenericBarrierOption                         |
+| Forwards/swaps   | CommodityForward, CommoditySwap, CommoditySwaption                                  |
+| Exotic           | CommodityStrikeResettableOption                                                      |
+| Positions        | CommodityPosition                                                                    |
+
+*** Extensions to Existing Asset Classes (11 types)
+
+These ORE types belong logically to asset classes already delivered but were
+not included in the Phase 0–4 scope.
+
+| Extension target | Types                                                                      |
+|------------------+----------------------------------------------------------------------------|
+| Rates            | ForwardRateAgreement, BalanceGuaranteedSwap, CallableSwap,                 |
+|                  | KnockOutSwap, RiskParticipationAgreement, InflationSwap                    |
+| Fixed Income     | BondFuture, BondOption, BondTRS, BondPosition, Ascot                      |
+| Credit           | CreditDefaultSwapOption, IndexCreditDefaultSwapOption, CreditLinkedSwap, CBO |
+
+*** Composite and Scripted (6 types)
+
+| Type             | Notes                                                                      |
+|------------------+----------------------------------------------------------------------------|
+| CompositeTrade   | Ordered set of constituent trades; no fixed schema                         |
+| MultiLegOption   | Cross-asset multi-leg option; discriminated by constituent types           |
+| ScriptedTrade    | Arbitrary ORE AMC/script payoff; schema is the script itself               |
+| Autocallable_01  | Specific scripted autocallable variant                                     |
+| DoubleDigitalOption | Cross-asset scripted                                                    |
+| PerformanceOption_01 | Specific scripted performance option                                   |
+
+* Option Instruments — Cross-Asset Analysis
+
+The original plan listed =option_instrument= as a potential catch-all table
+for "cross-asset vanilla options not covered above". After analysing the full
+ORE type inventory, the conclusion is:
+
+*A separate =option_instrument= table is not needed.*
+
+Options in ORE are always scoped to an asset class. The correct home for each
+option type is the table of its asset class:
+
+| Option family     | Home table           | Already handled?         |
+|-------------------+----------------------+--------------------------|
+| Swaption, CapFloor | instruments (rates) | Yes (Phase 1)            |
+| FxOption family   | fx_instruments       | Yes (Phase 2)            |
+| BondOption        | bond_instruments     | No (Phase 6 extension)   |
+| CreditDefaultSwapOption | credit_instruments | No (Phase 6 extension) |
+| EquityOption family | equity_instruments | No (Phase 5)             |
+| CommodityOption family | commodity_instruments | No (Phase 5)        |
+| MultiLegOption    | composite_instruments | No (Phase 7)            |
+
+Within each table, option-specific fields (=option_type=, =strike_price=,
+=expiry_date=, =exercise_type=, =barrier_type=, =lower_barrier=,
+=upper_barrier=) are nullable and populated only when =trade_type_code=
+identifies an option sub-type. This is the same pattern already established
+for =fx_instruments= (=strike_price= and =expiry_date= are NULL for
+=FxForward=, populated for =FxOption=).
+
+The FX Phase 2 design therefore serves as the reference implementation for all
+subsequent option-bearing tables.
+
+* Architecture
+
+No new design principles are introduced. All phases follow the conventions
+established in the original plan:
+
+- Asset-class-per-table with =trade_type_code= as discriminator
+- Optional fields (NULL) for sub-type-specific economics
+- Sub-tables only when a genuine 1:N relationship exists (as in =swap_legs=)
+- All five Phase 0 reference tables reused (day count, convention, frequency,
+  floating index, leg type) wherever applicable
+- Bitemporal SQL with =valid_from= / =valid_to= and insert trigger
+- Full stack: SQL → domain → repository → service → NATS handler → Qt UI
+
+** Basket and Multi-Underlying Products
+
+A small number of equity and commodity types (basket options, rainbow options,
+worst-of basket swaps) reference multiple underlyings. Two options exist:
+
+1. *JSON column*: store basket constituents as a =JSONB= column
+   (=basket_weights TEXT=) in the parent table. Simple; no join needed for
+   display. Suitable when basket composition is read-only reference data.
+
+2. *Sub-table*: =equity_basket_constituents_tbl= (equity_instrument_id, code,
+   weight). Suitable when constituents need to be queried or edited
+   individually.
+
+*Recommended approach*: follow FX precedent and keep the parent table flat.
+Add a =basket_json= column of type =TEXT= (PostgreSQL =JSONB= coerced to text
+at the C++ boundary). If constituent-level editing becomes necessary in a later
+sprint, a sub-table can be introduced then without schema-breaking changes to
+the parent.
+
+* Phases
+
+** Phase 5 — Equity Instruments
+
+*** Scope
+
+All 30 equity ORE types via one new table: =ores_trading_equity_instruments_tbl=.
+
+*** Database Schema
+
+| Column                  | Type          | Nullable | Notes                                    |
+|-------------------------+---------------+----------+------------------------------------------|
+| trade_id                | UUID PK       | No       | FK → trades                              |
+| trade_type_code         | TEXT          | No       | FK → trade_types (discriminator)         |
+| underlying_code         | TEXT          | No       | Ticker / symbol (e.g. ".SPX", "AAPL")   |
+| currency                | TEXT          | No       | ISO 4217                                 |
+| notional                | DOUBLE        | No       | Contract notional or equity value        |
+| quantity                | DOUBLE        | Yes      | Number of shares/contracts (positions)   |
+| start_date              | DATE          | Yes      | Swap/accumulator start                   |
+| maturity_date           | DATE          | Yes      | Expiry or swap end                       |
+| option_type             | TEXT          | Yes      | Call / Put (all option types)            |
+| strike_price            | DOUBLE        | Yes      | Option strike                            |
+| exercise_type           | TEXT          | Yes      | European / American / Bermudan           |
+| barrier_type            | TEXT          | Yes      | UpIn / UpOut / DownIn / DownOut          |
+| lower_barrier           | DOUBLE        | Yes      | Double-barrier lower level               |
+| upper_barrier           | DOUBLE        | Yes      | Double-barrier upper level               |
+| average_type            | TEXT          | Yes      | Arithmetic / Geometric (Asian options)   |
+| averaging_start_date    | DATE          | Yes      | Asian averaging window start             |
+| variance_strike         | DOUBLE        | Yes      | VarianceSwap strike variance             |
+| cliquet_frequency_code  | TEXT          | Yes      | FK → payment_frequency_types (Cliquet)  |
+| accumulation_amount     | DOUBLE        | Yes      | Per-fixing accumulation (Accumulator)    |
+| knock_out_barrier       | DOUBLE        | Yes      | Accumulator knock-out level              |
+| basket_json             | TEXT          | Yes      | JSON array of {code, weight} for baskets |
+| day_count_code          | TEXT          | Yes      | FK → day_count_fraction_types (swaps)   |
+| payment_frequency_code  | TEXT          | Yes      | FK → payment_frequency_types (swaps)    |
+| return_type             | TEXT          | Yes      | TotalReturn / PriceReturn (EquitySwap)  |
+| description             | TEXT          | Yes      | Free-text note                           |
+| Standard audit fields   |               |          | version, tenant_id, modified_by, …      |
+
+*** Field Applicability by Sub-Type
+
+| Fields populated       | Sub-types                                                          |
+|------------------------+--------------------------------------------------------------------|
+| option_type, strike_price, exercise_type | All EquityOption* variants                    |
+| barrier_type, upper_barrier, lower_barrier | EquityBarrierOption, EquityDoubleBarrierOption, etc. |
+| average_type, averaging_start_date | EquityAsianOption                             |
+| variance_strike        | EquityVarianceSwap*, EquityPairwiseVarianceSwap                   |
+| cliquet_frequency_code | EquityCliquetOption                                                |
+| accumulation_amount, knock_out_barrier | EquityAccumulator, EquityTaRF              |
+| basket_json            | EquityBasketOption, EquityRainbowOption, EquityWorstOfBasketSwap  |
+| day_count_code, payment_frequency_code, return_type | EquitySwap, TotalReturnSwap, ContractForDifference |
+| quantity               | EquityPosition, EquityOptionPosition                               |
+| start_date, maturity_date | EquitySwap, EquityForward, EquityAccumulator, TotalReturnSwap  |
+
+*** Full Stack Coverage
+
+Same pattern as Phase 2–4: SQL + domain + repository + service + NATS handler
++ Qt UI (=ClientEquityInstrumentModel=, =EquityInstrumentMdiWindow=,
+=EquityInstrumentDetailDialog=, =EquityInstrumentHistoryDialog=,
+=EquityInstrumentController=, =MainWindow= integration).
+
+*** PR Strategy
+
+Two PRs:
+1. SQL + domain + repository + service + NATS handler + registrar
+2. Qt UI + MainWindow integration
+
+** Phase 6 — Commodity Instruments
+
+*** Scope
+
+All 28 commodity ORE types via one new table:
+=ores_trading_commodity_instruments_tbl=.
+
+*** Database Schema
+
+| Column                  | Type          | Nullable | Notes                                          |
+|-------------------------+---------------+----------+------------------------------------------------|
+| trade_id                | UUID PK       | No       | FK → trades                                    |
+| trade_type_code         | TEXT          | No       | FK → trade_types (discriminator)               |
+| commodity_code          | TEXT          | No       | Commodity identifier (e.g. "NGAS", "OIL.BRENT")|
+| currency                | TEXT          | No       | ISO 4217                                       |
+| quantity                | DOUBLE        | No       | Contract quantity                              |
+| unit                    | TEXT          | No       | e.g. Barrels, MT, MWh, MMBtu                   |
+| start_date              | DATE          | Yes      | Swap / accumulator start                       |
+| maturity_date           | DATE          | Yes      | Forward delivery or swap end                   |
+| fixed_price             | DOUBLE        | Yes      | CommoditySwap fixed leg price                  |
+| option_type             | TEXT          | Yes      | Call / Put                                     |
+| strike_price            | DOUBLE        | Yes      | Option strike                                  |
+| exercise_type           | TEXT          | Yes      | European / American                            |
+| average_type            | TEXT          | Yes      | Arithmetic / Geometric                         |
+| averaging_start_date    | DATE          | Yes      | Asian averaging window start                   |
+| averaging_end_date      | DATE          | Yes      | Asian averaging window end                     |
+| spread_commodity_code   | TEXT          | Yes      | Second commodity in spread options             |
+| spread_amount           | DOUBLE        | Yes      | Spread option strike spread                    |
+| strip_frequency_code    | TEXT          | Yes      | FK → payment_frequency_types (option strips)  |
+| variance_strike         | DOUBLE        | Yes      | VarianceSwap strike variance                   |
+| accumulation_amount     | DOUBLE        | Yes      | Accumulator per-fixing amount                  |
+| knock_out_barrier       | DOUBLE        | Yes      | Accumulator knock-out                          |
+| barrier_type            | TEXT          | Yes      | Barrier option type                            |
+| lower_barrier           | DOUBLE        | Yes      | Window/generic barrier lower level             |
+| upper_barrier           | DOUBLE        | Yes      | Window/generic barrier upper level             |
+| basket_json             | TEXT          | Yes      | JSON array of {code, weight} for baskets       |
+| day_count_code          | TEXT          | Yes      | FK → day_count_fraction_types (swaps)         |
+| payment_frequency_code  | TEXT          | Yes      | FK → payment_frequency_types (swaps)          |
+| swaption_expiry_date    | DATE          | Yes      | CommoditySwaption option expiry                |
+| description             | TEXT          | Yes      | Free-text note                                 |
+| Standard audit fields   |               |          |                                                |
+
+*** PR Strategy: same two-PR split as Phase 5.
+
+** Phase 7 — Extensions to Existing Asset Classes
+
+This phase adds ORE types that logically belong to tables already delivered
+but were out of scope for Phases 1–4.
+
+*** Bond Extensions
+
+Add nullable columns to =ores_trading_bond_instruments_tbl=:
+
+| New column        | Type   | Nullable | Notes                                               |
+|-------------------+--------+----------+-----------------------------------------------------|
+| future_expiry_date | DATE  | Yes      | BondFuture delivery date                            |
+| option_type       | TEXT   | Yes      | Call / Put — BondOption                             |
+| option_expiry_date | DATE  | Yes      | BondOption expiry                                   |
+| option_strike     | DOUBLE | Yes      | BondOption strike (clean price)                     |
+| trs_return_type   | TEXT   | Yes      | TotalReturn / PriceReturn — BondTRS                 |
+| trs_funding_leg_code | TEXT | Yes    | Funding leg floating index — BondTRS                |
+| ascot_option_type | TEXT   | Yes      | ASCOT option type                                   |
+
+New ORE types now mapped: BondFuture, BondOption, BondTRS, BondPosition, Ascot.
+
+*** Credit Extensions
+
+Add nullable columns to =ores_trading_credit_instruments_tbl=:
+
+| New column        | Type   | Nullable | Notes                                               |
+|-------------------+--------+----------+-----------------------------------------------------|
+| option_type       | TEXT   | Yes      | Call / Put — CreditDefaultSwapOption                |
+| option_expiry_date | DATE  | Yes      | CDS option expiry                                   |
+| option_strike     | DOUBLE | Yes      | CDS option strike spread (bps)                      |
+| linked_asset_code | TEXT   | Yes      | Reference asset — CreditLinkedSwap                  |
+| tranche_attachment | DOUBLE | Yes    | CBO tranche attachment point                        |
+| tranche_detachment | DOUBLE | Yes    | CBO tranche detachment point                        |
+
+New ORE types now mapped: CreditDefaultSwapOption, IndexCreditDefaultSwapOption,
+CreditLinkedSwap, CBO.
+
+*** Rates Extensions
+
+Add nullable columns to =ores_trading_instruments_tbl=:
+
+| New column           | Type   | Nullable | Notes                                            |
+|----------------------+--------+----------+--------------------------------------------------|
+| fra_fixing_date      | DATE   | Yes      | ForwardRateAgreement fixing date                 |
+| fra_settlement_date  | DATE   | Yes      | ForwardRateAgreement settlement date             |
+| lockout_days         | INT    | Yes      | BalanceGuaranteedSwap / KnockOutSwap parameter   |
+| callable_dates_json  | TEXT   | Yes      | JSON array of call dates — CallableSwap          |
+| rpa_counterparty     | TEXT   | Yes      | Reference counterparty — RiskParticipationAgreement |
+| inflation_index_code | TEXT   | Yes      | InflationSwap index (e.g. HICP, RPI)            |
+| base_cpi             | DOUBLE | Yes      | InflationSwap base CPI level                     |
+
+New ORE types now mapped: ForwardRateAgreement, BalanceGuaranteedSwap,
+CallableSwap, KnockOutSwap, RiskParticipationAgreement, InflationSwap.
+
+*** PR Strategy
+
+One PR per asset class extended (bond, credit, rates) — three PRs total.
+Each PR is a pure migration (=ALTER TABLE= + new nullable columns) so there
+is no risk of breaking existing data.
+
+** Phase 8 — Composite and Scripted Instruments
+
+*** Scope
+
+Six ORE types that do not fit a fixed schema: CompositeTrade, MultiLegOption,
+ScriptedTrade, Autocallable_01, DoubleDigitalOption, PerformanceOption_01.
+
+*** Design
+
+**** CompositeTrade
+
+An ordered list of constituent trades. The constituent trades already exist
+individually in their respective instrument tables.
+
+New table: =ores_trading_composite_instruments_tbl=
+
+| Column          | Type   | Nullable | Notes                              |
+|-----------------+--------+----------+------------------------------------|
+| trade_id        | UUID PK | No      | FK → trades                        |
+| trade_type_code | TEXT   | No       | CompositeTrade / MultiLegOption    |
+| description     | TEXT   | Yes      |                                    |
+| Standard audit  |        |          |                                    |
+
+New sub-table: =ores_trading_composite_legs_tbl=
+
+| Column                    | Type | Notes                                    |
+|---------------------------+------+------------------------------------------|
+| id                        | UUID | PK                                       |
+| composite_instrument_id   | UUID | FK → composite_instruments               |
+| leg_sequence              | INT  | 1-based ordering                         |
+| constituent_trade_id      | UUID | FK → trades (the constituent instrument) |
+
+**** ScriptedTrade and Scripted Variants
+
+ORE's =ScriptedTrade= and its specific instances (Autocallable_01,
+DoubleDigitalOption, PerformanceOption_01) carry an ORE AMC payoff script
+rather than a fixed set of economic fields.
+
+New table: =ores_trading_scripted_instruments_tbl=
+
+| Column          | Type | Nullable | Notes                                          |
+|-----------------+------+----------+------------------------------------------------|
+| trade_id        | UUID PK | No    | FK → trades                                    |
+| trade_type_code | TEXT | No       | ScriptedTrade, Autocallable_01, etc.           |
+| script_name     | TEXT | No       | ORE script name (e.g. "Autocallable")          |
+| script_body     | TEXT | Yes      | Embedded ORE AMC script (if bespoke)           |
+| events_json     | TEXT | Yes      | JSON array of {date, type, value} event schedule |
+| underlyings_json | TEXT | Yes     | JSON array of underlying codes                 |
+| parameters_json | TEXT | Yes      | JSON object of script parameters               |
+| description     | TEXT | Yes      |                                                |
+| Standard audit  |      |          |                                                |
+
+*** PR Strategy: Two PRs (composite / scripted).
+
+** Phase 9 — Positions and Cash
+
+*** Scope
+
+Five "position" ORE types that record a held position rather than a trade
+payoff: EquityPosition, EquityOptionPosition, BondPosition, CashPosition,
+CommodityPosition.
+
+These could be folded into their asset-class tables (nullable
+=quantity= + =price= columns) or collected in a single
+=ores_trading_positions_tbl=. Given that positions are managed and displayed
+differently from instruments in most trading systems, a separate table is
+preferred.
+
+New table: =ores_trading_positions_tbl=
+
+| Column          | Type   | Nullable | Notes                                          |
+|-----------------+--------+----------+------------------------------------------------|
+| trade_id        | UUID PK | No      | FK → trades                                    |
+| trade_type_code | TEXT   | No       | EquityPosition, BondPosition, etc.             |
+| underlying_code | TEXT   | No       | Asset identifier                               |
+| currency        | TEXT   | No       | ISO 4217                                       |
+| quantity        | DOUBLE | No       | Signed position quantity (negative = short)    |
+| price           | DOUBLE | Yes      | Average cost or mark price                     |
+| price_date      | DATE   | Yes      | Price observation date                         |
+| description     | TEXT   | Yes      |                                                |
+| Standard audit  |        |          |                                                |
+
+*** PR Strategy: One PR.
+
+* Phase Priority and Sequencing
+
+Recommended delivery order based on ORE Studio user priorities and
+implementation complexity:
+
+| Phase | Content                     | New tables | New ORE types | Complexity |
+|-------+-----------------------------+------------+---------------+------------|
+| 5     | Equity Instruments          | 1          | 28            | Medium     |
+| 6     | Commodity Instruments       | 1          | 27            | Medium     |
+| 7     | Extensions (bond/credit/rates) | 0 (ALTER) | 16           | Low        |
+| 8     | Composite + Scripted        | 3          | 6             | High       |
+| 9     | Positions + Cash            | 1          | 5             | Low        |
+
+Phases 5 and 6 are independent and can be done concurrently on separate
+branches. Phase 7 depends on Phases 1–4 being merged (already done). Phases
+8 and 9 are self-contained.
+
+* Key Design Decisions
+
+** No =option_instrument= Catch-All Table
+
+After reviewing all 164 ORE types, no cross-asset vanilla option type exists
+that cannot be housed in its asset-class table. The =option_instrument= slot
+in the original plan's architecture table is therefore dropped. MultiLegOption
+goes into the composite instruments table (Phase 8).
+
+** Basket / Multi-Underlying as JSON
+
+Basket and rainbow product basket constituents are stored as a =basket_json=
+TEXT column rather than a sub-table. This keeps the schema flat and consistent
+with the FX instrument precedent. A sub-table can be introduced later if
+constituent-level filtering or editing is needed.
+
+** Scripted Instruments as Opaque JSON
+
+ORE AMC scripts and event schedules are not relational data; they are opaque
+to the database layer. Storing them as JSON columns is the correct approach —
+the ORE engine parses the script, not the database.
+
+** ALTER TABLE for Extensions (Phase 7)
+
+Adding nullable columns via =ALTER TABLE= avoids recreating the existing
+tables and touching the bitemporal trigger. Since all new columns are nullable,
+existing rows are unaffected. The =valid_from= / =valid_to= mechanism
+automatically versions any subsequent UPDATE.
+
+* Reference
+
+- ORE type inventory: =projects/ores.sql/populate/trading/trading_trade_types_populate.sql= (164 types)
+- Phase 0–4 plan: [[file:2026-03-26-cdm-instrument-domain-model.org][2026-03-26-cdm-instrument-domain-model.org]]
+- FX instrument (option pattern reference): =projects/ores.trading.api/include/ores.trading.api/domain/fx_instrument.hpp=
+- Swap leg (sub-table reference): =projects/ores.trading.api/include/ores.trading.api/domain/swap_leg.hpp=

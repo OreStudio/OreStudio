@@ -952,8 +952,8 @@ the samples, send it to the grid and retrieve the results.
     CLOCK: [2026-03-26 Thu 00:00]--[2026-03-26 Thu 02:23] =>  2:23
     :END:
 
-*** BLOCKED CDM Phase 1: Rates instrument domain model                 :code:
-CLOSED: [2026-03-26 Thu 20:00]
+*** DONE CDM Phase 1: Rates instrument domain model                    :code:
+CLOSED: [2026-03-28 Sat 00:00]
     :LOGBOOK:
     CLOCK: [2026-03-26 Thu 15:00]--[2026-03-26 Thu 20:00] =>  5:00
     :END:
@@ -1013,7 +1013,8 @@ value_date, settlement, and option fields for FxOption).
   =FxInstrumentController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
-*** STARTED CDM Phase 4: Credit instrument domain model                :code:
+*** DONE CDM Phase 4: Credit instrument domain model                   :code:
+CLOSED: [2026-03-28 Sat 00:00]
 
 Implement the credit instrument domain model (Phase 4 of the CDM-inspired
 instrument design). See [[file:../../plans/2026-03-26-cdm-instrument-domain-model.org][plan]] for architecture.
@@ -1026,18 +1027,19 @@ index_series, seniority, restructuring, description).
 
 ***** Tasks
 
-- [ ] SQL: =ores_trading_credit_instruments_tbl= + notify trigger + drop files
-- [ ] SQL: Register in =trading_create.sql=, =drop_trading.sql=
-- [ ] Domain: =credit_instrument= struct, JSON I/O, table I/O, protocol messages
-- [ ] Repository: =credit_instrument= entity, mapper, repository
-- [ ] Service: =credit_instrument_service=
-- [ ] Server: messaging handler + registrar registration
-- [ ] Qt UI: =ClientCreditInstrumentModel=, =CreditInstrumentMdiWindow=,
+- [X] SQL: =ores_trading_credit_instruments_tbl= + notify trigger + drop files
+- [X] SQL: Register in =trading_create.sql=, =drop_trading.sql=
+- [X] Domain: =credit_instrument= struct, JSON I/O, table I/O, protocol messages
+- [X] Repository: =credit_instrument= entity, mapper, repository
+- [X] Service: =credit_instrument_service=
+- [X] Server: messaging handler + registrar registration
+- [X] Qt UI: =ClientCreditInstrumentModel=, =CreditInstrumentMdiWindow=,
   =CreditInstrumentDetailDialog=, =CreditInstrumentHistoryDialog=,
   =CreditInstrumentController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
-*** STARTED CDM Phase 3: Bond instrument domain model                  :code:
+*** DONE CDM Phase 3: Bond instrument domain model                     :code:
+CLOSED: [2026-03-28 Sat 00:00]
 
 Implement the bond instrument domain model (Phase 3 of the CDM-inspired
 instrument design). See [[file:../../plans/2026-03-26-cdm-instrument-domain-model.org][plan]] for architecture.

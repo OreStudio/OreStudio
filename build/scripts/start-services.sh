@@ -181,6 +181,14 @@ launch_wrapper_node() {
     local work_dir="$RUN_DIR/wrappers/node_${n}"
     mkdir -p "$work_dir"
     local name="ores.compute.wrapper.node${n}"
+    local wrapper_tls_args=()
+    if [[ -n "$NATS_TLS_CA" ]]; then
+        wrapper_tls_args+=(
+            --nats-tls-ca   "$KEYS_DIR/ca.crt"
+            --nats-tls-cert "$KEYS_DIR/ores.compute.wrapper.crt"
+            --nats-tls-key  "$KEYS_DIR/ores.compute.wrapper.key"
+        )
+    fi
     launch_binary "$name" "ores.compute.wrapper" \
         --log-enabled \
         --log-level "$LOG_LEVEL" \
@@ -191,7 +199,8 @@ launch_wrapper_node() {
         --host-id "$host_id" \
         --tenant-id "$NATS_PREFIX" \
         --work-dir "$work_dir" \
-        --http-base-url "http://localhost:$HTTP_PORT"
+        --http-base-url "http://localhost:$HTTP_PORT" \
+        "${wrapper_tls_args[@]}"
 }
 
 wait_for_ready() {

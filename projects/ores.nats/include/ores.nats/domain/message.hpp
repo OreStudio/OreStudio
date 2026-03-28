@@ -21,7 +21,9 @@
 #define ORES_NATS_DOMAIN_MESSAGE_HPP
 
 #include <functional>
+#include <span>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 #include <cstddef>
@@ -68,6 +70,27 @@ struct message {
  * @brief Callback type for incoming NATS messages.
  */
 using message_handler = std::function<void(message)>;
+
+/**
+ * @brief Reinterprets a string's character data as a read-only byte span.
+ *
+ * Use this when calling request_sync() or publish() with a JSON/text payload
+ * that is already held in a std::string or std::string_view, so callers do
+ * not need to scatter reinterpret_cast throughout service code.
+ */
+inline std::span<const std::byte> as_bytes(std::string_view s) noexcept {
+    return {reinterpret_cast<const std::byte*>(s.data()), s.size()};
+}
+
+/**
+ * @brief Reinterprets a message's byte payload as a string_view.
+ *
+ * Use this when deserialising a NATS reply payload with rfl::json::read or
+ * similar, so callers do not need to scatter reinterpret_cast throughout.
+ */
+inline std::string_view as_string_view(const std::vector<std::byte>& data) noexcept {
+    return {reinterpret_cast<const char*>(data.data()), data.size()};
+}
 
 }
 

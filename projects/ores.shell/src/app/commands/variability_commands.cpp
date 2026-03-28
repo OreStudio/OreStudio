@@ -30,12 +30,12 @@
 namespace ores::shell::app::commands {
 
 using namespace ores::logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
 template<typename Response>
-std::optional<Response> do_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.request(subject, body);
@@ -54,7 +54,7 @@ std::optional<Response> do_request(std::ostream& out, nats_session& session,
 }
 
 template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
@@ -75,7 +75,7 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_session& session
 } // anonymous namespace
 
 void variability_commands::
-register_commands(cli::Menu& root_menu, nats_session& session) {
+register_commands(cli::Menu& root_menu, nats_client& session) {
     auto variability_menu =
         std::make_unique<cli::Menu>("variability");
 
@@ -109,7 +109,7 @@ register_commands(cli::Menu& root_menu, nats_session& session) {
 }
 
 void variability_commands::
-process_list_settings(std::ostream& out, nats_session& session) {
+process_list_settings(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list settings request.";
 
     auto result = do_request<variability::messaging::list_settings_response>(
@@ -123,7 +123,7 @@ process_list_settings(std::ostream& out, nats_session& session) {
 }
 
 void variability_commands::
-process_save_setting(std::ostream& out, nats_session& session,
+process_save_setting(std::ostream& out, nats_client& session,
     std::string name, std::string value, std::string data_type,
     std::string description,
     std::string change_reason_code, std::string change_commentary) {
@@ -165,7 +165,7 @@ process_save_setting(std::ostream& out, nats_session& session,
 }
 
 void variability_commands::
-process_delete_setting(std::ostream& out, nats_session& session,
+process_delete_setting(std::ostream& out, nats_client& session,
     std::string name) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete setting request for: "
                                << name;
@@ -195,7 +195,7 @@ process_delete_setting(std::ostream& out, nats_session& session,
 }
 
 void variability_commands::
-process_get_setting_history(std::ostream& out, nats_session& session,
+process_get_setting_history(std::ostream& out, nats_client& session,
     std::string name) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get setting history for: "
                                << name;

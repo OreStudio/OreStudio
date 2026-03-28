@@ -83,6 +83,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         refresh_request::nats_subject, qg,
         [ah](ores::nats::message msg) { ah->refresh(std::move(msg)); }));
+    subs.push_back(nats.queue_subscribe(
+        service_login_request::nats_subject, qg,
+        [ah](ores::nats::message msg) { ah->service_login(std::move(msg)); }));
 
     // --- Bootstrap ---
     auto bh = std::make_shared<bootstrap_handler>(nats, ctx, signer);

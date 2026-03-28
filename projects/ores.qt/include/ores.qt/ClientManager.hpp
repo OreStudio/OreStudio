@@ -34,8 +34,8 @@
 #include <QTimer>
 #include "ores.utility/rfl/reflectors.hpp"
 #include <QDateTime>
-#include "ores.shell/service/nats_session.hpp"
-#include "ores.shell/service/session_expired_error.hpp"
+#include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/session_expired_error.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -354,7 +354,7 @@ public:
                     result.error().what());
             }
             return std::move(*result);
-        } catch (const shell::service::session_expired_error& e) {
+        } catch (const ores::nats::service::session_expired_error& e) {
             using namespace ores::logging;
             BOOST_LOG_SEV(lg(), warn) << "Session expired: " << e.what();
             QMetaObject::invokeMethod(this, "sessionExpired", Qt::QueuedConnection);
@@ -465,7 +465,7 @@ private:
     void onRefreshTimer();
 
     // NATS session for connection and authentication
-    shell::service::nats_session session_;
+    ores::nats::service::nats_client session_;
 
     // Subject prefix applied to all outbound NATS messages
     std::string subject_prefix_;

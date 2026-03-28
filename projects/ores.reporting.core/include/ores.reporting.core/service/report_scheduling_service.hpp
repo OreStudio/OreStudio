@@ -27,7 +27,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.reporting.api/domain/report_definition.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 
@@ -56,7 +56,8 @@ private:
 public:
     using context = ores::database::context;
 
-    report_scheduling_service(context ctx, ores::nats::service::client& nats);
+    report_scheduling_service(context ctx,
+        ores::nats::service::nats_client& svc_nats);
 
     /**
      * @brief Ensures all report definitions have a scheduler job.
@@ -125,7 +126,7 @@ private:
         const std::string& performed_by);
 
     context ctx_;
-    ores::nats::service::client& nats_;
+    ores::nats::service::nats_client& svc_nats_;
 };
 
 }

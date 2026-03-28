@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_TENANTS_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -58,7 +58,7 @@ public:
      * pagination_context is passed for API consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         pagination_context& pagination);
 
     /**
@@ -71,7 +71,7 @@ public:
      * @param include_deleted When true, includes soft-deleted tenants.
      */
     static void process_get_tenants(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         bool include_deleted);
 
     /**
@@ -88,7 +88,7 @@ public:
      * @param description Optional description
      */
     static void process_add_tenant(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string code, std::string name, std::string type,
         std::string hostname, std::string description);
 
@@ -102,7 +102,7 @@ public:
      * @param tenant_id The tenant UUID to get history for.
      */
     static void process_tenant_history(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string tenant_id);
 
     /**
@@ -115,7 +115,7 @@ public:
      * @param tenant_id The tenant UUID to delete.
      */
     static void process_delete_tenant(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string tenant_id);
 };
 

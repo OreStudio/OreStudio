@@ -101,6 +101,33 @@ struct refresh_response {
     int access_lifetime_s = 1800;
 };
 
+/**
+ * @brief Authenticates a service account and issues a JWT.
+ *
+ * Service accounts cannot log in with the regular password-based login path.
+ * They authenticate by presenting their database user password (which is
+ * stored as a SHA-256 hash in the service account row). On success the IAM
+ * service creates a session and returns a short-lived RS256 JWT identical in
+ * structure to a human login token.
+ *
+ * The @p username must match the @c username column of an existing service
+ * account (i.e. the database user name such as "ores_local1_reporting_service").
+ * The @p password is the plaintext database password for that user.
+ */
+struct service_login_request {
+    using response_type = struct service_login_response;
+    static constexpr std::string_view nats_subject = "iam.v1.auth.service-login";
+    std::string username;
+    std::string password;
+};
+
+struct service_login_response {
+    bool success = false;
+    std::string token;
+    std::string message;
+    int access_lifetime_s = 1800;
+};
+
 }
 
 #endif

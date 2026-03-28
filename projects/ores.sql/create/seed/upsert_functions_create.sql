@@ -675,9 +675,10 @@ $$ language plpgsql;
  * - Account names should match database user names for consistency
  */
 create or replace function ores_iam_service_accounts_upsert_fn(
-    p_username text,
-    p_email text,
-    p_description text
+    p_username    text,
+    p_email       text,
+    p_description text,
+    p_password    text default null  -- plaintext DB password; stored as SHA-256 hex
 ) returns void as $$
 begin
     perform ores_seed_validate_not_empty_fn(p_username, 'Service account username');
@@ -711,6 +712,17 @@ begin
         raise notice 'Created service account: %', p_username;
     else
         raise notice 'Service account already exists: %', p_username;
+    end if;
+
+    -- Store service_password_hash using SHA-256 (suitable for high-entropy
+    -- machine credentials such as randomly generated DB passwords).
+    if p_password is not null then
+        update ores_iam_accounts_tbl
+        set service_password_hash = encode(sha256(p_password::bytea), 'hex')
+        where username  = p_username
+          and tenant_id = ores_iam_system_tenant_id_fn()
+          and valid_to  = ores_utility_infinity_timestamp_fn();
+        raise notice 'Set service_password_hash for: %', p_username;
     end if;
 end;
 $$ language plpgsql;

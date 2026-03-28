@@ -27,6 +27,7 @@
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -52,8 +53,10 @@ class report_definition_handler {
 public:
     report_definition_handler(ores::nats::service::client& nats,
         ores::database::context ctx,
-        std::optional<ores::security::jwt::jwt_authenticator> verifier)
-        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
+        std::optional<ores::security::jwt::jwt_authenticator> verifier,
+        ores::nats::service::nats_client& svc_nats)
+        : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier))
+        , svc_nats_(svc_nats) {}
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(report_definition_handler_lg(), debug)
@@ -176,7 +179,7 @@ public:
         const auto& ctx = *ctx_expected;
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
-            service::report_scheduling_service scheduler(ctx_, nats_);
+            service::report_scheduling_service scheduler(ctx_, svc_nats_);
             int scheduled_count = 0;
             std::vector<std::string> failed_ids;
             for (const auto& id : req->ids) {
@@ -216,7 +219,7 @@ public:
         const auto& ctx = *ctx_expected;
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
-            service::report_scheduling_service scheduler(ctx_, nats_);
+            service::report_scheduling_service scheduler(ctx_, svc_nats_);
             int unscheduled_count = 0;
             std::vector<std::string> failed_ids;
             for (const auto& id : req->ids) {
@@ -248,6 +251,7 @@ private:
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;
+    ores::nats::service::nats_client& svc_nats_;
 };
 
 } // namespace ores::reporting::messaging

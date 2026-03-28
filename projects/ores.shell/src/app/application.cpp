@@ -24,7 +24,7 @@
 #include "ores.utility/version/version.hpp"
 #include "ores.iam.api/messaging/bootstrap_protocol.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/repl.hpp"
 
 namespace ores::shell::app {
@@ -47,7 +47,7 @@ auto& anon_lg() {
     return instance;
 }
 
-bool auto_connect(service::nats_session& session, std::ostream& out,
+bool auto_connect(ores::nats::service::nats_client& session, std::ostream& out,
     const std::optional<nats::config::nats_options>& cfg) {
     nats::config::nats_options opts;
     if (cfg) opts = *cfg;
@@ -62,7 +62,7 @@ bool auto_connect(service::nats_session& session, std::ostream& out,
     }
 }
 
-void check_bootstrap_status(service::nats_session& session, std::ostream& out) {
+void check_bootstrap_status(ores::nats::service::nats_client& session, std::ostream& out) {
     try {
         auto reply = session.request("iam.v1.auth.bootstrap-status",
             rfl::json::write(iam::messaging::bootstrap_status_request{}));
@@ -80,7 +80,7 @@ void check_bootstrap_status(service::nats_session& session, std::ostream& out) {
     }
 }
 
-bool auto_login(service::nats_session& session, std::ostream& out,
+bool auto_login(ores::nats::service::nats_client& session, std::ostream& out,
     const config::login_options& login_config) {
     try {
         iam::messaging::login_request req;
@@ -95,7 +95,7 @@ bool auto_login(service::nats_session& session, std::ostream& out,
                 << (result ? result->message : "parse error") << std::endl;
             return false;
         }
-        service::nats_session::login_info info;
+        ores::nats::service::nats_client::login_info info;
         info.jwt = result->token;
         info.username = result->username;
         info.tenant_id = result->tenant_id;
@@ -118,7 +118,7 @@ void application::run() {
         "ORE Studio Shell");
 
     try {
-        service::nats_session session;
+        ores::nats::service::nats_client session;
 
         bool connected = auto_connect(session, std::cout, connection_config_);
         if (connected) {

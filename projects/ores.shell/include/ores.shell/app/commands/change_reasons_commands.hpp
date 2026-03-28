@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_CHANGE_REASONS_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.shell/app/pagination_context.hpp"
 
 namespace cli {
@@ -56,7 +56,7 @@ public:
      * pagination_context is passed for API consistency.
      */
     static void register_commands(cli::Menu& root_menu,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         pagination_context& pagination);
 
     /**
@@ -68,7 +68,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_get_change_reasons(std::ostream& out,
-        service::nats_session& session);
+        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process an add change reason request.
@@ -83,7 +83,7 @@ public:
      * @param change_commentary Free-text commentary explaining the change
      */
     static void process_add_change_reason(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string code, std::string description,
         std::string category_code, std::string change_commentary);
 
@@ -97,7 +97,7 @@ public:
      * @param code Code of the change reason to delete
      */
     static void process_delete_change_reason(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string code);
 
     /**
@@ -110,7 +110,7 @@ public:
      * @param code Code of the change reason
      */
     static void process_get_change_reason_history(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string code);
 };
 

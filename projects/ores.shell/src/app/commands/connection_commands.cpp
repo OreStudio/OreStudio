@@ -30,7 +30,7 @@
 namespace ores::shell::app::commands {
 
 using namespace ores::logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
@@ -42,7 +42,7 @@ auto& anon_lg() {
     return instance;
 }
 
-void check_bootstrap_status(nats_session& session, std::ostream& out) {
+void check_bootstrap_status(nats_client& session, std::ostream& out) {
     try {
         auto reply = session.request("iam.v1.auth.bootstrap-status",
             rfl::json::write(iam::messaging::bootstrap_status_request{}));
@@ -68,7 +68,7 @@ void check_bootstrap_status(nats_session& session, std::ostream& out) {
 } // anonymous namespace
 
 void connection_commands::
-register_commands(cli::Menu& root_menu, nats_session& session) {
+register_commands(cli::Menu& root_menu, nats_client& session) {
     root_menu.Insert("connect", [&session](std::ostream& out,
             std::string host, std::string port, std::string /*identifier*/) {
         process_connect(std::ref(out), std::ref(session),
@@ -81,7 +81,7 @@ register_commands(cli::Menu& root_menu, nats_session& session) {
 }
 
 void connection_commands::
-process_connect(std::ostream& out, nats_session& session,
+process_connect(std::ostream& out, nats_client& session,
     std::string host, std::string port, std::string /*identifier*/) {
 
     const std::string resolved_host = host.empty() ? "localhost" : std::move(host);
@@ -111,7 +111,7 @@ process_connect(std::ostream& out, nats_session& session,
 }
 
 void connection_commands::
-process_disconnect(std::ostream& out, nats_session& session) {
+process_disconnect(std::ostream& out, nats_client& session) {
     if (!session.is_connected()) {
         out << "✗ Not connected." << std::endl;
         return;

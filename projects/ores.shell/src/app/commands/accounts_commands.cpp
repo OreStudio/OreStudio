@@ -45,7 +45,7 @@
 namespace ores::shell::app::commands {
 
 using namespace ores::logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
@@ -76,7 +76,7 @@ std::string format_duration(std::chrono::seconds dur) {
 }
 
 template<typename Response>
-std::optional<Response> do_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.request(subject, body);
@@ -95,7 +95,7 @@ std::optional<Response> do_request(std::ostream& out, nats_session& session,
 }
 
 template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
@@ -116,7 +116,7 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_session& session
 } // anonymous namespace
 
 void accounts_commands::
-register_commands(cli::Menu& root_menu, nats_session& session,
+register_commands(cli::Menu& root_menu, nats_client& session,
                   pagination_context& pagination) {
     auto accounts_menu =
         std::make_unique<cli::Menu>("accounts");
@@ -249,7 +249,7 @@ register_commands(cli::Menu& root_menu, nats_session& session,
 }
 
 void accounts_commands::
-process_list_accounts(std::ostream& out, nats_session& session,
+process_list_accounts(std::ostream& out, nats_client& session,
                       pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list account request.";
 
@@ -286,7 +286,7 @@ process_list_accounts(std::ostream& out, nats_session& session,
 }
 
 void accounts_commands::
-process_login(std::ostream& out, nats_session& session,
+process_login(std::ostream& out, nats_client& session,
     std::string principal, std::string password) {
     iam::messaging::login_request req;
     req.principal = std::move(principal);
@@ -301,7 +301,7 @@ process_login(std::ostream& out, nats_session& session,
         return;
     }
 
-    nats_session::login_info info;
+    nats_client::login_info info;
     info.jwt = result->token;
     info.username = result->username;
     info.tenant_id = result->tenant_id;
@@ -315,7 +315,7 @@ process_login(std::ostream& out, nats_session& session,
 }
 
 void accounts_commands::
-process_lock_account(std::ostream& out, nats_session& session,
+process_lock_account(std::ostream& out, nats_client& session,
     std::string account_id) {
     // Validate UUID format
     try {
@@ -353,7 +353,7 @@ process_lock_account(std::ostream& out, nats_session& session,
 }
 
 void accounts_commands::
-process_unlock_account(std::ostream& out, nats_session& session,
+process_unlock_account(std::ostream& out, nats_client& session,
     std::string account_id) {
     // Validate UUID format
     try {
@@ -391,7 +391,7 @@ process_unlock_account(std::ostream& out, nats_session& session,
 }
 
 void accounts_commands::process_create_account(std::ostream& out,
-    nats_session& session, std::string principal,
+    nats_client& session, std::string principal,
     std::string password, std::string totp_secret, std::string email) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating create account request for principal: "
                                << principal;
@@ -418,7 +418,7 @@ void accounts_commands::process_create_account(std::ostream& out,
 }
 
 void accounts_commands::
-process_list_login_info(std::ostream& out, nats_session& session) {
+process_list_login_info(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list login info request.";
 
     auto result = do_auth_request<iam::messaging::list_login_info_response>(
@@ -432,7 +432,7 @@ process_list_login_info(std::ostream& out, nats_session& session) {
 }
 
 void accounts_commands::
-process_logout(std::ostream& out, nats_session& session) {
+process_logout(std::ostream& out, nats_client& session) {
     if (!session.is_logged_in()) {
         out << "✗ Not logged in." << std::endl;
         return;
@@ -456,7 +456,7 @@ process_logout(std::ostream& out, nats_session& session) {
 }
 
 void accounts_commands::
-process_bootstrap(std::ostream& out, nats_session& session,
+process_bootstrap(std::ostream& out, nats_client& session,
     std::string principal, std::string password, std::string email) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating bootstrap request for principal: "
                                << principal;
@@ -487,7 +487,7 @@ process_bootstrap(std::ostream& out, nats_session& session,
 }
 
 void accounts_commands::
-process_list_sessions(std::ostream& out, nats_session& session,
+process_list_sessions(std::ostream& out, nats_client& session,
     std::string account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating list sessions request.";
 
@@ -551,7 +551,7 @@ process_list_sessions(std::ostream& out, nats_session& session,
 }
 
 void accounts_commands::
-process_active_sessions(std::ostream& out, nats_session& session) {
+process_active_sessions(std::ostream& out, nats_client& session) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating active sessions request.";
 
     auto result = do_auth_request<iam::messaging::get_active_sessions_response>(
@@ -591,7 +591,7 @@ process_active_sessions(std::ostream& out, nats_session& session) {
 }
 
 void accounts_commands::
-process_session_stats(std::ostream& out, nats_session& session, int days) {
+process_session_stats(std::ostream& out, nats_client& session, int days) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating session statistics request for "
                                << days << " days.";
 
@@ -659,7 +659,7 @@ process_session_stats(std::ostream& out, nats_session& session, int days) {
 }
 
 void accounts_commands::
-process_get_account_history(std::ostream& out, nats_session& session,
+process_get_account_history(std::ostream& out, nats_client& session,
     std::string username) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get account history for: "
                                << username;
@@ -695,7 +695,7 @@ process_get_account_history(std::ostream& out, nats_session& session,
 }
 
 void accounts_commands::
-process_account_info(std::ostream& out, nats_session& session,
+process_account_info(std::ostream& out, nats_client& session,
     std::string username) {
     BOOST_LOG_SEV(lg(), debug) << "Getting comprehensive account info for: "
                                << username;

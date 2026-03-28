@@ -139,7 +139,7 @@ LoginResult ClientManager::login(const std::string& username,
         }
 
         // Store auth in session
-        session_.set_auth(shell::service::nats_session::login_info{
+        session_.set_auth(ores::nats::service::nats_client::login_info{
             .jwt = response.token,
             .username = response.username,
             .tenant_id = response.tenant_id,
@@ -263,7 +263,7 @@ LoginResult ClientManager::testConnection(
     BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host << ":" << port;
 
     try {
-        shell::service::nats_session temp_session;
+        ores::nats::service::nats_client temp_session;
         nats::config::nats_options opts;
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;
@@ -304,7 +304,7 @@ SignupResult ClientManager::signup(
     BOOST_LOG_SEV(lg(), info) << "Attempting signup to " << host << ":" << port;
 
     try {
-        shell::service::nats_session temp_session;
+        ores::nats::service::nats_client temp_session;
         nats::config::nats_options opts;
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;
@@ -463,7 +463,7 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
         // Update JWT with new token from select_party response
         if (!result->token.empty()) {
             auto auth = session_.auth();
-            shell::service::nats_session::login_info updated_auth = auth;
+            ores::nats::service::nats_client::login_info updated_auth = auth;
             updated_auth.jwt = result->token;
             if (!result->party_name.empty())
                 updated_auth.tenant_name = result->party_name;

@@ -21,7 +21,7 @@
 #define ORES_SHELL_APP_COMMANDS_VARIABILITY_COMMANDS_HPP
 
 #include "ores.logging/make_logger.hpp"
-#include "ores.shell/service/nats_session.hpp"
+#include "ores.nats/service/nats_client.hpp"
 
 namespace cli {
 
@@ -55,7 +55,7 @@ public:
      * Creates the variability submenu and adds variability operations.
      */
     static void register_commands(cli::Menu& root_menu,
-        service::nats_session& session);
+        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a list settings request.
@@ -66,7 +66,7 @@ public:
      * @param session Client session for connectivity.
      */
     static void process_list_settings(std::ostream& out,
-        service::nats_session& session);
+        ores::nats::service::nats_client& session);
 
     /**
      * @brief Process a save setting request.
@@ -83,7 +83,7 @@ public:
      * @param change_commentary Free-text commentary
      */
     static void process_save_setting(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string name, std::string value, std::string data_type,
         std::string description,
         std::string change_reason_code, std::string change_commentary);
@@ -98,7 +98,7 @@ public:
      * @param name Name of the setting to delete
      */
     static void process_delete_setting(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string name);
 
     /**
@@ -111,7 +111,7 @@ public:
      * @param name Name of the setting
      */
     static void process_get_setting_history(std::ostream& out,
-        service::nats_session& session,
+        ores::nats::service::nats_client& session,
         std::string name);
 };
 

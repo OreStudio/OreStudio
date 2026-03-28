@@ -34,7 +34,7 @@
 namespace ores::shell::app::commands {
 
 using namespace logging;
-using service::nats_session;
+using ores::nats::service::nats_client;
 
 namespace {
 
@@ -43,7 +43,7 @@ std::string format_time(std::chrono::system_clock::time_point tp) {
 }
 
 template<typename Response>
-std::optional<Response> do_auth_request(std::ostream& out, nats_session& session,
+std::optional<Response> do_auth_request(std::ostream& out, nats_client& session,
     const std::string& subject, const std::string& body) {
     try {
         auto reply = session.authenticated_request(subject, body);
@@ -64,7 +64,7 @@ std::optional<Response> do_auth_request(std::ostream& out, nats_session& session
 }  // anonymous namespace
 
 void tenants_commands::
-register_commands(cli::Menu& root_menu, nats_session& session,
+register_commands(cli::Menu& root_menu, nats_client& session,
                   pagination_context& /*pagination*/) {
     auto tenants_menu =
         std::make_unique<cli::Menu>("tenants");
@@ -101,7 +101,7 @@ register_commands(cli::Menu& root_menu, nats_session& session,
 }
 
 void tenants_commands::
-process_get_tenants(std::ostream& out, nats_session& session,
+process_get_tenants(std::ostream& out, nats_client& session,
     bool include_deleted) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request. "
                                << "include_deleted=" << include_deleted;
@@ -119,7 +119,7 @@ process_get_tenants(std::ostream& out, nats_session& session,
 }
 
 void tenants_commands::
-process_add_tenant(std::ostream& out, nats_session& session,
+process_add_tenant(std::ostream& out, nats_client& session,
     std::string code, std::string name, std::string type,
     std::string hostname, std::string description) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add tenant request for code: "
@@ -168,7 +168,7 @@ process_add_tenant(std::ostream& out, nats_session& session,
 }
 
 void tenants_commands::
-process_tenant_history(std::ostream& out, nats_session& session,
+process_tenant_history(std::ostream& out, nats_client& session,
     std::string tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating tenant history request for: "
                                << tenant_id;
@@ -230,7 +230,7 @@ process_tenant_history(std::ostream& out, nats_session& session,
 }
 
 void tenants_commands::
-process_delete_tenant(std::ostream& out, nats_session& session,
+process_delete_tenant(std::ostream& out, nats_client& session,
     std::string tenant_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete tenant request for: "
                                << tenant_id;

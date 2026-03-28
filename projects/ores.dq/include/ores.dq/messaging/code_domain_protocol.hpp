@@ -24,8 +24,6 @@
 #include <iosfwd>
 #include <vector>
 #include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.dq/domain/code_domain.hpp"
 
@@ -158,43 +156,6 @@ struct get_code_domain_history_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const get_code_domain_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Code Domain traits
-template<>
-struct message_traits<dq::messaging::get_code_domains_request> {
-    using request_type = dq::messaging::get_code_domains_request;
-    using response_type = dq::messaging::get_code_domains_response;
-    static constexpr message_type request_message_type =
-        message_type::get_code_domains_request;
-};
-
-template<>
-struct message_traits<dq::messaging::save_code_domain_request> {
-    using request_type = dq::messaging::save_code_domain_request;
-    using response_type = dq::messaging::save_code_domain_response;
-    static constexpr message_type request_message_type =
-        message_type::save_code_domain_request;
-};
-
-template<>
-struct message_traits<dq::messaging::delete_code_domain_request> {
-    using request_type = dq::messaging::delete_code_domain_request;
-    using response_type = dq::messaging::delete_code_domain_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_code_domain_request;
-};
-
-template<>
-struct message_traits<dq::messaging::get_code_domain_history_request> {
-    using request_type = dq::messaging::get_code_domain_history_request;
-    using response_type = dq::messaging::get_code_domain_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_code_domain_history_request;
-};
 
 }
 

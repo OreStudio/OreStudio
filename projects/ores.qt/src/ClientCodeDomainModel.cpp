@@ -20,10 +20,9 @@
 #include "ores.qt/ClientCodeDomainModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.dq/messaging/code_domain_protocol.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -204,11 +203,11 @@ void ClientCodeDomainModel::fetch_domains(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch code domains: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .domains = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch code domains: " + comms::net::to_string(result.error())),
+                                "Failed to fetch code domains: " + result.error()),
                             .error_details = {}};
                 }
 

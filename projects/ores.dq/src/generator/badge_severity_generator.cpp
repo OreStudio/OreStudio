@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq/generators/badge_severity_generator.hpp"
+#include "ores.dq/generator/badge_severity_generator.hpp"
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -33,9 +33,10 @@ domain::badge_severity generate_synthetic_badge_severity(
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
 
+    const auto idx = ++counter;
     domain::badge_severity r;
     r.version = 1;
-    r.code = ;
+    r.code = "sev_" + ctx.alphanumeric(4) + "_" + std::to_string(idx);
     r.name = std::string(faker::word::adjective()) + " Severity";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);

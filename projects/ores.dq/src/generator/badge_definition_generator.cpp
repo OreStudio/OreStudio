@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq/generators/badge_definition_generator.hpp"
+#include "ores.dq/generator/badge_definition_generator.hpp"
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -33,15 +33,16 @@ domain::badge_definition generate_synthetic_badge_definition(
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
 
+    const auto idx = ++counter;
     domain::badge_definition r;
     r.version = 1;
-    r.code = ;
+    r.code = "badge_" + ctx.alphanumeric(6) + "_" + std::to_string(idx);
     r.name = std::string(faker::word::adjective());
     r.description = std::string(faker::lorem::sentence());
-    r.background_colour = std::string("#") + faker::string::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::NoPrefix);
+    r.background_colour = std::string("#") + faker::number::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::None);
     r.text_colour = std::string("#ffffff");
     r.severity_code = std::string("secondary");
-    r.css_class = std::optional<std::string>{};
+    r.css_class = std::string{};
     r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
     r.performed_by = modified_by;

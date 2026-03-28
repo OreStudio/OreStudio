@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.dq/generators/code_domain_generator.hpp"
+#include "ores.dq/generator/code_domain_generator.hpp"
 
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
@@ -33,9 +33,10 @@ domain::code_domain generate_synthetic_code_domain(
     const auto modified_by = ctx.env().get_or(
         std::string(generation_keys::modified_by), "system");
 
+    const auto idx = ++counter;
     domain::code_domain r;
     r.version = 1;
-    r.code = ;
+    r.code = "dom_" + ctx.alphanumeric(4) + "_" + std::to_string(idx);
     r.name = std::string(faker::word::noun()) + " Domain";
     r.description = std::string(faker::lorem::sentence());
     r.display_order = faker::number::integer(1, 100);

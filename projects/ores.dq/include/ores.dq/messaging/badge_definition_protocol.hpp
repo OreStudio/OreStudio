@@ -24,8 +24,6 @@
 #include <iosfwd>
 #include <vector>
 #include <expected>
-#include "ores.comms/messaging/message_type.hpp"
-#include "ores.comms/messaging/message_traits.hpp"
 #include "ores.utility/serialization/error_code.hpp"
 #include "ores.dq/domain/badge_definition.hpp"
 
@@ -158,43 +156,6 @@ struct get_badge_definition_history_response final {
 };
 
 std::ostream& operator<<(std::ostream& s, const get_badge_definition_history_response& v);
-
-}
-
-namespace ores::comms::messaging {
-
-// Badge Definition traits
-template<>
-struct message_traits<dq::messaging::get_badge_definitions_request> {
-    using request_type = dq::messaging::get_badge_definitions_request;
-    using response_type = dq::messaging::get_badge_definitions_response;
-    static constexpr message_type request_message_type =
-        message_type::get_badge_definitions_request;
-};
-
-template<>
-struct message_traits<dq::messaging::save_badge_definition_request> {
-    using request_type = dq::messaging::save_badge_definition_request;
-    using response_type = dq::messaging::save_badge_definition_response;
-    static constexpr message_type request_message_type =
-        message_type::save_badge_definition_request;
-};
-
-template<>
-struct message_traits<dq::messaging::delete_badge_definition_request> {
-    using request_type = dq::messaging::delete_badge_definition_request;
-    using response_type = dq::messaging::delete_badge_definition_response;
-    static constexpr message_type request_message_type =
-        message_type::delete_badge_definition_request;
-};
-
-template<>
-struct message_traits<dq::messaging::get_badge_definition_history_request> {
-    using request_type = dq::messaging::get_badge_definition_history_request;
-    using response_type = dq::messaging::get_badge_definition_history_response;
-    static constexpr message_type request_message_type =
-        message_type::get_badge_definition_history_request;
-};
 
 }
 

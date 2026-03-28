@@ -20,10 +20,9 @@
 #include "ores.qt/ClientBadgeSeverityModel.hpp"
 
 #include <QtConcurrent>
-#include "ores.dq/messaging/badge_severity_protocol.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.comms/net/client_session.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
@@ -204,11 +203,11 @@ void ClientBadgeSeverityModel::fetch_severities(
 
                 if (!result) {
                     BOOST_LOG_SEV(lg(), error) << "Failed to fetch badge severities: "
-                                               << comms::net::to_string(result.error());
+                                               << result.error();
                     return {.success = false, .severities = {},
                             .total_available_count = 0,
                             .error_message = QString::fromStdString(
-                                "Failed to fetch badge severities: " + comms::net::to_string(result.error())),
+                                "Failed to fetch badge severities: " + result.error()),
                             .error_details = {}};
                 }
 

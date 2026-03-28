@@ -26,8 +26,7 @@
 #include "ui_BadgeDefinitionDetailDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
-#include "ores.dq/messaging/badge_definition_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 
 namespace ores::qt {
 
@@ -197,34 +196,15 @@ void BadgeDefinitionDetailDialog::onSaveClicked() {
         }
 
         dq::messaging::save_badge_definition_request request;
-        request.definition = definition;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::save_badge_definition_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.data = definition;
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            return {false, "Failed to communicate with server"};
+            return {false, response_result.error()};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = dq::messaging::save_badge_definition_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->success, response->message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<SaveResult>(self);
@@ -277,40 +257,21 @@ void BadgeDefinitionDetailDialog::onDeleteClicked() {
         std::string message;
     };
 
-    auto task = [self, code = definition_.code]() -> DeleteResult {
+    auto task = [self, code_str = definition_.code]() -> DeleteResult {
         if (!self || !self->clientManager_) {
             return {false, "Dialog closed"};
         }
 
         dq::messaging::delete_badge_definition_request request;
-        request.codes = {code};
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::delete_badge_definition_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        request.codes = {code_str};
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            return {false, "Failed to communicate with server"};
+            return {false, response_result.error()};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response"};
-        }
-
-        auto response = dq::messaging::delete_badge_definition_response::
-            deserialize(*payload_result);
-
-        if (!response || response->results.empty()) {
-            return {false, "Invalid server response"};
-        }
-
-        return {response->results[0].success, response->results[0].message};
+        return {response_result->success, response_result->message};
     };
 
     auto* watcher = new QFutureWatcher<DeleteResult>(self);

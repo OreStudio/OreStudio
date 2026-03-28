@@ -15,7 +15,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.dq.api")
+set(name "ores.dq")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -32,16 +32,19 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.dq.api/include)
+    ${CMAKE_SOURCE_DIR}/projects/ores.dq/include)
 
 target_link_libraries(${lib_target_name}
     PUBLIC
-        ores.dq.lib
-        ores.eventing.lib
+        ores.database.lib
         ores.platform.lib
     PRIVATE
         ores.utility.lib
+        ores.logging.lib
+        reflectcpp::reflectcpp
+        sqlgen::sqlgen
         faker-cxx::faker-cxx
-        libfort::fort)
+        libfort::fort
+        Boost::boost)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

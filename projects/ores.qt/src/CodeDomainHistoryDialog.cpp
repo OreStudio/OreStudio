@@ -26,8 +26,7 @@
 #include "ui_CodeDomainHistoryDialog.h"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
-#include "ores.dq/messaging/code_domain_protocol.hpp"
-#include "ores.comms/messaging/frame.hpp"
+#include "ores.dq.api/messaging/badge_protocol.hpp"
 
 namespace ores::qt {
 
@@ -137,34 +136,15 @@ void CodeDomainHistoryDialog::loadHistory() {
 
         dq::messaging::get_code_domain_history_request request;
         request.code = code;
-        auto payload = request.serialize();
-
-        comms::messaging::frame request_frame(
-            comms::messaging::message_type::get_code_domain_history_request,
-            0, std::move(payload)
-        );
-
-        auto response_result = self->clientManager_->sendRequest(
-            std::move(request_frame));
+        auto response_result = self->clientManager_->
+            process_authenticated_request(std::move(request));
 
         if (!response_result) {
-            return {false, "Failed to communicate with server", {}};
+            return {false, response_result.error(), {}};
         }
 
-        auto payload_result = response_result->decompressed_payload();
-        if (!payload_result) {
-            return {false, "Failed to decompress response", {}};
-        }
-
-        auto response = dq::messaging::get_code_domain_history_response::
-            deserialize(*payload_result);
-
-        if (!response) {
-            return {false, "Invalid server response", {}};
-        }
-
-        return {response->success, response->message,
-                std::move(response->versions)};
+        return {response_result->success, response_result->message,
+                std::move(response_result->history)};
     };
 
     auto* watcher = new QFutureWatcher<HistoryResult>(self);

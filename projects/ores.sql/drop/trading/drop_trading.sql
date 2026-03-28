@@ -52,6 +52,10 @@
 \ir ./trading_credit_instruments_notify_trigger_drop.sql
 \ir ./trading_credit_instruments_drop.sql
 
+-- Equity instruments
+\ir ./trading_equity_instruments_notify_trigger_drop.sql
+\ir ./trading_equity_instruments_drop.sql
+
 -- Trades (depends on reference data, drop after junction tables)
 \ir ./trading_trades_notify_trigger_drop.sql
 \ir ./trading_trades_drop.sql

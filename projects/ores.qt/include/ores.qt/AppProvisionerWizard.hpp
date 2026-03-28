@@ -105,7 +105,7 @@ private:
     PlatformsPage*      platforms_page_;
     PackageUploadPage*  package_upload_page_;
     AuditPage*          audit_page_;
-    AppProvisionerReviewPage*         review_page_;
+    AppProvisionerReviewPage*         app_provisioner_review_page_;
 };
 
 } // namespace ores::qt

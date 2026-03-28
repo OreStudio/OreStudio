@@ -113,7 +113,6 @@ fi
 DB_NAME="${ORES_DATABASE_NAME:-ores_dev_${LABEL}}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.${LABEL}}"
 NATS_URL="nats://localhost:4222"
-KEYS_DIR="${PROJECT_DIR}/build/keys/nats"
 
 # Sanitise LABEL for Postgres identifier use (lowercase, hyphens/dots → underscores)
 LABEL_LOWER="$(echo "${LABEL}" | tr '[:upper:]' '[:lower:]' | tr '.-' '__')"

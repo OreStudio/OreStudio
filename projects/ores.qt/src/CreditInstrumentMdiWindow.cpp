@@ -127,7 +127,7 @@ void CreditInstrumentMdiWindow::setupTable() {
     tableView_ = new QTableView(this);
     tableView_->setModel(proxyModel_);
     tableView_->setSelectionBehavior(QAbstractItemView::SelectRows);
-    tableView_->setSelectionMode(QAbstractItemView::SingleSelection);
+    tableView_->setSelectionMode(QAbstractItemView::ExtendedSelection);
     tableView_->setSortingEnabled(true);
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);

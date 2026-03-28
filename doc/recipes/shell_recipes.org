@@ -17,7 +17,7 @@ Component]].
   :header-args+: :var log_args="--log-enabled --log-level trace --log-directory ../log"
   :header-args+: :var login_args="--login-username newuser3"
   :header-args+: :var connect_args="--connect-host localhost --connect-port 51004 --connect-identifier recipes"
-  :header-args+: :var ORES_COMMS_SHELL_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "newuser3")
+  :header-args+: :var ORES_SHELL_LOGIN_PASSWORD=(auth-source-pick-first-password :host "localhost" :user "newuser3")
   :END:
 
 ** General
@@ -354,7 +354,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<auto-login>>
 EOF
@@ -472,7 +472,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<create-account>>
 EOF
@@ -503,7 +503,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-account>>
 EOF
@@ -533,7 +533,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-account>>
 EOF
@@ -557,7 +557,7 @@ ores-shell>
 | 644b4827-7281-4596-b9e0-befeb123688a | ores_test_dml_user | test_dml@system.ores  | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | 3860fdff-54db-4d83-bb6b-3a7f45b88687 | ores_test_ddl_user | test_ddl@system.ores  | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | 0308a18f-d075-4ea0-a7a9-0211d7ca217b | ores_http_user     | http@system.ores      | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
-| e775c0ca-5d55-4d2d-a5dd-5f6ae7a432ba | ores_comms_user    | comms@system.ores     | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
+| e775c0ca-5d55-4d2d-a5dd-5f6ae7a432ba | ores_shell_user    | comms@system.ores     | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | cd426d64-3fcc-4306-8e5a-19149e3b89e0 | ores_wt_user       | wt@system.ores        | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | 30ed8453-69a6-4f5c-92c3-930424565cd5 | ores_cli_user      | cli@system.ores       | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
 | a9fb774d-2048-48dc-a96c-e432d7107ea4 | ores_ddl_user      | ddl@system.ores       | system.initial_load | postgres    | 2026-02-05 11:29:49.000000000 | 1       |
@@ -580,7 +580,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-login-info>>
 EOF
@@ -618,7 +618,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<lock-account>>
 EOF
@@ -648,7 +648,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<unlock-account>>
 EOF
@@ -678,7 +678,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<account-roles>>
 EOF
@@ -716,7 +716,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<account-permissions>>
 EOF
@@ -759,7 +759,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<assign-role>>
 EOF
@@ -804,7 +804,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<revoke-role>>
 EOF
@@ -837,7 +837,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<assign-role-by-name>>
 EOF
@@ -855,7 +855,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<revoke-role-by-name>>
 EOF
@@ -872,7 +872,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<account-history>>
 EOF
@@ -956,7 +956,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-get>>
 EOF
@@ -993,7 +993,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-get-all>>
 EOF
@@ -1039,7 +1039,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-add>>
 EOF
@@ -1072,7 +1072,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<create-account-tenant>>
 EOF
@@ -1103,7 +1103,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<list-accounts-tenant>>
 EOF
@@ -1133,7 +1133,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-history>>
 EOF
@@ -1172,7 +1172,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<tenants-delete>>
 EOF
@@ -1251,7 +1251,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<list-feature-flags>>
 EOF
@@ -1292,7 +1292,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<add-feature-flag>>
 EOF
@@ -1321,7 +1321,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<delete-feature-flag>>
 EOF
@@ -1350,7 +1350,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args}  << 'EOF'
 <<feature-flag-history>>
 EOF
@@ -1435,7 +1435,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-list>>
 EOF
@@ -1455,26 +1455,26 @@ ores-shell>
 +----------+---------+------------------+--------+--------------+----------------+-----------+-----------------------------+-----------------+-------------------------------+
 | ISO Code | Version | Name             | Symbol | Type         | Fractions/Unit | Precision | Change Reason               | Recorded By     | Recorded At                   |
 +----------+---------+------------------+--------+--------------+----------------+-----------+-----------------------------+-----------------+-------------------------------+
-| XLM      | 1       | Stellar          | XLM    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| PAXG     | 1       | PAX Gold         | PAXG   | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| USDC     | 1       | USD Coin         | USDC   | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| LINK     | 1       | Chainlink        | LINK   | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| HYPE     | 1       | Hype             | HYPE   | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| ZEC      | 1       | ZCash            | ZEC    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| USDT     | 1       | Tether           | USDT   | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| SOL      | 1       | Solana           | SOL    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| ADA      | 1       | Cardano          | ADA    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| TRX      | 1       | TRON             | TRX    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| HBAR     | 1       | Hedera Hashgraph | HBAR   | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| SUI      | 1       | Sui              | SUI    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| BCH      | 1       | Bitcoin Cash     | BCH    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| XMR      | 1       | Monero           | XMR    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| BTC      | 1       | Bitcoin          | ₿    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| ETH      | 1       | Ethereum         | Ξ     | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| XRP      | 1       | XRP              | ✕    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| BNB      | 1       | Binance Coin     | BNB    | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| DOGE     | 1       | Dogecoin         | Ð     | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
-| AVAX     | 1       | Avalanche        | AVAX   | crypto.major | 100000000      | 8         | system.external_data_import | ores_comms_user | 2026-02-05 15:24:57.000000000 |
+| XLM      | 1       | Stellar          | XLM    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| PAXG     | 1       | PAX Gold         | PAXG   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| USDC     | 1       | USD Coin         | USDC   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| LINK     | 1       | Chainlink        | LINK   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| HYPE     | 1       | Hype             | HYPE   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| ZEC      | 1       | ZCash            | ZEC    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| USDT     | 1       | Tether           | USDT   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| SOL      | 1       | Solana           | SOL    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| ADA      | 1       | Cardano          | ADA    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| TRX      | 1       | TRON             | TRX    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| HBAR     | 1       | Hedera Hashgraph | HBAR   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| SUI      | 1       | Sui              | SUI    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| BCH      | 1       | Bitcoin Cash     | BCH    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| XMR      | 1       | Monero           | XMR    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| BTC      | 1       | Bitcoin          | ₿    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| ETH      | 1       | Ethereum         | Ξ     | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| XRP      | 1       | XRP              | ✕    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| BNB      | 1       | Binance Coin     | BNB    | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| DOGE     | 1       | Dogecoin         | Ð     | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
+| AVAX     | 1       | Avalanche        | AVAX   | crypto.major | 100000000      | 8         | system.external_data_import | ores_shell_user | 2026-02-05 15:24:57.000000000 |
 +----------+---------+------------------+--------+--------------+----------------+-----------+-----------------------------+-----------------+-------------------------------+
 
 
@@ -1495,7 +1495,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-add>>
 EOF
@@ -1525,7 +1525,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-delete>>
 EOF
@@ -1542,7 +1542,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<currencies-history>>
 EOF
@@ -1622,7 +1622,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<list-roles>>
 EOF
@@ -1664,7 +1664,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<get-role>>
 EOF
@@ -1751,7 +1751,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<list-permissions>>
 EOF
@@ -1818,7 +1818,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<permissions-suggest>>
 EOF
@@ -1920,7 +1920,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-channels>>
 EOF
@@ -1960,7 +1960,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-listen>>
 EOF
@@ -1992,7 +1992,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-unlisten>>
 EOF
@@ -2022,7 +2022,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-subscriptions>>
 EOF
@@ -2050,7 +2050,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<events-notifications>>
 EOF
@@ -2240,7 +2240,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-get>>
 EOF
@@ -2372,7 +2372,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-add>>
 EOF
@@ -2400,7 +2400,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-delete>>
 EOF
@@ -2428,7 +2428,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<countries-history>>
 EOF
@@ -2512,7 +2512,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-get>>
 EOF
@@ -2565,7 +2565,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-add>>
 EOF
@@ -2593,7 +2593,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-delete>>
 EOF
@@ -2621,7 +2621,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reasons-history>>
 EOF
@@ -2707,7 +2707,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-get>>
 EOF
@@ -2744,7 +2744,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-add>>
 EOF
@@ -2772,7 +2772,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-delete>>
 EOF
@@ -2800,7 +2800,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<change-reason-categories-history>>
 EOF
@@ -2844,7 +2844,7 @@ exit
 #+end_src
 
 #+begin_src sh :noweb yes :results output  :wrap example
-export ORES_COMMS_SHELL_LOGIN_PASSWORD
+export ORES_SHELL_LOGIN_PASSWORD
 ./ores.shell ${log_args} ${connect_args} ${login_args} << 'EOF'
 <<setup-new-system>>
 EOF

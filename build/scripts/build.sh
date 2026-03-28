@@ -19,9 +19,7 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 PRESET="${ORES_BUILD_PRESET:-linux-clang-debug-make}"
 BUILD_DIR="$PROJECT_DIR/build/output/${PRESET}"
-TMP_DIR="$PROJECT_DIR/build/tmp"
-
-mkdir -p "$TMP_DIR"
+TMP_DIR="$PROJECT_DIR/tmp"
 export TMPDIR="$TMP_DIR"
 
 if [[ ! -d "$BUILD_DIR" ]]; then
@@ -30,4 +28,16 @@ if [[ ! -d "$BUILD_DIR" ]]; then
     exit 1
 fi
 
-exec make -C "$BUILD_DIR" -j"$(nproc)" "$@"
+JOBS="${CMAKE_BUILD_PARALLEL_LEVEL:-2}"
+LOG_FILE="$PROJECT_DIR/build/tmp/build.log"
+
+make -C "$BUILD_DIR" -j"$JOBS" "$@" 2>&1 | tee "$LOG_FILE"
+EXIT_CODE="${PIPESTATUS[0]}"
+
+if [[ "$EXIT_CODE" -ne 0 ]]; then
+    echo ""
+    echo "=== Build failed (last 40 lines) ==="
+    tail -40 "$LOG_FILE"
+fi
+
+exit "$EXIT_CODE"

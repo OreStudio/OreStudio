@@ -44,6 +44,21 @@ struct nats_options final {
      * externally).
      */
     std::string subject_prefix;
+
+    /**
+     * @brief Mutual TLS settings.
+     *
+     * All three paths must be set together, or all left empty (plain TCP).
+     * When set, the NATS connection uses TLS and presents the client
+     * certificate to the broker for mutual authentication.
+     *
+     *   tls_ca_cert     — path to the CA certificate (ca.crt)
+     *   tls_client_cert — path to this service's certificate (<service>.crt)
+     *   tls_client_key  — path to this service's private key (<service>.key)
+     */
+    std::string tls_ca_cert;
+    std::string tls_client_cert;
+    std::string tls_client_key;
 };
 
 }

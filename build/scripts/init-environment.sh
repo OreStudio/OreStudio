@@ -113,6 +113,7 @@ fi
 DB_NAME="${ORES_DATABASE_NAME:-ores_dev_${LABEL}}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.${LABEL}}"
 NATS_URL="nats://localhost:4222"
+KEYS_DIR="${PROJECT_DIR}/build/keys/nats"
 
 # Sanitise LABEL for Postgres identifier use (lowercase, hyphens/dots → underscores)
 LABEL_LOWER="$(echo "${LABEL}" | tr '[:upper:]' '[:lower:]' | tr '.-' '__')"
@@ -250,7 +251,7 @@ ORES_DB_DDL_USER="ores_${LABEL_LOWER}_ddl_user"
 ORES_DB_CLI_USER="ores_${LABEL_LOWER}_cli_user"
 ORES_DB_WT_USER="ores_${LABEL_LOWER}_wt_user"
 ORES_DB_HTTP_USER="ores_${LABEL_LOWER}_http_user"
-ORES_DB_COMMS_USER="ores_${LABEL_LOWER}_comms_user"
+ORES_DB_SHELL_USER="ores_${LABEL_LOWER}_shell_user"
 ORES_DB_READONLY_USER="ores_${LABEL_LOWER}_readonly_user"
 ORES_TEST_DB_DDL_USER="ores_${LABEL_LOWER}_test_ddl_user"
 ORES_TEST_DB_DML_USER="ores_${LABEL_LOWER}_test_dml_user"
@@ -263,7 +264,7 @@ ORES_DB_DDL_PASSWORD="$(get_or_gen ORES_DB_DDL_PASSWORD)"
 ORES_DB_CLI_PASSWORD="$(get_or_gen ORES_DB_CLI_PASSWORD)"
 ORES_DB_WT_PASSWORD="$(get_or_gen ORES_DB_WT_PASSWORD)"
 ORES_DB_HTTP_PASSWORD="$(get_or_gen ORES_DB_HTTP_PASSWORD)"
-ORES_DB_COMMS_PASSWORD="$(get_or_gen ORES_DB_COMMS_PASSWORD)"
+ORES_DB_SHELL_PASSWORD="$(get_or_gen ORES_DB_SHELL_PASSWORD)"
 ORES_DB_READONLY_PASSWORD="$(get_or_gen ORES_DB_READONLY_PASSWORD)"
 ORES_TEST_DB_DDL_PASSWORD="$(get_or_gen ORES_TEST_DB_DDL_PASSWORD)"
 ORES_TEST_DB_PASSWORD="$(get_or_gen ORES_TEST_DB_PASSWORD)"
@@ -294,6 +295,9 @@ cat >> "${ENV_FILE}" << EOF
 ORES_DATABASE_NAME=${DB_NAME}
 ORES_NATS_URL=${NATS_URL}
 ORES_NATS_SUBJECT_PREFIX=${NATS_PREFIX}
+# mTLS: set ORES_NATS_TLS_CA to enable; leave empty for plain TCP (default).
+# Run build/scripts/generate_nats_certs.sh first to generate the certificates.
+ORES_NATS_TLS_CA=
 
 # ---------------------------------------------------------------------------
 # Database admin (postgres superuser — for recreate_database.sh and psql)
@@ -313,7 +317,7 @@ ORES_DB_DDL_USER=${ORES_DB_DDL_USER}
 ORES_DB_CLI_USER=${ORES_DB_CLI_USER}
 ORES_DB_WT_USER=${ORES_DB_WT_USER}
 ORES_DB_HTTP_USER=${ORES_DB_HTTP_USER}
-ORES_DB_COMMS_USER=${ORES_DB_COMMS_USER}
+ORES_DB_SHELL_USER=${ORES_DB_SHELL_USER}
 ORES_DB_READONLY_USER=${ORES_DB_READONLY_USER}
 ORES_TEST_DB_DDL_USER=${ORES_TEST_DB_DDL_USER}
 
@@ -324,7 +328,7 @@ ORES_DB_DDL_PASSWORD=${ORES_DB_DDL_PASSWORD}
 ORES_DB_CLI_PASSWORD=${ORES_DB_CLI_PASSWORD}
 ORES_DB_WT_PASSWORD=${ORES_DB_WT_PASSWORD}
 ORES_DB_HTTP_PASSWORD=${ORES_DB_HTTP_PASSWORD}
-ORES_DB_COMMS_PASSWORD=${ORES_DB_COMMS_PASSWORD}
+ORES_DB_SHELL_PASSWORD=${ORES_DB_SHELL_PASSWORD}
 ORES_DB_READONLY_PASSWORD=${ORES_DB_READONLY_PASSWORD}
 
 # ---------------------------------------------------------------------------
@@ -362,11 +366,11 @@ EOF
     echo "ORES_CLI_DB_DATABASE=${DB_NAME}"
     echo ""
     echo "# ---------------------------------------------------------------------------"
-    echo "# Comms shell DB credentials (read by C++ make_mapper(\"COMMS_SHELL\"))"
+    echo "# Shell DB credentials (read by C++ make_mapper(\"SHELL\"))"
     echo "# ---------------------------------------------------------------------------"
-    echo "ORES_COMMS_SHELL_DB_USER=${ORES_DB_COMMS_USER}"
-    echo "ORES_COMMS_SHELL_DB_PASSWORD=${ORES_DB_COMMS_PASSWORD}"
-    echo "ORES_COMMS_SHELL_DB_DATABASE=${DB_NAME}"
+    echo "ORES_SHELL_DB_USER=${ORES_DB_SHELL_USER}"
+    echo "ORES_SHELL_DB_PASSWORD=${ORES_DB_SHELL_PASSWORD}"
+    echo "ORES_SHELL_DB_DATABASE=${DB_NAME}"
     echo ""
     echo "# ---------------------------------------------------------------------------"
     echo "# HTTP server DB credentials (read by C++ make_mapper(\"HTTP_SERVER\"))"

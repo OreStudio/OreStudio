@@ -63,6 +63,7 @@ external/lei/*-golden-copy.csv
 .env
 build/keys/*.pem
 build/keys/*.key
+build/keys/nats/
 
 # Transient local files (logs, scratch)
 /tmp/*

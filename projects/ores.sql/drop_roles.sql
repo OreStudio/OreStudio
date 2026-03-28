@@ -60,7 +60,7 @@ begin
         'ores_' || v_label || '_ddl_user',
         'ores_' || v_label || '_cli_user',
         'ores_' || v_label || '_wt_user',
-        'ores_' || v_label || '_comms_user',
+        'ores_' || v_label || '_shell_user',
         'ores_' || v_label || '_http_user',
         'ores_' || v_label || '_test_ddl_user',
         'ores_' || v_label || '_test_dml_user',

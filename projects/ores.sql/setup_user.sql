@@ -34,7 +34,7 @@
  *     -v ddl_user='ores_local2_ddl_user' \
  *     -v cli_user='ores_local2_cli_user' \
  *     -v wt_user='ores_local2_wt_user' \
- *     -v comms_user='ores_local2_comms_user' \
+ *     -v shell_user='ores_local2_shell_user' \
  *     -v http_user='ores_local2_http_user' \
  *     -v test_ddl_user='ores_local2_test_ddl_user' \
  *     -v test_dml_user='ores_local2_test_dml_user' \
@@ -53,7 +53,7 @@
  *     -v ddl_password='DDL_PASSWORD' \
  *     -v cli_password='CLI_PASSWORD' \
  *     -v wt_password='WT_PASSWORD' \
- *     -v comms_password='COMMS_PASSWORD' \
+ *     -v shell_password='SHELL_PASSWORD' \
  *     -v http_password='HTTP_PASSWORD' \
  *     -v test_ddl_password='TEST_DDL_PASSWORD' \
  *     -v test_dml_password='TEST_DML_PASSWORD' \
@@ -130,15 +130,15 @@
     \quit
 \endif
 
-\if :{?comms_user}
+\if :{?shell_user}
 \else
-    \echo 'ERROR: comms_user variable is required.'
+    \echo 'ERROR: shell_user variable is required.'
     \quit
 \endif
 
-\if :{?comms_password}
+\if :{?shell_password}
 \else
-    \echo 'ERROR: comms_password variable is required for Communications service.'
+    \echo 'ERROR: shell_password variable is required for Communications service.'
     \quit
 \endif
 
@@ -337,7 +337,7 @@ create role :service_role nologin;
 create user :ddl_user      with password :'ddl_password'      in role :owner_role;
 create user :cli_user      with password :'cli_password'      in role :rw_role;
 create user :wt_user       with password :'wt_password'       in role :rw_role;
-create user :comms_user    with password :'comms_password'    in role :rw_role;
+create user :shell_user    with password :'shell_password'    in role :rw_role;
 create user :http_user     with password :'http_password'     in role :rw_role;
 -- Domain service users: no broad role — specific table GRANTs applied in
 -- setup_schema.sql via create/iam/iam_service_db_grants_create.sql.
@@ -374,7 +374,7 @@ create user :readonly_user with password :'ro_password'       in role :ro_role;
 alter role :ddl_user              set search_path to public;
 alter role :cli_user              set search_path to public;
 alter role :wt_user               set search_path to public;
-alter role :comms_user            set search_path to public;
+alter role :shell_user            set search_path to public;
 alter role :iam_service_user      set search_path to public;
 alter role :refdata_service_user  set search_path to public;
 alter role :dq_service_user       set search_path to public;
@@ -398,7 +398,7 @@ alter role :test_dml_user set app.current_tenant_id = 'ffffffff-ffff-ffff-ffff-f
 -- Grant pg_cron permissions to application users (if pg_cron is installed).
 do $$
 declare
-    v_comms_user           text := :'comms_user';
+    v_shell_user           text := :'shell_user';
     v_iam_service_user     text := :'iam_service_user';
     v_refdata_service_user text := :'refdata_service_user';
     v_dq_service_user      text := :'dq_service_user';
@@ -412,7 +412,7 @@ declare
 begin
     if exists (select 1 from pg_extension where extname = 'pg_cron') then
         for v_user in select * from (values
-            (v_comms_user), (v_iam_service_user), (v_refdata_service_user),
+            (v_shell_user), (v_iam_service_user), (v_refdata_service_user),
             (v_dq_service_user), (v_variability_service_user), (v_assets_service_user),
             (v_synthetic_service_user), (v_scheduler_service_user),
             (v_reporting_service_user), (v_telemetry_service_user),

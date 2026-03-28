@@ -262,7 +262,7 @@ Login users inherit from appropriate group roles:
 | =ores_ddl_user=    | =ores_owner=   | Migrations, schema changes     |
 | =ores_cli_user=    | =ores_rw=      | Command-line interface         |
 | =ores_wt_user=     | =ores_rw=      | Web toolkit service            |
-| =ores_comms_user=  | =ores_rw=      | Communications service         |
+| =ores_shell_user=  | =ores_rw=      | Interactive shell               |
 | =ores_http_user=   | =ores_rw=      | HTTP REST service              |
 | =ores_readonly_user= | =ores_ro=    | Analytics, BI tools            |
 
@@ -312,7 +312,7 @@ export ORES_DB_CLI_PASSWORD=your_password
 export ORES_DB_DDL_PASSWORD=your_password
 export ORES_DB_WT_PASSWORD=your_password
 export ORES_DB_HTTP_PASSWORD=your_password
-export ORES_DB_COMMS_PASSWORD=your_password
+export ORES_DB_SHELL_PASSWORD=your_password
 
 # Test infrastructure
 export ORES_TEST_DB_DDL_PASSWORD=your_password
@@ -336,7 +336,7 @@ psql -U postgres \
   -v ddl_password='DDL_PASS' \
   -v cli_password='CLI_PASS' \
   -v wt_password='WT_PASS' \
-  -v comms_password='COMMS_PASS' \
+  -v shell_password='SHELL_PASS' \
   -v http_password='HTTP_PASS' \
   -v test_ddl_password='TEST_DDL_PASS' \
   -v test_dml_password='TEST_DML_PASS' \

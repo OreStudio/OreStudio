@@ -49,7 +49,7 @@ Passwords are read from environment variables (set via .env or CI environment):
     ORES_DB_DDL_USER                    DDL database user name (env-prefixed)
     ORES_DB_CLI_USER                    CLI database user name (env-prefixed)
     ORES_DB_WT_USER                     Web Toolkit database user name (env-prefixed)
-    ORES_DB_COMMS_USER                  Communications database user name (env-prefixed)
+    ORES_DB_SHELL_USER                  Communications database user name (env-prefixed)
     ORES_DB_HTTP_USER                   HTTP database user name (env-prefixed)
     ORES_DB_READONLY_USER               Read-only database user name (env-prefixed)
     ORES_TEST_DB_DDL_USER               Test DDL database user name (env-prefixed)
@@ -68,7 +68,7 @@ Passwords are read from environment variables (set via .env or CI environment):
     ORES_DB_DDL_PASSWORD                Password for the DDL database user
     ORES_DB_CLI_PASSWORD                Password for the CLI database user
     ORES_DB_WT_PASSWORD                 Password for the Web Toolkit database user
-    ORES_DB_COMMS_PASSWORD              Password for the Communications database user
+    ORES_DB_SHELL_PASSWORD              Password for the Communications database user
     ORES_DB_HTTP_PASSWORD               Password for the HTTP database user
     ORES_TEST_DB_DDL_PASSWORD           Password for the test DDL database user
     ORES_TEST_DB_PASSWORD               Password for the test DML database user
@@ -134,7 +134,7 @@ MISSING_PASSWORDS=()
 [[ -z "${ORES_DB_DDL_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_DDL_USER")
 [[ -z "${ORES_DB_CLI_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_CLI_USER")
 [[ -z "${ORES_DB_WT_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_WT_USER")
-[[ -z "${ORES_DB_COMMS_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_COMMS_USER")
+[[ -z "${ORES_DB_SHELL_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_SHELL_USER")
 [[ -z "${ORES_DB_HTTP_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_HTTP_USER")
 [[ -z "${ORES_DB_READONLY_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_READONLY_USER")
 [[ -z "${ORES_TEST_DB_DDL_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_DDL_USER")
@@ -153,7 +153,7 @@ MISSING_PASSWORDS=()
 [[ -z "${ORES_DB_DDL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_DDL_PASSWORD")
 [[ -z "${ORES_DB_CLI_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_CLI_PASSWORD")
 [[ -z "${ORES_DB_WT_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_WT_PASSWORD")
-[[ -z "${ORES_DB_COMMS_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_COMMS_PASSWORD")
+[[ -z "${ORES_DB_SHELL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_SHELL_PASSWORD")
 [[ -z "${ORES_DB_HTTP_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_HTTP_PASSWORD")
 [[ -z "${ORES_TEST_DB_DDL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_DDL_PASSWORD")
 [[ -z "${ORES_TEST_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_PASSWORD")
@@ -242,7 +242,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v ddl_user="${ORES_DB_DDL_USER}" \
     -v cli_user="${ORES_DB_CLI_USER}" \
     -v wt_user="${ORES_DB_WT_USER}" \
-    -v comms_user="${ORES_DB_COMMS_USER}" \
+    -v shell_user="${ORES_DB_SHELL_USER}" \
     -v http_user="${ORES_DB_HTTP_USER}" \
     -v readonly_user="${ORES_DB_READONLY_USER}" \
     -v test_ddl_user="${ORES_TEST_DB_DDL_USER}" \
@@ -261,7 +261,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v ddl_password="${ORES_DB_DDL_PASSWORD}" \
     -v cli_password="${ORES_DB_CLI_PASSWORD}" \
     -v wt_password="${ORES_DB_WT_PASSWORD}" \
-    -v comms_password="${ORES_DB_COMMS_PASSWORD}" \
+    -v shell_password="${ORES_DB_SHELL_PASSWORD}" \
     -v http_password="${ORES_DB_HTTP_PASSWORD}" \
     -v test_ddl_password="${ORES_TEST_DB_DDL_PASSWORD}" \
     -v test_dml_password="${ORES_TEST_DB_PASSWORD}" \

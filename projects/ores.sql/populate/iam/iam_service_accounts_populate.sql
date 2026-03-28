@@ -29,7 +29,7 @@
  * setup_user.sql (e.g. ores_local2_iam_service).
  *
  * Required psql variables (set by setup_database.sh / recreate_database.sh):
- *   :ddl_user, :cli_user, :wt_user, :comms_user, :http_user,
+ *   :ddl_user, :cli_user, :wt_user, :shell_user, :http_user,
  *   :test_ddl_user, :test_dml_user,
  *   :iam_service_user, :refdata_service_user, :dq_service_user,
  *   :variability_service_user, :assets_service_user,
@@ -76,9 +76,9 @@ select ores_iam_service_accounts_upsert_fn(
 );
 
 select ores_iam_service_accounts_upsert_fn(
-    :'comms_user',
-    'comms@system.ores',
-    'System service account for binary protocol server'
+    :'shell_user',
+    'shell@system.ores',
+    'System service account for interactive shell'
 );
 
 select ores_iam_service_accounts_upsert_fn(

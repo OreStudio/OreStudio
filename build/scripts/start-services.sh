@@ -86,6 +86,10 @@ CHECKOUT_LABEL="${ORES_CHECKOUT_LABEL:-local1}"
 NATS_URL="${ORES_NATS_URL:-nats://localhost:4222}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.$CHECKOUT_LABEL}"
 
+# mTLS: optional; all three must be set together or all left empty.
+NATS_TLS_CA="${ORES_NATS_TLS_CA:-}"
+KEYS_DIR="$PROJECT_DIR/build/keys/nats"
+
 # Port bases match ores-prodigy.el ores/port-bases.
 declare -A PORT_BASES=(
     [remote]=50000 [local1]=51000 [local2]=52000
@@ -148,12 +152,22 @@ launch_binary() {
 
 launch_nats_service() {
     local name="$1"
+    # Derive the service cert/key from the binary name (e.g. ores.iam.service).
+    local tls_args=()
+    if [[ -n "$NATS_TLS_CA" ]]; then
+        tls_args+=(
+            --nats-tls-ca   "$KEYS_DIR/ca.crt"
+            --nats-tls-cert "$KEYS_DIR/${name}.crt"
+            --nats-tls-key  "$KEYS_DIR/${name}.key"
+        )
+    fi
     launch "$name" \
         --log-enabled \
         --log-level "$LOG_LEVEL" \
         --log-directory ../log \
         --nats-url "$NATS_URL" \
-        --nats-subject-prefix "$NATS_PREFIX"
+        --nats-subject-prefix "$NATS_PREFIX" \
+        "${tls_args[@]}"
 }
 
 launch_wrapper_node() {
@@ -216,7 +230,8 @@ discover_nats_services() {
 # ============================================================
 echo "Starting ORE Studio services"
 echo "  Preset : $PRESET"
-echo "  NATS   : $NATS_URL (prefix: $NATS_PREFIX)"
+TLS_STATUS="${NATS_TLS_CA:+enabled}"
+echo "  NATS   : $NATS_URL (prefix: $NATS_PREFIX, mTLS: ${TLS_STATUS:-disabled})"
 echo "  Ports  : HTTP=$HTTP_PORT  WT=$WT_PORT"
 echo ""
 

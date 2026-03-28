@@ -20,6 +20,7 @@
 #ifndef ORES_IAM_REPOSITORY_ACCOUNT_REPOSITORY_HPP
 #define ORES_IAM_REPOSITORY_ACCOUNT_REPOSITORY_HPP
 
+#include <optional>
 #include <string>
 #include <vector>
 #include <boost/uuid/uuid.hpp>
@@ -105,6 +106,18 @@ public:
      */
     std::vector<domain::account>
     read_latest_by_email(const std::string& email);
+
+    /**
+     * @brief Verifies service account credentials.
+     *
+     * Looks up the account by username and compares the SHA-256 hash of the
+     * supplied password against the stored service_password_hash.  Returns the
+     * account UUID on success, or nullopt if the account is not found, is a
+     * user account, or the password does not match.
+     */
+    std::optional<boost::uuids::uuid>
+    check_service_credentials(const std::string& username,
+                              const std::string& password);
 
     /**
      * @brief Deletes an account by closing its temporal validity.

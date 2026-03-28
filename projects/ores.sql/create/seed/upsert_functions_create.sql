@@ -716,7 +716,7 @@ begin
 
     -- Store service_password_hash using SHA-256 (suitable for high-entropy
     -- machine credentials such as randomly generated DB passwords).
-    if p_password is not null then
+    if p_password is not null and p_password <> '' then
         update ores_iam_accounts_tbl
         set service_password_hash = encode(sha256(p_password::bytea), 'hex')
         where username  = p_username

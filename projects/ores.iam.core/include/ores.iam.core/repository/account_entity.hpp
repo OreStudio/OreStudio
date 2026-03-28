@@ -43,6 +43,7 @@ struct account_entity {
     std::string password_salt;
     std::string totp_secret;
     std::string email;
+    std::string service_password_hash;
     std::string modified_by;
     std::string change_reason_code;
     std::string change_commentary;

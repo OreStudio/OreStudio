@@ -19,6 +19,9 @@
  */
 #include "ores.iam.core/repository/account_repository.hpp"
 
+#include <array>
+#include <format>
+#include <openssl/evp.h>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include <sqlgen/postgres.hpp>
@@ -186,6 +189,47 @@ void account_repository::remove(const boost::uuids::uuid& account_id) {
         where("id"_c == id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing account from database");
+}
+
+std::optional<boost::uuids::uuid>
+account_repository::check_service_credentials(
+    const std::string& username, const std::string& password) {
+    BOOST_LOG_SEV(lg(), debug) << "Checking service credentials for: " << username;
+
+    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto query = sqlgen::read<std::vector<account_entity>> |
+        where("username"_c == username && "valid_to"_c == max.value()) |
+        limit(1);
+
+    const auto r = sqlgen::session(ctx_.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    if (!r || r->empty())
+        return std::nullopt;
+
+    const auto& entity = r->front();
+    if (entity.account_type == "user") {
+        BOOST_LOG_SEV(lg(), debug) << "Rejecting user account for service login: " << username;
+        return std::nullopt;
+    }
+
+    // Compute SHA-256 of the supplied password and compare against stored hash.
+    // service_password_hash = encode(sha256(password::bytea), 'hex') in PostgreSQL.
+    std::array<unsigned char, EVP_MAX_MD_SIZE> digest{};
+    unsigned int digest_len = 0;
+    EVP_Digest(password.data(), password.size(), digest.data(), &digest_len, EVP_sha256(), nullptr);
+
+    std::string computed_hash;
+    computed_hash.reserve(digest_len * 2);
+    for (unsigned int i = 0; i < digest_len; ++i)
+        computed_hash += std::format("{:02x}", digest[i]);
+
+    if (computed_hash != entity.service_password_hash) {
+        BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
+        return std::nullopt;
+    }
+
+    return boost::lexical_cast<boost::uuids::uuid>(entity.id.value());
 }
 
 }

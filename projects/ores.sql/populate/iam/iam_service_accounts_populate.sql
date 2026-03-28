@@ -45,17 +45,17 @@
 -- Capture service DB passwords from the environment so they are never stored
 -- in plaintext in committed SQL. The backtick syntax runs a shell command at
 -- psql execution time; the result is bound to the named variable.
-\set iam_service_pw         `echo $ORES_IAM_SERVICE_DB_PASSWORD`
-\set refdata_service_pw     `echo $ORES_REFDATA_SERVICE_DB_PASSWORD`
-\set dq_service_pw          `echo $ORES_DQ_SERVICE_DB_PASSWORD`
-\set variability_service_pw `echo $ORES_VARIABILITY_SERVICE_DB_PASSWORD`
-\set assets_service_pw      `echo $ORES_ASSETS_SERVICE_DB_PASSWORD`
-\set synthetic_service_pw   `echo $ORES_SYNTHETIC_SERVICE_DB_PASSWORD`
-\set scheduler_service_pw   `echo $ORES_SCHEDULER_SERVICE_DB_PASSWORD`
-\set reporting_service_pw   `echo $ORES_REPORTING_SERVICE_DB_PASSWORD`
-\set telemetry_service_pw   `echo $ORES_TELEMETRY_SERVICE_DB_PASSWORD`
-\set trading_service_pw     `echo $ORES_TRADING_SERVICE_DB_PASSWORD`
-\set compute_service_pw     `echo $ORES_COMPUTE_SERVICE_DB_PASSWORD`
+\set iam_service_pw         `echo "$ORES_IAM_SERVICE_DB_PASSWORD"`
+\set refdata_service_pw     `echo "$ORES_REFDATA_SERVICE_DB_PASSWORD"`
+\set dq_service_pw          `echo "$ORES_DQ_SERVICE_DB_PASSWORD"`
+\set variability_service_pw `echo "$ORES_VARIABILITY_SERVICE_DB_PASSWORD"`
+\set assets_service_pw      `echo "$ORES_ASSETS_SERVICE_DB_PASSWORD"`
+\set synthetic_service_pw   `echo "$ORES_SYNTHETIC_SERVICE_DB_PASSWORD"`
+\set scheduler_service_pw   `echo "$ORES_SCHEDULER_SERVICE_DB_PASSWORD"`
+\set reporting_service_pw   `echo "$ORES_REPORTING_SERVICE_DB_PASSWORD"`
+\set telemetry_service_pw   `echo "$ORES_TELEMETRY_SERVICE_DB_PASSWORD"`
+\set trading_service_pw     `echo "$ORES_TRADING_SERVICE_DB_PASSWORD"`
+\set compute_service_pw     `echo "$ORES_COMPUTE_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',

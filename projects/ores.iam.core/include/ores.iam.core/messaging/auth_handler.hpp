@@ -38,6 +38,7 @@
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/domain/session.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
@@ -591,43 +592,12 @@ public:
             return;
         }
         try {
-            using ores::database::repository::execute_parameterized_multi_column_query;
-
-            // Look up the service account and verify the password in one query.
-            // service_password_hash stores encode(sha256(password), 'hex').
-            const auto sql =
-                "SELECT a.id::text, a.account_type, "
-                "       (encode(sha256($2::bytea), 'hex') = a.service_password_hash) AS pwd_ok "
-                "FROM ores_iam_accounts_tbl a "
-                "WHERE a.username = $1 "
-                "  AND a.valid_to = ores_utility_infinity_timestamp_fn() "
-                "LIMIT 1";
-            const auto rows = execute_parameterized_multi_column_query(
-                ctx_, sql, {req->username, req->password},
-                auth_handler_lg(), "service_login lookup");
-
-            if (rows.empty() || rows.front().size() < 3) {
+            repository::account_repository account_repo(ctx_);
+            const auto account_id = account_repo.check_service_credentials(
+                req->username, req->password);
+            if (!account_id) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Service login failed: account not found for " << req->username;
-                reply(nats_, msg, service_login_response{
-                    .success = false, .message = "Invalid credentials"});
-                return;
-            }
-
-            const auto& row = rows.front();
-            const auto account_type = row[1].value_or("");
-            const auto pwd_ok = row[2].value_or("f");
-
-            if (account_type == "user") {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Service login rejected for user account: " << req->username;
-                reply(nats_, msg, service_login_response{
-                    .success = false, .message = "Invalid credentials"});
-                return;
-            }
-            if (pwd_ok != "t" && pwd_ok != "true" && pwd_ok != "1") {
-                BOOST_LOG_SEV(auth_handler_lg(), warn)
-                    << "Service login failed: bad password for " << req->username;
+                    << "Service login failed: invalid credentials for " << req->username;
                 reply(nats_, msg, service_login_response{
                     .success = false, .message = "Invalid credentials"});
                 return;

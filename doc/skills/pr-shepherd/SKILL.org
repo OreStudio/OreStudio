@@ -31,9 +31,41 @@ want to:
 
 * How to Use This Skill
 
-1. Ensure the PR has been pushed and created (e.g. via =gh pr create=).
-2. Run this skill, passing the PR number if not on the current branch.
-3. The skill will execute the watch-and-fix loop until CI is green.
+The preferred approach is the =pr-watch= background script, which polls GitHub
+cheaply using only the =gh= CLI and invokes Claude only when there is something
+actionable.  This avoids wasting Claude resources on idle polling.
+
+** Using pr-watch (recommended)
+
+Start the watcher immediately after the PR is created.  The script
+self-backgrounds, writes a log under =tmp/=, and exits once CI is green and all
+review threads are resolved.
+
+#+BEGIN_SRC sh
+./build/scripts/pr-watch.sh <PR_NUMBER>
+# e.g.
+./build/scripts/pr-watch.sh 574
+./build/scripts/pr-watch.sh 574 --interval 10   # poll every 10 minutes
+#+END_SRC
+
+Monitor progress:
+
+#+BEGIN_SRC sh
+tail -f tmp/pr-watch-<PR_NUMBER>.log
+#+END_SRC
+
+The script invokes =claude -p= with structured context whenever:
+
+- A CI check-run fails (logs included in the prompt).
+- A new unresolved review thread appears from an external reviewer.
+
+It exits cleanly and logs =PR #NNN is ready= when all checks pass and all
+threads are resolved.
+
+** Manual loop (fallback)
+
+If =pr-watch= is not suitable, run this skill directly and follow the
+[[*Detailed Instructions][Detailed Instructions]] below.
 
 See [[*Detailed Instructions][Detailed Instructions]] for the full loop behaviour.
 

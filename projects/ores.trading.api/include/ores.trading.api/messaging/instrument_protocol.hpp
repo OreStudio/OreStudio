@@ -26,6 +26,7 @@
 #include "ores.trading.api/domain/swap_leg.hpp"
 #include "ores.trading.api/domain/fx_instrument.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/credit_instrument.hpp"
 
 namespace ores::trading::messaging {
 
@@ -198,6 +199,61 @@ struct get_bond_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::bond_instrument> history;
+};
+
+// ---- Credit instrument protocol ----
+
+struct get_credit_instruments_request {
+    using response_type = struct get_credit_instruments_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.credit_instruments.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+struct get_credit_instruments_response {
+    std::vector<ores::trading::domain::credit_instrument> instruments;
+    int total_available_count = 0;
+    bool success = true;
+    std::string message;
+};
+
+struct save_credit_instrument_request {
+    using response_type = struct save_credit_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.credit_instruments.save";
+    ores::trading::domain::credit_instrument data;
+};
+
+struct save_credit_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_credit_instrument_request {
+    using response_type = struct delete_credit_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.credit_instruments.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_credit_instrument_response {
+    bool success = false;
+    std::string message;
+    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
+};
+
+struct get_credit_instrument_history_request {
+    using response_type = struct get_credit_instrument_history_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.credit_instruments.history";
+    std::string id;
+};
+
+struct get_credit_instrument_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::trading::domain::credit_instrument> history;
 };
 
 }

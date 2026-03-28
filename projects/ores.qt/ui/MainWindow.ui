@@ -134,6 +134,7 @@
     <addaction name="ActionInstruments"/>
     <addaction name="ActionFxInstruments"/>
     <addaction name="ActionBondInstruments"/>
+    <addaction name="ActionCreditInstruments"/>
     <addaction name="separator"/>
     <addaction name="ActionDayCountFractionTypes"/>
     <addaction name="ActionBusinessDayConventionTypes"/>
@@ -708,6 +709,14 @@
    </property>
    <property name="toolTip">
     <string>Manage bond instruments</string>
+   </property>
+  </action>
+  <action name="ActionCreditInstruments">
+   <property name="text">
+    <string>&amp;Credit Instruments</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage credit instruments</string>
    </property>
   </action>
   <action name="ActionJobDefinitions">

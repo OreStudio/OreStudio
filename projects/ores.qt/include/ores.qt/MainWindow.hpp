@@ -106,6 +106,7 @@ class LegTypeController;
 class InstrumentController;
 class FxInstrumentController;
 class BondInstrumentController;
+class CreditInstrumentController;
 class OreImportController;
 class PortfolioExplorerMdiWindow;
 class OrgExplorerMdiWindow;
@@ -664,6 +665,7 @@ private:
     std::unique_ptr<InstrumentController> instrumentController_;
     std::unique_ptr<FxInstrumentController> fxInstrumentController_;
     std::unique_ptr<BondInstrumentController> bondInstrumentController_;
+    std::unique_ptr<CreditInstrumentController> creditInstrumentController_;
     std::unique_ptr<JobDefinitionController> jobDefinitionController_;
     std::unique_ptr<AppController> appController_;
     std::unique_ptr<AppVersionController> appVersionController_;

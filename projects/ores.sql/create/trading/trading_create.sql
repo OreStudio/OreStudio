@@ -73,6 +73,10 @@
 \ir ./trading_bond_instruments_create.sql
 \ir ./trading_bond_instruments_notify_trigger_create.sql
 
+-- Credit instruments (depends on reference data above)
+\ir ./trading_credit_instruments_create.sql
+\ir ./trading_credit_instruments_notify_trigger_create.sql
+
 -- Trades (depends on reference data above)
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql

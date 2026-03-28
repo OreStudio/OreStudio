@@ -1013,6 +1013,30 @@ value_date, settlement, and option fields for FxOption).
   =FxInstrumentController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
+*** STARTED CDM Phase 4: Credit instrument domain model                :code:
+
+Implement the credit instrument domain model (Phase 4 of the CDM-inspired
+instrument design). See [[file:../../plans/2026-03-26-cdm-instrument-domain-model.org][plan]] for architecture.
+
+Covers CreditDefaultSwap, CDSIndex, and SyntheticCDO, backed by one new
+temporal table: =ores_trading_credit_instruments_tbl= (reference_entity,
+currency, notional, spread, recovery_rate, tenor, start_date, maturity_date,
+day_count_code, payment_frequency_code, and optional fields for index_name,
+index_series, seniority, restructuring, description).
+
+***** Tasks
+
+- [ ] SQL: =ores_trading_credit_instruments_tbl= + notify trigger + drop files
+- [ ] SQL: Register in =trading_create.sql=, =drop_trading.sql=
+- [ ] Domain: =credit_instrument= struct, JSON I/O, table I/O, protocol messages
+- [ ] Repository: =credit_instrument= entity, mapper, repository
+- [ ] Service: =credit_instrument_service=
+- [ ] Server: messaging handler + registrar registration
+- [ ] Qt UI: =ClientCreditInstrumentModel=, =CreditInstrumentMdiWindow=,
+  =CreditInstrumentDetailDialog=, =CreditInstrumentHistoryDialog=,
+  =CreditInstrumentController=, =MainWindow= integration
+- [ ] Database: recreate to pick up new table
+
 *** STARTED CDM Phase 3: Bond instrument domain model                  :code:
 
 Implement the bond instrument domain model (Phase 3 of the CDM-inspired

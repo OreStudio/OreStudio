@@ -27,6 +27,7 @@
 #include "ores.trading.api/domain/fx_instrument.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
+#include "ores.trading.api/domain/equity_instrument.hpp"
 
 namespace ores::trading::messaging {
 
@@ -254,6 +255,61 @@ struct get_credit_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::credit_instrument> history;
+};
+
+// ---- Equity instrument protocol ----
+
+struct get_equity_instruments_request {
+    using response_type = struct get_equity_instruments_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_instruments.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+struct get_equity_instruments_response {
+    std::vector<ores::trading::domain::equity_instrument> instruments;
+    int total_available_count = 0;
+    bool success = true;
+    std::string message;
+};
+
+struct save_equity_instrument_request {
+    using response_type = struct save_equity_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_instruments.save";
+    ores::trading::domain::equity_instrument data;
+};
+
+struct save_equity_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_equity_instrument_request {
+    using response_type = struct delete_equity_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_instruments.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_equity_instrument_response {
+    bool success = false;
+    std::string message;
+    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
+};
+
+struct get_equity_instrument_history_request {
+    using response_type = struct get_equity_instrument_history_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.equity_instruments.history";
+    std::string id;
+};
+
+struct get_equity_instrument_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::trading::domain::equity_instrument> history;
 };
 
 }

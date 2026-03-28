@@ -77,6 +77,10 @@
 \ir ./trading_credit_instruments_create.sql
 \ir ./trading_credit_instruments_notify_trigger_create.sql
 
+-- Equity instruments (depends on reference data above)
+\ir ./trading_equity_instruments_create.sql
+\ir ./trading_equity_instruments_notify_trigger_create.sql
+
 -- Trades (depends on reference data above)
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql

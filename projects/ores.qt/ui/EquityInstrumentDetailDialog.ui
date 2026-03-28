@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EquityInstrumentDetailDialog</class>
+ <widget class="QWidget" name="EquityInstrumentDetailDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>720</width>
+    <height>780</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>720</width>
+    <height>780</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Equity Instrument Details</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex"><number>0</number></property>
+     <widget class="QWidget" name="detailsTab">
+      <attribute name="title"><string>Details</string></attribute>
+      <layout class="QVBoxLayout" name="detailsLayout">
+       <item>
+        <widget class="QScrollArea" name="detailsScrollArea">
+         <property name="widgetResizable"><bool>true</bool></property>
+         <widget class="QWidget" name="detailsScrollContents">
+          <property name="geometry">
+           <rect><x>0</x><y>0</y><width>680</width><height>700</height></rect>
+          </property>
+          <layout class="QVBoxLayout" name="detailsScrollLayout">
+           <item>
+            <widget class="QGroupBox" name="coreGroup">
+             <property name="title">
+              <string>Core Fields</string>
+             </property>
+             <layout class="QFormLayout" name="coreFormLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="labelTradeTypeCode">
+                <property name="text"><string>Trade Type:</string></property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QComboBox" name="tradeTypeCodeCombo">
+                <item><property name="text"><string>EquityOption</string></property></item>
+                <item><property name="text"><string>EquityOptionPosition</string></property></item>
+                <item><property name="text"><string>EquityPosition</string></property></item>
+                <item><property name="text"><string>EquitySwap</string></property></item>
+                <item><property name="text"><string>EquityForward</string></property></item>
+                <item><property name="text"><string>EquityBarrierOption</string></property></item>
+                <item><property name="text"><string>EquityAsianOption</string></property></item>
+                <item><property name="text"><string>EquityVarianceSwap</string></property></item>
+                <item><property name="text"><string>EquityVolatilitySwap</string></property></item>
+                <item><property name="text"><string>EquityCliquetOption</string></property></item>
+                <item><property name="text"><string>EquityAccumulator</string></property></item>
+                <item><property name="text"><string>EquityTaRF</string></property></item>
+                <item><property name="text"><string>EquityBasketOption</string></property></item>
+                <item><property name="text"><string>EquityRainbowOption</string></property></item>
+                <item><property name="text"><string>EquityWorstOfBasketSwap</string></property></item>
+                <item><property name="text"><string>TotalReturnSwap</string></property></item>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="labelUnderlyingCode">
+                <property name="text"><string>Underlying:</string></property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="underlyingCodeEdit">
+                <property name="placeholderText">
+                 <string>Equity ticker/symbol (e.g. .SPX, AAPL)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="labelCurrency">
+                <property name="text"><string>Currency:</string></property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="currencyEdit">
+                <property name="placeholderText">
+                 <string>ISO 4217 (e.g. USD)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="labelNotional">
+                <property name="text"><string>Notional:</string></property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QDoubleSpinBox" name="notionalSpinBox">
+                <property name="decimals"><number>2</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>999999999999.000000000000000</double></property>
+                <property name="singleStep"><double>1000.000000000000000</double></property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="labelQuantity">
+                <property name="text"><string>Quantity:</string></property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="quantitySpinBox">
+                <property name="decimals"><number>6</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>999999999.000000000000000</double></property>
+                <property name="toolTip"><string>Number of shares/contracts (0 = not applicable)</string></property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="labelStartDate">
+                <property name="text"><string>Start Date:</string></property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QLineEdit" name="startDateEdit">
+                <property name="placeholderText">
+                 <string>ISO 8601 date (e.g. 2026-01-01)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="labelMaturityDate">
+                <property name="text"><string>Maturity Date:</string></property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QLineEdit" name="maturityDateEdit">
+                <property name="placeholderText">
+                 <string>ISO 8601 date (e.g. 2027-01-01)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="optionBarrierGroup">
+             <property name="title">
+              <string>Option / Barrier Fields</string>
+             </property>
+             <layout class="QFormLayout" name="optionFormLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="labelOptionType">
+                <property name="text"><string>Option Type:</string></property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="optionTypeEdit">
+                <property name="placeholderText">
+                 <string>Call or Put (leave blank for non-option)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="labelExerciseType">
+                <property name="text"><string>Exercise Type:</string></property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="exerciseTypeEdit">
+                <property name="placeholderText">
+                 <string>European, American, or Bermudan</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="labelStrikePrice">
+                <property name="text"><string>Strike Price:</string></property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QDoubleSpinBox" name="strikePriceSpinBox">
+                <property name="decimals"><number>6</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>999999999.000000000000000</double></property>
+                <property name="toolTip"><string>Strike price (0 = not applicable)</string></property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="labelBarrierType">
+                <property name="text"><string>Barrier Type:</string></property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="barrierTypeEdit">
+                <property name="placeholderText">
+                 <string>UpIn, UpOut, DownIn, DownOut (leave blank if none)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="labelLowerBarrier">
+                <property name="text"><string>Lower Barrier:</string></property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="lowerBarrierSpinBox">
+                <property name="decimals"><number>6</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>999999999.000000000000000</double></property>
+                <property name="toolTip"><string>Lower barrier level (0 = not applicable)</string></property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="labelUpperBarrier">
+                <property name="text"><string>Upper Barrier:</string></property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="upperBarrierSpinBox">
+                <property name="decimals"><number>6</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>999999999.000000000000000</double></property>
+                <property name="toolTip"><string>Upper barrier level (0 = not applicable)</string></property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="advancedGroup">
+             <property name="title">
+              <string>Advanced Fields</string>
+             </property>
+             <layout class="QFormLayout" name="advancedFormLayout">
+              <item row="0" column="0">
+               <widget class="QLabel" name="labelAverageType">
+                <property name="text"><string>Average Type:</string></property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="averageTypeEdit">
+                <property name="placeholderText">
+                 <string>Arithmetic or Geometric (Asian options)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="labelAveragingStartDate">
+                <property name="text"><string>Averaging Start:</string></property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="averagingStartDateEdit">
+                <property name="placeholderText">
+                 <string>ISO 8601 date (Asian options)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="labelVarianceStrike">
+                <property name="text"><string>Variance Strike:</string></property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QDoubleSpinBox" name="varianceStrikeSpinBox">
+                <property name="decimals"><number>6</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>9999.000000000000000</double></property>
+                <property name="toolTip"><string>Strike variance for variance/vol swaps (0 = not applicable)</string></property>
+               </widget>
+              </item>
+              <item row="3" column="0">
+               <widget class="QLabel" name="labelCliquetFrequencyCode">
+                <property name="text"><string>Cliquet Frequency:</string></property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="cliquetFrequencyCodeEdit">
+                <property name="placeholderText">
+                 <string>e.g. Monthly (cliquet options)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="labelAccumulationAmount">
+                <property name="text"><string>Accumulation Amt:</string></property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QDoubleSpinBox" name="accumulationAmountSpinBox">
+                <property name="decimals"><number>2</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>999999999.000000000000000</double></property>
+                <property name="toolTip"><string>Per-fixing accumulation amount (accumulators)</string></property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="labelKnockOutBarrier">
+                <property name="text"><string>Knock-Out Barrier:</string></property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QDoubleSpinBox" name="knockOutBarrierSpinBox">
+                <property name="decimals"><number>6</number></property>
+                <property name="minimum"><double>0.000000000000000</double></property>
+                <property name="maximum"><double>999999999.000000000000000</double></property>
+                <property name="toolTip"><string>Knock-out barrier level (accumulators, 0 = not applicable)</string></property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="labelDayCountCode">
+                <property name="text"><string>Day Count:</string></property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QLineEdit" name="dayCountCodeEdit">
+                <property name="placeholderText">
+                 <string>e.g. Actual/365 (Fixed) (swaps)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="0">
+               <widget class="QLabel" name="labelPaymentFrequencyCode">
+                <property name="text"><string>Payment Frequency:</string></property>
+               </widget>
+              </item>
+              <item row="7" column="1">
+               <widget class="QLineEdit" name="paymentFrequencyCodeEdit">
+                <property name="placeholderText">
+                 <string>e.g. Annual, Quarterly (swaps)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="labelReturnType">
+                <property name="text"><string>Return Type:</string></property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QLineEdit" name="returnTypeEdit">
+                <property name="placeholderText">
+                 <string>TotalReturn or PriceReturn (equity swaps)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="0">
+               <widget class="QLabel" name="labelBasketJson">
+                <property name="text"><string>Basket JSON:</string></property>
+               </widget>
+              </item>
+              <item row="9" column="1">
+               <widget class="QPlainTextEdit" name="basketJsonEdit">
+                <property name="minimumSize">
+                 <size><width>0</width><height>60</height></size>
+                </property>
+                <property name="maximumSize">
+                 <size><width>16777215</width><height>120</height></size>
+                </property>
+                <property name="placeholderText">
+                 <string>[{"code":"AAPL","weight":0.5},{"code":"GOOG","weight":0.5}]</string>
+                </property>
+                <property name="toolTip"><string>JSON array of basket constituents (basket/rainbow products)</string></property>
+               </widget>
+              </item>
+              <item row="10" column="0">
+               <widget class="QLabel" name="labelDescription">
+                <property name="text"><string>Description:</string></property>
+               </widget>
+              </item>
+              <item row="10" column="1">
+               <widget class="QPlainTextEdit" name="descriptionEdit">
+                <property name="minimumSize">
+                 <size><width>0</width><height>60</height></size>
+                </property>
+                <property name="maximumSize">
+                 <size><width>16777215</width><height>120</height></size>
+                </property>
+                <property name="placeholderText">
+                 <string>Enter a description (optional)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <spacer name="verticalSpacer">
+             <property name="orientation"><enum>Qt::Vertical</enum></property>
+             <property name="sizeHint" stdset="0">
+              <size><width>20</width><height>20</height></size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="provenanceTab">
+      <attribute name="title"><string>Provenance</string></attribute>
+      <layout class="QVBoxLayout" name="provenanceTabLayout">
+       <item>
+        <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation"><enum>Qt::Horizontal</enum></property>
+       <property name="sizeHint" stdset="0">
+        <size><width>40</width><height>20</height></size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="deleteButton">
+       <property name="text"><string>Delete</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="closeButton">
+       <property name="text"><string>Close</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text"><string>Save</string></property>
+       <property name="default"><bool>true</bool></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>ores::qt::ProvenanceWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

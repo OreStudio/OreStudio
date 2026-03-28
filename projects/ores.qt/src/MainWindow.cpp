@@ -96,6 +96,7 @@
 #include "ores.qt/BondInstrumentController.hpp"
 #include "ores.qt/CreditInstrumentController.hpp"
 #include "ores.qt/EquityInstrumentController.hpp"
+#include "ores.qt/CommodityInstrumentController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/AppController.hpp"
 #include "ores.qt/AppVersionController.hpp"
@@ -260,6 +261,7 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionBondInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionCreditInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionEquityInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
+    ui_->ActionCommodityInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
@@ -844,6 +846,10 @@ MainWindow::MainWindow(QWidget* parent) :
         if (equityInstrumentController_)
             equityInstrumentController_->showListWindow();
     });
+    connect(ui_->ActionCommodityInstruments, &QAction::triggered, this, [this]() {
+        if (commodityInstrumentController_)
+            commodityInstrumentController_->showListWindow();
+    });
 
     // Connect Job Definitions action to controller
     connect(ui_->ActionJobDefinitions, &QAction::triggered, this, [this]() {
@@ -1285,6 +1291,7 @@ void MainWindow::updateMenuState() {
     ui_->ActionBondInstruments->setEnabled(isLoggedIn);
     ui_->ActionCreditInstruments->setEnabled(isLoggedIn);
     ui_->ActionEquityInstruments->setEnabled(isLoggedIn);
+    ui_->ActionCommodityInstruments->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
     ui_->ActionImportOreData->setEnabled(isLoggedIn);
@@ -2201,6 +2208,24 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowCreated);
     connect(equityInstrumentController_.get(), &EquityInstrumentController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
+
+    commodityInstrumentController_ = std::make_unique<CommodityInstrumentController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(commodityInstrumentController_.get(), &CommodityInstrumentController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(commodityInstrumentController_.get(), &CommodityInstrumentController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(commodityInstrumentController_.get(), &CommodityInstrumentController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(commodityInstrumentController_.get(), &CommodityInstrumentController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),

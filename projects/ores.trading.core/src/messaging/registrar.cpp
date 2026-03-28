@@ -22,6 +22,7 @@
 #include "ores.trading.core/messaging/instrument_ref_handler.hpp"
 #include "ores.trading.core/messaging/instrument_handler.hpp"
 #include "ores.trading.core/messaging/fx_instrument_handler.hpp"
+#include "ores.trading.core/messaging/bond_instrument_handler.hpp"
 
 namespace ores::trading::messaging {
 
@@ -274,6 +275,35 @@ registrar::register_handlers(ores::nats::service::client& nats,
         std::string(get_fx_instrument_history_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             fx_instrument_handler h(nats, ctx, verifier);
+            h.history(std::move(msg));
+        }));
+
+    // Bond instruments
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_bond_instruments_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
+            h.list(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_bond_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
+            h.save(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_bond_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
+            h.remove(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_bond_instrument_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            bond_instrument_handler h(nats, ctx, verifier);
             h.history(std::move(msg));
         }));
 

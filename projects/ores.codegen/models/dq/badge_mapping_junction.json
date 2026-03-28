@@ -1,0 +1,77 @@
+{
+  "junction": {
+    "schema": "public",
+    "product": "ores",
+    "component": "dq",
+    "has_tenant_id": true,
+    "name": "badge_mappings",
+    "name_singular": "badge_mapping",
+    "name_title": "Badge Mapping",
+    "name_singular_words": "badge mapping",
+    "brief": "Links a (code domain, entity code) pair to a badge definition.",
+    "description": "Universal mapping table that associates any (code_domain, entity_code)\npair with a badge definition. This is the single join point between\ndomain values and their visual presentation.\n\nExamples:\n- ('party_status', 'ACTIVE')  -> 'active'\n- ('party_status', 'FROZEN')  -> 'frozen'\n- ('fsm_state',    'DRAFT')   -> 'fsm_draft'\n- ('login_status', 'Online')  -> 'login_online'\n- ('dq_nature',    'Actual')  -> 'dq_actual'\n\nPopulated via seed scripts; no management UI needed.",
+
+    "left": {
+      "column": "code_domain_code",
+      "column_short": "code_domain",
+      "column_title": "Code Domain",
+      "type": "text",
+      "cpp_type": "std::string",
+      "index_comment": "Index for looking up all mappings in a code domain",
+      "description": "Code of the domain this mapping belongs to.",
+      "detail": "References code_domain.code (soft FK). Examples: 'party_status', 'fsm_state'.",
+      "generator_expr": "std::string(faker::word::noun()) + \"_status\""
+    },
+
+    "right": {
+      "column": "entity_code",
+      "column_short": "entity",
+      "column_title": "Entity Code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "index_comment": "Index for finding the badge for a specific entity code",
+      "description": "The domain value being mapped to a badge.",
+      "detail": "Examples: 'ACTIVE', 'DRAFT', 'Online', 'Actual'.",
+      "generator_expr": "std::string(faker::word::adjective()).substr(0, 1)"
+    },
+
+    "columns": [
+      {
+        "name": "badge_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "The badge definition to use for this mapping.",
+        "detail": "References badge_definition.code (soft FK). Examples: 'active', 'fsm_draft'.",
+        "generator_expr": "std::string(faker::word::adjective())"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_dq_badge_mappings_tbl"
+    },
+
+    "repository": {
+      "name_singular_short": "mapping",
+      "name_short": "mappings",
+      "name_singular_words": "badge mapping",
+      "name_words": "badge mappings",
+      "order_column": "code_domain_code"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\"", "\"sqlgen/PrimaryKey.hpp\""]
+      },
+      "iterator_var": "bm",
+      "table_display": [
+        {"column": "code_domain_code", "header": "Code Domain"},
+        {"column": "entity_code", "header": "Entity Code"},
+        {"column": "badge_code", "header": "Badge"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    }
+  }
+}

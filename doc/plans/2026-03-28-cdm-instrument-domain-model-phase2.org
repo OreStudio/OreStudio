@@ -167,22 +167,22 @@ All 30 equity ORE types via one new table: =ores_trading_equity_instruments_tbl=
 | trade_type_code         | TEXT          | No       | FK → trade_types (discriminator)         |
 | underlying_code         | TEXT          | No       | Ticker / symbol (e.g. ".SPX", "AAPL")   |
 | currency                | TEXT          | No       | ISO 4217                                 |
-| notional                | DOUBLE        | No       | Contract notional or equity value        |
-| quantity                | DOUBLE        | Yes      | Number of shares/contracts (positions)   |
+| notional                | NUMERIC(28,10) | No       | Contract notional or equity value        |
+| quantity                | NUMERIC(28,10) | Yes      | Number of shares/contracts (positions)   |
 | start_date              | DATE          | Yes      | Swap/accumulator start                   |
 | maturity_date           | DATE          | Yes      | Expiry or swap end                       |
 | option_type             | TEXT          | Yes      | Call / Put (all option types)            |
-| strike_price            | DOUBLE        | Yes      | Option strike                            |
+| strike_price            | NUMERIC(28,10) | Yes      | Option strike                            |
 | exercise_type           | TEXT          | Yes      | European / American / Bermudan           |
 | barrier_type            | TEXT          | Yes      | UpIn / UpOut / DownIn / DownOut          |
-| lower_barrier           | DOUBLE        | Yes      | Double-barrier lower level               |
-| upper_barrier           | DOUBLE        | Yes      | Double-barrier upper level               |
+| lower_barrier           | NUMERIC(28,10) | Yes      | Double-barrier lower level               |
+| upper_barrier           | NUMERIC(28,10) | Yes      | Double-barrier upper level               |
 | average_type            | TEXT          | Yes      | Arithmetic / Geometric (Asian options)   |
 | averaging_start_date    | DATE          | Yes      | Asian averaging window start             |
-| variance_strike         | DOUBLE        | Yes      | VarianceSwap strike variance             |
+| variance_strike         | NUMERIC(28,10) | Yes      | VarianceSwap strike variance             |
 | cliquet_frequency_code  | TEXT          | Yes      | FK → payment_frequency_types (Cliquet)  |
-| accumulation_amount     | DOUBLE        | Yes      | Per-fixing accumulation (Accumulator)    |
-| knock_out_barrier       | DOUBLE        | Yes      | Accumulator knock-out level              |
+| accumulation_amount     | NUMERIC(28,10) | Yes      | Per-fixing accumulation (Accumulator)    |
+| knock_out_barrier       | NUMERIC(28,10) | Yes      | Accumulator knock-out level              |
 | basket_json             | TEXT          | Yes      | JSON array of {code, weight} for baskets |
 | day_count_code          | TEXT          | Yes      | FK → day_count_fraction_types (swaps)   |
 | payment_frequency_code  | TEXT          | Yes      | FK → payment_frequency_types (swaps)    |
@@ -233,26 +233,26 @@ All 28 commodity ORE types via one new table:
 | trade_type_code         | TEXT          | No       | FK → trade_types (discriminator)               |
 | commodity_code          | TEXT          | No       | Commodity identifier (e.g. "NGAS", "OIL.BRENT")|
 | currency                | TEXT          | No       | ISO 4217                                       |
-| quantity                | DOUBLE        | No       | Contract quantity                              |
+| quantity                | NUMERIC(28,10) | No       | Contract quantity                              |
 | unit                    | TEXT          | No       | e.g. Barrels, MT, MWh, MMBtu                   |
 | start_date              | DATE          | Yes      | Swap / accumulator start                       |
 | maturity_date           | DATE          | Yes      | Forward delivery or swap end                   |
-| fixed_price             | DOUBLE        | Yes      | CommoditySwap fixed leg price                  |
+| fixed_price             | NUMERIC(28,10) | Yes      | CommoditySwap fixed leg price                  |
 | option_type             | TEXT          | Yes      | Call / Put                                     |
-| strike_price            | DOUBLE        | Yes      | Option strike                                  |
+| strike_price            | NUMERIC(28,10) | Yes      | Option strike                                  |
 | exercise_type           | TEXT          | Yes      | European / American                            |
 | average_type            | TEXT          | Yes      | Arithmetic / Geometric                         |
 | averaging_start_date    | DATE          | Yes      | Asian averaging window start                   |
 | averaging_end_date      | DATE          | Yes      | Asian averaging window end                     |
 | spread_commodity_code   | TEXT          | Yes      | Second commodity in spread options             |
-| spread_amount           | DOUBLE        | Yes      | Spread option strike spread                    |
+| spread_amount           | NUMERIC(28,10) | Yes      | Spread option strike spread                    |
 | strip_frequency_code    | TEXT          | Yes      | FK → payment_frequency_types (option strips)  |
-| variance_strike         | DOUBLE        | Yes      | VarianceSwap strike variance                   |
-| accumulation_amount     | DOUBLE        | Yes      | Accumulator per-fixing amount                  |
-| knock_out_barrier       | DOUBLE        | Yes      | Accumulator knock-out                          |
+| variance_strike         | NUMERIC(28,10) | Yes      | VarianceSwap strike variance                   |
+| accumulation_amount     | NUMERIC(28,10) | Yes      | Accumulator per-fixing amount                  |
+| knock_out_barrier       | NUMERIC(28,10) | Yes      | Accumulator knock-out                          |
 | barrier_type            | TEXT          | Yes      | Barrier option type                            |
-| lower_barrier           | DOUBLE        | Yes      | Window/generic barrier lower level             |
-| upper_barrier           | DOUBLE        | Yes      | Window/generic barrier upper level             |
+| lower_barrier           | NUMERIC(28,10) | Yes      | Window/generic barrier lower level             |
+| upper_barrier           | NUMERIC(28,10) | Yes      | Window/generic barrier upper level             |
 | basket_json             | TEXT          | Yes      | JSON array of {code, weight} for baskets       |
 | day_count_code          | TEXT          | Yes      | FK → day_count_fraction_types (swaps)         |
 | payment_frequency_code  | TEXT          | Yes      | FK → payment_frequency_types (swaps)          |
@@ -276,7 +276,7 @@ Add nullable columns to =ores_trading_bond_instruments_tbl=:
 | future_expiry_date | DATE  | Yes      | BondFuture delivery date                            |
 | option_type       | TEXT   | Yes      | Call / Put — BondOption                             |
 | option_expiry_date | DATE  | Yes      | BondOption expiry                                   |
-| option_strike     | DOUBLE | Yes      | BondOption strike (clean price)                     |
+| option_strike     | NUMERIC(28,10) | Yes      | BondOption strike (clean price)                     |
 | trs_return_type   | TEXT   | Yes      | TotalReturn / PriceReturn — BondTRS                 |
 | trs_funding_leg_code | TEXT | Yes    | Funding leg floating index — BondTRS                |
 | ascot_option_type | TEXT   | Yes      | ASCOT option type                                   |
@@ -291,10 +291,10 @@ Add nullable columns to =ores_trading_credit_instruments_tbl=:
 |-------------------+--------+----------+-----------------------------------------------------|
 | option_type       | TEXT   | Yes      | Call / Put — CreditDefaultSwapOption                |
 | option_expiry_date | DATE  | Yes      | CDS option expiry                                   |
-| option_strike     | DOUBLE | Yes      | CDS option strike spread (bps)                      |
+| option_strike     | NUMERIC(28,10) | Yes      | CDS option strike spread (bps)                      |
 | linked_asset_code | TEXT   | Yes      | Reference asset — CreditLinkedSwap                  |
-| tranche_attachment | DOUBLE | Yes    | CBO tranche attachment point                        |
-| tranche_detachment | DOUBLE | Yes    | CBO tranche detachment point                        |
+| tranche_attachment | NUMERIC(28,10) | Yes    | CBO tranche attachment point                        |
+| tranche_detachment | NUMERIC(28,10) | Yes    | CBO tranche detachment point                        |
 
 New ORE types now mapped: CreditDefaultSwapOption, IndexCreditDefaultSwapOption,
 CreditLinkedSwap, CBO.
@@ -311,7 +311,7 @@ Add nullable columns to =ores_trading_instruments_tbl=:
 | callable_dates_json  | TEXT   | Yes      | JSON array of call dates — CallableSwap          |
 | rpa_counterparty     | TEXT   | Yes      | Reference counterparty — RiskParticipationAgreement |
 | inflation_index_code | TEXT   | Yes      | InflationSwap index (e.g. HICP, RPI)            |
-| base_cpi             | DOUBLE | Yes      | InflationSwap base CPI level                     |
+| base_cpi             | NUMERIC(28,10) | Yes      | InflationSwap base CPI level                     |
 
 New ORE types now mapped: ForwardRateAgreement, BalanceGuaranteedSwap,
 CallableSwap, KnockOutSwap, RiskParticipationAgreement, InflationSwap.
@@ -398,8 +398,8 @@ New table: =ores_trading_positions_tbl=
 | trade_type_code | TEXT   | No       | EquityPosition, BondPosition, etc.             |
 | underlying_code | TEXT   | No       | Asset identifier                               |
 | currency        | TEXT   | No       | ISO 4217                                       |
-| quantity        | DOUBLE | No       | Signed position quantity (negative = short)    |
-| price           | DOUBLE | Yes      | Average cost or mark price                     |
+| quantity        | NUMERIC(28,10) | No       | Signed position quantity (negative = short)    |
+| price           | NUMERIC(28,10) | Yes      | Average cost or mark price                     |
 | price_date      | DATE   | Yes      | Price observation date                         |
 | description     | TEXT   | Yes      |                                                |
 | Standard audit  |        |          |                                                |

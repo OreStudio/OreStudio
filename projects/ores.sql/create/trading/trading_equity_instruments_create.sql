@@ -83,6 +83,7 @@ create table if not exists "ores_trading_equity_instruments_tbl" (
     check ("option_type" is null or "option_type" in ('Call', 'Put')),
     check ("exercise_type" is null or "exercise_type" in ('European', 'American', 'Bermudan')),
     check ("average_type" is null or "average_type" in ('Arithmetic', 'Geometric')),
+    check ("barrier_type" is null or "barrier_type" in ('UpIn', 'UpOut', 'DownIn', 'DownOut')),
     check ("return_type" is null or "return_type" in ('TotalReturn', 'PriceReturn'))
 );
 

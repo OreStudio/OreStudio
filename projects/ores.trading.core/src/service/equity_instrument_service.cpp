@@ -19,7 +19,7 @@
  */
 #include "ores.trading.core/service/equity_instrument_service.hpp"
 
-#include <stdexcept>
+#include <boost/uuid/random_generator.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
@@ -59,10 +59,12 @@ equity_instrument_service::find_equity_instrument(const std::string& id) {
 }
 
 void equity_instrument_service::save_equity_instrument(const domain::equity_instrument& v) {
-    if (v.id.is_nil())
-        throw std::invalid_argument("Equity instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving equity_instrument: " << v.id;
     auto t = v;
+    if (t.id.is_nil()) {
+        static boost::uuids::random_generator gen;
+        t.id = gen();
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving equity_instrument: " << t.id;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved equity_instrument: " << t.id;

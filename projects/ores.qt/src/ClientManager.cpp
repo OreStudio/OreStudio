@@ -26,6 +26,7 @@
 #include <boost/uuid/string_generator.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.platform/environment/environment.hpp"
 #include "ores.eventing/domain/entity_change_event.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
@@ -68,6 +69,10 @@ LoginResult ClientManager::connect(const std::string& host, std::uint16_t port) 
         nats::config::nats_options opts;
         opts.url = "nats://" + host + ":" + std::to_string(port);
         opts.subject_prefix = subject_prefix_;
+        using ores::platform::environment::environment;
+        if (auto v = environment::get_value("ORES_NATS_TLS_CA"))   opts.tls_ca_cert     = *v;
+        if (auto v = environment::get_value("ORES_NATS_TLS_CERT")) opts.tls_client_cert = *v;
+        if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))  opts.tls_client_key  = *v;
 
         session_.connect(std::move(opts));
 

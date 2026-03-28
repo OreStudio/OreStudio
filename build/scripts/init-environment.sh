@@ -115,7 +115,13 @@ NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.${LABEL}}"
 NATS_URL="nats://localhost:4222"
 NATS_CERTS_DIR="${CHECKOUT_ROOT}/build/keys/nats"
 NATS_TLS_CA=""
-[[ -f "${NATS_CERTS_DIR}/ca.crt" ]] && NATS_TLS_CA="${NATS_CERTS_DIR}/ca.crt"
+NATS_TLS_CERT=""
+NATS_TLS_KEY=""
+if [[ -f "${NATS_CERTS_DIR}/ca.crt" ]]; then
+    NATS_TLS_CA="${NATS_CERTS_DIR}/ca.crt"
+    NATS_TLS_CERT="${NATS_CERTS_DIR}/ores.qt.client.crt"
+    NATS_TLS_KEY="${NATS_CERTS_DIR}/ores.qt.client.key"
+fi
 
 # Sanitise LABEL for Postgres identifier use (lowercase, hyphens/dots → underscores)
 LABEL_LOWER="$(echo "${LABEL}" | tr '[:upper:]' '[:lower:]' | tr '.-' '__')"
@@ -299,7 +305,10 @@ ORES_NATS_URL=${NATS_URL}
 ORES_NATS_SUBJECT_PREFIX=${NATS_PREFIX}
 # mTLS: auto-enabled when certificates exist in build/keys/nats/.
 # Run build/scripts/generate_nats_certs.sh to generate them.
+# ORES_NATS_TLS_CERT/KEY are used by the Qt desktop client.
 ORES_NATS_TLS_CA=${NATS_TLS_CA}
+ORES_NATS_TLS_CERT=${NATS_TLS_CERT}
+ORES_NATS_TLS_KEY=${NATS_TLS_KEY}
 
 # ---------------------------------------------------------------------------
 # Database admin (postgres superuser — for recreate_database.sh and psql)

@@ -45,6 +45,7 @@ SERVICES=(
     ores.compute.service
     ores.http.server
     ores.wt.service
+    ores.qt.client
 )
 
 CA_DAYS=365

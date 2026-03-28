@@ -24,6 +24,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
+# Ensure ~/.local/bin is on PATH so claude is found when run via nohup.
+export PATH="${HOME}/.local/bin:${PATH}"
 
 usage() {
     cat <<EOF
@@ -44,11 +48,16 @@ Options:
                             skipped (default: current authenticated gh user)
     -h, --help              Show this help message
 
+Log output is written to: ${PROJECT_ROOT}/tmp/pr-watch-<PR>.log
+
 Examples:
     $(basename "$0") 574
     $(basename "$0") 574 --interval 10
     $(basename "$0") 574 --repo OreStudio/OreStudio --interval 3
     $(basename "$0") 574 --ignore-logins mcraveiro,bot
+
+To run in background:
+    $(basename "$0") 574 &
 
 EOF
     exit 0
@@ -58,7 +67,10 @@ if [[ $# -eq 0 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
     usage
 fi
 
-# Check dependencies
+# Capture PR number (first positional arg) for the log filename.
+PR_NUMBER="$1"
+
+# Check dependencies.
 for cmd in gh claude python3; do
     if ! command -v "$cmd" &>/dev/null; then
         echo "Error: '$cmd' not found in PATH" >&2
@@ -66,4 +78,10 @@ for cmd in gh claude python3; do
     fi
 done
 
-exec python3 "${SCRIPT_DIR}/pr_watch.py" "$@"
+# Ensure tmp directory exists.
+mkdir -p "${PROJECT_ROOT}/tmp"
+
+LOG_FILE="${PROJECT_ROOT}/tmp/pr-watch-${PR_NUMBER}.log"
+
+echo "Watching PR #${PR_NUMBER} — log: ${LOG_FILE}"
+exec python3 "${SCRIPT_DIR}/pr_watch.py" "$@" >> "${LOG_FILE}" 2>&1

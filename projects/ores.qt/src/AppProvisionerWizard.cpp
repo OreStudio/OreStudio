@@ -536,9 +536,9 @@ private:
 
 // ── Page 6: Review ────────────────────────────────────────────────────────────
 
-class ReviewPage : public QWizardPage {
+class AppProvisionerReviewPage : public QWizardPage {
 public:
-    explicit ReviewPage(QWidget* parent = nullptr) : QWizardPage(parent) {
+    explicit AppProvisionerReviewPage(QWidget* parent = nullptr) : QWizardPage(parent) {
         setTitle(tr("Review"));
         setSubTitle(tr("Confirm the details below then click Create."));
 
@@ -623,7 +623,7 @@ AppProvisionerWizard::AppProvisionerWizard(ClientManager* clientManager,
     package_upload_page_  = new PackageUploadPage(http_base_url_,
                                                   app_version_id_, this);
     audit_page_           = new AuditPage(changeReasonCache, this);
-    review_page_          = new ReviewPage(this);
+    review_page_          = new AppProvisionerReviewPage(this);
 
     setPage(kAppIdentityPage,    app_identity_page_);
     setPage(kVersionDetailsPage, version_details_page_);

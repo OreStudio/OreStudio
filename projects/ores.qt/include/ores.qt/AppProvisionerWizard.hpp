@@ -34,7 +34,7 @@ class VersionDetailsPage;
 class PlatformsPage;
 class PackageUploadPage;
 class AuditPage;
-class ReviewPage;
+class AppProvisionerReviewPage;
 
 /**
  * @brief Step-by-step wizard for provisioning a new compute application.
@@ -78,7 +78,7 @@ public:
                                   QWidget* parent = nullptr);
 
     /**
-     * @brief Called by ReviewPage::validatePage() to perform the server
+     * @brief Called by AppProvisionerReviewPage::validatePage() to perform the server
      *        requests.  Returns true on success (wizard closes), false on
      *        failure (wizard stays open with an error message shown).
      */
@@ -88,7 +88,7 @@ signals:
     void provisioned();
 
 private:
-    friend class ReviewPage;  // needs access to page pointers in initializePage()
+    friend class AppProvisionerReviewPage;  // needs access to page pointers in initializePage()
 
     ClientManager*     client_manager_;
     ChangeReasonCache* change_reason_cache_;
@@ -105,7 +105,7 @@ private:
     PlatformsPage*      platforms_page_;
     PackageUploadPage*  package_upload_page_;
     AuditPage*          audit_page_;
-    ReviewPage*         review_page_;
+    AppProvisionerReviewPage*         review_page_;
 };
 
 } // namespace ores::qt

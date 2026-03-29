@@ -44,6 +44,8 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 /**
  * @brief Unified compute console modelled on the BOINC manager UI.
  *
@@ -76,6 +78,7 @@ private:
 public:
     explicit ComputeConsoleWindow(ClientManager* clientManager,
                                   ChangeReasonCache* changeReasonCache,
+                                  BadgeCache* badgeCache,
                                   QWidget* parent = nullptr);
 
     /**
@@ -133,6 +136,7 @@ private:
 
     ClientManager*     client_manager_;
     ChangeReasonCache* change_reason_cache_;
+    BadgeCache* badge_cache_;
     std::string        http_base_url_;
 
     // Models

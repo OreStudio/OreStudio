@@ -32,6 +32,8 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 /**
  * @brief MDI window for displaying and managing business units.
  *
@@ -56,6 +58,7 @@ public:
         ClientManager* clientManager,
         ImageCache* imageCache,
         const QString& username,
+        BadgeCache* badgeCache,
         QWidget* parent = nullptr);
     ~BusinessUnitMdiWindow() override = default;
 
@@ -96,6 +99,7 @@ private:
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

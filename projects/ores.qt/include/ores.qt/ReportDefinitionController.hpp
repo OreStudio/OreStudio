@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 class ReportDefinitionMdiWindow;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
@@ -61,6 +62,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ChangeReasonCache* changeReasonCache,
+        BadgeCache* badgeCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -95,6 +97,7 @@ private:
     void showHistoryWindow(const reporting::domain::report_definition& definition);
 
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     ReportDefinitionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

@@ -19,6 +19,7 @@
  */
 #include "ores.qt/ComputeConsoleController.hpp"
 
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ComputeConsoleWindow.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
@@ -32,12 +33,14 @@ ComputeConsoleController::ComputeConsoleController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     QObject* parent)
     : QObject(parent),
       mainWindow_(mainWindow),
       mdiArea_(mdiArea),
       clientManager_(clientManager),
-      changeReasonCache_(changeReasonCache) {
+      changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "ComputeConsoleController created";
 }
@@ -50,7 +53,7 @@ void ComputeConsoleController::showConsole() {
 
     BOOST_LOG_SEV(lg(), info) << "Opening compute console";
 
-    consoleWindow_ = new ComputeConsoleWindow(clientManager_, changeReasonCache_);
+    consoleWindow_ = new ComputeConsoleWindow(clientManager_, changeReasonCache_, badgeCache_);
     consoleWindow_->setHttpBaseUrl(http_base_url_);
 
     connect(consoleWindow_, &ComputeConsoleWindow::statusChanged,

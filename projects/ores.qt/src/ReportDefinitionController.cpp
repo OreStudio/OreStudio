@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ReportDefinitionMdiWindow.hpp"
 #include "ores.qt/ReportDefinitionDetailDialog.hpp"
 #include "ores.qt/ReportDefinitionHistoryDialog.hpp"
@@ -52,11 +53,13 @@ ReportDefinitionController::ReportDefinitionController(
     QMdiArea* mdiArea,
     ClientManager* clientManager,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -96,7 +99,7 @@ void ReportDefinitionController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new ReportDefinitionMdiWindow(clientManager_, username_);
+    listWindow_ = new ReportDefinitionMdiWindow(clientManager_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &ReportDefinitionMdiWindow::statusChanged,

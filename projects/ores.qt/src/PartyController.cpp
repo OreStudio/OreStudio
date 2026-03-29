@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QPointer>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/PartyMdiWindow.hpp"
 #include "ores.qt/EntityDetailDialog.hpp"
 #include "ores.qt/PartyDetailOperations.hpp"
@@ -55,12 +56,14 @@ PartyController::PartyController(
     ClientManager* clientManager,
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -106,7 +109,7 @@ void PartyController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PartyMdiWindow(clientManager_, imageCache_, username_);
+    listWindow_ = new PartyMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &PartyMdiWindow::statusChanged,

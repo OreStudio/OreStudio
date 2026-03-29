@@ -24,6 +24,7 @@
 #include <QPointer>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/BookMdiWindow.hpp"
 #include "ores.qt/BookDetailDialog.hpp"
 #include "ores.qt/BookHistoryDialog.hpp"
@@ -40,12 +41,14 @@ BookController::BookController(
     ClientManager* clientManager,
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -62,7 +65,7 @@ void BookController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BookMdiWindow(clientManager_, imageCache_, username_);
+    listWindow_ = new BookMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &BookMdiWindow::statusChanged,

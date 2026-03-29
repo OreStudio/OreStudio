@@ -25,6 +25,7 @@
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/PortfolioMdiWindow.hpp"
 #include "ores.qt/PortfolioDetailDialog.hpp"
 #include "ores.qt/PortfolioHistoryDialog.hpp"
@@ -40,12 +41,14 @@ PortfolioController::PortfolioController(
     ClientManager* clientManager,
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -62,7 +65,7 @@ void PortfolioController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new PortfolioMdiWindow(clientManager_, imageCache_, username_);
+    listWindow_ = new PortfolioMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &PortfolioMdiWindow::statusChanged,

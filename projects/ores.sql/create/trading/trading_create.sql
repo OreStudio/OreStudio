@@ -88,6 +88,16 @@
 \ir ./trading_commodity_instruments_create.sql
 \ir ./trading_commodity_instruments_notify_trigger_create.sql
 
+-- Composite instruments (depends on reference data above)
+\ir ./trading_composite_instruments_create.sql
+\ir ./trading_composite_instruments_notify_trigger_create.sql
+\ir ./trading_composite_legs_create.sql
+\ir ./trading_composite_legs_notify_trigger_create.sql
+
+-- Scripted instruments (depends on reference data above)
+\ir ./trading_scripted_instruments_create.sql
+\ir ./trading_scripted_instruments_notify_trigger_create.sql
+
 -- Trades (depends on reference data above)
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql

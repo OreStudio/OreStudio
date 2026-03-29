@@ -97,6 +97,8 @@
 #include "ores.qt/CreditInstrumentController.hpp"
 #include "ores.qt/EquityInstrumentController.hpp"
 #include "ores.qt/CommodityInstrumentController.hpp"
+#include "ores.qt/CompositeInstrumentController.hpp"
+#include "ores.qt/ScriptedInstrumentController.hpp"
 #include "ores.qt/JobDefinitionController.hpp"
 #include "ores.qt/AppController.hpp"
 #include "ores.qt/AppVersionController.hpp"
@@ -264,6 +266,8 @@ MainWindow::MainWindow(QWidget* parent) :
     ui_->ActionCreditInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionEquityInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionCommodityInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
+    ui_->ActionCompositeInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
+    ui_->ActionScriptedInstruments->setIcon(IconUtils::createRecoloredIcon(Icon::ArrowTrending, IconUtils::DefaultIconColor));
     ui_->ActionJobDefinitions->setIcon(IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
     ui_->ActionReportTypes->setIcon(IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     ui_->ActionConcurrencyPolicies->setIcon(IconUtils::createRecoloredIcon(Icon::Settings, IconUtils::DefaultIconColor));
@@ -855,6 +859,14 @@ MainWindow::MainWindow(QWidget* parent) :
         if (commodityInstrumentController_)
             commodityInstrumentController_->showListWindow();
     });
+    connect(ui_->ActionCompositeInstruments, &QAction::triggered, this, [this]() {
+        if (compositeInstrumentController_)
+            compositeInstrumentController_->showListWindow();
+    });
+    connect(ui_->ActionScriptedInstruments, &QAction::triggered, this, [this]() {
+        if (scriptedInstrumentController_)
+            scriptedInstrumentController_->showListWindow();
+    });
 
     // Connect Job Definitions action to controller
     connect(ui_->ActionJobDefinitions, &QAction::triggered, this, [this]() {
@@ -1297,6 +1309,8 @@ void MainWindow::updateMenuState() {
     ui_->ActionCreditInstruments->setEnabled(isLoggedIn);
     ui_->ActionEquityInstruments->setEnabled(isLoggedIn);
     ui_->ActionCommodityInstruments->setEnabled(isLoggedIn);
+    ui_->ActionCompositeInstruments->setEnabled(isLoggedIn);
+    ui_->ActionScriptedInstruments->setEnabled(isLoggedIn);
     ui_->ActionPortfolioExplorer->setEnabled(isLoggedIn);
     ui_->ActionOrgExplorer->setEnabled(isLoggedIn);
     ui_->ActionImportOreData->setEnabled(isLoggedIn);
@@ -2231,6 +2245,39 @@ void MainWindow::createControllers() {
     connect(commodityInstrumentController_.get(), &CommodityInstrumentController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
+    compositeInstrumentController_ = std::make_unique<CompositeInstrumentController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(compositeInstrumentController_.get(), &CompositeInstrumentController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
+
+    scriptedInstrumentController_ = std::make_unique<ScriptedInstrumentController>(
+        this, mdiArea_, clientManager_,
+        QString::fromStdString(username_), this);
+
+    connect(scriptedInstrumentController_.get(), &ScriptedInstrumentController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(scriptedInstrumentController_.get(), &ScriptedInstrumentController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message);
+    });
+    connect(scriptedInstrumentController_.get(), &ScriptedInstrumentController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(scriptedInstrumentController_.get(), &ScriptedInstrumentController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),

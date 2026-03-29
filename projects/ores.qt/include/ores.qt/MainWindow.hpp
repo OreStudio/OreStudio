@@ -109,6 +109,8 @@ class BondInstrumentController;
 class CreditInstrumentController;
 class EquityInstrumentController;
 class CommodityInstrumentController;
+class CompositeInstrumentController;
+class ScriptedInstrumentController;
 class OreImportController;
 class PortfolioExplorerMdiWindow;
 class OrgExplorerMdiWindow;
@@ -671,6 +673,8 @@ private:
     std::unique_ptr<CreditInstrumentController> creditInstrumentController_;
     std::unique_ptr<EquityInstrumentController> equityInstrumentController_;
     std::unique_ptr<CommodityInstrumentController> commodityInstrumentController_;
+    std::unique_ptr<CompositeInstrumentController> compositeInstrumentController_;
+    std::unique_ptr<ScriptedInstrumentController> scriptedInstrumentController_;
     std::unique_ptr<JobDefinitionController> jobDefinitionController_;
     std::unique_ptr<AppController> appController_;
     std::unique_ptr<AppVersionController> appVersionController_;

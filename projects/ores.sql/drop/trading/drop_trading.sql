@@ -60,6 +60,16 @@
 \ir ./trading_commodity_instruments_notify_trigger_drop.sql
 \ir ./trading_commodity_instruments_drop.sql
 
+-- Composite instruments (drop legs before header)
+\ir ./trading_composite_legs_notify_trigger_drop.sql
+\ir ./trading_composite_legs_drop.sql
+\ir ./trading_composite_instruments_notify_trigger_drop.sql
+\ir ./trading_composite_instruments_drop.sql
+
+-- Scripted instruments
+\ir ./trading_scripted_instruments_notify_trigger_drop.sql
+\ir ./trading_scripted_instruments_drop.sql
+
 -- Trades (depends on reference data, drop after junction tables)
 \ir ./trading_trades_notify_trigger_drop.sql
 \ir ./trading_trades_drop.sql

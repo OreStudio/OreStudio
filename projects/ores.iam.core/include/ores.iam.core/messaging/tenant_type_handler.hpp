@@ -132,7 +132,7 @@ public:
             return;
         }
         try {
-            service::tenant_type_service svc(ctx_);
+            service::tenant_type_service svc(ctx);
             svc.remove_type(req->type);
             BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
                 << "Completed " << msg.subject;

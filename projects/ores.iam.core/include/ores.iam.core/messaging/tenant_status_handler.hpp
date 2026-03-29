@@ -132,7 +132,7 @@ public:
             return;
         }
         try {
-            service::tenant_status_service svc(ctx_);
+            service::tenant_status_service svc(ctx);
             svc.remove_status(req->status);
             BOOST_LOG_SEV(tenant_status_handler_lg(), debug)
                 << "Completed " << msg.subject;

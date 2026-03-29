@@ -123,7 +123,7 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "compute::hosts:write")) {
+        if (!has_permission(ctx, "compute::hosts:delete")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }

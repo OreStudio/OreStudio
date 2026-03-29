@@ -342,6 +342,7 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::batches:write', 'Submit and manage compute batch jobs');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::hosts:read',    'View compute hosts');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::hosts:write',   'Register and update compute hosts');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::hosts:delete',  'Remove compute hosts');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::*', 'Full access to all compute operations');
 
 -- =============================================================================

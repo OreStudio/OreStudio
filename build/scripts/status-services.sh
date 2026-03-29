@@ -82,10 +82,26 @@ if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
     done
 fi
 
+CHECKOUT_LABEL="${ORES_CHECKOUT_LABEL:-local1}"
+NATS_PORT="${ORES_NATS_PORT:-4222}"
+NATS_PID_FILE="$PROJECT_DIR/build/nats/$CHECKOUT_LABEL/nats-server.pid"
+NATS_LOG="$LOG_DIR/nats-server.log"
+
 echo "ORE Studio service status ($PRESET)"
 echo ""
 printf "  %-10s %-38s %s\n" "STATUS" "SERVICE" "DETAIL"
 printf "  %-10s %-38s %s\n" "----------" "--------------------------------------" "------"
+
+# --- NATS server (infrastructure, not preset-scoped) ---
+if [[ ! -f "$NATS_PID_FILE" ]]; then
+    printf "  %-10s %-38s %s\n" "missing" "nats-server" "(no PID file — start via start-services.sh or prodigy)"
+elif ! kill -0 "$(cat "$NATS_PID_FILE")" 2>/dev/null; then
+    printf "  %-10s %-38s %s\n" "stopped" "nats-server" "PID $(cat "$NATS_PID_FILE") (dead)"
+elif [[ -f "$NATS_LOG" ]] && grep -q "Server is ready" "$NATS_LOG" 2>/dev/null; then
+    printf "  %-10s %-38s %s\n" "running" "nats-server" "PID $(cat "$NATS_PID_FILE")  port $NATS_PORT"
+else
+    printf "  %-10s %-38s %s\n" "starting" "nats-server" "PID $(cat "$NATS_PID_FILE")  port $NATS_PORT"
+fi
 
 running=0
 starting=0

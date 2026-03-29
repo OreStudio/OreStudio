@@ -56,13 +56,11 @@ public:
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
         const QModelIndex& index) const override;
 
-    void set_badge_color_resolver(badge_color_resolver resolver);
     void set_badge_color_resolver(std::size_t column, badge_color_resolver resolver);
 
 private:
     std::vector<column_style> styles_;
     QFont monospaceFont_;
-    badge_color_resolver badge_resolver_;
     std::unordered_map<std::size_t, badge_color_resolver> column_resolvers_;
 };
 

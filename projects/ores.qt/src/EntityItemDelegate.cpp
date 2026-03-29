@@ -59,8 +59,6 @@ void EntityItemDelegate::paint(QPainter* painter,
             auto it = column_resolvers_.find(col);
             if (it != column_resolvers_.end())
                 colors = it->second(text);
-            else if (badge_resolver_)
-                colors = badge_resolver_(text);
 
             QFont badgeFont = opt.font;
             badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
@@ -102,10 +100,6 @@ void EntityItemDelegate::paint(QPainter* painter,
     }
 
     QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
-}
-
-void EntityItemDelegate::set_badge_color_resolver(badge_color_resolver resolver) {
-    badge_resolver_ = std::move(resolver);
 }
 
 void EntityItemDelegate::set_badge_color_resolver(

@@ -141,7 +141,9 @@ if [[ ! -f "${IAM_KEY}" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Read existing .env values so passwords are preserved on re-runs
+# Read existing .env values so passwords are preserved on re-runs.
+# Uses grep rather than an associative array so the script is compatible
+# with bash 3.2 (macOS system shell).
 # ---------------------------------------------------------------------------
 # Read a single key from the existing .env file.
 # bash 3.2 compatible — no associative arrays (macOS ships bash 3.x).

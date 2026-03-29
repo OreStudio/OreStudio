@@ -25,8 +25,8 @@
 #include <QFutureWatcher>
 #include <QPointer>
 #include <QHeaderView>
-#include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ColorConstants.hpp"
+#include "ores.qt/IconUtils.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 
@@ -214,13 +214,13 @@ void ServiceDashboardMdiWindow::loadSamples() {
             QColor  status_color;
             if (age_secs < 30) {
                 status_text  = tr("Green");
-                status_color = badge_colors::online;
+                status_color = color_constants::level_info;
             } else if (age_secs < 120) {
                 status_text  = tr("Amber");
-                status_color = badge_colors::old;
+                status_color = color_constants::level_warn;
             } else {
                 status_text  = tr("Offline");
-                status_color = badge_colors::unlocked;
+                status_color = color_constants::level_trace;
             }
 
             auto makeItem = [](const QString& text) {
@@ -267,13 +267,13 @@ void ServiceDashboardMdiWindow::loadSamples() {
             QColor  status_color;
             if (result.online_hosts > 0 && age_secs < 90) {
                 status_text  = tr("Green");
-                status_color = badge_colors::online;
+                status_color = color_constants::level_info;
             } else if (result.total_hosts > 0) {
                 status_text  = tr("Amber");
-                status_color = badge_colors::old;
+                status_color = color_constants::level_warn;
             } else {
                 status_text  = tr("Red");
-                status_color = badge_colors::locked;
+                status_color = color_constants::level_error;
             }
 
             auto makeItem = [](const QString& text) {

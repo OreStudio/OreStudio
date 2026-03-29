@@ -90,9 +90,10 @@ list(FILTER exe_files INCLUDE REGEX "main.cpp")
 # Resources (.qrc) are embedded in the executable only.
 file(GLOB RESOURCES "${ORES_QT_DIR}/resources/*.qrc")
 
-qt_add_executable(${exe_target_name} ${exe_files} ${RESOURCES})
+qt_add_executable(${exe_target_name} ${exe_files} ${RESOURCES} ${FORMS})
 set_target_properties(${exe_target_name} PROPERTIES
     OUTPUT_NAME ${exe_binary_name}
+    AUTOUIC_SEARCH_PATHS ${ORES_QT_DIR}/ui
     AUTORCC_RESOURCE_DIRS "${ORES_QT_DIR}/resources;${ORES_QT_DIR}/resources/icons")
 
 target_link_libraries(${exe_target_name}

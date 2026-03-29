@@ -36,6 +36,7 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.dq.lib
         ores.eventing.lib
         ores.platform.lib
     PRIVATE

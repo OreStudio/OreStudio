@@ -81,6 +81,12 @@
 \ir ./dq_catalogs_notify_trigger_drop.sql
 \ir ./dq_catalog_drop.sql
 
+-- Badge system (mappings before definitions, definitions before severities/domains)
+\ir ./dq_badge_mappings_drop.sql
+\ir ./dq_badge_definitions_drop.sql
+\ir ./dq_badge_severities_drop.sql
+\ir ./dq_code_domains_drop.sql
+
 -- Population functions
 \ir ./dq_population_functions_drop.sql
 

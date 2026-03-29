@@ -114,6 +114,7 @@ class PortfolioExplorerMdiWindow;
 class OrgExplorerMdiWindow;
 class ImageCache;
 class ChangeReasonCache;
+class BadgeCache;
 class DataLibrarianWindow;
 
 /**
@@ -693,6 +694,9 @@ private:
 
     /** @brief Cache for change reasons used by entity dialogs */
     ChangeReasonCache* changeReasonCache_;
+
+    /** @brief Cache for badge definitions and mappings */
+    BadgeCache* badgeCache_;
 
     /** @brief Username of currently logged-in user */
     std::string username_;

@@ -1,0 +1,114 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "dq",
+    "has_tenant_id": true,
+    "entity_singular": "code_domain",
+    "entity_plural": "code_domains",
+    "entity_title": "Code Domain",
+    "brief": "A named namespace for disambiguating enum codes across entity types.",
+    "description": "A code domain is a classification registry that names the context in\nwhich a code value exists. It disambiguates identical codes used in\ndifferent entity types — e.g. 'ACTIVE' in party_status vs 'ACTIVE'\nin book_status.\n\nCode domains are reusable beyond badges: any future system needing\nto namespace code values (validation rules, audit customisation, etc.)\ncan reference this table.",
+
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique code domain identifier.",
+      "detail": "Examples: 'party_status', 'book_type', 'fsm_state', 'dq_nature'."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Human-readable name for the code domain.",
+        "generator_expr": "std::string(faker::word::noun()) + \" Domain\""
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Detailed description of what this code domain classifies.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Order for UI display purposes.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_dq_code_domains_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "domain",
+      "entity_plural_short": "domains",
+      "entity_singular_words": "code domain",
+      "entity_plural_words": "code domains"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<string>"],
+        "entity": ["<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "cd",
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "description", "header": "Description"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.dq/domain/code_domain.hpp",
+      "domain_class": "dq::domain::code_domain",
+      "protocol_include": "ores.dq/messaging/code_domain_protocol.hpp",
+      "collection_name": "domains",
+      "item_var": "domain",
+      "key_field": "code",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "dq::messaging::get_code_domains_request",
+      "get_response_class": "dq::messaging::get_code_domains_response",
+      "get_message_type": "get_code_domains_request",
+      "save_request_class": "dq::messaging::save_code_domain_request",
+      "save_response_class": "dq::messaging::save_code_domain_response",
+      "save_message_type": "save_code_domain_request",
+      "delete_request_class": "dq::messaging::delete_code_domain_request",
+      "delete_response_class": "dq::messaging::delete_code_domain_response",
+      "delete_message_type": "delete_code_domain_request",
+      "history_request_class": "dq::messaging::get_code_domain_history_request",
+      "history_response_class": "dq::messaging::get_code_domain_history_response",
+      "history_message_type": "get_code_domain_history_request",
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 150},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 200},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 300},
+        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "CodeDomainListWindow",
+      "window_title": "Code Domains",
+      "icon": "Grid"
+    }
+  }
+}

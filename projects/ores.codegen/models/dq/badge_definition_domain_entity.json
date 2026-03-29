@@ -1,0 +1,155 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "dq",
+    "has_tenant_id": true,
+    "entity_singular": "badge_definition",
+    "entity_plural": "badge_definitions",
+    "entity_title": "Badge Definition",
+    "brief": "Visual definition for a badge, including colours, label, and severity.",
+    "description": "The badge catalogue. Each entry defines the complete visual presentation\nof a badge: display label, tooltip, background colour, text colour,\nseverity level, and an optional Bootstrap CSS class hint for Wt.\n\nBadge definitions are the single source of truth for all badge visual\nmetadata across Qt and Wt. They are loaded at client startup as\nreference data and looked up at render time via BadgeCache.",
+
+    "primary_key": {
+      "column": "code",
+      "type": "text",
+      "cpp_type": "std::string",
+      "description": "Unique badge definition code.",
+      "detail": "Examples: 'active', 'locked', 'fsm_draft', 'login_online'."
+    },
+
+    "natural_keys": [
+      {
+        "column": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "description": "Display label shown inside the badge.",
+        "generator_expr": "std::string(faker::word::adjective())"
+      }
+    ],
+
+    "columns": [
+      {
+        "name": "description",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Tooltip text explaining what this badge represents.",
+        "generator_expr": "std::string(faker::lorem::sentence())"
+      },
+      {
+        "name": "background_colour",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Badge background colour as a hex string.",
+        "detail": "Example: '#22c55e'.",
+        "generator_expr": "std::string(\"#\") + faker::string::hexadecimal(6, faker::HexCasing::Lower, faker::HexPrefix::NoPrefix)"
+      },
+      {
+        "name": "text_colour",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Badge text colour as a hex string.",
+        "detail": "Default is '#ffffff' (white). May vary for light-background badges.",
+        "generator_expr": "std::string(\"#ffffff\")"
+      },
+      {
+        "name": "severity_code",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Severity classification for this badge.",
+        "detail": "Soft FK to ores_dq_badge_severities_tbl. Bootstrap-aligned codes: secondary, info, success, warning, danger, primary.",
+        "generator_expr": "std::string(\"secondary\")"
+      },
+      {
+        "name": "css_class",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Optional Bootstrap CSS class hint for Wt rendering.",
+        "detail": "Example: 'badge bg-success'. Qt ignores this field. Nullable — Wt falls back to inline style from background_colour/text_colour when absent.",
+        "generator_expr": "std::optional<std::string>{}"
+      },
+      {
+        "name": "display_order",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Order for UI display purposes.",
+        "generator_expr": "faker::number::integer(1, 100)"
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_dq_badge_definitions_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "definition",
+      "entity_plural_short": "definitions",
+      "entity_singular_words": "badge definition",
+      "entity_plural_words": "badge definitions"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>"],
+        "entity": ["<optional>", "<string>", "\"sqlgen/Timestamp.hpp\""]
+      },
+      "iterator_var": "bd",
+      "table_display": [
+        {"column": "code", "header": "Code"},
+        {"column": "name", "header": "Name"},
+        {"column": "background_colour", "header": "Background"},
+        {"column": "text_colour", "header": "Text"},
+        {"column": "severity_code", "header": "Severity"},
+        {"column": "display_order", "header": "Order"},
+        {"column": "modified_by", "header": "Modified By"},
+        {"column": "version", "header": "Version"}
+      ]
+    },
+
+    "qt": {
+      "domain_include": "ores.dq/domain/badge_definition.hpp",
+      "domain_class": "dq::domain::badge_definition",
+      "protocol_include": "ores.dq/messaging/badge_definition_protocol.hpp",
+      "collection_name": "definitions",
+      "item_var": "definition",
+      "key_field": "code",
+      "has_uuid_primary_key": false,
+
+      "get_request_class": "dq::messaging::get_badge_definitions_request",
+      "get_response_class": "dq::messaging::get_badge_definitions_response",
+      "get_message_type": "get_badge_definitions_request",
+      "save_request_class": "dq::messaging::save_badge_definition_request",
+      "save_response_class": "dq::messaging::save_badge_definition_response",
+      "save_message_type": "save_badge_definition_request",
+      "delete_request_class": "dq::messaging::delete_badge_definition_request",
+      "delete_response_class": "dq::messaging::delete_badge_definition_response",
+      "delete_message_type": "delete_badge_definition_request",
+      "history_request_class": "dq::messaging::get_badge_definition_history_request",
+      "history_response_class": "dq::messaging::get_badge_definition_history_response",
+      "history_message_type": "get_badge_definition_history_request",
+
+      "columns": [
+        {"enum_name": "Code", "field": "code", "header": "Code", "is_string": true, "width": 150},
+        {"enum_name": "Name", "field": "name", "header": "Name", "is_string": true, "width": 150},
+        {"enum_name": "Description", "field": "description", "header": "Description", "is_string": true, "width": 250},
+        {"enum_name": "BackgroundColour", "field": "background_colour", "header": "Background", "is_string": true, "width": 100},
+        {"enum_name": "TextColour", "field": "text_colour", "header": "Text", "is_string": true, "width": 80},
+        {"enum_name": "SeverityCode", "field": "severity_code", "header": "Severity", "is_string": true, "width": 100},
+        {"enum_name": "DisplayOrder", "field": "display_order", "header": "Order", "is_int": true, "width": 80},
+        {"enum_name": "Version", "field": "version", "header": "Version", "is_int": true, "width": 80},
+        {"enum_name": "ModifiedBy", "field": "modified_by", "header": "Modified By", "is_string": true, "width": 120},
+        {"enum_name": "RecordedAt", "field": "recorded_at", "header": "Recorded At", "is_timestamp": true, "width": 150}
+      ],
+
+      "settings_group": "BadgeDefinitionListWindow",
+      "window_title": "Badge Definitions",
+      "icon": "Tag"
+    }
+  }
+}

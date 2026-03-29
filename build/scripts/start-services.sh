@@ -83,8 +83,11 @@ mkdir -p "$LOG_DIR" "$RUN_DIR"
 
 # --- Derived configuration ---
 CHECKOUT_LABEL="${ORES_CHECKOUT_LABEL:-local1}"
-NATS_URL="${ORES_NATS_URL:-nats://localhost:4222}"
+NATS_PORT="${ORES_NATS_PORT:-4222}"
+NATS_URL="${ORES_NATS_URL:-nats://localhost:$NATS_PORT}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.$CHECKOUT_LABEL}"
+NATS_CONFIG="$PROJECT_DIR/build/config/nats-$CHECKOUT_LABEL.conf"
+NATS_PID_FILE="$PROJECT_DIR/build/nats/$CHECKOUT_LABEL/nats-server.pid"
 
 # mTLS: optional; all three must be set together or all left empty.
 NATS_TLS_CA="${ORES_NATS_TLS_CA:-}"
@@ -203,6 +206,22 @@ launch_wrapper_node() {
         "${wrapper_tls_args[@]}"
 }
 
+wait_for_nats() {
+    local port="$1"
+    printf "  wait    nats-server (port %d)" "$port"
+    local i
+    for i in $(seq 1 60); do
+        if (echo > /dev/tcp/localhost/"$port") 2>/dev/null; then
+            echo " ... ready"
+            return 0
+        fi
+        sleep 0.5
+        [[ $((i % 4)) -eq 0 ]] && printf "."
+    done
+    echo " ... timeout (check nats-server logs)"
+    return 1
+}
+
 wait_for_ready() {
     local name="$1"
     local log_file="$LOG_DIR/$name.log"
@@ -250,6 +269,24 @@ echo "  Preset : $PRESET"
 TLS_STATUS="${NATS_TLS_CA:+enabled}"
 echo "  NATS   : $NATS_URL (prefix: $NATS_PREFIX, mTLS: ${TLS_STATUS:-disabled})"
 echo "  Ports  : HTTP=$HTTP_PORT  WT=$WT_PORT"
+echo ""
+
+# 0. NATS server — start if not already running.
+echo "[NATS server]"
+if [[ -f "$NATS_PID_FILE" ]] && kill -0 "$(cat "$NATS_PID_FILE")" 2>/dev/null; then
+    printf "  skip    %-38s PID %d\n" "nats-server" "$(cat "$NATS_PID_FILE")"
+else
+    if [[ ! -f "$NATS_CONFIG" ]]; then
+        echo "  error: NATS config not found: $NATS_CONFIG"
+        echo "         run: ./build/scripts/init-nats.sh"
+        exit 1
+    fi
+    mkdir -p "$(dirname "$NATS_PID_FILE")"
+    nats-server --config "$NATS_CONFIG" &
+    echo "$!" > "$NATS_PID_FILE"
+    printf "  start   %-38s PID %d\n" "nats-server" "$!"
+fi
+wait_for_nats "$NATS_PORT"
 echo ""
 
 # 1. IAM first — all other services fetch JWKS from it on startup.

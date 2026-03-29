@@ -11,11 +11,13 @@
 # Use --preset to stop a specific preset without re-running init-environment.sh.
 #
 # Services are stopped in reverse dependency order to allow clean NATS draining:
+#   0. Compute wrapper nodes       (outermost layer)
 #   1. WT service and HTTP server  (front-end servers)
 #   2. Domain services             (NATS workers, except IAM)
-#   3. IAM service                 (JWKS provider, stopped last)
+#   3. IAM service                 (JWKS provider)
+#   4. NATS server                 (stopped last — only if started by this script)
 #
-# Waits up to 10 seconds between phases for graceful NATS drain to complete.
+# Waits between phases for graceful NATS drain to complete.
 
 set -euo pipefail
 
@@ -195,6 +197,35 @@ if [[ -d "$BIN_DIR" ]]; then
         total_stopped=$((total_stopped + 1))
     done < <(pgrep -f "$BIN_DIR/ores\." 2>/dev/null || true)
     wait_for_pids "untracked services" "${untracked_pids[@]}"
+fi
+
+# ---------------------------------------------------------------------------
+# Phase 4: NATS server (stopped last — all services must drain first)
+# Only stopped if start-services.sh started it (PID file present).
+# If NATS was started via prodigy or manually, this phase is a no-op.
+# ---------------------------------------------------------------------------
+
+CHECKOUT_LABEL="${ORES_CHECKOUT_LABEL:-local1}"
+NATS_PID_FILE="$PROJECT_DIR/build/nats/$CHECKOUT_LABEL/nats-server.pid"
+
+echo "[Phase 4: NATS server]"
+if [[ -f "$NATS_PID_FILE" ]]; then
+    nats_pid="$(cat "$NATS_PID_FILE")"
+    rm -f "$NATS_PID_FILE"
+    if kill -0 "$nats_pid" 2>/dev/null; then
+        kill -TERM "$nats_pid"
+        printf "  stop    %-38s PID %d\n" "nats-server" "$nats_pid"
+        total_stopped=$((total_stopped + 1))
+        echo ""
+        wait_for_pids "NATS server" "$nats_pid"
+    else
+        printf "  gone    %-38s PID %d\n" "nats-server" "$nats_pid"
+        total_gone=$((total_gone + 1))
+        echo ""
+    fi
+else
+    echo "  skip    nats-server (no PID file — not managed by start-services.sh)"
+    echo ""
 fi
 
 if [[ $((total_stopped + total_gone)) -eq 0 ]]; then

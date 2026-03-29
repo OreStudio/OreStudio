@@ -10,7 +10,7 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>ZeroCouponFixed</LegType>
-        <Currency></Currency>
+        <Currency>USD</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>

@@ -10,7 +10,7 @@
       <LegData>
         <Payer>true</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>USD</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>ACT</DayCounter>
         <Notionals>
@@ -38,7 +38,7 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>USD</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>

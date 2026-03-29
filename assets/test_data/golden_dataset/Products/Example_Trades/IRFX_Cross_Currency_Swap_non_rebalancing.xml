@@ -10,7 +10,7 @@
       <LegData>
         <Payer>true</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>EUR</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
@@ -40,7 +40,7 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>USD</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
@@ -80,7 +80,7 @@
       <LegData>
         <Payer>true</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>EUR</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>
@@ -110,7 +110,7 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>USD</Currency>
         <PaymentConvention>ModifiedFollowing</PaymentConvention>
         <DayCounter>A360</DayCounter>
         <Notionals>

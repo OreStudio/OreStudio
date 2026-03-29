@@ -10,7 +10,7 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>Fixed</LegType>
-        <Currency></Currency>
+        <Currency>CNY</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A365F</DayCounter>
         <Notionals>
@@ -35,7 +35,7 @@
       <LegData>
         <Payer>true</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>CNY</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>A365F</DayCounter>
         <Notionals>

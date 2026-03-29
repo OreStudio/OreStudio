@@ -10,7 +10,7 @@
       <LegData>
         <Payer>false</Payer>
         <LegType>Fixed</LegType>
-        <Currency></Currency>
+        <Currency>GBP</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>ACT/365</DayCounter>
         <Amortizations>
@@ -116,7 +116,7 @@
       <LegData>
         <Payer>true</Payer>
         <LegType>Floating</LegType>
-        <Currency></Currency>
+        <Currency>GBP</Currency>
         <PaymentConvention>MF</PaymentConvention>
         <DayCounter>ACT/365</DayCounter>
         <Amortizations>

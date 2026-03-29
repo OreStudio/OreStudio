@@ -536,9 +536,9 @@ Reads ORES_PRESET from the existing .env if available; otherwise prompts."
     (unless (file-executable-p script-path)
       (user-error "Script not found or not executable: %s" script-path))
     (let* ((existing-preset (cdr (assoc "ORES_PRESET" (ores/load-dotenv))))
-           (preset (or existing-preset
-                       (completing-read "Build preset: " ores-db/presets nil nil nil nil
-                                        (car ores-db/presets))))
+           (default-preset (or existing-preset (car ores-db/presets)))
+           (preset (completing-read (format "Build preset (default: %s): " default-preset)
+                                    ores-db/presets nil nil nil nil default-preset))
            (default-directory root))
       (compilation-start
        (format "%s -y --preset %s" script-path preset)

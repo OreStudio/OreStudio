@@ -270,8 +270,8 @@ void CommodityInstrumentHistoryDialog::updateChangesTable(int currentVersionInde
 
     if (current.fixed_price != previous.fixed_price)
         addChange("Fixed Price",
-            QString::number(previous.fixed_price, 'f', 6),
-            QString::number(current.fixed_price, 'f', 6));
+            previous.fixed_price ? QString::number(*previous.fixed_price, 'f', 6) : QString(),
+            current.fixed_price ? QString::number(*current.fixed_price, 'f', 6) : QString());
 
     if (current.option_type != previous.option_type)
         addChange("Option Type",
@@ -285,8 +285,8 @@ void CommodityInstrumentHistoryDialog::updateChangesTable(int currentVersionInde
 
     if (current.strike_price != previous.strike_price)
         addChange("Strike Price",
-            QString::number(previous.strike_price, 'f', 6),
-            QString::number(current.strike_price, 'f', 6));
+            previous.strike_price ? QString::number(*previous.strike_price, 'f', 6) : QString(),
+            current.strike_price ? QString::number(*current.strike_price, 'f', 6) : QString());
 
     if (current.barrier_type != previous.barrier_type)
         addChange("Barrier Type",
@@ -295,13 +295,13 @@ void CommodityInstrumentHistoryDialog::updateChangesTable(int currentVersionInde
 
     if (current.lower_barrier != previous.lower_barrier)
         addChange("Lower Barrier",
-            QString::number(previous.lower_barrier, 'f', 6),
-            QString::number(current.lower_barrier, 'f', 6));
+            previous.lower_barrier ? QString::number(*previous.lower_barrier, 'f', 6) : QString(),
+            current.lower_barrier ? QString::number(*current.lower_barrier, 'f', 6) : QString());
 
     if (current.upper_barrier != previous.upper_barrier)
         addChange("Upper Barrier",
-            QString::number(previous.upper_barrier, 'f', 6),
-            QString::number(current.upper_barrier, 'f', 6));
+            previous.upper_barrier ? QString::number(*previous.upper_barrier, 'f', 6) : QString(),
+            current.upper_barrier ? QString::number(*current.upper_barrier, 'f', 6) : QString());
 
     if (current.average_type != previous.average_type)
         addChange("Average Type",
@@ -310,8 +310,8 @@ void CommodityInstrumentHistoryDialog::updateChangesTable(int currentVersionInde
 
     if (current.variance_strike != previous.variance_strike)
         addChange("Variance Strike",
-            QString::number(previous.variance_strike, 'f', 6),
-            QString::number(current.variance_strike, 'f', 6));
+            previous.variance_strike ? QString::number(*previous.variance_strike, 'f', 6) : QString(),
+            current.variance_strike ? QString::number(*current.variance_strike, 'f', 6) : QString());
 
     if (current.spread_commodity_code != previous.spread_commodity_code)
         addChange("Spread Commodity",
@@ -320,8 +320,8 @@ void CommodityInstrumentHistoryDialog::updateChangesTable(int currentVersionInde
 
     if (current.spread_amount != previous.spread_amount)
         addChange("Spread Amount",
-            QString::number(previous.spread_amount, 'f', 6),
-            QString::number(current.spread_amount, 'f', 6));
+            previous.spread_amount ? QString::number(*previous.spread_amount, 'f', 6) : QString(),
+            current.spread_amount ? QString::number(*current.spread_amount, 'f', 6) : QString());
 
     if (current.basket_json != previous.basket_json)
         addChange("Basket JSON",
@@ -362,8 +362,8 @@ void CommodityInstrumentHistoryDialog::updateFullDetails(int versionIndex) {
     ui_->optionTypeValue->setText(
         QString::fromStdString(v.option_type));
     ui_->strikePriceValue->setText(
-        v.strike_price != 0.0
-            ? QString::number(v.strike_price, 'f', 6)
+        v.strike_price
+            ? QString::number(*v.strike_price, 'f', 6)
             : QString());
     ui_->versionNumberValue->setText(QString::number(v.version));
     ui_->modifiedByValue->setText(

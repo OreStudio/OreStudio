@@ -21,6 +21,7 @@
 #define ORES_TRADING_DOMAIN_COMMODITY_INSTRUMENT_HPP
 
 #include <chrono>
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
@@ -96,9 +97,9 @@ struct commodity_instrument final {
     std::string maturity_date;
 
     /**
-     * @brief Fixed price for forwards and fixed-leg swaps. Zero if not applicable.
+     * @brief Fixed price for forwards and fixed-leg swaps. Nullopt if not applicable.
      */
-    double fixed_price = 0.0;
+    std::optional<double> fixed_price;
 
     /**
      * @brief Option type: 'Call' or 'Put'. Empty for non-option products.
@@ -106,9 +107,9 @@ struct commodity_instrument final {
     std::string option_type;
 
     /**
-     * @brief Option strike price. Zero for non-option products.
+     * @brief Option strike price. Nullopt for non-option products.
      */
-    double strike_price = 0.0;
+    std::optional<double> strike_price;
 
     /**
      * @brief Exercise type: 'European' or 'American'.
@@ -136,9 +137,9 @@ struct commodity_instrument final {
     std::string spread_commodity_code;
 
     /**
-     * @brief Spread amount for spread options. Zero when not applicable.
+     * @brief Spread amount for spread options. Nullopt when not applicable.
      */
-    double spread_amount = 0.0;
+    std::optional<double> spread_amount;
 
     /**
      * @brief Strip frequency code for option strips (e.g. Monthly, Quarterly).
@@ -146,19 +147,19 @@ struct commodity_instrument final {
     std::string strip_frequency_code;
 
     /**
-     * @brief Strike variance for variance swap products. Zero when not applicable.
+     * @brief Strike variance for variance swap products. Nullopt when not applicable.
      */
-    double variance_strike = 0.0;
+    std::optional<double> variance_strike;
 
     /**
      * @brief Per-fixing accumulation amount for accumulator products.
      */
-    double accumulation_amount = 0.0;
+    std::optional<double> accumulation_amount;
 
     /**
      * @brief Knock-out barrier level for accumulator products.
      */
-    double knock_out_barrier = 0.0;
+    std::optional<double> knock_out_barrier;
 
     /**
      * @brief Barrier type: e.g. 'UpIn', 'UpOut', 'DownIn', 'DownOut'.
@@ -166,14 +167,14 @@ struct commodity_instrument final {
     std::string barrier_type;
 
     /**
-     * @brief Lower barrier level. Zero when not applicable.
+     * @brief Lower barrier level. Nullopt when not applicable.
      */
-    double lower_barrier = 0.0;
+    std::optional<double> lower_barrier;
 
     /**
-     * @brief Upper barrier level. Zero when not applicable.
+     * @brief Upper barrier level. Nullopt when not applicable.
      */
-    double upper_barrier = 0.0;
+    std::optional<double> upper_barrier;
 
     /**
      * @brief JSON array of {code, weight} constituents for basket products.

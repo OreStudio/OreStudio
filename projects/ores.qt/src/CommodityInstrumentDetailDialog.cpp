@@ -217,16 +217,16 @@ void CommodityInstrumentDetailDialog::updateUiFromCommodityInstrument() {
         QString::fromStdString(instrument_.start_date));
     ui_->maturityDateEdit->setText(
         QString::fromStdString(instrument_.maturity_date));
-    ui_->fixedPriceSpinBox->setValue(instrument_.fixed_price);
+    ui_->fixedPriceSpinBox->setValue(instrument_.fixed_price.value_or(0.0));
     ui_->optionTypeEdit->setText(
         QString::fromStdString(instrument_.option_type));
     ui_->exerciseTypeEdit->setText(
         QString::fromStdString(instrument_.exercise_type));
-    ui_->strikePriceSpinBox->setValue(instrument_.strike_price);
+    ui_->strikePriceSpinBox->setValue(instrument_.strike_price.value_or(0.0));
     ui_->barrierTypeEdit->setText(
         QString::fromStdString(instrument_.barrier_type));
-    ui_->lowerBarrierSpinBox->setValue(instrument_.lower_barrier);
-    ui_->upperBarrierSpinBox->setValue(instrument_.upper_barrier);
+    ui_->lowerBarrierSpinBox->setValue(instrument_.lower_barrier.value_or(0.0));
+    ui_->upperBarrierSpinBox->setValue(instrument_.upper_barrier.value_or(0.0));
     ui_->averageTypeEdit->setText(
         QString::fromStdString(instrument_.average_type));
     ui_->averagingStartDateEdit->setText(
@@ -235,12 +235,12 @@ void CommodityInstrumentDetailDialog::updateUiFromCommodityInstrument() {
         QString::fromStdString(instrument_.averaging_end_date));
     ui_->spreadCommodityCodeEdit->setText(
         QString::fromStdString(instrument_.spread_commodity_code));
-    ui_->spreadAmountSpinBox->setValue(instrument_.spread_amount);
+    ui_->spreadAmountSpinBox->setValue(instrument_.spread_amount.value_or(0.0));
     ui_->stripFrequencyCodeEdit->setText(
         QString::fromStdString(instrument_.strip_frequency_code));
-    ui_->varianceStrikeSpinBox->setValue(instrument_.variance_strike);
-    ui_->accumulationAmountSpinBox->setValue(instrument_.accumulation_amount);
-    ui_->knockOutBarrierSpinBox->setValue(instrument_.knock_out_barrier);
+    ui_->varianceStrikeSpinBox->setValue(instrument_.variance_strike.value_or(0.0));
+    ui_->accumulationAmountSpinBox->setValue(instrument_.accumulation_amount.value_or(0.0));
+    ui_->knockOutBarrierSpinBox->setValue(instrument_.knock_out_barrier.value_or(0.0));
     ui_->dayCountCodeEdit->setText(
         QString::fromStdString(instrument_.day_count_code));
     ui_->paymentFrequencyCodeEdit->setText(
@@ -277,16 +277,28 @@ void CommodityInstrumentDetailDialog::updateCommodityInstrumentFromUi() {
         ui_->startDateEdit->text().trimmed().toStdString();
     instrument_.maturity_date =
         ui_->maturityDateEdit->text().trimmed().toStdString();
-    instrument_.fixed_price = ui_->fixedPriceSpinBox->value();
+    {
+        const double v = ui_->fixedPriceSpinBox->value();
+        instrument_.fixed_price = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
     instrument_.option_type =
         ui_->optionTypeEdit->text().trimmed().toStdString();
     instrument_.exercise_type =
         ui_->exerciseTypeEdit->text().trimmed().toStdString();
-    instrument_.strike_price = ui_->strikePriceSpinBox->value();
+    {
+        const double v = ui_->strikePriceSpinBox->value();
+        instrument_.strike_price = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
     instrument_.barrier_type =
         ui_->barrierTypeEdit->text().trimmed().toStdString();
-    instrument_.lower_barrier = ui_->lowerBarrierSpinBox->value();
-    instrument_.upper_barrier = ui_->upperBarrierSpinBox->value();
+    {
+        const double v = ui_->lowerBarrierSpinBox->value();
+        instrument_.lower_barrier = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
+    {
+        const double v = ui_->upperBarrierSpinBox->value();
+        instrument_.upper_barrier = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
     instrument_.average_type =
         ui_->averageTypeEdit->text().trimmed().toStdString();
     instrument_.averaging_start_date =
@@ -295,12 +307,24 @@ void CommodityInstrumentDetailDialog::updateCommodityInstrumentFromUi() {
         ui_->averagingEndDateEdit->text().trimmed().toStdString();
     instrument_.spread_commodity_code =
         ui_->spreadCommodityCodeEdit->text().trimmed().toStdString();
-    instrument_.spread_amount = ui_->spreadAmountSpinBox->value();
+    {
+        const double v = ui_->spreadAmountSpinBox->value();
+        instrument_.spread_amount = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
     instrument_.strip_frequency_code =
         ui_->stripFrequencyCodeEdit->text().trimmed().toStdString();
-    instrument_.variance_strike = ui_->varianceStrikeSpinBox->value();
-    instrument_.accumulation_amount = ui_->accumulationAmountSpinBox->value();
-    instrument_.knock_out_barrier = ui_->knockOutBarrierSpinBox->value();
+    {
+        const double v = ui_->varianceStrikeSpinBox->value();
+        instrument_.variance_strike = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
+    {
+        const double v = ui_->accumulationAmountSpinBox->value();
+        instrument_.accumulation_amount = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
+    {
+        const double v = ui_->knockOutBarrierSpinBox->value();
+        instrument_.knock_out_barrier = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
     instrument_.day_count_code =
         ui_->dayCountCodeEdit->text().trimmed().toStdString();
     instrument_.payment_frequency_code =

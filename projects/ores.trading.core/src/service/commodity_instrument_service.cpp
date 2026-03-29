@@ -61,7 +61,7 @@ commodity_instrument_service::find_commodity_instrument(const std::string& id) {
 void commodity_instrument_service::save_commodity_instrument(const domain::commodity_instrument& v) {
     auto t = v;
     if (t.id.is_nil()) {
-        static boost::uuids::random_generator gen;
+        boost::uuids::random_generator gen;
         t.id = gen();
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving commodity_instrument: " << t.id;

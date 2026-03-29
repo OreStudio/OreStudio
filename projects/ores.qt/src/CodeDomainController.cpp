@@ -75,7 +75,7 @@ void CodeDomainController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Code Domains");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Grid, IconUtils::DefaultIconColor));
+        Icon::Table, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -160,7 +160,7 @@ void CodeDomainController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Code Domain");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Grid, IconUtils::DefaultIconColor));
+        Icon::Table, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -209,7 +209,7 @@ void CodeDomainController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Code Domain: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Grid, IconUtils::DefaultIconColor));
+        Icon::Table, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

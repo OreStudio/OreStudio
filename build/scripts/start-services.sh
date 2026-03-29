@@ -299,9 +299,10 @@ else
         exit 1
     fi
     mkdir -p "$(dirname "$NATS_PID_FILE")"
-    "$NATS_SERVER_BIN" --config "$NATS_CONFIG" &
+    NATS_LOG="$LOG_DIR/nats-server.log"
+    "$NATS_SERVER_BIN" --config "$NATS_CONFIG" -l "$NATS_LOG" &
     echo "$!" > "$NATS_PID_FILE"
-    printf "  start   %-38s PID %d\n" "nats-server" "$!"
+    printf "  start   %-38s PID %d (log: %s)\n" "nats-server" "$!" "$NATS_LOG"
 fi
 wait_for_nats "$NATS_PORT"
 echo ""

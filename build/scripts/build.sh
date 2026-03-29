@@ -30,6 +30,7 @@ fi
 
 JOBS="${CMAKE_BUILD_PARALLEL_LEVEL:-2}"
 LOG_FILE="$PROJECT_DIR/build/tmp/build.log"
+mkdir -p "$(dirname "$LOG_FILE")"
 
 make -C "$BUILD_DIR" -j"$JOBS" "$@" 2>&1 | tee "$LOG_FILE"
 EXIT_CODE="${PIPESTATUS[0]}"

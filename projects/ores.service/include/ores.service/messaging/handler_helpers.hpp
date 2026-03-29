@@ -132,7 +132,7 @@ inline bool has_permission(const ores::database::context& ctx,
     if (perms.empty()) return true;
     // Exact match or component-level wildcard
     for (const auto& p : perms) {
-        if (p == required_permission) return true;
+        if (p == "*" || p == required_permission) return true;
         // Component-level wildcard: "iam::*" satisfies "iam::accounts:create"
         if (p.size() >= 2 && p.ends_with("::*")) {
             const auto prefix = std::string_view(p).substr(0, p.size() - 1);

@@ -28,7 +28,10 @@ file(GLOB_RECURSE files RELATIVE
 
 # Compile BadgeCache directly from the main source tree — ores.qt is an
 # executable so there is no library target to link against.
+# The header must also be listed so AUTOMOC finds Q_OBJECT and generates
+# moc_BadgeCache.cpp (without it the signal implementations are undefined).
 list(APPEND files "${CMAKE_SOURCE_DIR}/projects/ores.qt/src/BadgeCache.cpp")
+list(APPEND files "${CMAKE_SOURCE_DIR}/projects/ores.qt/include/ores.qt/BadgeCache.hpp")
 
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}

@@ -65,7 +65,7 @@
 -- =============================================================================
 
 \echo '--- Data Governance Layer ---'
-\ir governance/governance_populate.sql
+\ir dq/dq_populate.sql
 
 -- =============================================================================
 -- Data Catalogues Layer

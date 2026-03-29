@@ -55,15 +55,3 @@ select ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Organisation',
     'Sample organisational hierarchy data for development and testing. Includes business units, portfolios, and trading books.'
 );
-
--- =============================================================================
--- Summary
--- =============================================================================
-
-\echo ''
-\echo '--- Summary ---'
-
-select 'Dataset Bundles' as entity, count(*) as count
-from ores_dq_dataset_bundles_tbl
-where valid_to = ores_utility_infinity_timestamp_fn()
-order by entity;

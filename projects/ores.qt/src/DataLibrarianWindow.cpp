@@ -319,6 +319,8 @@ void DataLibrarianWindow::setupCentralWorkspace() {
 
     datasetTable_->setModel(datasetProxyModel_);
     datasetTable_->setItemDelegate(new DatasetItemDelegate(badgeCache_, datasetTable_));
+    connect(badgeCache_, &BadgeCache::loaded, datasetTable_->viewport(),
+            [this]() { datasetTable_->viewport()->update(); });
     datasetTable_->setSortingEnabled(true);
     datasetTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     datasetTable_->setSelectionMode(QAbstractItemView::ExtendedSelection);

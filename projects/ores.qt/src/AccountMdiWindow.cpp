@@ -159,6 +159,8 @@ AccountMdiWindow(ClientManager* clientManager,
     proxyModel_->setSourceModel(accountModel_.get());
     accountTableView_->setModel(proxyModel_);
     accountTableView_->setItemDelegate(new AccountItemDelegate(badgeCache_, this));
+    connect(badgeCache_, &BadgeCache::loaded, accountTableView_->viewport(),
+            [this]() { accountTableView_->viewport()->update(); });
     accountTableView_->setSortingEnabled(true);
     accountTableView_->sortByColumn(0, Qt::AscendingOrder);
 

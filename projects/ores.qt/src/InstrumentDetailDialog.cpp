@@ -100,7 +100,7 @@ void InstrumentDetailDialog::setupConnections() {
     connect(ui_->lockoutDaysSpinBox,
             QOverload<int>::of(&QSpinBox::valueChanged),
             this, &InstrumentDetailDialog::onFieldChanged);
-    connect(ui_->callableDatesJsonEdit, &QLineEdit::textChanged, this,
+    connect(ui_->callableDatesJsonEdit, &QPlainTextEdit::textChanged, this,
             &InstrumentDetailDialog::onFieldChanged);
     connect(ui_->rpaCounterpartyEdit, &QLineEdit::textChanged, this,
             &InstrumentDetailDialog::onFieldChanged);
@@ -168,7 +168,7 @@ void InstrumentDetailDialog::updateUiFromInstrument() {
         QString::fromStdString(instrument_.fra_settlement_date));
     ui_->lockoutDaysSpinBox->setValue(
         instrument_.lockout_days.value_or(0));
-    ui_->callableDatesJsonEdit->setText(
+    ui_->callableDatesJsonEdit->setPlainText(
         QString::fromStdString(instrument_.callable_dates_json));
     ui_->rpaCounterpartyEdit->setText(
         QString::fromStdString(instrument_.rpa_counterparty));
@@ -202,20 +202,14 @@ void InstrumentDetailDialog::updateInstrumentFromUi() {
         ui_->fraFixingDateEdit->text().trimmed().toStdString();
     instrument_.fra_settlement_date =
         ui_->fraSettlementDateEdit->text().trimmed().toStdString();
-    {
-        int v = ui_->lockoutDaysSpinBox->value();
-        instrument_.lockout_days = v != 0 ? std::optional(v) : std::nullopt;
-    }
+    instrument_.lockout_days = nulloptIfZero(ui_->lockoutDaysSpinBox->value());
     instrument_.callable_dates_json =
-        ui_->callableDatesJsonEdit->text().trimmed().toStdString();
+        ui_->callableDatesJsonEdit->toPlainText().trimmed().toStdString();
     instrument_.rpa_counterparty =
         ui_->rpaCounterpartyEdit->text().trimmed().toStdString();
     instrument_.inflation_index_code =
         ui_->inflationIndexCodeEdit->text().trimmed().toStdString();
-    {
-        double v = ui_->baseCpiSpinBox->value();
-        instrument_.base_cpi = v != 0.0 ? std::optional(v) : std::nullopt;
-    }
+    instrument_.base_cpi = nulloptIfZero(ui_->baseCpiSpinBox->value());
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }

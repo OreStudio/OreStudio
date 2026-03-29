@@ -253,10 +253,7 @@ void BondInstrumentDetailDialog::updateBondInstrumentFromUi() {
         ui_->optionTypeCombo->currentText().trimmed().toStdString();
     instrument_.option_expiry_date =
         ui_->optionExpiryDateEdit->text().trimmed().toStdString();
-    {
-        double v = ui_->optionStrikeSpinBox->value();
-        instrument_.option_strike = v != 0.0 ? std::optional(v) : std::nullopt;
-    }
+    instrument_.option_strike = nulloptIfZero(ui_->optionStrikeSpinBox->value());
     instrument_.trs_return_type =
         ui_->trsReturnTypeCombo->currentText().trimmed().toStdString();
     instrument_.trs_funding_leg_code =

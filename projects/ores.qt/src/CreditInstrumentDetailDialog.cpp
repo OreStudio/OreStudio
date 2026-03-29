@@ -269,20 +269,13 @@ void CreditInstrumentDetailDialog::updateCreditInstrumentFromUi() {
         ui_->optionTypeCombo->currentText().trimmed().toStdString();
     instrument_.option_expiry_date =
         ui_->optionExpiryDateEdit->text().trimmed().toStdString();
-    {
-        double v = ui_->optionStrikeSpinBox->value();
-        instrument_.option_strike = v != 0.0 ? std::optional(v) : std::nullopt;
-    }
+    instrument_.option_strike = nulloptIfZero(ui_->optionStrikeSpinBox->value());
     instrument_.linked_asset_code =
         ui_->linkedAssetCodeEdit->text().trimmed().toStdString();
-    {
-        double v = ui_->trancheAttachmentSpinBox->value();
-        instrument_.tranche_attachment = v != 0.0 ? std::optional(v) : std::nullopt;
-    }
-    {
-        double v = ui_->trancheDetachmentSpinBox->value();
-        instrument_.tranche_detachment = v != 0.0 ? std::optional(v) : std::nullopt;
-    }
+    instrument_.tranche_attachment =
+        nulloptIfZero(ui_->trancheAttachmentSpinBox->value());
+    instrument_.tranche_detachment =
+        nulloptIfZero(ui_->trancheDetachmentSpinBox->value());
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }

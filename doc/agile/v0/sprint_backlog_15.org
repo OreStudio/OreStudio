@@ -1265,6 +1265,41 @@ Tasks:
 - [ ] Add integration tests confirming service roles cannot be assigned via the
   public API.
 
+*** Rename request contexts to reflect their scope (tenant_ctx, etc.)   :code:
+
+Several service handler functions and service classes hold intermediate database
+context values with generic names (=ctx=, =local_ctx=) when a more descriptive
+name would make the security boundary immediately obvious at a glance.  The most
+important case is the distinction between the service-level context (no tenant
+set, used to reach shared tables) and the per-request tenant context (tenant
+set, subject to RLS) — but the pattern applies anywhere a context is derived and
+then used for a scoped operation.
+
+Naming conventions to adopt:
+
+- =svc_ctx= — the service-level context held on the handler (no tenant, no actor).
+- =tenant_ctx= — a context derived from =svc_ctx= with a specific tenant applied
+  (e.g. =ctx_.with_tenant(tid, performed_by)=).
+- =req_ctx= — a context built by =make_request_context()= from an inbound NATS
+  message (tenant + actor extracted from JWT).
+
+Applying these names consistently lets a reviewer confirm at a glance that the
+correct context is used for each DB call, and makes incorrect usage (e.g. using
+=svc_ctx= where =req_ctx= is expected) stand out immediately.
+
+Tasks:
+
+- [ ] Audit all handler classes in =ores.*.core= and =ores.service= for context
+  variable names and apply the convention above.
+- [ ] Rename the =ctx_= member of handler classes that hold a service-level
+  context to =svc_ctx_=.
+- [ ] Rename local variables produced by =ctx_.with_tenant(...)= to =tenant_ctx=.
+- [ ] Rename local variables produced by =make_request_context()= to =req_ctx=
+  (or just =ctx= inside a handler function body where the scope is clear).
+- [ ] Update =report_scheduling_service= which currently uses both =ctx_= (service)
+  and a derived =tenant_ctx= — ensure the member is clearly =svc_ctx_= and all
+  derived locals follow the convention.
+
 * Footer
 
 

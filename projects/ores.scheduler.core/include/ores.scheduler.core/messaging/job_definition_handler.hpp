@@ -116,6 +116,7 @@ public:
         if (auto req = decode<schedule_job_request>(msg)) {
             try {
                 service::job_definition_service svc(ctx);
+                stamp(req->definition, ctx);
                 svc.save_definition(req->definition);
                 reply(nats_, msg, schedule_job_response{.success = true});
             } catch (const std::exception& e) {
@@ -152,6 +153,7 @@ public:
             resp.success = true;
             for (auto& def : req->definitions) {
                 try {
+                    stamp(def, ctx);
                     svc.save_definition(def);
                     ++resp.scheduled_count;
                 } catch (const std::exception& e) {

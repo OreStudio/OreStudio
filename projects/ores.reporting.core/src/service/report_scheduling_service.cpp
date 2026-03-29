@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 
+#include <expected>
 #include <unordered_set>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -117,14 +118,16 @@ report_scheduling_service::build_job_definition(
     return job;
 }
 
-bool report_scheduling_service::send_schedule_request(
+std::expected<void, std::string>
+report_scheduling_service::send_schedule_request(
     const domain::report_definition& def,
     const boost::uuids::uuid& job_id,
     const std::string& performed_by) {
 
     auto job = build_job_definition(def, job_id, performed_by);
     if (!job)
-        return false;
+        return std::unexpected("Invalid cron expression for definition "
+            + boost::uuids::to_string(def.id));
 
     const ores::scheduler::messaging::schedule_job_request req{
         .definition = *job,
@@ -142,22 +145,30 @@ bool report_scheduling_service::send_schedule_request(
             reinterpret_cast<const char*>(reply_msg.data.data()),
             reply_msg.data.size());
         auto resp = rfl::json::read<ores::scheduler::messaging::schedule_job_response>(sv);
-        if (!resp || !resp->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Scheduler rejected job for definition " << def.id
-                << ": " << (resp ? resp->message : "parse error");
-            return false;
+        if (!resp) {
+            const std::string err = "Scheduler returned unparseable response for definition "
+                + boost::uuids::to_string(def.id);
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
+        }
+        if (!resp->success) {
+            const std::string err = "Scheduler rejected job for definition "
+                + boost::uuids::to_string(def.id) + ": " + resp->message;
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
         }
     } catch (const std::exception& e) {
+        const std::string err = std::string("Scheduler NATS call failed: ") + e.what();
         BOOST_LOG_SEV(lg(), error)
             << "Failed to call scheduler for definition " << def.id
             << ": " << e.what();
-        return false;
+        return std::unexpected(err);
     }
-    return true;
+    return {};
 }
 
-bool report_scheduling_service::schedule_one(
+std::expected<bool, std::string>
+report_scheduling_service::schedule_one(
     const domain::report_definition& def,
     const std::string& performed_by) {
 
@@ -167,8 +178,9 @@ bool report_scheduling_service::schedule_one(
     }
 
     const auto job_id = gen_uuid();
-    if (!send_schedule_request(def, job_id, performed_by))
-        return false;
+    auto send_result = send_schedule_request(def, job_id, performed_by);
+    if (!send_result)
+        return std::unexpected(send_result.error());
 
     // Resolve the "active" FSM state UUID once from the system context.
     const auto active_state = find_fsm_state_id(
@@ -192,7 +204,8 @@ bool report_scheduling_service::schedule_one(
     return true;
 }
 
-bool report_scheduling_service::unschedule_one(
+std::expected<bool, std::string>
+report_scheduling_service::unschedule_one(
     const domain::report_definition& def,
     const std::string& performed_by) {
 
@@ -218,17 +231,24 @@ bool report_scheduling_service::unschedule_one(
             reinterpret_cast<const char*>(reply_msg.data.data()),
             reply_msg.data.size());
         auto resp = rfl::json::read<ores::scheduler::messaging::unschedule_job_response>(sv);
-        if (!resp || !resp->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Scheduler failed to unschedule job " << job_id_str
-                << ": " << (resp ? resp->message : "parse error");
-            return false;
+        if (!resp) {
+            const std::string err = "Scheduler returned unparseable response for job "
+                + job_id_str;
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
+        }
+        if (!resp->success) {
+            const std::string err = "Scheduler failed to unschedule job "
+                + job_id_str + ": " + resp->message;
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
         }
     } catch (const std::exception& e) {
+        const std::string err = std::string("Scheduler NATS call failed: ") + e.what();
         BOOST_LOG_SEV(lg(), error)
             << "Failed to call scheduler to unschedule definition " << def.id
             << ": " << e.what();
-        return false;
+        return std::unexpected(err);
     }
 
     // Resolve the "suspended" FSM state UUID from the system context.

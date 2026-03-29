@@ -21,6 +21,7 @@
 #define ORES_REPORTING_MESSAGING_REPORT_DEFINITION_HANDLER_HPP
 
 #include <optional>
+#include <expected>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
@@ -195,21 +196,34 @@ public:
             service::report_scheduling_service scheduler(ctx_, svc_nats_);
             int scheduled_count = 0;
             std::vector<std::string> failed_ids;
+            std::string first_error;
             for (const auto& id : req->ids) {
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    if (scheduler.schedule_one(*def, req->performed_by))
+                    auto result = scheduler.schedule_one(*def, req->performed_by);
+                    if (!result) {
+                        BOOST_LOG_SEV(report_definition_handler_lg(), error)
+                            << "Failed to schedule definition " << id
+                            << ": " << result.error();
+                        failed_ids.push_back(id);
+                        if (first_error.empty())
+                            first_error = result.error();
+                    } else if (*result) {
                         ++scheduled_count;
+                    }
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(report_definition_handler_lg(), error)
                         << "Failed to schedule definition " << id
                         << ": " << e.what();
                     failed_ids.push_back(id);
+                    if (first_error.empty())
+                        first_error = e.what();
                 }
             }
             reply(nats_, msg, schedule_report_definitions_response{
                 .success = failed_ids.empty(),
+                .message = first_error,
                 .scheduled_count = scheduled_count,
                 .failed_ids = std::move(failed_ids)});
         } else {
@@ -239,21 +253,34 @@ public:
             service::report_scheduling_service scheduler(ctx_, svc_nats_);
             int unscheduled_count = 0;
             std::vector<std::string> failed_ids;
+            std::string first_error;
             for (const auto& id : req->ids) {
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    if (scheduler.unschedule_one(*def, req->performed_by))
+                    auto result = scheduler.unschedule_one(*def, req->performed_by);
+                    if (!result) {
+                        BOOST_LOG_SEV(report_definition_handler_lg(), error)
+                            << "Failed to unschedule definition " << id
+                            << ": " << result.error();
+                        failed_ids.push_back(id);
+                        if (first_error.empty())
+                            first_error = result.error();
+                    } else if (*result) {
                         ++unscheduled_count;
+                    }
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(report_definition_handler_lg(), error)
                         << "Failed to unschedule definition " << id
                         << ": " << e.what();
                     failed_ids.push_back(id);
+                    if (first_error.empty())
+                        first_error = e.what();
                 }
             }
             reply(nats_, msg, unschedule_report_definitions_response{
                 .success = failed_ids.empty(),
+                .message = first_error,
                 .unscheduled_count = unscheduled_count,
                 .failed_ids = std::move(failed_ids)});
         } else {

@@ -425,18 +425,24 @@ EOF
 } >> "${ENV_FILE}"
 
 # Preserve any logging vars that were already set
+echo "Checking for existing logging configuration..."
 _log_level="$(get_existing_val ORES_TEST_LOG_LEVEL)"
-_log_console="$(get_existing_val ORES_TEST_LOG_CONSOLE)"
 if [[ -n "${_log_level}" ]]; then
+    echo "Preserving test logging (level=${_log_level})"
+    _log_console="$(get_existing_val ORES_TEST_LOG_CONSOLE)"
     {
         echo ""
         echo "# Test logging"
         echo "ORES_TEST_LOG_LEVEL=${_log_level}"
         echo "ORES_TEST_LOG_CONSOLE=${_log_console:-true}"
     } >> "${ENV_FILE}"
+else
+    echo "No test logging configuration found; skipping."
 fi
 
+echo "Setting file permissions..."
 chmod 600 "${ENV_FILE}"
+echo "Done."
 
 echo ""
 echo "=== Environment initialised for '${LABEL}' (db: ${DB_NAME}) ==="

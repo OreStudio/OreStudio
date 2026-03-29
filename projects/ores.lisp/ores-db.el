@@ -639,7 +639,7 @@ Uses two-phase creation: postgres creates the database, ores_ddl_user sets up sc
     ("R" "Full recreate: roles+users+DB+data" ores-db/recreate-all)]
    ["Utilities"
     ("i" "Init environment" ores-db/init-environment)
-    ("N" "Init NATS (C-u = +provision)" ores-db/init-nats)
+    ("N" "Regen NATS config (C-u = +provision)" ores-db/init-nats)
     ("D" "Diff .env vs .env.old" ores-db/diff-environment)
     ("v" "Setup SQL connections" ores-db/setup-connections)
     ("V" "Show env vars" ores-db/show-env-vars)

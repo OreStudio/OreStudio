@@ -514,8 +514,18 @@ This runs recreate_database.sh which drops everything and recreates from scratch
     (user-error "Aborted"))
   (ores-db/run-script "recreate_database.sh" "*ores-db-recreate-all*" '("-y")))
 
+(defconst ores-db/presets
+  '("linux-clang-debug-make"
+    "linux-clang-release-make"
+    "linux-clang-debug-ninja"
+    "linux-clang-release-ninja"
+    "macos-clang-debug-ninja"
+    "macos-clang-release-ninja")
+  "Known build presets for preset selection prompt.")
+
 (defun ores-db/init-environment ()
-  "Run build/scripts/init-environment.sh -y to regenerate the .env file."
+  "Run build/scripts/init-environment.sh -y to regenerate the .env file.
+Reads ORES_PRESET from the existing .env if available; otherwise prompts."
   (interactive)
   (let* ((root (or ores-db/project-root
                    (when-let ((pr (project-current)))
@@ -525,9 +535,13 @@ This runs recreate_database.sh which drops everything and recreates from scratch
       (user-error "Not in an OreStudio project"))
     (unless (file-executable-p script-path)
       (user-error "Script not found or not executable: %s" script-path))
-    (let ((default-directory root))
+    (let* ((existing-preset (cdr (assoc "ORES_PRESET" (ores/load-dotenv))))
+           (preset (or existing-preset
+                       (completing-read "Build preset: " ores-db/presets nil nil nil nil
+                                        (car ores-db/presets))))
+           (default-directory root))
       (compilation-start
-       (format "%s -y" script-path)
+       (format "%s -y --preset %s" script-path preset)
        nil
        (lambda (_) "*ores-db-init-environment*")))))
 

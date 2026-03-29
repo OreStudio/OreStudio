@@ -302,7 +302,7 @@ else
     NATS_LOG="$LOG_DIR/nats-server.log"
     "$NATS_SERVER_BIN" --config "$NATS_CONFIG" -l "$NATS_LOG" &
     echo "$!" > "$NATS_PID_FILE"
-    printf "  start   %-38s PID %d (log: %s)\n" "nats-server" "$!" "$NATS_LOG"
+    printf "  start   %-38s PID %d\n" "nats-server" "$!"
 fi
 wait_for_nats "$NATS_PORT"
 echo ""

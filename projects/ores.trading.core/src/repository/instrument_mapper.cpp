@@ -43,6 +43,13 @@ instrument_mapper::map(const instrument_entity& v) {
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.description = v.description.value_or("");
+    r.fra_fixing_date = v.fra_fixing_date.value_or("");
+    r.fra_settlement_date = v.fra_settlement_date.value_or("");
+    r.lockout_days = v.lockout_days;
+    r.callable_dates_json = v.callable_dates_json.value_or("");
+    r.rpa_counterparty = v.rpa_counterparty.value_or("");
+    r.inflation_index_code = v.inflation_index_code.value_or("");
+    r.base_cpi = v.base_cpi;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -69,6 +76,18 @@ instrument_mapper::map(const domain::instrument& v) {
     r.start_date = v.start_date;
     r.maturity_date = v.maturity_date;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.fra_fixing_date = v.fra_fixing_date.empty()
+        ? std::nullopt : std::optional(v.fra_fixing_date);
+    r.fra_settlement_date = v.fra_settlement_date.empty()
+        ? std::nullopt : std::optional(v.fra_settlement_date);
+    r.lockout_days = v.lockout_days;
+    r.callable_dates_json = v.callable_dates_json.empty()
+        ? std::nullopt : std::optional(v.callable_dates_json);
+    r.rpa_counterparty = v.rpa_counterparty.empty()
+        ? std::nullopt : std::optional(v.rpa_counterparty);
+    r.inflation_index_code = v.inflation_index_code.empty()
+        ? std::nullopt : std::optional(v.inflation_index_code);
+    r.base_cpi = v.base_cpi;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

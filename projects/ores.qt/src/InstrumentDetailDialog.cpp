@@ -19,6 +19,7 @@
  */
 #include "ores.qt/InstrumentDetailDialog.hpp"
 
+#include <QDate>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -92,6 +93,22 @@ void InstrumentDetailDialog::setupConnections() {
     connect(ui_->notionalSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &InstrumentDetailDialog::onFieldChanged);
+    connect(ui_->fraFixingDateEdit, &QLineEdit::textChanged, this,
+            &InstrumentDetailDialog::onFieldChanged);
+    connect(ui_->fraSettlementDateEdit, &QLineEdit::textChanged, this,
+            &InstrumentDetailDialog::onFieldChanged);
+    connect(ui_->lockoutDaysSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &InstrumentDetailDialog::onFieldChanged);
+    connect(ui_->callableDatesJsonEdit, &QPlainTextEdit::textChanged, this,
+            &InstrumentDetailDialog::onFieldChanged);
+    connect(ui_->rpaCounterpartyEdit, &QLineEdit::textChanged, this,
+            &InstrumentDetailDialog::onFieldChanged);
+    connect(ui_->inflationIndexCodeEdit, &QLineEdit::textChanged, this,
+            &InstrumentDetailDialog::onFieldChanged);
+    connect(ui_->baseCpiSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &InstrumentDetailDialog::onFieldChanged);
 }
 
 void InstrumentDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -124,6 +141,13 @@ void InstrumentDetailDialog::setReadOnly(bool readOnly) {
     ui_->startDateEdit->setReadOnly(readOnly);
     ui_->maturityDateEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->fraFixingDateEdit->setReadOnly(readOnly);
+    ui_->fraSettlementDateEdit->setReadOnly(readOnly);
+    ui_->lockoutDaysSpinBox->setReadOnly(readOnly);
+    ui_->callableDatesJsonEdit->setReadOnly(readOnly);
+    ui_->rpaCounterpartyEdit->setReadOnly(readOnly);
+    ui_->inflationIndexCodeEdit->setReadOnly(readOnly);
+    ui_->baseCpiSpinBox->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -138,6 +162,20 @@ void InstrumentDetailDialog::updateUiFromInstrument() {
         QString::fromStdString(instrument_.maturity_date));
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
+    ui_->fraFixingDateEdit->setText(
+        QString::fromStdString(instrument_.fra_fixing_date));
+    ui_->fraSettlementDateEdit->setText(
+        QString::fromStdString(instrument_.fra_settlement_date));
+    ui_->lockoutDaysSpinBox->setValue(
+        instrument_.lockout_days.value_or(0));
+    ui_->callableDatesJsonEdit->setPlainText(
+        QString::fromStdString(instrument_.callable_dates_json));
+    ui_->rpaCounterpartyEdit->setText(
+        QString::fromStdString(instrument_.rpa_counterparty));
+    ui_->inflationIndexCodeEdit->setText(
+        QString::fromStdString(instrument_.inflation_index_code));
+    ui_->baseCpiSpinBox->setValue(
+        instrument_.base_cpi.value_or(0.0));
 
     populateProvenance(instrument_.version,
                        instrument_.modified_by,
@@ -160,6 +198,18 @@ void InstrumentDetailDialog::updateInstrumentFromUi() {
         ui_->maturityDateEdit->text().trimmed().toStdString();
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    instrument_.fra_fixing_date =
+        ui_->fraFixingDateEdit->text().trimmed().toStdString();
+    instrument_.fra_settlement_date =
+        ui_->fraSettlementDateEdit->text().trimmed().toStdString();
+    instrument_.lockout_days = nulloptIfZero(ui_->lockoutDaysSpinBox->value());
+    instrument_.callable_dates_json =
+        ui_->callableDatesJsonEdit->toPlainText().trimmed().toStdString();
+    instrument_.rpa_counterparty =
+        ui_->rpaCounterpartyEdit->text().trimmed().toStdString();
+    instrument_.inflation_index_code =
+        ui_->inflationIndexCodeEdit->text().trimmed().toStdString();
+    instrument_.base_cpi = nulloptIfZero(ui_->baseCpiSpinBox->value());
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }

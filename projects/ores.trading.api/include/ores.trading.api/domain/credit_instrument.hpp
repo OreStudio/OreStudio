@@ -22,18 +22,19 @@
 
 #include <chrono>
 #include <string>
+#include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::domain {
 
 /**
- * @brief Credit instrument economics for CreditDefaultSwap, CDSIndex, and
- * SyntheticCDO trades.
+ * @brief Credit instrument economics for CreditDefaultSwap, CDSIndex,
+ * SyntheticCDO, CreditDefaultSwapOption, IndexCreditDefaultSwapOption,
+ * CreditLinkedSwap, and CBO trades.
  *
- * Discriminated by trade_type_code. Optional fields (index_name, index_series,
- * seniority, restructuring, description) are empty/zero for non-applicable
- * product types.
+ * Discriminated by trade_type_code. Optional fields are empty/zero for
+ * non-applicable product types.
  */
 struct credit_instrument final {
     /**
@@ -159,6 +160,41 @@ struct credit_instrument final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    // -------------------------------------------------------------------------
+    // Phase 7 extensions: CreditDefaultSwapOption, CreditLinkedSwap, CBO
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Option type: "Call" or "Put" — CreditDefaultSwapOption.
+     * Empty otherwise.
+     */
+    std::string option_type;
+
+    /**
+     * @brief Option expiry date (ISO 8601) for CDS options. Empty otherwise.
+     */
+    std::string option_expiry_date;
+
+    /**
+     * @brief Option strike spread in bps for CDS options. Null when not set.
+     */
+    std::optional<double> option_strike;
+
+    /**
+     * @brief Reference asset code for CreditLinkedSwap. Empty otherwise.
+     */
+    std::string linked_asset_code;
+
+    /**
+     * @brief CBO tranche attachment point as decimal. Null when not set.
+     */
+    std::optional<double> tranche_attachment;
+
+    /**
+     * @brief CBO tranche detachment point as decimal. Null when not set.
+     */
+    std::optional<double> tranche_detachment;
 };
 
 }

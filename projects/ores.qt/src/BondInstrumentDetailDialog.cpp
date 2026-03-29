@@ -110,6 +110,21 @@ void BondInstrumentDetailDialog::setupConnections() {
             this, &BondInstrumentDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &BondInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->futureExpiryDateEdit, &QLineEdit::textChanged, this,
+            &BondInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged, this,
+            &BondInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->optionExpiryDateEdit, &QLineEdit::textChanged, this,
+            &BondInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->optionStrikeSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &BondInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->trsReturnTypeCombo, &QComboBox::currentTextChanged, this,
+            &BondInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->trsFundingLegCodeEdit, &QLineEdit::textChanged, this,
+            &BondInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->ascotOptionTypeEdit, &QLineEdit::textChanged, this,
+            &BondInstrumentDetailDialog::onFieldChanged);
 }
 
 void BondInstrumentDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -149,6 +164,13 @@ void BondInstrumentDetailDialog::setReadOnly(bool readOnly) {
     ui_->callDateEdit->setReadOnly(readOnly);
     ui_->conversionRatioSpinBox->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->futureExpiryDateEdit->setReadOnly(readOnly);
+    ui_->optionTypeCombo->setEnabled(!readOnly);
+    ui_->optionExpiryDateEdit->setReadOnly(readOnly);
+    ui_->optionStrikeSpinBox->setReadOnly(readOnly);
+    ui_->trsReturnTypeCombo->setEnabled(!readOnly);
+    ui_->trsFundingLegCodeEdit->setReadOnly(readOnly);
+    ui_->ascotOptionTypeEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -176,6 +198,20 @@ void BondInstrumentDetailDialog::updateUiFromBondInstrument() {
     ui_->conversionRatioSpinBox->setValue(instrument_.conversion_ratio);
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
+    ui_->futureExpiryDateEdit->setText(
+        QString::fromStdString(instrument_.future_expiry_date));
+    ui_->optionTypeCombo->setCurrentText(
+        QString::fromStdString(instrument_.option_type));
+    ui_->optionExpiryDateEdit->setText(
+        QString::fromStdString(instrument_.option_expiry_date));
+    ui_->optionStrikeSpinBox->setValue(
+        instrument_.option_strike.value_or(0.0));
+    ui_->trsReturnTypeCombo->setCurrentText(
+        QString::fromStdString(instrument_.trs_return_type));
+    ui_->trsFundingLegCodeEdit->setText(
+        QString::fromStdString(instrument_.trs_funding_leg_code));
+    ui_->ascotOptionTypeEdit->setText(
+        QString::fromStdString(instrument_.ascot_option_type));
 
     populateProvenance(instrument_.version,
                        instrument_.modified_by,
@@ -211,6 +247,19 @@ void BondInstrumentDetailDialog::updateBondInstrumentFromUi() {
     instrument_.conversion_ratio = ui_->conversionRatioSpinBox->value();
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    instrument_.future_expiry_date =
+        ui_->futureExpiryDateEdit->text().trimmed().toStdString();
+    instrument_.option_type =
+        ui_->optionTypeCombo->currentText().trimmed().toStdString();
+    instrument_.option_expiry_date =
+        ui_->optionExpiryDateEdit->text().trimmed().toStdString();
+    instrument_.option_strike = nulloptIfZero(ui_->optionStrikeSpinBox->value());
+    instrument_.trs_return_type =
+        ui_->trsReturnTypeCombo->currentText().trimmed().toStdString();
+    instrument_.trs_funding_leg_code =
+        ui_->trsFundingLegCodeEdit->text().trimmed().toStdString();
+    instrument_.ascot_option_type =
+        ui_->ascotOptionTypeEdit->text().trimmed().toStdString();
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }

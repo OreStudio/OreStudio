@@ -61,6 +61,7 @@
 -- Rates instruments (depends on reference data above)
 \ir ./trading_instruments_create.sql
 \ir ./trading_instruments_notify_trigger_create.sql
+\ir ./trading_instruments_extensions_create.sql
 
 \ir ./trading_swap_legs_create.sql
 \ir ./trading_swap_legs_notify_trigger_create.sql
@@ -72,10 +73,12 @@
 -- Bond instruments (depends on reference data above)
 \ir ./trading_bond_instruments_create.sql
 \ir ./trading_bond_instruments_notify_trigger_create.sql
+\ir ./trading_bond_instruments_extensions_create.sql
 
 -- Credit instruments (depends on reference data above)
 \ir ./trading_credit_instruments_create.sql
 \ir ./trading_credit_instruments_notify_trigger_create.sql
+\ir ./trading_credit_instruments_extensions_create.sql
 
 -- Equity instruments (depends on reference data above)
 \ir ./trading_equity_instruments_create.sql

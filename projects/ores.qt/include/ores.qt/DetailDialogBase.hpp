@@ -161,6 +161,17 @@ protected:
     // -------------------------------------------------------------------------
 
     /**
+     * @brief Return std::optional(v) when v is non-zero, std::nullopt otherwise.
+     *
+     * Use when reading a spin box value that maps to a nullable database column
+     * where zero means "not set".
+     */
+    template<typename T>
+    static std::optional<T> nulloptIfZero(T v) {
+        return v != T{} ? std::optional<T>(v) : std::nullopt;
+    }
+
+    /**
      * @brief Enable or disable the Provenance tab.
      *
      * Call with @c false in create mode (no provenance data exists yet) and

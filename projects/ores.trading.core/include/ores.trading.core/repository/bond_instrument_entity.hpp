@@ -57,6 +57,14 @@ struct bond_instrument_entity {
     std::string change_commentary;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
+    // Phase 7 extensions
+    std::optional<std::string> future_expiry_date;
+    std::optional<std::string> option_type;
+    std::optional<std::string> option_expiry_date;
+    std::optional<double> option_strike;
+    std::optional<std::string> trs_return_type;
+    std::optional<std::string> trs_funding_leg_code;
+    std::optional<std::string> ascot_option_type;
 };
 
 std::ostream& operator<<(std::ostream& s, const bond_instrument_entity& v);

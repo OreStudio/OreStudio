@@ -611,10 +611,10 @@ Uses two-phase creation: postgres creates the database, ores_ddl_user sets up sc
     ("t" "Toggle marks" ores-db/toggle-marks)]
    ["Create/Recreate"
     ("n" "New whimsical database" ores-db/create-whimsical)
-    ("d" "Recreate current env" ores-db/recreate-current-env)
-    ("r" "Recreate at point" ores-db/recreate-at-point)
-    ("e" "Recreate environment..." ores-db/recreate-env-database)
-    ("R" "Recreate ALL (nuclear)" ores-db/recreate-all)]
+    ("d" "Recreate DB only (current env)" ores-db/recreate-current-env)
+    ("r" "Recreate DB only (at point)" ores-db/recreate-at-point)
+    ("e" "Recreate DB only (choose env)" ores-db/recreate-env-database)
+    ("R" "Full recreate: roles+users+DB+data" ores-db/recreate-all)]
    ["Utilities"
     ("i" "Init environment" ores-db/init-environment)
     ("D" "Diff .env vs .env.old" ores-db/diff-environment)

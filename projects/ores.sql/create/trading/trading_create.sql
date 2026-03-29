@@ -81,6 +81,10 @@
 \ir ./trading_equity_instruments_create.sql
 \ir ./trading_equity_instruments_notify_trigger_create.sql
 
+-- Commodity instruments (depends on reference data above)
+\ir ./trading_commodity_instruments_create.sql
+\ir ./trading_commodity_instruments_notify_trigger_create.sql
+
 -- Trades (depends on reference data above)
 \ir ./trading_trades_create.sql
 \ir ./trading_trades_notify_trigger_create.sql

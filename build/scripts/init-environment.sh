@@ -282,6 +282,14 @@ ORES_TEST_DB_PASSWORD="$(get_or_gen ORES_TEST_DB_PASSWORD)"
 JWT_KEY_ONELINE="$(awk '{printf "%s\\n", $0}' "${IAM_KEY}")"
 
 # ---------------------------------------------------------------------------
+# Backup existing .env before overwriting
+# ---------------------------------------------------------------------------
+if [[ -f "${ENV_FILE}" ]]; then
+    cp "${ENV_FILE}" "${ENV_FILE}.old"
+    echo "Backed up existing .env to .env.old"
+fi
+
+# ---------------------------------------------------------------------------
 # Write .env
 # ---------------------------------------------------------------------------
 echo "Writing ${ENV_FILE}..."

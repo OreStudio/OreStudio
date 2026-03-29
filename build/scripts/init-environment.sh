@@ -112,7 +112,21 @@ fi
 
 DB_NAME="${ORES_DATABASE_NAME:-ores_dev_${LABEL}}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.${LABEL}}"
-NATS_URL="nats://localhost:4222"
+
+# Derive per-environment NATS ports from the numeric suffix of the label.
+# local1→42221/8221, local2→42222/8222, …  non-numeric labels fall back to 42229/8229.
+LABEL_SUFFIX="$(echo "${LABEL}" | sed 's/[^0-9]*\([0-9]*\)$/\1/')"
+if [[ -n "${LABEL_SUFFIX}" ]]; then
+    NATS_PORT=$((42220 + LABEL_SUFFIX))
+    NATS_MONITOR_PORT=$((8220 + LABEL_SUFFIX))
+else
+    NATS_PORT=42229
+    NATS_MONITOR_PORT=8229
+fi
+NATS_URL="nats://localhost:${NATS_PORT}"
+NATS_MONITOR_URL="http://localhost:${NATS_MONITOR_PORT}"
+NATS_STORE_DIR="${CHECKOUT_ROOT}/build/nats/${LABEL}/jetstream"
+
 NATS_CERTS_DIR="${CHECKOUT_ROOT}/build/keys/nats"
 NATS_TLS_CA=""
 NATS_TLS_CERT=""
@@ -330,8 +344,17 @@ if [[ -n "${PRESET}" ]]; then
 fi
 cat >> "${ENV_FILE}" << EOF
 ORES_DATABASE_NAME=${DB_NAME}
+
+# ---------------------------------------------------------------------------
+# NATS (per-environment: port derived from label suffix)
+# Run build/scripts/init-nats.sh to generate the server config and store dir.
+# ---------------------------------------------------------------------------
+ORES_NATS_PORT=${NATS_PORT}
 ORES_NATS_URL=${NATS_URL}
+ORES_NATS_MONITOR_PORT=${NATS_MONITOR_PORT}
+ORES_NATS_MONITOR_URL=${NATS_MONITOR_URL}
 ORES_NATS_SUBJECT_PREFIX=${NATS_PREFIX}
+ORES_NATS_STORE_DIR=${NATS_STORE_DIR}
 # mTLS: auto-enabled when certificates exist in build/keys/nats/.
 # Run build/scripts/generate_nats_certs.sh to generate them.
 # ORES_NATS_TLS_CERT/KEY are used by the Qt desktop client.

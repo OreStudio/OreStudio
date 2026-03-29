@@ -134,6 +134,7 @@ falls back to the current project."
     (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
     (define-key map (kbd "i")   #'ores-db/init-environment)
+    (define-key map (kbd "N")   #'ores-db/init-nats)
     (define-key map (kbd "D")   #'ores-db/diff-environment)
     (define-key map (kbd "v")   #'ores-db/setup-connections)
     (define-key map (kbd "V")   #'ores-db/show-env-vars)
@@ -545,6 +546,27 @@ Reads ORES_PRESET from the existing .env if available; otherwise prompts."
        nil
        (lambda (_) "*ores-db-init-environment*")))))
 
+(defun ores-db/init-nats (&optional provision)
+  "Run build/scripts/init-nats.sh to generate the per-environment NATS config.
+With prefix argument PROVISION, also provision JetStream streams (requires
+NATS to already be running)."
+  (interactive "P")
+  (let* ((root (or ores-db/project-root
+                   (when-let ((pr (project-current)))
+                     (project-root pr))))
+         (script-path (expand-file-name "build/scripts/init-nats.sh" root)))
+    (unless root
+      (user-error "Not in an OreStudio project"))
+    (unless (file-executable-p script-path)
+      (user-error "Script not found or not executable: %s" script-path))
+    (let ((default-directory root))
+      (compilation-start
+       (if provision
+           (format "%s --provision" script-path)
+         script-path)
+       nil
+       (lambda (_) "*ores-nats-init*")))))
+
 (defun ores-db/diff-environment ()
   "Show a diff buffer comparing .env.old with the current .env."
   (interactive)
@@ -617,6 +639,7 @@ Uses two-phase creation: postgres creates the database, ores_ddl_user sets up sc
     ("R" "Full recreate: roles+users+DB+data" ores-db/recreate-all)]
    ["Utilities"
     ("i" "Init environment" ores-db/init-environment)
+    ("N" "Init NATS (C-u = +provision)" ores-db/init-nats)
     ("D" "Diff .env vs .env.old" ores-db/diff-environment)
     ("v" "Setup SQL connections" ores-db/setup-connections)
     ("V" "Show env vars" ores-db/show-env-vars)

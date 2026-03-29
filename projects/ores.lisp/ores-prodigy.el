@@ -186,9 +186,13 @@ Uses BASE directly; build type and checkout are already visible as tags."
     ;; Services subscribe using a subject prefix to isolate this checkout from
     ;; others sharing the same NATS broker. The matching namespace value is
     ;; stored in the connection manager and applied by the client at login.
-    (let ((nats-args `("--nats-url" "nats://localhost:4222"
-                       "--nats-subject-prefix"
-                       ,(format "ores.dev.%s" ores/checkout-label))))
+    (let* ((dotenv-init (ores/load-dotenv-for-prodigy))
+           (nats-url    (or (cdr (assoc "ORES_NATS_URL" dotenv-init))
+                            "nats://localhost:4222"))
+           (nats-prefix (or (cdr (assoc "ORES_NATS_SUBJECT_PREFIX" dotenv-init))
+                            (format "ores.dev.%s" ores/checkout-label)))
+           (nats-args   `("--nats-url" ,nats-url
+                          "--nats-subject-prefix" ,nats-prefix)))
 
       ;; NATS domain services
       (dolist (svc (ores/nats-domain-services))
@@ -266,7 +270,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
     ;; Compute wrapper nodes (test grid — 5 local nodes)
     (let* ((dotenv    (ores/load-dotenv-for-prodigy))
            (http-port (ores/get-port 'http build-type))
-           (tenant-id (format "ores.dev.%s" ores/checkout-label)))
+           (tenant-id nats-prefix))
       (dotimes (i 5)
         (let* ((n        (1+ i))
                (id-key   (format "ORES_COMPUTE_WRAPPER_NODE_%d_HOST_ID" n))
@@ -282,7 +286,7 @@ Uses BASE directly; build type and checkout are already visible as tags."
               :cwd     bin
               :command (concat bin "/ores.compute.wrapper")
               :args    `(,@common-args
-                         "--nats-url"    "nats://localhost:4222"
+                         "--nats-url"    ,nats-url
                          "--host-id"     ,host-id
                          "--tenant-id"   ,tenant-id
                          "--work-dir"    ,work-dir

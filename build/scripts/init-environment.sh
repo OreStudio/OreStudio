@@ -128,6 +128,14 @@ NATS_MONITOR_URL="http://localhost:${NATS_MONITOR_PORT}"
 NATS_STORE_DIR="${CHECKOUT_ROOT}/build/nats/${LABEL}/jetstream"
 
 NATS_CERTS_DIR="${CHECKOUT_ROOT}/build/keys/nats"
+
+# ---------------------------------------------------------------------------
+# NATS mTLS certificates — generate if not present (idempotent: existing
+# files are preserved; pass --force to regenerate).
+# ---------------------------------------------------------------------------
+echo "--- NATS certificates ---"
+"${SCRIPT_DIR}/generate_nats_certs.sh"
+
 NATS_TLS_CA=""
 NATS_TLS_CERT=""
 NATS_TLS_KEY=""

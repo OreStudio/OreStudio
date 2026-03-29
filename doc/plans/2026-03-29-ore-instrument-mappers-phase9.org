@@ -65,6 +65,9 @@ It reports:
 - Trade types in =external/= not present in =golden_dataset/=
 - Fields present in =external/= example XML not present in the corresponding
   ORES-generated golden file
+- XSD validation errors: each golden file is validated against the ORE XSD
+  schemas (=external/ore/xsd/=) using =lxml=; any schema violation is reported
+  as a gap (and treated as a blocking error once the family is mandatory)
 
 *Progression*:
 - Initially non-blocking: the script runs as a GitHub Action step and produces

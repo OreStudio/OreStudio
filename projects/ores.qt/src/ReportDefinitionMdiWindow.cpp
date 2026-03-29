@@ -178,9 +178,6 @@ void ReportDefinitionMdiWindow::setupTable() {
         cs::mono_center,    // Version
         cs::text_left,      // ModifiedBy
     }, tableView_);
-    // Lifecycle states (draft/active/suspended/archived) and concurrency
-    // policies (skip/queue/fail) have non-overlapping values, so a single
-    // combined resolver works for both badge columns.
     delegate->set_badge_color_resolver(3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
         static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
         if (!cache) return default_gray;

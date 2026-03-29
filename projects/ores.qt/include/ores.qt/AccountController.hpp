@@ -30,6 +30,7 @@
 #include "ores.iam.api/domain/account.hpp"
 
 namespace ores::qt { class ChangeReasonCache; }
+namespace ores::qt { class BadgeCache; }
 
 namespace ores::qt {
 
@@ -81,6 +82,7 @@ public:
         ClientManager* clientManager,
         const QString& username,
         ChangeReasonCache* changeReasonCache = nullptr,
+        BadgeCache* badgeCache = nullptr,
         QObject* parent = nullptr);
 
     /**
@@ -217,6 +219,7 @@ private:
      */
     QPointer<DetachableMdiSubWindow> accountListWindow_;
     ChangeReasonCache* changeReasonCache_ = nullptr;
+    BadgeCache* badgeCache_ = nullptr;
 };
 
 }

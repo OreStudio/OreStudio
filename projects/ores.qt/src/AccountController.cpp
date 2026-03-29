@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/AccountController.hpp"
+#include "ores.qt/BadgeCache.hpp"
 
 #include <QPointer>
 #include <QtConcurrent>
@@ -52,10 +53,12 @@ AccountController::AccountController(
     ClientManager* clientManager,
     const QString& username,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, {}, parent),
       accountListWindow_(nullptr),
-      changeReasonCache_(changeReasonCache) {
+      changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache) {
     BOOST_LOG_SEV(lg(), debug) << "Account controller created";
 
     // Connect to notification signal from ClientManager
@@ -119,7 +122,7 @@ void AccountController::showListWindow() {
 
     BOOST_LOG_SEV(lg(), info) << "Creating new accounts MDI window";
 
-    auto* accountWidget = new AccountMdiWindow(clientManager_, username_, mainWindow_);
+    auto* accountWidget = new AccountMdiWindow(clientManager_, username_, badgeCache_, mainWindow_);
 
     // Connect status signals
     connect(accountWidget, &AccountMdiWindow::statusChanged,

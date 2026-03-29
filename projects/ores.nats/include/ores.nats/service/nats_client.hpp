@@ -96,8 +96,12 @@ public:
      *
      * Used by the service path. The provider owns all acquisition and
      * proactive refresh logic; nats_client calls it before each request.
+     * When called with force=true the provider must discard any cached
+     * token and re-authenticate unconditionally (used after the server
+     * returns X-Error: token_expired to handle extreme clock-skew cases
+     * where the client's own expiry timer has not yet fired).
      */
-    using token_provider = std::function<std::string()>;
+    using token_provider = std::function<std::string(bool force)>;
 
     // -- Interactive path --
 

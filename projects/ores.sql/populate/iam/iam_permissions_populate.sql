@@ -284,11 +284,6 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::badge
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::badges:write',  'Create and modify badge definitions and severities');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::badges:delete', 'Delete badge definitions and severities');
 
--- Methodology permissions
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:read',   'View methodologies');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:write',  'Create and modify methodologies');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:delete', 'Delete methodologies');
-
 -- Data Quality component wildcard
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::*', 'Full access to all data quality operations');
 

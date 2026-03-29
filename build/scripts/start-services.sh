@@ -95,7 +95,8 @@ if [[ -z "$NATS_SERVER_BIN" ]]; then
     echo "error: nats-server not found (tried PATH, /usr/sbin, /sbin, /usr/local/sbin)"
     exit 1
 fi
-echo "  nats-server: $NATS_SERVER_BIN"
+NATS_SERVER_VERSION="$("$NATS_SERVER_BIN" --version 2>&1 | head -1 || true)"
+echo "  nats-server: $NATS_SERVER_BIN ($NATS_SERVER_VERSION)"
 
 # --- Derived configuration ---
 CHECKOUT_LABEL="${ORES_CHECKOUT_LABEL:-local1}"

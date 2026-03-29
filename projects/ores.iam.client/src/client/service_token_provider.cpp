@@ -135,8 +135,11 @@ make_service_token_provider(ores::nats::service::client& nats,
     // round-trip and startup failures are surfaced immediately.
     state->authenticate();
 
-    return [state]() -> std::string {
-        state->refresh_if_needed();
+    return [state](bool force) -> std::string {
+        if (force)
+            state->authenticate();
+        else
+            state->refresh_if_needed();
         return state->jwt;
     };
 }

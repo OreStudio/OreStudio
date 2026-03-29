@@ -211,12 +211,12 @@ void ClientCodeDomainModel::fetch_domains(
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->domains.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->code_domains.size()
                                            << " code domains";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->domains.size());
+                    static_cast<std::uint32_t>(result->code_domains.size());
                 return {.success = true,
-                        .domains = std::move(result->domains),
+                        .domains = std::move(result->code_domains),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "code domains");

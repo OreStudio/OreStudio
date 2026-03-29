@@ -211,12 +211,12 @@ void ClientBadgeSeverityModel::fetch_severities(
                             .error_details = {}};
                 }
 
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->severities.size()
+                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->badge_severities.size()
                                            << " badge severities";
                 const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->severities.size());
+                    static_cast<std::uint32_t>(result->badge_severities.size());
                 return {.success = true,
-                        .severities = std::move(result->severities),
+                        .severities = std::move(result->badge_severities),
                         .total_available_count = count,
                         .error_message = {}, .error_details = {}};
             }, "badge severities");

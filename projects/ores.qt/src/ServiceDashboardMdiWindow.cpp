@@ -26,7 +26,6 @@
 #include <QPointer>
 #include <QHeaderView>
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/ColorConstants.hpp"
 #include "ores.telemetry/messaging/service_samples_protocol.hpp"
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 
@@ -214,13 +213,13 @@ void ServiceDashboardMdiWindow::loadSamples() {
             QColor  status_color;
             if (age_secs < 30) {
                 status_text  = tr("Green");
-                status_color = badge_colors::online;
+                status_color = QColor(34, 197, 94);   // green
             } else if (age_secs < 120) {
                 status_text  = tr("Amber");
-                status_color = badge_colors::old;
+                status_color = QColor(234, 179, 8);   // amber
             } else {
                 status_text  = tr("Offline");
-                status_color = badge_colors::unlocked;
+                status_color = QColor(107, 114, 128); // gray
             }
 
             auto makeItem = [](const QString& text) {
@@ -267,13 +266,13 @@ void ServiceDashboardMdiWindow::loadSamples() {
             QColor  status_color;
             if (result.online_hosts > 0 && age_secs < 90) {
                 status_text  = tr("Green");
-                status_color = badge_colors::online;
+                status_color = QColor(34, 197, 94);   // green
             } else if (result.total_hosts > 0) {
                 status_text  = tr("Amber");
-                status_color = badge_colors::old;
+                status_color = QColor(234, 179, 8);   // amber
             } else {
                 status_text  = tr("Red");
-                status_color = badge_colors::locked;
+                status_color = QColor(239, 68, 68);   // red
             }
 
             auto makeItem = [](const QString& text) {

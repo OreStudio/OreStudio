@@ -316,6 +316,242 @@ as a user token.
 | =projects/ores.iam.client/src/client/service_token_provider.cpp=                  | Reactive re-auth on =token_expired=; short TTL   |
 | =projects/ores.*.core/include/.../messaging/*_handler.hpp= (write handlers)       | Add =require_permission()= calls                 |
 
+* Phase 3 — Mutual TLS for NATS (per-service client certificates)
+
+** Goal
+
+Encrypt all NATS traffic and cryptographically authenticate every service at
+the transport layer.  After this phase a service cannot connect to the NATS
+broker at all unless it presents a valid client certificate issued by the
+project CA — independent of JWT-level authentication.  This gives defence in
+depth: even if a JWT is leaked, it cannot be used from a host that does not
+hold the corresponding private key.
+
+** Model
+
+A single internal CA (=ores-ca=) issues:
+
+- One *server certificate* for the NATS broker.
+- One *client certificate per service* (=ores.iam.service=,
+  =ores.reporting.service=, …).
+
+The CA certificate is the only trust anchor distributed to all parties.
+No public CA is involved; everything is self-contained within the deployment.
+
+Certificates use 4096-bit RSA or P-256 ECDSA (preferred — smaller, faster).
+Validity: 1 year for the CA, 90 days for leaf certificates, rotated by the
+key-management script (see Step 3b).
+
+** Why per-service keys (not one shared client cert)?
+
+- Revocation is surgical: compromising one service does not require rotating
+  every other service's certificate.
+- Audit logs can attribute connections to a specific service identity at the
+  TLS layer, independently of the JWT claim.
+- Aligns with the principle of least privilege already established for DB users
+  and NATS RBAC roles.
+
+** Implementation Steps
+
+*** Step 3a — CA and certificate generation script
+
+*File:* =build/scripts/generate_nats_certs.sh=
+
+A script (following the same bash-wrapper-over-python pattern) that:
+
+1. Creates =build/keys/nats/= directory (already git-ignored via
+   =build/keys/*.pem= / =build/keys/*.key=).
+2. Generates the internal CA (=ca.key=, =ca.crt=) if not already present.
+3. Generates a server keypair (=nats-server.key=, =nats-server.crt=) signed by
+   the CA, with SAN =localhost= and the deployment hostname.
+4. For each service name in a hardcoded list generates a client keypair
+   (=<service>.key=, =<service>.crt=) signed by the CA, with CN set to the
+   service name (e.g. =ores.reporting.service=).
+
+The script is idempotent: existing files are not overwritten unless
+=--force= is passed.  This allows certs to be regenerated on rotation without
+accidentally overwriting a key that is still in use.
+
+Certificates and keys are written under =build/keys/nats/= and are never
+committed (already covered by the existing =build/keys/*.pem= gitignore rule;
+extend it to cover =build/keys/nats/=).
+
+*** Step 3b — NATS server configuration
+
+*File:* =build/config/nats.conf= (new)
+
+#+begin_src conf
+port: 4222
+
+tls {
+  cert_file:  "build/keys/nats/nats-server.crt"
+  key_file:   "build/keys/nats/nats-server.key"
+  ca_file:    "build/keys/nats/ca.crt"
+  verify:     true          # require client certificates (mTLS)
+  timeout:    5
+}
+#+end_src
+
+The =verify: true= field enables mutual TLS: the broker rejects any connection
+that does not present a certificate signed by =ca.crt=.
+
+Update =build/scripts/start-services.sh= to pass =--config build/config/nats.conf=
+when launching =nats-server=.  The URL passed to services changes from
+=nats://localhost:4222= to =tls://localhost:4222=.
+
+*** Step 3c — =nats_options= gains TLS fields
+
+*File:* =projects/ores.nats/include/ores.nats/config/nats_options.hpp=
+
+#+begin_src cpp
+struct nats_options final {
+    std::string url = "nats://localhost:4222";
+    std::string subject_prefix;
+
+    // mTLS — all three must be set together or all left empty.
+    std::string tls_ca_cert;      // path to CA certificate (ca.crt)
+    std::string tls_client_cert;  // path to client certificate (<service>.crt)
+    std::string tls_client_key;   // path to client private key (<service>.key)
+};
+#+end_src
+
+*** Step 3d — =client.cpp= applies TLS options
+
+*File:* =projects/ores.nats/src/service/client.cpp=
+
+After =natsOptions_SetURL=, add:
+
+#+begin_src cpp
+if (!impl_->opts.tls_ca_cert.empty()) {
+    natsOptions_SetSecure(opts, true);
+    natsOptions_LoadCATrustedCertificates(opts,
+        impl_->opts.tls_ca_cert.c_str());
+    natsOptions_LoadCertificatesChain(opts,
+        impl_->opts.tls_client_cert.c_str(),
+        impl_->opts.tls_client_key.c_str());
+}
+#+end_src
+
+The =nats.c= library's TLS API (=natsOptions_SetSecure=,
+=natsOptions_LoadCATrustedCertificates=, =natsOptions_LoadCertificatesChain=)
+maps directly to these fields.  No new library dependency is required.
+
+*** Step 3e — =nats_configuration= reads TLS fields from CLI / env
+
+*File:* =projects/ores.nats/src/config/nats_configuration.cpp=
+
+Add three new CLI options (=--nats-tls-ca=, =--nats-tls-cert=,
+=--nats-tls-key=) and corresponding environment variable fallbacks
+(=ORES_NATS_TLS_CA=, =ORES_NATS_TLS_CERT=, =ORES_NATS_TLS_KEY=) following the
+same pattern as =--nats-url=.
+
+The =init-environment.sh= script populates these variables per-service,
+pointing each service at its own keypair under =build/keys/nats/=.
+
+*** Step 3f — CI key generation
+
+Add a step to the CI workflow (and =init-environment.sh=) that calls
+=generate_nats_certs.sh= before starting the NATS server.  In CI, the
+=--force= flag regenerates keys on every run (ephemeral).  In developer
+environments, keys are generated once and reused.
+
+** Files Changed
+
+| File                                              | Change                                              |
+|---------------------------------------------------+-----------------------------------------------------|
+| =build/scripts/generate_nats_certs.sh=            | New — CA + per-service cert generation              |
+| =build/config/nats.conf=                          | New — NATS server config with mTLS                  |
+| =build/scripts/start-services.sh=                 | Pass =--config= to nats-server; use =tls://= URL    |
+| =build/scripts/init-environment.sh=               | Add =ORES_NATS_TLS_*= env vars per service          |
+| =.gitignore=                                      | Extend to cover =build/keys/nats/=                  |
+| =projects/ores.nats/include/.../nats_options.hpp= | Add =tls_ca_cert=, =tls_client_cert=, =tls_client_key= |
+| =projects/ores.nats/src/service/client.cpp=       | Apply TLS options via =natsOptions_*= API           |
+| =projects/ores.nats/src/config/nats_configuration.cpp= | Parse TLS CLI flags / env vars                 |
+
+** Open Questions
+
+1. *Certificate rotation automation.*  90-day leaf certs require rotation
+   before expiry.  For developer environments a manual =generate_nats_certs.sh=
+   re-run suffices.  In production, consider =certbot= or a Vault PKI backend.
+   Out of scope for this phase; document the manual rotation procedure.
+
+2. *NATS subject-level authorisation via NKey.*  NATS also supports NKey-based
+   identity and =accounts= blocks in the server config for subject-level access
+   control.  This is an alternative to JWT-based RBAC at the NATS layer.
+   Evaluate whether NKey accounts would replace or complement Phase 2 in a
+   follow-up.
+
+* Phase 4 — Rename =comms_user= to =shell_user=
+
+** Context
+
+The database user =ores_<env>_comms_user= (and the corresponding
+=ORES_DB_COMMS_USER= / =ORES_DB_COMMS_PASSWORD= env vars) is used exclusively
+by the interactive shell (=ores.shell=), which reads credentials via
+=make_mapper("COMMS_SHELL")=.  The name "comms" is misleading — it refers to the
+binary comms protocol the shell uses internally, not to any communications
+service.  Renaming it to =shell_user= makes the purpose immediately obvious.
+
+** Scope
+
+This is a pure rename — no schema changes, no privilege changes.  The new user
+gets the same =rw_role= membership that =comms_user= has today.
+
+** Implementation Steps
+
+*** Step 4a — SQL: rename variables
+
+In every SQL and shell script that references =comms_user= / =comms_password=:
+
+- =projects/ores.sql/setup_user.sql= :: rename variable and validation block
+- =projects/ores.sql/recreate_database.sql= :: rename =comms_user= blocks
+- =projects/ores.sql/recreate_database.sh= :: rename variable names and help text
+- =projects/ores.sql/setup_database.sh= :: rename =-v comms_user= flag
+- =projects/ores.sql/setup_schema.sql= :: rename if referenced (currently not)
+- =projects/ores.sql/drop_roles.sql= :: rename =comms_user= entry in user array
+- =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql= :: rename
+  the upsert call from =:'comms_user'= to =:'shell_user'=
+
+*** Step 4b — Init script and .env
+
+In =build/scripts/init-environment.sh=:
+
+- Rename =ORES_DB_COMMS_USER= → =ORES_DB_SHELL_USER=
+- Rename =ORES_DB_COMMS_PASSWORD= → =ORES_DB_SHELL_PASSWORD=
+- Rename the emitted section from =ORES_COMMS_SHELL_DB_*= →
+  =ORES_SHELL_DB_USER=, =ORES_SHELL_DB_PASSWORD=, =ORES_SHELL_DB_DATABASE=
+
+*** Step 4c — C++ config
+
+In =projects/ores.shell/src/config/parser.cpp=:
+
+Change =make_mapper("COMMS_SHELL")= to =make_mapper("SHELL")= so the
+binary reads =ORES_SHELL_DB_*= from the environment.
+
+*** Step 4d — Documentation and recipes
+
+Update all references in:
+
+- =projects/ores.sql/modeling/database_lifecycle.org=
+- =doc/recipes/shell_recipes.org= (=ORES_COMMS_SHELL_LOGIN_PASSWORD= →
+  =ORES_SHELL_LOGIN_PASSWORD=; =ores_comms_user= → =ores_shell_user=)
+- Any =.claude/skills= or =doc/skills= files referencing =COMMS_SHELL=
+
+** Files Changed
+
+| File                                                                 | Change                                        |
+|----------------------------------------------------------------------+-----------------------------------------------|
+| =projects/ores.sql/setup_user.sql=                                   | =comms_user= / =comms_password= → =shell_user= / =shell_password= |
+| =projects/ores.sql/recreate_database.sql=                            | Same rename                                   |
+| =projects/ores.sql/recreate_database.sh=                             | Same rename + help text                       |
+| =projects/ores.sql/setup_database.sh=                                | Same rename                                   |
+| =projects/ores.sql/drop_roles.sql=                                   | Same rename                                   |
+| =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=   | =comms_user= → =shell_user= upsert parameter  |
+| =build/scripts/init-environment.sh=                                  | =ORES_DB_COMMS_*= → =ORES_DB_SHELL_*=         |
+| =projects/ores.shell/src/config/parser.cpp=                          | =make_mapper("COMMS_SHELL")= → =make_mapper("SHELL")= |
+| =doc/recipes/shell_recipes.org=                                       | Update all =COMMS_SHELL= / =comms_user= refs  |
+| =projects/ores.sql/modeling/database_lifecycle.org=                  | Update user table                             |
+
 * Open Questions
 
 1. *Wildcard matching in =check_permission()=.*  The existing implementation

@@ -59,7 +59,28 @@ cmake --preset linux-clang-release-ninja
 
 ** Building the project
 
-To build the entire project:
+Use the wrapper script for day-to-day local builds (make preset, all cores):
+
+#+begin_src sh
+build/scripts/build.sh
+#+end_src
+
+Build specific targets by name:
+
+#+begin_src sh
+build/scripts/build.sh ores.iam.core ores.service
+#+end_src
+
+Switch to the release preset:
+
+#+begin_src sh
+ORES_BUILD_PRESET=linux-clang-release-make build/scripts/build.sh
+#+end_src
+
+The script wraps =make -C build/output/$PRESET -j$(nproc)= and fails if the
+build directory does not exist (run =cmake --preset= first).
+
+Alternatively, invoke cmake directly (ninja preset):
 
 #+begin_src sh
 cmake --build --preset linux-clang-debug-ninja

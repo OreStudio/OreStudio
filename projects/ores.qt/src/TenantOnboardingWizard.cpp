@@ -603,10 +603,12 @@ void ApplyOnboardingPage::startOnboarding() {
             req.email = adminEmail;
 
             auto resp = clientManager->process_authenticated_request(
-                std::move(req));
+                std::move(req), ClientManager::slow_timeout);
 
             if (!resp) {
-                result.error = "Failed to communicate with server";
+                result.error = QString("Failed to communicate with server: %1")
+                    .arg(QString::fromStdString(resp.error()))
+                    .toStdString();
                 return result;
             }
 

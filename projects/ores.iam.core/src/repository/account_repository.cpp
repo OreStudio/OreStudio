@@ -224,7 +224,8 @@ account_repository::check_service_credentials(
     for (unsigned int i = 0; i < digest_len; ++i)
         computed_hash += std::format("{:02x}", digest[i]);
 
-    if (computed_hash != entity.service_password_hash) {
+    if (!entity.service_password_hash.has_value() ||
+        computed_hash != entity.service_password_hash.value()) {
         BOOST_LOG_SEV(lg(), debug) << "Password mismatch for service account: " << username;
         return std::nullopt;
     }

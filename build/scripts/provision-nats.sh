@@ -26,12 +26,15 @@ fi
 
 NATS_URL="${ORES_NATS_URL:-nats://localhost:4222}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.local1}"
+NATS_TLS_CA="${ORES_NATS_TLS_CA:-}"
+KEYS_DIR="${CHECKOUT_ROOT}/build/keys/nats"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --nats-url) NATS_URL="$2"; shift 2 ;;
-        --nats-prefix) NATS_PREFIX="$2"; shift 2 ;;
+        --nats-url)     NATS_URL="$2";     shift 2 ;;
+        --nats-prefix)  NATS_PREFIX="$2";  shift 2 ;;
+        --nats-tls-ca)  NATS_TLS_CA="$2";  shift 2 ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
 done
@@ -45,7 +48,15 @@ if ! command -v nats &>/dev/null; then
     exit 1
 fi
 
+# Build nats CLI command with optional mTLS flags.
+# provision-nats.sh uses the CLI cert (same as ores.http.server) as a generic
+# management client cert when mTLS is required.
 NATS_CMD="nats --server ${NATS_URL}"
+if [[ -n "$NATS_TLS_CA" ]]; then
+    NATS_CMD+=" --tlsca ${NATS_TLS_CA}"
+    NATS_CMD+=" --tlscert ${KEYS_DIR}/ores.http.server.crt"
+    NATS_CMD+=" --tlskey ${KEYS_DIR}/ores.http.server.key"
+fi
 
 echo "[NATS provisioning]"
 

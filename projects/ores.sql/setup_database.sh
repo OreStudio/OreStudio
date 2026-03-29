@@ -84,7 +84,8 @@ fi
 OWNER_ROLE="${ORES_DB_OWNER_ROLE:-}"
 RW_ROLE="${ORES_DB_RW_ROLE:-}"
 RO_ROLE="${ORES_DB_RO_ROLE:-}"
-for var_name in OWNER_ROLE RW_ROLE RO_ROLE; do
+SERVICE_ROLE="${ORES_DB_SERVICE_ROLE:-}"
+for var_name in OWNER_ROLE RW_ROLE RO_ROLE SERVICE_ROLE; do
     if [[ -z "${!var_name}" ]]; then
         echo "Error: ORES_DB_${var_name} must be set" >&2
         exit 1
@@ -101,6 +102,7 @@ psql \
     -v owner_role="${OWNER_ROLE}" \
     -v rw_role="${RW_ROLE}" \
     -v ro_role="${RO_ROLE}" \
+    -v service_role="${SERVICE_ROLE}" \
     -v ddl_user="${DDL_USER}" \
     -f "${SCRIPT_DIR}/create_database.sql"
 
@@ -118,7 +120,7 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -v ddl_user="${DDL_USER}" \
     -v cli_user="${ORES_DB_CLI_USER:-}" \
     -v wt_user="${ORES_DB_WT_USER:-}" \
-    -v comms_user="${ORES_DB_COMMS_USER:-}" \
+    -v shell_user="${ORES_DB_SHELL_USER:-}" \
     -v http_user="${ORES_DB_HTTP_USER:-}" \
     -v test_ddl_user="${ORES_TEST_DB_DDL_USER:-}" \
     -v test_dml_user="${ORES_TEST_DB_USER:-}" \

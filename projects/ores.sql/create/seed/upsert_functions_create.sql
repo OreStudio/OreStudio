@@ -728,6 +728,58 @@ end;
 $$ language plpgsql;
 
 /**
+ * Assign a role to a service account by username (idempotent).
+ */
+create or replace function ores_iam_account_role_assign_fn(
+    p_tenant_id uuid,
+    p_username   text,
+    p_role_name  text
+) returns void as $$
+declare
+    v_account_id uuid;
+    v_role_id    uuid;
+begin
+    select id into v_account_id
+    from ores_iam_accounts_tbl
+    where tenant_id = p_tenant_id
+      and username  = p_username
+      and valid_to  = ores_utility_infinity_timestamp_fn();
+
+    if v_account_id is null then
+        raise exception 'Account not found: %', p_username;
+    end if;
+
+    select id into v_role_id
+    from ores_iam_roles_tbl
+    where tenant_id = p_tenant_id
+      and name      = p_role_name
+      and valid_to  = ores_utility_infinity_timestamp_fn();
+
+    if v_role_id is null then
+        raise exception 'Role not found: %', p_role_name;
+    end if;
+
+    insert into ores_iam_account_roles_tbl (
+        tenant_id, account_id, role_id,
+        assigned_by, assigned_at,
+        change_reason_code, change_commentary,
+        valid_from, valid_to)
+    values (
+        p_tenant_id, v_account_id, v_role_id,
+        current_user, current_timestamp,
+        'system.new_record', 'System seed data',
+        current_timestamp, ores_utility_infinity_timestamp_fn())
+    on conflict (account_id, role_id, valid_from) do nothing;
+
+    if found then
+        raise notice 'Assigned role % to account %', p_role_name, p_username;
+    else
+        raise notice 'Role % already assigned to account %', p_role_name, p_username;
+    end if;
+end;
+$$ language plpgsql;
+
+/**
  * Assign a permission to a role.
  */
 create or replace function ores_iam_role_permissions_assign_fn(

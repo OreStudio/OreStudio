@@ -41,7 +41,15 @@ enum class error_code {
      * The client may attempt a token refresh (iam.v1.auth.refresh) and
      * then retry the original request.
      */
-    token_expired
+    token_expired,
+
+    /**
+     * @brief The caller is authenticated but lacks the required permission.
+     *
+     * The JWT was valid but the caller's permission list does not contain
+     * the permission required by this handler.
+     */
+    forbidden
 };
 
 } // namespace ores::service

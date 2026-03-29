@@ -51,6 +51,7 @@ target_link_libraries(${exe_binary_name} PRIVATE
     ores.telemetry.lib
     ores.security.lib
     ores.utility.lib
+    ores.platform.lib
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets

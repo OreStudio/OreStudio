@@ -65,6 +65,10 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tena
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:terminate', 'Terminate tenants');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::tenants:impersonate', 'Access other tenants');
 
+-- Session permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::sessions:read', 'View active sessions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::sessions:write', 'Create sessions (login / service-login)');
+
 -- Login info permissions (read-only audit data)
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::login_info:read', 'View login history and info');
 
@@ -174,6 +178,79 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::datas
 
 -- Data Quality component wildcard
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::*', 'Full access to all data quality operations');
+
+-- =============================================================================
+-- Assets Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'assets::images:read',   'View asset images');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'assets::images:write',  'Upload and modify asset images');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'assets::images:delete', 'Delete asset images');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'assets::*', 'Full access to all assets operations');
+
+-- =============================================================================
+-- Scheduler Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'scheduler::job_definitions:read',   'View scheduled jobs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'scheduler::job_definitions:write',  'Schedule and update jobs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'scheduler::job_definitions:delete', 'Unschedule jobs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'scheduler::*', 'Full access to all scheduler operations');
+
+-- =============================================================================
+-- Reporting Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::report_definitions:read',   'View report definitions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::report_definitions:write',  'Create and modify report definitions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::report_definitions:delete', 'Delete report definitions');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::report_instances:read',     'View report run history');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::report_instances:write',    'Trigger report runs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::report_instances:delete',   'Delete report run records');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::report_types:read',         'View report types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::concurrency_policies:read', 'View concurrency policies');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'reporting::*', 'Full access to all reporting operations');
+
+-- =============================================================================
+-- Trading Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'trading::instruments:read',   'View trading instruments');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'trading::instruments:write',  'Create and modify trading instruments');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'trading::instruments:delete', 'Delete trading instruments');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'trading::trades:read',        'View trades');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'trading::trades:write',       'Create and modify trades');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'trading::trades:delete',      'Delete trades');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'trading::*', 'Full access to all trading operations');
+
+-- =============================================================================
+-- Compute Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::apps:read',     'View compute applications');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::apps:write',    'Register and update compute applications');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::apps:delete',   'Remove compute applications');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::batches:read',  'View compute batch jobs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::batches:write', 'Submit and manage compute batch jobs');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::hosts:read',    'View compute hosts');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::hosts:write',   'Register and update compute hosts');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'compute::*', 'Full access to all compute operations');
+
+-- =============================================================================
+-- Telemetry Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'telemetry::logs:write',    'Write telemetry log entries');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'telemetry::logs:read',     'Read telemetry log entries');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'telemetry::samples:write', 'Write service/NATS health samples');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'telemetry::samples:read',  'Read service/NATS health samples');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'telemetry::*', 'Full access to all telemetry operations');
+
+-- =============================================================================
+-- Synthetic Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'synthetic::*', 'Full access to all synthetic data operations');
 
 -- =============================================================================
 -- Global Wildcard Permission

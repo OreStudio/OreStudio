@@ -50,6 +50,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 
 class tenant_handler {
 public:
@@ -94,6 +95,10 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::tenants:write")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
             if (req->data.id.is_nil())
                 req->data.id = boost::uuids::random_generator()();
             repository::tenant_repository repo(ctx);

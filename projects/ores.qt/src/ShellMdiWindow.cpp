@@ -28,6 +28,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
+#include "ores.platform/environment/environment.hpp"
 
 namespace ores::qt {
 
@@ -186,6 +187,10 @@ void ShellMdiWindow::start_shell() {
     shell_opts.url = "nats://" + client_manager_->connectedHost()
         + ":" + std::to_string(client_manager_->connectedPort());
     shell_opts.subject_prefix = client_manager_->subjectPrefix();
+    using ores::platform::environment::environment;
+    if (auto v = environment::get_value("ORES_NATS_TLS_CA"))   shell_opts.tls_ca_cert     = *v;
+    if (auto v = environment::get_value("ORES_NATS_TLS_CERT")) shell_opts.tls_client_cert = *v;
+    if (auto v = environment::get_value("ORES_NATS_TLS_KEY"))  shell_opts.tls_client_key  = *v;
 
     try {
         shell_session_.connect(std::move(shell_opts));

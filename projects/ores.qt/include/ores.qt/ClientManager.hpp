@@ -120,6 +120,11 @@ private:
     }
 
 public:
+    // Standard timeout for quick NATS round-trips (queries, lookups).
+    static constexpr std::chrono::seconds fast_timeout{30};
+    // Extended timeout for slow server-side operations (provisioning, imports).
+    static constexpr std::chrono::seconds slow_timeout{120};
+
     explicit ClientManager(std::shared_ptr<eventing::service::event_bus> event_bus,
                            QObject* parent = nullptr);
     ~ClientManager() override;

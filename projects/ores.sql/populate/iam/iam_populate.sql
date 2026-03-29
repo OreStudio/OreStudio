@@ -32,3 +32,10 @@
 
 \echo '--- IAM Service Accounts ---'
 \ir iam_service_accounts_populate.sql
+
+-- =============================================================================
+-- Service Account Role Assignments (NATS RBAC)
+-- =============================================================================
+
+\echo '--- IAM Service Account Role Assignments ---'
+\ir iam_service_account_roles_populate.sql

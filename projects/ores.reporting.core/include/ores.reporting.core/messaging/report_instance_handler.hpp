@@ -49,6 +49,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class report_instance_handler {
@@ -90,6 +91,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "reporting::report_instances:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<save_report_instance_request>(msg)) {
             service::report_instance_service svc(ctx);
             try {
@@ -119,6 +124,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "reporting::report_instances:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<delete_report_instance_request>(msg)) {
             service::report_instance_service svc(ctx);
             try {

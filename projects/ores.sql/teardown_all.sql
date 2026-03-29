@@ -142,7 +142,7 @@ where (datname like 'ores_%' or datname like 'oresdb_%')
 drop role if exists ores_ddl_user;
 drop role if exists ores_cli_user;
 drop role if exists ores_wt_user;
-drop role if exists ores_comms_user;
+drop role if exists ores_shell_user;
 drop role if exists ores_iam_service;
 drop role if exists ores_refdata_service;
 drop role if exists ores_dq_service;

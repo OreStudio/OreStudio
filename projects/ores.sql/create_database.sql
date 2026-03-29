@@ -64,7 +64,7 @@ create database :db_name;
 
 -- Grant permissions to appropriate roles
 grant all privileges on database :db_name to :owner_role;
-grant connect, temp on database :db_name to :rw_role, :ro_role;
+grant connect, temp on database :db_name to :rw_role, :ro_role, :service_role;
 
 -- Allow the DDL user to bypass row-level security so that SECURITY DEFINER
 -- trigger functions (owned by the DDL user) can perform FK validation SELECTs
@@ -82,7 +82,7 @@ alter role :ddl_user bypassrls;
 \i setup_extensions.sql
 
 -- Grant schema permissions to appropriate roles
-grant usage on schema public to :owner_role, :rw_role, :ro_role;
+grant usage on schema public to :owner_role, :rw_role, :ro_role, :service_role;
 grant create on schema public to :owner_role;
 
 -- Grant pgmq schema access if the extension was installed.

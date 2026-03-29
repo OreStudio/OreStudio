@@ -235,6 +235,20 @@ void client::connect() {
     natsOptions_Create(&opts);
     natsOptions_SetURL(opts, impl_->opts.url.c_str());
     natsOptions_SetErrorHandler(opts, on_conn_error, nullptr);
+
+    if (!impl_->opts.tls_ca_cert.empty()) {
+        natsOptions_SetSecure(opts, true);
+        natsOptions_LoadCATrustedCertificates(
+            opts, impl_->opts.tls_ca_cert.c_str());
+        natsOptions_LoadCertificatesChain(
+            opts,
+            impl_->opts.tls_client_cert.c_str(),
+            impl_->opts.tls_client_key.c_str());
+        BOOST_LOG_SEV(lg(), info)
+            << "mTLS enabled (ca=" << impl_->opts.tls_ca_cert
+            << ", cert=" << impl_->opts.tls_client_cert << ")";
+    }
+
     natsStatus s = natsConnection_Connect(&impl_->conn, opts);
     natsOptions_Destroy(opts);
     if (s != NATS_OK)

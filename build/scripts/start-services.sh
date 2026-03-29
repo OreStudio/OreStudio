@@ -86,6 +86,10 @@ CHECKOUT_LABEL="${ORES_CHECKOUT_LABEL:-local1}"
 NATS_URL="${ORES_NATS_URL:-nats://localhost:4222}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.$CHECKOUT_LABEL}"
 
+# mTLS: optional; all three must be set together or all left empty.
+NATS_TLS_CA="${ORES_NATS_TLS_CA:-}"
+KEYS_DIR="$PROJECT_DIR/build/keys/nats"
+
 # Port bases match ores-prodigy.el ores/port-bases.
 declare -A PORT_BASES=(
     [remote]=50000 [local1]=51000 [local2]=52000
@@ -148,12 +152,22 @@ launch_binary() {
 
 launch_nats_service() {
     local name="$1"
+    # Derive the service cert/key from the binary name (e.g. ores.iam.service).
+    local tls_args=()
+    if [[ -n "$NATS_TLS_CA" ]]; then
+        tls_args+=(
+            --nats-tls-ca   "$KEYS_DIR/ca.crt"
+            --nats-tls-cert "$KEYS_DIR/${name}.crt"
+            --nats-tls-key  "$KEYS_DIR/${name}.key"
+        )
+    fi
     launch "$name" \
         --log-enabled \
         --log-level "$LOG_LEVEL" \
         --log-directory ../log \
         --nats-url "$NATS_URL" \
-        --nats-subject-prefix "$NATS_PREFIX"
+        --nats-subject-prefix "$NATS_PREFIX" \
+        "${tls_args[@]}"
 }
 
 launch_wrapper_node() {
@@ -167,6 +181,14 @@ launch_wrapper_node() {
     local work_dir="$RUN_DIR/wrappers/node_${n}"
     mkdir -p "$work_dir"
     local name="ores.compute.wrapper.node${n}"
+    local wrapper_tls_args=()
+    if [[ -n "$NATS_TLS_CA" ]]; then
+        wrapper_tls_args+=(
+            --nats-tls-ca   "$KEYS_DIR/ca.crt"
+            --nats-tls-cert "$KEYS_DIR/ores.compute.wrapper.crt"
+            --nats-tls-key  "$KEYS_DIR/ores.compute.wrapper.key"
+        )
+    fi
     launch_binary "$name" "ores.compute.wrapper" \
         --log-enabled \
         --log-level "$LOG_LEVEL" \
@@ -177,16 +199,25 @@ launch_wrapper_node() {
         --host-id "$host_id" \
         --tenant-id "$NATS_PREFIX" \
         --work-dir "$work_dir" \
-        --http-base-url "http://localhost:$HTTP_PORT"
+        --http-base-url "http://localhost:$HTTP_PORT" \
+        "${wrapper_tls_args[@]}"
 }
 
 wait_for_ready() {
     local name="$1"
     local log_file="$LOG_DIR/$name.log"
+    # Snapshot size before launch. If the service recreates (truncates) its log,
+    # the new size will be smaller — reset to 0 so we search from the beginning.
+    local start_pos=0
+    [[ -f "$log_file" ]] && start_pos=$(wc -c < "$log_file")
     printf "  wait    %s" "$name"
     local i
     for i in $(seq 1 60); do
-        if grep -q "Service ready" "$log_file" 2>/dev/null; then
+        # Detect log truncation (service recreated file on startup)
+        local cur_size=0
+        [[ -f "$log_file" ]] && cur_size=$(wc -c < "$log_file")
+        [[ "$cur_size" -lt "$start_pos" ]] && start_pos=0
+        if tail -c "+$((start_pos + 1))" "$log_file" 2>/dev/null | grep -q "Service ready"; then
             echo " ... ready"
             return 0
         fi
@@ -216,7 +247,8 @@ discover_nats_services() {
 # ============================================================
 echo "Starting ORE Studio services"
 echo "  Preset : $PRESET"
-echo "  NATS   : $NATS_URL (prefix: $NATS_PREFIX)"
+TLS_STATUS="${NATS_TLS_CA:+enabled}"
+echo "  NATS   : $NATS_URL (prefix: $NATS_PREFIX, mTLS: ${TLS_STATUS:-disabled})"
 echo "  Ports  : HTTP=$HTTP_PORT  WT=$WT_PORT"
 echo ""
 
@@ -237,6 +269,14 @@ echo ""
 
 # 3. HTTP server
 echo "[HTTP server]"
+http_tls_args=()
+if [[ -n "$NATS_TLS_CA" ]]; then
+    http_tls_args+=(
+        --nats-tls-ca   "$KEYS_DIR/ca.crt"
+        --nats-tls-cert "$KEYS_DIR/ores.http.server.crt"
+        --nats-tls-key  "$KEYS_DIR/ores.http.server.key"
+    )
+fi
 launch ores.http.server \
     --log-enabled \
     --log-level "$LOG_LEVEL" \
@@ -244,15 +284,25 @@ launch ores.http.server \
     --port "$HTTP_PORT" \
     --nats-url "$NATS_URL" \
     --nats-subject-prefix "$NATS_PREFIX" \
-    --compute-storage-dir ../compute
+    --compute-storage-dir ../compute \
+    "${http_tls_args[@]}"
 echo ""
 
 # 4. WT server
 echo "[WT server]"
+wt_tls_args=()
+if [[ -n "$NATS_TLS_CA" ]]; then
+    wt_tls_args+=(
+        --nats-tls-ca   "$KEYS_DIR/ca.crt"
+        --nats-tls-cert "$KEYS_DIR/ores.wt.service.crt"
+        --nats-tls-key  "$KEYS_DIR/ores.wt.service.key"
+    )
+fi
 launch ores.wt.service \
     --log-enabled \
     --log-level "$LOG_LEVEL" \
     --log-directory ../log \
+    "${wt_tls_args[@]}" \
     -- \
     --http-address 0.0.0.0 \
     --docroot . \
@@ -262,7 +312,9 @@ echo ""
 # 5. Compute wrapper nodes (test environment grid)
 if [[ -x "$BIN_DIR/ores.compute.wrapper" ]]; then
     # Provision JetStream streams before launching nodes.
-    "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX"
+    provision_tls_args=()
+    [[ -n "$NATS_TLS_CA" ]] && provision_tls_args+=(--nats-tls-ca "$NATS_TLS_CA")
+    "$SCRIPT_DIR/provision-nats.sh" --nats-url "$NATS_URL" --nats-prefix "$NATS_PREFIX" "${provision_tls_args[@]}"
 
     echo "[Compute wrapper nodes]"
     for n in 1 2 3 4 5; do

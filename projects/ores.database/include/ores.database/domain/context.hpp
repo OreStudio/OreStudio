@@ -134,6 +134,26 @@ public:
     }
 
     /**
+     * @brief Gets the permission codes carried in this context.
+     *
+     * Populated from the JWT at request time for service-to-service calls;
+     * empty for contexts that pre-date the RBAC enforcement layer.
+     */
+    const std::vector<std::string>& roles() const { return roles_; }
+
+    /**
+     * @brief Returns a copy of this context with the given permission codes.
+     *
+     * Used by make_request_context to attach JWT permissions to the
+     * per-request database context.
+     */
+    [[nodiscard]] context with_roles(std::vector<std::string> roles) const {
+        auto copy = *this;
+        copy.roles_ = std::move(roles);
+        return copy;
+    }
+
+    /**
      * @brief Creates a new context with a different tenant ID (no party).
      *
      * The service_account is preserved from the base context.
@@ -165,6 +185,7 @@ private:
     connection_pool_type connection_pool_;
     sqlgen::postgres::Credentials credentials_;
     std::string service_account_;
+    std::vector<std::string> roles_;
 };
 
 }

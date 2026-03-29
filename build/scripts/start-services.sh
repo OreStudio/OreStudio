@@ -81,6 +81,21 @@ fi
 
 mkdir -p "$LOG_DIR" "$RUN_DIR"
 
+# --- Locate nats-server (Debian installs it in /usr/sbin) ---
+NATS_SERVER_BIN=""
+for _candidate in \
+        "$(command -v nats-server 2>/dev/null || true)" \
+        /usr/sbin/nats-server \
+        /sbin/nats-server \
+        /usr/local/sbin/nats-server \
+        /usr/local/bin/nats-server; do
+    [[ -x "$_candidate" ]] && NATS_SERVER_BIN="$_candidate" && break
+done
+if [[ -z "$NATS_SERVER_BIN" ]]; then
+    echo "error: nats-server not found (tried PATH, /usr/sbin, /sbin, /usr/local/sbin)"
+    exit 1
+fi
+
 # --- Derived configuration ---
 CHECKOUT_LABEL="${ORES_CHECKOUT_LABEL:-local1}"
 NATS_PORT="${ORES_NATS_PORT:-4222}"
@@ -282,7 +297,7 @@ else
         exit 1
     fi
     mkdir -p "$(dirname "$NATS_PID_FILE")"
-    nats-server --config "$NATS_CONFIG" &
+    "$NATS_SERVER_BIN" --config "$NATS_CONFIG" &
     echo "$!" > "$NATS_PID_FILE"
     printf "  start   %-38s PID %d\n" "nats-server" "$!"
 fi

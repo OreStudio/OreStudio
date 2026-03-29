@@ -112,18 +112,27 @@ echo "  Ready: ${NATS_STORE_DIR}"
 # Phase 3: Start nats-server (optional)
 # ---------------------------------------------------------------------------
 if [[ "${DO_START}" -eq 1 ]]; then
-    if ! command -v nats-server &>/dev/null; then
-        echo "Error: nats-server not found in PATH." >&2
+    NATS_SERVER_BIN=""
+    for _candidate in \
+            "$(command -v nats-server 2>/dev/null || true)" \
+            /usr/sbin/nats-server \
+            /sbin/nats-server \
+            /usr/local/sbin/nats-server \
+            /usr/local/bin/nats-server; do
+        [[ -x "$_candidate" ]] && NATS_SERVER_BIN="$_candidate" && break
+    done
+    if [[ -z "$NATS_SERVER_BIN" ]]; then
+        echo "Error: nats-server not found (tried PATH, /usr/sbin, /sbin, /usr/local/sbin)" >&2
         exit 1
     fi
 
-    echo "--- Starting nats-server ---"
+    echo "--- Starting nats-server ($NATS_SERVER_BIN) ---"
     if [[ "${DO_DAEMON}" -eq 1 ]]; then
-        nats-server --config "${CONFIG_OUT}" --pid "${CHECKOUT_ROOT}/build/nats/${LABEL}/nats-server.pid" &
+        "$NATS_SERVER_BIN" --config "${CONFIG_OUT}" --pid "${CHECKOUT_ROOT}/build/nats/${LABEL}/nats-server.pid" &
         echo "  nats-server started in background (PID $!)"
     else
         echo "  Starting nats-server in foreground (Ctrl-C to stop)..."
-        exec nats-server --config "${CONFIG_OUT}"
+        exec "$NATS_SERVER_BIN" --config "${CONFIG_OUT}"
     fi
 fi
 

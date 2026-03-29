@@ -37,37 +37,37 @@
 \echo '--- Service Account Role Assignments ---'
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'iam_service_user', 'role_iam_service');
+    ores_iam_system_tenant_id_fn(), :'iam_service_user', 'IamService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'refdata_service_user', 'role_refdata_service');
+    ores_iam_system_tenant_id_fn(), :'refdata_service_user', 'RefdataService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'dq_service_user', 'role_dq_service');
+    ores_iam_system_tenant_id_fn(), :'dq_service_user', 'DqService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'variability_service_user', 'role_variability_service');
+    ores_iam_system_tenant_id_fn(), :'variability_service_user', 'VariabilityService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'assets_service_user', 'role_assets_service');
+    ores_iam_system_tenant_id_fn(), :'assets_service_user', 'AssetsService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'synthetic_service_user', 'role_synthetic_service');
+    ores_iam_system_tenant_id_fn(), :'synthetic_service_user', 'SyntheticService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'scheduler_service_user', 'role_scheduler_service');
+    ores_iam_system_tenant_id_fn(), :'scheduler_service_user', 'SchedulerService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'reporting_service_user', 'role_reporting_service');
+    ores_iam_system_tenant_id_fn(), :'reporting_service_user', 'ReportingService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'telemetry_service_user', 'role_telemetry_service');
+    ores_iam_system_tenant_id_fn(), :'telemetry_service_user', 'TelemetryService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'trading_service_user', 'role_trading_service');
+    ores_iam_system_tenant_id_fn(), :'trading_service_user', 'TradingService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'compute_service_user', 'role_compute_service');
+    ores_iam_system_tenant_id_fn(), :'compute_service_user', 'ComputeService');
 
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count

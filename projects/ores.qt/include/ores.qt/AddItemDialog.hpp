@@ -21,8 +21,7 @@
 #define ORES_QT_ADD_ITEM_DIALOG_HPP
 
 #include <QWidget>
-#include <QToolBar>
-#include <QAction>
+#include <QPushButton>
 #include <QComboBox>
 #include <QLineEdit>
 #include <QSpinBox>
@@ -121,6 +120,7 @@ signals:
 
 private slots:
     void onSaveClicked();
+    void onCancelClicked();
     void onTestClicked();
     void onTypeChanged(int index);
     void onPasswordChanged();
@@ -130,7 +130,7 @@ private slots:
 
 private:
     void setupUI();
-    void setupToolbar();
+    QWidget* setupButtons();
     void populateFolderCombo();
     void populateEnvironmentCombo();
     void updateFieldVisibility();
@@ -141,10 +141,10 @@ private:
 
     connections::service::connection_manager* manager_;
 
-    // Toolbar
-    QToolBar* toolBar_;
-    QAction* saveAction_;
-    QAction* testAction_;
+    // Buttons
+    QPushButton* saveButton_;
+    QPushButton* cancelButton_;
+    QPushButton* testButton_;
 
     // Type selector
     QComboBox* typeCombo_;

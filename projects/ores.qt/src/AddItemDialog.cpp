@@ -26,6 +26,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QFormLayout>
+#include <QPushButton>
 #include <QMessageBox>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -59,9 +60,6 @@ void AddItemDialog::setupUI() {
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
-
-    setupToolbar();
-    mainLayout->addWidget(toolBar_);
 
     // Content area with margins
     auto* contentWidget = new QWidget(this);
@@ -148,6 +146,8 @@ void AddItemDialog::setupUI() {
     contentLayout->addStretch();
 
     mainLayout->addWidget(contentWidget);
+    auto* buttonBar = setupButtons();
+    mainLayout->addWidget(buttonBar);
 
     populateFolderCombo();
     populateEnvironmentCombo();
@@ -169,25 +169,37 @@ void AddItemDialog::setupUI() {
             this, &AddItemDialog::onEnvironmentComboChanged);
 }
 
-void AddItemDialog::setupToolbar() {
-    toolBar_ = new QToolBar(this);
-    toolBar_->setIconSize(QSize(20, 20));
+QWidget* AddItemDialog::setupButtons() {
+    auto* bar = new QWidget(this);
+    auto* layout = new QHBoxLayout(bar);
+    layout->setContentsMargins(16, 8, 16, 16);
 
-    saveAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor),
-        tr("Save"));
-    saveAction_->setToolTip(tr("Save changes"));
+    testButton_ = new QPushButton(tr("Test"), bar);
+    testButton_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor));
+    testButton_->setToolTip(tr("Test connection"));
+    testButton_->setVisible(false);
+    layout->addWidget(testButton_);
 
-    toolBar_->addSeparator();
+    layout->addStretch();
 
-    testAction_ = toolBar_->addAction(
-        IconUtils::createRecoloredIcon(Icon::PlugConnected, IconUtils::DefaultIconColor),
-        tr("Test"));
-    testAction_->setToolTip(tr("Test connection"));
-    testAction_->setVisible(false);
+    cancelButton_ = new QPushButton(tr("Cancel"), bar);
+    cancelButton_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Dismiss, IconUtils::DefaultIconColor));
+    layout->addWidget(cancelButton_);
 
-    connect(saveAction_, &QAction::triggered, this, &AddItemDialog::onSaveClicked);
-    connect(testAction_, &QAction::triggered, this, &AddItemDialog::onTestClicked);
+    saveButton_ = new QPushButton(tr("Save"), bar);
+    saveButton_->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Save, IconUtils::DefaultIconColor));
+    saveButton_->setDefault(true);
+    saveButton_->setEnabled(false);
+    layout->addWidget(saveButton_);
+
+    connect(saveButton_, &QPushButton::clicked, this, &AddItemDialog::onSaveClicked);
+    connect(cancelButton_, &QPushButton::clicked, this, &AddItemDialog::onCancelClicked);
+    connect(testButton_, &QPushButton::clicked, this, &AddItemDialog::onTestClicked);
+
+    return bar;
 }
 
 void AddItemDialog::populateFolderCombo() {
@@ -336,7 +348,7 @@ void AddItemDialog::updateFieldVisibility() {
     tagSelector_->setEnabled(isEnvironment || isConnection);
 
     // Test button only for connections with callback
-    testAction_->setVisible(isConnection && static_cast<bool>(testCallback_));
+    testButton_->setVisible(isConnection && static_cast<bool>(testCallback_));
 
     // Reset host/port/namespace lock state when switching away from Connection
     if (!isConnection) {
@@ -356,7 +368,7 @@ void AddItemDialog::updateSaveButtonState() {
         valid = valid && hasHost && !usernameEdit_->text().trimmed().isEmpty();
     }
 
-    saveAction_->setEnabled(valid);
+    saveButton_->setEnabled(valid);
 }
 
 void AddItemDialog::setFolder(const connections::domain::folder& folder) {
@@ -570,7 +582,7 @@ std::vector<boost::uuids::uuid> AddItemDialog::getSelectedTagIds() const {
 
 void AddItemDialog::setTestCallback(TestConnectionCallback callback) {
     testCallback_ = std::move(callback);
-    testAction_->setVisible(itemType_ == ItemType::Connection && static_cast<bool>(testCallback_));
+    testButton_->setVisible(itemType_ == ItemType::Connection && static_cast<bool>(testCallback_));
 }
 
 void AddItemDialog::onPasswordChanged() {
@@ -638,6 +650,13 @@ bool AddItemDialog::validateInput() {
     }
 
     return true;
+}
+
+void AddItemDialog::onCancelClicked() {
+    if (auto* parent = parentWidget())
+        parent->close();
+    else
+        close();
 }
 
 void AddItemDialog::onSaveClicked() {
@@ -791,8 +810,8 @@ void AddItemDialog::onTestClicked() {
         return;
     }
 
-    testAction_->setEnabled(false);
-    testAction_->setText(tr("Testing..."));
+    testButton_->setEnabled(false);
+    testButton_->setText(tr("Testing..."));
 
     BOOST_LOG_SEV(lg(), info) << "Testing connection to " << host.toStdString()
                               << ":" << port;
@@ -802,8 +821,8 @@ void AddItemDialog::onTestClicked() {
         QString error = watcher->result();
         watcher->deleteLater();
 
-        testAction_->setEnabled(true);
-        testAction_->setText(tr("Test"));
+        testButton_->setEnabled(true);
+        testButton_->setText(tr("Test"));
 
         if (error.isEmpty()) {
             QMessageBox::information(this, tr("Test Connection"),

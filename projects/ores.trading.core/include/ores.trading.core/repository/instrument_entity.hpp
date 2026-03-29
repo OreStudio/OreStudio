@@ -50,6 +50,14 @@ struct instrument_entity {
     std::string change_commentary;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
+    // Phase 7 extensions
+    std::optional<std::string> fra_fixing_date;
+    std::optional<std::string> fra_settlement_date;
+    std::optional<int> lockout_days;
+    std::optional<std::string> callable_dates_json;
+    std::optional<std::string> rpa_counterparty;
+    std::optional<std::string> inflation_index_code;
+    std::optional<double> base_cpi;
 };
 
 std::ostream& operator<<(std::ostream& s, const instrument_entity& v);

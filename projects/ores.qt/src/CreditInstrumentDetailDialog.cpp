@@ -116,6 +116,21 @@ void CreditInstrumentDetailDialog::setupConnections() {
             &CreditInstrumentDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &CreditInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged, this,
+            &CreditInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->optionExpiryDateEdit, &QLineEdit::textChanged, this,
+            &CreditInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->optionStrikeSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &CreditInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->linkedAssetCodeEdit, &QLineEdit::textChanged, this,
+            &CreditInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->trancheAttachmentSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &CreditInstrumentDetailDialog::onFieldChanged);
+    connect(ui_->trancheDetachmentSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &CreditInstrumentDetailDialog::onFieldChanged);
 }
 
 void CreditInstrumentDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -158,6 +173,12 @@ void CreditInstrumentDetailDialog::setReadOnly(bool readOnly) {
     ui_->seniorityEdit->setReadOnly(readOnly);
     ui_->restructuringEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
+    ui_->optionTypeCombo->setEnabled(!readOnly);
+    ui_->optionExpiryDateEdit->setReadOnly(readOnly);
+    ui_->optionStrikeSpinBox->setReadOnly(readOnly);
+    ui_->linkedAssetCodeEdit->setReadOnly(readOnly);
+    ui_->trancheAttachmentSpinBox->setReadOnly(readOnly);
+    ui_->trancheDetachmentSpinBox->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -191,6 +212,18 @@ void CreditInstrumentDetailDialog::updateUiFromCreditInstrument() {
         QString::fromStdString(instrument_.restructuring));
     ui_->descriptionEdit->setPlainText(
         QString::fromStdString(instrument_.description));
+    ui_->optionTypeCombo->setCurrentText(
+        QString::fromStdString(instrument_.option_type));
+    ui_->optionExpiryDateEdit->setText(
+        QString::fromStdString(instrument_.option_expiry_date));
+    ui_->optionStrikeSpinBox->setValue(
+        instrument_.option_strike.value_or(0.0));
+    ui_->linkedAssetCodeEdit->setText(
+        QString::fromStdString(instrument_.linked_asset_code));
+    ui_->trancheAttachmentSpinBox->setValue(
+        instrument_.tranche_attachment.value_or(0.0));
+    ui_->trancheDetachmentSpinBox->setValue(
+        instrument_.tranche_detachment.value_or(0.0));
 
     populateProvenance(instrument_.version,
                        instrument_.modified_by,
@@ -232,6 +265,24 @@ void CreditInstrumentDetailDialog::updateCreditInstrumentFromUi() {
         ui_->restructuringEdit->text().trimmed().toStdString();
     instrument_.description =
         ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    instrument_.option_type =
+        ui_->optionTypeCombo->currentText().trimmed().toStdString();
+    instrument_.option_expiry_date =
+        ui_->optionExpiryDateEdit->text().trimmed().toStdString();
+    {
+        double v = ui_->optionStrikeSpinBox->value();
+        instrument_.option_strike = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
+    instrument_.linked_asset_code =
+        ui_->linkedAssetCodeEdit->text().trimmed().toStdString();
+    {
+        double v = ui_->trancheAttachmentSpinBox->value();
+        instrument_.tranche_attachment = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
+    {
+        double v = ui_->trancheDetachmentSpinBox->value();
+        instrument_.tranche_detachment = v != 0.0 ? std::optional(v) : std::nullopt;
+    }
     instrument_.modified_by = username_;
     instrument_.performed_by = username_;
 }

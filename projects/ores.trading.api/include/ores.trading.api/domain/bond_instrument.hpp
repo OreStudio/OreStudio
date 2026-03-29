@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <string>
+#include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
@@ -52,7 +53,8 @@ struct bond_instrument final {
 
     /**
      * @brief ORE product type code (Bond, ForwardBond, CallableBond,
-     * ConvertibleBond, BondRepo).
+     * ConvertibleBond, BondRepo, BondFuture, BondOption, BondTRS,
+     * BondPosition, Ascot).
      */
     std::string trade_type_code;
 
@@ -142,6 +144,46 @@ struct bond_instrument final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    // -------------------------------------------------------------------------
+    // Phase 7 extensions: BondFuture, BondOption, BondTRS, Ascot
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Delivery date for BondFuture. Empty for other types.
+     */
+    std::string future_expiry_date;
+
+    /**
+     * @brief Option type for BondOption: "Call" or "Put". Empty otherwise.
+     */
+    std::string option_type;
+
+    /**
+     * @brief Option expiry date for BondOption (ISO 8601). Empty otherwise.
+     */
+    std::string option_expiry_date;
+
+    /**
+     * @brief Option strike as clean price for BondOption. Null when not set.
+     */
+    std::optional<double> option_strike;
+
+    /**
+     * @brief Return type for BondTRS: "TotalReturn" or "PriceReturn".
+     * Empty otherwise.
+     */
+    std::string trs_return_type;
+
+    /**
+     * @brief Funding leg floating index code for BondTRS. Empty otherwise.
+     */
+    std::string trs_funding_leg_code;
+
+    /**
+     * @brief ASCOT option type. Empty for non-Ascot products.
+     */
+    std::string ascot_option_type;
 };
 
 }

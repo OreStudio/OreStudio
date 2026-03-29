@@ -60,6 +60,13 @@ struct credit_instrument_entity {
     std::string change_commentary;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_from = "9999-12-31 23:59:59";
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> valid_to = "9999-12-31 23:59:59";
+    // Phase 7 extensions
+    std::optional<std::string> option_type;
+    std::optional<std::string> option_expiry_date;
+    std::optional<double> option_strike;
+    std::optional<std::string> linked_asset_code;
+    std::optional<double> tranche_attachment;
+    std::optional<double> tranche_detachment;
 };
 
 std::ostream& operator<<(std::ostream& s, const credit_instrument_entity& v);

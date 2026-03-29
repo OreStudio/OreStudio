@@ -50,6 +50,13 @@ bond_instrument_mapper::map(const bond_instrument_entity& v) {
     r.call_date = v.call_date.value_or("");
     r.conversion_ratio = v.conversion_ratio.value_or(0.0);
     r.description = v.description.value_or("");
+    r.future_expiry_date = v.future_expiry_date.value_or("");
+    r.option_type = v.option_type.value_or("");
+    r.option_expiry_date = v.option_expiry_date.value_or("");
+    r.option_strike = v.option_strike;
+    r.trs_return_type = v.trs_return_type.value_or("");
+    r.trs_funding_leg_code = v.trs_funding_leg_code.value_or("");
+    r.ascot_option_type = v.ascot_option_type.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -87,6 +94,19 @@ bond_instrument_mapper::map(const domain::bond_instrument& v) {
         ? std::nullopt : std::optional(v.conversion_ratio);
     r.description = v.description.empty()
         ? std::nullopt : std::optional(v.description);
+    r.future_expiry_date = v.future_expiry_date.empty()
+        ? std::nullopt : std::optional(v.future_expiry_date);
+    r.option_type = v.option_type.empty()
+        ? std::nullopt : std::optional(v.option_type);
+    r.option_expiry_date = v.option_expiry_date.empty()
+        ? std::nullopt : std::optional(v.option_expiry_date);
+    r.option_strike = v.option_strike;
+    r.trs_return_type = v.trs_return_type.empty()
+        ? std::nullopt : std::optional(v.trs_return_type);
+    r.trs_funding_leg_code = v.trs_funding_leg_code.empty()
+        ? std::nullopt : std::optional(v.trs_funding_leg_code);
+    r.ascot_option_type = v.ascot_option_type.empty()
+        ? std::nullopt : std::optional(v.ascot_option_type);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

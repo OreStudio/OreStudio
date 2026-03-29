@@ -22,6 +22,7 @@
 
 #include <chrono>
 #include <string>
+#include <optional>
 #include <boost/uuid/uuid.hpp>
 #include "ores.utility/uuid/tenant_id.hpp"
 
@@ -31,8 +32,10 @@ namespace ores::trading::domain {
  * @brief Parent instrument record holding economic terms for a trade.
  *
  * Discriminated by trade_type_code (e.g. Swap, CrossCurrencySwap, CapFloor,
- * Swaption). Asset-class-specific leg details live in swap_leg records linked
- * by instrument_id.
+ * Swaption, ForwardRateAgreement, BalanceGuaranteedSwap, CallableSwap,
+ * KnockOutSwap, RiskParticipationAgreement, InflationSwap).
+ * Asset-class-specific leg details live in swap_leg records linked by
+ * instrument_id.
  */
 struct instrument final {
     /**
@@ -107,6 +110,51 @@ struct instrument final {
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
+
+    // -------------------------------------------------------------------------
+    // Phase 7 extensions: FRA, BalanceGuaranteedSwap, CallableSwap,
+    // KnockOutSwap, RiskParticipationAgreement, InflationSwap
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Fixing date for ForwardRateAgreement (ISO 8601). Empty otherwise.
+     */
+    std::string fra_fixing_date;
+
+    /**
+     * @brief Settlement date for ForwardRateAgreement (ISO 8601).
+     * Empty otherwise.
+     */
+    std::string fra_settlement_date;
+
+    /**
+     * @brief Lockout days for BalanceGuaranteedSwap / KnockOutSwap.
+     * Null when not set.
+     */
+    std::optional<int> lockout_days;
+
+    /**
+     * @brief JSON array of call dates for CallableSwap.
+     * Empty otherwise.
+     */
+    std::string callable_dates_json;
+
+    /**
+     * @brief Reference counterparty code for RiskParticipationAgreement.
+     * Empty otherwise.
+     */
+    std::string rpa_counterparty;
+
+    /**
+     * @brief Inflation index code for InflationSwap (e.g. HICP, RPI).
+     * Empty otherwise.
+     */
+    std::string inflation_index_code;
+
+    /**
+     * @brief Base CPI level for InflationSwap. Null when not set.
+     */
+    std::optional<double> base_cpi;
 };
 
 }

@@ -53,6 +53,12 @@ credit_instrument_mapper::map(const credit_instrument_entity& v) {
     r.seniority = v.seniority.value_or("");
     r.restructuring = v.restructuring.value_or("");
     r.description = v.description.value_or("");
+    r.option_type = v.option_type.value_or("");
+    r.option_expiry_date = v.option_expiry_date.value_or("");
+    r.option_strike = v.option_strike;
+    r.linked_asset_code = v.linked_asset_code.value_or("");
+    r.tranche_attachment = v.tranche_attachment;
+    r.tranche_detachment = v.tranche_detachment;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -94,6 +100,15 @@ credit_instrument_mapper::map(const domain::credit_instrument& v) {
         ? std::nullopt : std::optional(v.restructuring);
     r.description = v.description.empty()
         ? std::nullopt : std::optional(v.description);
+    r.option_type = v.option_type.empty()
+        ? std::nullopt : std::optional(v.option_type);
+    r.option_expiry_date = v.option_expiry_date.empty()
+        ? std::nullopt : std::optional(v.option_expiry_date);
+    r.option_strike = v.option_strike;
+    r.linked_asset_code = v.linked_asset_code.empty()
+        ? std::nullopt : std::optional(v.linked_asset_code);
+    r.tranche_attachment = v.tranche_attachment;
+    r.tranche_detachment = v.tranche_detachment;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

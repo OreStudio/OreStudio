@@ -33,6 +33,8 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 /**
  * @brief MDI window for displaying and managing user accounts.
  *
@@ -55,6 +57,7 @@ private:
 public:
     explicit AccountMdiWindow(ClientManager* clientManager,
                               const QString& username,
+                              BadgeCache* badgeCache,
                               QWidget* parent = nullptr);
     ~AccountMdiWindow() override;
 
@@ -119,6 +122,7 @@ private:
     QSortFilterProxyModel* proxyModel_;
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 };
 
 }

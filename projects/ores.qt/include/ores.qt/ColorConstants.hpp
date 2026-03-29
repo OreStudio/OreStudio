@@ -109,9 +109,6 @@ struct badge_colors {
     static inline const QColor treatment_enriched{168, 85, 247}; // Purple
 };
 
-// Backward compatibility alias
-using dimension_badge_colors = badge_colors;
-
 }
 
 #endif

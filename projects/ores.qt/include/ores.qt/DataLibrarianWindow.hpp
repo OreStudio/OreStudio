@@ -48,6 +48,8 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 /**
  * @brief The Data Librarian window for browsing and managing datasets.
  *
@@ -76,6 +78,7 @@ private:
 public:
     explicit DataLibrarianWindow(ClientManager* clientManager,
                                   const QString& username,
+                                  BadgeCache* badgeCache,
                                   QWidget* parent = nullptr);
     ~DataLibrarianWindow() override = default;
 
@@ -162,6 +165,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     // Main layout
     QSplitter* mainSplitter_;

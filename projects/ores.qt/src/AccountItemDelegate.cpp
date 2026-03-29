@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/AccountItemDelegate.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientAccountModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
 #include "ores.qt/FontUtils.hpp"
@@ -30,28 +31,9 @@ namespace ores::qt {
 
 using Column = ClientAccountModel::Column;
 
-namespace {
-
-// Login status badge colors
-const QColor status_never_bg(107, 114, 128);    // Gray for never logged in
-const QColor status_never_text(255, 255, 255);
-const QColor status_old_bg(234, 179, 8);        // Amber/Yellow for long ago
-const QColor status_old_text(255, 255, 255);
-const QColor status_recent_bg(59, 130, 246);    // Blue for recent
-const QColor status_recent_text(255, 255, 255);
-const QColor status_online_bg(34, 197, 94);     // Green for online
-const QColor status_online_text(255, 255, 255);
-
-// Locked status badge colors
-const QColor locked_badge_bg(239, 68, 68);      // Red background for locked
-const QColor locked_badge_text(255, 255, 255);
-const QColor unlocked_badge_bg(107, 114, 128);  // Gray background for not locked
-const QColor unlocked_badge_text(255, 255, 255);
-
-}
-
-AccountItemDelegate::AccountItemDelegate(QObject* parent)
-    : QStyledItemDelegate(parent) {
+AccountItemDelegate::AccountItemDelegate(BadgeCache* badgeCache, QObject* parent)
+    : QStyledItemDelegate(parent),
+      badgeCache_(badgeCache) {
     monospaceFont_ = FontUtils::monospace();
 }
 
@@ -67,37 +49,34 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QStyle* style = QApplication::style();
         style->drawPrimitive(QStyle::PE_PanelItemViewItem, &opt, painter);
 
+        static const QColor default_gray(107, 114, 128);
+        static const QColor white(255, 255, 255);
+
         QString text = index.data(Qt::DisplayRole).toString();
-        QColor bgColor, textColor;
+        QColor bgColor = default_gray;
+        QColor textColor = white;
         QString badgeText;
 
         if (index.column() == Column::Status) {
-            if (text == "Online") {
-                bgColor = status_online_bg;
-                textColor = status_online_text;
-                badgeText = tr("Online");
-            } else if (text == "Recent") {
-                bgColor = status_recent_bg;
-                textColor = status_recent_text;
-                badgeText = tr("Recent");
-            } else if (text == "Old") {
-                bgColor = status_old_bg;
-                textColor = status_old_text;
-                badgeText = tr("Old");
-            } else {
-                bgColor = status_never_bg;
-                textColor = status_never_text;
-                badgeText = tr("Never");
+            if (text == "Online") badgeText = tr("Online");
+            else if (text == "Recent") badgeText = tr("Recent");
+            else if (text == "Old") badgeText = tr("Old");
+            else badgeText = tr("Never");
+            if (badgeCache_) {
+                auto* def = badgeCache_->resolve("login_status", text.toStdString());
+                if (def) {
+                    bgColor = QColor(QString::fromStdString(def->background_colour));
+                    textColor = QColor(QString::fromStdString(def->text_colour));
+                }
             }
         } else if (index.column() == Column::Locked) {
-            if (text == "Locked") {
-                bgColor = locked_badge_bg;
-                textColor = locked_badge_text;
-                badgeText = tr("Yes");
-            } else {
-                bgColor = unlocked_badge_bg;
-                textColor = unlocked_badge_text;
-                badgeText = tr("No");
+            badgeText = (text == "Locked") ? tr("Yes") : tr("No");
+            if (badgeCache_) {
+                auto* def = badgeCache_->resolve("account_locked", text.toStdString());
+                if (def) {
+                    bgColor = QColor(QString::fromStdString(def->background_colour));
+                    textColor = QColor(QString::fromStdString(def->text_colour));
+                }
             }
         }
 

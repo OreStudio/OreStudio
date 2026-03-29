@@ -944,7 +944,7 @@ MainWindow::MainWindow(QWidget* parent) :
 
         // Create new Data Librarian window
         auto* librarianWindow = new DataLibrarianWindow(
-            clientManager_, QString::fromStdString(username_), this);
+            clientManager_, QString::fromStdString(username_), badgeCache_, this);
 
         auto* subWindow = new DetachableMdiSubWindow(this);
         subWindow->setWidget(librarianWindow);
@@ -1379,7 +1379,7 @@ void MainWindow::createControllers() {
     // Create account controller (admin only functionality)
     accountController_ = std::make_unique<AccountController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),
-        changeReasonCache_, this);
+        changeReasonCache_, badgeCache_, this);
 
     // Connect account controller signals to status bar and window lifecycle
     connect(accountController_.get(), &AccountController::statusMessage,

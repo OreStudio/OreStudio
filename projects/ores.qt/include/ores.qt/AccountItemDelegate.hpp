@@ -25,6 +25,8 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 /**
  * @brief Custom delegate for rendering account table cells.
  *
@@ -35,7 +37,8 @@ class AccountItemDelegate : public QStyledItemDelegate {
     Q_OBJECT
 
 public:
-    explicit AccountItemDelegate(QObject* parent = nullptr);
+    explicit AccountItemDelegate(BadgeCache* badgeCache,
+                                 QObject* parent = nullptr);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
@@ -44,6 +47,7 @@ public:
                    const QModelIndex& index) const override;
 
 private:
+    BadgeCache* badgeCache_;
     QFont monospaceFont_;
 };
 

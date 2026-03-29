@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/DataLibrarianWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
 
 #include <map>
 #include <QVBoxLayout>
@@ -74,10 +75,12 @@ Icon iconForSubjectArea(const QString& subjectAreaName) {
 }
 
 DataLibrarianWindow::DataLibrarianWindow(
-    ClientManager* clientManager, const QString& username, QWidget* parent)
+    ClientManager* clientManager, const QString& username,
+    BadgeCache* badgeCache, QWidget* parent)
     : QWidget(parent),
       clientManager_(clientManager),
       username_(username),
+      badgeCache_(badgeCache),
       mainSplitter_(new QSplitter(Qt::Horizontal, this)),
       navigationTree_(new QTreeView(this)),
       navigationModel_(new QStandardItemModel(this)),
@@ -315,7 +318,7 @@ void DataLibrarianWindow::setupCentralWorkspace() {
     datasetProxyModel_->setSortCaseSensitivity(Qt::CaseInsensitive);
 
     datasetTable_->setModel(datasetProxyModel_);
-    datasetTable_->setItemDelegate(new DatasetItemDelegate(datasetTable_));
+    datasetTable_->setItemDelegate(new DatasetItemDelegate(badgeCache_, datasetTable_));
     datasetTable_->setSortingEnabled(true);
     datasetTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
     datasetTable_->setSelectionMode(QAbstractItemView::ExtendedSelection);

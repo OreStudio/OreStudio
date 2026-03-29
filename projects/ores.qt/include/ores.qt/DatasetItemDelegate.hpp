@@ -25,11 +25,14 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 class DatasetItemDelegate final : public QStyledItemDelegate {
     Q_OBJECT
 
 public:
-    explicit DatasetItemDelegate(QObject* parent = nullptr);
+    explicit DatasetItemDelegate(BadgeCache* badgeCache,
+                                 QObject* parent = nullptr);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
@@ -38,6 +41,7 @@ public:
                    const QModelIndex& index) const override;
 
 private:
+    BadgeCache* badgeCache_;
 };
 
 }

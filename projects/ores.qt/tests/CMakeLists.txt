@@ -19,6 +19,7 @@ set(name "ores.qt")
 set(tests_binary_name ${name}.tests)
 set(tests_target_name ${name}.tests)
 
+# Required for Q_OBJECT signal/slot generation in test sources.
 set(CMAKE_AUTOMOC ON)
 
 set(files "")
@@ -26,35 +27,17 @@ file(GLOB_RECURSE files RELATIVE
     "${CMAKE_CURRENT_SOURCE_DIR}/"
     "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-# Compile BadgeCache directly from the main source tree — ores.qt is an
-# executable so there is no library target to link against.
-# The header must also be listed so AUTOMOC finds Q_OBJECT and generates
-# moc_BadgeCache.cpp (without it the signal implementations are undefined).
-list(APPEND files "${CMAKE_SOURCE_DIR}/projects/ores.qt/src/BadgeCache.cpp")
-list(APPEND files "${CMAKE_SOURCE_DIR}/projects/ores.qt/include/ores.qt/BadgeCache.hpp")
-
 add_executable(${tests_target_name} ${files})
 set_target_properties(${tests_target_name}
     PROPERTIES OUTPUT_NAME ${tests_binary_name})
 
-target_include_directories(${tests_target_name} PRIVATE
-    ${CMAKE_SOURCE_DIR}/projects/ores.qt/include)
-
 target_link_libraries(${tests_target_name}
     PRIVATE
-        ores.dq.api.lib
-        ores.dq.lib
-        ores.nats.lib
-        ores.eventing.lib
-        ores.iam.api.lib
-        ores.logging.lib
-        ores.utility.lib
+        ores.qt.lib
         ores.testing.lib
         ores.openssl_cleanup
         Catch2::Catch2
         faker-cxx::faker-cxx
-        Qt6::Core
-        Qt6::Concurrent
         ${CMAKE_THREAD_LIBS_INIT})
 
 add_custom_target(test_${tests_target_name}

@@ -16,56 +16,90 @@
 # Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(name "ores.qt")
-set(exe_binary_name ${name})
+set(lib_binary_name ${name})
+set(lib_target_name ${name}.lib)
 set(ORES_QT_DIR ${CMAKE_SOURCE_DIR}/projects/ores.qt)
 
+# Qt code generation (MOC for Q_OBJECT, UIC for .ui forms, RCC for resources)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-file(GLOB_RECURSE HEADERS "${ORES_QT_DIR}/*.hpp")
-file(GLOB SOURCES "*.cpp")
+set(files "")
+file(GLOB_RECURSE files RELATIVE
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+
+# Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
+file(GLOB_RECURSE HEADERS "${ORES_QT_DIR}/include/*.hpp")
+# UI forms for AUTOUIC.
 file(GLOB FORMS "${ORES_QT_DIR}/ui/*.ui")
-file(GLOB RESOURCES "${ORES_QT_DIR}/resources/*.qrc")
 
-qt_add_executable(${exe_binary_name} ${SOURCES} ${HEADERS} ${FORMS} ${RESOURCES})
+set(lib_files ${files})
+list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
-target_link_libraries(${exe_binary_name} PRIVATE
-    ores.ore.lib
-    ores.http.api.lib
-    ores.refdata.core.lib
-    ores.trading.api.lib
-    ores.compute.api.lib
-    ores.scheduler.api.lib
-    ores.reporting.api.lib
-    ores.nats.lib
-    ores.shell.lib
-    ores.dq.api.lib
-    ores.dq.lib
-    ores.synthetic.api.lib
-    ores.assets.api.lib
-    ores.iam.api.lib
-    ores.connections.lib
-    ores.eventing.lib
-    ores.variability.api.lib
-    ores.telemetry.lib
-    ores.security.lib
-    ores.utility.lib
-    ores.platform.lib
-    Qt6::Core
-    Qt6::Gui
-    Qt6::Widgets
-    Qt6::Concurrent
-    Qt6::Network
-    Qt6::Svg
-    Qt6::Charts)
+add_library(${lib_target_name} ${lib_files} ${HEADERS} ${FORMS})
+set_target_properties(${lib_target_name} PROPERTIES
+    OUTPUT_NAME ${lib_binary_name}
+    AUTOUIC_SEARCH_PATHS ${ORES_QT_DIR}/ui)
+set_target_properties(${lib_target_name}
+    PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+
+target_include_directories(${lib_target_name} PUBLIC
+    ${ORES_QT_DIR}/include)
+
+target_link_libraries(${lib_target_name}
+    PUBLIC
+        ores.ore.lib
+        ores.http.api.lib
+        ores.refdata.core.lib
+        ores.trading.api.lib
+        ores.compute.api.lib
+        ores.scheduler.api.lib
+        ores.reporting.api.lib
+        ores.nats.lib
+        ores.shell.lib
+        ores.dq.api.lib
+        ores.dq.lib
+        ores.synthetic.api.lib
+        ores.assets.api.lib
+        ores.iam.api.lib
+        ores.connections.lib
+        ores.eventing.lib
+        ores.variability.api.lib
+        ores.telemetry.lib
+        ores.security.lib
+        ores.utility.lib
+        ores.platform.lib
+        Qt6::Core
+        Qt6::Gui
+        Qt6::Widgets
+        Qt6::Concurrent
+        Qt6::Network
+        Qt6::Svg
+        Qt6::Charts)
 # Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)
 
-set_target_properties(${exe_binary_name} PROPERTIES
-    AUTORCC_RESOURCE_DIRS "${ORES_QT_DIR}/resources;${ORES_QT_DIR}/resources/icons"
-    AUTOUIC_SEARCH_PATHS ${ORES_QT_DIR}/ui)
+install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
 
-target_include_directories(${name} PRIVATE ${ORES_QT_DIR}/include)
+set(exe_binary_name ${name})
+set(exe_target_name ${name}.exe)
+
+set(exe_files ${files})
+list(FILTER exe_files INCLUDE REGEX "main.cpp")
+# Resources (.qrc) are embedded in the executable only.
+file(GLOB RESOURCES "${ORES_QT_DIR}/resources/*.qrc")
+
+qt_add_executable(${exe_target_name} ${exe_files} ${RESOURCES})
+set_target_properties(${exe_target_name} PROPERTIES
+    OUTPUT_NAME ${exe_binary_name}
+    AUTORCC_RESOURCE_DIRS "${ORES_QT_DIR}/resources;${ORES_QT_DIR}/resources/icons")
+
+target_link_libraries(${exe_target_name}
+    PRIVATE
+        ${lib_target_name}
+        ores.openssl_cleanup
+        ${CMAKE_THREAD_LIBS_INIT})
 
 # Copy main assets from assets/images directory
 file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -75,4 +109,4 @@ foreach(in_file IN LISTS ORES_MAIN_ASSETS)
     file(COPY_FILE ${in_file} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${out_file})
 endforeach()
 
-install(TARGETS ores.qt RUNTIME DESTINATION bin)
+install(TARGETS ${exe_target_name} RUNTIME DESTINATION bin)

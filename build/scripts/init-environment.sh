@@ -266,7 +266,10 @@ ORES_TEST_DB_DDL_USER="ores_${LABEL_LOWER}_test_ddl_user"
 ORES_TEST_DB_DML_USER="ores_${LABEL_LOWER}_test_dml_user"
 
 # ---------------------------------------------------------------------------
-# Resolve all passwords (reuse existing where available)
+# Resolve ALL values before writing — must happen while the old .env is still
+# in place so get_existing_val can read it.  Inline get_or_gen calls inside
+# the write block would read from the already-truncated new file and generate
+# fresh secrets on every run.
 # ---------------------------------------------------------------------------
 echo "Resolving passwords..."
 ORES_DB_DDL_PASSWORD="$(get_or_gen ORES_DB_DDL_PASSWORD)"
@@ -277,6 +280,23 @@ ORES_DB_SHELL_PASSWORD="$(get_or_gen ORES_DB_SHELL_PASSWORD)"
 ORES_DB_READONLY_PASSWORD="$(get_or_gen ORES_DB_READONLY_PASSWORD)"
 ORES_TEST_DB_DDL_PASSWORD="$(get_or_gen ORES_TEST_DB_DDL_PASSWORD)"
 ORES_TEST_DB_PASSWORD="$(get_or_gen ORES_TEST_DB_PASSWORD)"
+ORES_HTTP_SERVER_JWT_SECRET="$(get_or_gen ORES_HTTP_SERVER_JWT_SECRET)"
+
+# Service passwords — indexed arrays are bash 3.2 compatible
+SERVICE_PW_VALS=()
+for component in "${SERVICE_COMPONENTS[@]}"; do
+    upper="$(echo "${component}" | tr '[:lower:]-' '[:upper:]_')"
+    pw_key="ORES_${upper}_SERVICE_DB_PASSWORD"
+    SERVICE_PW_VALS+=("$(get_or_gen "${pw_key}")")
+done
+
+# Grid node UUIDs
+GRID_NODE_IDS=()
+for n in 1 2 3 4 5; do
+    key="ORES_GRID_NODE_${n}_HOST_ID"
+    GRID_NODE_IDS+=("$(get_or_gen_uuid "${key}")")
+done
+echo "All credentials resolved."
 
 # Encode PEM as a single line with literal \n separators
 JWT_KEY_ONELINE="$(awk '{printf "%s\\n", $0}' "${IAM_KEY}")"
@@ -368,13 +388,13 @@ EOF
     echo "# ---------------------------------------------------------------------------"
     echo "# NATS service DB credentials (read by C++ make_mapper)"
     echo "# ---------------------------------------------------------------------------"
-    for component in "${SERVICE_COMPONENTS[@]}"; do
+    for i in "${!SERVICE_COMPONENTS[@]}"; do
+        component="${SERVICE_COMPONENTS[$i]}"
         upper="$(echo "${component}" | tr '[:lower:]-' '[:upper:]_')"
         db_user="ores_${LABEL_LOWER}_${component}_service"
-        pw_key="ORES_${upper}_SERVICE_DB_PASSWORD"
         echo ""
         echo "ORES_${upper}_SERVICE_DB_USER=${db_user}"
-        echo "${pw_key}=$(get_or_gen "${pw_key}")"
+        echo "ORES_${upper}_SERVICE_DB_PASSWORD=${SERVICE_PW_VALS[$i]}"
         echo "ORES_${upper}_SERVICE_DB_DATABASE=${DB_NAME}"
     done
     echo ""
@@ -398,7 +418,7 @@ EOF
     echo "ORES_HTTP_SERVER_DB_USER=${ORES_DB_HTTP_USER}"
     echo "ORES_HTTP_SERVER_DB_PASSWORD=${ORES_DB_HTTP_PASSWORD}"
     echo "ORES_HTTP_SERVER_DB_DATABASE=${DB_NAME}"
-    echo "ORES_HTTP_SERVER_JWT_SECRET=$(get_or_gen ORES_HTTP_SERVER_JWT_SECRET)"
+    echo "ORES_HTTP_SERVER_JWT_SECRET=${ORES_HTTP_SERVER_JWT_SECRET}"
     echo ""
     echo "# ---------------------------------------------------------------------------"
     echo "# WT service DB credentials (read by C++ make_mapper(\"WT\"))"
@@ -418,9 +438,9 @@ EOF
     echo "# Each ID must match a host record in the compute.hosts table."
     echo "# Re-run recreate_database.sh after regenerating to keep IDs in sync."
     echo "# ---------------------------------------------------------------------------"
-    for n in 1 2 3 4 5; do
-        key="ORES_GRID_NODE_${n}_HOST_ID"
-        echo "${key}=$(get_or_gen_uuid "${key}")"
+    for i in "${!GRID_NODE_IDS[@]}"; do
+        n=$((i + 1))
+        echo "ORES_GRID_NODE_${n}_HOST_ID=${GRID_NODE_IDS[$i]}"
     done
 } >> "${ENV_FILE}"
 

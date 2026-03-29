@@ -82,7 +82,7 @@ void CodeDomainMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &CodeDomainMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -176,9 +176,8 @@ void CodeDomainMdiWindow::setupConnections() {
     });
 }
 
-void CodeDomainMdiWindow::reload() {
+void CodeDomainMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading code domains";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading code domains..."));
     model_->refresh();
 }

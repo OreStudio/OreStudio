@@ -82,7 +82,7 @@ void BadgeDefinitionMdiWindow::setupToolbar() {
             Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
     connect(reloadAction_, &QAction::triggered, this,
-            &BadgeDefinitionMdiWindow::reload);
+            &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -176,9 +176,8 @@ void BadgeDefinitionMdiWindow::setupConnections() {
     });
 }
 
-void BadgeDefinitionMdiWindow::reload() {
+void BadgeDefinitionMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading badge definitions";
-    clearStaleIndicator();
     emit statusChanged(tr("Loading badge definitions..."));
     model_->refresh();
 }

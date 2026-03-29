@@ -58,9 +58,6 @@ public:
         QWidget* parent = nullptr);
     ~BadgeDefinitionMdiWindow() override = default;
 
-public slots:
-    void reload() override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
@@ -82,6 +79,8 @@ private slots:
     void onDoubleClicked(const QModelIndex& index);
 
 protected:
+    void doReload() override;
+
     QString normalRefreshTooltip() const override {
         return tr("Refresh badge definitions");
     }

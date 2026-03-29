@@ -75,7 +75,7 @@ void BadgeSeverityController::showListWindow() {
     listMdiSubWindow_->setWidget(listWindow_);
     listMdiSubWindow_->setWindowTitle("Badge Severities");
     listMdiSubWindow_->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Award, IconUtils::DefaultIconColor));
+        Icon::Star, IconUtils::DefaultIconColor));
     listMdiSubWindow_->setAttribute(Qt::WA_DeleteOnClose);
     listMdiSubWindow_->resize(listWindow_->sizeHint());
 
@@ -160,7 +160,7 @@ void BadgeSeverityController::showAddWindow() {
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle("New Badge Severity");
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Award, IconUtils::DefaultIconColor));
+        Icon::Star, IconUtils::DefaultIconColor));
 
     register_detachable_window(detailWindow);
 
@@ -209,7 +209,7 @@ void BadgeSeverityController::showDetailWindow(
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(QString("Badge Severity: %1").arg(identifier));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
-        Icon::Award, IconUtils::DefaultIconColor));
+        Icon::Star, IconUtils::DefaultIconColor));
 
     // Track window
     track_window(key, detailWindow);

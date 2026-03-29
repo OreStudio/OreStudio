@@ -401,6 +401,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     // Composite instruments
     subs.push_back(nats.queue_subscribe(
+        std::string(get_composite_instrument_legs_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            composite_instrument_handler h(nats, ctx, verifier);
+            h.get_legs(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
         std::string(get_composite_instruments_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             composite_instrument_handler h(nats, ctx, verifier);

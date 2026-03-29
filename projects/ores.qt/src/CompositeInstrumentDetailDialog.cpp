@@ -84,7 +84,7 @@ void CompositeInstrumentDetailDialog::setupConnections() {
             &CompositeInstrumentDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this,
             &CompositeInstrumentDetailDialog::onFieldChanged);
-    connect(ui_->legsJsonEdit, &QPlainTextEdit::textChanged, this,
+    connect(ui_->legsWidget, &CompositeLegsWidget::legsChanged, this,
             &CompositeInstrumentDetailDialog::onFieldChanged);
 }
 
@@ -102,6 +102,65 @@ void CompositeInstrumentDetailDialog::setCompositeInstrument(
     const trading::domain::composite_instrument& v) {
     instrument_ = v;
     updateUiFromCompositeInstrument();
+    if (!instrument_.id.is_nil())
+        loadLegs();
+}
+
+void CompositeInstrumentDetailDialog::setLegs(
+    const std::vector<trading::domain::composite_leg>& legs) {
+    // Suppress hasChanges_ side-effect while restoring server data.
+    const bool saved = hasChanges_;
+    ui_->legsWidget->setLegs(legs);
+    hasChanges_ = saved;
+    updateSaveButtonState();
+}
+
+void CompositeInstrumentDetailDialog::loadLegs() {
+    if (!clientManager_ || instrument_.id.is_nil()) return;
+
+    QPointer<CompositeInstrumentDetailDialog> self = this;
+    const auto instrument_id = boost::uuids::to_string(instrument_.id);
+
+    struct LegsResult {
+        bool success;
+        std::string message;
+        std::vector<trading::domain::composite_leg> legs;
+    };
+
+    auto task = [self, instrument_id]() -> LegsResult {
+        if (!self || !self->clientManager_)
+            return {false, "Dialog closed", {}};
+
+        trading::messaging::get_composite_instrument_legs_request request;
+        request.instrument_id = instrument_id;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(
+                std::move(request));
+
+        if (!response_result)
+            return {false, "Failed to communicate with server", {}};
+
+        return {response_result->success, response_result->message,
+                std::move(response_result->legs)};
+    };
+
+    auto* watcher = new QFutureWatcher<LegsResult>(self);
+    connect(watcher, &QFutureWatcher<LegsResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (result.success) {
+            self->setLegs(result.legs);
+        } else {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to load composite legs: " << result.message;
+        }
+    });
+
+    QFuture<LegsResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
 
 void CompositeInstrumentDetailDialog::setCreateMode(bool createMode) {
@@ -116,7 +175,7 @@ void CompositeInstrumentDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->tradeTypeCodeCombo->setEnabled(!readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
-    ui_->legsJsonEdit->setReadOnly(readOnly);
+    ui_->legsWidget->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
@@ -174,9 +233,11 @@ void CompositeInstrumentDetailDialog::onSaveClicked() {
     }
 
     updateCompositeInstrumentFromUi();
+    const auto legs = ui_->legsWidget->legs();
 
     BOOST_LOG_SEV(lg(), info) << "Saving composite instrument: "
-                              << boost::uuids::to_string(instrument_.id);
+                              << boost::uuids::to_string(instrument_.id)
+                              << " with " << legs.size() << " legs";
 
     QPointer<CompositeInstrumentDetailDialog> self = this;
 
@@ -185,21 +246,20 @@ void CompositeInstrumentDetailDialog::onSaveClicked() {
         std::string message;
     };
 
-    auto task = [self, instrument = instrument_]() -> SaveResult {
-        if (!self || !self->clientManager_) {
+    auto task = [self, instrument = instrument_,
+                 legs = legs]() -> SaveResult {
+        if (!self || !self->clientManager_)
             return {false, "Dialog closed"};
-        }
 
         trading::messaging::save_composite_instrument_request request;
         request.data = instrument;
-        request.legs = {};
+        request.legs = legs;
         auto response_result =
             self->clientManager_->process_authenticated_request(
                 std::move(request));
 
-        if (!response_result) {
+        if (!response_result)
             return {false, "Failed to communicate with server"};
-        }
 
         return {response_result->success, response_result->message};
     };
@@ -255,9 +315,8 @@ void CompositeInstrumentDetailDialog::onDeleteClicked() {
     auto task = [self,
                  id_str = boost::uuids::to_string(instrument_.id)]()
                 -> DeleteResult {
-        if (!self || !self->clientManager_) {
+        if (!self || !self->clientManager_)
             return {false, "Dialog closed"};
-        }
 
         trading::messaging::delete_composite_instrument_request request;
         request.ids = {id_str};
@@ -265,9 +324,8 @@ void CompositeInstrumentDetailDialog::onDeleteClicked() {
             self->clientManager_->process_authenticated_request(
                 std::move(request));
 
-        if (!response_result) {
+        if (!response_result)
             return {false, "Failed to communicate with server"};
-        }
 
         return {response_result->success, response_result->message};
     };

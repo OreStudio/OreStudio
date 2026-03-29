@@ -373,6 +373,19 @@ struct get_commodity_instrument_history_response {
 
 // ---- Composite instrument protocol ----
 
+struct get_composite_instrument_legs_request {
+    using response_type = struct get_composite_instrument_legs_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.composite_instruments.legs.list";
+    std::string instrument_id;
+};
+
+struct get_composite_instrument_legs_response {
+    std::vector<ores::trading::domain::composite_leg> legs;
+    bool success = true;
+    std::string message;
+};
+
 struct get_composite_instruments_request {
     using response_type = struct get_composite_instruments_response;
     static constexpr std::string_view nats_subject =

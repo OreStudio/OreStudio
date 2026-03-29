@@ -73,31 +73,7 @@
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="legsGroup">
-             <property name="title">
-              <string>Constituent Legs (JSON)</string>
-             </property>
-             <layout class="QVBoxLayout" name="legsGroupLayout">
-              <item>
-               <widget class="QLabel" name="labelLegsJson">
-                <property name="text"><string>Legs JSON:</string></property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPlainTextEdit" name="legsJsonEdit">
-                <property name="minimumSize">
-                 <size><width>0</width><height>100</height></size>
-                </property>
-                <property name="maximumSize">
-                 <size><width>16777215</width><height>200</height></size>
-                </property>
-                <property name="placeholderText">
-                 <string>JSON array of constituent trade IDs, e.g. [{"sequence":1,"trade_id":"..."}]</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
+            <widget class="ores::qt::CompositeLegsWidget" name="legsWidget" native="true"/>
            </item>
            <item>
             <spacer name="verticalSpacer">
@@ -158,6 +134,11 @@
    <class>ores::qt::ProvenanceWidget</class>
    <extends>QWidget</extends>
    <header>ores.qt/ProvenanceWidget.hpp</header>
+  </customwidget>
+  <customwidget>
+   <class>ores::qt::CompositeLegsWidget</class>
+   <extends>QWidget</extends>
+   <header>ores.qt/CompositeLegsWidget.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>

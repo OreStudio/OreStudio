@@ -20,6 +20,7 @@
 #include "ores.trading.core/service/composite_instrument_service.hpp"
 
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 #include "ores.service/messaging/handler_helpers.hpp"
 
 using ores::service::messaging::stamp;
@@ -73,14 +74,18 @@ void composite_instrument_service::save_composite_instrument(
         static boost::uuids::random_generator gen;
         t.id = gen();
     }
+    const auto id_str = boost::uuids::to_string(t.id);
     BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.id
                                << " with " << legs.size() << " legs";
     stamp(t, ctx_);
+    // Replace-on-save: remove the existing leg set before writing the new
+    // one so that updates do not accumulate stale legs.
+    leg_repo_.remove_by_instrument(ctx_, id_str);
     repo_.write(ctx_, t);
-    for (auto& leg : legs) {
-        auto l = leg;
-        stamp(l, ctx_);
-        leg_repo_.write(ctx_, l);
+    for (auto leg : legs) {
+        leg.instrument_id = t.id;
+        stamp(leg, ctx_);
+        leg_repo_.write(ctx_, leg);
     }
     BOOST_LOG_SEV(lg(), info) << "Saved composite_instrument: " << t.id;
 }

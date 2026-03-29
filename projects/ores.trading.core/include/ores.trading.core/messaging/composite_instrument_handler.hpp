@@ -160,6 +160,36 @@ public:
         }
     }
 
+    void get_legs(ores::nats::message msg) {
+        BOOST_LOG_SEV(composite_instrument_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        service::composite_instrument_service svc(ctx);
+        if (auto req = decode<get_composite_instrument_legs_request>(msg)) {
+            try {
+                auto legs = svc.get_legs(req->instrument_id);
+                BOOST_LOG_SEV(composite_instrument_handler_lg(), debug)
+                    << "Completed " << msg.subject;
+                reply(nats_, msg, get_composite_instrument_legs_response{
+                    .legs = std::move(legs), .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(composite_instrument_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, get_composite_instrument_legs_response{
+                    .success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(composite_instrument_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+        }
+    }
+
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(composite_instrument_handler_lg(), debug)
             << "Handling " << msg.subject;

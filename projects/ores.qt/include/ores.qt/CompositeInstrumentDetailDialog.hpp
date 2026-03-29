@@ -20,10 +20,12 @@
 #ifndef ORES_QT_COMPOSITE_INSTRUMENT_DETAIL_DIALOG_HPP
 #define ORES_QT_COMPOSITE_INSTRUMENT_DETAIL_DIALOG_HPP
 
+#include <vector>
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
+#include "ores.trading.api/domain/composite_leg.hpp"
 
 namespace Ui {
 class CompositeInstrumentDetailDialog;
@@ -55,8 +57,17 @@ public:
     void setUsername(const std::string& username);
     void setCompositeInstrument(
         const trading::domain::composite_instrument& v);
+    void setLegs(
+        const std::vector<trading::domain::composite_leg>& legs);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
+
+    /**
+     * @brief Asynchronously fetch legs from the server and populate the widget.
+     *
+     * Call after setCompositeInstrument() when opening an existing record.
+     */
+    void loadLegs();
 
 signals:
     void compositeInstrumentSaved(const QString& id);

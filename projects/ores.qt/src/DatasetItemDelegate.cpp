@@ -51,7 +51,7 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         static const QColor default_bg(107, 114, 128);
         static const QColor white(255, 255, 255);
 
-        auto resolve = [this, &default_bg](
+        auto resolve = [this](
             const QString& domain, const QString& value) -> std::pair<QColor, QColor> {
             if (badgeCache_ && !value.isEmpty()) {
                 auto* def = badgeCache_->resolve(domain.toStdString(),

@@ -66,7 +66,6 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Tena
 
 -- Assign permissions to Trading role
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Trading', 'refdata::currencies:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Trading', 'refdata::currencies:history');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Trading', 'variability::flags:read');
 
 -- Assign permissions to Sales role
@@ -74,18 +73,15 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Sale
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Sales', 'variability::flags:read');
 
 -- Assign permissions to Operations role
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'refdata::currencies:create');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'refdata::currencies:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'refdata::currencies:update');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'refdata::currencies:write');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'refdata::currencies:delete');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'refdata::currencies:history');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'variability::flags:read');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Operations', 'iam::accounts:read');
 
 -- Assign permissions to Support role
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Support', 'iam::accounts:read');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Support', 'refdata::currencies:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Support', 'refdata::currencies:history');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Support', 'variability::flags:read');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Support', 'iam::login_info:read');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Support', 'iam::roles:read');

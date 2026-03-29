@@ -47,6 +47,7 @@ inline auto& trade_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class trade_handler {
@@ -131,6 +132,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "trading::trades:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::trade_service svc(ctx);
         if (auto req = decode<save_trade_request>(msg)) {
             try {
@@ -160,6 +165,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "trading::trades:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::trade_service svc(ctx);
         if (auto req = decode<delete_trade_request>(msg)) {
             try {

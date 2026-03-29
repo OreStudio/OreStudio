@@ -45,6 +45,7 @@ inline auto& book_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class book_handler {
@@ -87,6 +88,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::books:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::book_service svc(ctx);
         auto req = decode<save_book_request>(msg);
         if (!req) {
@@ -116,6 +121,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::books:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::book_service svc(ctx);
         auto req = decode<delete_book_request>(msg);
         if (!req) {

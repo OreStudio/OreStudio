@@ -38,6 +38,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 namespace {
@@ -91,6 +92,10 @@ public:
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!has_permission(*ctx_expected, "dq::badges:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             stamp(req->data, *ctx_expected);
@@ -112,6 +117,10 @@ public:
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!has_permission(*ctx_expected, "dq::badges:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             svc.remove_severities(req->codes);
@@ -185,6 +194,10 @@ public:
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!has_permission(*ctx_expected, "dq::badges:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             stamp(req->data, *ctx_expected);
@@ -206,6 +219,10 @@ public:
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!has_permission(*ctx_expected, "dq::badges:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             svc.remove_code_domains(req->codes);
@@ -279,6 +296,10 @@ public:
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!has_permission(*ctx_expected, "dq::badges:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             stamp(req->data, *ctx_expected);
@@ -300,6 +321,10 @@ public:
         }
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) { error_reply(nats_, msg, ctx_expected.error()); return; }
+        if (!has_permission(*ctx_expected, "dq::badges:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::badge_service svc(*ctx_expected);
         try {
             svc.remove_definitions(req->codes);

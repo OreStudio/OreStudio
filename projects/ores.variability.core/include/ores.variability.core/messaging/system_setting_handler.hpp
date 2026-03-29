@@ -45,6 +45,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class system_setting_handler {
@@ -84,6 +85,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "variability::flags:create")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::system_settings_service svc(ctx);
         if (auto req = decode<save_setting_request>(msg)) {
             try {
@@ -115,6 +120,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "variability::flags:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::system_settings_service svc(ctx);
         if (auto req = decode<delete_setting_request>(msg)) {
             try {

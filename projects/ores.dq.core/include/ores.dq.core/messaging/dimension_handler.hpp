@@ -38,6 +38,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 namespace {
@@ -103,6 +104,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::nature_dimensions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dimension_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -129,6 +134,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::nature_dimensions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dimension_service svc(ctx);
         try {
             svc.remove_nature_dimensions(req->codes);
@@ -220,6 +229,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::origin_dimensions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dimension_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -246,6 +259,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::origin_dimensions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dimension_service svc(ctx);
         try {
             svc.remove_origin_dimensions(req->codes);
@@ -337,6 +354,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::treatment_dimensions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dimension_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -364,6 +385,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::treatment_dimensions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dimension_service svc(ctx);
         try {
             svc.remove_treatment_dimensions(req->codes);

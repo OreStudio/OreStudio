@@ -106,7 +106,6 @@ For some reason we are no longer sampling for sessions. Investigate why.
 Seems like we do not have change reasons on entity deletes. We need to update
 all entities.
 
-
 *** Add party level currency and country restrictions                  :code:
 
 At present a party can use all currencies and all countries. In reality we
@@ -145,9 +144,6 @@ Highlights:
 The toolbars of each entity should have icons for the auxiliary types they use.
 Also we may need to make the menu options a bit more obvious (e.g. "Purpose
 Types"?).
-
-
-
 
 *** Analyse caching at dialog level                                    :code:
 

@@ -47,6 +47,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 
 class tenant_status_handler {
 public:
@@ -90,6 +91,10 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::tenants:create")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
             service::tenant_status_service svc(ctx);
             stamp(req->data, ctx);
             svc.save_status(req->data);
@@ -115,8 +120,19 @@ public:
                 << "Failed to decode: " << msg.subject;
             return;
         }
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::tenants:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         try {
-            service::tenant_status_service svc(ctx_);
+            service::tenant_status_service svc(ctx);
             svc.remove_status(req->status);
             BOOST_LOG_SEV(tenant_status_handler_lg(), debug)
                 << "Completed " << msg.subject;

@@ -45,6 +45,7 @@ inline auto& counterparty_identifier_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class counterparty_identifier_handler {
@@ -98,6 +99,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::counterparty_identifiers:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::counterparty_identifier_service svc(ctx);
         auto req = decode<save_counterparty_identifier_request>(msg);
         if (!req) {
@@ -129,6 +134,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::counterparty_identifiers:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::counterparty_identifier_service svc(ctx);
         auto req = decode<delete_counterparty_identifier_request>(msg);
         if (!req) {

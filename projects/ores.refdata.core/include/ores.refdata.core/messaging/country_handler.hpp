@@ -44,6 +44,7 @@ inline auto& country_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class country_handler {
@@ -97,6 +98,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::countries:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::country_service svc(ctx);
         auto req = decode<save_country_request>(msg);
         if (!req) {
@@ -127,6 +132,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::countries:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::country_service svc(ctx);
         auto req = decode<delete_country_request>(msg);
         if (!req) {

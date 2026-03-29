@@ -47,6 +47,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class host_handler {
@@ -90,6 +91,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "compute::hosts:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<save_host_request>(msg)) {
             try {
                 service::host_service svc(ctx);
@@ -118,6 +123,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "compute::hosts:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<delete_host_request>(msg)) {
             try {
                 service::host_service svc(ctx);

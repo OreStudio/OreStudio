@@ -88,6 +88,7 @@ using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class work_handler {
@@ -107,6 +108,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "compute::batches:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<pull_work_request>(msg)) {
             try {
                 service::result_service result_svc(ctx);

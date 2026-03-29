@@ -44,6 +44,7 @@ inline auto& currency_market_tier_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class currency_market_tier_handler {
@@ -95,6 +96,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::currency_market_tiers:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::currency_market_tier_service svc(ctx);
         auto req = decode<save_currency_market_tier_request>(msg);
         if (!req) {
@@ -126,6 +131,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::currency_market_tiers:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::currency_market_tier_service svc(ctx);
         auto req = decode<delete_currency_market_tier_request>(msg);
         if (!req) {

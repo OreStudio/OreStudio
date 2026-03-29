@@ -44,6 +44,7 @@ inline auto& monetary_nature_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class monetary_nature_handler {
@@ -88,6 +89,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::monetary_natures:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::monetary_nature_service svc(ctx);
         auto req = decode<save_monetary_nature_request>(msg);
         if (!req) {
@@ -119,6 +124,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::monetary_natures:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::monetary_nature_service svc(ctx);
         auto req = decode<delete_monetary_nature_request>(msg);
         if (!req) {

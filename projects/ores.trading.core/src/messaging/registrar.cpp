@@ -26,6 +26,8 @@
 #include "ores.trading.core/messaging/credit_instrument_handler.hpp"
 #include "ores.trading.core/messaging/equity_instrument_handler.hpp"
 #include "ores.trading.core/messaging/commodity_instrument_handler.hpp"
+#include "ores.trading.core/messaging/composite_instrument_handler.hpp"
+#include "ores.trading.core/messaging/scripted_instrument_handler.hpp"
 
 namespace ores::trading::messaging {
 
@@ -394,6 +396,64 @@ registrar::register_handlers(ores::nats::service::client& nats,
         std::string(get_commodity_instrument_history_request::nats_subject), queue,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             commodity_instrument_handler h(nats, ctx, verifier);
+            h.history(std::move(msg));
+        }));
+
+    // Composite instruments
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_composite_instruments_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            composite_instrument_handler h(nats, ctx, verifier);
+            h.list(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_composite_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            composite_instrument_handler h(nats, ctx, verifier);
+            h.save(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_composite_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            composite_instrument_handler h(nats, ctx, verifier);
+            h.remove(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_composite_instrument_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            composite_instrument_handler h(nats, ctx, verifier);
+            h.history(std::move(msg));
+        }));
+
+    // Scripted instruments
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_scripted_instruments_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            scripted_instrument_handler h(nats, ctx, verifier);
+            h.list(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(save_scripted_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            scripted_instrument_handler h(nats, ctx, verifier);
+            h.save(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(delete_scripted_instrument_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            scripted_instrument_handler h(nats, ctx, verifier);
+            h.remove(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_scripted_instrument_history_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            scripted_instrument_handler h(nats, ctx, verifier);
             h.history(std::move(msg));
         }));
 

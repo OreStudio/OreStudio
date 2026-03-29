@@ -29,6 +29,9 @@
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
+#include "ores.trading.api/domain/composite_instrument.hpp"
+#include "ores.trading.api/domain/composite_leg.hpp"
+#include "ores.trading.api/domain/scripted_instrument.hpp"
 
 namespace ores::trading::messaging {
 
@@ -366,6 +369,117 @@ struct get_commodity_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::commodity_instrument> history;
+};
+
+// ---- Composite instrument protocol ----
+
+struct get_composite_instruments_request {
+    using response_type = struct get_composite_instruments_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.composite_instruments.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+struct get_composite_instruments_response {
+    std::vector<ores::trading::domain::composite_instrument> instruments;
+    int total_available_count = 0;
+    bool success = true;
+    std::string message;
+};
+
+struct save_composite_instrument_request {
+    using response_type = struct save_composite_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.composite_instruments.save";
+    ores::trading::domain::composite_instrument data;
+    std::vector<ores::trading::domain::composite_leg> legs;
+};
+
+struct save_composite_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_composite_instrument_request {
+    using response_type = struct delete_composite_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.composite_instruments.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_composite_instrument_response {
+    bool success = false;
+    std::string message;
+    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
+};
+
+struct get_composite_instrument_history_request {
+    using response_type = struct get_composite_instrument_history_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.composite_instruments.history";
+    std::string id;
+};
+
+struct get_composite_instrument_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::trading::domain::composite_instrument> history;
+};
+
+// ---- Scripted instrument protocol ----
+
+struct get_scripted_instruments_request {
+    using response_type = struct get_scripted_instruments_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.scripted_instruments.list";
+    int offset = 0;
+    int limit = 100;
+};
+
+struct get_scripted_instruments_response {
+    std::vector<ores::trading::domain::scripted_instrument> instruments;
+    int total_available_count = 0;
+    bool success = true;
+    std::string message;
+};
+
+struct save_scripted_instrument_request {
+    using response_type = struct save_scripted_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.scripted_instruments.save";
+    ores::trading::domain::scripted_instrument data;
+};
+
+struct save_scripted_instrument_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_scripted_instrument_request {
+    using response_type = struct delete_scripted_instrument_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.scripted_instruments.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_scripted_instrument_response {
+    bool success = false;
+    std::string message;
+    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
+};
+
+struct get_scripted_instrument_history_request {
+    using response_type = struct get_scripted_instrument_history_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.scripted_instruments.history";
+    std::string id;
+};
+
+struct get_scripted_instrument_history_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::trading::domain::scripted_instrument> history;
 };
 
 }

@@ -971,3 +971,150 @@ begin
     end if;
 end;
 $$ language plpgsql;
+
+-- =============================================================================
+-- Data Quality: Badge System
+-- =============================================================================
+
+/**
+ * Upsert a badge severity (secondary, info, success, warning, danger, primary).
+ */
+create or replace function ores_dq_badge_severities_upsert_fn(
+    p_tenant_id uuid,
+    p_code text,
+    p_name text,
+    p_description text,
+    p_display_order integer
+) returns void as $$
+begin
+    perform ores_seed_validate_not_empty_fn(p_code, 'Badge severity code');
+    perform ores_seed_validate_not_empty_fn(p_name, 'Badge severity name');
+
+    insert into ores_dq_badge_severities_tbl (
+        tenant_id, code, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        p_tenant_id, p_code, 0, p_name, p_description, p_display_order,
+        current_user, current_user, 'system.new_record', 'System seed data - badge severity',
+        current_timestamp, ores_utility_infinity_timestamp_fn()
+    )
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Created badge severity: %', p_code;
+    else
+        raise notice 'Badge severity already exists: %', p_code;
+    end if;
+end;
+$$ language plpgsql;
+
+/**
+ * Upsert a badge code domain (e.g. party_status, login_status).
+ */
+create or replace function ores_dq_code_domains_upsert_fn(
+    p_tenant_id uuid,
+    p_code text,
+    p_name text,
+    p_description text,
+    p_display_order integer
+) returns void as $$
+begin
+    perform ores_seed_validate_not_empty_fn(p_code, 'Code domain code');
+    perform ores_seed_validate_not_empty_fn(p_name, 'Code domain name');
+
+    insert into ores_dq_code_domains_tbl (
+        tenant_id, code, version, name, description, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        p_tenant_id, p_code, 0, p_name, p_description, p_display_order,
+        current_user, current_user, 'system.new_record', 'System seed data - badge code domain',
+        current_timestamp, ores_utility_infinity_timestamp_fn()
+    )
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Created code domain: %', p_code;
+    else
+        raise notice 'Code domain already exists: %', p_code;
+    end if;
+end;
+$$ language plpgsql;
+
+/**
+ * Upsert a badge definition (visual metadata for a badge).
+ */
+create or replace function ores_dq_badge_definitions_upsert_fn(
+    p_tenant_id uuid,
+    p_code text,
+    p_name text,
+    p_description text,
+    p_background_colour text,
+    p_text_colour text,
+    p_severity_code text,
+    p_css_class text,
+    p_display_order integer
+) returns void as $$
+begin
+    perform ores_seed_validate_not_empty_fn(p_code, 'Badge definition code');
+    perform ores_seed_validate_not_empty_fn(p_name, 'Badge definition name');
+
+    insert into ores_dq_badge_definitions_tbl (
+        tenant_id, code, version, name, description,
+        background_colour, text_colour, severity_code, css_class, display_order,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        p_tenant_id, p_code, 0, p_name, p_description,
+        p_background_colour, p_text_colour, p_severity_code, p_css_class, p_display_order,
+        current_user, current_user, 'system.new_record', 'System seed data - badge definition',
+        current_timestamp, ores_utility_infinity_timestamp_fn()
+    )
+    on conflict (tenant_id, code) where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Created badge definition: %', p_code;
+    else
+        raise notice 'Badge definition already exists: %', p_code;
+    end if;
+end;
+$$ language plpgsql;
+
+/**
+ * Upsert a badge mapping (links a code domain + entity code to a badge).
+ */
+create or replace function ores_dq_badge_mappings_upsert_fn(
+    p_tenant_id uuid,
+    p_code_domain_code text,
+    p_entity_code text,
+    p_badge_code text
+) returns void as $$
+begin
+    perform ores_seed_validate_not_empty_fn(p_code_domain_code, 'Code domain code');
+    perform ores_seed_validate_not_empty_fn(p_entity_code, 'Entity code');
+    perform ores_seed_validate_not_empty_fn(p_badge_code, 'Badge code');
+
+    insert into ores_dq_badge_mappings_tbl (
+        tenant_id, code_domain_code, entity_code, version, badge_code,
+        modified_by, performed_by, change_reason_code, change_commentary,
+        valid_from, valid_to
+    )
+    values (
+        p_tenant_id, p_code_domain_code, p_entity_code, 0, p_badge_code,
+        current_user, current_user, 'system.new_record', 'System seed data - badge mapping',
+        current_timestamp, ores_utility_infinity_timestamp_fn()
+    )
+    on conflict (tenant_id, code_domain_code, entity_code)
+        where valid_to = ores_utility_infinity_timestamp_fn() do nothing;
+
+    if found then
+        raise notice 'Created badge mapping: % / % -> %', p_code_domain_code, p_entity_code, p_badge_code;
+    else
+        raise notice 'Badge mapping already exists: % / %', p_code_domain_code, p_entity_code;
+    end if;
+end;
+$$ language plpgsql;

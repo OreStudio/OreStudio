@@ -46,6 +46,7 @@ inline auto& currency_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class currency_handler {
@@ -99,6 +100,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::currencies:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::currency_service svc(ctx);
         auto req = decode<save_currency_request>(msg);
         if (!req) {
@@ -129,6 +134,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::currencies:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::currency_service svc(ctx);
         auto req = decode<delete_currency_request>(msg);
         if (!req) {

@@ -40,6 +40,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 namespace {
@@ -108,6 +109,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::catalogs:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::data_organization_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -134,6 +139,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::catalogs:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::data_organization_service svc(ctx);
         try {
             for (const auto& code : req->codes)
@@ -225,6 +234,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::data_domains:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::data_organization_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -251,6 +264,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::data_domains:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::data_organization_service svc(ctx);
         try {
             for (const auto& name : req->names)
@@ -345,6 +362,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::methodologies:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dataset_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -371,6 +392,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::methodologies:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::dataset_service svc(ctx);
         try {
             for (const auto& code : req->codes)
@@ -466,6 +491,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::subject_areas:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::data_organization_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -492,6 +521,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::subject_areas:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::data_organization_service svc(ctx);
         try {
             for (const auto& key : req->keys)

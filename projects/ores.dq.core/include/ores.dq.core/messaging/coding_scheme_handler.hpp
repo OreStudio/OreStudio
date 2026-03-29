@@ -38,6 +38,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 namespace {
@@ -105,6 +106,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::coding_scheme_authority_types:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::coding_scheme_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -134,6 +139,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::coding_scheme_authority_types:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::coding_scheme_service svc(ctx);
         try {
             svc.remove_authority_types(req->types);
@@ -230,6 +239,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::coding_schemes:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::coding_scheme_service svc(ctx);
         try {
             stamp(req->data, ctx);
@@ -256,6 +269,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "dq::coding_schemes:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::coding_scheme_service svc(ctx);
         try {
             svc.remove_coding_schemes(req->codes);

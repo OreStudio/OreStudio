@@ -46,6 +46,7 @@ inline auto& app_version_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class app_version_handler {
@@ -89,6 +90,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "compute::apps:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         if (auto req = decode<save_app_version_request>(msg)) {
             try {
                 service::app_version_service svc(ctx);

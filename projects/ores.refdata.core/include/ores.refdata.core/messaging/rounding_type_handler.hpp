@@ -44,6 +44,7 @@ inline auto& rounding_type_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class rounding_type_handler {
@@ -88,6 +89,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::rounding_types:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::rounding_type_service svc(ctx);
         auto req = decode<save_rounding_type_request>(msg);
         if (!req) {
@@ -119,6 +124,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::rounding_types:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::rounding_type_service svc(ctx);
         auto req = decode<delete_rounding_type_request>(msg);
         if (!req) {

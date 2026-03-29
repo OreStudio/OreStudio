@@ -44,6 +44,7 @@ inline auto& commodity_instrument_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class commodity_instrument_handler {
@@ -96,6 +97,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "trading::instruments:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::commodity_instrument_service svc(ctx);
         if (auto req = decode<save_commodity_instrument_request>(msg)) {
             try {
@@ -125,6 +130,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "trading::instruments:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::commodity_instrument_service svc(ctx);
         if (auto req = decode<delete_commodity_instrument_request>(msg)) {
             delete_commodity_instrument_response resp;

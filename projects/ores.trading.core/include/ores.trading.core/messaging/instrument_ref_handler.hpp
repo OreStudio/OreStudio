@@ -53,6 +53,7 @@ inline auto& instrument_ref_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class instrument_ref_handler {
@@ -95,6 +96,10 @@ private:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::instruments:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         Svc svc(req_ctx);
         if (auto req = decode<Req>(msg)) {
             try {
@@ -123,6 +128,10 @@ private:
             return;
         }
         const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::instruments:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         Svc svc(req_ctx);
         if (auto req = decode<Req>(msg)) {
             try {

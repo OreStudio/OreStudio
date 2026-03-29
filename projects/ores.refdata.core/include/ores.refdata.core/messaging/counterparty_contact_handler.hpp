@@ -45,6 +45,7 @@ inline auto& counterparty_contact_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class counterparty_contact_handler {
@@ -100,6 +101,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::counterparty_contacts:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::counterparty_contact_information_service svc(ctx);
         auto req =
             decode<save_counterparty_contact_information_request>(msg);
@@ -134,6 +139,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::counterparty_contacts:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::counterparty_contact_information_service svc(ctx);
         auto req =
             decode<delete_counterparty_contact_information_request>(msg);

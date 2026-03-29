@@ -79,12 +79,115 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'iam::*', 
 -- Reference Data Component Permissions
 -- =============================================================================
 
--- Currency management permissions
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currencies:create', 'Create new currencies');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currencies:read', 'View currency details');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currencies:update', 'Modify currency settings');
+-- Currency permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currencies:read',   'View currency details');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currencies:write',  'Create and modify currencies');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currencies:delete', 'Delete currencies');
-select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currencies:history', 'View currency version history');
+
+-- Currency market tier permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currency_market_tiers:read',   'View currency market tiers');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currency_market_tiers:write',  'Create and modify currency market tiers');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::currency_market_tiers:delete', 'Delete currency market tiers');
+
+-- Country permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::countries:read',   'View countries');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::countries:write',  'Create and modify countries');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::countries:delete', 'Delete countries');
+
+-- Monetary nature permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::monetary_natures:read',   'View monetary natures');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::monetary_natures:write',  'Create and modify monetary natures');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::monetary_natures:delete', 'Delete monetary natures');
+
+-- Purpose type permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::purpose_types:read',   'View purpose types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::purpose_types:write',  'Create and modify purpose types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::purpose_types:delete', 'Delete purpose types');
+
+-- Rounding type permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::rounding_types:read',   'View rounding types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::rounding_types:write',  'Create and modify rounding types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::rounding_types:delete', 'Delete rounding types');
+
+-- Party permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::parties:read',   'View parties');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::parties:write',  'Create and modify parties');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::parties:delete', 'Delete parties');
+
+-- Party type permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_types:read',   'View party types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_types:write',  'Create and modify party types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_types:delete', 'Delete party types');
+
+-- Party status permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_statuses:read',   'View party statuses');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_statuses:write',  'Create and modify party statuses');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_statuses:delete', 'Delete party statuses');
+
+-- Party identifier scheme permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_id_schemes:read',   'View party identifier schemes');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_id_schemes:write',  'Create and modify party identifier schemes');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_id_schemes:delete', 'Delete party identifier schemes');
+
+-- Party identifier permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_identifiers:read',   'View party identifiers');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_identifiers:write',  'Create and modify party identifiers');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_identifiers:delete', 'Delete party identifiers');
+
+-- Party contact permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_contacts:read',   'View party contacts');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_contacts:write',  'Create and modify party contacts');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::party_contacts:delete', 'Delete party contacts');
+
+-- Contact type permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::contact_types:read',   'View contact types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::contact_types:write',  'Create and modify contact types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::contact_types:delete', 'Delete contact types');
+
+-- Counterparty permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparties:read',   'View counterparties');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparties:write',  'Create and modify counterparties');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparties:delete', 'Delete counterparties');
+
+-- Counterparty identifier permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparty_identifiers:read',   'View counterparty identifiers');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparty_identifiers:write',  'Create and modify counterparty identifiers');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparty_identifiers:delete', 'Delete counterparty identifiers');
+
+-- Counterparty contact permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparty_contacts:read',   'View counterparty contacts');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparty_contacts:write',  'Create and modify counterparty contacts');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::counterparty_contacts:delete', 'Delete counterparty contacts');
+
+-- Book permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::books:read',   'View books');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::books:write',  'Create and modify books');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::books:delete', 'Delete books');
+
+-- Book status permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::book_statuses:read',   'View book statuses');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::book_statuses:write',  'Create and modify book statuses');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::book_statuses:delete', 'Delete book statuses');
+
+-- Portfolio permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::portfolios:read',   'View portfolios');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::portfolios:write',  'Create and modify portfolios');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::portfolios:delete', 'Delete portfolios');
+
+-- Business unit permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_units:read',   'View business units');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_units:write',  'Create and modify business units');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_units:delete', 'Delete business units');
+
+-- Business unit type permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_unit_types:read',   'View business unit types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_unit_types:write',  'Create and modify business unit types');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_unit_types:delete', 'Delete business unit types');
+
+-- Business centre permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_centres:read',   'View business centres');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_centres:write',  'Create and modify business centres');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::business_centres:delete', 'Delete business centres');
 
 -- Refdata component wildcard
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'refdata::*', 'Full access to all reference data operations');
@@ -175,6 +278,16 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::datas
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundle_members:read', 'View dataset bundle members');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundle_members:write', 'Create and modify dataset bundle members');
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::dataset_bundle_members:delete', 'Delete dataset bundle members');
+
+-- Badge permissions (badge severities, code domains, definitions)
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::badges:read',   'View badge definitions and severities');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::badges:write',  'Create and modify badge definitions and severities');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::badges:delete', 'Delete badge definitions and severities');
+
+-- Methodology permissions
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:read',   'View methodologies');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:write',  'Create and modify methodologies');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::methodologies:delete', 'Delete methodologies');
 
 -- Data Quality component wildcard
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'dq::*', 'Full access to all data quality operations');

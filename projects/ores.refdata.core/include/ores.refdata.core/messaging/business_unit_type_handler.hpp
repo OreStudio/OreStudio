@@ -46,6 +46,7 @@ inline auto& business_unit_type_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class business_unit_type_handler {
@@ -90,6 +91,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::business_unit_types:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         repository::business_unit_type_repository repo(ctx);
         auto req = decode<save_business_unit_type_request>(msg);
         if (!req) {
@@ -121,6 +126,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::business_unit_types:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         repository::business_unit_type_repository repo(ctx);
         auto req = decode<delete_business_unit_type_request>(msg);
         if (!req) {

@@ -122,6 +122,7 @@ inline std::string acct_lookup_tenant_name(
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 
 class account_handler {
 public:
@@ -190,6 +191,10 @@ public:
                 return;
             }
             const auto& base_ctx = *base_ctx_expected;
+            if (!has_permission(base_ctx, "iam::accounts:create")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
 
             // Parse principal: if username@hostname, route to that tenant's
             // context so accounts can be created in any tenant by a system
@@ -250,6 +255,10 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::accounts:delete")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
             service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.delete_account(sg(req->account_id));
@@ -283,6 +292,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::accounts:lock")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
@@ -319,6 +332,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::accounts:unlock")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id : req->account_ids) {
@@ -381,6 +398,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "iam::accounts:reset_password")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::account_service svc(ctx);
         boost::uuids::string_generator sg;
         for (const auto& id_str : req->account_ids) {
@@ -479,6 +500,10 @@ public:
                 return;
             }
             const auto& ctx = *ctx_expected;
+            if (!has_permission(ctx, "iam::accounts:update")) {
+                error_reply(nats_, msg, ores::service::error_code::forbidden);
+                return;
+            }
             service::account_service svc(ctx);
             boost::uuids::string_generator sg;
             svc.update_account(sg(req->account_id), req->email,

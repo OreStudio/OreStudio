@@ -44,6 +44,7 @@ inline auto& party_type_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
 class party_type_handler {
@@ -88,6 +89,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::party_types:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::party_type_service svc(ctx);
         auto req = decode<save_party_type_request>(msg);
         if (!req) {
@@ -118,6 +123,10 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        if (!has_permission(ctx, "refdata::party_types:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
         service::party_type_service svc(ctx);
         auto req = decode<delete_party_type_request>(msg);
         if (!req) {

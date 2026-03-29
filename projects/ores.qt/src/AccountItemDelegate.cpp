@@ -58,7 +58,10 @@ void AccountItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         QString badgeText;
 
         if (index.column() == Column::Status) {
-            badgeText = text;
+            if (text == "Online") badgeText = tr("Online");
+            else if (text == "Recent") badgeText = tr("Recent");
+            else if (text == "Old") badgeText = tr("Old");
+            else badgeText = tr("Never");
             if (badgeCache_) {
                 auto* def = badgeCache_->resolve("login_status", text.toStdString());
                 if (def) {

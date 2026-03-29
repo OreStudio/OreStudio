@@ -1147,11 +1147,28 @@ MdiWindows, DetailDialogs, HistoryDialogs, ClientModels) follows the same
 per-type pattern as all other entity types in =ores.qt= and is out of scope for
 this story.
 
-*** Move badges to database                                            :code:
+*** STARTED Move badges to database                                    :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-28 Sat 10:00]
+    :END:
 
 At present we did some hackery to use badges on Qt UI. ideally we want the
 database to have some meta-data about badges and then use that to drive the UI
-so we can reuse it for Wt.
+so we can reuse it for Wt. See [[file:../../plans/2026-03-28-badge-system-design.org][design]].
+
+*Phase 1 — Infrastructure*
+
+***** Tasks
+
+- [ ] Create codegen model: =badge_severity_domain_entity.json=
+- [ ] Create codegen model: =code_domain_domain_entity.json=
+- [ ] Create codegen model: =badge_definition_domain_entity.json=
+- [ ] Create codegen model: =badge_mapping_junction.json=
+- [ ] Run codegen and integrate generated SQL artefacts
+- [ ] Run codegen and integrate generated C++ artefacts
+- [ ] Create population seed data from hardcoded colours
+- [ ] Implement =BadgeCache= in =ores.qt=
+- [ ] Wire =BadgeCache= into client startup sequence
 
 * Footer
 

@@ -109,6 +109,7 @@
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
@@ -136,6 +137,7 @@ MainWindow::MainWindow(QWidget* parent) :
     clientManager_(new ClientManager(eventBus_, this)),
     imageCache_(new ImageCache(clientManager_, this)),
     changeReasonCache_(new ChangeReasonCache(clientManager_, this)),
+    badgeCache_(new BadgeCache(clientManager_, this)),
     systemTrayIcon_(nullptr), trayContextMenu_(nullptr),
     instanceColorIndicator_(nullptr), eventViewerWindow_(nullptr),
     telemetryViewerWindow_(nullptr),
@@ -510,6 +512,9 @@ MainWindow::MainWindow(QWidget* parent) :
 
         // Load change reasons for entity dialogs
         changeReasonCache_->loadAll();
+
+        // Load badge definitions and mappings for badge rendering
+        badgeCache_->loadAll();
     });
 
     // When image list is loaded, automatically fetch the actual images

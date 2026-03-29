@@ -18,9 +18,9 @@
  *
  */
 #include "ores.qt/DatasetItemDelegate.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ClientDatasetModel.hpp"
 #include "ores.qt/DelegatePaintUtils.hpp"
-#include "ores.qt/ColorConstants.hpp"
 
 #include <QPainter>
 #include <QApplication>
@@ -28,34 +28,9 @@
 
 namespace ores::qt {
 
-namespace {
-
-using dbc = dimension_badge_colors;
-
-QColor getOriginColor(const QString& origin) {
-    if (origin == "Primary") return dbc::origin_primary;
-    if (origin == "Derived") return dbc::origin_derived;
-    return dbc::default_bg;
-}
-
-QColor getNatureColor(const QString& nature) {
-    if (nature == "Actual") return dbc::nature_actual;
-    if (nature == "Estimated") return dbc::nature_estimated;
-    if (nature == "Simulated") return dbc::nature_simulated;
-    return dbc::default_bg;
-}
-
-QColor getTreatmentColor(const QString& treatment) {
-    if (treatment == "Raw") return dbc::treatment_raw;
-    if (treatment == "Cleaned") return dbc::treatment_cleaned;
-    if (treatment == "Enriched") return dbc::treatment_enriched;
-    return dbc::default_bg;
-}
-
-}
-
-DatasetItemDelegate::DatasetItemDelegate(QObject* parent)
-    : QStyledItemDelegate(parent) {
+DatasetItemDelegate::DatasetItemDelegate(BadgeCache* badgeCache, QObject* parent)
+    : QStyledItemDelegate(parent),
+      badgeCache_(badgeCache) {
 }
 
 void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option,
@@ -73,6 +48,21 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         badgeFont.setPointSize(qRound(badgeFont.pointSize() * 0.8));
         badgeFont.setBold(true);
 
+        static const QColor default_bg(107, 114, 128);
+        static const QColor white(255, 255, 255);
+
+        auto resolve = [this](
+            const QString& domain, const QString& value) -> std::pair<QColor, QColor> {
+            if (badgeCache_ && !value.isEmpty()) {
+                auto* def = badgeCache_->resolve(domain.toStdString(),
+                                                 value.toStdString());
+                if (def)
+                    return {QColor(QString::fromStdString(def->background_colour)),
+                            QColor(QString::fromStdString(def->text_colour))};
+            }
+            return {default_bg, white};
+        };
+
         // Get the tag values
         QString origin = index.data(ClientDatasetModel::OriginRole).toString();
         QString nature = index.data(ClientDatasetModel::NatureRole).toString();
@@ -83,18 +73,21 @@ void DatasetItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
         badgeRect.adjust(4, 0, 0, 0);
 
         if (!origin.isEmpty()) {
+            auto [bg, fg] = resolve("dq_origin", origin);
             DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
-                origin, getOriginColor(origin), dbc::text, badgeFont);
+                origin, bg, fg, badgeFont);
         }
 
         if (!nature.isEmpty()) {
+            auto [bg, fg] = resolve("dq_nature", nature);
             DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
-                nature, getNatureColor(nature), dbc::text, badgeFont);
+                nature, bg, fg, badgeFont);
         }
 
         if (!treatment.isEmpty()) {
+            auto [bg, fg] = resolve("dq_treatment", treatment);
             DelegatePaintUtils::draw_inline_badge(painter, badgeRect,
-                treatment, getTreatmentColor(treatment), dbc::text, badgeFont);
+                treatment, bg, fg, badgeFont);
         }
 
         return;

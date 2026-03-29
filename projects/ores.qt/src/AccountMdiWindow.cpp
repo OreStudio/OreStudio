@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/AccountMdiWindow.hpp"
+#include "ores.qt/BadgeCache.hpp"
 
 #include <vector>
 #include <QtCore/QVariant>
@@ -52,6 +53,7 @@ using namespace ores::logging;
 AccountMdiWindow::
 AccountMdiWindow(ClientManager* clientManager,
                  const QString& username,
+                 BadgeCache* badgeCache,
                  QWidget* parent)
     : EntityListMdiWindow(parent),
       verticalLayout_(new QVBoxLayout(this)),
@@ -70,7 +72,8 @@ AccountMdiWindow(ClientManager* clientManager,
       accountModel_(std::make_unique<ClientAccountModel>(clientManager)),
       proxyModel_(new QSortFilterProxyModel(this)),
       clientManager_(clientManager),
-      username_(username) {
+      username_(username),
+      badgeCache_(badgeCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating account MDI window";
 
@@ -155,7 +158,7 @@ AccountMdiWindow(ClientManager* clientManager,
 
     proxyModel_->setSourceModel(accountModel_.get());
     accountTableView_->setModel(proxyModel_);
-    accountTableView_->setItemDelegate(new AccountItemDelegate(this));
+    accountTableView_->setItemDelegate(new AccountItemDelegate(badgeCache_, this));
     accountTableView_->setSortingEnabled(true);
     accountTableView_->sortByColumn(0, Qt::AscendingOrder);
 

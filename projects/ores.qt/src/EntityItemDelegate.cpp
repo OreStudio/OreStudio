@@ -56,7 +56,10 @@ void EntityItemDelegate::paint(QPainter* painter,
         const QString text = index.data(Qt::DisplayRole).toString();
         if (!text.isEmpty()) {
             badge_color_pair colors{QColor(0x6B, 0x72, 0x80), Qt::white};
-            if (badge_resolver_)
+            auto it = column_resolvers_.find(col);
+            if (it != column_resolvers_.end())
+                colors = it->second(text);
+            else if (badge_resolver_)
                 colors = badge_resolver_(text);
 
             QFont badgeFont = opt.font;
@@ -103,6 +106,11 @@ void EntityItemDelegate::paint(QPainter* painter,
 
 void EntityItemDelegate::set_badge_color_resolver(badge_color_resolver resolver) {
     badge_resolver_ = std::move(resolver);
+}
+
+void EntityItemDelegate::set_badge_color_resolver(
+    std::size_t column, badge_color_resolver resolver) {
+    column_resolvers_[column] = std::move(resolver);
 }
 
 }

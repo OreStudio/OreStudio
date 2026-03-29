@@ -34,6 +34,8 @@
 
 namespace ores::qt {
 
+class BadgeCache;
+
 /**
  * @brief MDI window for displaying and managing report definitions.
  *
@@ -57,6 +59,7 @@ public:
     explicit ReportDefinitionMdiWindow(
         ClientManager* clientManager,
         const QString& username,
+        BadgeCache* badgeCache,
         QWidget* parent = nullptr);
     ~ReportDefinitionMdiWindow() override = default;
 
@@ -101,6 +104,7 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
+    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;

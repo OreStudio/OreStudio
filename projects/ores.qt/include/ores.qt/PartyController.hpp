@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 class ChangeReasonCache;
 class PartyMdiWindow;
 class DetachableMdiSubWindow;
@@ -62,6 +63,7 @@ public:
         ClientManager* clientManager,
         ImageCache* imageCache,
         ChangeReasonCache* changeReasonCache,
+        BadgeCache* badgeCache,
         const QString& username,
         QObject* parent = nullptr);
 
@@ -95,6 +97,7 @@ private:
 
     ImageCache* imageCache_;
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache* badgeCache_;
     PartyMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

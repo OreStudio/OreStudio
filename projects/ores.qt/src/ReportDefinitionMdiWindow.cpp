@@ -27,7 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/BadgeColors.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
@@ -39,10 +39,12 @@ using namespace ores::logging;
 ReportDefinitionMdiWindow::ReportDefinitionMdiWindow(
     ClientManager* clientManager,
     const QString& username,
+    BadgeCache* badgeCache,
     QWidget* parent)
     : EntityListMdiWindow(parent),
       clientManager_(clientManager),
       username_(username),
+      badgeCache_(badgeCache),
       toolbar_(nullptr),
       tableView_(nullptr),
       model_(nullptr),
@@ -179,11 +181,21 @@ void ReportDefinitionMdiWindow::setupTable() {
     // Lifecycle states (draft/active/suspended/archived) and concurrency
     // policies (skip/queue/fail) have non-overlapping values, so a single
     // combined resolver works for both badge columns.
-    delegate->set_badge_color_resolver([](const QString& v) -> badge_color_pair {
-        const auto u = v.toUpper();
-        if (u == "SKIP" || u == "QUEUE" || u == "FAIL")
-            return resolve_concurrency_policy_badge_color(v);
-        return resolve_report_definition_badge_color(v);
+    delegate->set_badge_color_resolver(3, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+        if (!cache) return default_gray;
+        auto* def = cache->resolve("report_concurrency_policy", value.toStdString());
+        if (!def) return default_gray;
+        return {QColor(QString::fromStdString(def->background_colour)),
+                QColor(QString::fromStdString(def->text_colour))};
+    });
+    delegate->set_badge_color_resolver(4, [cache = badgeCache_](const QString& value) -> badge_color_pair {
+        static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+        if (!cache) return default_gray;
+        auto* def = cache->resolve("report_fsm_state", value.toStdString());
+        if (!def) return default_gray;
+        return {QColor(QString::fromStdString(def->background_colour)),
+                QColor(QString::fromStdString(def->text_colour))};
     });
     tableView_->setItemDelegate(delegate);
 

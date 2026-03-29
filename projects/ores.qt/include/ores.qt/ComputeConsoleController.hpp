@@ -31,6 +31,7 @@
 
 namespace ores::qt {
 
+class BadgeCache;
 class ChangeReasonCache;
 class ComputeConsoleWindow;
 
@@ -59,6 +60,7 @@ public:
         QMdiArea* mdiArea,
         ClientManager* clientManager,
         ChangeReasonCache* changeReasonCache,
+        BadgeCache* badgeCache,
         QObject* parent = nullptr);
 
     void showConsole();
@@ -76,6 +78,7 @@ private:
     QMdiArea*          mdiArea_;
     ClientManager*     clientManager_;
     ChangeReasonCache* changeReasonCache_;
+    BadgeCache*        badgeCache_;
     std::string        http_base_url_;
 
     QPointer<ComputeConsoleWindow>   consoleWindow_;

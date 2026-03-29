@@ -1775,7 +1775,7 @@ void MainWindow::createControllers() {
     // Create party controller
     partyController_ = std::make_unique<PartyController>(
         this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
-        QString::fromStdString(username_), this);
+        badgeCache_, QString::fromStdString(username_), this);
 
     connect(partyController_.get(), &PartyController::statusMessage,
             this, [this](const QString& message) {
@@ -1793,7 +1793,7 @@ void MainWindow::createControllers() {
     // Create counterparty controller
     counterpartyController_ = std::make_unique<CounterpartyController>(
         this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
-        QString::fromStdString(username_), this);
+        badgeCache_, QString::fromStdString(username_), this);
 
     connect(counterpartyController_.get(), &CounterpartyController::statusMessage,
             this, [this](const QString& message) {
@@ -1829,7 +1829,7 @@ void MainWindow::createControllers() {
     // Create business unit controller
     businessUnitController_ = std::make_unique<BusinessUnitController>(
         this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
-        QString::fromStdString(username_), this);
+        badgeCache_, QString::fromStdString(username_), this);
 
     connect(businessUnitController_.get(), &BusinessUnitController::statusMessage,
             this, [this](const QString& message) {
@@ -1865,7 +1865,7 @@ void MainWindow::createControllers() {
     // Create portfolio controller
     portfolioController_ = std::make_unique<PortfolioController>(
         this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
-        QString::fromStdString(username_), this);
+        badgeCache_, QString::fromStdString(username_), this);
 
     connect(portfolioController_.get(), &PortfolioController::statusMessage,
             this, [this](const QString& message) {
@@ -1883,7 +1883,7 @@ void MainWindow::createControllers() {
     // Create book controller
     bookController_ = std::make_unique<BookController>(
         this, mdiArea_, clientManager_, imageCache_, changeReasonCache_,
-        QString::fromStdString(username_), this);
+        badgeCache_, QString::fromStdString(username_), this);
 
     connect(bookController_.get(), &BookController::statusMessage,
             this, [this](const QString& message) {
@@ -2303,7 +2303,7 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     computeConsoleController_ = std::make_unique<ComputeConsoleController>(
-        this, mdiArea_, clientManager_, changeReasonCache_, this);
+        this, mdiArea_, clientManager_, changeReasonCache_, badgeCache_, this);
     if (!httpBaseUrl_.empty())
         computeConsoleController_->setHttpBaseUrl(httpBaseUrl_);
     connect(computeConsoleController_.get(),
@@ -2376,7 +2376,7 @@ void MainWindow::createControllers() {
             this, &MainWindow::onDetachableWindowDestroyed);
 
     reportDefinitionController_ = std::make_unique<ReportDefinitionController>(
-        this, mdiArea_, clientManager_, changeReasonCache_,
+        this, mdiArea_, clientManager_, changeReasonCache_, badgeCache_,
         QString::fromStdString(username_), this);
     connect(reportDefinitionController_.get(), &ReportDefinitionController::statusMessage,
             this, [this](const QString& message) {

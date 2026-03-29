@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/BusinessUnitController.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 
 #include <QMdiSubWindow>
@@ -39,12 +40,14 @@ BusinessUnitController::BusinessUnitController(
     ClientManager* clientManager,
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -61,7 +64,7 @@ void BusinessUnitController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new BusinessUnitMdiWindow(clientManager_, imageCache_, username_);
+    listWindow_ = new BusinessUnitMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &BusinessUnitMdiWindow::statusChanged,

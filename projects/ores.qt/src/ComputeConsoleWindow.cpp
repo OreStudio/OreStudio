@@ -35,7 +35,7 @@
 #include "ores.qt/AppProvisionerWizard.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
-#include "ores.qt/BadgeColors.hpp"
+#include "ores.qt/BadgeCache.hpp"
 #include "ores.qt/AppDetailDialog.hpp"
 #include "ores.qt/AppVersionDetailDialog.hpp"
 #include "ores.qt/BatchDetailDialog.hpp"
@@ -54,10 +54,12 @@ using namespace ores::logging;
 
 ComputeConsoleWindow::ComputeConsoleWindow(ClientManager* clientManager,
                                            ChangeReasonCache* changeReasonCache,
+                                           BadgeCache* badgeCache,
                                            QWidget* parent)
     : QWidget(parent),
       client_manager_(clientManager),
       change_reason_cache_(changeReasonCache),
+      badge_cache_(badgeCache),
       host_cache_(new HostDisplayNameCache(this)),
       task_model_(std::make_unique<ComputeTaskViewModel>(clientManager, this)),
       app_model_(std::make_unique<ClientAppModel>(clientManager, this)),
@@ -142,7 +144,22 @@ QWidget* ComputeConsoleWindow::make_tasks_tab() {
         cs::text_left,      // Batch
         cs::text_left,      // Received
     }, task_view_);
-    task_delegate->set_badge_color_resolver(resolve_compute_task_badge_color);
+    task_delegate->set_badge_color_resolver(1, [cache = badge_cache_](const QString& value) -> badge_color_pair {
+        static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+        if (!cache) return default_gray;
+        auto* def = cache->resolve("compute_task_state", value.toStdString());
+        if (!def) return default_gray;
+        return {QColor(QString::fromStdString(def->background_colour)),
+                QColor(QString::fromStdString(def->text_colour))};
+    });
+    task_delegate->set_badge_color_resolver(2, [cache = badge_cache_](const QString& value) -> badge_color_pair {
+        static const badge_color_pair default_gray{QColor(0x6B, 0x72, 0x80), Qt::white};
+        if (!cache) return default_gray;
+        auto* def = cache->resolve("compute_task_outcome", value.toStdString());
+        if (!def) return default_gray;
+        return {QColor(QString::fromStdString(def->background_colour)),
+                QColor(QString::fromStdString(def->text_colour))};
+    });
     task_view_->setItemDelegate(task_delegate);
 
     connect(task_view_->selectionModel(),

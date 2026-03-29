@@ -20,6 +20,7 @@
 #include "ores.qt/CounterpartyController.hpp"
 
 #include <QMdiSubWindow>
+#include "ores.qt/BadgeCache.hpp"
 #include <QMessageBox>
 #include <QPointer>
 #include "ores.qt/IconUtils.hpp"
@@ -55,12 +56,14 @@ CounterpartyController::CounterpartyController(
     ClientManager* clientManager,
     ImageCache* imageCache,
     ChangeReasonCache* changeReasonCache,
+    BadgeCache* badgeCache,
     const QString& username,
     QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username,
           std::string_view{}, parent),
       imageCache_(imageCache),
       changeReasonCache_(changeReasonCache),
+      badgeCache_(badgeCache),
       listWindow_(nullptr),
       listMdiSubWindow_(nullptr) {
 
@@ -106,7 +109,7 @@ void CounterpartyController::showListWindow() {
     }
 
     // Create new window
-    listWindow_ = new CounterpartyMdiWindow(clientManager_, imageCache_, username_);
+    listWindow_ = new CounterpartyMdiWindow(clientManager_, imageCache_, username_, badgeCache_);
 
     // Connect signals
     connect(listWindow_, &CounterpartyMdiWindow::statusChanged,

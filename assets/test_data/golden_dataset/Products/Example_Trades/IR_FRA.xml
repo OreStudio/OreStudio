@@ -1,0 +1,19 @@
+<Portfolio>
+  <Trade id="FRA">
+    <TradeType>ForwardRateAgreement</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <ForwardRateAgreementData>
+      <StartDate>2026-10-19</StartDate>
+      <EndDate>2027-04-20</EndDate>
+      <Currency>EUR</Currency>
+      <Index>EUR-EURIBOR-6M</Index>
+      <LongShort>Long</LongShort>
+      <Strike>0.00499999989</Strike>
+      <Notional>100000000</Notional>
+    </ForwardRateAgreementData>
+  </Trade>
+</Portfolio>

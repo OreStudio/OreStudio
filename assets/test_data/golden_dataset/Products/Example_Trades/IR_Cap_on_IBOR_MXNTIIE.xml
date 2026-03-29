@@ -1,0 +1,45 @@
+<Portfolio>
+  <Trade id="Cap_MXN">
+    <TradeType>CapFloor</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <CapFloorData>
+      <LongShort>Long</LongShort>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Floating</LegType>
+        <Currency>MXN</Currency>
+        <DayCounter>A360</DayCounter>
+        <PaymentConvention>Following</PaymentConvention>
+        <Notionals>
+          <Notional>2e+09</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-04-22</StartDate>
+            <EndDate>2026-01-26</EndDate>
+            <Tenor>28D</Tenor>
+            <Calendar>MXN</Calendar>
+            <Convention>Following</Convention>
+            <Rule>Backward</Rule>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>MXN-TIIE-28D</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>1</FixingDays>
+          <Spreads>
+            <Spread>0</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+      <Caps>
+        <Cap>0.0799999982</Cap>
+      </Caps>
+      <Floors/>
+    </CapFloorData>
+  </Trade>
+</Portfolio>

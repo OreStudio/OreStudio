@@ -1,0 +1,38 @@
+<Portfolio>
+  <Trade id="Zero_fixed_with_zerocouponleg">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>ZeroCouponFixed</LegType>
+        <Currency></Currency>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>184500</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2027-01-05</StartDate>
+            <EndDate>2027-07-06</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>USD</Calendar>
+            <Convention>MF</Convention>
+            <Rule>Zero</Rule>
+          </Rules>
+        </ScheduleData>
+        <ZeroCouponFixedLegData>
+          <Rates>
+            <Rate>0.0164999999</Rate>
+          </Rates>
+          <Compounding>Compounded</Compounding>
+        </ZeroCouponFixedLegData>
+      </LegData>
+    </SwapData>
+  </Trade>
+</Portfolio>

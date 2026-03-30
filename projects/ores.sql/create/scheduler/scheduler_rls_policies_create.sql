@@ -52,9 +52,12 @@ with check (
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
 -- WITH CHECK is not needed and would block bulk operations.
+-- Exception: the system service context bypasses party isolation for the same
+-- cross-tenant reasons as the tenant isolation policy above.
 create policy ores_scheduler_job_definitions_party_isolation_policy
 on ores_scheduler_job_definitions_tbl
 as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );

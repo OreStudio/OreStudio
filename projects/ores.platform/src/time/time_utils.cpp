@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <filesystem>
 #include "ores.platform/time/time_utils.hpp"
 
 namespace ores::platform::time {
@@ -62,6 +63,16 @@ std::chrono::system_clock::time_point time_utils::to_time_point_utc(std::tm tm) 
 std::chrono::system_clock::time_point time_utils::to_time_point_local(std::tm tm) {
     tm.tm_isdst = -1; // let mktime determine DST from the date/time fields
     return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
+std::chrono::system_clock::time_point
+time_utils::file_time_to_system_clock(std::filesystem::file_time_type ft) {
+    // std::chrono::clock_cast is C++20 but unimplemented on Apple libc++.
+    // Compute the offset from file_clock::now() and apply it to
+    // system_clock::now() — portable across all supported platforms.
+    return std::chrono::system_clock::now() +
+        std::chrono::duration_cast<std::chrono::system_clock::duration>(
+            ft - std::filesystem::file_time_type::clock::now());
 }
 
 }

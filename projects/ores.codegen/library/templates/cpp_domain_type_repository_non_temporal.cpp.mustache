@@ -19,7 +19,14 @@ std::vector<domain::{{entity_singular}}>
 {{entity_singular}}_repository::read(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading {{entity_plural_words}}.";
 
+{{#domain_entity.has_tenant_id}}
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>> |
+        where("tenant_id"_c == tid);
+{{/domain_entity.has_tenant_id}}
+{{^domain_entity.has_tenant_id}}
     const auto query = sqlgen::read<std::vector<{{entity_singular}}_entity>>;
+{{/domain_entity.has_tenant_id}}
 
     return execute_read_query<{{entity_singular}}_entity, domain::{{entity_singular}}>(
         ctx, query,

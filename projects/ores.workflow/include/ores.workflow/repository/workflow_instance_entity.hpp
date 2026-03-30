@@ -44,7 +44,7 @@ struct workflow_instance_entity {
     std::optional<std::string> error;
     std::optional<std::string> correlation_id;
     std::string created_by;
-    std::optional<std::optional<std::chrono::system_clock::time_point>> completed_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
 };
 

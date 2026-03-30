@@ -36,7 +36,9 @@ std::vector<domain::workflow_instance>
 workflow_instance_repository::read(context ctx) {
     BOOST_LOG_SEV(lg(), debug) << "Reading workflow instances.";
 
-    const auto query = sqlgen::read<std::vector<workflow_instance_entity>>;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<workflow_instance_entity>> |
+        where("tenant_id"_c == tid);
 
     return execute_read_query<workflow_instance_entity, domain::workflow_instance>(
         ctx, query,

@@ -38,6 +38,10 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
+{{#is_optional_timestamp}}
+    if (v.{{name}})
+        r.{{name}} = timestamp_to_timepoint(*v.{{name}});
+{{/is_optional_timestamp}}
 {{#is_simple}}
     r.{{name}} = v.{{name}};
 {{/is_simple}}

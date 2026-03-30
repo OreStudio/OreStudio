@@ -1138,7 +1138,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             for col in domain_entity['columns']:
                 col['is_int'] = col.get('type') == 'integer' or col.get('cpp_type') == 'int'
                 is_uuid_type = col.get('type') == 'uuid' or 'boost::uuids::uuid' in col.get('cpp_type', '')
-                is_timestamp_type = col.get('type') == 'timestamp'
+                is_timestamp_type = col.get('type') in ('timestamp', 'timestamptz')
                 col['is_uuid'] = is_uuid_type and not col.get('nullable', False)
                 col['is_optional_uuid'] = is_uuid_type and col.get('nullable', False)
                 col['is_optional_timestamp'] = is_timestamp_type and col.get('nullable', False)

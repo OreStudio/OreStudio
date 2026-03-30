@@ -43,8 +43,8 @@ struct workflow_step_entity {
     std::string request_json;
     std::optional<std::string> response_json;
     std::optional<std::string> error;
-    std::optional<std::optional<std::chrono::system_clock::time_point>> started_at;
-    std::optional<std::optional<std::chrono::system_clock::time_point>> completed_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> started_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> completed_at;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> created_at;
 };
 

@@ -43,7 +43,8 @@ workflow_instance_mapper::map(const workflow_instance_entity& v) {
     r.error = v.error.value_or("");
     r.correlation_id = v.correlation_id.value_or("");
     r.created_by = v.created_by;
-    r.completed_at = v.completed_at.value_or("");
+    if (v.completed_at)
+        r.completed_at = timestamp_to_timepoint(*v.completed_at);
     if (!v.created_at)
         throw std::logic_error("Cannot map entity with null created_at to domain object.");
     r.created_at = timestamp_to_timepoint(*v.created_at);

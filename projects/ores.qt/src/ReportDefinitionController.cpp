@@ -460,7 +460,6 @@ void ReportDefinitionController::onScheduleRequested(
     BOOST_LOG_SEV(lg(), info) << "Scheduling " << ids.size() << " report definitions";
 
     QPointer<ReportDefinitionController> self = this;
-    const std::string performed_by = username_.toStdString();
 
     struct ScheduleResult {
         bool success;
@@ -469,7 +468,7 @@ void ReportDefinitionController::onScheduleRequested(
         int failed_count;
     };
 
-    auto task = [self, ids, performed_by]() -> ScheduleResult {
+    auto task = [self, ids]() -> ScheduleResult {
         if (!self || !self->clientManager_)
             return {false, "Controller destroyed", 0, static_cast<int>(ids.size())};
 
@@ -477,7 +476,6 @@ void ReportDefinitionController::onScheduleRequested(
         for (const auto& id : ids) {
             request.ids.push_back(boost::uuids::to_string(id));
         }
-        request.performed_by = performed_by;
         auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server", 0, static_cast<int>(ids.size())};
@@ -527,7 +525,6 @@ void ReportDefinitionController::onUnscheduleRequested(
     BOOST_LOG_SEV(lg(), info) << "Unscheduling " << ids.size() << " report definitions";
 
     QPointer<ReportDefinitionController> self = this;
-    const std::string performed_by = username_.toStdString();
 
     struct UnscheduleResult {
         bool success;
@@ -536,7 +533,7 @@ void ReportDefinitionController::onUnscheduleRequested(
         int failed_count;
     };
 
-    auto task = [self, ids, performed_by]() -> UnscheduleResult {
+    auto task = [self, ids]() -> UnscheduleResult {
         if (!self || !self->clientManager_)
             return {false, "Controller destroyed", 0, static_cast<int>(ids.size())};
 
@@ -544,7 +541,6 @@ void ReportDefinitionController::onUnscheduleRequested(
         for (const auto& id : ids) {
             request.ids.push_back(boost::uuids::to_string(id));
         }
-        request.performed_by = performed_by;
         auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
             return {false, "Failed to communicate with server", 0, static_cast<int>(ids.size())};

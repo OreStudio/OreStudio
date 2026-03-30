@@ -94,6 +94,34 @@ void stamp(T& obj, const ores::database::context& ctx,
     }
 }
 
+/**
+ * @brief Returns the acting user for delegation from a request context.
+ *
+ * For user-facing handlers, returns ctx.actor() — the end-user extracted from
+ * the validated JWT. For system handlers where no user actor is present, falls
+ * back to ctx.service_account().
+ *
+ * This value is used as the @c on_behalf_of field in service-to-service
+ * requests, allowing downstream services to attribute writes to the original
+ * user even though they only receive the calling service's JWT.
+ *
+ * @par Security note — non-cryptographic delegation
+ * The @c on_behalf_of value is plain data carried in the NATS message payload,
+ * NOT a cryptographically signed claim.  Its integrity guarantee is only as
+ * strong as the trust placed in the sending service: any service that can
+ * authenticate to NATS could in principle send an arbitrary value.  This
+ * pattern is therefore safe only inside a trusted internal service mesh where
+ * each service is individually authenticated (e.g. via service JWTs) and
+ * operates under least-privilege RBAC.  It is NOT a substitute for OAuth 2.0
+ * Token Exchange (RFC 8693) or similar mechanisms where the delegated identity
+ * must be independently verifiable by the receiving service.
+ *
+ * @param ctx  Per-request context populated from the validated inbound JWT.
+ */
+inline const std::string& delegated_actor(const ores::database::context& ctx) {
+    return ctx.actor().empty() ? ctx.service_account() : ctx.actor();
+}
+
 // Serialise resp to JSON and publish to the message's reply subject.
 // No-op if the message has no reply subject.
 template<typename Resp>

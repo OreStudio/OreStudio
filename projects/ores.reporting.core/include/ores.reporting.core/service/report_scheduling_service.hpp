@@ -74,16 +74,18 @@ public:
      * Creates a nats_publish job in the scheduler and stores the returned
      * scheduler_job_id on the definition. Skips definitions already scheduled.
      *
-     * @param def     The definition to schedule (must have a valid id and
-     *                schedule_expression).
-     * @param performed_by  Actor name stamped on the write.
+     * @param def          The definition to schedule (must have a valid id and
+     *                     schedule_expression).
+     * @param on_behalf_of Original end-user identity from the caller's validated
+     *                     JWT (via delegated_actor()). Stamped as modified_by on
+     *                     the scheduler job and on the updated definition.
      * @return true  — job was created.
      *         false — definition already had a scheduler_job_id (no-op).
      *         unexpected(msg) — scheduling failed; msg contains the error.
      */
     std::expected<bool, std::string>
     schedule_one(const domain::report_definition& def,
-        const std::string& performed_by);
+        const std::string& on_behalf_of);
 
     /**
      * @brief Unschedule one definition by removing its scheduler job.
@@ -91,15 +93,15 @@ public:
      * Deletes the scheduler job and clears scheduler_job_id on the definition.
      * Skips definitions that are not currently scheduled.
      *
-     * @param def  The definition to unschedule.
-     * @param performed_by  Actor name stamped on the write.
+     * @param def          The definition to unschedule.
+     * @param on_behalf_of Original end-user identity. See schedule_one.
      * @return true  — job was removed.
      *         false — definition was not scheduled (no-op).
      *         unexpected(msg) — unscheduling failed; msg contains the error.
      */
     std::expected<bool, std::string>
     unschedule_one(const domain::report_definition& def,
-        const std::string& performed_by);
+        const std::string& on_behalf_of);
 
 private:
     /**
@@ -108,30 +110,30 @@ private:
      * Creates a nats_publish job_definition for the given report definition
      * and calls scheduler.v1.job-definitions.schedule via request_sync.
      *
-     * @param def     The report definition to schedule.
-     * @param job_id  Pre-allocated UUID to use as the job's primary key.
-     * @param performed_by  Actor name for audit fields.
+     * @param def          The report definition to schedule.
+     * @param job_id       Pre-allocated UUID to use as the job's primary key.
+     * @param on_behalf_of Original end-user identity for audit fields.
      * @return success or unexpected(error message).
      */
     std::expected<void, std::string>
     send_schedule_request(const domain::report_definition& def,
         const boost::uuids::uuid& job_id,
-        const std::string& performed_by);
+        const std::string& on_behalf_of);
 
     /**
      * @brief Build a scheduler job_definition for a report definition.
      *
      * Used by both schedule_one and the batch reconciliation path.
      *
-     * @param def     The report definition.
-     * @param job_id  Pre-allocated UUID to use as the job's primary key.
-     * @param performed_by  Actor name for audit fields.
+     * @param def          The report definition.
+     * @param job_id       Pre-allocated UUID to use as the job's primary key.
+     * @param on_behalf_of Original end-user identity for audit fields.
      * @return A populated job_definition, or nullopt if the cron is invalid.
      */
     std::optional<ores::scheduler::domain::job_definition>
     build_job_definition(const domain::report_definition& def,
         const boost::uuids::uuid& job_id,
-        const std::string& performed_by);
+        const std::string& on_behalf_of);
 
     context ctx_;
     ores::nats::service::nats_client& svc_nats_;

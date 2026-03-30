@@ -82,7 +82,6 @@ struct schedule_report_definitions_request {
     static constexpr std::string_view nats_subject =
         "reporting.v1.report-definitions.schedule";
     std::vector<std::string> ids;
-    std::string performed_by;
 };
 
 struct schedule_report_definitions_response {
@@ -97,7 +96,6 @@ struct unschedule_report_definitions_request {
     static constexpr std::string_view nats_subject =
         "reporting.v1.report-definitions.unschedule";
     std::vector<std::string> ids;
-    std::string performed_by;
 };
 
 struct unschedule_report_definitions_response {

@@ -48,6 +48,18 @@ struct schedule_job_request {
     ores::scheduler::domain::job_definition definition;
     std::string change_reason_code;
     std::string change_commentary;
+    /**
+     * @brief Original end-user on whose behalf this request is made.
+     *
+     * Set by the calling service from its validated JWT actor (via
+     * delegated_actor()). The scheduler uses this as modified_by on the
+     * job definition, attributing the write to the originating user rather
+     * than the calling service account.
+     *
+     * Non-cryptographic: trusted only because the caller is an authenticated
+     * internal service. See delegated_actor() for full security note.
+     */
+    std::string on_behalf_of;
 };
 
 struct schedule_job_response {
@@ -62,6 +74,9 @@ struct unschedule_job_request {
     std::string job_definition_id;
     std::string change_reason_code;
     std::string change_commentary;
+    /** @brief Original end-user on whose behalf this request is made. See
+     *  schedule_job_request::on_behalf_of for the full note. */
+    std::string on_behalf_of;
 };
 
 struct unschedule_job_response {
@@ -76,6 +91,9 @@ struct schedule_jobs_batch_request {
     std::vector<ores::scheduler::domain::job_definition> definitions;
     std::string change_reason_code;
     std::string change_commentary;
+    /** @brief Original end-user on whose behalf this request is made. See
+     *  schedule_job_request::on_behalf_of for the full note. */
+    std::string on_behalf_of;
 };
 
 struct schedule_jobs_batch_response {

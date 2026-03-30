@@ -84,7 +84,7 @@ std::optional<ores::scheduler::domain::job_definition>
 report_scheduling_service::build_job_definition(
     const domain::report_definition& def,
     const boost::uuids::uuid& job_id,
-    const std::string& performed_by) {
+    const std::string& on_behalf_of) {
 
     auto cron = ores::scheduler::domain::cron_expression::from_string(
         def.schedule_expression);
@@ -111,8 +111,8 @@ report_scheduling_service::build_job_definition(
     job.action_type = "nats_publish";
     job.action_payload = rfl::json::write(payload);
     job.is_active = true;
-    job.modified_by = performed_by;
-    job.performed_by = performed_by;
+    job.modified_by = on_behalf_of;
+    job.performed_by = on_behalf_of;
     job.change_reason_code = "system.report_scheduled";
     job.change_commentary = "Scheduled by reporting service";
     return job;
@@ -122,9 +122,9 @@ std::expected<void, std::string>
 report_scheduling_service::send_schedule_request(
     const domain::report_definition& def,
     const boost::uuids::uuid& job_id,
-    const std::string& performed_by) {
+    const std::string& on_behalf_of) {
 
-    auto job = build_job_definition(def, job_id, performed_by);
+    auto job = build_job_definition(def, job_id, on_behalf_of);
     if (!job)
         return std::unexpected("Invalid cron expression for definition "
             + boost::uuids::to_string(def.id));
@@ -132,7 +132,8 @@ report_scheduling_service::send_schedule_request(
     const ores::scheduler::messaging::schedule_job_request req{
         .definition = *job,
         .change_reason_code = "system.report_scheduled",
-        .change_commentary = "Scheduled by reporting service"
+        .change_commentary = "Scheduled by reporting service",
+        .on_behalf_of = on_behalf_of
     };
 
     const auto req_json = rfl::json::write(req);
@@ -170,7 +171,7 @@ report_scheduling_service::send_schedule_request(
 std::expected<bool, std::string>
 report_scheduling_service::schedule_one(
     const domain::report_definition& def,
-    const std::string& performed_by) {
+    const std::string& on_behalf_of) {
 
     if (def.scheduler_job_id.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "Definition already scheduled: " << def.id;
@@ -178,7 +179,7 @@ report_scheduling_service::schedule_one(
     }
 
     const auto job_id = gen_uuid();
-    auto send_result = send_schedule_request(def, job_id, performed_by);
+    auto send_result = send_schedule_request(def, job_id, on_behalf_of);
     if (!send_result)
         return std::unexpected(send_result.error());
 
@@ -190,12 +191,12 @@ report_scheduling_service::schedule_one(
     auto updated = def;
     updated.scheduler_job_id = job_id;
     updated.fsm_state_id = active_state;
-    updated.modified_by = performed_by;
-    updated.performed_by = performed_by;
+    updated.modified_by = on_behalf_of;
+    updated.performed_by = on_behalf_of;
     updated.change_reason_code = "system.report_scheduled";
     updated.change_commentary = "Linked to scheduler job";
 
-    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, performed_by);
+    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, on_behalf_of);
     report_definition_service svc(tenant_ctx);
     svc.save_definition(updated);
 
@@ -207,7 +208,7 @@ report_scheduling_service::schedule_one(
 std::expected<bool, std::string>
 report_scheduling_service::unschedule_one(
     const domain::report_definition& def,
-    const std::string& performed_by) {
+    const std::string& on_behalf_of) {
 
     if (!def.scheduler_job_id.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "Definition not scheduled: " << def.id;
@@ -218,7 +219,8 @@ report_scheduling_service::unschedule_one(
     const ores::scheduler::messaging::unschedule_job_request req{
         .job_definition_id = job_id_str,
         .change_reason_code = "system.report_unscheduled",
-        .change_commentary = "Unscheduled by reporting service"
+        .change_commentary = "Unscheduled by reporting service",
+        .on_behalf_of = on_behalf_of
     };
 
     const auto req_json = rfl::json::write(req);
@@ -259,12 +261,12 @@ report_scheduling_service::unschedule_one(
     auto updated = def;
     updated.scheduler_job_id = std::nullopt;
     updated.fsm_state_id = suspended_state;
-    updated.modified_by = performed_by;
-    updated.performed_by = performed_by;
+    updated.modified_by = on_behalf_of;
+    updated.performed_by = on_behalf_of;
     updated.change_reason_code = "system.report_unscheduled";
     updated.change_commentary = "Scheduler job removed";
 
-    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, performed_by);
+    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, on_behalf_of);
     report_definition_service svc(tenant_ctx);
     svc.save_definition(updated);
 
@@ -276,7 +278,8 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     BOOST_LOG_SEV(lg(), info)
         << "Starting scheduler reconciliation for report definitions.";
 
-    const auto& performed_by = ctx_.service_account();
+    // Reconciliation is system-initiated: on_behalf_of is the service account.
+    const auto& on_behalf_of = ctx_.service_account();
 
     // Step 1: ask the IAM service for all active tenants.
     BOOST_LOG_SEV(lg(), debug) << "Requesting active tenant list from IAM.";
@@ -333,7 +336,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             << "Reconciling tenant: " << tenant_id_str
             << " [" << tenant.name << "]";
 
-        const auto tenant_ctx = ctx_.with_tenant(tenant_id, performed_by);
+        const auto tenant_ctx = ctx_.with_tenant(tenant_id, on_behalf_of);
 
         repository::report_definition_repository repo;
         std::vector<domain::report_definition> unscheduled;
@@ -361,10 +364,11 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         ores::scheduler::messaging::schedule_jobs_batch_request batch_req;
         batch_req.change_reason_code = "system.report_scheduled";
         batch_req.change_commentary = "Startup reconciliation by reporting service";
+        batch_req.on_behalf_of = on_behalf_of;
 
         for (const auto& def : unscheduled) {
             const auto job_id = gen_uuid();
-            auto job = build_job_definition(def, job_id, performed_by);
+            auto job = build_job_definition(def, job_id, on_behalf_of);
             if (!job) {
                 // Invalid cron — warning already logged in build_job_definition.
                 ++total_failed;
@@ -433,8 +437,8 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             auto def_updated = *entry.def;
             def_updated.scheduler_job_id = entry.job_id;
             def_updated.fsm_state_id = active_state;
-            def_updated.modified_by = performed_by;
-            def_updated.performed_by = performed_by;
+            def_updated.modified_by = on_behalf_of;
+            def_updated.performed_by = on_behalf_of;
             def_updated.change_reason_code = "system.report_scheduled";
             def_updated.change_commentary = "Linked to scheduler job by reconciliation";
 

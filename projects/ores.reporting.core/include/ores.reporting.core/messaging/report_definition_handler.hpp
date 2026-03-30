@@ -49,6 +49,7 @@ using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::delegated_actor;
 using namespace ores::logging;
 
 class report_definition_handler {
@@ -194,6 +195,7 @@ public:
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, svc_nats_);
+            const auto& actor = delegated_actor(ctx);
             int scheduled_count = 0;
             std::vector<std::string> failed_ids;
             std::string first_error;
@@ -201,7 +203,7 @@ public:
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    auto result = scheduler.schedule_one(*def, req->performed_by);
+                    auto result = scheduler.schedule_one(*def, actor);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
                             << "Failed to schedule definition " << id
@@ -251,6 +253,7 @@ public:
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, svc_nats_);
+            const auto& actor = delegated_actor(ctx);
             int unscheduled_count = 0;
             std::vector<std::string> failed_ids;
             std::string first_error;
@@ -258,7 +261,7 @@ public:
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    auto result = scheduler.unschedule_one(*def, req->performed_by);
+                    auto result = scheduler.unschedule_one(*def, actor);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
                             << "Failed to unschedule definition " << id

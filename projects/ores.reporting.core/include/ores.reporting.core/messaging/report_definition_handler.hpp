@@ -196,6 +196,10 @@ public:
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, svc_nats_);
             const auto& actor = delegated_actor(ctx);
+            std::string user_jwt;
+            if (const auto it = msg.headers.find("Authorization");
+                it != msg.headers.end() && it->second.starts_with("Bearer "))
+                user_jwt = it->second.substr(7);
             int scheduled_count = 0;
             std::vector<std::string> failed_ids;
             std::string first_error;
@@ -203,7 +207,7 @@ public:
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    auto result = scheduler.schedule_one(*def, actor);
+                    auto result = scheduler.schedule_one(*def, actor, user_jwt);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
                             << "Failed to schedule definition " << id
@@ -254,6 +258,10 @@ public:
             service::report_definition_service svc(ctx);
             service::report_scheduling_service scheduler(ctx_, svc_nats_);
             const auto& actor = delegated_actor(ctx);
+            std::string user_jwt;
+            if (const auto it = msg.headers.find("Authorization");
+                it != msg.headers.end() && it->second.starts_with("Bearer "))
+                user_jwt = it->second.substr(7);
             int unscheduled_count = 0;
             std::vector<std::string> failed_ids;
             std::string first_error;
@@ -261,7 +269,7 @@ public:
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    auto result = scheduler.unschedule_one(*def, actor);
+                    auto result = scheduler.unschedule_one(*def, actor, user_jwt);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
                             << "Failed to unschedule definition " << id

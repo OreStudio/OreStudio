@@ -49,15 +49,18 @@ struct schedule_job_request {
     std::string change_reason_code;
     std::string change_commentary;
     /**
-     * @brief Original end-user on whose behalf this request is made.
+     * @brief Raw JWT Bearer token of the original end-user.
      *
-     * Set by the calling service from its validated JWT actor (via
-     * delegated_actor()). The scheduler uses this as modified_by on the
-     * job definition, attributing the write to the originating user rather
-     * than the calling service account.
+     * The calling service forwards the user's JWT verbatim from the inbound
+     * request. The scheduler validates it independently: if expired, the
+     * request is rejected. On success the scheduler derives a fully-scoped
+     * DB context (tenant_id, actor, party_ids) directly from the token's
+     * claims, ensuring correct RLS and audit attribution without relying on
+     * client-supplied payload fields.
      *
-     * Non-cryptographic: trusted only because the caller is an authenticated
-     * internal service. See delegated_actor() for full security note.
+     * Empty for system-initiated calls (e.g. startup reconciliation); the
+     * scheduler falls back to a service-account context scoped to the job's
+     * tenant_id.
      */
     std::string on_behalf_of;
 };
@@ -74,7 +77,7 @@ struct unschedule_job_request {
     std::string job_definition_id;
     std::string change_reason_code;
     std::string change_commentary;
-    /** @brief Original end-user on whose behalf this request is made. See
+    /** @brief Raw JWT of the original end-user. See
      *  schedule_job_request::on_behalf_of for the full note. */
     std::string on_behalf_of;
 };
@@ -91,7 +94,7 @@ struct schedule_jobs_batch_request {
     std::vector<ores::scheduler::domain::job_definition> definitions;
     std::string change_reason_code;
     std::string change_commentary;
-    /** @brief Original end-user on whose behalf this request is made. See
+    /** @brief Raw JWT of the original end-user. See
      *  schedule_job_request::on_behalf_of for the full note. */
     std::string on_behalf_of;
 };

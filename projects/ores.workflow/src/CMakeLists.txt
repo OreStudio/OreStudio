@@ -38,11 +38,8 @@ target_include_directories(${lib_target_name} PUBLIC
 target_link_libraries(${lib_target_name}
     PRIVATE
         ores.database.lib
-        ores.comms.lib
         ores.utility.lib
         sqlgen::sqlgen
-        faker-cxx::faker-cxx
-        libfort::fort
         Boost::boost)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)
 

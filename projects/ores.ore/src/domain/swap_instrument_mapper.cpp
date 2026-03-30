@@ -678,6 +678,10 @@ swap_mapping_result swap_instrument_mapper::forward_callable_swap(
     if (cd.OptionData &&
             cd.OptionData->exerciseDatesGroup &&
             cd.OptionData->exerciseDatesGroup->ExerciseDates) {
+        // Manual JSON array construction is intentional: exercise dates are
+        // ISO-8601 strings (YYYY-MM-DD) containing only ASCII alphanumerics
+        // and hyphens, so no escaping is ever needed. Adding a JSON library
+        // dependency to ores.ore purely for this would be disproportionate.
         std::string json = "[";
         bool first = true;
         for (const auto& d :

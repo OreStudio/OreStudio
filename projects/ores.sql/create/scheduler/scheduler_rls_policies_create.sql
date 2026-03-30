@@ -21,14 +21,11 @@
 -- =============================================================================
 -- Row-Level Security Policies for Scheduler Tables
 -- =============================================================================
--- Scheduler jobs are tenant-scoped: visibility is by tenant only.  Party
--- isolation is NOT applied here because scheduler jobs are system-level
--- operations (e.g. report reconciliation) created by service accounts whose
--- party may differ from the end-user's party.  Enforcing party isolation would
--- make jobs invisible to legitimate users in the same tenant.
+-- Scheduler jobs are party-scoped: each job belongs to exactly one party within
+-- a tenant. RLS enforces both tenant and party isolation.
 --
 -- Note: pg_cron itself (cron.job, cron.job_run_details) runs as the database
--- owner and ignores RLS. Tenant isolation for job instances is enforced
+-- owner and ignores RLS. Tenant/party isolation for job instances is enforced
 -- at the application layer by filtering on the cron_job_id values registered
 -- in ores_scheduler_job_definitions_tbl.
 
@@ -49,5 +46,18 @@ for all using (
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
+);
+
+-- Party isolation: strict enforcement — no party context means no rows visible.
+-- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
+-- WITH CHECK is not needed and would block bulk operations.
+-- Exception: the system service context bypasses party isolation for cross-tenant
+-- operations such as startup reconciliation.
+create policy ores_scheduler_job_definitions_party_isolation_policy
+on ores_scheduler_job_definitions_tbl
+as restrictive
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
     OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );

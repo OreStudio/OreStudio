@@ -66,6 +66,7 @@ public:
         NextFire,
         Version,
         ModifiedBy,
+        RecordedAt,
         ColumnCount
     };
 

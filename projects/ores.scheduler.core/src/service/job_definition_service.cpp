@@ -20,6 +20,7 @@
 #include "ores.scheduler.core/service/job_definition_service.hpp"
 
 #include <stdexcept>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::scheduler::service {
 
@@ -41,9 +42,28 @@ job_definition_service::find_definition(const std::string& id) {
     return results.front();
 }
 
-void job_definition_service::save_definition(const domain::job_definition& v) {
+void job_definition_service::save_definition(domain::job_definition v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Job Definition id cannot be empty.");
+
+    // If a current job already exists with this name, adopt its id so the
+    // INSERT trigger treats this as a bitemporal version update (closes the
+    // old row) rather than a new insert that would violate the name+tenant
+    // unique constraint.
+    if (!v.job_name.empty()) {
+        const auto lookup_tid = v.tenant_id
+            ? boost::uuids::to_string(*v.tenant_id)
+            : ctx_.tenant_id().to_string();
+        auto existing = repo_.find_by_name(ctx_, lookup_tid, v.job_name);
+        if (existing && existing->id != v.id) {
+            BOOST_LOG_SEV(lg(), debug)
+                << "Job name '" << v.job_name
+                << "' already exists with id " << existing->id
+                << "; adopting existing id for version update";
+            v.id = existing->id;
+        }
+    }
+
     BOOST_LOG_SEV(lg(), debug) << "Saving job definition: " << v.id;
     repo_.write(ctx_, v);
     BOOST_LOG_SEV(lg(), info) << "Saved job definition: " << v.id;

@@ -19,6 +19,7 @@
  */
 #include "ores.reporting.core/service/report_scheduling_service.hpp"
 
+#include <expected>
 #include <unordered_set>
 #include <rfl.hpp>
 #include <rfl/json.hpp>
@@ -34,6 +35,7 @@
 #include "ores.scheduler.api/rfl/reflectors.hpp"
 #include "ores.scheduler.api/domain/job_definition.hpp"
 #include "ores.scheduler.api/messaging/scheduler_protocol.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.reporting.api/messaging/report_instance_protocol.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.reporting.core/repository/report_definition_repository.hpp"
@@ -76,14 +78,14 @@ find_fsm_state_id(const ores::database::context& ctx, logging::logger_t& log,
 } // anonymous namespace
 
 report_scheduling_service::report_scheduling_service(
-    context ctx, ores::nats::service::nats_client& svc_nats)
-    : ctx_(std::move(ctx)), svc_nats_(svc_nats) {}
+    context ctx, ores::nats::service::nats_client svc_nats)
+    : ctx_(std::move(ctx)), svc_nats_(std::move(svc_nats)) {}
 
 std::optional<ores::scheduler::domain::job_definition>
 report_scheduling_service::build_job_definition(
     const domain::report_definition& def,
     const boost::uuids::uuid& job_id,
-    const std::string& performed_by) {
+    const std::string& actor) {
 
     auto cron = ores::scheduler::domain::cron_expression::from_string(
         def.schedule_expression);
@@ -110,25 +112,27 @@ report_scheduling_service::build_job_definition(
     job.action_type = "nats_publish";
     job.action_payload = rfl::json::write(payload);
     job.is_active = true;
-    job.modified_by = performed_by;
-    job.performed_by = performed_by;
-    job.change_reason_code = "system.report_scheduled";
+    job.modified_by = actor;
+    job.performed_by = actor;
+    job.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
     job.change_commentary = "Scheduled by reporting service";
     return job;
 }
 
-bool report_scheduling_service::send_schedule_request(
+std::expected<void, std::string>
+report_scheduling_service::send_schedule_request(
     const domain::report_definition& def,
     const boost::uuids::uuid& job_id,
-    const std::string& performed_by) {
+    const std::string& actor) {
 
-    auto job = build_job_definition(def, job_id, performed_by);
+    auto job = build_job_definition(def, job_id, actor);
     if (!job)
-        return false;
+        return std::unexpected("Invalid cron expression for definition "
+            + boost::uuids::to_string(def.id));
 
     const ores::scheduler::messaging::schedule_job_request req{
         .definition = *job,
-        .change_reason_code = "system.report_scheduled",
+        .change_reason_code = std::string(ores::service::messaging::change_reasons::new_record),
         .change_commentary = "Scheduled by reporting service"
     };
 
@@ -142,24 +146,32 @@ bool report_scheduling_service::send_schedule_request(
             reinterpret_cast<const char*>(reply_msg.data.data()),
             reply_msg.data.size());
         auto resp = rfl::json::read<ores::scheduler::messaging::schedule_job_response>(sv);
-        if (!resp || !resp->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Scheduler rejected job for definition " << def.id
-                << ": " << (resp ? resp->message : "parse error");
-            return false;
+        if (!resp) {
+            const std::string err = "Scheduler returned unparseable response for definition "
+                + boost::uuids::to_string(def.id);
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
+        }
+        if (!resp->success) {
+            const std::string err = "Scheduler rejected job for definition "
+                + boost::uuids::to_string(def.id) + ": " + resp->message;
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
         }
     } catch (const std::exception& e) {
+        const std::string err = std::string("Scheduler NATS call failed: ") + e.what();
         BOOST_LOG_SEV(lg(), error)
             << "Failed to call scheduler for definition " << def.id
             << ": " << e.what();
-        return false;
+        return std::unexpected(err);
     }
-    return true;
+    return {};
 }
 
-bool report_scheduling_service::schedule_one(
+std::expected<bool, std::string>
+report_scheduling_service::schedule_one(
     const domain::report_definition& def,
-    const std::string& performed_by) {
+    const std::string& actor) {
 
     if (def.scheduler_job_id.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "Definition already scheduled: " << def.id;
@@ -167,8 +179,9 @@ bool report_scheduling_service::schedule_one(
     }
 
     const auto job_id = gen_uuid();
-    if (!send_schedule_request(def, job_id, performed_by))
-        return false;
+    auto send_result = send_schedule_request(def, job_id, actor);
+    if (!send_result)
+        return std::unexpected(send_result.error());
 
     // Resolve the "active" FSM state UUID once from the system context.
     const auto active_state = find_fsm_state_id(
@@ -178,12 +191,12 @@ bool report_scheduling_service::schedule_one(
     auto updated = def;
     updated.scheduler_job_id = job_id;
     updated.fsm_state_id = active_state;
-    updated.modified_by = performed_by;
-    updated.performed_by = performed_by;
-    updated.change_reason_code = "system.report_scheduled";
+    updated.modified_by = actor;
+    updated.performed_by = ctx_.service_account();
+    updated.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
     updated.change_commentary = "Linked to scheduler job";
 
-    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, performed_by);
+    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, actor);
     report_definition_service svc(tenant_ctx);
     svc.save_definition(updated);
 
@@ -192,9 +205,10 @@ bool report_scheduling_service::schedule_one(
     return true;
 }
 
-bool report_scheduling_service::unschedule_one(
+std::expected<bool, std::string>
+report_scheduling_service::unschedule_one(
     const domain::report_definition& def,
-    const std::string& performed_by) {
+    const std::string& actor) {
 
     if (!def.scheduler_job_id.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "Definition not scheduled: " << def.id;
@@ -204,7 +218,7 @@ bool report_scheduling_service::unschedule_one(
     const auto job_id_str = boost::uuids::to_string(*def.scheduler_job_id);
     const ores::scheduler::messaging::unschedule_job_request req{
         .job_definition_id = job_id_str,
-        .change_reason_code = "system.report_unscheduled",
+        .change_reason_code = std::string(ores::service::messaging::change_reasons::new_record),
         .change_commentary = "Unscheduled by reporting service"
     };
 
@@ -218,17 +232,24 @@ bool report_scheduling_service::unschedule_one(
             reinterpret_cast<const char*>(reply_msg.data.data()),
             reply_msg.data.size());
         auto resp = rfl::json::read<ores::scheduler::messaging::unschedule_job_response>(sv);
-        if (!resp || !resp->success) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Scheduler failed to unschedule job " << job_id_str
-                << ": " << (resp ? resp->message : "parse error");
-            return false;
+        if (!resp) {
+            const std::string err = "Scheduler returned unparseable response for job "
+                + job_id_str;
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
+        }
+        if (!resp->success) {
+            const std::string err = "Scheduler failed to unschedule job "
+                + job_id_str + ": " + resp->message;
+            BOOST_LOG_SEV(lg(), error) << err;
+            return std::unexpected(err);
         }
     } catch (const std::exception& e) {
+        const std::string err = std::string("Scheduler NATS call failed: ") + e.what();
         BOOST_LOG_SEV(lg(), error)
             << "Failed to call scheduler to unschedule definition " << def.id
             << ": " << e.what();
-        return false;
+        return std::unexpected(err);
     }
 
     // Resolve the "suspended" FSM state UUID from the system context.
@@ -239,12 +260,12 @@ bool report_scheduling_service::unschedule_one(
     auto updated = def;
     updated.scheduler_job_id = std::nullopt;
     updated.fsm_state_id = suspended_state;
-    updated.modified_by = performed_by;
-    updated.performed_by = performed_by;
-    updated.change_reason_code = "system.report_unscheduled";
+    updated.modified_by = actor;
+    updated.performed_by = ctx_.service_account();
+    updated.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
     updated.change_commentary = "Scheduler job removed";
 
-    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, performed_by);
+    const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, actor);
     report_definition_service svc(tenant_ctx);
     svc.save_definition(updated);
 
@@ -256,7 +277,6 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     BOOST_LOG_SEV(lg(), info)
         << "Starting scheduler reconciliation for report definitions.";
 
-    const auto& performed_by = ctx_.service_account();
 
     // Step 1: ask the IAM service for all active tenants.
     BOOST_LOG_SEV(lg(), debug) << "Requesting active tenant list from IAM.";
@@ -313,7 +333,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             << "Reconciling tenant: " << tenant_id_str
             << " [" << tenant.name << "]";
 
-        const auto tenant_ctx = ctx_.with_tenant(tenant_id, performed_by);
+        const auto tenant_ctx = ctx_.with_tenant(tenant_id, ctx_.service_account());
 
         repository::report_definition_repository repo;
         std::vector<domain::report_definition> unscheduled;
@@ -339,12 +359,12 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         };
         std::vector<pending_entry> pending;
         ores::scheduler::messaging::schedule_jobs_batch_request batch_req;
-        batch_req.change_reason_code = "system.report_scheduled";
+        batch_req.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
         batch_req.change_commentary = "Startup reconciliation by reporting service";
 
         for (const auto& def : unscheduled) {
             const auto job_id = gen_uuid();
-            auto job = build_job_definition(def, job_id, performed_by);
+            auto job = build_job_definition(def, job_id, ctx_.service_account());
             if (!job) {
                 // Invalid cron — warning already logged in build_job_definition.
                 ++total_failed;
@@ -386,10 +406,17 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             for (const auto& fid : resp->failed_ids)
                 failed_ids.insert(fid);
 
-            BOOST_LOG_SEV(lg(), debug)
-                << "Scheduler accepted " << resp->scheduled_count
-                << " job(s), " << resp->failed_ids.size()
-                << " failed for tenant: " << tenant_id_str;
+            if (resp->failed_ids.empty()) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Scheduler accepted " << resp->scheduled_count
+                    << " job(s) for tenant: " << tenant_id_str;
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Scheduler failed " << resp->failed_ids.size()
+                    << " job(s) (accepted " << resp->scheduled_count
+                    << ") for tenant: " << tenant_id_str
+                    << ". First error: " << resp->message;
+            }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Batch schedule NATS call failed for tenant "
@@ -413,9 +440,9 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             auto def_updated = *entry.def;
             def_updated.scheduler_job_id = entry.job_id;
             def_updated.fsm_state_id = active_state;
-            def_updated.modified_by = performed_by;
-            def_updated.performed_by = performed_by;
-            def_updated.change_reason_code = "system.report_scheduled";
+            def_updated.modified_by = ctx_.service_account();
+            def_updated.performed_by = ctx_.service_account();
+            def_updated.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
             def_updated.change_commentary = "Linked to scheduler job by reconciliation";
 
             try {

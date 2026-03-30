@@ -364,6 +364,14 @@ private:
     void showTenantProvisioningWizard();
 
     /**
+     * @brief Shows the party provisioning wizard for first-time party setup.
+     *
+     * Displays a guided wizard that helps set up a newly provisioned tenant's
+     * first operational party. Clears the party setup flag on completion.
+     */
+    void showPartyProvisioningWizard();
+
+    /**
      * @brief Options for configuring the login dialog.
      */
     struct LoginDialogOptions {

@@ -54,7 +54,7 @@ public:
     std::optional<domain::job_definition>
     find_definition(const std::string& id);
 
-    void save_definition(const domain::job_definition& v);
+    void save_definition(domain::job_definition v);
 
     void remove_definition(const std::string& id);
 

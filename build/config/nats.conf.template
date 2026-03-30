@@ -1,0 +1,28 @@
+# NATS server configuration template for ORE Studio.
+#
+# Do not use this file directly — run build/scripts/init-nats.sh to generate
+# a per-environment config at build/config/nats-<label>.conf.
+#
+# Variables substituted by init-nats.sh:
+#   {{LABEL}}             — checkout label (e.g. local1)
+#   {{NATS_PORT}}         — per-env port (e.g. 42221)
+#   {{NATS_MONITOR_PORT}} — per-env HTTP monitoring port (e.g. 8221)
+#   {{NATS_STORE_DIR}}    — absolute path to JetStream store directory
+#   {{CHECKOUT_ROOT}}     — absolute path to the checkout root
+
+port: {{NATS_PORT}}
+
+# HTTP monitoring endpoint — used by telemetry service NATS poller
+http: {{NATS_MONITOR_PORT}}
+
+jetstream {
+  store_dir: "{{NATS_STORE_DIR}}"
+}
+
+tls {
+  cert_file: "{{CHECKOUT_ROOT}}/build/keys/nats/nats-server.crt"
+  key_file:  "{{CHECKOUT_ROOT}}/build/keys/nats/nats-server.key"
+  ca_file:   "{{CHECKOUT_ROOT}}/build/keys/nats/ca.crt"
+  verify:    true   # require client certificates (mTLS)
+  timeout:   5
+}

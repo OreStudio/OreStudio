@@ -112,8 +112,30 @@ fi
 
 DB_NAME="${ORES_DATABASE_NAME:-ores_dev_${LABEL}}"
 NATS_PREFIX="${ORES_NATS_SUBJECT_PREFIX:-ores.dev.${LABEL}}"
-NATS_URL="nats://localhost:4222"
+
+# Derive per-environment NATS ports from the numeric suffix of the label.
+# local1→42221/8221, local2→42222/8222, …  non-numeric labels fall back to 42229/8229.
+LABEL_SUFFIX="$(echo "${LABEL}" | sed 's/[^0-9]*\([0-9]*\)$/\1/')"
+if [[ -n "${LABEL_SUFFIX}" ]]; then
+    NATS_PORT=$((42220 + LABEL_SUFFIX))
+    NATS_MONITOR_PORT=$((8220 + LABEL_SUFFIX))
+else
+    NATS_PORT=42229
+    NATS_MONITOR_PORT=8229
+fi
+NATS_URL="nats://localhost:${NATS_PORT}"
+NATS_MONITOR_URL="http://localhost:${NATS_MONITOR_PORT}"
+NATS_STORE_DIR="${CHECKOUT_ROOT}/build/nats/${LABEL}/jetstream"
+
 NATS_CERTS_DIR="${CHECKOUT_ROOT}/build/keys/nats"
+
+# ---------------------------------------------------------------------------
+# NATS mTLS certificates — generate if not present (idempotent: existing
+# files are preserved; pass --force to regenerate).
+# ---------------------------------------------------------------------------
+echo "--- NATS certificates ---"
+"${SCRIPT_DIR}/generate_nats_certs.sh"
+
 NATS_TLS_CA=""
 NATS_TLS_CERT=""
 NATS_TLS_KEY=""
@@ -141,7 +163,9 @@ if [[ ! -f "${IAM_KEY}" ]]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Read existing .env values so passwords are preserved on re-runs
+# Read existing .env values so passwords are preserved on re-runs.
+# Uses grep rather than an associative array so the script is compatible
+# with bash 3.2 (macOS system shell).
 # ---------------------------------------------------------------------------
 # Read a single key from the existing .env file.
 # bash 3.2 compatible — no associative arrays (macOS ships bash 3.x).
@@ -264,7 +288,10 @@ ORES_TEST_DB_DDL_USER="ores_${LABEL_LOWER}_test_ddl_user"
 ORES_TEST_DB_DML_USER="ores_${LABEL_LOWER}_test_dml_user"
 
 # ---------------------------------------------------------------------------
-# Resolve all passwords (reuse existing where available)
+# Resolve ALL values before writing — must happen while the old .env is still
+# in place so get_existing_val can read it.  Inline get_or_gen calls inside
+# the write block would read from the already-truncated new file and generate
+# fresh secrets on every run.
 # ---------------------------------------------------------------------------
 echo "Resolving passwords..."
 ORES_DB_DDL_PASSWORD="$(get_or_gen ORES_DB_DDL_PASSWORD)"
@@ -275,9 +302,34 @@ ORES_DB_SHELL_PASSWORD="$(get_or_gen ORES_DB_SHELL_PASSWORD)"
 ORES_DB_READONLY_PASSWORD="$(get_or_gen ORES_DB_READONLY_PASSWORD)"
 ORES_TEST_DB_DDL_PASSWORD="$(get_or_gen ORES_TEST_DB_DDL_PASSWORD)"
 ORES_TEST_DB_PASSWORD="$(get_or_gen ORES_TEST_DB_PASSWORD)"
+ORES_HTTP_SERVER_JWT_SECRET="$(get_or_gen ORES_HTTP_SERVER_JWT_SECRET)"
+
+# Service passwords — indexed arrays are bash 3.2 compatible
+SERVICE_PW_VALS=()
+for component in "${SERVICE_COMPONENTS[@]}"; do
+    upper="$(echo "${component}" | tr '[:lower:]-' '[:upper:]_')"
+    pw_key="ORES_${upper}_SERVICE_DB_PASSWORD"
+    SERVICE_PW_VALS+=("$(get_or_gen "${pw_key}")")
+done
+
+# Grid node UUIDs
+GRID_NODE_IDS=()
+for n in 1 2 3 4 5; do
+    key="ORES_GRID_NODE_${n}_HOST_ID"
+    GRID_NODE_IDS+=("$(get_or_gen_uuid "${key}")")
+done
+echo "All credentials resolved."
 
 # Encode PEM as a single line with literal \n separators
 JWT_KEY_ONELINE="$(awk '{printf "%s\\n", $0}' "${IAM_KEY}")"
+
+# ---------------------------------------------------------------------------
+# Backup existing .env before overwriting
+# ---------------------------------------------------------------------------
+if [[ -f "${ENV_FILE}" ]]; then
+    cp "${ENV_FILE}" "${ENV_FILE}.old"
+    echo "Backed up existing .env to .env.old"
+fi
 
 # ---------------------------------------------------------------------------
 # Write .env
@@ -300,8 +352,17 @@ if [[ -n "${PRESET}" ]]; then
 fi
 cat >> "${ENV_FILE}" << EOF
 ORES_DATABASE_NAME=${DB_NAME}
+
+# ---------------------------------------------------------------------------
+# NATS (per-environment: port derived from label suffix)
+# Run build/scripts/init-nats.sh to generate the server config and store dir.
+# ---------------------------------------------------------------------------
+ORES_NATS_PORT=${NATS_PORT}
 ORES_NATS_URL=${NATS_URL}
+ORES_NATS_MONITOR_PORT=${NATS_MONITOR_PORT}
+ORES_NATS_MONITOR_URL=${NATS_MONITOR_URL}
 ORES_NATS_SUBJECT_PREFIX=${NATS_PREFIX}
+ORES_NATS_STORE_DIR=${NATS_STORE_DIR}
 # mTLS: auto-enabled when certificates exist in build/keys/nats/.
 # Run build/scripts/generate_nats_certs.sh to generate them.
 # ORES_NATS_TLS_CERT/KEY are used by the Qt desktop client.
@@ -358,13 +419,13 @@ EOF
     echo "# ---------------------------------------------------------------------------"
     echo "# NATS service DB credentials (read by C++ make_mapper)"
     echo "# ---------------------------------------------------------------------------"
-    for component in "${SERVICE_COMPONENTS[@]}"; do
+    for i in "${!SERVICE_COMPONENTS[@]}"; do
+        component="${SERVICE_COMPONENTS[$i]}"
         upper="$(echo "${component}" | tr '[:lower:]-' '[:upper:]_')"
         db_user="ores_${LABEL_LOWER}_${component}_service"
-        pw_key="ORES_${upper}_SERVICE_DB_PASSWORD"
         echo ""
         echo "ORES_${upper}_SERVICE_DB_USER=${db_user}"
-        echo "${pw_key}=$(get_or_gen "${pw_key}")"
+        echo "ORES_${upper}_SERVICE_DB_PASSWORD=${SERVICE_PW_VALS[$i]}"
         echo "ORES_${upper}_SERVICE_DB_DATABASE=${DB_NAME}"
     done
     echo ""
@@ -388,7 +449,7 @@ EOF
     echo "ORES_HTTP_SERVER_DB_USER=${ORES_DB_HTTP_USER}"
     echo "ORES_HTTP_SERVER_DB_PASSWORD=${ORES_DB_HTTP_PASSWORD}"
     echo "ORES_HTTP_SERVER_DB_DATABASE=${DB_NAME}"
-    echo "ORES_HTTP_SERVER_JWT_SECRET=$(get_or_gen ORES_HTTP_SERVER_JWT_SECRET)"
+    echo "ORES_HTTP_SERVER_JWT_SECRET=${ORES_HTTP_SERVER_JWT_SECRET}"
     echo ""
     echo "# ---------------------------------------------------------------------------"
     echo "# WT service DB credentials (read by C++ make_mapper(\"WT\"))"
@@ -408,37 +469,53 @@ EOF
     echo "# Each ID must match a host record in the compute.hosts table."
     echo "# Re-run recreate_database.sh after regenerating to keep IDs in sync."
     echo "# ---------------------------------------------------------------------------"
-    for n in 1 2 3 4 5; do
-        key="ORES_GRID_NODE_${n}_HOST_ID"
-        echo "${key}=$(get_or_gen_uuid "${key}")"
+    for i in "${!GRID_NODE_IDS[@]}"; do
+        n=$((i + 1))
+        echo "ORES_GRID_NODE_${n}_HOST_ID=${GRID_NODE_IDS[$i]}"
     done
 } >> "${ENV_FILE}"
 
 # Preserve any logging vars that were already set
+echo "Checking for existing logging configuration..."
 _log_level="$(get_existing_val ORES_TEST_LOG_LEVEL)"
-_log_console="$(get_existing_val ORES_TEST_LOG_CONSOLE)"
 if [[ -n "${_log_level}" ]]; then
+    echo "Preserving test logging (level=${_log_level})"
+    _log_console="$(get_existing_val ORES_TEST_LOG_CONSOLE)"
     {
         echo ""
         echo "# Test logging"
         echo "ORES_TEST_LOG_LEVEL=${_log_level}"
         echo "ORES_TEST_LOG_CONSOLE=${_log_console:-true}"
     } >> "${ENV_FILE}"
+else
+    echo "No test logging configuration found; skipping."
 fi
 
+echo "Setting file permissions..."
 chmod 600 "${ENV_FILE}"
+echo "Done."
+
+# ---------------------------------------------------------------------------
+# NATS setup — generate per-environment server config and JetStream store dir
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- NATS setup ---"
+"${SCRIPT_DIR}/init-nats.sh"
 
 echo ""
-echo "=== Environment initialised for '${LABEL}' (db: ${DB_NAME}) ==="
+echo "=== Environment initialised for '${LABEL}' (db: ${DB_NAME}, NATS port: ${NATS_PORT}) ==="
 echo ""
 echo "Next steps:"
 echo "  1. Create the database (first time only):"
 echo "       ./projects/ores.sql/recreate_database.sh -y"
 echo ""
-echo "  2. In Emacs, set up SQL connections:"
+echo "  2. Start NATS:"
+echo "       nats-server --config build/config/nats-${LABEL}.conf"
+echo ""
+echo "  3. In Emacs, set up SQL connections:"
 echo "       M-x ores-db/setup-connections"
 echo ""
-echo "  3. Start services via prodigy — they read ORES_PRESET and credentials from .env."
+echo "  4. Start services via prodigy — they read ORES_PRESET and credentials from .env."
 echo ""
 echo "Logging:"
 echo "  Enable:  ./build/scripts/init-environment.sh --enable-logging [level]"

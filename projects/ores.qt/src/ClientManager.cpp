@@ -235,6 +235,7 @@ LoginResult ClientManager::login(const std::string& username,
             .error_message = {},
             .password_reset_required = response.password_reset_required,
             .tenant_bootstrap_mode = response.tenant_bootstrap_mode,
+            .party_setup_mode = response.party_setup_mode,
             .selected_party_id = selected_party_id,
             .available_parties = std::move(available_parties),
             .http_base_url = std::move(discovered_base_url)

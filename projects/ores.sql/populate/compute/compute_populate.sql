@@ -33,7 +33,7 @@ select
     'Reset stale in-progress compute results every minute',
     'compute.v1.work.reap',
     '* * * * *',
-    'send_mq_message',
+    'nats_publish',
     '{"subject":"compute.v1.work.reap"}',
     1,
     current_user, current_user, 'system.new_record', '',

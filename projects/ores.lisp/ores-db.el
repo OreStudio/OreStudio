@@ -133,6 +133,9 @@ falls back to the current project."
     (define-key map (kbd "e")   #'ores-db/recreate-env-database)
     (define-key map (kbd "R")   #'ores-db/recreate-all)
     (define-key map (kbd "n")   #'ores-db/create-whimsical)
+    (define-key map (kbd "i")   #'ores-db/init-environment)
+    (define-key map (kbd "N")   #'ores-db/init-nats)
+    (define-key map (kbd "D")   #'ores-db/diff-environment)
     (define-key map (kbd "v")   #'ores-db/setup-connections)
     (define-key map (kbd "V")   #'ores-db/show-env-vars)
     (define-key map (kbd "g")   #'ores-db/ui-refresh)
@@ -512,6 +515,74 @@ This runs recreate_database.sh which drops everything and recreates from scratch
     (user-error "Aborted"))
   (ores-db/run-script "recreate_database.sh" "*ores-db-recreate-all*" '("-y")))
 
+(defconst ores-db/presets
+  '("linux-clang-debug-make"
+    "linux-clang-release-make"
+    "linux-clang-debug-ninja"
+    "linux-clang-release-ninja"
+    "macos-clang-debug-ninja"
+    "macos-clang-release-ninja")
+  "Known build presets for preset selection prompt.")
+
+(defun ores-db/init-environment ()
+  "Run build/scripts/init-environment.sh -y to regenerate the .env file.
+Reads ORES_PRESET from the existing .env if available; otherwise prompts."
+  (interactive)
+  (let* ((root (or ores-db/project-root
+                   (when-let ((pr (project-current)))
+                     (project-root pr))))
+         (script-path (expand-file-name "build/scripts/init-environment.sh" root)))
+    (unless root
+      (user-error "Not in an OreStudio project"))
+    (unless (file-executable-p script-path)
+      (user-error "Script not found or not executable: %s" script-path))
+    (let* ((existing-preset (cdr (assoc "ORES_PRESET" (ores/load-dotenv))))
+           (default-preset (or existing-preset (car ores-db/presets)))
+           (preset (completing-read (format "Build preset (default: %s): " default-preset)
+                                    ores-db/presets nil nil nil nil default-preset))
+           (default-directory root))
+      (compilation-start
+       (format "%s -y --preset %s" script-path preset)
+       nil
+       (lambda (_) "*ores-db-init-environment*")))))
+
+(defun ores-db/init-nats (&optional provision)
+  "Run build/scripts/init-nats.sh to generate the per-environment NATS config.
+With prefix argument PROVISION, also provision JetStream streams (requires
+NATS to already be running)."
+  (interactive "P")
+  (let* ((root (or ores-db/project-root
+                   (when-let ((pr (project-current)))
+                     (project-root pr))))
+         (script-path (expand-file-name "build/scripts/init-nats.sh" root)))
+    (unless root
+      (user-error "Not in an OreStudio project"))
+    (unless (file-executable-p script-path)
+      (user-error "Script not found or not executable: %s" script-path))
+    (let ((default-directory root))
+      (compilation-start
+       (if provision
+           (format "%s --provision" script-path)
+         script-path)
+       nil
+       (lambda (_) "*ores-nats-init*")))))
+
+(defun ores-db/diff-environment ()
+  "Show a diff buffer comparing .env.old with the current .env."
+  (interactive)
+  (let* ((root (or ores-db/project-root
+                   (when-let ((pr (project-current)))
+                     (project-root pr))))
+         (env-file (expand-file-name ".env" root))
+         (env-old  (expand-file-name ".env.old" root)))
+    (unless root
+      (user-error "Not in an OreStudio project"))
+    (unless (file-exists-p env-old)
+      (user-error "No .env.old found — run init-environment.sh at least twice"))
+    (unless (file-exists-p env-file)
+      (user-error "No .env found"))
+    (diff env-old env-file)))
+
 (defun ores-db/create-whimsical ()
   "Create a new database instance with a whimsical name.
 Uses two-phase creation: postgres creates the database, ores_ddl_user sets up schema."
@@ -562,11 +633,14 @@ Uses two-phase creation: postgres creates the database, ores_ddl_user sets up sc
     ("t" "Toggle marks" ores-db/toggle-marks)]
    ["Create/Recreate"
     ("n" "New whimsical database" ores-db/create-whimsical)
-    ("d" "Recreate current env" ores-db/recreate-current-env)
-    ("r" "Recreate at point" ores-db/recreate-at-point)
-    ("e" "Recreate environment..." ores-db/recreate-env-database)
-    ("R" "Recreate ALL (nuclear)" ores-db/recreate-all)]
+    ("d" "Recreate DB only (current env)" ores-db/recreate-current-env)
+    ("r" "Recreate DB only (at point)" ores-db/recreate-at-point)
+    ("e" "Recreate DB only (choose env)" ores-db/recreate-env-database)
+    ("R" "Full recreate: roles+users+DB+data" ores-db/recreate-all)]
    ["Utilities"
+    ("i" "Init environment" ores-db/init-environment)
+    ("N" "Regen NATS config (C-u = +provision)" ores-db/init-nats)
+    ("D" "Diff .env vs .env.old" ores-db/diff-environment)
     ("v" "Setup SQL connections" ores-db/setup-connections)
     ("V" "Show env vars" ores-db/show-env-vars)
     ("q" "Quit" transient-quit-one)]])

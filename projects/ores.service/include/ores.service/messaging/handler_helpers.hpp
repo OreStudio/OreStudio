@@ -25,6 +25,7 @@
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -94,6 +95,24 @@ void stamp(T& obj, const ores::database::context& ctx,
     }
 }
 
+/**
+ * @brief Returns the acting user from a request context.
+ *
+ * For user-facing handlers, returns ctx.actor() — the end-user extracted from
+ * the validated JWT. For system handlers where no user actor is present, falls
+ * back to ctx.service_account().
+ *
+ * This value is stamped as modified_by in service-to-service requests.
+ * The receiving service trusts it as plain payload data; its integrity is
+ * guaranteed by the calling service's authentication (service JWT) and
+ * least-privilege RBAC on the internal service mesh.
+ *
+ * @param ctx  Per-request context populated from the validated inbound JWT.
+ */
+inline const std::string& delegated_actor(const ores::database::context& ctx) {
+    return ctx.actor().empty() ? ctx.service_account() : ctx.actor();
+}
+
 // Serialise resp to JSON and publish to the message's reply subject.
 // No-op if the message has no reply subject.
 template<typename Resp>
@@ -155,7 +174,7 @@ inline void error_reply(ores::nats::service::client& nats,
         default:                                       error_str = "unauthorized";  break;
     }
     nats.publish(msg.reply_subject, std::span<const std::byte>{},
-        {{"X-Error", std::string(error_str)}});
+        {{std::string(ores::nats::headers::x_error), std::string(error_str)}});
 }
 
 // Deserialise the message payload from JSON into Req.

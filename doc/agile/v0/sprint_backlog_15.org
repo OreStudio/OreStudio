@@ -1172,7 +1172,136 @@ so we can reuse it for Wt. See [[file:../../plans/2026-03-28-badge-system-design
 - [ ] Implement =BadgeCache= in =ores.qt=
 - [ ] Wire =BadgeCache= into client startup sequence
 
+*** Fix suspicious signup handler using raw ctx_ without tenant context :code:
+
+The =signup()= method in =auth_handler.hpp= uses raw =ctx_= (the service-level
+context with no tenant set) when calling =account_service= and
+=authorization_service=. Every other authenticated handler either calls
+=make_request_context()= to extract a tenant from the JWT, or explicitly calls
+=ctx_.with_tenant(...)= to set one before proceeding.
+
+Using =ctx_= directly means the =tenant_aware_pool= never sets
+=app.current_tenant_id=, so PostgreSQL RLS policies have no tenant to filter
+on. This may allow cross-tenant data leakage or bypass of tenant isolation
+during account creation.
+
+Tasks:
+
+- [ ] Audit what tenant isolation =signup= requires (new-tenant bootstrap vs.
+  existing-tenant self-service).
+- [ ] Ensure =account_service= and =authorization_service= are always called
+  with a valid tenant context.
+- [ ] Add a test that verifies signup cannot write to the wrong tenant.
+
+*** Document and enforce canonical IAM context setup patterns          :code:
+
+Three distinct patterns for setting up the request context exist across
+=ores.iam.core= messaging handlers, with no documented rule for when each
+should be used:
+
+1. =make_request_context()= — canonical path used by most handlers (e.g.
+   =role_handler::list()=). Extracts the JWT, validates it, and calls
+   =ctx.with_tenant(tenant_id)=.
+2. =ctx_.with_tenant(tid, "")= — used in =auth_handler::login()= and
+   =auth_is_tenant_bootstrap_mode()=. No JWT; derives tenant from hostname.
+   Legitimate for pre-auth flows.
+3. =tenant_context::with_tenant(ctx, code)= — used in
+   =role_handler::assign_by_name()= / =revoke_by_name()= for cross-tenant
+   switching after initial auth. Legitimate but distinct from (1).
+4. Raw =ctx_= — used in =auth_handler::signup()=. No tenant set at all —
+   likely a bug (see related story above).
+
+Tasks:
+
+- [ ] Document when each pattern is appropriate in a developer guide or code
+  comment block near the handler base.
+- [ ] Review all handlers to confirm each uses the appropriate pattern.
+- [ ] Fix any handlers using an incorrect pattern.
+
+*** Enforce single canonical entry point for authenticated IAM handlers :code:
+
+All authenticated NATS handlers must set a valid tenant context before any
+database access so that PostgreSQL RLS policies can filter by
+=app.current_tenant_id=. Currently this is enforced only by convention.
+
+The =tenant_aware_pool= is the sole mechanism that sets
+=app.current_tenant_id=. If a handler bypasses =make_request_context()=, the
+pool may use a stale or missing tenant ID, silently breaking tenant isolation.
+
+Tasks:
+
+- [ ] Define the canonical entry-point contract for authenticated vs. pre-auth
+  handlers.
+- [ ] Add a compile-time or runtime guard that detects missing tenant context
+  before DB access (e.g. assertion in =tenant_aware_pool::acquire()=).
+- [ ] Audit all existing handlers and confirm compliance.
+- [ ] Update developer documentation to explain the enforcement mechanism.
+
+*** Distinguish service roles from user roles; prevent leakage to tenants :code:
+
+Service account roles (=IamService=, =RefdataService=, etc.) are internal
+system roles assigned to NATS domain service accounts. They must never be:
+
+1. Shown to users in role-assignment UIs (Roles dialog, account editor).
+2. Copied to new tenants during provisioning — =ores_iam_provision_tenant_fn=
+   currently copies all system-tenant roles, including service roles, to every
+   provisioned tenant.
+
+Exposing service roles to tenants is a security concern: a misconfigured
+tenant admin could assign a service role to a user account, granting it
+service-level permissions (e.g. =iam::*= for =IamService=).
+
+Tasks:
+
+- [ ] Add a =role_type= column (or equivalent discriminator) to
+  =ores_iam_roles_tbl= with values =user= / =service=.
+- [ ] Mark all service roles as =service= type in =iam_roles_populate.sql=.
+- [ ] Update =ores_iam_provision_tenant_fn= to copy only =user=-type roles to
+  new tenants.
+- [ ] Update =role_handler::list()= and =authorization_service::list_roles()=
+  to exclude =service=-type roles from responses to non-system tenants.
+- [ ] Write a migration script to clean up service roles already copied to
+  existing tenant records.
+- [ ] Add integration tests confirming service roles cannot be assigned via the
+  public API.
+
+*** Rename request contexts to reflect their scope (tenant_ctx, etc.)   :code:
+
+Several service handler functions and service classes hold intermediate database
+context values with generic names (=ctx=, =local_ctx=) when a more descriptive
+name would make the security boundary immediately obvious at a glance.  The most
+important case is the distinction between the service-level context (no tenant
+set, used to reach shared tables) and the per-request tenant context (tenant
+set, subject to RLS) — but the pattern applies anywhere a context is derived and
+then used for a scoped operation.
+
+Naming conventions to adopt:
+
+- =svc_ctx= — the service-level context held on the handler (no tenant, no actor).
+- =tenant_ctx= — a context derived from =svc_ctx= with a specific tenant applied
+  (e.g. =ctx_.with_tenant(tid, performed_by)=).
+- =req_ctx= — a context built by =make_request_context()= from an inbound NATS
+  message (tenant + actor extracted from JWT).
+
+Applying these names consistently lets a reviewer confirm at a glance that the
+correct context is used for each DB call, and makes incorrect usage (e.g. using
+=svc_ctx= where =req_ctx= is expected) stand out immediately.
+
+Tasks:
+
+- [ ] Audit all handler classes in =ores.*.core= and =ores.service= for context
+  variable names and apply the convention above.
+- [ ] Rename the =ctx_= member of handler classes that hold a service-level
+  context to =svc_ctx_=.
+- [ ] Rename local variables produced by =ctx_.with_tenant(...)= to =tenant_ctx=.
+- [ ] Rename local variables produced by =make_request_context()= to =req_ctx=
+  (or just =ctx= inside a handler function body where the scope is clear).
+- [ ] Update =report_scheduling_service= which currently uses both =ctx_= (service)
+  and a derived =tenant_ctx= — ensure the member is clearly =svc_ctx_= and all
+  derived locals follow the convention.
+
 * Footer
+
 
 
 | Previous: [[id:93CE19DF-1501-11F1-8EF4-40B0768014EB][Sprint Backlog 14]] | Next: TBD |

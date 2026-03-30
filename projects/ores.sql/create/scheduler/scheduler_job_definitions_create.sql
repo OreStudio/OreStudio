@@ -32,8 +32,8 @@
  *
  * The action_type column controls how the scheduler executes the job:
  *   - 'execute_sql'    : run the SQL in the command column directly.
- *   - 'send_mq_message': publish a message; action_payload carries the
- *                        routing key and body.
+ *   - 'nats_publish'  : publish a NATS message; action_payload carries
+ *                        the subject and body.
  */
 
 create table if not exists "ores_scheduler_job_definitions_tbl" (
@@ -43,10 +43,10 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
     "party_id"            uuid,
     "job_name"            text not null,
     "description"         text not null default '',
-    "command"             text not null,
+    "command"             text not null default '',
     "schedule_expression" text not null,
     "action_type"         text not null default 'execute_sql'
-                          check (action_type in ('execute_sql','send_mq_message')),
+                          check (action_type in ('execute_sql','nats_publish')),
     "action_payload"      jsonb not null default '{}'::jsonb,
     "is_active"           integer not null default 1,
     "modified_by"         text not null,
@@ -63,7 +63,7 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
     check ("valid_from" < "valid_to"),
     check ("id" <> '00000000-0000-0000-0000-000000000000'::uuid),
     check ("job_name" <> ''),
-    check ("command" <> ''),
+    check (action_type != 'execute_sql' or "command" <> ''),
     check ("schedule_expression" <> '')
 );
 

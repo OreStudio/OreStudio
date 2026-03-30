@@ -21,6 +21,7 @@
 #define ORES_PLATFORM_TIME_TIME_UTILS_HPP
 
 #include <ctime>
+#include <chrono>
 
 namespace ores::platform::time {
 
@@ -64,6 +65,36 @@ public:
      * @return The corresponding time_t value.
      */
     static std::time_t timegm_safe(std::tm* tm);
+
+    /**
+     * @brief Converts a UTC tm struct directly to a system_clock::time_point.
+     *
+     * Interprets the tm fields as UTC. Use this when the source data is
+     * known to be in UTC (e.g. a value already normalised to UTC before
+     * storing in tm).
+     *
+     * @param tm The tm struct to convert (interpreted as UTC, passed by value
+     *           because timegm may normalise the fields).
+     * @return The corresponding system_clock::time_point.
+     */
+    static std::chrono::system_clock::time_point
+    to_time_point_utc(std::tm tm);
+
+    /**
+     * @brief Converts a local-time tm struct directly to a
+     *        system_clock::time_point.
+     *
+     * Interprets the tm fields as the process's local timezone (via
+     * std::mktime), then converts to UTC. Use this when the source data
+     * is in the session/system timezone — e.g. a timestamp returned by
+     * libpq whose offset has been stripped by rfl::Timestamp::strptime.
+     *
+     * @param tm The tm struct to convert (passed by value because mktime
+     *           may normalise DST and other fields).
+     * @return The corresponding system_clock::time_point.
+     */
+    static std::chrono::system_clock::time_point
+    to_time_point_local(std::tm tm);
 };
 
 }

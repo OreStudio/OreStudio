@@ -115,6 +115,7 @@ public:
         }
         if (auto req = decode<schedule_job_request>(msg)) {
             try {
+                req->definition.performed_by = ctx.service_account();
                 service::job_definition_service svc(ctx);
                 svc.save_definition(req->definition);
                 reply(nats_, msg, schedule_job_response{.success = true});
@@ -147,21 +148,21 @@ public:
             return;
         }
         if (auto req = decode<schedule_jobs_batch_request>(msg)) {
-            service::job_definition_service svc(ctx);
             schedule_jobs_batch_response resp;
-            resp.success = true;
             for (auto& def : req->definitions) {
                 try {
+                    def.performed_by = ctx.service_account();
+                    service::job_definition_service svc(ctx);
                     svc.save_definition(def);
                     ++resp.scheduled_count;
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(job_definition_handler_lg(), error)
                         << "Failed to schedule job " << def.job_name
                         << ": " << e.what();
-                    resp.failed_ids.push_back(
-                        boost::uuids::to_string(def.id));
+                    resp.failed_ids.push_back(boost::uuids::to_string(def.id));
                 }
             }
+            resp.success = resp.failed_ids.empty();
             reply(nats_, msg, resp);
         } else {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn)

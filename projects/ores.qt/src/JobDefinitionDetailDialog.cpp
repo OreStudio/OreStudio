@@ -149,10 +149,10 @@ void JobDefinitionDetailDialog::updateUiFromDefinition() {
 
     populateProvenance(definition_.version,
                        definition_.modified_by,
-                       /*performed_by=*/"",
-                       /*recorded_at=*/std::chrono::system_clock::time_point{},
-                       /*change_reason_code=*/"",
-                       /*change_commentary=*/"");
+                       definition_.performed_by,
+                       definition_.recorded_at,
+                       definition_.change_reason_code,
+                       definition_.change_commentary);
 
     hasChanges_ = false;
     updateSaveButtonState();

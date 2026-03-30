@@ -1,0 +1,239 @@
+#+TITLE: Service-to-Service JWT Delegation
+#+DATE: 2026-03-30
+#+AUTHOR: ORE Studio Team
+#+STATUS: DRAFT
+
+* Context
+
+Service accounts authenticate to NATS using their own RS256 JWT
+(=Authorization: Bearer <service-jwt>=), established by the =service_nats_client=
+pattern from the service-to-service auth design.  When a backend service calls
+another on behalf of an end-user, the receiving service sees the calling
+service's JWT.  The receiving service therefore builds a DB context scoped to
+the calling service's tenant and party — not the original user's — resulting in
+wrong RLS context, wrong audit attribution, and incorrect =modified_by= values.
+
+The current workaround on =feature/service-rbac-step2f= passes user identity as
+ad-hoc payload fields (=on_behalf_of=, =tenant_id=, =actor=) on individual
+message structs.  This requires manually updating every message type and every
+handler that participates in delegation, and provides no cryptographic guarantee
+on the delegated identity.
+
+* Guiding Principles
+
+1. *Always forward, never decide.*  A handler that makes outbound service calls
+   unconditionally forwards the inbound JWT as delegation.  It does not inspect
+   whether delegation is "needed" for a particular call.  The receiving end
+   handles both delegated and non-delegated calls identically.
+
+2. *JWT integrity.*  The delegated identity is a cryptographically signed JWT,
+   not a plain payload field.  The receiving service validates it independently.
+   A corrupt or expired delegated token is rejected.
+
+3. *No message struct changes.*  Delegation context travels in NATS message
+   headers, not in payload fields.  Message structs carry only business data.
+
+4. *No per-handler special casing.*  =make_request_context= is updated once.
+   All handlers — existing and future — benefit automatically.
+
+5. *Constants, not strings.*  All header names are defined as =constexpr= string
+   view constants.  No magic strings anywhere.
+
+* Architecture
+
+#+BEGIN_SRC
+  Qt / caller                  Reporting Service           Scheduler Service
+  ────────────                 ─────────────────           ─────────────────
+  Authorization: Bearer        Authorization: Bearer       Authorization: Bearer
+    <user-jwt>          ──►      <service-jwt>       ──►     <service-jwt>
+                                X-Delegated-Authorization:
+                                  Bearer <user-jwt>
+
+  make_request_context:        make_request_context:       make_request_context:
+    Authorization JWT     ──►    Authorization JWT    ──►    X-Delegated-Auth JWT
+    → user context               → service context           → user context  ✓
+#+END_SRC
+
+The calling service extracts the inbound =Authorization= header and re-sends it
+as =X-Delegated-Authorization= on every outbound call.  The receiving service's
+=make_request_context= checks =X-Delegated-Authorization= first; if present and
+valid, it builds the DB context from the user's claims (tenant, party,
+visible_party_ids, actor, roles).  =performed_by= is always the receiving
+service's own service account — stamped by the handler, not taken from any JWT.
+
+For system-initiated calls (e.g. startup reconciliation) there is no inbound
+user JWT.  =extract_bearer= returns an empty string.  =with_delegation("")= is a
+no-op.  The outbound call carries only the service JWT.  =make_request_context=
+falls through to =Authorization= and returns the service context.  No special
+casing in any handler.
+
+* What Needs to Be Built
+
+** Step 1 — Header name constants
+
+New file: =projects/ores.nats/include/ores.nats/domain/headers.hpp=
+
+#+BEGIN_SRC cpp
+namespace ores::nats::headers {
+    inline constexpr std::string_view authorization           = "Authorization";
+    inline constexpr std::string_view delegated_authorization = "X-Delegated-Authorization";
+    inline constexpr std::string_view bearer_prefix           = "Bearer ";
+    inline constexpr std::string_view x_error                 = "X-Error";
+}
+#+END_SRC
+
+Replace all string literals for these values throughout the codebase with the
+constants.  Affected files include =request_context.cpp=, =nats_client.cpp=, and
+all handlers that currently hard-code ="Authorization"= or ="X-Error"=.
+
+** Step 2 — =nats_client::with_delegation=
+
+Extend =nats_client= in =ores.nats/include/ores.nats/service/nats_client.hpp=:
+
+1. Add private field =std::string delegation_token_= (empty by default).
+
+2. Add public factory method:
+#+BEGIN_SRC cpp
+/// Returns a new nats_client that shares this instance's underlying
+/// connection and token provider, but injects
+///   X-Delegated-Authorization: Bearer <token>
+/// on every authenticated_request call.
+/// If token is empty, returns an equivalent of *this (no delegation).
+[[nodiscard]] nats_client with_delegation(std::string token) const;
+#+END_SRC
+
+3. In =do_authenticated_request=: if =delegation_token_= is non-empty, merge
+   =headers::delegated_authorization= into the outgoing headers map before
+   calling =request_sync=.
+
+The returned =nats_client= is a value type sharing the underlying =client*= /
+=token_provider=.  It is stack-allocated per request in the calling handler.
+Thread safety is preserved: no mutable shared state is modified.
+
+Add a free helper (same header or =ores.nats/service/nats_helpers.hpp=):
+
+#+BEGIN_SRC cpp
+/// Extracts the raw token from "Authorization: Bearer <token>" in msg.headers.
+/// Returns empty string if the header is absent or malformed.
+std::string extract_bearer(const ores::nats::message& msg);
+#+END_SRC
+
+** Step 3 — =make_request_context= updated once
+
+In =projects/ores.service/src/service/request_context.cpp=, update
+=make_request_context= to check =headers::delegated_authorization= first:
+
+#+BEGIN_SRC
+Priority:
+  1. headers::delegated_authorization present
+       → make_context_from_jwt(base_ctx, token, verifier)
+       → expired  : return token_expired  (hard reject)
+       → invalid  : return unauthorized
+       → valid    : return full user context
+  2. headers::authorization present
+       → existing behaviour (unchanged)
+  3. Neither present
+       → return unauthorized
+#+END_SRC
+
+No other changes to =make_request_context=.  All handlers — at the scheduler,
+IAM, and any future service — benefit without modification.
+
+** Step 4 — Calling handlers: always-forward pattern
+
+In every handler method that constructs a service object which makes outbound
+NATS calls, replace:
+
+#+BEGIN_SRC cpp
+// Before
+some_service svc(ctx_, svc_nats_);
+
+// After
+some_service svc(ctx_, svc_nats_.with_delegation(extract_bearer(msg)));
+#+END_SRC
+
+This is the entire change at the handler level.  The same line is used
+unconditionally regardless of whether the inbound request was user-initiated or
+system-initiated.  =extract_bearer= returns empty on system calls; =with_delegation("")=
+is a no-op.
+
+Initial affected handlers:
+- =report_definition_handler::schedule()=
+- =report_definition_handler::unschedule()=
+
+** Step 5 — Scheduler handler: remove =resolve_context=
+
+=make_request_context= now returns a fully-populated context (tenant, party,
+actor) for both delegated user calls and direct service calls.  All accounts —
+user and service — always have a party (service accounts use system parties).
+There is no null case.
+
+Remove =resolve_context= from =job_definition_handler= entirely.  Replace the
+three write handlers (=schedule=, =schedule_batch=, =unschedule=) with the
+standard pattern:
+
+#+BEGIN_SRC cpp
+auto ctx_expected = make_request_context(ctx_, msg, verifier_);
+if (!ctx_expected) { error_reply(...); return; }
+const auto& ctx = *ctx_expected;
+// ctx is always fully populated.
+req->definition.performed_by = ctx.service_account();
+service::job_definition_service svc(ctx);
+svc.save_definition(req->definition);
+#+END_SRC
+
+** Step 6 — Protocol cleanup
+
+Remove all ad-hoc delegation fields added during earlier iterations:
+
+- =on_behalf_of= from =schedule_job_request=, =schedule_jobs_batch_request=,
+  =unschedule_job_request= (already removed).
+- =tenant_id=, =party_id=, =actor= from =unschedule_job_request= (revert).
+
+Message structs carry only business payload.
+
+** Step 7 — =report_scheduling_service= cleanup
+
+Remove =user_jwt= parameter from all methods.  The service calls
+=nats_.authenticated_request(...)= exactly as before; the =nats_client= it
+received via the always-forward pattern handles delegation transparently.
+
+* Invariants
+
+| Scenario | X-Delegated-Authorization | Authorization | Context at receiver |
+|---|---|---|---|
+| Qt → Service | absent | user JWT | user context |
+| Service A → Service B (user req) | user JWT | service JWT | user context |
+| Service A → Service B (system) | absent | service JWT | service context |
+| Multi-hop A → B → C (user req) | user JWT (forwarded) | service JWT | user context |
+
+=performed_by= is always the receiving service's =service_account()=, stamped
+by the handler after =make_request_context= returns.  It is never taken from
+any JWT.
+
+* Affected Files
+
+** New files
+
+- =projects/ores.nats/include/ores.nats/domain/headers.hpp=
+
+** Modified files
+
+- =projects/ores.nats/include/ores.nats/service/nats_client.hpp= — add =with_delegation=, =delegation_token_= field
+- =projects/ores.nats/src/service/nats_client.cpp= — implement =with_delegation=, inject header in =do_authenticated_request=; add =extract_bearer=
+- =projects/ores.service/src/service/request_context.cpp= — check =X-Delegated-Authorization= before =Authorization=
+- =projects/ores.reporting.core/include/ores.reporting.core/messaging/report_definition_handler.hpp= — always-forward pattern in =schedule= / =unschedule=
+- =projects/ores.reporting.core/include/ores.reporting.core/service/report_scheduling_service.hpp= — remove =user_jwt= from all method signatures
+- =projects/ores.reporting.core/src/service/report_scheduling_service.cpp= — remove =user_jwt= from all methods and NATS requests
+- =projects/ores.scheduler.core/include/ores.scheduler.core/messaging/job_definition_handler.hpp= — remove =resolve_context=; standard context pattern in write handlers
+- =projects/ores.scheduler.api/include/ores.scheduler.api/messaging/scheduler_protocol.hpp= — revert =unschedule_job_request= to business payload only
+
+* Rollout Order
+
+1. Header constants — replace all string literals.
+2. =nats_client= — add =with_delegation= and =extract_bearer=.
+3. =make_request_context= — check delegated header first.
+4. Scheduler handler — remove =resolve_context=.
+5. Reporting handler and service — always-forward pattern, remove =user_jwt=.
+6. Protocol cleanup — revert =unschedule_job_request=.
+7. Build and test end-to-end: UI schedule → reporting → scheduler → DB with correct tenant/party/actor.

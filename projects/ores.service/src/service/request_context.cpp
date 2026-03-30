@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.security/jwt/jwt_error.hpp"
 
@@ -40,24 +41,12 @@ static auto& lg() {
 } // namespace
 
 std::expected<ores::database::context, ores::service::error_code>
-make_request_context(
+make_context_from_jwt(
     const ores::database::context& base_ctx,
-    const ores::nats::message& msg,
-    const std::optional<ores::security::jwt::jwt_authenticator>& verifier) {
+    const std::string& token,
+    const ores::security::jwt::jwt_authenticator& verifier) {
 
-    if (!verifier)
-        return base_ctx;
-
-    const auto it = msg.headers.find("Authorization");
-    if (it == msg.headers.end())
-        return std::unexpected(ores::service::error_code::unauthorized);
-
-    const auto& val = it->second;
-    if (!val.starts_with("Bearer "))
-        return std::unexpected(ores::service::error_code::unauthorized);
-
-    const auto token = val.substr(7);
-    auto claims = verifier->validate(token);
+    auto claims = verifier.validate(token);
     if (!claims) {
         if (claims.error() == ores::security::jwt::jwt_error::expired_token)
             return std::unexpected(ores::service::error_code::token_expired);
@@ -90,6 +79,43 @@ make_request_context(
         return base_ctx.with_tenant(*tid_result, claims->username.value_or(""))
                        .with_roles(claims->roles);
     }
+}
+
+std::expected<ores::database::context, ores::service::error_code>
+make_request_context(
+    const ores::database::context& base_ctx,
+    const ores::nats::message& msg,
+    const std::optional<ores::security::jwt::jwt_authenticator>& verifier) {
+
+    if (!verifier)
+        return base_ctx;
+
+    // Check X-Delegated-Authorization first: a downstream service forwarded
+    // the original end-user JWT.  Validate it and build the user's full context
+    // (tenant, party, actor, roles).  An expired delegated token is a hard
+    // reject — the original session has ended.
+    const auto del_it = msg.headers.find(
+        std::string(ores::nats::headers::delegated_authorization));
+    if (del_it != msg.headers.end()) {
+        const auto& val = del_it->second;
+        if (!val.starts_with(ores::nats::headers::bearer_prefix))
+            return std::unexpected(ores::service::error_code::unauthorized);
+        return make_context_from_jwt(
+            base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()),
+            *verifier);
+    }
+
+    // Fall through to the standard Authorization header.
+    const auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
+    if (it == msg.headers.end())
+        return std::unexpected(ores::service::error_code::unauthorized);
+
+    const auto& val = it->second;
+    if (!val.starts_with(ores::nats::headers::bearer_prefix))
+        return std::unexpected(ores::service::error_code::unauthorized);
+
+    return make_context_from_jwt(
+        base_ctx, val.substr(ores::nats::headers::bearer_prefix.size()), *verifier);
 }
 
 } // namespace ores::service::service

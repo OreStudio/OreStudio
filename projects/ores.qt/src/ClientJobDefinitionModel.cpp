@@ -92,6 +92,8 @@ QVariant ClientJobDefinitionModel::data(
             return definition.version;
         case ModifiedBy:
             return QString::fromStdString(definition.modified_by);
+        case RecordedAt:
+            return relative_time_helper::format(definition.recorded_at);
         default:
             return {};
         }
@@ -124,6 +126,8 @@ QVariant ClientJobDefinitionModel::headerData(
         return tr("Version");
     case ModifiedBy:
         return tr("Modified By");
+    case RecordedAt:
+        return tr("Recorded At");
     default:
         return {};
     }

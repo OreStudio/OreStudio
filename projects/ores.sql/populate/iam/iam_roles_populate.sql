@@ -110,80 +110,80 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Data
 -- =============================================================================
 
 -- IAM service: full own-component access
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_iam_service', 'IAM domain service — full IAM access');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_iam_service', 'iam::*');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'IamService', 'IAM domain service — full IAM access');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'IamService', 'iam::*');
 
 -- Reference Data service: full own-component + tenant read
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_refdata_service', 'Reference Data domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_refdata_service', 'refdata::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_refdata_service', 'iam::tenants:read');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'RefdataService', 'Reference Data domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'RefdataService', 'refdata::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'RefdataService', 'iam::tenants:read');
 
 -- Data Quality service: full own-component + tenant read
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_dq_service', 'Data Quality domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_dq_service', 'dq::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_dq_service', 'iam::tenants:read');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'DqService', 'Data Quality domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DqService', 'dq::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'DqService', 'iam::tenants:read');
 
 -- Variability service: full own-component + tenant read
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_variability_service', 'Variability domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_variability_service', 'variability::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_variability_service', 'iam::tenants:read');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'VariabilityService', 'Variability domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'VariabilityService', 'variability::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'VariabilityService', 'iam::tenants:read');
 
 -- Assets service: full own-component + tenant read
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_assets_service', 'Assets domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_assets_service', 'assets::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_assets_service', 'iam::tenants:read');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'AssetsService', 'Assets domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'AssetsService', 'assets::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'AssetsService', 'iam::tenants:read');
 
 -- Scheduler service: full own-component + tenant read + change reasons read
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_scheduler_service', 'Scheduler domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_scheduler_service', 'scheduler::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_scheduler_service', 'iam::tenants:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_scheduler_service', 'dq::change_reasons:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_scheduler_service', 'dq::change_reason_categories:read');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'SchedulerService', 'Scheduler domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SchedulerService', 'scheduler::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SchedulerService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SchedulerService', 'dq::change_reasons:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SchedulerService', 'dq::change_reason_categories:read');
 
 -- Reporting service: full own-component + shared reads + scheduler write/delete
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'Reporting domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'reporting::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'iam::tenants:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'dq::change_reasons:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'dq::change_reason_categories:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'scheduler::job_definitions:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'scheduler::job_definitions:write');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_reporting_service', 'scheduler::job_definitions:delete');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'Reporting domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'reporting::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'dq::change_reasons:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'dq::change_reason_categories:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'scheduler::job_definitions:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'scheduler::job_definitions:write');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ReportingService', 'scheduler::job_definitions:delete');
 
 -- Telemetry service: full own-component + tenant read
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_telemetry_service', 'Telemetry domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_telemetry_service', 'telemetry::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_telemetry_service', 'iam::tenants:read');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'TelemetryService', 'Telemetry domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'TelemetryService', 'telemetry::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'TelemetryService', 'iam::tenants:read');
 
 -- Trading service: full own-component + all refdata reads + change reasons
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_trading_service', 'Trading domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_trading_service', 'trading::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_trading_service', 'iam::tenants:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_trading_service', 'refdata::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_trading_service', 'dq::change_reasons:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_trading_service', 'dq::change_reason_categories:read');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'TradingService', 'Trading domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'TradingService', 'trading::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'TradingService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'TradingService', 'refdata::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'TradingService', 'dq::change_reasons:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'TradingService', 'dq::change_reason_categories:read');
 
 -- Compute service: full own-component + tenant read + refdata parties read
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_compute_service', 'Compute Grid domain service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_compute_service', 'compute::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_compute_service', 'iam::tenants:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_compute_service', 'refdata::*');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'ComputeService', 'Compute Grid domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ComputeService', 'compute::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ComputeService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ComputeService', 'refdata::*');
 
 -- Synthetic service: read access across all domain components for data generation
-select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'Synthetic data generation service');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'synthetic::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'iam::tenants:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'iam::accounts:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'iam::roles:read');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'refdata::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'dq::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'variability::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'assets::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'trading::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'reporting::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'scheduler::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'compute::*');
-select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'role_synthetic_service', 'telemetry::*');
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'Synthetic data generation service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'synthetic::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'iam::accounts:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'iam::roles:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'refdata::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'dq::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'variability::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'assets::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'trading::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'reporting::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'scheduler::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'compute::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'telemetry::*');
 
 -- Show summary
 select 'Roles:' as summary, count(*) as count from ores_iam_roles_tbl

@@ -69,6 +69,28 @@ public:
     std::optional<domain::job_definition>
     find_by_id(context ctx, const boost::uuids::uuid& id);
 
+    /**
+     * @brief Returns the current job definition with the given name for the
+     *        context's tenant, or nullopt if none exists.
+     *
+     * Used by save_definition to detect name collisions so an existing job can
+     * be updated in-place (bitemporal version bump) rather than rejected with a
+     * unique-constraint violation.
+     */
+    std::optional<domain::job_definition>
+    find_by_name(context ctx, const std::string& job_name);
+
+    /**
+     * @brief Like find_by_name but uses an explicit tenant_id string rather
+     *        than the context's tenant.
+     *
+     * Required when the calling context is the system tenant (e.g. reconciliation
+     * batch) but the job row belongs to a user tenant.
+     */
+    std::optional<domain::job_definition>
+    find_by_name(context ctx, const std::string& tenant_id,
+        const std::string& job_name);
+
     void remove(context ctx, const std::string& id);
 };
 

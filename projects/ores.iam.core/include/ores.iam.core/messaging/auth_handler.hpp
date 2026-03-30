@@ -63,14 +63,13 @@ inline auto& auth_handler_lg() {
 }
 
 inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
-    auto it = msg.headers.find("Authorization");
+    auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
     if (it == msg.headers.end())
         return {};
     const auto& val = it->second;
-    constexpr std::string_view prefix = "Bearer ";
-    if (!val.starts_with(prefix))
+    if (!val.starts_with(ores::nats::headers::bearer_prefix))
         return {};
-    return val.substr(prefix.size());
+    return val.substr(ores::nats::headers::bearer_prefix.size());
 }
 
 inline std::vector<boost::uuids::uuid> auth_compute_visible_party_ids(
@@ -151,6 +150,24 @@ inline bool auth_is_tenant_bootstrap_mode(
         using namespace ores::logging;
         BOOST_LOG_SEV(auth_handler_lg(), warn)
             << "Failed to check tenant bootstrap mode: " << e.what();
+    }
+    return false;
+}
+
+inline bool auth_is_party_setup_mode(
+    const ores::database::context& ctx,
+    const std::string& tenant_id_str) {
+    try {
+        auto tid_result = ores::utility::uuid::tenant_id::from_string(tenant_id_str);
+        if (!tid_result) return false;
+        auto tenant_ctx = ctx.with_tenant(*tid_result, "");
+        variability::service::system_settings_service sfs(tenant_ctx, tenant_id_str);
+        sfs.refresh();
+        return sfs.is_party_setup_mode_enabled();
+    } catch (const std::exception& e) {
+        using namespace ores::logging;
+        BOOST_LOG_SEV(auth_handler_lg(), warn)
+            << "Failed to check party setup mode: " << e.what();
     }
     return false;
 }
@@ -257,21 +274,65 @@ public:
                 auth_is_tenant_bootstrap_mode(
                     login_ctx, acct.tenant_id.to_string());
 
+            // Check if this tenant is waiting for the first party setup wizard
+            const bool in_party_setup =
+                !acct.tenant_id.is_system() &&
+                !in_tenant_bootstrap &&
+                auth_is_party_setup_mode(
+                    login_ctx, acct.tenant_id.to_string());
+
             repository::account_party_repository ap_repo(login_ctx);
             auto account_parties =
                 ap_repo.read_latest_by_account(acct.id);
 
-            // Every fully-provisioned account must have at least one party.
-            // A missing party is a misconfiguration — reject the login so the
-            // issue surfaces immediately rather than producing a confusing
-            // partial session.
-            if (account_parties.empty()) {
+            // An account with no party is normally a misconfiguration.
+            // Exception: if party_setup_mode is active the new party account
+            // intentionally has no party yet — the party setup wizard will
+            // assign one.  Allow the login with a tenant-only context and
+            // return party_setup_mode = true so the client shows the wizard.
+            if (account_parties.empty() && !in_party_setup) {
                 BOOST_LOG_SEV(auth_handler_lg(), warn)
                     << "Login rejected for " << username
                     << ": account has no party assignment";
                 throw std::runtime_error(
                     "Account has no party assignment. "
                     "Please contact your administrator.");
+            }
+
+            if (account_parties.empty() && in_party_setup) {
+                BOOST_LOG_SEV(auth_handler_lg(), info)
+                    << "Login allowed without party for " << username
+                    << ": party setup mode active";
+                const auto now = std::chrono::system_clock::now();
+                boost::uuids::random_generator uuid_gen;
+                const auto session_id_str =
+                    boost::uuids::to_string(uuid_gen());
+
+                security::jwt::jwt_claims claims;
+                claims.subject = boost::uuids::to_string(acct.id);
+                claims.issued_at = now;
+                claims.expires_at = now + std::chrono::seconds(
+                    token_settings_.access_lifetime_s);
+                claims.username = acct.username;
+                claims.email = acct.email;
+                claims.tenant_id = acct.tenant_id.to_string();
+                claims.session_id = session_id_str;
+                claims.session_start_time = now;
+                auto token = signer_.create_token(claims).value_or("");
+
+                login_response resp;
+                resp.success = true;
+                resp.token = token;
+                resp.account_id = boost::uuids::to_string(acct.id);
+                resp.tenant_id = acct.tenant_id.to_string();
+                resp.username = acct.username;
+                resp.email = acct.email;
+                resp.party_setup_mode = true;
+                resp.access_lifetime_s = token_settings_.access_lifetime_s;
+                BOOST_LOG_SEV(auth_handler_lg(), debug)
+                    << "Completed " << msg.subject << " (party setup mode)";
+                reply(nats_, msg, resp);
+                return;
             }
 
             // Create a session record so that analytics, session listings,
@@ -327,6 +388,7 @@ public:
                 resp.email = acct.email;
                 resp.selected_party_id = boost::uuids::to_string(party_id);
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.party_setup_mode = in_party_setup;
                 resp.access_lifetime_s = token_settings_.access_lifetime_s;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
@@ -372,6 +434,7 @@ public:
                 resp.username = acct.username;
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
+                resp.party_setup_mode = in_party_setup;
                 resp.access_lifetime_s = token_settings_.party_selection_lifetime_s;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);

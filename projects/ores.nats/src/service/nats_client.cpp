@@ -20,6 +20,7 @@
 #include "ores.nats/service/nats_client.hpp"
 
 #include <stdexcept>
+#include <unordered_map>
 #include "ores.nats/service/client.hpp"
 
 namespace ores::nats::service {
@@ -96,8 +97,13 @@ message nats_client::do_authenticated_request(std::string_view subject,
     // Service path: token_provider owns acquisition and proactive refresh.
     if (token_provider_) {
         const auto make_headers = [&](bool force = false) {
-            return std::unordered_map<std::string, std::string>{
-                {"Authorization", "Bearer " + token_provider_(force)}};
+            std::unordered_map<std::string, std::string> hdrs{
+                {std::string(headers::authorization),
+                 std::string(headers::bearer_prefix) + token_provider_(force)}};
+            if (!delegation_token_.empty())
+                hdrs[std::string(headers::delegated_authorization)] =
+                    std::string(headers::bearer_prefix) + delegation_token_;
+            return hdrs;
         };
         // Reactive re-auth: the server rejected the token as expired. Pass
         // force=true so the provider re-authenticates unconditionally,
@@ -105,7 +111,7 @@ message nats_client::do_authenticated_request(std::string_view subject,
         // timer has not yet fired.
         auto reply = active_client().request_sync(
             subject, body, make_headers(), timeout);
-        const auto x_err = reply.headers.find("X-Error");
+        const auto x_err = reply.headers.find(std::string(headers::x_error));
         if (x_err != reply.headers.end() && x_err->second == "token_expired") {
             BOOST_LOG_SEV(lg(), info)
                 << "Service token expired on " << subject << "; re-authenticating";
@@ -119,11 +125,16 @@ message nats_client::do_authenticated_request(std::string_view subject,
     if (!auth_)
         throw std::runtime_error("Not authenticated");
 
-    const std::unordered_map<std::string, std::string> headers{
-        {"Authorization", "Bearer " + auth_->jwt}};
-    const auto reply = active_client().request_sync(subject, body, headers, timeout);
+    std::unordered_map<std::string, std::string> hdrs{
+        {std::string(headers::authorization),
+         std::string(headers::bearer_prefix) + auth_->jwt}};
+    if (!delegation_token_.empty())
+        hdrs[std::string(headers::delegated_authorization)] =
+            std::string(headers::bearer_prefix) + delegation_token_;
 
-    const auto x_error_it = reply.headers.find("X-Error");
+    const auto reply = active_client().request_sync(subject, body, hdrs, timeout);
+
+    const auto x_error_it = reply.headers.find(std::string(headers::x_error));
     if (x_error_it == reply.headers.end())
         return reply;
 
@@ -132,6 +143,26 @@ message nats_client::do_authenticated_request(std::string_view subject,
         throw session_expired_error("Session has expired. Please log in again.");
     }
     return reply;
+}
+
+nats_client nats_client::with_delegation(std::string token) const {
+    nats_client copy;
+    copy.owned_client_     = owned_client_;
+    copy.auth_             = auth_;
+    copy.external_client_  = external_client_;
+    copy.token_provider_   = token_provider_;
+    copy.delegation_token_ = std::move(token);
+    return copy;
+}
+
+std::string extract_bearer(const ores::nats::message& msg) {
+    const auto it = msg.headers.find(std::string(headers::authorization));
+    if (it == msg.headers.end())
+        return {};
+    const auto& val = it->second;
+    if (!val.starts_with(headers::bearer_prefix))
+        return {};
+    return val.substr(headers::bearer_prefix.size());
 }
 
 message nats_client::authenticated_request(std::string_view subject,

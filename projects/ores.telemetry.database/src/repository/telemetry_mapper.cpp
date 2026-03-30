@@ -20,13 +20,12 @@
 #include "ores.telemetry.database/repository/telemetry_mapper.hpp"
 
 #include <format>
-#include <iomanip>
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "sqlgen/Timestamp.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include "ores.telemetry/log/skip_telemetry_guard.hpp"
 
 namespace ores::telemetry::database::repository {
@@ -49,16 +48,9 @@ inline static std::string_view logger_name =
  */
 std::optional<std::chrono::system_clock::time_point>
 parse_timestamp(const std::string& str) {
-    if (str.empty()) {
+    if (str.empty())
         return std::nullopt;
-    }
-    std::tm tm = {};
-    std::istringstream ss(str);
-    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    if (ss.fail()) {
-        return std::nullopt;
-    }
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    return ores::platform::time::datetime::parse_time_point(str);
 }
 
 }

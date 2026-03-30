@@ -35,21 +35,29 @@
 alter table ores_scheduler_job_definitions_tbl enable row level security;
 
 -- Tenant isolation: all operations restricted to current tenant.
+-- Exception: the system service context (tenant = system sentinel) is allowed
+-- to read and write jobs for any tenant during cross-tenant operations such as
+-- startup reconciliation.  The INSERT trigger always validates tenant_id FK.
 create policy ores_scheduler_job_definitions_tenant_isolation_policy
 on ores_scheduler_job_definitions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 )
 with check (
     tenant_id = ores_iam_current_tenant_id_fn()
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );
 
 -- Party isolation: strict enforcement — no party context means no rows visible.
 -- FOR SELECT only: the trigger validates party_id FK on INSERT/UPDATE, so
 -- WITH CHECK is not needed and would block bulk operations.
+-- Exception: the system service context bypasses party isolation for cross-tenant
+-- operations such as startup reconciliation.
 create policy ores_scheduler_job_definitions_party_isolation_policy
 on ores_scheduler_job_definitions_tbl
 as restrictive
 for select using (
     party_id = ANY(ores_iam_visible_party_ids_fn())
+    OR ores_iam_current_tenant_id_fn() = ores_iam_system_tenant_id_fn()
 );

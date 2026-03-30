@@ -55,4 +55,13 @@ std::time_t time_utils::timegm_safe(std::tm* tm) {
 #endif
 }
 
+std::chrono::system_clock::time_point time_utils::to_time_point_utc(std::tm tm) {
+    return std::chrono::system_clock::from_time_t(timegm_safe(&tm));
+}
+
+std::chrono::system_clock::time_point time_utils::to_time_point_local(std::tm tm) {
+    tm.tm_isdst = -1; // let mktime determine DST from the date/time fields
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
 }

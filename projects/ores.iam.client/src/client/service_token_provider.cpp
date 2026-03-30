@@ -27,6 +27,7 @@
 #include <unordered_map>
 #include <rfl/json.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.iam.api/messaging/login_protocol.hpp"
@@ -91,7 +92,8 @@ struct token_state {
     void refresh() {
         BOOST_LOG_SEV(lg(), debug) << "Refreshing JWT for " << username;
         const std::unordered_map<std::string, std::string> headers{
-            {"Authorization", "Bearer " + jwt}};
+            {std::string(ores::nats::headers::authorization),
+             std::string(ores::nats::headers::bearer_prefix) + jwt}};
         const auto reply = nats.request_sync(
             refresh_subject, std::span<const std::byte>{}, headers);
 

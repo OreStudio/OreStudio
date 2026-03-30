@@ -45,7 +45,7 @@ on ores_workflow_workflow_instances_tbl (tenant_id, type);
 -- -----------------------------------------------------------------------------
 
 alter table ores_workflow_workflow_steps_tbl
-    add constraint if not exists ores_workflow_workflow_steps_workflow_id_fk
+    add constraint ores_workflow_workflow_steps_workflow_id_fk
     foreign key (workflow_id)
     references ores_workflow_workflow_instances_tbl (id)
     on delete cascade;

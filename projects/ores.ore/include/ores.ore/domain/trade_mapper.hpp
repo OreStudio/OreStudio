@@ -26,6 +26,7 @@
 #include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
+#include "ores.ore/domain/bond_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -90,6 +91,15 @@ public:
      */
     static std::optional<fx_mapping_result>
     map_fx_instrument(const trade& v);
+
+    /**
+     * @brief Dispatches a bond-family trade to bond_instrument_mapper.
+     *
+     * Returns a populated result for Bond, ForwardBond, CallableBond,
+     * and ConvertibleBond. Returns empty for all other types.
+     */
+    static std::optional<bond_mapping_result>
+    map_bond_instrument(const trade& v);
 };
 
 }

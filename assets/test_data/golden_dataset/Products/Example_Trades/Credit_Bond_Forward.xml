@@ -1,0 +1,22 @@
+<Portfolio>
+  <Trade id="ForwardBond">
+    <TradeType>ForwardBond</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+        <BondNotional>10000000.00</BondNotional>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>2025-07-16</ForwardMaturityDate>
+        <Amount>10000000</Amount>
+        <SettlementDirty>true</SettlementDirty>
+      </SettlementData>
+      <LongInForward>true</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>

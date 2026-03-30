@@ -1,0 +1,55 @@
+<Portfolio>
+  <Trade id="Repo">
+    <TradeType>BondRepo</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <BondRepoData>
+      <BondData>
+        <SecurityId>ISIN:US912828X703</SecurityId>
+        <BondNotional>27807597.777444</BondNotional>
+      </BondData>
+      <RepoData>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>USD</Currency>
+          <PaymentConvention>F</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>28371510</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2024-02-12</StartDate>
+              <EndDate>2026-05-14</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>US</Calendar>
+              <Convention>MF</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.0177999996</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+      </RepoData>
+    </BondRepoData>
+  </Trade>
+  <Trade id="Security">
+    <TradeType>Bond</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <BondData>
+      <SecurityId>ISIN:US912828X703</SecurityId>
+      <BondNotional>27807597.777444</BondNotional>
+    </BondData>
+  </Trade>
+</Portfolio>

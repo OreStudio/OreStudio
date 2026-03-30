@@ -38,7 +38,7 @@ file(GLOB FORMS "${ORES_QT_DIR}/ui/*.ui")
 set(lib_files ${files})
 list(FILTER lib_files EXCLUDE REGEX "main.cpp")
 
-add_library(${lib_target_name} ${lib_files} ${HEADERS} ${FORMS})
+add_library(${lib_target_name} STATIC ${lib_files} ${HEADERS} ${FORMS})
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name}
     AUTOUIC_SEARCH_PATHS ${ORES_QT_DIR}/ui)
@@ -82,7 +82,7 @@ target_link_libraries(${lib_target_name}
         Qt6::Charts)
 # Note: Boost::process comes transitively through ores.telemetry.lib (PUBLIC)
 
-install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)
+install(TARGETS ${lib_target_name} ARCHIVE DESTINATION lib)
 
 set(exe_binary_name ${name})
 set(exe_target_name ${name}.exe)

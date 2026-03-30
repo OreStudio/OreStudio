@@ -4,7 +4,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <Settlement>Cash</Settlement>

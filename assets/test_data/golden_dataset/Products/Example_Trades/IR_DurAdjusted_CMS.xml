@@ -4,7 +4,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -47,7 +50,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -94,7 +100,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -141,7 +150,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -184,7 +196,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -231,7 +246,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -278,7 +296,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -322,7 +343,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -370,7 +394,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <SwapData>
       <LegData>
@@ -418,7 +445,10 @@
     <Envelope>
       <CounterParty>CPTY</CounterParty>
       <NettingSetId>NS</NettingSetId>
-      <AdditionalFields/>
+      <AdditionalFields>
+        <valuation_date>2025-02-10</valuation_date>
+        <party_id>party</party_id>
+      </AdditionalFields>
     </Envelope>
     <CapFloorData>
       <LongShort>Long</LongShort>

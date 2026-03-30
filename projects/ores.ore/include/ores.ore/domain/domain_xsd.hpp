@@ -162,6 +162,12 @@ struct any_attribute
     xsd::string value;
 };
 
+struct any_element
+{
+    std::string name;
+    xsd::string value;
+};
+
 }
 
 #endif

@@ -1,0 +1,20 @@
+{
+  "enum": {
+    "component": "workflow",
+    "namespace": "ores::workflow::domain",
+    "name": "workflow_status",
+    "brief": "Lifecycle status values for workflow instances and steps.",
+    "description": "Represents the current execution state of a workflow instance or step.\nTerminal states are completed, failed, and compensated.",
+    "underlying_type": "std::uint8_t",
+    "includes": ["<cstdint>", "<ostream>", "<string_view>"],
+
+    "values": [
+      {"name": "pending",       "value": "0", "comment": "Created but not yet started."},
+      {"name": "in_progress",   "value": "1", "comment": "Currently executing."},
+      {"name": "completed",     "value": "2", "comment": "Finished successfully (terminal)."},
+      {"name": "failed",        "value": "3", "comment": "Finished with an error (terminal)."},
+      {"name": "compensating",  "value": "4", "comment": "Rolling back completed steps."},
+      {"name": "compensated",   "value": "5", "comment": "Rollback finished (terminal)."}
+    ]
+  }
+}

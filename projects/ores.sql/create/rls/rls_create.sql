@@ -34,3 +34,4 @@
 \ir ../geo/geo_rls_policies_create.sql
 \ir ../scheduler/scheduler_rls_policies_create.sql
 \ir ../compute/compute_rls_policies_create.sql
+\ir ../workflow/workflow_rls_policies_create.sql

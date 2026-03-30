@@ -1,0 +1,106 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "workflow",
+    "entity_singular": "workflow_instance",
+    "entity_plural": "workflow_instances",
+    "entity_title": "Workflow Instance",
+    "has_tenant_id": true,
+    "brief": "A single execution of a named workflow.",
+    "description": "Tracks the lifecycle of a workflow execution, including its type, status,\nthe serialised request that triggered it, and any result or error produced.\nInstances are append-mostly; status transitions are the primary mutation.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the workflow instance."
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "tenant_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "Tenant that owns this workflow instance."
+      },
+      {
+        "name": "type",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Workflow type name, e.g. 'provision_parties_workflow'."
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "'pending'",
+        "description": "Current workflow status: pending, in_progress, completed, failed, compensating, compensated."
+      },
+      {
+        "name": "request_json",
+        "type": "jsonb",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Serialised JSON payload of the originating request."
+      },
+      {
+        "name": "result_json",
+        "type": "jsonb",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Serialised JSON result, populated on successful completion."
+      },
+      {
+        "name": "error",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Human-readable error message, populated on failure."
+      },
+      {
+        "name": "correlation_id",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Distributed tracing correlation ID (Nats-Correlation-Id header value)."
+      },
+      {
+        "name": "created_by",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Username or service identity that initiated the workflow."
+      },
+      {
+        "name": "completed_at",
+        "type": "timestamptz",
+        "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
+        "nullable": true,
+        "description": "Timestamp when the workflow reached a terminal state."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_workflow_workflow_instances_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "instance",
+      "entity_plural_short": "instances",
+      "entity_singular_words": "workflow instance",
+      "entity_plural_words": "workflow instances"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "wi"
+    }
+  }
+}

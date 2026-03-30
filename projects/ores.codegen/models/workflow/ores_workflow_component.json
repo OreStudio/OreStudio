@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "workflow",
+    "full_name": "ores.workflow",
+    "brief": "Workflow orchestration service component",
+    "description": "Provides saga-pattern workflow orchestration for multi-step provisioning and\nother long-running distributed operations. Tracks workflow instances and their\nindividual steps, supports compensation (rollback), and integrates with the\nNATS messaging layer for inter-service coordination."
+  }
+}

@@ -3,8 +3,8 @@
 ## Status
 
 - Phase 1 (tenant/party wizard split): **In progress** — see PR feature/service-rbac-step2f
-- Phase 2 (per-party status trigger, `provision-parties` endpoint): **Planned**
-- Phase 3 (`ores.workflow` orchestration service): **Planned**
+- Phase 2 (per-party status trigger, Qt wizard updates): **Planned** — blocked on Phase 3
+- Phase 3 (`ores.workflow` orchestration service): **Planned** — start here (SQL → component → executor → IAM cleanup → correlation IDs → Qt)
 
 ---
 
@@ -633,22 +633,46 @@ Step 3: reporting.v1.runs.trigger             { party_id }
 
 ## Implementation Order
 
-1. **Phase 2** (per-party status, provision-parties endpoint without workflow service):
-   - Remove `party_setup_mode` global flag and no-party-login hack
-   - Add `party_setup_required` based on `party.status`
-   - Implement `provision-parties` as a temporary direct `iam.v1.admin.provision-parties`
-     endpoint (IAM calls Refdata via NATS internally — acceptable as a stepping stone)
-   - Update both wizard UIs
+Build backend infrastructure first, then wire the UI to it at the end.
 
-2. **Phase 3** (`ores.workflow` service):
-   - Create service skeleton, DB tables, migration
-   - Implement `provision_parties_workflow` executor
-   - Move `iam.v1.admin.provision-parties` → `workflow.v1.provision-parties`
-   - Update Qt wizard to call the new subject
+1. **SQL schema** (`ores_workflow_*` tables):
+   - `ores_workflow_workflow_instances_tbl` (with `correlation_id` column)
+   - `ores_workflow_workflow_steps_tbl`
+   - Register in `workflow_create.sql`, `drop_workflow.sql`
 
-3. **Phase 4** (UX polish): password reset flag, multi-select LEI picker
+2. **`ores.workflow` component skeleton** (component-creator skill):
+   - Domain types: `workflow`, `workflow_step`, `workflow_status`
+   - Repository: `workflow_repository`
+   - Messaging skeleton: `workflow_protocol.hpp`, `workflow_handler.hpp`
+   - CMake wiring: link against `ores.iam.api`, `ores.refdata.api`, `ores.nats`, `ores.database`
 
-4. **Phase 5** (financial workflows): trade expiry, barrier event
+3. **`provision_parties_workflow` executor**:
+   - Implement `workflow_executor` base interface
+   - Step sequence: `refdata.v1.parties.save` → `iam.v1.accounts.save` → `iam.v1.accounts.add-party`
+   - Compensation logic (reverse order on failure)
+   - Correlation ID propagation via NATS headers
+
+4. **IAM backend cleanup** (Phase 2 server-side changes):
+   - Add `iam.v1.accounts.add-party` endpoint (if not present)
+   - Add `iam.v1.accounts.remove-party` endpoint (new)
+   - Add `party_setup_required` to `login_response` and `select_party_response` driven by `party.status = 'Inactive'`
+   - Remove `party_setup_mode` global flag, `auth_is_party_setup_mode`, and no-party-login hack
+   - Remove `party_setup_mode` system settings methods
+
+5. **Correlation ID infrastructure** (`ores.nats`):
+   - `correlation.hpp`: `extract_or_generate`, `propagate`, `set` helpers
+   - Log correlation ID at handler entry across all services
+
+6. **Qt wizard updates** (Phase 2 client-side, last):
+   - Replace `AccountSetupPage` with `PartyProvisionPage` in `TenantProvisioningWizard`
+   - `PartyProvisionPage` calls `workflow.v1.provision-parties` via NATS
+   - Update `PartyApplyAndSummaryPage` to set `party.status = 'Active'` via `save_party_request`
+   - Update `LoginDialog` / `MainWindow` trigger logic (`party_setup_required`)
+   - Display correlation ID on wizard summary page
+
+7. **Phase 4** (UX polish): password reset flag, multi-select LEI picker
+
+8. **Phase 5** (financial workflows): trade expiry, barrier event
 
 ---
 

@@ -184,3 +184,18 @@ TENANT_001 ores_compute_app_version_platforms_tbl
 # tenant context. tenant_id has no meaning in this monitoring table.
 # =============================================================================
 TENANT_001 ores_telemetry_service_samples_tbl
+
+# =============================================================================
+# Workflow instances table - tenant_id present but not in PK by design.
+# Uses a UUID primary key for global uniqueness. tenant_id is carried for RLS
+# and filtering, not for uniqueness. Same pattern as other append-only tables.
+# =============================================================================
+TENANT_002 ores_workflow_workflow_instances_tbl
+
+# =============================================================================
+# Workflow steps table - tenant isolation via FK to parent instance.
+# Steps have no direct tenant_id; they inherit tenant context from the parent
+# ores_workflow_workflow_instances_tbl row via the workflow_id FK. RLS on the
+# steps table uses a subquery join to enforce tenant isolation.
+# =============================================================================
+TENANT_001 ores_workflow_workflow_steps_tbl

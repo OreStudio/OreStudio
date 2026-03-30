@@ -110,8 +110,9 @@ provision_parties_workflow::provision_parties_workflow(
     , request_(std::move(request)) {
     party_states_.resize(request_.parties.size());
     // Pre-generate a UUID for each party so step 0 and step 2 can agree.
+    boost::uuids::random_generator gen;
     for (auto& s : party_states_)
-        s.party_id = boost::uuids::random_generator()();
+        s.party_id = gen();
 }
 
 bool provision_parties_workflow::execute(
@@ -140,8 +141,14 @@ bool provision_parties_workflow::execute(
         party_obj.party_type = input.party_type;
         party_obj.business_center_code = input.business_center_code;
         if (input.parent_party_id) {
-            party_obj.parent_party_id =
-                boost::lexical_cast<boost::uuids::uuid>(*input.parent_party_id);
+            try {
+                party_obj.parent_party_id =
+                    boost::lexical_cast<boost::uuids::uuid>(*input.parent_party_id);
+            } catch (const boost::bad_lexical_cast&) {
+                error_ = std::format("Invalid parent_party_id '{}' for party {}: "
+                    "not a valid UUID", *input.parent_party_id, i);
+                return false;
+            }
         }
         party_obj.status = "Active";
         party_obj.change_commentary = "Provisioned by workflow";

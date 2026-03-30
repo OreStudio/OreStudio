@@ -99,7 +99,18 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
 
     // Run the saga executor
     service::provision_parties_workflow executor(instance.id, std::move(*req));
-    const bool ok = executor.execute(req_ctx, delegated_nats);
+
+    bool ok = false;
+    try {
+        ok = executor.execute(req_ctx, delegated_nats);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), error)
+            << "Unhandled exception in workflow execution: " << e.what();
+        instance_repo.update_status(req_ctx, instance.id, "failed", "", e.what());
+        reply(nats_, msg, provision_parties_response{
+            .success = false, .message = e.what()});
+        return;
+    }
 
     if (!ok) {
         BOOST_LOG_SEV(lg(), warning) << "provision_parties_workflow failed: "
@@ -109,7 +120,12 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         instance_repo.update_status(req_ctx, instance.id,
             "compensating", "", executor.error());
 
-        executor.compensate(req_ctx, delegated_nats);
+        try {
+            executor.compensate(req_ctx, delegated_nats);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Unhandled exception in workflow compensation: " << e.what();
+        }
 
         instance_repo.update_status(req_ctx, instance.id,
             "compensated", "", executor.error());

@@ -58,9 +58,7 @@ void workflow_instance_repository::create(
 
     const auto entity = workflow_instance_mapper::to_entity(v);
     const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(insert(entity))
-        .and_then(commit);
+        .and_then(insert(entity));
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Workflow instance created.";
@@ -95,9 +93,7 @@ void workflow_instance_repository::update_status(
     ) | where("id"_c == id_str);
 
     const auto r = sqlgen::session(ctx.connection_pool())
-        .and_then(begin_transaction)
-        .and_then(query)
-        .and_then(commit);
+        .and_then(query);
     ensure_success(r, lg());
 
     BOOST_LOG_SEV(lg(), debug) << "Workflow instance status updated.";

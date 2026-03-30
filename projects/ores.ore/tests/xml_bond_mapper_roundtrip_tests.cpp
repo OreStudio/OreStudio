@@ -92,11 +92,33 @@ TEST_CASE("mapper_roundtrip_bond_reverse", tags) {
 
     REQUIRE(reconstructed.BondData.operator bool());
     const auto& bd = *reconstructed.BondData;
+
+    // Issuer and issue date
+    REQUIRE(bd.IssuerId);
+    CHECK(std::string(*bd.IssuerId) == "CPTY_C");
+    REQUIRE(bd.IssueDate);
+    CHECK(std::string(*bd.IssueDate) == "2025-02-03");
+
+    // Leg: currency and notional
     REQUIRE(!bd.LegData.empty());
     CHECK(std::string(*bd.LegData[0].Currency) == "EUR");
     REQUIRE(bd.LegData[0].Notionals);
     CHECK(static_cast<float>(bd.LegData[0].Notionals->Notional[0])
           == Approx(10000000.0f).epsilon(0.001f));
+
+    // Coupon rate
+    REQUIRE(bd.LegData[0].legDataType);
+    REQUIRE(bd.LegData[0].legDataType->FixedLegData);
+    REQUIRE(!bd.LegData[0].legDataType->FixedLegData->Rates.Rate.empty());
+    CHECK(static_cast<float>(bd.LegData[0].legDataType->FixedLegData->Rates.Rate[0])
+          == Approx(0.05f).epsilon(0.0001f));
+
+    // Maturity date
+    REQUIRE(bd.LegData[0].ScheduleData);
+    REQUIRE(!bd.LegData[0].ScheduleData->Rules.empty());
+    REQUIRE(bd.LegData[0].ScheduleData->Rules[0].EndDate);
+    CHECK(std::string(*bd.LegData[0].ScheduleData->Rules[0].EndDate) == "2035-02-03");
+
     BOOST_LOG_SEV(lg, info) << "Bond reverse-mapper test passed";
 }
 
@@ -154,10 +176,23 @@ TEST_CASE("mapper_roundtrip_convertible_bond_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto t = load_trade("Cash_ConvertibleBond.xml", 0);
     const auto result = bond_instrument_mapper::forward_convertible_bond(t);
+    const auto& instr = result.instrument;
 
     const auto reconstructed =
         bond_instrument_mapper::reverse_convertible_bond(result.instrument);
 
     REQUIRE(reconstructed.ConvertibleBondData.operator bool());
+    const auto& cbd = *reconstructed.ConvertibleBondData;
+
+    // Cash_ConvertibleBond.xml has no LegData — verify clean empty round-trip
+    CHECK(cbd.BondData.LegData.empty());
+    CHECK(!cbd.BondData.IssuerId);
+    CHECK(!cbd.BondData.IssueDate);
+
+    // Instrument fields should round-trip consistently with the forward pass
+    CHECK(instr.currency.empty());
+    CHECK(instr.issuer.empty());
+    CHECK(instr.face_value == Approx(0.0).epsilon(0.001));
+
     BOOST_LOG_SEV(lg, info) << "ConvertibleBond reverse-mapper test passed";
 }

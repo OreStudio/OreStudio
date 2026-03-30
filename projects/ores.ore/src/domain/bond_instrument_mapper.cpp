@@ -59,8 +59,11 @@ void bond_instrument_mapper::map_bond_data(
         instr.issuer = std::string(*bd.IssuerId);
     if (bd.IssueDate)
         instr.issue_date = std::string(*bd.IssueDate);
-    if (bd.SettlementDays && !std::string(*bd.SettlementDays).empty())
-        instr.settlement_days = std::stoi(std::string(*bd.SettlementDays));
+    if (bd.SettlementDays) {
+        const std::string settlement_days_str(*bd.SettlementDays);
+        if (!settlement_days_str.empty())
+            instr.settlement_days = std::stoi(settlement_days_str);
+    }
 
     if (!bd.LegData.empty()) {
         const auto& ld = bd.LegData.front();

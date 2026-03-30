@@ -17,47 +17,50 @@
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula % :block today
 #+TBLNAME: today_summary
-#+CAPTION: Clock summary at [2026-03-26 Thu 08:08], for Thursday, March 26, 2026.
-|      | <75>                           |        |      |      |       |
-| Tags | Headline                       | Time   |      |      |     % |
-|------+--------------------------------+--------+------+------+-------|
-|      | *Total time*                   | *2:23* |      |      | 100.0 |
-|------+--------------------------------+--------+------+------+-------|
-|      | Stories                        | 2:23   |      |      | 100.0 |
-|      | Active                         |        | 2:23 |      | 100.0 |
-| code | End to end fixes for grid work |        |      | 2:23 | 100.0 |
+#+CAPTION: Clock summary at [2026-03-30 Mon 18:01], for Monday, March 30, 2026.
+|      | <75>                                      |        |      |      |       |
+| Tags | Headline                                  | Time   |      |      |     % |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | *Total time*                              | *3:00* |      |      | 100.0 |
+|------+-------------------------------------------+--------+------+------+-------|
+|      | Stories                                   | 3:00   |      |      | 100.0 |
+|      | Active                                    |        | 3:00 |      | 100.0 |
+| code | CDM Phase 3: Bond instrument domain model |        |      | 3:00 | 100.0 |
 #+end:
 
 #+begin: clocktable :maxlevel 3 :scope subtree :tags t :indent nil :emphasize nil :scope file :narrow 75 :formula %
 #+TBLNAME: sprint_summary
-#+CAPTION: Clock summary at [2026-03-26 Thu 08:08]
+#+CAPTION: Clock summary at [2026-03-30 Mon 18:01]
 |       | <75>                                                     |         |       |      |       |
 | Tags  | Headline                                                 | Time    |       |      |     % |
 |-------+----------------------------------------------------------+---------+-------+------+-------|
-|       | *Total time*                                             | *66:46* |       |      | 100.0 |
+|       | *Total time*                                             | *86:56* |       |      | 100.0 |
 |-------+----------------------------------------------------------+---------+-------+------+-------|
-|       | Stories                                                  | 66:46   |       |      | 100.0 |
-|       | Active                                                   |         | 66:46 |      | 100.0 |
-| agile | Sprint and product backlog refinement                    |         |       | 0:54 |   1.3 |
-| code  | Add BOINC-inspired distributed compute grid              |         |       | 7:03 |  10.6 |
-| code  | Fix ORE import bugs                                      |         |       | 6:35 |   9.9 |
-| code  | Add loading indicator to all entity list windows         |         |       | 2:49 |   4.2 |
-| code  | Replace =feature_flags= with unified system_settings     |         |       | 5:59 |   9.0 |
-| code  | Implement JWT refresh                                    |         |       | 3:16 |   4.9 |
-| code  | Add compute grid telemetry pipeline                      |         |       | 2:10 |   3.2 |
-| code  | Add service dashboard with live RAG status               |         |       | 2:49 |   4.2 |
-| code  | E2E compute testing fixes and loading lifecycle refactor |         |       | 8:43 |  13.1 |
-| code  | Add NATS service discovery for HTTP base URL             |         |       | 7:10 |  10.7 |
-| code  | Extract API from main component                          |         |       | 8:13 |  12.3 |
-| code  | Fix missing tenant_id in system settings tests           |         |       | 0:30 |   0.7 |
-| code  | Fix sccache cache bloat causing slow/cold builds         |         |       | 0:30 |   0.7 |
-| code  | Move generators to api layer and split http.server       |         |       | 2:55 |   4.4 |
-| code  | Implement full environment isolation for database roles  |         |       | 1:53 |   2.8 |
-| code  | Add ORES_PRESET to .env; add start-client.sh             |         |       | 0:30 |   0.7 |
-| code  | End to end fixes for grid work                           |         |       | 4:47 |   7.2 |
+|       | Stories                                                  | 86:56   |       |      | 100.0 |
+|       | Active                                                   |         | 86:56 |      | 100.0 |
+| agile | Sprint and product backlog refinement                    |         |       | 0:54 |   1.0 |
+| code  | Add BOINC-inspired distributed compute grid              |         |       | 7:03 |   8.1 |
+| code  | Fix ORE import bugs                                      |         |       | 6:35 |   7.6 |
+| code  | Add loading indicator to all entity list windows         |         |       | 2:49 |   3.2 |
+| code  | Replace =feature_flags= with unified system_settings     |         |       | 5:59 |   6.9 |
+| code  | Implement JWT refresh                                    |         |       | 3:16 |   3.8 |
+| code  | Add compute grid telemetry pipeline                      |         |       | 2:10 |   2.5 |
+| code  | Add service dashboard with live RAG status               |         |       | 2:49 |   3.2 |
+| code  | E2E compute testing fixes and loading lifecycle refactor |         |       | 8:43 |  10.0 |
+| code  | Add NATS service discovery for HTTP base URL             |         |       | 7:10 |   8.2 |
+| code  | Extract API from main component                          |         |       | 8:13 |   9.5 |
+| code  | Fix missing tenant_id in system settings tests           |         |       | 0:30 |   0.6 |
+| code  | Fix sccache cache bloat causing slow/cold builds         |         |       | 0:30 |   0.6 |
+| code  | Move generators to api layer and split http.server       |         |       | 2:55 |   3.4 |
+| code  | Implement full environment isolation for database roles  |         |       | 1:53 |   2.2 |
+| code  | Add ORES_PRESET to .env; add start-client.sh             |         |       | 0:30 |   0.6 |
+| code  | End to end fixes for grid work                           |         |       | 4:57 |   5.7 |
+| code  | CDM Phase 1: Rates instrument domain model               |         |       | 5:00 |   5.8 |
+| code  | CDM Phase 2: FX instrument domain model                  |         |       | 8:00 |   9.2 |
+| code  | CDM Phase 3: Bond instrument domain model                |         |       | 7:00 |   8.1 |
 #+end:
 
-*** STARTED Sprint and product backlog refinement                     :agile:
+*** COMPLETED Sprint and product backlog refinement                   :agile:
     :LOGBOOK:
     CLOCK: [2026-03-24 Tue 22:00]--[2026-03-24 Tue 22:34] =>  0:34
     CLOCK: [2026-03-20 Fri 09:50]--[2026-03-20 Fri 10:10] =>  0:20
@@ -917,96 +920,30 @@ Highlights:
   cleanup and a terminate() guard on startup exceptions.
 #+end_quote
 
-*** Add =publication_params_schema= to artefact types                  :code:
-
-The GLEIF librarian integration plan (=2026-02-08=) requires artefact types to
-declare what parameters they accept so that the publish wizard can render
-per-dataset configuration pages dynamically. The =PublishBundleWizard= and its
-=LeiPartyConfigPage= are already in place, but the database column that drives
-them is missing.
-
-Tasks:
-
-- [ ] Add =publication_params_schema jsonb= nullable column to
-  =ores_dq_artefact_types_tbl= (new migration/alter script under
-  =projects/ores.sql/create/dq/=).
-- [ ] Populate the column for the two LEI artefact types
-  (=gleif.lei_parties.small= and =gleif.lei_counterparties.small=) in
-  =projects/ores.sql/populate/= with the JSON schema describing their accepted
-  parameters (e.g. =target_party_ids= for counterparties).
-- [ ] Update the =artefact_type= domain type and IO in =ores.dq.api= to include
-  the new nullable field.
-- [ ] Expose the schema via the =dq.v1.artefact_types.list= response so the Qt
-  client can read it.
-- [ ] Update =LeiPartyConfigPage= in =PublishBundleWizard= to read the schema
-  and drive its UI from it rather than hard-coding the fields.
-
-*** Add counterparty party scoping (librarian Phase 2)                 :code:
-
-Phase 2 of the librarian party/counterparty publication plan
-(=2026-02-11=). Phase 1 (dataset dependencies, optional bundle members, party
-RLS on =party_counterparties_tbl=) is complete. Phase 2 scopes counterparties
-to the publishing party, enabling per-party counterparty namespaces.
-
-Prerequisite: the =publication_params_schema= story above must be merged first.
-
-Tasks:
-
-- [ ] Add =party_id uuid NOT NULL= column to =ores_refdata_counterparties_tbl=
-  (migration script; back-fill existing rows with the tenant root party).
-- [ ] Update =counterparty= domain type codegen model and regenerate
-  =counterparty.hpp= / IO helpers to include =party_id=.
-- [ ] Add party-scoped RLS policy on =counterparties_tbl= using
-  =ores_iam_visible_party_ids_fn()=.
-- [ ] Update =ores_dq_lei_counterparties_publish_fn()= to accept and use
-  =target_party_ids= from the =p_params= argument.
-- [ ] Populate =publication_params_schema= for =gleif.lei_counterparties.small=
-  with the =target_party_ids= parameter definition.
-- [ ] Update the counterparty repository =write= path to stamp =party_id=.
-- [ ] Add =LeiCounterpartyConfigPage= to =PublishBundleWizard= (or extend the
-  existing =LeiPartyConfigPage=) with a party picker for =target_party_ids=.
-
-*** Unify compute wrapper nodes as replicated services                 :code:
-
-Currently compute wrapper nodes are a special case: hardcoded instance names
-(=node1=, =node2=, ...), pattern-matched separately in =status-services.sh=,
-and given a dedicated "nodes" section in the service dashboard. All other
-services are singletons and need no such handling.
-
-The goal is a uniform service model where any service type has a
-=replica_count= (defaulting to 1). Wrappers set theirs to N. Scripts and the
-dashboard treat all services identically — showing =running/desired= — with no
-special-casing for nodes.
-
-The one non-trivial aspect is =--host-id= assignment: each wrapper replica
-needs a stable, unique UUID for heartbeat tracking and telemetry. Options are
-static UUIDs assigned per replica slot in a config file, or UUIDs generated
-once at first start and persisted to a state file.
-
-Tasks:
-
-- [ ] Define a service manifest format (e.g. =services.toml=) with a
-  =replicas= field per service type.
-- [ ] Rewrite =start-services.sh= and =status-services.sh= to drive from the
-  manifest rather than hardcoded names; remove =*node*= pattern matching.
-- [ ] Generate or persist per-replica =host-id= values so restarts reuse the
-  same UUID (avoids host churn in =ores_compute_hosts_tbl=).
-- [ ] Update the service dashboard to show =running/desired= uniformly for all
-  service types; remove the separate "nodes" counter.
-- [ ] Remove the =nodes_running= / =nodes_stopped= special cases from the
-  summary output.
-
-*** Add support for running ORE samples                                :code:
-
-It would be nice to point to a ORE directory and have ORES automatically pack
-the samples, send it to the grid and retrieve the results.
-
-*** End to end fixes for grid work                                     :code:
+*** COMPLETED Move badges to database                                  :code:
     :LOGBOOK:
-    CLOCK: [2026-03-26 Thu 00:00]--[2026-03-26 Thu 02:23] =>  2:23
+    CLOCK: [2026-03-28 Sat 10:00]
     :END:
 
-*** DONE CDM Phase 1: Rates instrument domain model                    :code:
+At present we did some hackery to use badges on Qt UI. ideally we want the
+database to have some meta-data about badges and then use that to drive the UI
+so we can reuse it for Wt. See [[file:../../plans/2026-03-28-badge-system-design.org][design]].
+
+*Phase 1 — Infrastructure*
+
+***** Tasks
+
+- [ ] Create codegen model: =badge_severity_domain_entity.json=
+- [ ] Create codegen model: =code_domain_domain_entity.json=
+- [ ] Create codegen model: =badge_definition_domain_entity.json=
+- [ ] Create codegen model: =badge_mapping_junction.json=
+- [ ] Run codegen and integrate generated SQL artefacts
+- [ ] Run codegen and integrate generated C++ artefacts
+- [ ] Create population seed data from hardcoded colours
+- [ ] Implement =BadgeCache= in =ores.qt=
+- [ ] Wire =BadgeCache= into client startup sequence
+
+*** COMPLETED CDM Phase 1: Rates instrument domain model               :code:
 CLOSED: [2026-03-28 Sat 00:00]
     :LOGBOOK:
     CLOCK: [2026-03-26 Thu 15:00]--[2026-03-26 Thu 20:00] =>  5:00
@@ -1042,7 +979,7 @@ commands which are deferred to a follow-up story. Builds cleanly.
 
 Pull Request: OreStudio/OreStudio#569
 
-*** DONE CDM Phase 2: FX instrument domain model                       :code:
+*** COMPLETED CDM Phase 2: FX instrument domain model                  :code:
     :LOGBOOK:
     CLOCK: [2026-03-27 Fri 10:00]--[2026-03-27 Fri 18:00] =>  8:00
     :END:
@@ -1067,7 +1004,7 @@ value_date, settlement, and option fields for FxOption).
   =FxInstrumentController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
-*** DONE CDM Phase 4: Credit instrument domain model                   :code:
+*** COMPLETED CDM Phase 4: Credit instrument domain model              :code:
 CLOSED: [2026-03-28 Sat 00:00]
 
 Implement the credit instrument domain model (Phase 4 of the CDM-inspired
@@ -1092,8 +1029,10 @@ index_series, seniority, restructuring, description).
   =CreditInstrumentController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
-*** DONE CDM Phase 3: Bond instrument domain model                     :code:
-CLOSED: [2026-03-28 Sat 00:00]
+*** COMPLETED CDM Phase 3: Bond instrument domain model                :code:
+    :LOGBOOK:
+    CLOCK: [2026-03-29 Sun 20:00]--[2026-03-30 Mon 03:00] =>  7:00
+    :END:
 
 Implement the bond instrument domain model (Phase 3 of the CDM-inspired
 instrument design). See [[file:../../plans/2026-03-26-cdm-instrument-domain-model.org][plan]] for architecture.
@@ -1117,191 +1056,73 @@ conversion_ratio, description).
   =BondInstrumentController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
-*** TODO Refactor trading reference type boilerplate into shared templates :code:
+* AI Generated Sprint Summary
 
-The five new trading instrument reference data types (DayCountFractionType,
-BusinessDayConventionType, FloatingIndexType, PaymentFrequencyType, LegType)
-introduced in Phase 0 of the CDM instrument domain model follow the established
-per-type file convention used throughout the codebase. However, because all five
-types share the same structure (code + description + provenance), there is an
-opportunity to reduce boilerplate in several layers without changing the
-established pattern elsewhere.
+#+begin_src markdown
+# **ORE Studio Sprint 15 – Release Notes**
+*March 2026*
 
-Acceptance criteria:
+Sprint 15 delivered the BOINC-inspired distributed compute grid, a full service architecture migration to `*.api`/`*.core` layers, a production-grade JWT refresh system, and four new CDM instrument domain models.
 
-- CLI =add_*_options= structs: Replace the five identical
-  =add_*_type_options= structs and their =operator<<=  implementations with a
-  single =add_trading_ref_type_options= struct shared across all five types,
-  reducing 10 files to 1.
+---
 
-- CLI =application.cpp= template helpers: Extract the repeated =export_*=,
-  =delete_*=, and =add_*= function bodies into private template helpers
-  (=export_trading_ref_type=, =delete_trading_ref_type=,
-  =add_trading_ref_type=) so each of the 15 per-type methods becomes a
-  one-line call.
+## ✅ **Highlights**
 
-- Repository entity structs: Replace the five identical =*_entity= structs in
-  =ores.trading.core= with a single =trading_ref_type_entity= base struct, and
-  type-alias or inherit per type.
+- **Distributed compute grid** — full stack implementation (domain, SQL, service, wrapper, NATS JetStream, Qt UI) inspired by BOINC, with telemetry pipeline and RAG service health dashboard.
+- **Service architecture migration** — all ten service libraries (`iam`, `refdata`, `compute`, `scheduler`, `assets`, `variability`, `synthetic`, `trading`, `reporting`, `http.server`) split into `*.api` (contracts) and `*.core` (implementation) layers.
+- **JWT token refresh** — configurable lifetimes via system settings, `iam.v1.auth.refresh` endpoint, reactive shell retry, proactive Qt timer, and `ores_iam_auth_events_tbl` TimescaleDB telemetry hypertable.
+- **CDM instrument models** — Rates (Swap, CrossCurrencySwap, CapFloor, Swaption), FX (FxForward, FxSwap, FxOption), Bond (Bond, ForwardBond, CallableBond, ConvertibleBond, BondRepo), and Credit (CDS, CDSIndex, SyntheticCDO).
+- **Unified system settings** — replaced `ores_variability_feature_flags_tbl` with `ores_variability_system_settings_tbl` supporting bool, int, string, and JSON value types across all stack layers.
 
-Scope: =ores.cli= and =ores.trading.core= only. The Qt UI layer (Controllers,
-MdiWindows, DetailDialogs, HistoryDialogs, ClientModels) follows the same
-per-type pattern as all other entity types in =ores.qt= and is out of scope for
-this story.
+---
 
-*** STARTED Move badges to database                                    :code:
-    :LOGBOOK:
-    CLOCK: [2026-03-28 Sat 10:00]
-    :END:
+## 🛠️ **Key Improvements**
 
-At present we did some hackery to use badges on Qt UI. ideally we want the
-database to have some meta-data about badges and then use that to drive the UI
-so we can reuse it for Wt. See [[file:../../plans/2026-03-28-badge-system-design.org][design]].
+### **Compute Grid**
+- BOINC-inspired grid with `ores.compute.service` and `ores.compute.wrapper` executables; NATS JetStream lifecycle transitions replace legacy PGMQ/pg_cron.
+- Telemetry: `ores_compute_grid_samples_tbl` and `ores_compute_node_samples_tbl` hypertables; `get_grid_stats` unified NATS endpoint for dashboard.
+- E2E fixes: result-stuck-InProgress bug, host_id persistence, outcome code mapping, SIGSEGV on window close, file extension preservation in artifact URIs.
+- Loading lifecycle refactored via `AbstractClientModel` with `dataLoaded()`/`loadError()` signals wired to `endLoading()` across all six compute MdiWindows.
 
-*Phase 1 — Infrastructure*
+### **Authentication & Security**
+- Token lifetimes configurable via `iam.token.*` system settings; hot-reloaded on `system_setting_changed` events.
+- `make_request_context()` now explicitly returns `token_expired` / `unauthorized` error codes via `X-Error` NATS headers — updated across all 48 domain handlers.
+- Auth telemetry records login, logout, refresh, max-session events with 90-day/3-year retention policies.
 
-***** Tasks
+### **Architecture**
+- All modules migrated to `*.api` / `*.core` three-layer pattern; HTTP route handlers relocated to domain core modules.
+- NATS service discovery: Qt client auto-discovers HTTP base URL after login via `ores.http` shared protocol types — eliminates manual `http_port` config.
+- Full PostgreSQL environment isolation: environment-prefixed roles prevent cross-environment contamination.
 
-- [ ] Create codegen model: =badge_severity_domain_entity.json=
-- [ ] Create codegen model: =code_domain_domain_entity.json=
-- [ ] Create codegen model: =badge_definition_domain_entity.json=
-- [ ] Create codegen model: =badge_mapping_junction.json=
-- [ ] Run codegen and integrate generated SQL artefacts
-- [ ] Run codegen and integrate generated C++ artefacts
-- [ ] Create population seed data from hardcoded colours
-- [ ] Implement =BadgeCache= in =ores.qt=
-- [ ] Wire =BadgeCache= into client startup sequence
+### **Infrastructure & DX**
+- `sccache` CI bloat fixed: cross-PR cache sharing, increased sccache limit — reduced cold build times from 2+ hours.
+- `ORES_PRESET` stored in `.env`; new `start-client.sh` supports multi-instance coloured Qt clients.
+- Loading indicators (4px indeterminate progress bar) added to all 45+ entity list windows.
+- Badge system Phase 1 infrastructure: `badge_definition` and `badge_mapping` domain entities with DB-driven metadata for reuse across Qt and Wt.
 
-*** Fix suspicious signup handler using raw ctx_ without tenant context :code:
+---
 
-The =signup()= method in =auth_handler.hpp= uses raw =ctx_= (the service-level
-context with no tenant set) when calling =account_service= and
-=authorization_service=. Every other authenticated handler either calls
-=make_request_context()= to extract a tenant from the JWT, or explicitly calls
-=ctx_.with_tenant(...)= to set one before proceeding.
+## ⚠️ **Known Issues & Postponed**
 
-Using =ctx_= directly means the =tenant_aware_pool= never sets
-=app.current_tenant_id=, so PostgreSQL RLS policies have no tenant to filter
-on. This may allow cross-tenant data leakage or bypass of tenant isolation
-during account creation.
+- **CDM CLI commands** (instruments list/add/delete) deferred to a follow-up story for all four instrument phases.
+- **Database recreate** required to pick up new `ores_trading_fx_instruments_tbl`, `ores_trading_bond_instruments_tbl`, `ores_trading_credit_instruments_tbl` tables.
+- **Three-level provisioning** (party wizard split, `provision-parties` endpoint, `ores.workflow` orchestration service) — Phase 1 landed late in sprint; Phases 2–3 deferred to Sprint 16.
 
-Tasks:
+---
 
-- [ ] Audit what tenant isolation =signup= requires (new-tenant bootstrap vs.
-  existing-tenant self-service).
-- [ ] Ensure =account_service= and =authorization_service= are always called
-  with a valid tenant context.
-- [ ] Add a test that verifies signup cannot write to the wrong tenant.
+## 📊 **Time Summary**
 
-*** Document and enforce canonical IAM context setup patterns          :code:
+- **Total effort**: 86h 56m
+- **Code**: 99% | **Agile/Analysis/Doc**: 1%
+- Top tasks: E2E compute fixes (8h 43m), API extraction (8h 13m), CDM FX (8h 00m), CDM Bond (7h 00m), NATS service discovery (7h 10m), BOINC compute grid (7h 03m)
 
-Three distinct patterns for setting up the request context exist across
-=ores.iam.core= messaging handlers, with no documented rule for when each
-should be used:
+---
 
-1. =make_request_context()= — canonical path used by most handlers (e.g.
-   =role_handler::list()=). Extracts the JWT, validates it, and calls
-   =ctx.with_tenant(tenant_id)=.
-2. =ctx_.with_tenant(tid, "")= — used in =auth_handler::login()= and
-   =auth_is_tenant_bootstrap_mode()=. No JWT; derives tenant from hostname.
-   Legitimate for pre-auth flows.
-3. =tenant_context::with_tenant(ctx, code)= — used in
-   =role_handler::assign_by_name()= / =revoke_by_name()= for cross-tenant
-   switching after initial auth. Legitimate but distinct from (1).
-4. Raw =ctx_= — used in =auth_handler::signup()=. No tenant set at all —
-   likely a bug (see related story above).
+*Next sprint: Complete the three-level provisioning workflow service (`ores.workflow`), advance CDM to equity/commodity phases, and begin RBAC handler guards.*
 
-Tasks:
-
-- [ ] Document when each pattern is appropriate in a developer guide or code
-  comment block near the handler base.
-- [ ] Review all handlers to confirm each uses the appropriate pattern.
-- [ ] Fix any handlers using an incorrect pattern.
-
-*** Enforce single canonical entry point for authenticated IAM handlers :code:
-
-All authenticated NATS handlers must set a valid tenant context before any
-database access so that PostgreSQL RLS policies can filter by
-=app.current_tenant_id=. Currently this is enforced only by convention.
-
-The =tenant_aware_pool= is the sole mechanism that sets
-=app.current_tenant_id=. If a handler bypasses =make_request_context()=, the
-pool may use a stale or missing tenant ID, silently breaking tenant isolation.
-
-Tasks:
-
-- [ ] Define the canonical entry-point contract for authenticated vs. pre-auth
-  handlers.
-- [ ] Add a compile-time or runtime guard that detects missing tenant context
-  before DB access (e.g. assertion in =tenant_aware_pool::acquire()=).
-- [ ] Audit all existing handlers and confirm compliance.
-- [ ] Update developer documentation to explain the enforcement mechanism.
-
-*** Distinguish service roles from user roles; prevent leakage to tenants :code:
-
-Service account roles (=IamService=, =RefdataService=, etc.) are internal
-system roles assigned to NATS domain service accounts. They must never be:
-
-1. Shown to users in role-assignment UIs (Roles dialog, account editor).
-2. Copied to new tenants during provisioning — =ores_iam_provision_tenant_fn=
-   currently copies all system-tenant roles, including service roles, to every
-   provisioned tenant.
-
-Exposing service roles to tenants is a security concern: a misconfigured
-tenant admin could assign a service role to a user account, granting it
-service-level permissions (e.g. =iam::*= for =IamService=).
-
-Tasks:
-
-- [ ] Add a =role_type= column (or equivalent discriminator) to
-  =ores_iam_roles_tbl= with values =user= / =service=.
-- [ ] Mark all service roles as =service= type in =iam_roles_populate.sql=.
-- [ ] Update =ores_iam_provision_tenant_fn= to copy only =user=-type roles to
-  new tenants.
-- [ ] Update =role_handler::list()= and =authorization_service::list_roles()=
-  to exclude =service=-type roles from responses to non-system tenants.
-- [ ] Write a migration script to clean up service roles already copied to
-  existing tenant records.
-- [ ] Add integration tests confirming service roles cannot be assigned via the
-  public API.
-
-*** Rename request contexts to reflect their scope (tenant_ctx, etc.)   :code:
-
-Several service handler functions and service classes hold intermediate database
-context values with generic names (=ctx=, =local_ctx=) when a more descriptive
-name would make the security boundary immediately obvious at a glance.  The most
-important case is the distinction between the service-level context (no tenant
-set, used to reach shared tables) and the per-request tenant context (tenant
-set, subject to RLS) — but the pattern applies anywhere a context is derived and
-then used for a scoped operation.
-
-Naming conventions to adopt:
-
-- =svc_ctx= — the service-level context held on the handler (no tenant, no actor).
-- =tenant_ctx= — a context derived from =svc_ctx= with a specific tenant applied
-  (e.g. =ctx_.with_tenant(tid, performed_by)=).
-- =req_ctx= — a context built by =make_request_context()= from an inbound NATS
-  message (tenant + actor extracted from JWT).
-
-Applying these names consistently lets a reviewer confirm at a glance that the
-correct context is used for each DB call, and makes incorrect usage (e.g. using
-=svc_ctx= where =req_ctx= is expected) stand out immediately.
-
-Tasks:
-
-- [ ] Audit all handler classes in =ores.*.core= and =ores.service= for context
-  variable names and apply the convention above.
-- [ ] Rename the =ctx_= member of handler classes that hold a service-level
-  context to =svc_ctx_=.
-- [ ] Rename local variables produced by =ctx_.with_tenant(...)= to =tenant_ctx=.
-- [ ] Rename local variables produced by =make_request_context()= to =req_ctx=
-  (or just =ctx= inside a handler function body where the scope is clear).
-- [ ] Update =report_scheduling_service= which currently uses both =ctx_= (service)
-  and a derived =tenant_ctx= — ensure the member is clearly =svc_ctx_= and all
-  derived locals follow the convention.
+---
+#+end_src
 
 * Footer
-
-
 
 | Previous: [[id:93CE19DF-1501-11F1-8EF4-40B0768014EB][Sprint Backlog 14]] | Next: TBD |

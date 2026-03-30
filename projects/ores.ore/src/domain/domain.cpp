@@ -3948,7 +3948,8 @@ void _set_optionData_LongShort_t(domain::optionData_LongShort_t* obj, const xsdc
 std::string to_string(settlementMethod val) { return xsdcpp::to_string((size_t)val, 4, _settlementMethod_Values, "settlementMethod"); }
 void _set_settlementMethod(domain::settlementMethod* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::settlementMethod)xsdcpp::toNumeric(pos, _settlementMethod_Values, val); }
 const xsdcpp::ElementInfo _settlementMethod_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_settlementMethod };
-const xsdcpp::ElementInfo _premiumCurrencyCode_Info = { 0, nullptr };
+void _set_premiumCurrencyCode(domain::premiumCurrencyCode* obj, const xsdcpp::Position& pos, std::string&& val) { xsdcpp::set_string(obj, pos, std::move(val)); }
+const xsdcpp::ElementInfo _premiumCurrencyCode_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_premiumCurrencyCode };
 std::string to_string(legType val) { return xsdcpp::to_string((size_t)val, 17, _legType_Values, "legType"); }
 std::string to_string(dayCounter val) { return xsdcpp::to_string((size_t)val, 71, _dayCounter_Values, "dayCounter"); }
 std::string to_string(businessDayConvention val) { return xsdcpp::to_string((size_t)val, 27, _businessDayConvention_Values, "businessDayConvention"); }
@@ -3960,7 +3961,8 @@ void _set_businessDayConvention(domain::businessDayConvention* obj, const xsdcpp
 const xsdcpp::ElementInfo _businessDayConvention_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_businessDayConvention };
 void _set_paymentLag(domain::paymentLag* obj, const xsdcpp::Position& pos, std::string&& val) { xsdcpp::set_string(obj, pos, std::move(val)); }
 const xsdcpp::ElementInfo _paymentLag_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_paymentLag };
-const xsdcpp::ElementInfo _extendedCurrencyCode_Info = { 0, nullptr };
+void _set_extendedCurrencyCode(domain::extendedCurrencyCode* obj, const xsdcpp::Position& pos, std::string&& val) { xsdcpp::set_string(obj, pos, std::move(val)); }
+const xsdcpp::ElementInfo _extendedCurrencyCode_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_extendedCurrencyCode };
 std::string to_string(barrierType val) { return xsdcpp::to_string((size_t)val, 10, _barrierType_Values, "barrierType"); }
 std::string to_string(barrierCompare val) { return xsdcpp::to_string((size_t)val, 3, _barrierCompare_Values, "barrierCompare"); }
 std::string to_string(barrierStyle val) { return xsdcpp::to_string((size_t)val, 2, _barrierStyle_Values, "barrierStyle"); }
@@ -4011,7 +4013,8 @@ std::string to_string(trsFxConversion val) { return xsdcpp::to_string((size_t)va
 void _set_trsFxConversion(domain::trsFxConversion* obj, const xsdcpp::Position& pos, std::string&& val) { *obj = (domain::trsFxConversion)xsdcpp::toNumeric(pos, _trsFxConversion_Values, val); }
 const xsdcpp::ElementInfo _trsFxConversion_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_trsFxConversion };
 void _set_cdoData_Qualifier_t(domain::cdoData_Qualifier_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
-const xsdcpp::ElementInfo _emptyFloat_Info = { 0, nullptr };
+void _set_emptyFloat(domain::emptyFloat* obj, const xsdcpp::Position& pos, std::string&& val) { xsdcpp::set_string(obj, pos, std::move(val)); }
+const xsdcpp::ElementInfo _emptyFloat_Info = { xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_emptyFloat };
 void _set_creditLinkedSwapData_CreditCurveId_t(domain::creditLinkedSwapData_CreditCurveId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 void _set_indexCreditDefaultSwapData_CreditCurveId_t(domain::indexCreditDefaultSwapData_CreditCurveId_t* obj, const xsdcpp::Position& pos, std::string&& val) { xsd::string& base = *obj; xsdcpp::set_string(&base, pos, std::move(val)); }
 std::string to_string(cdsOptionstrikeType val) { return xsdcpp::to_string((size_t)val, 2, _cdsOptionstrikeType_Values, "cdsOptionstrikeType"); }

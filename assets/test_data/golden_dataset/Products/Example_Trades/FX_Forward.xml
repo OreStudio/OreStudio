@@ -1,0 +1,28 @@
+<Portfolio>
+  <Trade id="FXFWD_EURUSD_10Y">
+    <TradeType>FxForward</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <FxForwardData>
+      <ValueDate>2033-02-20</ValueDate>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+      <Settlement>Cash</Settlement>
+      <SettlementData>
+        <Currency>USD</Currency>
+        <FXIndex>FX-TR20H-EUR-USD</FXIndex>
+        <Date>2033-02-24</Date>
+        <Rules>
+          <PaymentLag>2D</PaymentLag>
+          <PaymentCalendar>USD</PaymentCalendar>
+          <PaymentConvention>Following</PaymentConvention>
+        </Rules>
+      </SettlementData>
+    </FxForwardData>
+  </Trade>
+</Portfolio>

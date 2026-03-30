@@ -1,0 +1,40 @@
+<Portfolio>
+  <Trade id="FX_DOUBLE_BARRIER_OPTION">
+    <TradeType>FxDoubleBarrierOption</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <FxDoubleBarrierOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <PayOffAtExpiry>false</PayOffAtExpiry>
+        <Premiums>
+          <Premium>
+            <Amount>10900</Amount>
+            <Currency>EUR</Currency>
+            <PayDate>2023-09-15</PayDate>
+          </Premium>
+        </Premiums>
+        <ExerciseDates>
+          <ExerciseDate>2031-09-15</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <BarrierData>
+        <Type>KnockOut</Type>
+        <Levels>
+          <Level>1</Level>
+          <Level>1.29999995</Level>
+        </Levels>
+      </BarrierData>
+      <BoughtCurrency>EUR</BoughtCurrency>
+      <BoughtAmount>1000000</BoughtAmount>
+      <SoldCurrency>USD</SoldCurrency>
+      <SoldAmount>1100000</SoldAmount>
+    </FxDoubleBarrierOptionData>
+  </Trade>
+</Portfolio>

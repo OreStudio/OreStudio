@@ -20,9 +20,12 @@
 #ifndef ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 #define ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 
+#include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.ore/domain/domain.hpp"
+#include "ores.ore/domain/swap_instrument_mapper.hpp"
+#include "ores.ore/domain/fx_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -69,6 +72,24 @@ public:
      * trading domain trades.
      */
     static std::vector<trading::domain::trade> map(const portfolio& v);
+
+    /**
+     * @brief Dispatches a swap-family trade to swap_instrument_mapper.
+     *
+     * Returns a populated result for Swap, CrossCurrencySwap, InflationSwap,
+     * ForwardRateAgreement, and CapFloor. Returns empty for all other types.
+     */
+    static std::optional<swap_mapping_result>
+    map_swap_instrument(const trade& v);
+
+    /**
+     * @brief Dispatches an FX-family trade to fx_instrument_mapper.
+     *
+     * Returns a populated result for FxForward, FxSwap, and FxOption.
+     * Returns empty for all other types.
+     */
+    static std::optional<fx_mapping_result>
+    map_fx_instrument(const trade& v);
 };
 
 }

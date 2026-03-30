@@ -1,0 +1,24 @@
+<Portfolio>
+  <Trade id="Fx_Vol_Swap">
+    <TradeType>FxVarianceSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <FxVarianceSwapData>
+      <StartDate>2025-10-22</StartDate>
+      <EndDate>2026-04-26</EndDate>
+      <Currency>USD</Currency>
+      <Underlying>
+        <Type>FX</Type>
+        <Name>TR20H-EUR-USD</Name>
+      </Underlying>
+      <LongShort>Long</LongShort>
+      <Strike>0.0199999996</Strike>
+      <Notional>50000</Notional>
+      <Calendar>US</Calendar>
+      <MomentType>Volatility</MomentType>
+    </FxVarianceSwapData>
+  </Trade>
+</Portfolio>

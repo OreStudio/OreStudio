@@ -46,6 +46,7 @@
 #include "ores.qt/SystemProvisionerWizard.hpp"
 #include "ores.qt/TenantOnboardingWizard.hpp"
 #include "ores.qt/TenantProvisioningWizard.hpp"
+#include "ores.qt/PartyProvisioningWizard.hpp"
 #include "ores.qt/SignUpDialog.hpp"
 #include "ores.qt/MyAccountDialog.hpp"
 #include "ores.qt/SessionHistoryDialog.hpp"
@@ -3449,6 +3450,23 @@ void MainWindow::showTenantProvisioningWizard() {
     wizard->show();
 }
 
+void MainWindow::showPartyProvisioningWizard() {
+    BOOST_LOG_SEV(lg(), info) << "Showing Party Provisioning Wizard (party setup mode)";
+
+    auto* wizard = new PartyProvisioningWizard(clientManager_, this);
+    wizard->setWindowModality(Qt::ApplicationModal);
+    wizard->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(wizard, &PartyProvisioningWizard::provisioningCompleted,
+            this, [this]() {
+        BOOST_LOG_SEV(lg(), info) << "Party provisioning wizard completed";
+        ui_->statusbar->showMessage(
+            tr("Party setup completed successfully."));
+    });
+
+    wizard->show();
+}
+
 void MainWindow::showLoginDialog() {
     showLoginDialog(LoginDialogOptions{});
 }
@@ -3523,6 +3541,12 @@ void MainWindow::showLoginDialog(const LoginDialogOptions& options) {
     connect(loginWidget, &LoginDialog::tenantBootstrapDetected,
             this, [this]() {
         showTenantProvisioningWizard();
+    });
+
+    // Connect party setup mode signal - show party provisioning wizard
+    connect(loginWidget, &LoginDialog::partySetupDetected,
+            this, [this]() {
+        showPartyProvisioningWizard();
     });
 
     // Connect sign up request if enabled

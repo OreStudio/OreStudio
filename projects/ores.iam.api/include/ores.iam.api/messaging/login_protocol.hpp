@@ -47,6 +47,7 @@ struct login_response {
     std::string email;
     bool password_reset_required = false;
     bool tenant_bootstrap_mode = false;
+    bool party_setup_mode = false;
     std::string token;
     std::string error_message;
     std::string message;

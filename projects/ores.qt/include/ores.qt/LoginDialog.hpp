@@ -183,6 +183,11 @@ signals:
      */
     void tenantBootstrapDetected();
 
+    /**
+     * @brief Emitted when the tenant is in party setup mode.
+     */
+    void partySetupDetected();
+
 private slots:
     void onLoginClicked();
     void onSignUpClicked();

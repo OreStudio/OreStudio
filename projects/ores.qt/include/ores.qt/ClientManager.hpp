@@ -73,6 +73,7 @@ struct LoginResult {
     bool password_reset_required = false;
     bool bootstrap_mode = false;
     bool tenant_bootstrap_mode = false;
+    bool party_setup_mode = false;
     boost::uuids::uuid selected_party_id;
     std::vector<PartyInfo> available_parties;
     /**

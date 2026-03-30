@@ -148,7 +148,7 @@ fi
 get_existing_val() {
     local key="$1"
     [[ -f "${ENV_FILE}" ]] || return 0
-    grep "^${key}=" "${ENV_FILE}" | head -1 | cut -d'=' -f2-
+    grep "^${key}=" "${ENV_FILE}" | head -1 | cut -d'=' -f2- || true
 }
 
 # ---------------------------------------------------------------------------

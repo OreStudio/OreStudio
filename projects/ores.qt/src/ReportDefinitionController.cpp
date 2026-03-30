@@ -462,11 +462,16 @@ void ReportDefinitionController::onScheduleRequested(
     QPointer<ReportDefinitionController> self = this;
     const std::string performed_by = username_.toStdString();
 
-    struct ScheduleResult { bool success; std::string message; int count; };
+    struct ScheduleResult {
+        bool success;
+        std::string message;
+        int scheduled_count;
+        int failed_count;
+    };
 
     auto task = [self, ids, performed_by]() -> ScheduleResult {
         if (!self || !self->clientManager_)
-            return {false, "Controller destroyed", 0};
+            return {false, "Controller destroyed", 0, static_cast<int>(ids.size())};
 
         reporting::messaging::schedule_report_definitions_request request;
         for (const auto& id : ids) {
@@ -475,9 +480,11 @@ void ReportDefinitionController::onScheduleRequested(
         request.performed_by = performed_by;
         auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
-            return {false, "Failed to communicate with server", 0};
+            return {false, "Failed to communicate with server", 0, static_cast<int>(ids.size())};
 
-        return {response_result->success, response_result->message, response_result->scheduled_count};
+        return {response_result->success, response_result->message,
+            response_result->scheduled_count,
+            static_cast<int>(response_result->failed_ids.size())};
     };
 
     auto* watcher = new QFutureWatcher<ScheduleResult>(this);
@@ -488,13 +495,22 @@ void ReportDefinitionController::onScheduleRequested(
         if (!self) return;
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Scheduled " << result.count << " report definitions";
-            emit self->statusMessage(tr("Scheduled %1 report definition(s).").arg(result.count));
+            BOOST_LOG_SEV(lg(), info) << "Scheduled " << result.scheduled_count
+                                     << " report definitions";
+            emit self->statusMessage(
+                tr("Scheduled %1 report definition(s).").arg(result.scheduled_count));
             if (self->listWindow_)
                 self->listWindow_->markAsStale();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Schedule failed: " << result.message;
-            emit self->errorMessage(QString::fromStdString(result.message));
+            QMessageBox msgBox(self->mainWindow_);
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.setWindowTitle(tr("Scheduling Failed"));
+            msgBox.setText(tr("%1 report definition(s) could not be scheduled.")
+                .arg(result.failed_count));
+            msgBox.setDetailedText(QString::fromStdString(result.message));
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.exec();
         }
     });
     watcher->setFuture(QtConcurrent::run(task));
@@ -513,11 +529,16 @@ void ReportDefinitionController::onUnscheduleRequested(
     QPointer<ReportDefinitionController> self = this;
     const std::string performed_by = username_.toStdString();
 
-    struct UnscheduleResult { bool success; std::string message; int count; };
+    struct UnscheduleResult {
+        bool success;
+        std::string message;
+        int unscheduled_count;
+        int failed_count;
+    };
 
     auto task = [self, ids, performed_by]() -> UnscheduleResult {
         if (!self || !self->clientManager_)
-            return {false, "Controller destroyed", 0};
+            return {false, "Controller destroyed", 0, static_cast<int>(ids.size())};
 
         reporting::messaging::unschedule_report_definitions_request request;
         for (const auto& id : ids) {
@@ -526,9 +547,11 @@ void ReportDefinitionController::onUnscheduleRequested(
         request.performed_by = performed_by;
         auto response_result = self->clientManager_->process_authenticated_request(std::move(request));
         if (!response_result)
-            return {false, "Failed to communicate with server", 0};
+            return {false, "Failed to communicate with server", 0, static_cast<int>(ids.size())};
 
-        return {response_result->success, response_result->message, response_result->unscheduled_count};
+        return {response_result->success, response_result->message,
+            response_result->unscheduled_count,
+            static_cast<int>(response_result->failed_ids.size())};
     };
 
     auto* watcher = new QFutureWatcher<UnscheduleResult>(this);
@@ -539,15 +562,22 @@ void ReportDefinitionController::onUnscheduleRequested(
         if (!self) return;
 
         if (result.success) {
-            BOOST_LOG_SEV(lg(), info) << "Unscheduled " << result.count
+            BOOST_LOG_SEV(lg(), info) << "Unscheduled " << result.unscheduled_count
                                      << " report definitions";
             emit self->statusMessage(
-                tr("Unscheduled %1 report definition(s).").arg(result.count));
+                tr("Unscheduled %1 report definition(s).").arg(result.unscheduled_count));
             if (self->listWindow_)
                 self->listWindow_->markAsStale();
         } else {
             BOOST_LOG_SEV(lg(), error) << "Unschedule failed: " << result.message;
-            emit self->errorMessage(QString::fromStdString(result.message));
+            QMessageBox msgBox(self->mainWindow_);
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.setWindowTitle(tr("Unscheduling Failed"));
+            msgBox.setText(tr("%1 report definition(s) could not be unscheduled.")
+                .arg(result.failed_count));
+            msgBox.setDetailedText(QString::fromStdString(result.message));
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.exec();
         }
     });
     watcher->setFuture(QtConcurrent::run(task));

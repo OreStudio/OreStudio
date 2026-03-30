@@ -73,12 +73,14 @@ struct job_definition final {
 
     /**
      * @brief Type of action to execute on each firing.
+     * "execute_sql"  — run the SQL in the command field.
+     * "nats_publish" — publish a NATS message; action_payload carries subject and body.
      */
-    std::string action_type = "execute_sql";  // "execute_sql" | "send_mq_message"
+    std::string action_type = "execute_sql";
 
     /**
      * @brief JSON payload for the action.
-     * For send_mq_message: {"queue_id":"<uuid>","message_type":"<str>","payload":{}}
+     * For nats_publish: {"subject":"<nats_subject>","report_definition_id":"<uuid>","tenant_id":"<uuid>"}
      */
     std::string action_payload = "{}";
 

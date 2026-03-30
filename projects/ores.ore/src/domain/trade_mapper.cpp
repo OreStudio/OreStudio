@@ -91,6 +91,14 @@ trade_mapper::map_swap_instrument(const trade& v) {
         return swap_instrument_mapper::forward_fra(v);
     if (type == "CapFloor")
         return swap_instrument_mapper::forward_capfloor(v);
+    if (type == "Swaption")
+        return swap_instrument_mapper::forward_swaption(v);
+    if (type == "CallableSwap")
+        return swap_instrument_mapper::forward_callable_swap(v);
+    if (type == "FlexiSwap")
+        return swap_instrument_mapper::forward_flexi_swap(v);
+    if (type == "BalanceGuaranteedSwap")
+        return swap_instrument_mapper::forward_balance_guaranteed_swap(v);
     return std::nullopt;
 }
 

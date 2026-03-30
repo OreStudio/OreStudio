@@ -1,0 +1,143 @@
+<Portfolio>
+  <Trade id="BGS1">
+    <TradeType>BalanceGuaranteedSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <BalanceGuaranteedSwapData>
+      <ReferenceSecurity>ISIN:XS0983610930</ReferenceSecurity>
+      <Tranches>
+        <Tranche>
+          <Description>Class A</Description>
+          <SecurityId>ISIN:XS0983610930</SecurityId>
+          <Seniority>1</Seniority>
+          <Notionals>
+            <Notional>1500000</Notional>
+            <Notional startDate="2022-12-27">1000000</Notional>
+            <Notional startDate="2023-12-28">900000</Notional>
+            <Notional startDate="2024-12-27">800000</Notional>
+            <Notional startDate="2025-12-27">700000</Notional>
+            <Notional startDate="2026-12-27">600000</Notional>
+            <Notional startDate="2027-12-28">500000</Notional>
+            <Notional startDate="2028-12-27">400000</Notional>
+            <Notional startDate="2029-12-27">300000</Notional>
+            <Notional startDate="2030-12-27">200000</Notional>
+            <Notional startDate="2031-12-28">100000</Notional>
+            <Notional startDate="2032-12-27">0</Notional>
+          </Notionals>
+        </Tranche>
+        <Tranche>
+          <Description>Class B</Description>
+          <SecurityId>NA</SecurityId>
+          <Seniority>2</Seniority>
+          <Notionals>
+            <Notional>350000</Notional>
+            <Notional startDate="2022-12-27">300000</Notional>
+            <Notional startDate="2023-12-28">300000</Notional>
+            <Notional startDate="2024-12-27">300000</Notional>
+            <Notional startDate="2025-12-27">300000</Notional>
+            <Notional startDate="2026-12-27">300000</Notional>
+            <Notional startDate="2027-12-28">300000</Notional>
+            <Notional startDate="2028-12-27">300000</Notional>
+            <Notional startDate="2029-12-27">300000</Notional>
+            <Notional startDate="2030-12-27">300000</Notional>
+            <Notional startDate="2031-12-28">300000</Notional>
+            <Notional startDate="2032-12-27">200000</Notional>
+            <Notional startDate="2033-12-27">100000</Notional>
+            <Notional startDate="2034-12-27">0</Notional>
+          </Notionals>
+        </Tranche>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2021-12-27</StartDate>
+            <EndDate>2035-12-28</EndDate>
+            <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </Tranches>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>F</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>1500000</Notional>
+          <Notional startDate="2022-12-27">1000000</Notional>
+          <Notional startDate="2023-12-28">900000</Notional>
+          <Notional startDate="2024-12-27">800000</Notional>
+          <Notional startDate="2025-12-27">700000</Notional>
+          <Notional startDate="2026-12-27">600000</Notional>
+          <Notional startDate="2027-12-28">500000</Notional>
+          <Notional startDate="2028-12-27">400000</Notional>
+          <Notional startDate="2029-12-27">300000</Notional>
+          <Notional startDate="2030-12-27">200000</Notional>
+          <Notional startDate="2031-12-28">100000</Notional>
+          <Notional startDate="2032-12-27">0</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2021-12-27</StartDate>
+            <EndDate>2035-12-28</EndDate>
+            <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.00400000019</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>1500000</Notional>
+          <Notional startDate="2022-12-27">1000000</Notional>
+          <Notional startDate="2023-12-28">900000</Notional>
+          <Notional startDate="2024-12-27">800000</Notional>
+          <Notional startDate="2025-12-27">700000</Notional>
+          <Notional startDate="2026-12-27">600000</Notional>
+          <Notional startDate="2027-12-28">500000</Notional>
+          <Notional startDate="2028-12-27">400000</Notional>
+          <Notional startDate="2029-12-27">300000</Notional>
+          <Notional startDate="2030-12-27">200000</Notional>
+          <Notional startDate="2031-12-28">100000</Notional>
+          <Notional startDate="2032-12-27">0</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2021-12-27</StartDate>
+            <EndDate>2035-12-28</EndDate>
+            <Tenor>6M</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>false</IsInArrears>
+          <FixingDays>2</FixingDays>
+          <Spreads>
+            <Spread>0.00499999989</Spread>
+          </Spreads>
+          <Floors>
+            <Floor>0</Floor>
+          </Floors>
+        </FloatingLegData>
+      </LegData>
+    </BalanceGuaranteedSwapData>
+  </Trade>
+</Portfolio>

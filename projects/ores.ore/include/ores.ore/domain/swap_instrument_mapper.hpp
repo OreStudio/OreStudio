@@ -44,6 +44,10 @@ struct swap_mapping_result {
  *   - Swap (SwapData, CrossCurrencySwapData, InflationSwapData)
  *   - ForwardRateAgreement (ForwardRateAgreementData)
  *   - CapFloor (CapFloorData)
+ *   - Swaption (SwaptionData — European and Bermudan)
+ *   - CallableSwap (CallableSwapData)
+ *   - FlexiSwap (FlexiSwapData — forward-only; domain has no tranche fields)
+ *   - BalanceGuaranteedSwap (BalanceGuaranteedSwapData — forward-only)
  *
  * Forward mapping (ORE XSD → ORES domain) captures the economic fields that
  * the ORES relational model stores. Fields not yet modelled in ORES are
@@ -105,6 +109,56 @@ public:
     static trade reverse_capfloor(
         const ores::trading::domain::instrument& instr,
         const std::vector<ores::trading::domain::swap_leg>& legs);
+
+    /**
+     * @brief Forward-maps a Swaption trade (SwaptionData) to ORES domain types.
+     *
+     * Maps the first exercise date to instrument.start_date, leg data to
+     * swap_legs, and the option style to instrument.description.
+     */
+    static swap_mapping_result forward_swaption(const trade& t);
+
+    /**
+     * @brief Reverse-maps ORES domain types back to a Swaption ORE XSD trade.
+     */
+    static trade reverse_swaption(
+        const ores::trading::domain::instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs);
+
+    /**
+     * @brief Forward-maps a CallableSwap trade (CallableSwapData) to ORES
+     * domain types.
+     *
+     * Exercise dates are serialised as a JSON array in
+     * instrument.callable_dates_json.
+     */
+    static swap_mapping_result forward_callable_swap(const trade& t);
+
+    /**
+     * @brief Reverse-maps ORES domain types back to a CallableSwap ORE XSD
+     * trade.
+     */
+    static trade reverse_callable_swap(
+        const ores::trading::domain::instrument& instr,
+        const std::vector<ores::trading::domain::swap_leg>& legs);
+
+    /**
+     * @brief Forward-maps a FlexiSwap trade (FlexiSwapData) to ORES domain
+     * types.
+     *
+     * Only leg economics are captured. LowerNotionalBounds and Prepayment
+     * schedule are not stored in the current domain model — these are coverage
+     * gaps reported by the Python gap check.
+     */
+    static swap_mapping_result forward_flexi_swap(const trade& t);
+
+    /**
+     * @brief Forward-maps a BalanceGuaranteedSwap trade to ORES domain types.
+     *
+     * Only leg economics are captured. Tranche structure and ReferenceSecurity
+     * are not stored in the current domain model.
+     */
+    static swap_mapping_result forward_balance_guaranteed_swap(const trade& t);
 
 private:
     static ores::trading::domain::swap_leg map_leg(

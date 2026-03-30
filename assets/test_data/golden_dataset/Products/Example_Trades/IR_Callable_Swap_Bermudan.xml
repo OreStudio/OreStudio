@@ -1,0 +1,105 @@
+<Portfolio>
+  <Trade id="CALLABLE_SWAP_withExerciseDate">
+    <TradeType>CallableSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <CallableSwapData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <Style>Bermudan</Style>
+        <NoticePeriod>2D</NoticePeriod>
+        <NoticeCalendar>TARGET</NoticeCalendar>
+        <NoticeConvention>F</NoticeConvention>
+        <Settlement>Physical</Settlement>
+        <ExerciseFees>
+          <ExerciseFee type="Percentage">0.00100000005</ExerciseFee>
+          <ExerciseFee type="Absolute" startDate="2037-09-29">15000</ExerciseFee>
+          <ExerciseFee type="Percentage" startDate="2039-09-30">0.000500000024</ExerciseFee>
+        </ExerciseFees>
+        <ExerciseFeeSettlementPeriod>5D</ExerciseFeeSettlementPeriod>
+        <ExerciseFeeSettlementCalendar>TARGET</ExerciseFeeSettlementCalendar>
+        <ExerciseFeeSettlementConvention>MF</ExerciseFeeSettlementConvention>
+        <ExerciseDates>
+          <ExerciseDate>2035-09-30</ExerciseDate>
+          <ExerciseDate>2036-09-29</ExerciseDate>
+          <ExerciseDate>2037-09-29</ExerciseDate>
+          <ExerciseDate>2038-09-29</ExerciseDate>
+          <ExerciseDate>2039-09-30</ExerciseDate>
+          <ExerciseDate>2040-09-29</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Floating</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>ModifiedFollowing</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>10000000</Notional>
+          <Notional startDate="2036-09-29">9000000</Notional>
+          <Notional startDate="2037-09-29">8000000</Notional>
+          <Notional startDate="2038-09-29">7000000</Notional>
+          <Notional startDate="2039-09-30">6000000</Notional>
+          <Notional startDate="2040-09-29">5000000</Notional>
+          <Notional startDate="2041-09-29">4000000</Notional>
+          <Notional startDate="2042-09-29">3000000</Notional>
+          <Notional startDate="2043-09-30">2000000</Notional>
+          <Notional startDate="2044-09-29">1000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2035-09-30</StartDate>
+            <EndDate>2045-09-29</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>ModifiedFollowing</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <FloatingLegData>
+          <Index>EUR-EURIBOR-3M</Index>
+          <Spreads>
+            <Spread>0</Spread>
+          </Spreads>
+        </FloatingLegData>
+      </LegData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>Following</PaymentConvention>
+        <DayCounter>ACT/ACT</DayCounter>
+        <Notionals>
+          <Notional>10000000</Notional>
+          <Notional startDate="2036-09-29">9000000</Notional>
+          <Notional startDate="2037-09-29">8000000</Notional>
+          <Notional startDate="2038-09-29">7000000</Notional>
+          <Notional startDate="2039-09-30">6000000</Notional>
+          <Notional startDate="2040-09-29">5000000</Notional>
+          <Notional startDate="2041-09-29">4000000</Notional>
+          <Notional startDate="2042-09-29">3000000</Notional>
+          <Notional startDate="2043-09-30">2000000</Notional>
+          <Notional startDate="2044-09-29">1000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2035-09-30</StartDate>
+            <EndDate>2045-09-29</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>Following</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.0500000007</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </CallableSwapData>
+  </Trade>
+</Portfolio>

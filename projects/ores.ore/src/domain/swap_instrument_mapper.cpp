@@ -573,4 +573,236 @@ trade swap_instrument_mapper::reverse_capfloor(
     return t;
 }
 
+// ---------------------------------------------------------------------------
+// Forward: Swaption
+// ---------------------------------------------------------------------------
+
+swap_mapping_result swap_instrument_mapper::forward_swaption(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping Swaption: "
+                               << std::string(t.id);
+
+    swap_mapping_result result;
+    result.instrument.trade_type_code = "Swaption";
+    result.instrument.modified_by = "ores";
+    result.instrument.performed_by = "ores";
+    result.instrument.change_reason_code = "system.external_data_import";
+    result.instrument.change_commentary = "Imported from ORE XML";
+
+    if (!t.SwaptionData) return result;
+    const auto& sd = *t.SwaptionData;
+
+    if (sd.OptionData) {
+        const auto& od = *sd.OptionData;
+        if (od.Style)
+            result.instrument.description = std::string(*od.Style);
+        if (od.exerciseDatesGroup &&
+                od.exerciseDatesGroup->ExerciseDates &&
+                !od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
+            result.instrument.start_date = std::string(
+                od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+    }
+
+    int leg_num = 1;
+    for (const auto& ld : sd.LegData)
+        result.legs.push_back(map_leg(ld, leg_num++));
+
+    if (!result.legs.empty()) {
+        result.instrument.currency = result.legs.front().currency;
+        result.instrument.notional = result.legs.front().notional;
+        if (result.instrument.maturity_date.empty())
+            result.instrument.maturity_date =
+                end_date_from_schedule(sd.LegData.front().ScheduleData);
+    }
+
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: Swaption
+// ---------------------------------------------------------------------------
+
+trade swap_instrument_mapper::reverse_swaption(
+        const instrument& instr,
+        const std::vector<swap_leg>& legs) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping Swaption";
+
+    trade t;
+    t.TradeType = oreTradeType::Swaption;
+
+    swaptionData sd;
+
+    optionData od;
+    static_cast<std::string&>(od.LongShort) = "Long";
+    if (!instr.description.empty()) {
+        optionData_Style_t style;
+        static_cast<std::string&>(style) = instr.description;
+        od.Style = std::move(style);
+    }
+    if (!instr.start_date.empty()) {
+        _ExerciseDates_t ed;
+        domain::date d;
+        static_cast<std::string&>(d) = instr.start_date;
+        ed.ExerciseDate.push_back(d);
+        exerciseDatesGroup_group_t edg;
+        edg.ExerciseDates = std::move(ed);
+        od.exerciseDatesGroup = std::move(edg);
+    }
+    sd.OptionData = std::move(od);
+
+    for (const auto& sl : legs)
+        sd.LegData.push_back(reverse_leg(sl, instr));
+
+    t.SwaptionData = std::move(sd);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: CallableSwap
+// ---------------------------------------------------------------------------
+
+swap_mapping_result swap_instrument_mapper::forward_callable_swap(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableSwap: "
+                               << std::string(t.id);
+
+    swap_mapping_result result;
+    result.instrument.trade_type_code = "CallableSwap";
+    result.instrument.modified_by = "ores";
+    result.instrument.performed_by = "ores";
+    result.instrument.change_reason_code = "system.external_data_import";
+    result.instrument.change_commentary = "Imported from ORE XML";
+
+    if (!t.CallableSwapData) return result;
+    const auto& cd = *t.CallableSwapData;
+
+    if (cd.OptionData &&
+            cd.OptionData->exerciseDatesGroup &&
+            cd.OptionData->exerciseDatesGroup->ExerciseDates) {
+        std::string json = "[";
+        bool first = true;
+        for (const auto& d :
+                cd.OptionData->exerciseDatesGroup->ExerciseDates->ExerciseDate) {
+            if (!first) json += ",";
+            json += "\"" + std::string(d) + "\"";
+            first = false;
+        }
+        json += "]";
+        result.instrument.callable_dates_json = std::move(json);
+    }
+
+    int leg_num = 1;
+    for (const auto& ld : cd.LegData)
+        result.legs.push_back(map_leg(ld, leg_num++));
+
+    if (!result.legs.empty()) {
+        result.instrument.currency = result.legs.front().currency;
+        result.instrument.notional = result.legs.front().notional;
+        result.instrument.start_date =
+            start_date_from_schedule(cd.LegData.front().ScheduleData);
+        result.instrument.maturity_date =
+            end_date_from_schedule(cd.LegData.front().ScheduleData);
+    }
+
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: CallableSwap
+// ---------------------------------------------------------------------------
+
+trade swap_instrument_mapper::reverse_callable_swap(
+        const instrument& instr,
+        const std::vector<swap_leg>& legs) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping CallableSwap";
+
+    trade t;
+    t.TradeType = oreTradeType::CallableSwap;
+
+    callableSwapData cd;
+
+    if (!instr.callable_dates_json.empty()) {
+        // Minimal reconstruction: set an empty OptionData to mark the presence
+        // of the option. Full exercise dates parsing from JSON is a gap.
+        optionData od;
+        static_cast<std::string&>(od.LongShort) = "Long";
+        cd.OptionData = std::move(od);
+    }
+
+    for (const auto& sl : legs)
+        cd.LegData.push_back(reverse_leg(sl, instr));
+
+    t.CallableSwapData = std::move(cd);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: FlexiSwap (leg economics only)
+// ---------------------------------------------------------------------------
+
+swap_mapping_result swap_instrument_mapper::forward_flexi_swap(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FlexiSwap: "
+                               << std::string(t.id);
+
+    swap_mapping_result result;
+    result.instrument.trade_type_code = "FlexiSwap";
+    result.instrument.modified_by = "ores";
+    result.instrument.performed_by = "ores";
+    result.instrument.change_reason_code = "system.external_data_import";
+    result.instrument.change_commentary = "Imported from ORE XML";
+
+    if (!t.FlexiSwapData) return result;
+    const auto& fd = *t.FlexiSwapData;
+
+    int leg_num = 1;
+    for (const auto& ld : fd.LegData)
+        result.legs.push_back(map_leg(ld, leg_num++));
+
+    if (!result.legs.empty()) {
+        result.instrument.currency = result.legs.front().currency;
+        result.instrument.notional = result.legs.front().notional;
+        result.instrument.start_date =
+            start_date_from_schedule(fd.LegData.front().ScheduleData);
+        result.instrument.maturity_date =
+            end_date_from_schedule(fd.LegData.front().ScheduleData);
+    }
+
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: BalanceGuaranteedSwap (leg economics only)
+// ---------------------------------------------------------------------------
+
+swap_mapping_result swap_instrument_mapper::forward_balance_guaranteed_swap(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BalanceGuaranteedSwap: "
+                               << std::string(t.id);
+
+    swap_mapping_result result;
+    result.instrument.trade_type_code = "BalanceGuaranteedSwap";
+    result.instrument.modified_by = "ores";
+    result.instrument.performed_by = "ores";
+    result.instrument.change_reason_code = "system.external_data_import";
+    result.instrument.change_commentary = "Imported from ORE XML";
+
+    if (!t.BalanceGuaranteedSwapData) return result;
+    const auto& bd = *t.BalanceGuaranteedSwapData;
+
+    int leg_num = 1;
+    for (const auto& ld : bd.LegData)
+        result.legs.push_back(map_leg(ld, leg_num++));
+
+    if (!result.legs.empty()) {
+        result.instrument.currency = result.legs.front().currency;
+        result.instrument.notional = result.legs.front().notional;
+        result.instrument.start_date =
+            start_date_from_schedule(bd.LegData.front().ScheduleData);
+        result.instrument.maturity_date =
+            end_date_from_schedule(bd.LegData.front().ScheduleData);
+    }
+
+    return result;
+}
+
 } // namespace ores::ore::domain

@@ -1,0 +1,43 @@
+<Portfolio>
+  <Trade id="INDEX_CDS">
+    <TradeType>IndexCreditDefaultSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields>
+        <party_id>party</party_id>
+        <valuation_date>2025-02-10</valuation_date>
+      </AdditionalFields>
+    </Envelope>
+    <IndexCreditDefaultSwapData>
+      <CreditCurveId>RED:2I65BYEG6</CreditCurveId>
+      <SettlesAccrual>Y</SettlesAccrual>
+      <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <PaymentConvention>F</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>300000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>20240920</StartDate>
+            <EndDate>20341220</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>F</Convention>
+            <Rule>CDS2015</Rule>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.00999999978</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </IndexCreditDefaultSwapData>
+  </Trade>
+</Portfolio>

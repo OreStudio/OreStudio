@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.testing/project_root.hpp"
 
 namespace {
 
@@ -41,12 +42,19 @@ const std::string_view portfolio_xml  = "<Portfolio>\n</Portfolio>\n";
 const std::string_view currency_xml   = "<CurrencyConfig>\n</CurrencyConfig>\n";
 const std::string_view unrelated_xml  = "<Simulation>\n</Simulation>\n";
 
+// Returns a writable base directory for temporary test files. Uses the project's
+// build/test_tmp directory so tests work in sandboxed environments where the
+// system temp directory (TMPDIR / /tmp) may not be writable.
+std::filesystem::path test_tmp_base() {
+    return ores::testing::project_root::resolve("build/test_tmp");
+}
+
 struct temp_dir {
     std::filesystem::path path;
 
     temp_dir() {
         static std::atomic<int> counter{0};
-        path = std::filesystem::temp_directory_path() /
+        path = test_tmp_base() /
                ("ores_scanner_test_" + std::to_string(++counter));
         std::filesystem::create_directories(path);
     }
@@ -231,8 +239,7 @@ TEST_CASE("scan_excluded_currency_file_is_ignored", tags) {
 TEST_CASE("scan_nonexistent_directory_returns_empty_result", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto nonexistent =
-        std::filesystem::temp_directory_path() / "ores_no_such_dir_xyz";
+    const auto nonexistent = test_tmp_base() / "ores_no_such_dir_xyz";
 
     ore_directory_scanner scanner(nonexistent);
     const auto result = scanner.scan();

@@ -38,7 +38,7 @@ using namespace ores::logging;
 }
 
 // =============================================================================
-// load_file / save_file roundtrip tests
+// load_file / save_data / load_data roundtrip tests
 // =============================================================================
 
 TEST_CASE("currency_config_load_file_save_file_roundtrip", tags) {
@@ -53,18 +53,12 @@ TEST_CASE("currency_config_load_file_save_file_roundtrip", tags) {
     ores::ore::domain::load_file(input.string(), original);
     REQUIRE(original.Currency.size() == 179);
 
-    const auto tmp = std::filesystem::temp_directory_path() /
-        "ores_test_currencies.xml";
-    BOOST_LOG_SEV(lg, debug) << "Saving to file: " << tmp;
-    ores::ore::domain::save_file(tmp.string(), original);
-    REQUIRE(std::filesystem::exists(tmp));
+    const std::string serialised = ores::ore::domain::save_data(original);
 
-    BOOST_LOG_SEV(lg, debug) << "Reloading from saved file";
     currencyConfig reloaded;
-    ores::ore::domain::load_file(tmp.string(), reloaded);
+    ores::ore::domain::load_data(serialised, reloaded);
     CHECK(reloaded.Currency.size() == original.Currency.size());
 
-    std::filesystem::remove(tmp);
     BOOST_LOG_SEV(lg, info) << "File I/O roundtrip passed for currencyConfig";
 }
 
@@ -79,22 +73,16 @@ TEST_CASE("simulation_load_file_save_file_roundtrip", tags) {
     simulation original;
     ores::ore::domain::load_file(input.string(), original);
 
-    const auto tmp = std::filesystem::temp_directory_path() /
-        "ores_test_simulation.xml";
-    BOOST_LOG_SEV(lg, debug) << "Saving to file: " << tmp;
-    ores::ore::domain::save_file(tmp.string(), original);
-    REQUIRE(std::filesystem::exists(tmp));
+    const std::string serialised = ores::ore::domain::save_data(original);
 
-    BOOST_LOG_SEV(lg, debug) << "Reloading from saved file";
     simulation reloaded;
-    ores::ore::domain::load_file(tmp.string(), reloaded);
+    ores::ore::domain::load_data(serialised, reloaded);
 
     CHECK(static_cast<bool>(reloaded.Parameters) ==
           static_cast<bool>(original.Parameters));
     CHECK(static_cast<bool>(reloaded.CrossAssetModel) ==
           static_cast<bool>(original.CrossAssetModel));
 
-    std::filesystem::remove(tmp);
     BOOST_LOG_SEV(lg, info) << "File I/O roundtrip passed for simulation";
 }
 
@@ -110,17 +98,11 @@ TEST_CASE("todaysmarket_load_file_save_file_roundtrip", tags) {
     ores::ore::domain::load_file(input.string(), original);
     REQUIRE(!original.Configuration.empty());
 
-    const auto tmp = std::filesystem::temp_directory_path() /
-        "ores_test_todaysmarket.xml";
-    BOOST_LOG_SEV(lg, debug) << "Saving to file: " << tmp;
-    ores::ore::domain::save_file(tmp.string(), original);
-    REQUIRE(std::filesystem::exists(tmp));
+    const std::string serialised = ores::ore::domain::save_data(original);
 
-    BOOST_LOG_SEV(lg, debug) << "Reloading from saved file";
     todaysmarket reloaded;
-    ores::ore::domain::load_file(tmp.string(), reloaded);
+    ores::ore::domain::load_data(serialised, reloaded);
     CHECK(reloaded.Configuration.size() == original.Configuration.size());
 
-    std::filesystem::remove(tmp);
     BOOST_LOG_SEV(lg, info) << "File I/O roundtrip passed for todaysmarket";
 }

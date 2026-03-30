@@ -1905,7 +1905,7 @@ std::string to_string(oreTradeType);
 struct trade
 {
     xsd::string id;
-    xsd::vector<xsd::any_attribute> other_attributes;
+    xsd::vector<xsd::any_element> other_elements;
     domain::oreTradeType TradeType;
     xsd::optional<domain::envelope> Envelope;
     xsd::optional<domain::tradeActions> TradeActions;
@@ -7255,6 +7255,7 @@ struct envelope_PortfolioIds_t
 
 struct envelope_AdditionalFields_t
 {
+    xsd::vector<xsd::any_element> other_elements;
 };
 
 struct _NettingSetId_t : xsd::string

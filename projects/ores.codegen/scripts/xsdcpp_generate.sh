@@ -13,6 +13,8 @@
 #   --namespace NS       C++ namespace to wrap generated code (e.g., ores::ore)
 #   --name NAME          Name for generated files (e.g., domain)
 #   --include-prefix PFX Prefix for #include paths (default: PROJECT/NAME)
+#   --reset-goldens DIR  Delete DIR (relative to repo root) before regenerating,
+#                        so golden tests re-bootstrap on next test run
 #   --help               Show this help message
 #
 # Example:
@@ -54,6 +56,7 @@ PROJECT=""
 NAMESPACE=""
 NAME=""
 INCLUDE_PREFIX=""
+RESET_GOLDENS=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -76,6 +79,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --include-prefix)
             INCLUDE_PREFIX="$2"
+            shift 2
+            ;;
+        --reset-goldens)
+            RESET_GOLDENS="$2"
             shift 2
             ;;
         --help|-h)
@@ -144,6 +151,17 @@ echo ""
 echo "Header output:   projects/${PROJECT}/include/${PROJECT}/${NAME}"
 echo "CPP output:      projects/${PROJECT}/src/${NAME}"
 echo ""
+
+if [ -n "$RESET_GOLDENS" ]; then
+    RESET_FULL_PATH="${GIT_ROOT}/${RESET_GOLDENS}"
+    if [ -d "$RESET_FULL_PATH" ]; then
+        echo "Resetting golden files: ${RESET_GOLDENS}"
+        rm -rf "$RESET_FULL_PATH"
+    else
+        echo "Note: golden directory not found (nothing to delete): ${RESET_GOLDENS}"
+    fi
+    echo ""
+fi
 
 echo "Running xsdcpp..."
 xsdcpp "$XSD_FULL_PATH" \

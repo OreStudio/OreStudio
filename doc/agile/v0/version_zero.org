@@ -187,12 +187,14 @@ Backlogs]]. The last entry is the active sprint.
    :resource_id: s15
    :END:
 
-- [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | TBD.
+- [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Compute grid, service API/core split, JWT refresh, and CDM instruments.
 
 ** Sprint 16
    :PROPERTIES:
    :resource_id: s16
    :END:
+
+- [[id:9CE4BE1F-0D57-4927-8344-E66CBC72D882][Sprint Backlog 16]] | TBD.
 
 * Footer
 

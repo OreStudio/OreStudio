@@ -180,7 +180,7 @@ jobs:
         run: sccache --show-stats
 
       - name: Save cmake build cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         if: always() && matrix.compiler == 'gcc' && matrix.buildtype == 'debug'
         with:
           path: build/output/${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja/projects

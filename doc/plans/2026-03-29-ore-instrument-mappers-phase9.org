@@ -388,25 +388,26 @@ submission.
 
 ** Test Fixture Structure
 
-Thing 1 (golden diff) and Thing 3 (mapper round-trip) share a parametric test
-fixture in =projects/ores.ore/tests/=:
+Thing 1 (golden diff) and Thing 3 (mapper round-trip) use standalone
+=TEST_CASE= macros in =projects/ores.ore/tests/=, one per example file:
 
 #+begin_src cpp
 // Pseudocode
-TEMPLATE_TEST_CASE("ORE round-trip", ..., IR_Swap_Vanilla, IR_FRA, ...) {
-    auto original_xml = read_file("external/ore/examples/Products/Example_Trades/<name>.xml");
+TEST_CASE("golden_roundtrip_ir_swap_vanilla", tags) {
+    auto original_xml = read_file("external/ore/examples/Products/Example_Trades/IR_Swap_Vanilla.xml");
     auto ore_type = ores::ore::parse_trade(original_xml);         // XSD parse
     auto canonical_xml = ores::ore::serialize_trade(ore_type);    // canonical serialize
 
-    // Thing 1: golden diff
-    auto golden = read_file("assets/test_data/golden_dataset/Products/Example_Trades/<name>.xml");
-    REQUIRE(canonical_xml == golden);
+    // Thing 1: golden diff (bootstrap on first run, compare thereafter)
+    auto golden_path = "assets/test_data/golden_dataset/Products/Example_Trades/IR_Swap_Vanilla.xml";
+    if (!exists(golden_path)) { write_file(golden_path, canonical_xml); SUCCEED(); return; }
+    REQUIRE(canonical_xml == read_file(golden_path));
 
     // Thing 3: mapper round-trip (when mapper exists for this type)
-    auto ores_domain = trade_mapper::forward(ore_type);
-    auto reconstructed = trade_mapper::reverse(ores_domain);
+    auto ores_domain = swap_instrument_mapper::forward_swap(ore_type);
+    auto reconstructed = swap_instrument_mapper::reverse_swap(ores_domain.instrument, ores_domain.legs);
     auto reconstructed_xml = ores::ore::serialize_trade(reconstructed);
-    REQUIRE(reconstructed_xml == golden);
+    REQUIRE(reconstructed_xml == read_file(golden_path));
 }
 #+end_src
 

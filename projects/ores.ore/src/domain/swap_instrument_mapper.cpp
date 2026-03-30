@@ -417,7 +417,12 @@ legData swap_instrument_mapper::reverse_leg(
         const swap_leg& sl, const instrument& instr) {
     legData ld;
 
-    ld.LegType = leg_type_from_string(sl.leg_type_code).value_or(legType::Fixed);
+    const auto leg_type = leg_type_from_string(sl.leg_type_code);
+    if (!leg_type)
+        throw std::runtime_error(
+            "reverse_leg: unrecognised leg type '" + sl.leg_type_code +
+            "' — cannot produce valid ORE XML");
+    ld.LegType = *leg_type;
     ld.Currency = sl.currency;
 
     if (sl.notional != 0.0)

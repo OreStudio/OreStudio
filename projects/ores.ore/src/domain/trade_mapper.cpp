@@ -21,6 +21,8 @@
 
 #include <boost/uuid/nil_generator.hpp>
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
+#include "ores.ore/domain/swap_instrument_mapper.hpp"
+#include "ores.ore/domain/fx_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -76,6 +78,31 @@ std::vector<trading::domain::trade> trade_mapper::map(const portfolio& v) {
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped portfolio trades.";
     return r;
+}
+
+std::optional<swap_mapping_result>
+trade_mapper::map_swap_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "Swap" || type == "CrossCurrencySwap" ||
+            type == "InflationSwap")
+        return swap_instrument_mapper::forward_swap(v);
+    if (type == "ForwardRateAgreement")
+        return swap_instrument_mapper::forward_fra(v);
+    if (type == "CapFloor")
+        return swap_instrument_mapper::forward_capfloor(v);
+    return std::nullopt;
+}
+
+std::optional<fx_mapping_result>
+trade_mapper::map_fx_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "FxForward")
+        return fx_instrument_mapper::forward_fx_forward(v);
+    if (type == "FxSwap")
+        return fx_instrument_mapper::forward_fx_swap(v);
+    if (type == "FxOption")
+        return fx_instrument_mapper::forward_fx_option(v);
+    return std::nullopt;
 }
 
 }

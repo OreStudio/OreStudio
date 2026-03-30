@@ -47,7 +47,7 @@ jobs:
         run: |
           emacs -Q --script .build-site.el
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Doxygen
         run: |
           sudo apt-get install graphviz doxygen

@@ -143,16 +143,13 @@ fi
 # ---------------------------------------------------------------------------
 # Read existing .env values so passwords are preserved on re-runs
 # ---------------------------------------------------------------------------
-declare -A existing_vals
-if [[ -f "${ENV_FILE}" ]]; then
-    while IFS='=' read -r key rest; do
-        # Skip comments and blank lines
-        [[ "${key}" =~ ^[[:space:]]*# ]] && continue
-        [[ -z "${key}" ]] && continue
-        # Strip inline comments from value and reassemble (value may contain =)
-        existing_vals["${key}"]="${rest}"
-    done < "${ENV_FILE}"
-fi
+# Read a single key from the existing .env file.
+# bash 3.2 compatible — no associative arrays (macOS ships bash 3.x).
+get_existing_val() {
+    local key="$1"
+    [[ -f "${ENV_FILE}" ]] || return 0
+    grep "^${key}=" "${ENV_FILE}" | head -1 | cut -d'=' -f2- || true
+}
 
 # ---------------------------------------------------------------------------
 # Overwrite guard (skipped if no existing file)
@@ -170,8 +167,8 @@ fi
 # ---------------------------------------------------------------------------
 if [[ -n "${PGPASSWORD:-}" ]]; then
     PGPASSWORD_VAL="${PGPASSWORD}"
-elif [[ -n "${existing_vals[PGPASSWORD]:-}" ]]; then
-    PGPASSWORD_VAL="${existing_vals[PGPASSWORD]}"
+elif [[ -n "$(get_existing_val PGPASSWORD)" ]]; then
+    PGPASSWORD_VAL="$(get_existing_val PGPASSWORD)"
     echo "Reusing existing PGPASSWORD."
 else
     printf "Enter the postgres superuser password: "
@@ -208,8 +205,9 @@ gen_uuid() {
 # ---------------------------------------------------------------------------
 get_or_gen() {
     local key="$1"
-    if [[ -n "${existing_vals[$key]:-}" ]]; then
-        printf '%s' "${existing_vals[$key]}"
+    local existing; existing="$(get_existing_val "$key")"
+    if [[ -n "${existing}" ]]; then
+        printf '%s' "${existing}"
     else
         gen_password
     fi
@@ -220,8 +218,9 @@ get_or_gen() {
 # ---------------------------------------------------------------------------
 get_or_gen_uuid() {
     local key="$1"
-    if [[ -n "${existing_vals[$key]:-}" ]]; then
-        printf '%s' "${existing_vals[$key]}"
+    local existing; existing="$(get_existing_val "$key")"
+    if [[ -n "${existing}" ]]; then
+        printf '%s' "${existing}"
     else
         gen_uuid
     fi
@@ -416,12 +415,14 @@ EOF
 } >> "${ENV_FILE}"
 
 # Preserve any logging vars that were already set
-if [[ -n "${existing_vals[ORES_TEST_LOG_LEVEL]:-}" ]]; then
+_log_level="$(get_existing_val ORES_TEST_LOG_LEVEL)"
+_log_console="$(get_existing_val ORES_TEST_LOG_CONSOLE)"
+if [[ -n "${_log_level}" ]]; then
     {
         echo ""
         echo "# Test logging"
-        echo "ORES_TEST_LOG_LEVEL=${existing_vals[ORES_TEST_LOG_LEVEL]}"
-        echo "ORES_TEST_LOG_CONSOLE=${existing_vals[ORES_TEST_LOG_CONSOLE]:-true}"
+        echo "ORES_TEST_LOG_LEVEL=${_log_level}"
+        echo "ORES_TEST_LOG_CONSOLE=${_log_console:-true}"
     } >> "${ENV_FILE}"
 fi
 

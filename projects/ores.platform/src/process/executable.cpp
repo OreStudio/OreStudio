@@ -66,7 +66,7 @@ std::string executable_build_time() {
     if (ec)
         return "unknown";
 
-    const auto stp = std::chrono::clock_cast<std::chrono::system_clock>(ftime);
+    const auto stp = ores::platform::time::time_utils::file_time_to_system_clock(ftime);
     const auto tt = std::chrono::system_clock::to_time_t(stp);
 
     std::tm tm{};

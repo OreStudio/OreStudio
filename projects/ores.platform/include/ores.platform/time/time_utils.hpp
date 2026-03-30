@@ -22,6 +22,7 @@
 
 #include <ctime>
 #include <chrono>
+#include <filesystem>
 
 namespace ores::platform::time {
 
@@ -95,6 +96,20 @@ public:
      */
     static std::chrono::system_clock::time_point
     to_time_point_local(std::tm tm);
+
+    /**
+     * @brief Converts a filesystem file_time_type to a system_clock::time_point.
+     *
+     * std::chrono::clock_cast is the C++20 standard way to do this but is not
+     * implemented on all platforms (notably Apple libc++). This uses the
+     * now()-based portable alternative that works on all supported platforms
+     * without making epoch assumptions.
+     *
+     * @param ft The file time to convert.
+     * @return The equivalent system_clock::time_point.
+     */
+    static std::chrono::system_clock::time_point
+    file_time_to_system_clock(std::filesystem::file_time_type ft);
 };
 
 }

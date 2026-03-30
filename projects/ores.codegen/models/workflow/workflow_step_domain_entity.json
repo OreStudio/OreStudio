@@ -1,0 +1,106 @@
+{
+  "domain_entity": {
+    "schema": "public",
+    "component": "workflow",
+    "entity_singular": "workflow_step",
+    "entity_plural": "workflow_steps",
+    "entity_title": "Workflow Step",
+    "has_tenant_id": false,
+    "brief": "A single step within a workflow instance.",
+    "description": "Records the execution of one step in a saga workflow, including the step\nindex, name, status, request/response payloads, and timing. Steps reference\ntheir parent workflow instance via workflow_id.",
+
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "cpp_type": "boost::uuids::uuid",
+      "description": "UUID primary key for the workflow step."
+    },
+
+    "natural_keys": [],
+
+    "columns": [
+      {
+        "name": "workflow_id",
+        "type": "uuid",
+        "cpp_type": "boost::uuids::uuid",
+        "nullable": false,
+        "description": "FK reference to the parent workflow instance."
+      },
+      {
+        "name": "step_index",
+        "type": "integer",
+        "cpp_type": "int",
+        "nullable": false,
+        "description": "Zero-based ordinal position of this step within the workflow."
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Human-readable step name, e.g. 'create_account'."
+      },
+      {
+        "name": "status",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "default": "'pending'",
+        "description": "Step status: pending, in_progress, completed, failed, compensated."
+      },
+      {
+        "name": "request_json",
+        "type": "jsonb",
+        "cpp_type": "std::string",
+        "nullable": false,
+        "description": "Serialised JSON payload sent to the downstream service for this step."
+      },
+      {
+        "name": "response_json",
+        "type": "jsonb",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Serialised JSON response received from the downstream service."
+      },
+      {
+        "name": "error",
+        "type": "text",
+        "cpp_type": "std::string",
+        "nullable": true,
+        "description": "Human-readable error message if the step failed."
+      },
+      {
+        "name": "started_at",
+        "type": "timestamptz",
+        "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
+        "nullable": true,
+        "description": "Timestamp when the step began executing."
+      },
+      {
+        "name": "completed_at",
+        "type": "timestamptz",
+        "cpp_type": "std::optional<std::chrono::system_clock::time_point>",
+        "nullable": true,
+        "description": "Timestamp when the step reached a terminal state."
+      }
+    ],
+
+    "sql": {
+      "tablename": "ores_workflow_workflow_steps_tbl"
+    },
+
+    "repository": {
+      "entity_singular_short": "step",
+      "entity_plural_short": "steps",
+      "entity_singular_words": "workflow step",
+      "entity_plural_words": "workflow steps"
+    },
+
+    "cpp": {
+      "includes": {
+        "domain": ["<chrono>", "<optional>", "<string>", "<boost/uuid/uuid.hpp>"]
+      },
+      "iterator_var": "ws"
+    }
+  }
+}

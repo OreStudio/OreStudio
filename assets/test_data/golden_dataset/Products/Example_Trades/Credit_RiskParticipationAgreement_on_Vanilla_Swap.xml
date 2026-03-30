@@ -1,0 +1,105 @@
+<Portfolio>
+  <Trade id="RPA_VANILLA">
+    <TradeType>RiskParticipationAgreement</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields>
+        <party_id>party</party_id>
+        <valuation_date>2025-02-10</valuation_date>
+      </AdditionalFields>
+    </Envelope>
+    <RiskParticipationAgreementData>
+      <ParticipationRate>0.899999976</ParticipationRate>
+      <ProtectionStart>2025-02-10</ProtectionStart>
+      <ProtectionEnd>2037-12-16</ProtectionEnd>
+      <CreditCurveId>RED:027A8A|SNRFOR|USD|XR14</CreditCurveId>
+      <IssuerId>CompanyXZY</IssuerId>
+      <SettlesAccrual>false</SettlesAccrual>
+      <FixedRecoveryRate>0.150000006</FixedRecoveryRate>
+      <ProtectionFee>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Cashflow</LegType>
+          <Currency>USD</Currency>
+          <CashflowData>
+            <Cashflow>
+              <Amount date="2025-04-19">121171.719</Amount>
+            </Cashflow>
+          </CashflowData>
+        </LegData>
+      </ProtectionFee>
+      <Underlying>
+        <LegData>
+          <Payer>true</Payer>
+          <LegType>Floating</LegType>
+          <Currency>USD</Currency>
+          <PaymentConvention>ModifiedFollowing</PaymentConvention>
+          <DayCounter>A360</DayCounter>
+          <Notionals>
+            <Notional>100000000</Notional>
+            <Notional startDate="2026-04-17">90000000</Notional>
+            <Notional startDate="2028-04-16">80000000</Notional>
+            <Notional startDate="2030-04-17">70000000</Notional>
+            <Notional startDate="2032-04-16">60000000</Notional>
+            <Notional startDate="2034-04-17">50000000</Notional>
+            <Notional startDate="2036-04-16">40000000</Notional>
+            <Notional startDate="2038-04-17">30000000</Notional>
+            <Notional startDate="2040-04-16">20000000</Notional>
+            <Notional startDate="2042-04-17">10000000</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2024-04-16</StartDate>
+              <EndDate>2044-04-16</EndDate>
+              <Tenor>3M</Tenor>
+              <Calendar>US</Calendar>
+              <Convention>ModifiedFollowing</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FloatingLegData>
+            <Index>USD-LIBOR-3M</Index>
+            <Spreads>
+              <Spread>0.00499999989</Spread>
+            </Spreads>
+          </FloatingLegData>
+        </LegData>
+        <LegData>
+          <Payer>false</Payer>
+          <LegType>Fixed</LegType>
+          <Currency>USD</Currency>
+          <PaymentConvention>Following</PaymentConvention>
+          <DayCounter>ACT/ACT</DayCounter>
+          <Notionals>
+            <Notional>100000000</Notional>
+            <Notional startDate="2026-04-17">90000000</Notional>
+            <Notional startDate="2028-04-16">80000000</Notional>
+            <Notional startDate="2030-04-17">70000000</Notional>
+            <Notional startDate="2032-04-16">60000000</Notional>
+            <Notional startDate="2034-04-17">50000000</Notional>
+            <Notional startDate="2036-04-16">40000000</Notional>
+            <Notional startDate="2038-04-17">30000000</Notional>
+            <Notional startDate="2040-04-16">20000000</Notional>
+            <Notional startDate="2042-04-17">10000000</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2024-04-16</StartDate>
+              <EndDate>2044-04-16</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>US</Calendar>
+              <Convention>Following</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.0399999991</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+      </Underlying>
+    </RiskParticipationAgreementData>
+  </Trade>
+</Portfolio>

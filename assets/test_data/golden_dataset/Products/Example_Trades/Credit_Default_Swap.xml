@@ -1,0 +1,47 @@
+<Portfolio>
+  <Trade id="CDS">
+    <TradeType>CreditDefaultSwap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields>
+        <party_id>party</party_id>
+        <valuation_date>2025-02-10</valuation_date>
+      </AdditionalFields>
+    </Envelope>
+    <CreditDefaultSwapData>
+      <IssuerId>Berkshire Hathaway Inc.</IssuerId>
+      <CreditCurveId>RED:08CAD7|SNRFOR|USD|MR14</CreditCurveId>
+      <SettlesAccrual>Y</SettlesAccrual>
+      <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
+      <ProtectionStart>2023-01-28</ProtectionStart>
+      <UpfrontDate>2023-01-30</UpfrontDate>
+      <UpfrontFee>0</UpfrontFee>
+      <LegData>
+        <Payer>true</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>USD</Currency>
+        <PaymentConvention>F</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2023-01-27</StartDate>
+            <EndDate>2033-01-27</EndDate>
+            <Tenor>3M</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>F</Convention>
+            <Rule>CDS2015</Rule>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.00999999978</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </CreditDefaultSwapData>
+  </Trade>
+</Portfolio>

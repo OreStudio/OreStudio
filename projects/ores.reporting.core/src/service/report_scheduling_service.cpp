@@ -78,8 +78,8 @@ find_fsm_state_id(const ores::database::context& ctx, logging::logger_t& log,
 } // anonymous namespace
 
 report_scheduling_service::report_scheduling_service(
-    context ctx, ores::nats::service::nats_client& svc_nats)
-    : ctx_(std::move(ctx)), svc_nats_(svc_nats) {}
+    context ctx, ores::nats::service::nats_client svc_nats)
+    : ctx_(std::move(ctx)), svc_nats_(std::move(svc_nats)) {}
 
 std::optional<ores::scheduler::domain::job_definition>
 report_scheduling_service::build_job_definition(
@@ -113,7 +113,7 @@ report_scheduling_service::build_job_definition(
     job.action_payload = rfl::json::write(payload);
     job.is_active = true;
     job.modified_by = actor;
-    job.performed_by = actor; // scheduler will overwrite with service_account after JWT validation
+    job.performed_by = actor;
     job.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
     job.change_commentary = "Scheduled by reporting service";
     return job;
@@ -123,8 +123,7 @@ std::expected<void, std::string>
 report_scheduling_service::send_schedule_request(
     const domain::report_definition& def,
     const boost::uuids::uuid& job_id,
-    const std::string& actor,
-    const std::string& user_jwt) {
+    const std::string& actor) {
 
     auto job = build_job_definition(def, job_id, actor);
     if (!job)
@@ -134,8 +133,7 @@ report_scheduling_service::send_schedule_request(
     const ores::scheduler::messaging::schedule_job_request req{
         .definition = *job,
         .change_reason_code = std::string(ores::service::messaging::change_reasons::new_record),
-        .change_commentary = "Scheduled by reporting service",
-        .on_behalf_of = user_jwt
+        .change_commentary = "Scheduled by reporting service"
     };
 
     const auto req_json = rfl::json::write(req);
@@ -173,8 +171,7 @@ report_scheduling_service::send_schedule_request(
 std::expected<bool, std::string>
 report_scheduling_service::schedule_one(
     const domain::report_definition& def,
-    const std::string& actor,
-    const std::string& user_jwt) {
+    const std::string& actor) {
 
     if (def.scheduler_job_id.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "Definition already scheduled: " << def.id;
@@ -182,7 +179,7 @@ report_scheduling_service::schedule_one(
     }
 
     const auto job_id = gen_uuid();
-    auto send_result = send_schedule_request(def, job_id, actor, user_jwt);
+    auto send_result = send_schedule_request(def, job_id, actor);
     if (!send_result)
         return std::unexpected(send_result.error());
 
@@ -211,8 +208,7 @@ report_scheduling_service::schedule_one(
 std::expected<bool, std::string>
 report_scheduling_service::unschedule_one(
     const domain::report_definition& def,
-    const std::string& actor,
-    const std::string& user_jwt) {
+    const std::string& actor) {
 
     if (!def.scheduler_job_id.has_value()) {
         BOOST_LOG_SEV(lg(), debug) << "Definition not scheduled: " << def.id;
@@ -223,8 +219,7 @@ report_scheduling_service::unschedule_one(
     const ores::scheduler::messaging::unschedule_job_request req{
         .job_definition_id = job_id_str,
         .change_reason_code = std::string(ores::service::messaging::change_reasons::new_record),
-        .change_commentary = "Unscheduled by reporting service",
-        .on_behalf_of = user_jwt
+        .change_commentary = "Unscheduled by reporting service"
     };
 
     const auto req_json = rfl::json::write(req);
@@ -282,8 +277,6 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     BOOST_LOG_SEV(lg(), info)
         << "Starting scheduler reconciliation for report definitions.";
 
-    // Reconciliation is system-initiated: on_behalf_of is the service account.
-    const auto& on_behalf_of = ctx_.service_account();
 
     // Step 1: ask the IAM service for all active tenants.
     BOOST_LOG_SEV(lg(), debug) << "Requesting active tenant list from IAM.";
@@ -340,7 +333,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             << "Reconciling tenant: " << tenant_id_str
             << " [" << tenant.name << "]";
 
-        const auto tenant_ctx = ctx_.with_tenant(tenant_id, on_behalf_of);
+        const auto tenant_ctx = ctx_.with_tenant(tenant_id, ctx_.service_account());
 
         repository::report_definition_repository repo;
         std::vector<domain::report_definition> unscheduled;
@@ -368,11 +361,10 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         ores::scheduler::messaging::schedule_jobs_batch_request batch_req;
         batch_req.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
         batch_req.change_commentary = "Startup reconciliation by reporting service";
-        batch_req.on_behalf_of = on_behalf_of;
 
         for (const auto& def : unscheduled) {
             const auto job_id = gen_uuid();
-            auto job = build_job_definition(def, job_id, on_behalf_of); // actor = service account
+            auto job = build_job_definition(def, job_id, ctx_.service_account());
             if (!job) {
                 // Invalid cron — warning already logged in build_job_definition.
                 ++total_failed;
@@ -441,7 +433,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             auto def_updated = *entry.def;
             def_updated.scheduler_job_id = entry.job_id;
             def_updated.fsm_state_id = active_state;
-            def_updated.modified_by = on_behalf_of; // service account for system reconcile
+            def_updated.modified_by = ctx_.service_account();
             def_updated.performed_by = ctx_.service_account();
             def_updated.change_reason_code = std::string(ores::service::messaging::change_reasons::new_record);
             def_updated.change_commentary = "Linked to scheduler job by reconciliation";

@@ -58,7 +58,7 @@ public:
     using context = ores::database::context;
 
     report_scheduling_service(context ctx,
-        ores::nats::service::nats_client& svc_nats);
+        ores::nats::service::nats_client svc_nats);
 
     /**
      * @brief Ensures all report definitions have a scheduler job.
@@ -77,19 +77,15 @@ public:
      * @param def      The definition to schedule (must have a valid id and
      *                 schedule_expression).
      * @param actor    Authenticated username from this service's request context.
-     *                 Stamped as modified_by on the updated report definition.
-     * @param user_jwt Raw Bearer token of the original end-user, forwarded to
-     *                 the scheduler so it can derive the correct DB context
-     *                 (tenant_id, actor, party_ids). Empty for system-initiated
-     *                 calls such as reconciliation.
+     *                 Stamped as modified_by on the updated report definition and
+     *                 forwarded in the scheduler request payload.
      * @return true  — job was created.
      *         false — definition already had a scheduler_job_id (no-op).
      *         unexpected(msg) — scheduling failed; msg contains the error.
      */
     std::expected<bool, std::string>
     schedule_one(const domain::report_definition& def,
-        const std::string& actor,
-        const std::string& user_jwt);
+        const std::string& actor);
 
     /**
      * @brief Unschedule one definition by removing its scheduler job.
@@ -99,15 +95,13 @@ public:
      *
      * @param def      The definition to unschedule.
      * @param actor    Authenticated username. See schedule_one.
-     * @param user_jwt Raw Bearer token of the original end-user. See schedule_one.
      * @return true  — job was removed.
      *         false — definition was not scheduled (no-op).
      *         unexpected(msg) — unscheduling failed; msg contains the error.
      */
     std::expected<bool, std::string>
     unschedule_one(const domain::report_definition& def,
-        const std::string& actor,
-        const std::string& user_jwt);
+        const std::string& actor);
 
 private:
     /**
@@ -116,15 +110,12 @@ private:
      * @param def      The report definition to schedule.
      * @param job_id   Pre-allocated UUID to use as the job's primary key.
      * @param actor    Username for audit fields on the job definition.
-     * @param user_jwt Forwarded as on_behalf_of so the scheduler can derive
-     *                 the correct DB context. Empty for system-initiated calls.
      * @return success or unexpected(error message).
      */
     std::expected<void, std::string>
     send_schedule_request(const domain::report_definition& def,
         const boost::uuids::uuid& job_id,
-        const std::string& actor,
-        const std::string& user_jwt);
+        const std::string& actor);
 
     /**
      * @brief Build a scheduler job_definition for a report definition.
@@ -142,7 +133,7 @@ private:
         const std::string& actor);
 
     context ctx_;
-    ores::nats::service::nats_client& svc_nats_;
+    ores::nats::service::nats_client svc_nats_;
 };
 
 }

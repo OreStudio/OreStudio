@@ -63,14 +63,13 @@ inline auto& auth_handler_lg() {
 }
 
 inline std::string auth_extract_bearer_token(const ores::nats::message& msg) {
-    auto it = msg.headers.find("Authorization");
+    auto it = msg.headers.find(std::string(ores::nats::headers::authorization));
     if (it == msg.headers.end())
         return {};
     const auto& val = it->second;
-    constexpr std::string_view prefix = "Bearer ";
-    if (!val.starts_with(prefix))
+    if (!val.starts_with(ores::nats::headers::bearer_prefix))
         return {};
-    return val.substr(prefix.size());
+    return val.substr(ores::nats::headers::bearer_prefix.size());
 }
 
 inline std::vector<boost::uuids::uuid> auth_compute_visible_party_ids(

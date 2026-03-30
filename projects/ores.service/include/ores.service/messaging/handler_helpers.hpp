@@ -25,6 +25,7 @@
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -95,26 +96,16 @@ void stamp(T& obj, const ores::database::context& ctx,
 }
 
 /**
- * @brief Returns the acting user for delegation from a request context.
+ * @brief Returns the acting user from a request context.
  *
  * For user-facing handlers, returns ctx.actor() — the end-user extracted from
  * the validated JWT. For system handlers where no user actor is present, falls
  * back to ctx.service_account().
  *
- * This value is used as the @c on_behalf_of field in service-to-service
- * requests, allowing downstream services to attribute writes to the original
- * user even though they only receive the calling service's JWT.
- *
- * @par Security note — non-cryptographic delegation
- * The @c on_behalf_of value is plain data carried in the NATS message payload,
- * NOT a cryptographically signed claim.  Its integrity guarantee is only as
- * strong as the trust placed in the sending service: any service that can
- * authenticate to NATS could in principle send an arbitrary value.  This
- * pattern is therefore safe only inside a trusted internal service mesh where
- * each service is individually authenticated (e.g. via service JWTs) and
- * operates under least-privilege RBAC.  It is NOT a substitute for OAuth 2.0
- * Token Exchange (RFC 8693) or similar mechanisms where the delegated identity
- * must be independently verifiable by the receiving service.
+ * This value is stamped as modified_by in service-to-service requests.
+ * The receiving service trusts it as plain payload data; its integrity is
+ * guaranteed by the calling service's authentication (service JWT) and
+ * least-privilege RBAC on the internal service mesh.
  *
  * @param ctx  Per-request context populated from the validated inbound JWT.
  */
@@ -183,7 +174,7 @@ inline void error_reply(ores::nats::service::client& nats,
         default:                                       error_str = "unauthorized";  break;
     }
     nats.publish(msg.reply_subject, std::span<const std::byte>{},
-        {{"X-Error", std::string(error_str)}});
+        {{std::string(ores::nats::headers::x_error), std::string(error_str)}});
 }
 
 // Deserialise the message payload from JSON into Req.

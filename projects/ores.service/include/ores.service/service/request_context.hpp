@@ -57,8 +57,8 @@ make_request_context(
  * @brief Builds a per-request database context from a raw JWT Bearer token.
  *
  * Validates @p token and returns a context scoped to the tenant + party
- * encoded in the claims.  Used by service handlers that receive a forwarded
- * user JWT in a message payload field (on_behalf_of) rather than in a header.
+ * encoded in the claims.  Used by service handlers that receive a JWT token
+ * string directly rather than via a NATS message header.
  *
  * - Expired token                         → error_code::token_expired
  * - Invalid token (bad signature, etc.)   → error_code::unauthorized

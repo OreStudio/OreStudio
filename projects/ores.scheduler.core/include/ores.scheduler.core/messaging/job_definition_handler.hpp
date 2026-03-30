@@ -29,7 +29,6 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.scheduler.api/domain/cron_expression.hpp"
@@ -67,8 +66,6 @@ using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::delegated_actor;
-using ores::service::service::make_context_from_jwt;
 using namespace ores::logging;
 
 class job_definition_handler {
@@ -118,16 +115,8 @@ public:
         }
         if (auto req = decode<schedule_job_request>(msg)) {
             try {
-                auto op_ctx = resolve_context(req->on_behalf_of,
-                    req->definition.tenant_id);
-                if (!op_ctx) {
-                    reply(nats_, msg, schedule_job_response{
-                        .success = false, .message = "Delegated token expired or invalid"});
-                    return;
-                }
-                req->definition.modified_by = delegated_actor(*op_ctx);
-                req->definition.performed_by = op_ctx->service_account();
-                service::job_definition_service svc(*op_ctx);
+                req->definition.performed_by = ctx.service_account();
+                service::job_definition_service svc(ctx);
                 svc.save_definition(req->definition);
                 reply(nats_, msg, schedule_job_response{.success = true});
             } catch (const std::exception& e) {
@@ -163,25 +152,15 @@ public:
             resp.success = true;
             for (auto& def : req->definitions) {
                 try {
-                    auto op_ctx = resolve_context(req->on_behalf_of,
-                        def.tenant_id);
-                    if (!op_ctx) {
-                        BOOST_LOG_SEV(job_definition_handler_lg(), error)
-                            << "Delegated token expired for job " << def.job_name;
-                        resp.failed_ids.push_back(boost::uuids::to_string(def.id));
-                        continue;
-                    }
-                    def.modified_by = delegated_actor(*op_ctx);
-                    def.performed_by = op_ctx->service_account();
-                    service::job_definition_service svc(*op_ctx);
+                    def.performed_by = ctx.service_account();
+                    service::job_definition_service svc(ctx);
                     svc.save_definition(def);
                     ++resp.scheduled_count;
                 } catch (const std::exception& e) {
                     BOOST_LOG_SEV(job_definition_handler_lg(), error)
                         << "Failed to schedule job " << def.job_name
                         << ": " << e.what();
-                    resp.failed_ids.push_back(
-                        boost::uuids::to_string(def.id));
+                    resp.failed_ids.push_back(boost::uuids::to_string(def.id));
                 }
             }
             reply(nats_, msg, resp);
@@ -213,13 +192,7 @@ public:
         }
         if (auto req = decode<unschedule_job_request>(msg)) {
             try {
-                auto op_ctx = resolve_context(req->on_behalf_of, std::nullopt);
-                if (!op_ctx) {
-                    reply(nats_, msg, unschedule_job_response{
-                        .success = false, .message = "Delegated token expired or invalid"});
-                    return;
-                }
-                service::job_definition_service svc(*op_ctx);
+                service::job_definition_service svc(ctx);
                 svc.remove_definition(req->job_definition_id);
                 reply(nats_, msg, unschedule_job_response{.success = true});
             } catch (const std::exception& e) {
@@ -266,35 +239,6 @@ public:
     }
 
 private:
-    /**
-     * @brief Derive the DB context for a scheduler write operation.
-     *
-     * If @p on_behalf_of (a forwarded user JWT) is present, validates it and
-     * returns a fully-scoped user context (tenant_id, actor, party_ids).
-     * An expired token returns nullopt — the caller must reject the request.
-     *
-     * If @p on_behalf_of is empty (system-initiated calls such as
-     * reconciliation), falls back to a service-account context scoped to
-     * @p tenant_id from the job definition payload.
-     */
-    std::optional<ores::database::context> resolve_context(
-        const std::string& on_behalf_of,
-        const std::optional<boost::uuids::uuid>& tenant_id) const {
-
-        if (!on_behalf_of.empty() && verifier_) {
-            auto result = make_context_from_jwt(ctx_, on_behalf_of, *verifier_);
-            if (!result) return std::nullopt;
-            return *result;
-        }
-
-        // System path: scope to the job definition's tenant_id.
-        if (tenant_id) {
-            auto tid = ores::utility::uuid::tenant_id::from_uuid(*tenant_id);
-            if (tid) return ctx_.with_tenant(*tid, ctx_.service_account());
-        }
-        return ctx_;
-    }
-
     ores::nats::service::client& nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

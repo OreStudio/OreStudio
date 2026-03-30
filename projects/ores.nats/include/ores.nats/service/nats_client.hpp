@@ -29,6 +29,7 @@
 #include <string_view>
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
 
@@ -182,6 +183,20 @@ public:
         std::chrono::milliseconds timeout = std::chrono::seconds(10));
 
     /**
+     * @brief Returns a new nats_client that shares this instance's underlying
+     * connection and token provider but injects
+     *   X-Delegated-Authorization: Bearer <token>
+     * on every authenticated_request call.
+     *
+     * Used by handlers to forward the original end-user JWT to downstream
+     * services without modifying message payloads.  Call unconditionally:
+     * if token is empty the returned client behaves identically to *this.
+     *
+     * Thread-safe: the returned value is independent of *this.
+     */
+    [[nodiscard]] nats_client with_delegation(std::string token) const;
+
+    /**
      * @brief Return the underlying client (interactive path only).
      *
      * Returns nullptr if constructed via the service path.
@@ -201,7 +216,21 @@ private:
     // Service path state
     client* external_client_ = nullptr;
     token_provider token_provider_;
+
+    // Optional delegation token forwarded as X-Delegated-Authorization.
+    std::string delegation_token_;
 };
+
+/**
+ * @brief Extracts the raw token from an "Authorization: Bearer <token>" header.
+ *
+ * Returns the token string (without the "Bearer " prefix).
+ * Returns empty string if the header is absent or does not start with "Bearer ".
+ *
+ * Used by handlers to obtain the inbound user JWT for forwarding via
+ * nats_client::with_delegation.
+ */
+[[nodiscard]] std::string extract_bearer(const ores::nats::message& msg);
 
 } // namespace ores::nats::service
 

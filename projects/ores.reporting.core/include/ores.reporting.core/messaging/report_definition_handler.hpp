@@ -25,10 +25,10 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include "ores.nats/service/nats_client.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
 #include "ores.reporting.core/service/report_definition_service.hpp"
@@ -194,12 +194,10 @@ public:
         }
         if (auto req = decode<schedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
-            service::report_scheduling_service scheduler(ctx_, svc_nats_);
+            auto delegated = svc_nats_.with_delegation(
+                ores::nats::service::extract_bearer(msg));
+            service::report_scheduling_service scheduler(ctx_, delegated);
             const auto& actor = delegated_actor(ctx);
-            std::string user_jwt;
-            if (const auto it = msg.headers.find("Authorization");
-                it != msg.headers.end() && it->second.starts_with("Bearer "))
-                user_jwt = it->second.substr(7);
             int scheduled_count = 0;
             std::vector<std::string> failed_ids;
             std::string first_error;
@@ -207,7 +205,7 @@ public:
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    auto result = scheduler.schedule_one(*def, actor, user_jwt);
+                    auto result = scheduler.schedule_one(*def, actor);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
                             << "Failed to schedule definition " << id
@@ -256,12 +254,10 @@ public:
         }
         if (auto req = decode<unschedule_report_definitions_request>(msg)) {
             service::report_definition_service svc(ctx);
-            service::report_scheduling_service scheduler(ctx_, svc_nats_);
+            auto delegated = svc_nats_.with_delegation(
+                ores::nats::service::extract_bearer(msg));
+            service::report_scheduling_service scheduler(ctx_, delegated);
             const auto& actor = delegated_actor(ctx);
-            std::string user_jwt;
-            if (const auto it = msg.headers.find("Authorization");
-                it != msg.headers.end() && it->second.starts_with("Bearer "))
-                user_jwt = it->second.substr(7);
             int unscheduled_count = 0;
             std::vector<std::string> failed_ids;
             std::string first_error;
@@ -269,7 +265,7 @@ public:
                 try {
                     auto def = svc.find_definition(id);
                     if (!def) continue;
-                    auto result = scheduler.unschedule_one(*def, actor, user_jwt);
+                    auto result = scheduler.unschedule_one(*def, actor);
                     if (!result) {
                         BOOST_LOG_SEV(report_definition_handler_lg(), error)
                             << "Failed to unschedule definition " << id

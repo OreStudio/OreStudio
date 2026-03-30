@@ -48,21 +48,6 @@ struct schedule_job_request {
     ores::scheduler::domain::job_definition definition;
     std::string change_reason_code;
     std::string change_commentary;
-    /**
-     * @brief Raw JWT Bearer token of the original end-user.
-     *
-     * The calling service forwards the user's JWT verbatim from the inbound
-     * request. The scheduler validates it independently: if expired, the
-     * request is rejected. On success the scheduler derives a fully-scoped
-     * DB context (tenant_id, actor, party_ids) directly from the token's
-     * claims, ensuring correct RLS and audit attribution without relying on
-     * client-supplied payload fields.
-     *
-     * Empty for system-initiated calls (e.g. startup reconciliation); the
-     * scheduler falls back to a service-account context scoped to the job's
-     * tenant_id.
-     */
-    std::string on_behalf_of;
 };
 
 struct schedule_job_response {
@@ -77,9 +62,6 @@ struct unschedule_job_request {
     std::string job_definition_id;
     std::string change_reason_code;
     std::string change_commentary;
-    /** @brief Raw JWT of the original end-user. See
-     *  schedule_job_request::on_behalf_of for the full note. */
-    std::string on_behalf_of;
 };
 
 struct unschedule_job_response {
@@ -94,9 +76,6 @@ struct schedule_jobs_batch_request {
     std::vector<ores::scheduler::domain::job_definition> definitions;
     std::string change_reason_code;
     std::string change_commentary;
-    /** @brief Raw JWT of the original end-user. See
-     *  schedule_job_request::on_behalf_of for the full note. */
-    std::string on_behalf_of;
 };
 
 struct schedule_jobs_batch_response {

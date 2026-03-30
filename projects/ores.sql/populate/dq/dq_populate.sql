@@ -8,9 +8,11 @@
  * via populate_foundation.sql.
  *
  * This script populates:
+ * - Badge system (severities, code domains, definitions, mappings)
  * - Dimensions (origin, nature, treatment)
  * - Methodologies
  * - Artefact types
+ * - Dataset bundles and bundle members
  */
 
 -- =============================================================================
@@ -42,3 +44,17 @@
 
 \echo '--- Artefact Types ---'
 \ir dq_artefact_types_populate.sql
+
+-- =============================================================================
+-- Dataset Bundles (must follow artefact types)
+-- =============================================================================
+
+\echo '--- Dataset Bundles ---'
+\ir dq_dataset_bundle_populate.sql
+
+-- =============================================================================
+-- Dataset Bundle Members (must follow bundles and datasets)
+-- =============================================================================
+
+\echo '--- Dataset Bundle Members ---'
+\ir dq_dataset_bundle_member_populate.sql

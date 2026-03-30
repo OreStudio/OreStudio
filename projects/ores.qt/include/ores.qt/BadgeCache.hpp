@@ -73,6 +73,16 @@ public:
     bool isLoaded() const { return is_loaded_; }
 
     /**
+     * @brief Inject test data directly, bypassing the network load path.
+     *
+     * Sets definitions and mappings, builds the lookup index, and marks the
+     * cache as loaded. Intended for unit tests only.
+     */
+    void populate_for_testing(
+        std::vector<dq::domain::badge_definition> definitions,
+        std::vector<dq::messaging::badge_mapping> mappings);
+
+    /**
      * @brief Resolve a badge definition for a given (code_domain, entity_code) pair.
      *
      * @param code_domain_code The code domain (e.g., "party_status").

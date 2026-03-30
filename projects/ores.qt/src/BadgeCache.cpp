@@ -150,6 +150,21 @@ void BadgeCache::onMappingsLoaded() {
     }
 }
 
+void BadgeCache::populate_for_testing(
+    std::vector<dq::domain::badge_definition> definitions,
+    std::vector<dq::messaging::badge_mapping> mappings) {
+
+    definitions_ = std::move(definitions);
+    mappings_ = std::move(mappings);
+
+    definition_index_.clear();
+    for (std::size_t i = 0; i < definitions_.size(); ++i)
+        definition_index_[definitions_[i].code] = i;
+
+    buildIndex();
+    is_loaded_ = true;
+}
+
 void BadgeCache::buildIndex() {
     index_.clear();
     for (const auto& m : mappings_) {

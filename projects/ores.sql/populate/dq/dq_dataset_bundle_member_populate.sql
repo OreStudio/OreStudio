@@ -140,18 +140,3 @@ select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.business_units', 10);
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.portfolios', 20);
 select ores_dq_dataset_bundle_members_upsert_fn(ores_iam_system_tenant_id_fn(), 'organisation', 'testdata.books', 30);
-
--- =============================================================================
--- Summary
--- =============================================================================
-
-\echo ''
-\echo '--- Summary ---'
-
-select b.code as bundle, count(*) as dataset_count
-from ores_dq_dataset_bundles_tbl b
-join ores_dq_dataset_bundle_members_tbl m on b.code = m.bundle_code
-where b.valid_to = ores_utility_infinity_timestamp_fn()
-and m.valid_to = ores_utility_infinity_timestamp_fn()
-group by b.code
-order by b.code;

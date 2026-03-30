@@ -53,7 +53,11 @@ while [[ $# -gt 0 ]]; do
         --provision)          DO_PROVISION=1 ;;
         --start)              DO_START=1 ;;
         --daemon)             DO_DAEMON=1 ;;
-        --wait-timeout)       WAIT_TIMEOUT="$2"; shift ;;
+        --wait-timeout)
+            if [[ $# -lt 2 || "$2" =~ ^- ]]; then
+                echo "Error: --wait-timeout requires a numeric value." >&2; exit 1
+            fi
+            WAIT_TIMEOUT="$2"; shift ;;
         *) echo "Unknown argument: $1" >&2; exit 1 ;;
     esac
     shift

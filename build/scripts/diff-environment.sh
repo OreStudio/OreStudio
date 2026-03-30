@@ -6,9 +6,9 @@
 # diff-environment.sh - Show a unified diff between .env.old and .env.
 #
 # Produces a unified diff of the previous .env (.env.old) and the current
-# .env, with secrets masked so the output is safe to read in shared contexts.
-# Exits 0 if the files are identical, 1 if they differ (standard diff exit
-# codes), 2 on error (missing files).
+# .env. This is a developer tool — output contains secrets in plain text and
+# should not be shared. Exits 0 if the files are identical, 1 if they differ
+# (standard diff exit codes), 2 on error (missing files).
 #
 # Usage:
 #   ./build/scripts/diff-environment.sh

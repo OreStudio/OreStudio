@@ -23,6 +23,7 @@
 #include "ores.trading.api/domain/trade_json_io.hpp" // IWYU pragma: keep.
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
+#include "ores.ore/domain/bond_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -102,6 +103,20 @@ trade_mapper::map_fx_instrument(const trade& v) {
         return fx_instrument_mapper::forward_fx_swap(v);
     if (type == "FxOption")
         return fx_instrument_mapper::forward_fx_option(v);
+    return std::nullopt;
+}
+
+std::optional<bond_mapping_result>
+trade_mapper::map_bond_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "Bond")
+        return bond_instrument_mapper::forward_bond(v);
+    if (type == "ForwardBond")
+        return bond_instrument_mapper::forward_forward_bond(v);
+    if (type == "CallableBond")
+        return bond_instrument_mapper::forward_callable_bond(v);
+    if (type == "ConvertibleBond")
+        return bond_instrument_mapper::forward_convertible_bond(v);
     return std::nullopt;
 }
 

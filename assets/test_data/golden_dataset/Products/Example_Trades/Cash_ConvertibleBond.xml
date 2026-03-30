@@ -1,0 +1,16 @@
+<Portfolio>
+  <Trade id="ConvertibleBond#2">
+    <TradeType>ConvertibleBond</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields/>
+    </Envelope>
+    <ConvertibleBondData>
+      <BondData>
+        <SecurityId>ISIN:US531229AR32</SecurityId>
+        <BondNotional>1000000.00</BondNotional>
+      </BondData>
+    </ConvertibleBondData>
+  </Trade>
+</Portfolio>

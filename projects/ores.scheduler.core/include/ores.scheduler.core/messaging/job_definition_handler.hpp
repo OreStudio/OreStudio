@@ -149,7 +149,6 @@ public:
         }
         if (auto req = decode<schedule_jobs_batch_request>(msg)) {
             schedule_jobs_batch_response resp;
-            resp.success = true;
             for (auto& def : req->definitions) {
                 try {
                     def.performed_by = ctx.service_account();
@@ -163,6 +162,7 @@ public:
                     resp.failed_ids.push_back(boost::uuids::to_string(def.id));
                 }
             }
+            resp.success = resp.failed_ids.empty();
             reply(nats_, msg, resp);
         } else {
             BOOST_LOG_SEV(job_definition_handler_lg(), warn)

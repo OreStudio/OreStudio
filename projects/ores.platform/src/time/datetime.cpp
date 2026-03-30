@@ -69,7 +69,7 @@ std::chrono::system_clock::time_point datetime::parse_time_point(
         throw std::invalid_argument("Failed to parse time string: " + str);
     }
 
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    return time_utils::to_time_point_local(tm);
 }
 
 std::chrono::system_clock::time_point datetime::parse_time_point_utc(
@@ -84,7 +84,7 @@ std::chrono::system_clock::time_point datetime::parse_time_point_utc(
         throw std::invalid_argument("Failed to parse time string: " + str);
     }
 
-    return std::chrono::system_clock::from_time_t(time_utils::timegm_safe(&tm));
+    return time_utils::to_time_point_utc(tm);
 }
 
 }

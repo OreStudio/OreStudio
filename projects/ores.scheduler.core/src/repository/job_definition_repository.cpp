@@ -152,6 +152,29 @@ job_definition_repository::read_all_active(context ctx) {
     return result;
 }
 
+std::optional<domain::job_definition>
+job_definition_repository::find_by_name(context ctx, const std::string& job_name) {
+    return find_by_name(ctx, ctx.tenant_id().to_string(), job_name);
+}
+
+std::optional<domain::job_definition>
+job_definition_repository::find_by_name(context ctx, const std::string& tenant_id,
+    const std::string& job_name) {
+    BOOST_LOG_SEV(lg(), debug) << "Finding job definition by name: " << job_name
+                               << " for tenant: " << tenant_id;
+    const std::string sql = std::string(SELECT_COLS) +
+        "WHERE tenant_id = $1::uuid "
+        "  AND job_name = $2 "
+        "  AND valid_to = ores_utility_infinity_timestamp_fn()";
+
+    const auto rows = execute_parameterized_multi_column_query(ctx, sql, {tenant_id, job_name},
+        lg(), "Finding job definition by name.");
+    auto results = parse_rows(rows);
+    if (results.empty())
+        return std::nullopt;
+    return results.front();
+}
+
 void job_definition_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing job definition: " << id;
     const auto max(make_timestamp(MAX_TIMESTAMP, lg()));

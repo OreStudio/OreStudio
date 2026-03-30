@@ -19,8 +19,6 @@
  */
 #include "ores.iam.core/repository/session_mapper.hpp"
 
-#include <iomanip>
-#include <sstream>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/lexical_cast.hpp>
 #include "sqlgen/Timestamp.hpp"
@@ -40,16 +38,9 @@ namespace {
  */
 std::optional<std::chrono::system_clock::time_point>
 parse_timestamp(const std::string& str) {
-    if (str.empty()) {
+    if (str.empty())
         return std::nullopt;
-    }
-    std::tm tm = {};
-    std::istringstream ss(str);
-    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
-    if (ss.fail()) {
-        return std::nullopt;
-    }
-    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    return platform::time::datetime::parse_time_point(str);
 }
 
 /**

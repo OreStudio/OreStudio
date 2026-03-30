@@ -25,6 +25,7 @@
 #include <sqlgen/postgres.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.platform/time/datetime.hpp"
+#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::database::repository {
 
@@ -73,28 +74,34 @@ std::vector<Dest> map_vector(
 }
 
 /**
- * @brief Converts a timestamp string to a std::chrono::system_clock::time_point.
+ * @brief Converts a database timestamp string to a system_clock::time_point.
  *
- * Parses a UTC timestamp string in the format "%Y-%m-%d %H:%M:%S".
+ * The string is expected in the format "%Y-%m-%d %H:%M:%S" in the database
+ * session's local timezone (i.e. what libpq returns from a timestamptz column
+ * after stripping the timezone offset via rfl::Timestamp). Parsing with
+ * parse_time_point (mktime) converts from session-local time to UTC, which is
+ * correct for any session timezone — BST, JST, EST, etc.
  *
  * @param timestamp_str The timestamp string to convert
  * @return A system_clock::time_point representing the same instant in time
  *
  * @example
- * auto tp = timestamp_to_timepoint("2025-01-15 10:30:00");
+ * auto tp = timestamp_to_timepoint("2026-03-30 12:34:56"); // BST input → UTC tp
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(std::string_view timestamp_str) {
-    return platform::time::datetime::parse_time_point_utc(
+    return platform::time::datetime::parse_time_point(
         std::string{timestamp_str});
 }
 
 /**
  * @brief Converts a sqlgen Timestamp to a std::chrono::system_clock::time_point.
  *
- * Parses a UTC timestamp in the format "%Y-%m-%d %H:%M:%S".
+ * rfl::Timestamp already holds the parsed std::tm internally. This overload
+ * converts directly via to_time_point_local, avoiding the wasteful round-trip
+ * through str() → re-parse string that the string_view overload would do.
  *
- * @param ts The sqlgen Timestamp to convert
+ * @param ts The sqlgen Timestamp to convert (holds session-local time)
  * @return A system_clock::time_point representing the same instant in time
  *
  * @example
@@ -102,7 +109,7 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
-    return timestamp_to_timepoint(std::string_view{ts.str()});
+    return platform::time::time_utils::to_time_point_local(ts.get());
 }
 
 /**

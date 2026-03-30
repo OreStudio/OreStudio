@@ -63,6 +63,7 @@ public:
         Active,
         Version,
         ModifiedBy,
+        RecordedAt,
         ColumnCount
     };
 

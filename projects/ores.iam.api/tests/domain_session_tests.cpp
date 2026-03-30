@@ -24,6 +24,7 @@
 #include <boost/asio/ip/address.hpp>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include "ores.iam.api/domain/session_json_io.hpp" // IWYU pragma: keep.
 
 namespace {
@@ -146,7 +147,7 @@ TEST_CASE("session_serialization_to_json", tags) {
     tm.tm_hour = 10;
     tm.tm_min = 30;
     tm.tm_sec = 0;
-    const auto fixed_time = std::chrono::system_clock::from_time_t(std::mktime(&tm));
+    const auto fixed_time = ores::platform::time::time_utils::to_time_point_local(tm);
 
     session sut;
     sut.id = session_uuid;

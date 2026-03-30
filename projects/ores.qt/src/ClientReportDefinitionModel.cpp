@@ -28,6 +28,7 @@
 #include "ores.scheduler.api/domain/cron_expression.hpp"
 #include "ores.qt/ColorConstants.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.qt/RelativeTimeHelper.hpp"
 
 namespace ores::qt {
 
@@ -108,6 +109,8 @@ QVariant ClientReportDefinitionModel::data(
             return static_cast<qlonglong>(definition.version);
         case ModifiedBy:
             return QString::fromStdString(definition.modified_by);
+        case RecordedAt:
+            return relative_time_helper::format(definition.recorded_at);
         default:
             return {};
         }
@@ -142,6 +145,8 @@ QVariant ClientReportDefinitionModel::headerData(
         return tr("Version");
     case ModifiedBy:
         return tr("Modified By");
+    case RecordedAt:
+        return tr("Recorded At");
     default:
         return {};
     }

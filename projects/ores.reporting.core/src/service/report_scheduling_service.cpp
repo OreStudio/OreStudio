@@ -406,10 +406,17 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             for (const auto& fid : resp->failed_ids)
                 failed_ids.insert(fid);
 
-            BOOST_LOG_SEV(lg(), debug)
-                << "Scheduler accepted " << resp->scheduled_count
-                << " job(s), " << resp->failed_ids.size()
-                << " failed for tenant: " << tenant_id_str;
+            if (resp->failed_ids.empty()) {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Scheduler accepted " << resp->scheduled_count
+                    << " job(s) for tenant: " << tenant_id_str;
+            } else {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Scheduler failed " << resp->failed_ids.size()
+                    << " job(s) (accepted " << resp->scheduled_count
+                    << ") for tenant: " << tenant_id_str
+                    << ". First error: " << resp->message;
+            }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), error)
                 << "Batch schedule NATS call failed for tenant "

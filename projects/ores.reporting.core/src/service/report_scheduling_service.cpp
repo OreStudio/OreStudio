@@ -113,7 +113,7 @@ report_scheduling_service::build_job_definition(
     job.is_active = true;
     job.modified_by = on_behalf_of;
     job.performed_by = on_behalf_of;
-    job.change_reason_code = "system.report_scheduled";
+    job.change_reason_code = "system.new_record";
     job.change_commentary = "Scheduled by reporting service";
     return job;
 }
@@ -131,7 +131,7 @@ report_scheduling_service::send_schedule_request(
 
     const ores::scheduler::messaging::schedule_job_request req{
         .definition = *job,
-        .change_reason_code = "system.report_scheduled",
+        .change_reason_code = "system.new_record",
         .change_commentary = "Scheduled by reporting service",
         .on_behalf_of = on_behalf_of
     };
@@ -193,7 +193,7 @@ report_scheduling_service::schedule_one(
     updated.fsm_state_id = active_state;
     updated.modified_by = on_behalf_of;
     updated.performed_by = on_behalf_of;
-    updated.change_reason_code = "system.report_scheduled";
+    updated.change_reason_code = "system.new_record";
     updated.change_commentary = "Linked to scheduler job";
 
     const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, on_behalf_of);
@@ -218,7 +218,7 @@ report_scheduling_service::unschedule_one(
     const auto job_id_str = boost::uuids::to_string(*def.scheduler_job_id);
     const ores::scheduler::messaging::unschedule_job_request req{
         .job_definition_id = job_id_str,
-        .change_reason_code = "system.report_unscheduled",
+        .change_reason_code = "system.new_record",
         .change_commentary = "Unscheduled by reporting service",
         .on_behalf_of = on_behalf_of
     };
@@ -263,7 +263,7 @@ report_scheduling_service::unschedule_one(
     updated.fsm_state_id = suspended_state;
     updated.modified_by = on_behalf_of;
     updated.performed_by = on_behalf_of;
-    updated.change_reason_code = "system.report_unscheduled";
+    updated.change_reason_code = "system.new_record";
     updated.change_commentary = "Scheduler job removed";
 
     const auto tenant_ctx = ctx_.with_tenant(def.tenant_id, on_behalf_of);
@@ -362,7 +362,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
         };
         std::vector<pending_entry> pending;
         ores::scheduler::messaging::schedule_jobs_batch_request batch_req;
-        batch_req.change_reason_code = "system.report_scheduled";
+        batch_req.change_reason_code = "system.new_record";
         batch_req.change_commentary = "Startup reconciliation by reporting service";
         batch_req.on_behalf_of = on_behalf_of;
 
@@ -439,7 +439,7 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
             def_updated.fsm_state_id = active_state;
             def_updated.modified_by = on_behalf_of;
             def_updated.performed_by = on_behalf_of;
-            def_updated.change_reason_code = "system.report_scheduled";
+            def_updated.change_reason_code = "system.new_record";
             def_updated.change_commentary = "Linked to scheduler job by reconciliation";
 
             try {

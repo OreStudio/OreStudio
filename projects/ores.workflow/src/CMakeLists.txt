@@ -39,6 +39,10 @@ target_link_libraries(${lib_target_name}
     PRIVATE
         ores.database.lib
         ores.utility.lib
+        ores.service.lib
+        ores.nats.lib
+        ores.iam.api.lib
+        ores.refdata.api.lib
         sqlgen::sqlgen
         Boost::boost)
 # Note: reflectcpp comes transitively through ores.utility.lib -> ores.platform.lib (PUBLIC)

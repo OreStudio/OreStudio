@@ -20,8 +20,10 @@
 #ifndef ORES_WORKFLOW_REPOSITORY_WORKFLOW_STEP_REPOSITORY_HPP
 #define ORES_WORKFLOW_REPOSITORY_WORKFLOW_STEP_REPOSITORY_HPP
 
+#include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.workflow/domain/workflow_step.hpp"
@@ -29,9 +31,7 @@
 namespace ores::workflow::repository {
 
 /**
- * @brief Reads workflow steps from data storage.
- *
- * This is a read-only repository for a non-temporal table.
+ * @brief Repository for workflow steps (non-temporal, append-mostly).
  */
 class workflow_step_repository {
 private:
@@ -48,6 +48,21 @@ public:
     using context = ores::database::context;
 
     std::vector<domain::workflow_step> read(context ctx);
+
+    /**
+     * @brief Inserts a new workflow step record.
+     */
+    void create(context ctx, const domain::workflow_step& v);
+
+    /**
+     * @brief Updates the status (and optional response/error) of a workflow step.
+     *
+     * Sets @p status, @p response_json, @p error, and stamps completed_at to now.
+     */
+    void update_status(context ctx, const boost::uuids::uuid& id,
+        const std::string& status,
+        const std::string& response_json,
+        const std::string& error);
 };
 
 }

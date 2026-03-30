@@ -19,7 +19,12 @@
  */
 #include "ores.workflow/repository/workflow_step_repository.hpp"
 
+#include <chrono>
+#include <optional>
 #include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.workflow/domain/workflow_step_json_io.hpp" // IWYU pragma: keep.
 #include "ores.workflow/repository/workflow_step_entity.hpp"
@@ -42,6 +47,58 @@ workflow_step_repository::read(context ctx) {
         ctx, query,
         [](const auto& entities) { return workflow_step_mapper::map(entities); },
         lg(), "Reading workflow steps");
+}
+
+void workflow_step_repository::create(
+    context ctx, const domain::workflow_step& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Creating workflow step: "
+                               << boost::uuids::to_string(v.id);
+
+    const auto entity = workflow_step_mapper::to_entity(v);
+    const auto r = sqlgen::session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(insert(entity))
+        .and_then(commit);
+    ensure_success(r, lg());
+
+    BOOST_LOG_SEV(lg(), debug) << "Workflow step created.";
+}
+
+void workflow_step_repository::update_status(
+    context ctx, const boost::uuids::uuid& id,
+    const std::string& status,
+    const std::string& response_json,
+    const std::string& error) {
+    BOOST_LOG_SEV(lg(), debug) << "Updating workflow step status: "
+                               << boost::uuids::to_string(id)
+                               << " -> " << status;
+
+    const auto id_str = boost::uuids::to_string(id);
+    const auto now = timepoint_to_timestamp(
+        std::chrono::system_clock::now(), lg());
+    const auto opt_response = response_json.empty()
+        ? std::optional<std::string>{}
+        : std::optional<std::string>(response_json);
+    const auto opt_error = error.empty()
+        ? std::optional<std::string>{}
+        : std::optional<std::string>(error);
+    using ts_t = sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">;
+    const auto opt_now = std::optional<ts_t>(now);
+
+    const auto query = sqlgen::update<workflow_step_entity>(
+        "status"_c.set(status),
+        "response_json"_c.set(opt_response),
+        "error"_c.set(opt_error),
+        "completed_at"_c.set(opt_now)
+    ) | where("id"_c == id_str);
+
+    const auto r = sqlgen::session(ctx.connection_pool())
+        .and_then(begin_transaction)
+        .and_then(query)
+        .and_then(commit);
+    ensure_success(r, lg());
+
+    BOOST_LOG_SEV(lg(), debug) << "Workflow step status updated.";
 }
 
 }

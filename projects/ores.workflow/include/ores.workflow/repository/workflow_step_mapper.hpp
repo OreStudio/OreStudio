@@ -43,6 +43,7 @@ public:
     static domain::workflow_step map(const workflow_step_entity& v);
     static std::vector<domain::workflow_step>
     map(const std::vector<workflow_step_entity>& v);
+    static workflow_step_entity to_entity(const domain::workflow_step& v);
 };
 
 }

@@ -62,4 +62,29 @@ workflow_instance_mapper::map(const std::vector<workflow_instance_entity>& v) {
         "db entities");
 }
 
+workflow_instance_entity
+workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
+    BOOST_LOG_SEV(lg(), trace) << "Mapping domain object to entity.";
+
+    workflow_instance_entity r;
+    r.id = boost::uuids::to_string(v.id);
+    r.tenant_id = boost::uuids::to_string(v.tenant_id);
+    r.type = v.type;
+    r.status = v.status;
+    r.request_json = v.request_json;
+    r.result_json = v.result_json.empty()
+        ? std::nullopt : std::optional<std::string>(v.result_json);
+    r.error = v.error.empty()
+        ? std::nullopt : std::optional<std::string>(v.error);
+    r.correlation_id = v.correlation_id.empty()
+        ? std::nullopt : std::optional<std::string>(v.correlation_id);
+    r.created_by = v.created_by;
+    if (v.completed_at)
+        r.completed_at = timepoint_to_timestamp(*v.completed_at, lg());
+    r.created_at = timepoint_to_timestamp(v.created_at, lg());
+
+    BOOST_LOG_SEV(lg(), trace) << "Mapped domain object to entity.";
+    return r;
+}
+
 }

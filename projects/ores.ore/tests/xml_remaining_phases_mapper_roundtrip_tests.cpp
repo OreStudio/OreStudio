@@ -218,7 +218,7 @@ TEST_CASE("equity_double_barrier_option_forward", tags) {
 
     CHECK(r.instrument.trade_type_code == "EquityDoubleBarrierOption");
     CHECK(!r.instrument.option_type.empty());
-    CHECK(!r.instrument.underlying_name.empty());
+    CHECK(!r.instrument.underlying_code.empty());
 
     BOOST_LOG_SEV(lg, info) << "EquityDoubleBarrierOption forward test passed";
 }

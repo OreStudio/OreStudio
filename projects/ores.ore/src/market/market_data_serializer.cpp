@@ -19,39 +19,23 @@
  */
 #include "ores.ore/market/market_data_serializer.hpp"
 
+#include <chrono>
 #include <format>
 #include <ostream>
+#include <vector>
 
 namespace ores::ore::market {
-
-namespace {
-
-std::string format_yyyymmdd(std::chrono::year_month_day ymd) {
-    return std::format("{:04d}{:02d}{:02d}",
-        static_cast<int>(ymd.year()),
-        static_cast<unsigned>(ymd.month()),
-        static_cast<unsigned>(ymd.day()));
-}
-
-std::string format_yyyy_mm_dd(std::chrono::year_month_day ymd) {
-    return std::format("{:04d}-{:02d}-{:02d}",
-        static_cast<int>(ymd.year()),
-        static_cast<unsigned>(ymd.month()),
-        static_cast<unsigned>(ymd.day()));
-}
-
-} // namespace
 
 void serialize_market_data(std::ostream& out,
                            const std::vector<market_datum>& data) {
     for (const auto& d : data)
-        out << format_yyyymmdd(d.date) << '\t' << d.key << '\t' << d.value << '\n';
+        out << std::format("{:%Y%m%d}", d.date) << '\t' << d.key << '\t' << d.value << '\n';
 }
 
 void serialize_fixings(std::ostream& out,
                        const std::vector<fixing>& fixings) {
     for (const auto& f : fixings)
-        out << format_yyyy_mm_dd(f.date) << '\t' << f.index_name << '\t' << f.value << '\n';
+        out << std::format("{:%F}", f.date) << '\t' << f.index_name << '\t' << f.value << '\n';
 }
 
 } // namespace ores::ore::market

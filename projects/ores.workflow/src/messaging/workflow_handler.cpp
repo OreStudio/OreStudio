@@ -115,11 +115,11 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
 
     if (!ok) {
         BOOST_LOG_SEV(lg(), warn) << "provision_parties_workflow failed: "
-                                     << executor.error()
+                                     << executor.failure_reason()
                                      << ". Starting compensation.";
 
         instance_repo.update_status(req_ctx, instance.id,
-            "compensating", "", executor.error());
+            "compensating", "", executor.failure_reason());
 
         try {
             executor.compensate(req_ctx, delegated_nats);
@@ -129,10 +129,10 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         }
 
         instance_repo.update_status(req_ctx, instance.id,
-            "compensated", "", executor.error());
+            "compensated", "", executor.failure_reason());
 
         reply(nats_, msg, provision_parties_response{
-            .success = false, .message = executor.error()});
+            .success = false, .message = executor.failure_reason()});
         return;
     }
 

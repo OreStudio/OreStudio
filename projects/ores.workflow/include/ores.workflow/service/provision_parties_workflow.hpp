@@ -63,7 +63,7 @@ public:
     void compensate(ores::database::context ctx,
         ores::nats::service::nats_client& nats) override;
 
-    [[nodiscard]] const std::string& error() const override { return error_; }
+    [[nodiscard]] const std::string& failure_reason() const override { return error_; }
 
     /**
      * @brief Returns the provisioning result.

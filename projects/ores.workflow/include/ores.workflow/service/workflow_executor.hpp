@@ -69,11 +69,11 @@ public:
         ores::nats::service::nats_client& nats) = 0;
 
     /**
-     * @brief Human-readable error from a failed execution.
+     * @brief Human-readable reason for a failed execution.
      *
      * Valid only after execute() returns false.
      */
-    [[nodiscard]] virtual const std::string& error() const = 0;
+    [[nodiscard]] virtual const std::string& failure_reason() const = 0;
 };
 
 }

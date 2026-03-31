@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/lexical_cast.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.refdata.api/domain/party.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
@@ -267,7 +268,7 @@ void provision_parties_workflow::compensate(
             auto r = nats_call(nats, del_link, err);
             if (!r || !r->success) {
                 const auto reason = (r && !r->message.empty()) ? r->message : err;
-                BOOST_LOG_SEV(lg(), ores::logging::error)
+                BOOST_LOG_SEV(lg(), error)
                     << "Compensation delete_account_party failed for party "
                     << i << ": " << reason;
             }
@@ -282,7 +283,7 @@ void provision_parties_workflow::compensate(
             auto r = nats_call(nats, del_acct, err);
             if (!r || !r->success) {
                 const auto reason = (r && !r->message.empty()) ? r->message : err;
-                BOOST_LOG_SEV(lg(), ores::logging::error)
+                BOOST_LOG_SEV(lg(), error)
                     << "Compensation delete_account failed for party " << i
                     << ": " << reason;
             }
@@ -297,7 +298,7 @@ void provision_parties_workflow::compensate(
             auto r = nats_call(nats, del_party, err);
             if (!r || !r->success) {
                 const auto reason = (r && !r->message.empty()) ? r->message : err;
-                BOOST_LOG_SEV(lg(), ores::logging::error)
+                BOOST_LOG_SEV(lg(), error)
                     << "Compensation delete_party failed for party " << i
                     << ": " << reason;
             }

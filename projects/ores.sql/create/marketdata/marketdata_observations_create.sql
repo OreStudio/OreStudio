@@ -98,10 +98,14 @@ before insert on ores_marketdata_observations_tbl
 for each row execute function ores_marketdata_observations_insert_fn();
 
 -- =============================================================================
--- Soft-delete rule.
+-- Soft-delete trigger — implements the soft-delete pattern for corrections.
+-- Rules are incompatible with TimescaleDB hypertables; a BEFORE DELETE trigger
+-- returning NULL suppresses the physical delete and closes the current row
+-- instead, achieving the same semantics.
 -- =============================================================================
-create or replace rule ores_marketdata_observations_delete_rule as
-on delete to ores_marketdata_observations_tbl do instead
+create or replace function ores_marketdata_observations_delete_fn()
+returns trigger as $$
+begin
     update ores_marketdata_observations_tbl
     set valid_to = current_timestamp
     where tenant_id        = old.tenant_id
@@ -109,6 +113,13 @@ on delete to ores_marketdata_observations_tbl do instead
       and observation_date = old.observation_date
       and coalesce(point_id, '') = coalesce(old.point_id, '')
       and valid_to         = ores_utility_infinity_timestamp_fn();
+    return null;
+end;
+$$ language plpgsql;
+
+create or replace trigger ores_marketdata_observations_delete_trg
+before delete on ores_marketdata_observations_tbl
+for each row execute function ores_marketdata_observations_delete_fn();
 
 -- =============================================================================
 -- TimescaleDB hypertable.

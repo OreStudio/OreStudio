@@ -26,6 +26,9 @@
 #include "ores.ore/domain/bond_instrument_mapper.hpp"
 #include "ores.ore/domain/credit_instrument_mapper.hpp"
 #include "ores.ore/domain/equity_instrument_mapper.hpp"
+#include "ores.ore/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore/domain/scripted_instrument_mapper.hpp"
+#include "ores.ore/domain/composite_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -202,12 +205,53 @@ trade_mapper::map_equity_instrument(const trade& v) {
     return std::nullopt;
 }
 
+std::optional<commodity_mapping_result>
+trade_mapper::map_commodity_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "CommodityForward")
+        return commodity_instrument_mapper::forward_commodity_forward(v);
+    if (type == "CommodityOption")
+        return commodity_instrument_mapper::forward_commodity_option(v);
+    if (type == "CommoditySwap")
+        return commodity_instrument_mapper::forward_commodity_swap(v);
+    if (type == "CommoditySwaption")
+        return commodity_instrument_mapper::forward_commodity_swaption(v);
+    if (type == "CommodityVarianceSwap")
+        return commodity_instrument_mapper::forward_commodity_variance_swap(v);
+    if (type == "CommodityAveragePriceOption")
+        return commodity_instrument_mapper::forward_commodity_apo(v);
+    if (type == "CommodityOptionStrip")
+        return commodity_instrument_mapper::forward_commodity_option_strip(v);
+    return std::nullopt;
+}
+
+std::optional<scripted_mapping_result>
+trade_mapper::map_scripted_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "ScriptedTrade")
+        return scripted_instrument_mapper::forward_scripted_trade(v);
+    return std::nullopt;
+}
+
+std::optional<composite_mapping_result>
+trade_mapper::map_composite_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "CompositeTrade")
+        return composite_instrument_mapper::forward_composite_trade(v);
+    if (type == "MultiLegOption")
+        return composite_instrument_mapper::forward_multi_leg_option(v);
+    return std::nullopt;
+}
+
 instrument_mapping_result trade_mapper::map_instrument(const trade& v) {
-    if (auto r = map_swap_instrument(v))   return *r;
-    if (auto r = map_fx_instrument(v))     return *r;
-    if (auto r = map_bond_instrument(v))   return *r;
-    if (auto r = map_credit_instrument(v)) return *r;
-    if (auto r = map_equity_instrument(v)) return *r;
+    if (auto r = map_swap_instrument(v))      return *r;
+    if (auto r = map_fx_instrument(v))        return *r;
+    if (auto r = map_bond_instrument(v))      return *r;
+    if (auto r = map_credit_instrument(v))    return *r;
+    if (auto r = map_equity_instrument(v))    return *r;
+    if (auto r = map_commodity_instrument(v)) return *r;
+    if (auto r = map_scripted_instrument(v))  return *r;
+    if (auto r = map_composite_instrument(v)) return *r;
     return std::monostate{};
 }
 

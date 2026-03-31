@@ -30,6 +30,9 @@
 #include "ores.ore/domain/bond_instrument_mapper.hpp"
 #include "ores.ore/domain/credit_instrument_mapper.hpp"
 #include "ores.ore/domain/equity_instrument_mapper.hpp"
+#include "ores.ore/domain/commodity_instrument_mapper.hpp"
+#include "ores.ore/domain/scripted_instrument_mapper.hpp"
+#include "ores.ore/domain/composite_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -45,7 +48,10 @@ using instrument_mapping_result = std::variant<
     fx_mapping_result,
     bond_mapping_result,
     credit_mapping_result,
-    equity_mapping_result
+    equity_mapping_result,
+    commodity_mapping_result,
+    scripted_mapping_result,
+    composite_mapping_result
 >;
 
 /**
@@ -142,11 +148,29 @@ public:
     map_equity_instrument(const trade& v);
 
     /**
+     * @brief Dispatches a commodity-family trade to commodity_instrument_mapper.
+     */
+    static std::optional<commodity_mapping_result>
+    map_commodity_instrument(const trade& v);
+
+    /**
+     * @brief Dispatches a scripted trade to scripted_instrument_mapper.
+     */
+    static std::optional<scripted_mapping_result>
+    map_scripted_instrument(const trade& v);
+
+    /**
+     * @brief Dispatches a composite trade to composite_instrument_mapper.
+     */
+    static std::optional<composite_mapping_result>
+    map_composite_instrument(const trade& v);
+
+    /**
      * @brief Unified instrument dispatch: maps any supported ORE trade to its
      * instrument_mapping_result.
      *
-     * Tries swap, FX, bond, credit, then equity in order. Returns
-     * std::monostate for any trade type not yet covered (scripted, commodity).
+     * Tries swap, FX, bond, credit, equity, commodity, scripted, composite in
+     * order. Returns std::monostate for any unknown type.
      * Callers should use std::visit to handle the result.
      */
     static instrument_mapping_result map_instrument(const trade& v);

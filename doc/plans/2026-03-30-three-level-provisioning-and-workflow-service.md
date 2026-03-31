@@ -1,13 +1,21 @@
 # Plan: Three-Level Provisioning and Workflow Orchestration Service
 
-## Status
+## Status: CLOSED — 2026-03-31
 
-- Phase 1 (tenant/party wizard split): **Complete** — merged PR #582
-- Phase 2 (per-party status trigger, Qt wizard updates): **Complete** — merged PR #619
-- Phase 3 (`ores.workflow` orchestration service): **Complete** — merged PR #611 (SQL), #614 (executor)
-- Correlation ID infrastructure: **Complete** — merged PR #619
-- Phase 4 (UX polish): **Deferred** — password reset, multi-select LEI, async wizard
-- Phase 5 (financial workflows): **Deferred** — trade-expiry, barrier-event
+All implementation steps complete. Deferred items tracked in sprint backlog 16.
+
+| Phase | Status | PRs |
+|-------|--------|-----|
+| Phase 1 — tenant/party wizard split | **Complete** | #582 |
+| Phase 3 — `ores.workflow` service | **Complete** | #611, #614 |
+| Phase 2 — per-party status trigger + IAM cleanup | **Complete** | #619 |
+| Correlation ID infrastructure | **Complete** | #619 |
+| Phase 4 — UX polish (password reset, LEI multi-select, async) | **Deferred** | sprint 16 |
+| Phase 5 — financial workflows (trade-expiry, barrier-event) | **Deferred** | sprint 16 |
+| IAM/Refdata boundary cleanup | **Deferred** | sprint 16 |
+| DQ/Refdata boundary cleanup | **Deferred** | sprint 16 |
+
+E2E testing: branch `feature/three-level-provisioning-e2e`, story in sprint 16.
 
 ---
 

@@ -168,6 +168,148 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_16_tags.png]]
 
+*** TODO Three-level provisioning: end-to-end testing                  :code:
+
+End-to-end test of the complete three-level provisioning flow implemented
+across PRs #582, #611, #614, #619, and the correlation ID / summary page
+work on =feature/three-level-provisioning-e2e=. Branch:
+=feature/three-level-provisioning-e2e=.
+
+***** Tasks
+
+- [ ] Provision a fresh tenant from scratch (recreate DB, start services)
+- [ ] Log in as system admin; verify =TenantProvisioningWizard= fires
+- [ ] Step through bundle selection and install; verify DQ bundle published
+- [ ] Step through =PartyProvisionPage=; verify party + account created in DB
+      with =status='Inactive'=
+- [ ] Verify correlation ID appears on the summary page and matches
+      =ores_workflow_workflow_instances_tbl.correlation_id=
+- [ ] Verify bootstrap flag cleared; wizard does not reappear on next login
+- [ ] Log in as the provisioned party admin; verify =PartyProvisioningWizard= fires
+- [ ] Complete party wizard; verify party =status= set to =Active= in DB
+- [ ] Verify =PartyProvisioningWizard= does not reappear on subsequent logins
+- [ ] Verify compensation: force failure in each of the 3 workflow steps and
+      confirm rolled-back state in DB for party, account, account_party
+- [ ] Verify =Nats-Correlation-Id= header propagated to =refdata.v1.parties.save=
+      and =iam.v1.accounts.save= (check server logs)
+
+*** TODO Provisioned accounts: force password reset on first login       :code:
+
+When =workflow.v1.parties.provision= creates an account it should set
+=password_reset_required = true= so the party admin is forced to change the
+initial password on first login. See Phase 4 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =password_reset_required= column to =ores_iam_accounts_tbl= (or reuse
+      existing field if present)
+- [ ] =provision_parties_workflow=: set flag when creating account
+- [ ] =auth_handler.hpp=: return =password_reset_required= in =login_response=
+      if account flag is set, and reject login with a specific error code
+- [ ] Qt: show password-change dialog on login when flag is set
+- [ ] Clear flag on successful password change
+
+*** TODO Multi-select LEI picker for PartyProvisionPage                  :code:
+
+=LeiEntityPicker= currently supports single selection. Extend to multi-select
+so the tenant admin can pick the full GLEIF hierarchy (root + subsidiaries)
+in one pass, creating one =provision_party_input= entry per selected LEI.
+See Phase 4 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Extend =LeiEntityPicker= to support multi-select mode
+- [ ] =PartyProvisionPage=: iterate selected LEIs, build one input row per LEI
+- [ ] Derive =principal= per party (=username_base + "_" + short_code=)
+- [ ] Show per-party rows in the page with optional credential override fields
+- [ ] Summary page: list all provisioned usernames and their party names
+
+*** TODO Async workflow progress for large party hierarchies             :code:
+
+For tenants with more than ~20 parties the synchronous =provision-parties=
+endpoint will time out. Add an async path: return =workflow_id= immediately
+and poll =workflow.v1.status= from a progress page. See Phase 4 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =workflow.v1.status= NATS subject + request/response types
+- [ ] =workflow_handler=: implement status query by workflow ID
+- [ ] Add async variant of =provision_parties_response= (returns =workflow_id= only)
+- [ ] Qt: add =BundleInstallPage=-style async progress page in
+      =TenantProvisioningWizard= with polling timer
+- [ ] Threshold: use async path when =parties.size() > 5= (configurable)
+
+*** TODO IAM/Refdata service boundary cleanup                            :code:
+
+=ores.iam.core= currently crosses the service boundary in two places. These
+are pre-existing violations noted in the plan and must be fixed to ensure
+correct RLS enforcement and clean service ownership. See "Known pre-existing
+violations" in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] =bootstrap_handler.hpp=: replace direct =ores_refdata_parties_tbl= write
+      with =refdata.v1.parties.save= NATS call
+- [ ] =auth_handler.hpp=: replace direct =ores_refdata_parties_tbl= query
+      (=auth_lookup_party=) with =refdata.v1.parties.get-by-principal= NATS call
+      (add endpoint to =ores.refdata= if missing)
+- [ ] Verify RLS policies still enforced end-to-end after refactor
+- [ ] Remove cross-schema table includes from =ores.iam.core= CMake deps
+
+*** TODO DQ/Refdata service boundary cleanup                             :code:
+
+DQ bundle publication currently writes directly to =ores_refdata_*= tables.
+This must be routed via =refdata.v1.*= NATS endpoints. See "Open Questions"
+in [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Identify all direct =ores_refdata_*= writes inside =ores.dq= publication
+      pipeline
+- [ ] Add any missing =refdata.v1.*= NATS endpoints needed by DQ
+- [ ] Rewrite DQ publication to use NATS calls instead of direct DB writes
+- [ ] Verify bundle publish end-to-end after refactor
+- [ ] Remove cross-schema table includes from =ores.dq= CMake deps
+
+*** TODO Extend ores.workflow: trade-expiry workflow                     :code:
+
+First financial workflow in =ores.workflow=: expire a trade and cascade to
+positions, P&L reporting and scheduler cleanup. See Phase 5 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =workflow.v1.trade-expiry= NATS subject + request/response types
+- [ ] Implement =trade_expiry_workflow= executor (4 steps + compensation)
+      - Step 1: =trading.v1.trades.expire=
+      - Step 2: =risk.v1.positions.update=
+      - Step 3: =reporting.v1.runs.trigger-pnl=
+      - Step 4: =scheduler.v1.jobs.remove=
+- [ ] Register in =workflow_handler= and =registrar.cpp=
+- [ ] Qt: trigger from trade blotter context menu ("Expire trade")
+- [ ] Integration test: verify all 4 steps and compensation
+
+*** TODO Extend ores.workflow: barrier-event workflow                    :code:
+
+Second financial workflow: apply a knock-in/out barrier event to a trade and
+cascade to Greeks recomputation and reporting. See Phase 5 in
+[[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][plan]].
+
+***** Tasks
+
+- [ ] Add =workflow.v1.barrier-event= NATS subject + request/response types
+- [ ] Implement =barrier_event_workflow= executor (3 steps + compensation)
+      - Step 1: =trading.v1.trades.apply-barrier-event=
+      - Step 2: =risk.v1.greeks.recompute=
+      - Step 3: =reporting.v1.runs.trigger=
+- [ ] Register in =workflow_handler= and =registrar.cpp=
+- [ ] Qt: trigger from trade detail dialog when barrier condition is met
+- [ ] Integration test: verify all 3 steps and compensation
+
 *** TODO Positions domain model                                        :code:
 
 Implement the positions domain model. A position aggregates the net exposure

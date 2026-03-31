@@ -258,6 +258,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v telemetry_service_user="${ORES_TELEMETRY_SERVICE_DB_USER}" \
     -v trading_service_user="${ORES_TRADING_SERVICE_DB_USER}" \
     -v compute_service_user="${ORES_COMPUTE_SERVICE_DB_USER}" \
+    -v workflow_service_user="${ORES_WORKFLOW_SERVICE_DB_USER}" \
     -v ddl_password="${ORES_DB_DDL_PASSWORD}" \
     -v cli_password="${ORES_DB_CLI_PASSWORD}" \
     -v wt_password="${ORES_DB_WT_PASSWORD}" \
@@ -277,6 +278,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v telemetry_service_password="${ORES_TELEMETRY_SERVICE_DB_PASSWORD}" \
     -v trading_service_password="${ORES_TRADING_SERVICE_DB_PASSWORD}" \
     -v compute_service_password="${ORES_COMPUTE_SERVICE_DB_PASSWORD}" \
+    -v workflow_service_password="${ORES_WORKFLOW_SERVICE_DB_PASSWORD}" \
     -v db_name="${DB_NAME}"
 
 # Phases 2–4: Create database, schema, and metadata via shared helper

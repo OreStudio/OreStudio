@@ -35,7 +35,7 @@
 --   iam_service_user, refdata_service_user, dq_service_user,
 --   variability_service_user, assets_service_user, synthetic_service_user,
 --   scheduler_service_user, reporting_service_user, telemetry_service_user,
---   trading_service_user, compute_service_user
+--   trading_service_user, compute_service_user, workflow_service_user
 -- =============================================================================
 
 -- ---------------------------------------------------------------------------
@@ -90,7 +90,8 @@ grant usage, select on all sequences in schema public
        :reporting_service_user,
        :telemetry_service_user,
        :trading_service_user,
-       :compute_service_user;
+       :compute_service_user,
+       :workflow_service_user;
 
 alter default privileges in schema public
     grant usage, select on sequences
@@ -104,7 +105,8 @@ alter default privileges in schema public
        :reporting_service_user,
        :telemetry_service_user,
        :trading_service_user,
-       :compute_service_user;
+       :compute_service_user,
+       :workflow_service_user;
 
 -- ---------------------------------------------------------------------------
 -- iam_service: owns all IAM tables
@@ -192,6 +194,15 @@ select _ores_grant_select_fn('ores_reporting_',    :'synthetic_service_user');
 select _ores_grant_select_fn('ores_scheduler_',    :'synthetic_service_user');
 select _ores_grant_select_fn('ores_compute_',      :'synthetic_service_user');
 select _ores_grant_select_fn('ores_telemetry_',    :'synthetic_service_user');
+
+-- ---------------------------------------------------------------------------
+-- workflow_service: owns workflow tables; reads IAM tables and refdata parties
+-- for the party provisioning saga
+-- ---------------------------------------------------------------------------
+select _ores_grant_dml_fn('ores_workflow_', :'workflow_service_user');
+grant select on ores_iam_tenants_tbl to :workflow_service_user;
+select _ores_grant_dml_fn('ores_iam_', :'workflow_service_user');
+select _ores_grant_dml_fn('ores_refdata_parties', :'workflow_service_user');
 
 -- ---------------------------------------------------------------------------
 -- Clean up helper functions

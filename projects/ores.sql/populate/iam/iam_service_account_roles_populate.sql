@@ -29,7 +29,7 @@
  *   :variability_service_user, :assets_service_user,
  *   :synthetic_service_user, :scheduler_service_user,
  *   :reporting_service_user, :telemetry_service_user,
- *   :trading_service_user, :compute_service_user
+ *   :trading_service_user, :compute_service_user, :workflow_service_user
  *
  * This script is idempotent.
  */
@@ -68,6 +68,9 @@ select ores_iam_account_role_assign_fn(
 
 select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'compute_service_user', 'ComputeService');
+
+select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'workflow_service_user', 'WorkflowService');
 
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count

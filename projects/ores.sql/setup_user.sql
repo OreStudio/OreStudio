@@ -50,6 +50,7 @@
  *     -v telemetry_service_user='ores_local2_telemetry_service' \
  *     -v trading_service_user='ores_local2_trading_service' \
  *     -v compute_service_user='ores_local2_compute_service' \
+ *     -v workflow_service_user='ores_local2_workflow_service' \
  *     -v ddl_password='DDL_PASSWORD' \
  *     -v cli_password='CLI_PASSWORD' \
  *     -v wt_password='WT_PASSWORD' \
@@ -322,6 +323,18 @@
     \quit
 \endif
 
+\if :{?workflow_service_user}
+\else
+    \echo 'ERROR: workflow_service_user variable is required.'
+    \quit
+\endif
+
+\if :{?workflow_service_password}
+\else
+    \echo 'ERROR: workflow_service_password variable is required for Workflow domain service.'
+    \quit
+\endif
+
 -- 1. Create group roles (no login)
 -- These act as permission templates
 create role :owner_role   nologin;
@@ -352,6 +365,7 @@ create user :reporting_service_user   with password :'reporting_service_password
 create user :telemetry_service_user   with password :'telemetry_service_password';
 create user :trading_service_user     with password :'trading_service_password';
 create user :compute_service_user     with password :'compute_service_password';
+create user :workflow_service_user    with password :'workflow_service_password';
 
 -- Add all domain service users to service_role for infrastructure-level grants
 grant :service_role to
@@ -365,7 +379,8 @@ grant :service_role to
     :reporting_service_user,
     :telemetry_service_user,
     :trading_service_user,
-    :compute_service_user;
+    :compute_service_user,
+    :workflow_service_user;
 create user :test_ddl_user with password :'test_ddl_password' in role :owner_role createdb;
 create user :test_dml_user with password :'test_dml_password' in role :rw_role;
 create user :readonly_user with password :'ro_password'       in role :ro_role;
@@ -386,6 +401,7 @@ alter role :reporting_service_user set search_path to public;
 alter role :telemetry_service_user set search_path to public;
 alter role :trading_service_user  set search_path to public;
 alter role :compute_service_user  set search_path to public;
+alter role :workflow_service_user set search_path to public;
 alter role :http_user             set search_path to public;
 alter role :test_ddl_user         set search_path to public;
 alter role :test_dml_user         set search_path to public;

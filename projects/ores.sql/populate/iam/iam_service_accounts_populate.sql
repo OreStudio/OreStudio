@@ -58,6 +58,7 @@
 \set telemetry_service_pw   `echo "$ORES_TELEMETRY_SERVICE_DB_PASSWORD"`
 \set trading_service_pw     `echo "$ORES_TRADING_SERVICE_DB_PASSWORD"`
 \set compute_service_pw     `echo "$ORES_COMPUTE_SERVICE_DB_PASSWORD"`
+\set workflow_service_pw    `echo "$ORES_WORKFLOW_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
@@ -178,6 +179,13 @@ select ores_iam_service_accounts_upsert_fn(
     'compute_service@system.ores',
     'System service account for Compute Grid NATS domain service',
     :'compute_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'workflow_service_user',
+    'workflow_service@system.ores',
+    'System service account for Workflow Orchestration NATS domain service',
+    :'workflow_service_pw'
 );
 
 -- Summary

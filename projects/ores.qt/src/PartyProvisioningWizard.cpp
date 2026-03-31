@@ -384,11 +384,17 @@ void PartyOrganisationSetupPage::startPublish() {
             }
 
             // Step 2: Publish organisation bundle (business units, portfolios, books)
+            // Pass the current party_id so publish functions scope data to this
+            // party rather than resolving the tenant's root party.
+            dq::messaging::publish_bundle_params orgParams;
+            orgParams.party_id = boost::uuids::to_string(
+                clientManager->currentPartyId());
             dq::messaging::publish_bundle_request orgRequest;
             orgRequest.bundle_code = "organisation";
             orgRequest.mode = dq::domain::publication_mode::upsert;
             orgRequest.published_by = publishedBy;
             orgRequest.atomic = true;
+            orgRequest.params_json = dq::messaging::build_params_json(orgParams);
 
             auto orgResult = clientManager->process_authenticated_request(
                 std::move(orgRequest), std::chrono::minutes(5));
@@ -424,7 +430,7 @@ struct ReportEntry {
 // natural execution dependency (calibration → curves → valuation →
 // market risk → counterparty risk → scenario analysis → regulatory capital).
 // All use report_type="risk" and concurrency_policy="skip".
-constexpr std::array<ReportEntry, 28> k_default_reports{{
+constexpr std::array<ReportEntry, 27> k_default_reports{{
     // --- Market data & calibration (5-6 am) ----------------------------
     {.name = "Model Calibration",
      .description =

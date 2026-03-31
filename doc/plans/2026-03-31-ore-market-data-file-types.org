@@ -1,0 +1,242 @@
+:PROPERTIES:
+:ID: F4A17B30-FE81-11F0-A3C4-40B0768014EB
+:END:
+#+title: ORE Market Data File Types — Phase 1 (ores.ore)
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+Phase 1 introduces lightweight, faithful representations of ORE's text-based
+market data files into =ores.ore=, along with a parser and serializer that
+round-trip those files without loss.
+
+Strong typing of the quote key fields (instrument type, currency, tenor, etc.)
+is explicitly deferred to =ores.marketdata= (Phase 2). =ores.ore= is
+responsible only for: parse file → structs → write file, byte-faithfully.
+
+* Background
+
+ORE consumes two categories of text market data files.  Both use the same
+whitespace-delimited three-column line structure:
+
+#+begin_example
+DATE  KEY  VALUE
+#+end_example
+
+| File pattern         | Date format  | Key semantics               |
+|----------------------+--------------+-----------------------------|
+| =market*.txt=        | =YYYYMMDD=   | Instrument quote key        |
+| =fixings*.txt=       | =YYYY-MM-DD= | Index name                  |
+
+Comment lines begin with =#= and blank lines are silently skipped by ORE.
+Both conventions must be preserved on serialization.
+
+** Market data quote types
+
+There are 38 distinct quote-key prefixes across the ORE example library,
+covering interest rates, FX, volatilities, credit, equity, commodity,
+inflation, and miscellaneous types.  Representative examples:
+
+#+begin_example
+20160205 ZERO/RATE/EUR/BANK_EUR_BORROW/A365/2Y            0.0024
+20160205 IR_SWAP/RATE/CHF/2D/1D/1M                        0.0035
+20160205 FX/RATE/EUR/CHF                                  1.0947
+20160205 SWAPTION/RATE_LNVOL/CHF/25Y/10Y/ATM              0.3820
+20160205 CAPFLOOR/RATE_LNVOL/CHF/20Y/6M/0/0/0.025         0.5410
+20160205 EQUITY/PRICE/SP5/USD                             2023.81
+20160205 CDS/CREDIT_SPREAD/BANK/SR/USD/1Y                 0.0050
+20160205 COMMODITY_FWD/PRICE/GOLD/USD/2016-02-29         1207.40
+#+end_example
+
+** Fixings
+
+#+begin_example
+2021-09-30 EUR-EONIA          0.0074600000
+2016-01-28 EQ-SP5             2244.2
+2020-09-01 UKRPI              293.3
+#+end_example
+
+* Design Decisions
+
+** Minimal struct surface
+
+=ores.ore= needs at most *two structs*:
+
+#+begin_src cpp
+struct market_datum {
+    std::chrono::year_month_day date;
+    std::string key;    // opaque — not decomposed at this layer
+    std::string value;  // raw string — exact round-trip, no float precision loss
+};
+
+struct fixing {
+    std::chrono::year_month_day date;
+    std::string index_name;
+    std::string value;  // raw string
+};
+#+end_src
+
+=market_datum= and =fixing= are structurally identical but semantically
+distinct, so they are separate types for clarity at the call site.
+
+** Value as std::string
+
+Values are stored as =std::string= rather than =double= or a decimal type.
+This is intentional:
+
+- ORE files contain values with varying precision (e.g. =0.0074600000=,
+  =2244.2=, =-0.006119=).  Any floating-point representation introduces
+  representation error that manifests as noise on serialization.
+- =ores.ore= is a file-format layer, not a computation layer.  Callers that
+  need arithmetic work with values through =ores.marketdata= types (Phase 2),
+  which will use a decimal type.
+
+** One parser, two serializers
+
+Both file types parse the same three-column line format.  A single
+=market_data_line_parser= handles tokenization and date parsing for both,
+auto-detecting the date format (=YYYYMMDD= vs =YYYY-MM-DD=).
+
+Serialization writes the canonical date format per file type:
+- =market_data_serializer= — outputs =YYYYMMDD=
+- =fixings_serializer= — outputs =YYYY-MM-DD=
+
+** No codegen
+
+The structs are trivially simple and handwritten.  Codegen adds overhead
+without benefit here.  The existing XSD-driven codegen in =ores.ore= applies
+only to XML configuration files.
+
+* File Inventory
+
+Market data files from =external/ore/examples= that are used as test fixtures:
+
+| File                                            | Type         | Notes                          |
+|-------------------------------------------------+--------------+--------------------------------|
+| =ORE-API/Input/market_20160205.txt=             | Market data  | Most comprehensive; 38 types   |
+| =CurveBuilding/Input/market_20160205.txt=       | Market data  | Extended BASIS_SWAP coverage   |
+| =AmericanMonteCarlo/Input/market.txt=           | Market data  | Smaller; good smoke test       |
+| =Academy/TA001_Equity_Option/Input/marketdata.txt= | Market data | Equity-focused                 |
+| =AmericanMonteCarlo/Input/fixings.txt=          | Fixings      | IBOR/OIS fixings               |
+| =InitialMargin/Input/fixings_20160205.txt=      | Fixings      | Equity fixings (=EQ-= prefix)  |
+| =XvaRisk/Input/fixings_inflation.txt=           | Fixings      | Inflation index fixings        |
+
+* Implementation Plan
+
+** Step 1 — Structs
+
+New headers in =projects/ores.ore/include/ores.ore/market/=:
+
+- =market_datum.hpp= — =market_datum= struct
+- =fixing.hpp= — =fixing= struct
+
+No implementation files needed; structs are value types only.
+
+** Step 2 — Parser
+
+New files:
+
+- =include/ores.ore/market/market_data_parser.hpp=
+- =src/market/market_data_parser.cpp=
+
+Interface:
+
+#+begin_src cpp
+namespace ores::ore::market {
+
+/**
+ * @brief Parses an ORE market data quote file (market*.txt).
+ *
+ * Skips blank lines and comment lines (starting with #).
+ * Accepts both YYYYMMDD and YYYY-MM-DD date formats.
+ */
+std::vector<market_datum>
+parse_market_data(std::istream& in);
+
+/**
+ * @brief Parses an ORE fixings file (fixings*.txt).
+ *
+ * Skips blank lines and comment lines (starting with #).
+ * Accepts both YYYYMMDD and YYYY-MM-DD date formats.
+ */
+std::vector<fixing>
+parse_fixings(std::istream& in);
+
+} // namespace ores::ore::market
+#+end_src
+
+Both functions delegate to a shared internal line tokenizer.  Error handling:
+malformed lines produce a =std::invalid_argument= with the line number and
+offending content in the message.
+
+** Step 3 — Serializer
+
+New files:
+
+- =include/ores.ore/market/market_data_serializer.hpp=
+- =src/market/market_data_serializer.cpp=
+
+Interface:
+
+#+begin_src cpp
+namespace ores::ore::market {
+
+/**
+ * @brief Serializes market data quotes to ORE text format (YYYYMMDD dates).
+ */
+void serialize_market_data(std::ostream& out,
+                           const std::vector<market_datum>& data);
+
+/**
+ * @brief Serializes fixings to ORE text format (YYYY-MM-DD dates).
+ */
+void serialize_fixings(std::ostream& out,
+                       const std::vector<fixing>& fixings);
+
+} // namespace ores::ore::market
+#+end_src
+
+Output format:
+- One entry per line: =DATE<TAB>KEY<TAB>VALUE=
+- Values are written exactly as stored (no reformatting)
+- No comment lines are emitted (comments are not preserved through parse/serialize)
+
+** Step 4 — Round-trip Tests
+
+New test file: =projects/ores.ore/tests/market_roundtrip_tests.cpp=
+
+Test strategy: for each fixture file in the table above:
+
+1. Read the file content from =external/ore/examples/...=
+2. Parse into structs via the parser
+3. Serialize back to a string via the serializer
+4. Compare the entry count and each =date= / =key= / =value= triple against
+   the original parse
+
+The comparison is structural (field-by-field), not byte-identical string diff,
+because:
+- Comment lines are dropped on serialization
+- Column spacing may differ
+
+A separate =market_data_parser_tests.cpp= covers unit-level cases:
+malformed lines, unsupported date formats, comment-only files, empty files.
+
+* Acceptance Criteria
+
+- [ ] All seven fixture files parse without error
+- [ ] Roundtrip test: every datum in the parsed output of =market_20160205.txt=
+  survives serialize → re-parse with identical field values
+- [ ] Roundtrip test: same for each fixings fixture file
+- [ ] Parser rejects lines with fewer than 3 whitespace-delimited tokens with a
+  descriptive error including the line number
+- [ ] Value strings are preserved exactly (=0.0074600000= stays =0.0074600000=)
+- [ ] All tests pass on Linux, macOS, and Windows CI
+
+* Out of Scope (Phase 2)
+
+- Decomposition of quote keys into typed fields (=ZERO/RATE/EUR/...= →
+  =zero_rate_datum= struct with typed =currency=, =day_count=, =tenor= fields)
+- CDM =Observable= / =Price= mapping
+- =ores.marketdata= project, domain types, and NATS messaging
+- Database persistence of market data quotes
+- UI / Qt views for market data

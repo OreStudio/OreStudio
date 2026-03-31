@@ -293,6 +293,9 @@ ORES_TEST_DB_DML_USER="ores_${LABEL_LOWER}_test_dml_user"
 # the write block would read from the already-truncated new file and generate
 # fresh secrets on every run.
 # ---------------------------------------------------------------------------
+_existing_db_host="$(get_existing_val ORES_DB_HOST)"
+ORES_DB_HOST="${_existing_db_host:-localhost}"
+
 echo "Resolving passwords..."
 ORES_DB_DDL_PASSWORD="$(get_or_gen ORES_DB_DDL_PASSWORD)"
 ORES_DB_CLI_PASSWORD="$(get_or_gen ORES_DB_CLI_PASSWORD)"
@@ -374,8 +377,9 @@ ORES_NATS_TLS_KEY=${NATS_TLS_KEY}
 # Database admin (postgres superuser — for recreate_database.sh and psql)
 # ---------------------------------------------------------------------------
 PGPASSWORD=${PGPASSWORD_VAL}
+ORES_DB_HOST=${ORES_DB_HOST}
 ORES_TEST_DB_DATABASE=${DB_NAME}
-ORES_TEST_DB_HOST=localhost
+ORES_TEST_DB_HOST=${ORES_DB_HOST}
 
 # ---------------------------------------------------------------------------
 # Database roles and users (env-prefixed for isolation between environments)

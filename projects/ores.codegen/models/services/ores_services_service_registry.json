@@ -1,0 +1,204 @@
+{
+  "service_registry": {
+    "services": [
+      {
+        "name": "iam",
+        "psql_var": "iam_service",
+        "env_key": "IAM_SERVICE",
+        "iam_role": "IamService",
+        "description": "IAM",
+        "email": "iam_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_iam_"}
+        ],
+        "select_tables": [],
+        "select_prefixes": []
+      },
+      {
+        "name": "refdata",
+        "psql_var": "refdata_service",
+        "env_key": "REFDATA_SERVICE",
+        "iam_role": "RefdataService",
+        "description": "Reference Data",
+        "email": "refdata_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_refdata_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
+        "name": "dq",
+        "psql_var": "dq_service",
+        "env_key": "DQ_SERVICE",
+        "iam_role": "DqService",
+        "description": "Data Quality",
+        "email": "dq_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_dq_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
+        "name": "variability",
+        "psql_var": "variability_service",
+        "env_key": "VARIABILITY_SERVICE",
+        "iam_role": "VariabilityService",
+        "description": "Variability",
+        "email": "variability_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_variability_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
+        "name": "assets",
+        "psql_var": "assets_service",
+        "env_key": "ASSETS_SERVICE",
+        "iam_role": "AssetsService",
+        "description": "Assets",
+        "email": "assets_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_assets_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
+        "name": "scheduler",
+        "psql_var": "scheduler_service",
+        "env_key": "SCHEDULER_SERVICE",
+        "iam_role": "SchedulerService",
+        "description": "Scheduler",
+        "email": "scheduler_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_scheduler_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"},
+          {"table": "ores_dq_change_reasons_tbl"},
+          {"table": "ores_dq_change_reason_categories_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
+        "name": "reporting",
+        "psql_var": "reporting_service",
+        "env_key": "REPORTING_SERVICE",
+        "iam_role": "ReportingService",
+        "description": "Reporting",
+        "email": "reporting_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_reporting_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"},
+          {"table": "ores_dq_change_reasons_tbl"},
+          {"table": "ores_dq_change_reason_categories_tbl"}
+        ],
+        "select_prefixes": [
+          {"prefix": "ores_scheduler_"}
+        ]
+      },
+      {
+        "name": "telemetry",
+        "psql_var": "telemetry_service",
+        "env_key": "TELEMETRY_SERVICE",
+        "iam_role": "TelemetryService",
+        "description": "Telemetry",
+        "email": "telemetry_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_telemetry_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
+        "name": "trading",
+        "psql_var": "trading_service",
+        "env_key": "TRADING_SERVICE",
+        "iam_role": "TradingService",
+        "description": "Trading",
+        "email": "trading_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_trading_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"},
+          {"table": "ores_dq_change_reasons_tbl"},
+          {"table": "ores_dq_change_reason_categories_tbl"}
+        ],
+        "select_prefixes": [
+          {"prefix": "ores_refdata_"}
+        ]
+      },
+      {
+        "name": "compute",
+        "psql_var": "compute_service",
+        "env_key": "COMPUTE_SERVICE",
+        "iam_role": "ComputeService",
+        "description": "Compute Grid",
+        "email": "compute_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_compute_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"},
+          {"table": "ores_refdata_parties_tbl"}
+        ],
+        "select_prefixes": []
+      },
+      {
+        "name": "synthetic",
+        "psql_var": "synthetic_service",
+        "env_key": "SYNTHETIC_SERVICE",
+        "iam_role": "SyntheticService",
+        "description": "Synthetic",
+        "email": "synthetic_service@system.ores",
+        "dml_prefixes": [],
+        "select_tables": [],
+        "select_prefixes": [
+          {"prefix": "ores_iam_"},
+          {"prefix": "ores_refdata_"},
+          {"prefix": "ores_dq_"},
+          {"prefix": "ores_trading_"},
+          {"prefix": "ores_variability_"},
+          {"prefix": "ores_assets_"},
+          {"prefix": "ores_reporting_"},
+          {"prefix": "ores_scheduler_"},
+          {"prefix": "ores_compute_"},
+          {"prefix": "ores_telemetry_"}
+        ]
+      },
+      {
+        "name": "workflow",
+        "psql_var": "workflow_service",
+        "env_key": "WORKFLOW_SERVICE",
+        "iam_role": "WorkflowService",
+        "description": "Workflow Orchestration",
+        "email": "workflow_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_workflow_"},
+          {"prefix": "ores_iam_"},
+          {"prefix": "ores_refdata_parties"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
+      }
+    ]
+  }
+}

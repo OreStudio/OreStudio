@@ -791,14 +791,12 @@ trade equity_instrument_mapper::reverse_equity_barrier_option(
     }
     if (!instr.barrier_type.empty()) {
         barrierData bd;
-        if (instr.barrier_type == "UpAndOut")
-            bd.Type = barrierType::UpAndOut;
-        else if (instr.barrier_type == "UpAndIn")
-            bd.Type = barrierType::UpAndIn;
-        else if (instr.barrier_type == "DownAndOut")
-            bd.Type = barrierType::DownAndOut;
-        else if (instr.barrier_type == "DownAndIn")
-            bd.Type = barrierType::DownAndIn;
+        if (instr.barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
+        else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
+        else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
+        else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
         else
             throw std::runtime_error(
                 "reverse_equity_barrier_option: unrecognized barrier type '"
@@ -1132,6 +1130,8 @@ trade equity_instrument_mapper::reverse_equity_double_barrier_option(
         else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
         else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
         else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
         else
             throw std::runtime_error(
                 "reverse_equity_double_barrier_option: unrecognized barrier type '"
@@ -1172,6 +1172,8 @@ trade equity_instrument_mapper::reverse_equity_european_barrier_option(
         else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
         else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
         else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
         else
             throw std::runtime_error(
                 "reverse_equity_european_barrier_option: unrecognized barrier type '"

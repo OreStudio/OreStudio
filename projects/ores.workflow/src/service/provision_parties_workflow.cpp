@@ -154,7 +154,7 @@ bool provision_parties_workflow::execute(
                 return false;
             }
         }
-        party_obj.status = "Active";
+        party_obj.status = "Inactive"; // wizard fires on first login
         party_obj.change_commentary = "Provisioned by workflow";
         party_obj.recorded_at = std::chrono::system_clock::now();
 

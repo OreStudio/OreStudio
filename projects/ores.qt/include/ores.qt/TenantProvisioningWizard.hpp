@@ -40,11 +40,11 @@ class ClientDatasetBundleModel;
  * @brief Wizard for first-time tenant setup after provisioning.
  *
  * Guides a tenant admin through initial setup:
- * 1. Welcome          - explains the setup process
- * 2. Bundle Selection - choose a reference data bundle to publish
- * 3. Bundle Install   - publish the selected bundle
- * 4. Account Setup    - create the first party admin account
- * 5. Summary          - clear bootstrap flag and show results
+ * 1. Welcome           - explains the setup process
+ * 2. Bundle Selection  - choose a reference data bundle to publish
+ * 3. Bundle Install    - publish the selected bundle
+ * 4. Party Provision   - define parties and provision them via workflow
+ * 5. Summary           - clear bootstrap flag and show results
  *
  * This wizard appears automatically on first login to a tenant that is
  * in bootstrap mode. It clears the bootstrap flag on completion or cancel.
@@ -69,7 +69,7 @@ public:
         Page_Welcome,
         Page_BundleSelection,
         Page_BundleInstall,
-        Page_AccountSetup,
+        Page_PartyProvision,
         Page_Summary
     };
 
@@ -87,6 +87,9 @@ public:
     QString selectedBundleName() const { return selectedBundleName_; }
     void setSelectedBundleName(const QString& name) { selectedBundleName_ = name; }
 
+    /**
+     * @brief Username of the first provisioned party admin (set by PartyProvisionPage).
+     */
     QString newAccountUsername() const { return newAccountUsername_; }
     void setNewAccountUsername(const QString& u) { newAccountUsername_ = u; }
 
@@ -111,7 +114,7 @@ private:
 class ProvisioningWelcomePage;
 class BundleSelectionPage;
 class BundleInstallPage;
-class AccountSetupPage;
+class PartyProvisionPage;
 class TenantApplyAndSummaryPage;
 
 /**
@@ -185,17 +188,19 @@ private:
 };
 
 /**
- * @brief Page for creating the first party admin account.
+ * @brief Page for provisioning the first party and its admin account.
  *
- * The account is created without a party association. The party_setup_mode
- * flag guides this user into the PartyProvisioningWizard on their first login.
+ * Collects party details (name, short code) and account credentials
+ * (username base, password), then calls workflow.v1.parties.provision.
+ * The party is created with status='Inactive' so the PartyProvisioningWizard
+ * fires on the party admin's first login to complete operational setup.
  */
-class AccountSetupPage final : public QWizardPage {
+class PartyProvisionPage final : public QWizardPage {
     Q_OBJECT
 
 private:
     inline static std::string_view logger_name =
-        "ores.qt.account_setup_page";
+        "ores.qt.party_provision_page";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;
@@ -204,7 +209,7 @@ private:
     }
 
 public:
-    explicit AccountSetupPage(TenantProvisioningWizard* wizard);
+    explicit PartyProvisionPage(TenantProvisioningWizard* wizard);
     bool validatePage() override;
     bool isComplete() const override;
 
@@ -212,10 +217,11 @@ private:
     void setupUI();
 
     TenantProvisioningWizard* wizard_;
-    QLineEdit* usernameEdit_;
+    QLineEdit* partyNameEdit_;
+    QLineEdit* shortCodeEdit_;
+    QLineEdit* usernameBaseEdit_;
     QLineEdit* passwordEdit_;
     QLineEdit* confirmPasswordEdit_;
-    QLineEdit* emailEdit_;
     QLabel* statusLabel_;
 };
 

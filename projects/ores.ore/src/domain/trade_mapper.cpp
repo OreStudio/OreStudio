@@ -24,6 +24,7 @@
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
 #include "ores.ore/domain/bond_instrument_mapper.hpp"
+#include "ores.ore/domain/credit_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -128,10 +129,29 @@ trade_mapper::map_bond_instrument(const trade& v) {
     return std::nullopt;
 }
 
+std::optional<credit_mapping_result>
+trade_mapper::map_credit_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "CreditDefaultSwap")
+        return credit_instrument_mapper::forward_cds(v);
+    if (type == "IndexCreditDefaultSwap")
+        return credit_instrument_mapper::forward_index_cds(v);
+    if (type == "IndexCreditDefaultSwapOption")
+        return credit_instrument_mapper::forward_index_cds_option(v);
+    if (type == "CreditLinkedSwap")
+        return credit_instrument_mapper::forward_credit_linked_swap(v);
+    if (type == "SyntheticCDO")
+        return credit_instrument_mapper::forward_synthetic_cdo(v);
+    if (type == "RiskParticipationAgreement")
+        return credit_instrument_mapper::forward_rpa(v);
+    return std::nullopt;
+}
+
 instrument_mapping_result trade_mapper::map_instrument(const trade& v) {
-    if (auto r = map_swap_instrument(v)) return *r;
-    if (auto r = map_fx_instrument(v))   return *r;
-    if (auto r = map_bond_instrument(v)) return *r;
+    if (auto r = map_swap_instrument(v))   return *r;
+    if (auto r = map_fx_instrument(v))     return *r;
+    if (auto r = map_bond_instrument(v))   return *r;
+    if (auto r = map_credit_instrument(v)) return *r;
     return std::monostate{};
 }
 

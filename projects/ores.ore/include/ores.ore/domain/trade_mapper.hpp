@@ -28,6 +28,7 @@
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
 #include "ores.ore/domain/bond_instrument_mapper.hpp"
+#include "ores.ore/domain/credit_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -41,7 +42,8 @@ using instrument_mapping_result = std::variant<
     std::monostate,       ///< unmapped / not yet supported
     swap_mapping_result,
     fx_mapping_result,
-    bond_mapping_result
+    bond_mapping_result,
+    credit_mapping_result
 >;
 
 /**
@@ -105,6 +107,16 @@ public:
      */
     static std::optional<fx_mapping_result>
     map_fx_instrument(const trade& v);
+
+    /**
+     * @brief Dispatches a credit-family trade to credit_instrument_mapper.
+     *
+     * Returns a populated result for CreditDefaultSwap, IndexCreditDefaultSwap,
+     * IndexCreditDefaultSwapOption, CreditLinkedSwap, SyntheticCDO, and
+     * RiskParticipationAgreement. Returns empty for all other types.
+     */
+    static std::optional<credit_mapping_result>
+    map_credit_instrument(const trade& v);
 
     /**
      * @brief Dispatches a bond-family trade to bond_instrument_mapper.

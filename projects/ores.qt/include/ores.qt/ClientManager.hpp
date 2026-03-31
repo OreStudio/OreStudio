@@ -29,6 +29,8 @@
 #include <string>
 #include <filesystem>
 #include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <rfl/json.hpp>
 #include <QObject>
 #include <QTimer>
@@ -352,8 +354,13 @@ public:
             return std::unexpected(std::string("Not logged in"));
         }
         try {
+            const auto cid = boost::uuids::to_string(
+                boost::uuids::random_generator()());
             const auto json_body = rfl::json::write(request);
-            auto msg = session_.authenticated_request(
+            auto scoped = session_
+                .with_correlation_id(cid)
+                .with_session_id(session_id_);
+            auto msg = scoped.authenticated_request(
                 RequestType::nats_subject, json_body, timeout);
             const std::string_view data(
                 reinterpret_cast<const char*>(msg.data.data()),
@@ -501,6 +508,10 @@ private:
     // Current account info (from login)
     std::optional<boost::uuids::uuid> current_account_id_;
     std::string current_email_;
+
+    // Session trace ID generated on login, forwarded on every NATS request
+    // as Nats-Session-Id to group all calls from this login session in logs.
+    std::string session_id_;
 
     // Currently selected party context
     boost::uuids::uuid current_party_id_;

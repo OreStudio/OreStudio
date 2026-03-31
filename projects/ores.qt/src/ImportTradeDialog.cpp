@@ -34,6 +34,7 @@
 #include "ores.ore/xml/importer.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::qt {
 
@@ -579,6 +580,7 @@ void ImportTradeDialog::onImportClicked() {
     // Collect selected trades with per-row widget values
     struct TradeToImport {
         trading::domain::trade trade;
+        ore::domain::instrument_mapping_result instrument;
     };
 
     std::vector<TradeToImport> selected;
@@ -592,8 +594,19 @@ void ImportTradeDialog::onImportClicked() {
 
         TradeToImport tti;
         tti.trade = item.trade;
+        tti.instrument = item.instrument;
 
         tti.trade.id = boost::uuids::random_generator()();
+        // Patch instrument.id to match the new trade UUID.
+        std::visit([&](auto& r) {
+            if constexpr (!std::is_same_v<std::decay_t<decltype(r)>, std::monostate>) {
+                r.instrument.id = tti.trade.id;
+                if constexpr (requires { r.legs; }) {
+                    for (auto& leg : r.legs)
+                        leg.instrument_id = tti.trade.id;
+                }
+            }
+        }, tti.instrument);
         tti.trade.book_id = book_.id;
         tti.trade.portfolio_id = book_.parent_portfolio_id;
         tti.trade.party_id = book_.party_id;
@@ -686,6 +699,47 @@ void ImportTradeDialog::onImportClicked() {
                     }
 
                     if (response_result->success) {
+                        // Persist the instrument data for this trade.
+                        std::visit([&](const auto& r) {
+                            using T = std::decay_t<decltype(r)>;
+                            using namespace ores::trading::messaging;
+                            if constexpr (std::is_same_v<T, std::monostate>) {
+                                // Trade type not yet mapped — skip instrument save.
+                            } else if constexpr (std::is_same_v<T, ore::domain::swap_mapping_result>) {
+                                save_instrument_request req;
+                                req.data = r.instrument;
+                                req.legs = r.legs;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            } else if constexpr (std::is_same_v<T, ore::domain::fx_mapping_result>) {
+                                save_fx_instrument_request req;
+                                req.data = r.instrument;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            } else if constexpr (std::is_same_v<T, ore::domain::bond_mapping_result>) {
+                                save_bond_instrument_request req;
+                                req.data = r.instrument;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            } else if constexpr (std::is_same_v<T, ore::domain::credit_mapping_result>) {
+                                save_credit_instrument_request req;
+                                req.data = r.instrument;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            } else if constexpr (std::is_same_v<T, ore::domain::equity_mapping_result>) {
+                                save_equity_instrument_request req;
+                                req.data = r.instrument;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            } else if constexpr (std::is_same_v<T, ore::domain::commodity_mapping_result>) {
+                                save_commodity_instrument_request req;
+                                req.data = r.instrument;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            } else if constexpr (std::is_same_v<T, ore::domain::composite_mapping_result>) {
+                                save_composite_instrument_request req;
+                                req.data = r.instrument;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            } else if constexpr (std::is_same_v<T, ore::domain::scripted_mapping_result>) {
+                                save_scripted_instrument_request req;
+                                req.data = r.instrument;
+                                self->clientManager_->process_authenticated_request(std::move(req));
+                            }
+                        }, tti.instrument);
                         success_count++;
                         BOOST_LOG_SEV(lg(), debug)
                             << "Successfully imported trade: "

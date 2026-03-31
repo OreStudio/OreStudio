@@ -162,8 +162,7 @@ void ProvisioningWelcomePage::setupUI() {
            "tenant.</li>"
            "<li><b>Party Structure</b> - Set up your organisation's party "
            "hierarchy from the GLEIF LEI registry or from synthetic data.</li>"
-           "<li><b>Organisation Setup</b> - Publish parties, counterparties, "
-           "and organisational structure.</li>"
+           "<li><b>Organisation Setup</b> - Publish the party hierarchy.</li>"
            "</ol>"));
     layout->addWidget(stepsLabel);
 
@@ -444,8 +443,7 @@ TenantDataSourceSelectionPage::TenantDataSourceSelectionPage(
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Choose Data Source"));
-    setSubTitle(tr("Select how to populate parties, counterparties, and "
-                   "organisational structure for your tenant."));
+    setSubTitle(tr("Select how to populate the party hierarchy for your tenant."));
 
     setupUI();
 }
@@ -767,18 +765,14 @@ void TenantPartyOrganisationPage::initializePage() {
         TenantProvisioningWizard::DataSourceMode::synthetic;
 
     if (isSynthetic) {
-        setSubTitle(tr("Generating synthetic parties, counterparties, "
-                       "business units, portfolios, and trading books."));
-        statusLabel_->setText(tr("Generating synthetic organisation data..."));
+        setSubTitle(tr("Generating synthetic party hierarchy."));
+        statusLabel_->setText(tr("Generating synthetic party data..."));
     } else if (!wizard_->rootLei().isEmpty()) {
-        setSubTitle(tr("Publishing GLEIF party hierarchy, business units, "
-                       "portfolios, and trading books for your organisation."));
-        statusLabel_->setText(tr("Publishing organisation data with GLEIF "
-                                 "parties..."));
+        setSubTitle(tr("Publishing GLEIF party hierarchy for your organisation."));
+        statusLabel_->setText(tr("Publishing GLEIF party hierarchy..."));
     } else {
-        setSubTitle(tr("Publishing business units, portfolios, and trading "
-                       "books for your organisation."));
-        statusLabel_->setText(tr("Publishing organisation data..."));
+        setSubTitle(tr("Publishing party hierarchy."));
+        statusLabel_->setText(tr("Publishing party data..."));
     }
 
     startPublish();
@@ -820,7 +814,6 @@ void TenantPartyOrganisationPage::startBundlePublish() {
         const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
         const std::string size = datasetSize.empty() ? "small" : datasetSize;
         leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);
-        leiParams.opted_in_datasets.push_back("gleif.lei_counterparties." + size);
         leiParamsJson = dq::messaging::build_params_json(leiParams);
     }
 
@@ -904,33 +897,12 @@ void TenantPartyOrganisationPage::startBundlePublish() {
                     result.error_message = leiResult->error_message;
                     return result;
                 }
+                result.datasets_succeeded     = leiResult->datasets_succeeded;
+                result.total_records_inserted = leiResult->total_records_inserted;
+                result.total_records_updated  = leiResult->total_records_updated;
             }
 
-            // Step 2: Publish organisation bundle (business units, portfolios, books)
-            dq::messaging::publish_bundle_request orgRequest;
-            orgRequest.bundle_code = "organisation";
-            orgRequest.mode = dq::domain::publication_mode::upsert;
-            orgRequest.published_by = publishedBy;
-            orgRequest.atomic = true;
-
-            auto orgResult = clientManager->process_authenticated_request(
-                std::move(orgRequest), std::chrono::minutes(5));
-
-            if (!orgResult) {
-                result.error_message = "Failed to communicate with server "
-                    "(organisation bundle)";
-                return result;
-            }
-            if (!orgResult->success) {
-                result.error_message = orgResult->error_message;
-                return result;
-            }
-
-            result.datasets_succeeded   = orgResult->datasets_succeeded;
-            result.total_records_inserted = orgResult->total_records_inserted;
-            result.total_records_updated  = orgResult->total_records_updated;
-
-            // Step 3: Associate tenant admin with all Operational parties
+            // Step 2: Associate tenant admin with all Operational parties
             const auto accountId = clientManager->accountId();
             if (!accountId) {
                 // No account ID available - skip linking (non-fatal)
@@ -984,14 +956,9 @@ void TenantPartyOrganisationPage::startBundlePublish() {
     watcher->setFuture(future);
 
     if (hasLei) {
-        appendLog(tr("[1/2] Publishing GLEIF LEI parties and counterparties "
+        appendLog(tr("Publishing GLEIF LEI parties "
                       "(root: %1, dataset: %2)...")
             .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
-        appendLog(tr("[2/2] Publishing organisation structure (business units, "
-                      "portfolios, books)..."));
-    } else {
-        appendLog(tr("Publishing organisation bundle (business units, portfolios, "
-                      "books)..."));
     }
 }
 

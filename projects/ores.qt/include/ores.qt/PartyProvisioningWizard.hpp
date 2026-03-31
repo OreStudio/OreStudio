@@ -107,6 +107,9 @@ public:
 
     ClientManager* clientManager() const { return clientManager_; }
 
+    QString selectedBundleCode() const { return selectedBundleCode_; }
+    void setSelectedBundleCode(const QString& code) { selectedBundleCode_ = code; }
+
     QString rootLei() const { return rootLei_; }
     void setRootLei(const QString& lei) { rootLei_ = lei; }
 
@@ -187,6 +190,7 @@ private:
     void setupPages();
 
     ClientManager* clientManager_;
+    QString selectedBundleCode_ = "base";
     QString rootLei_;
     QString rootLeiName_;
     QString leiDatasetSize_ = "large";

@@ -613,6 +613,7 @@ void PartyOrganisationSetupPage::startBundlePublish() {
     ClientManager* clientManager = wizard_->clientManager();
     const std::string rootLei = wizard_->rootLei().toStdString();
     const bool hasLei = !rootLei.empty();
+    const std::string selectedBundle = wizard_->selectedBundleCode().toStdString();
 
     BOOST_LOG_SEV(lg(), info) << "Publishing organisation data"
                               << (hasLei ? " with root LEI: " : "")
@@ -679,12 +680,13 @@ void PartyOrganisationSetupPage::startBundlePublish() {
     // Run both publishes sequentially on a background thread
     QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
         [clientManager, publishedBy, leiParamsJson,
-         hasLei, rootLei]() -> std::optional<ResponseType> {
+         hasLei, rootLei, selectedBundle]() -> std::optional<ResponseType> {
 
-            // Step 1: Publish LEI parties and counterparties from base bundle
+            // Step 1: Re-publish the selected bundle with root_lei params to
+            // populate LEI parties and counterparties for this party's hierarchy
             if (hasLei) {
                 dq::messaging::publish_bundle_request leiRequest;
-                leiRequest.bundle_code = "standard";
+                leiRequest.bundle_code = selectedBundle;
                 leiRequest.mode = dq::domain::publication_mode::upsert;
                 leiRequest.published_by = publishedBy;
                 leiRequest.atomic = true;

@@ -806,6 +806,7 @@ void TenantPartyOrganisationPage::startBundlePublish() {
     ClientManager* clientManager = wizard_->clientManager();
     const std::string rootLei = wizard_->rootLei().toStdString();
     const bool hasLei = !rootLei.empty();
+    const std::string selectedBundle = wizard_->selectedBundleCode().toStdString();
 
     BOOST_LOG_SEV(lg(), info) << "Publishing organisation data"
                               << (hasLei ? " with root LEI: " : "")
@@ -874,16 +875,18 @@ void TenantPartyOrganisationPage::startBundlePublish() {
 
     QFuture<PublishResult> future = QtConcurrent::run(
         [clientManager, publishedBy, leiParamsJson, hasLei, rootLei,
+         selectedBundle,
          rootLeiName = wizard_->rootLeiName().toStdString(),
          leiDatasetSize = wizard_->leiDatasetSize().toStdString()]()
             -> PublishResult {
 
             PublishResult result;
 
-            // Step 1: Publish LEI parties and counterparties from base bundle
+            // Step 1: Re-publish the selected bundle with root_lei params to
+            // filter GLEIF party data to the chosen hierarchy
             if (hasLei) {
                 dq::messaging::publish_bundle_request leiRequest;
-                leiRequest.bundle_code = "standard";
+                leiRequest.bundle_code = selectedBundle;
                 leiRequest.mode = dq::domain::publication_mode::upsert;
                 leiRequest.published_by = publishedBy;
                 leiRequest.atomic = true;

@@ -318,11 +318,12 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
 TEST_CASE("import_portfolio_with_context_unmapped_type_is_monostate", tags) {
     auto lg(make_logger(test_suite));
 
-    // A scripted trade should currently produce monostate (not yet mapped).
-    const auto f = example_path("Scripted_BasketOption.xml");
+    // Ascot is not yet mapped, so it should produce monostate.
+    const auto f = example_path("Cash_Ascot.xml");
     const auto items = importer::import_portfolio_with_context(f);
     REQUIRE(!items.empty());
 
+    // The first trade in Cash_Ascot.xml is an Ascot — not yet mapped.
     const auto& item = items.front();
     INFO("Trade type: " << item.trade.trade_type);
     CHECK(std::holds_alternative<std::monostate>(item.instrument));

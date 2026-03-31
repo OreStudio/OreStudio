@@ -66,6 +66,7 @@ target_link_libraries(${lib_target_name}
         ores.synthetic.api.lib
         ores.assets.api.lib
         ores.iam.api.lib
+        ores.workflow.lib
         ores.connections.lib
         ores.eventing.lib
         ores.variability.api.lib

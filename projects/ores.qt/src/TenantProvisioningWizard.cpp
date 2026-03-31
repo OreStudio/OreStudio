@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/TenantProvisioningWizard.hpp"
+#include <cctype>
 #include "ores.qt/ClientDatasetBundleModel.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -31,9 +32,9 @@
 #include <QFutureWatcher>
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
-#include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
+#include "ores.workflow/messaging/workflow_protocol.hpp"
 
 namespace ores::qt {
 
@@ -74,7 +75,7 @@ void TenantProvisioningWizard::setupPages() {
     setPage(Page_Welcome, new ProvisioningWelcomePage(this));
     setPage(Page_BundleSelection, new BundleSelectionPage(this));
     setPage(Page_BundleInstall, new BundleInstallPage(this));
-    setPage(Page_AccountSetup, new AccountSetupPage(this));
+    setPage(Page_PartyProvision, new PartyProvisionPage(this));
     setPage(Page_Summary, new TenantApplyAndSummaryPage(this));
 
     setStartId(Page_Welcome);
@@ -423,29 +424,31 @@ void BundleInstallPage::startPublish() {
 }
 
 // ============================================================================
-// AccountSetupPage
+// PartyProvisionPage
 // ============================================================================
 
-AccountSetupPage::AccountSetupPage(TenantProvisioningWizard* wizard)
+PartyProvisionPage::PartyProvisionPage(TenantProvisioningWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Create Party Admin Account"));
-    setSubTitle(tr("Create the first operational account for this tenant. "
-                   "This account will complete party setup on first login."));
-
+    setTitle(tr("Provision Party and Admin Account"));
+    setSubTitle(tr("Define the first operational party and its administrator account. "
+                   "The party admin will complete operational setup on first login."));
     setupUI();
 }
 
-void AccountSetupPage::setupUI() {
+void PartyProvisionPage::setupUI() {
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(10);
 
     auto* infoLabel = new QLabel(
-        tr("This account will be the first party administrator. "
-           "After this wizard completes, log in with these credentials "
-           "to run the party setup wizard."),
+        tr("Enter the details for the root operational party. "
+           "An administrator account will be created with the username "
+           "<em>username_base</em>_<em>short_code</em> (e.g. "
+           "<code>party_admin_acmecorp</code>). "
+           "Log in with those credentials to complete party-level setup."),
         this);
     infoLabel->setWordWrap(true);
+    infoLabel->setTextFormat(Qt::RichText);
     layout->addWidget(infoLabel);
 
     layout->addSpacing(8);
@@ -454,25 +457,34 @@ void AccountSetupPage::setupUI() {
     auto* labelCol = new QVBoxLayout();
     auto* fieldCol = new QVBoxLayout();
 
-    labelCol->addWidget(new QLabel(tr("Username:"), this));
+    labelCol->addWidget(new QLabel(tr("Party Name:"), this));
+    labelCol->addWidget(new QLabel(tr("Short Code:"), this));
+    labelCol->addWidget(new QLabel(tr("Username Base:"), this));
     labelCol->addWidget(new QLabel(tr("Password:"), this));
     labelCol->addWidget(new QLabel(tr("Confirm Password:"), this));
-    labelCol->addWidget(new QLabel(tr("Email:"), this));
     labelCol->addStretch();
 
-    usernameEdit_ = new QLineEdit(this);
-    usernameEdit_->setPlaceholderText(tr("e.g. party_admin"));
+    partyNameEdit_ = new QLineEdit(this);
+    partyNameEdit_->setPlaceholderText(tr("e.g. Acme Corporation"));
+
+    shortCodeEdit_ = new QLineEdit(this);
+    shortCodeEdit_->setPlaceholderText(tr("e.g. acmecorp"));
+
+    usernameBaseEdit_ = new QLineEdit(this);
+    usernameBaseEdit_->setPlaceholderText(tr("e.g. party_admin"));
+    usernameBaseEdit_->setText(tr("party_admin"));
+
     passwordEdit_ = new QLineEdit(this);
     passwordEdit_->setEchoMode(QLineEdit::Password);
+
     confirmPasswordEdit_ = new QLineEdit(this);
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
-    emailEdit_ = new QLineEdit(this);
-    emailEdit_->setPlaceholderText(tr("e.g. admin@example.com"));
 
-    fieldCol->addWidget(usernameEdit_);
+    fieldCol->addWidget(partyNameEdit_);
+    fieldCol->addWidget(shortCodeEdit_);
+    fieldCol->addWidget(usernameBaseEdit_);
     fieldCol->addWidget(passwordEdit_);
     fieldCol->addWidget(confirmPasswordEdit_);
-    fieldCol->addWidget(emailEdit_);
     fieldCol->addStretch();
 
     formLayout->addLayout(labelCol);
@@ -485,62 +497,80 @@ void AccountSetupPage::setupUI() {
     statusLabel_->setWordWrap(true);
     layout->addWidget(statusLabel_);
 
-    connect(usernameEdit_, &QLineEdit::textChanged,
-            this, &AccountSetupPage::completeChanged);
-    connect(passwordEdit_, &QLineEdit::textChanged,
-            this, &AccountSetupPage::completeChanged);
-    connect(confirmPasswordEdit_, &QLineEdit::textChanged,
-            this, &AccountSetupPage::completeChanged);
+    auto notify = [this]() { emit completeChanged(); };
+    connect(partyNameEdit_,     &QLineEdit::textChanged, this, notify);
+    connect(shortCodeEdit_,     &QLineEdit::textChanged, this, notify);
+    connect(usernameBaseEdit_,  &QLineEdit::textChanged, this, notify);
+    connect(passwordEdit_,      &QLineEdit::textChanged, this, notify);
+    connect(confirmPasswordEdit_,&QLineEdit::textChanged, this, notify);
 }
 
-bool AccountSetupPage::isComplete() const {
-    return !usernameEdit_->text().trimmed().isEmpty()
+bool PartyProvisionPage::isComplete() const {
+    return !partyNameEdit_->text().trimmed().isEmpty()
+        && !shortCodeEdit_->text().trimmed().isEmpty()
+        && !usernameBaseEdit_->text().trimmed().isEmpty()
         && !passwordEdit_->text().isEmpty()
         && passwordEdit_->text() == confirmPasswordEdit_->text();
 }
 
-bool AccountSetupPage::validatePage() {
-    const std::string username = usernameEdit_->text().trimmed().toStdString();
-    const std::string password = passwordEdit_->text().toStdString();
-    const std::string email = emailEdit_->text().trimmed().toStdString();
-
+bool PartyProvisionPage::validatePage() {
     if (passwordEdit_->text() != confirmPasswordEdit_->text()) {
         statusLabel_->setText(tr("Passwords do not match."));
         return false;
     }
 
-    statusLabel_->setText(tr("Creating account..."));
-    ClientManager* clientManager = wizard_->clientManager();
+    const auto partyName = partyNameEdit_->text().trimmed().toStdString();
+    const auto shortCode = shortCodeEdit_->text().trimmed().toStdString();
+    const auto usernameBase = usernameBaseEdit_->text().trimmed().toStdString();
+    const auto password = passwordEdit_->text().toStdString();
 
-    iam::messaging::save_account_request request;
-    request.principal = username;
-    request.password = password;
-    request.email = email;
-    request.totp_secret = "";
+    // Derive principal: username_base + "_" + lowercase(short_code).
+    // Non-alphanumeric characters (including spaces) are replaced with '_'
+    // to produce a valid POSIX username component.
+    std::string principal = usernameBase + "_";
+    for (char c : shortCode) {
+        const char lc = static_cast<char>(
+            std::tolower(static_cast<unsigned char>(c)));
+        principal += (std::isalnum(static_cast<unsigned char>(lc)) ? lc : '_');
+    }
 
-    auto response = clientManager->process_authenticated_request(
+    statusLabel_->setText(tr("Provisioning party and account..."));
+
+    workflow::messaging::provision_party_input input;
+    input.full_name = partyName;
+    input.short_code = shortCode;
+    input.party_category = "Operational";
+    input.party_type = "Internal";
+    input.business_center_code = "";
+    input.principal = principal;
+    input.password = password;
+    input.totp_secret = "";
+    input.email = "";
+    input.account_type = "standard";
+
+    workflow::messaging::provision_parties_request request;
+    request.parties.push_back(std::move(input));
+
+    auto response = wizard_->clientManager()->process_authenticated_request(
         std::move(request));
 
     if (!response) {
-        statusLabel_->setText(tr("Failed to communicate with server."));
-        BOOST_LOG_SEV(lg(), error) << "Account creation: no server response";
+        statusLabel_->setText(tr("Failed to communicate with workflow service."));
+        BOOST_LOG_SEV(lg(), error) << "provision_parties: no server response";
         return false;
     }
 
     if (!response->success) {
-        statusLabel_->setText(
-            tr("Failed to create account: %1")
-                .arg(QString::fromStdString(response->message)));
-        BOOST_LOG_SEV(lg(), error) << "Account creation failed: "
-                                   << response->message;
+        const auto msg = QString::fromStdString(response->message);
+        statusLabel_->setText(tr("Provisioning failed: %1").arg(msg));
+        BOOST_LOG_SEV(lg(), error) << "provision_parties failed: " << response->message;
         return false;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Account created: " << username
-                              << " (id: " << response->account_id << ")";
-    statusLabel_->setText(tr("Account created successfully."));
-    wizard_->setNewAccountUsername(
-        QString::fromStdString(username));
+    BOOST_LOG_SEV(lg(), info) << "Party provisioned: " << partyName
+                              << " account: " << principal;
+    statusLabel_->setText(tr("Party and account provisioned successfully."));
+    wizard_->setNewAccountUsername(QString::fromStdString(principal));
     return true;
 }
 

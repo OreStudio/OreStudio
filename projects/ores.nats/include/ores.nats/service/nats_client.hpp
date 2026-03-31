@@ -197,6 +197,18 @@ public:
     [[nodiscard]] nats_client with_delegation(std::string token) const;
 
     /**
+     * @brief Returns a new nats_client that forwards a Nats-Correlation-Id
+     * header on every authenticated_request call.
+     *
+     * Call at handler entry after extract_or_generate_correlation_id() to
+     * thread the trace key through all downstream NATS calls made during
+     * that handler invocation.
+     *
+     * Thread-safe: the returned value is independent of *this.
+     */
+    [[nodiscard]] nats_client with_correlation_id(std::string cid) const;
+
+    /**
      * @brief Return the underlying client (interactive path only).
      *
      * Returns nullptr if constructed via the service path.
@@ -219,6 +231,9 @@ private:
 
     // Optional delegation token forwarded as X-Delegated-Authorization.
     std::string delegation_token_;
+
+    // Optional correlation ID forwarded as Nats-Correlation-Id.
+    std::string correlation_id_;
 };
 
 /**

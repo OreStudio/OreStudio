@@ -79,6 +79,13 @@ struct provision_parties_response {
     std::string message;
     std::vector<std::string> party_ids;
     std::vector<std::string> account_ids;
+    /**
+     * @brief Correlation ID echoed back for client-side logging and support.
+     *
+     * Set to the Nats-Correlation-Id header value from the inbound request
+     * (or a freshly generated UUID if the caller did not provide one).
+     */
+    std::string correlation_id;
 };
 
 }

@@ -670,8 +670,11 @@ public:
                     << "Failed to look up tenant name during "
                        "party selection: " << e.what();
             }
-            if (const auto p = acct_lookup_party(ctx, requested_party_id))
+            bool party_setup_required = false;
+            if (const auto p = acct_lookup_party(ctx, requested_party_id)) {
                 p_name = p->full_name;
+                party_setup_required = p->status == "Inactive";
+            }
 
             BOOST_LOG_SEV(account_handler_lg(), debug)
                 << "Completed " << msg.subject;
@@ -681,7 +684,8 @@ public:
                 .token = new_token,
                 .username = claims_result->username.value_or(""),
                 .tenant_name = t_name,
-                .party_name = p_name
+                .party_name = p_name,
+                .party_setup_required = party_setup_required
             });
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(account_handler_lg(), error)

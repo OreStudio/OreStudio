@@ -107,9 +107,11 @@ domain::workflow_step make_step(const boost::uuids::uuid& workflow_id,
 
 provision_parties_workflow::provision_parties_workflow(
     boost::uuids::uuid workflow_id,
-    messaging::provision_parties_request request)
+    messaging::provision_parties_request request,
+    std::string correlation_id)
     : workflow_id_(workflow_id)
-    , request_(std::move(request)) {
+    , request_(std::move(request))
+    , correlation_id_(std::move(correlation_id)) {
     party_states_.resize(request_.parties.size());
     // Pre-generate a UUID for each party so step 0 and step 2 can agree.
     boost::uuids::random_generator gen;
@@ -152,7 +154,7 @@ bool provision_parties_workflow::execute(
                 return false;
             }
         }
-        party_obj.status = "Active";
+        party_obj.status = "Inactive"; // wizard fires on first login
         party_obj.change_commentary = "Provisioned by workflow";
         party_obj.recorded_at = std::chrono::system_clock::now();
 
@@ -238,6 +240,7 @@ bool provision_parties_workflow::execute(
     // Populate result
     result_.success = true;
     result_.message = "All parties provisioned successfully.";
+    result_.correlation_id = correlation_id_;
     for (const auto& s : party_states_) {
         result_.party_ids.push_back(boost::uuids::to_string(s.party_id));
         result_.account_ids.push_back(s.account_id);

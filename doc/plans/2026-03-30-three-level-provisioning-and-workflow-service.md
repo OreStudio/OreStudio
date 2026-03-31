@@ -2,9 +2,9 @@
 
 ## Status
 
-- Phase 1 (tenant/party wizard split): **In progress** — see PR feature/service-rbac-step2f
-- Phase 2 (per-party status trigger, Qt wizard updates): **Planned** — blocked on Phase 3
-- Phase 3 (`ores.workflow` orchestration service): **Planned** — start here (SQL → component → executor → IAM cleanup → correlation IDs → Qt)
+- Phase 1 (tenant/party wizard split): **Complete** — merged PR #582
+- Phase 2 (per-party status trigger, Qt wizard updates): **In progress** — step 4 (IAM backend cleanup) in progress
+- Phase 3 (`ores.workflow` orchestration service): **Complete** — merged PR #611 (SQL), #614 (executor)
 
 ---
 

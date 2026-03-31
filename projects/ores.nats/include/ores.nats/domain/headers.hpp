@@ -38,6 +38,12 @@ inline constexpr std::string_view bearer_prefix           = "Bearer ";
 /// Server-sent error code header (e.g. "token_expired").
 inline constexpr std::string_view x_error                 = "X-Error";
 
+/// Application-level distributed trace key.
+/// Generated once at the entry point of a top-level request and forwarded
+/// on every downstream NATS call until the final response is returned.
+/// Distinct from the NATS-level Nats-Msg-Id used by JetStream deduplication.
+inline constexpr std::string_view nats_correlation_id     = "Nats-Correlation-Id";
+
 } // namespace ores::nats::headers
 
 #endif

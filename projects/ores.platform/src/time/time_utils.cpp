@@ -17,7 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include <charconv>
 #include <filesystem>
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include "ores.platform/time/time_utils.hpp"
 
 namespace ores::platform::time {
@@ -63,6 +68,53 @@ std::chrono::system_clock::time_point time_utils::to_time_point_utc(std::tm tm) 
 std::chrono::system_clock::time_point time_utils::to_time_point_local(std::tm tm) {
     tm.tm_isdst = -1; // let mktime determine DST from the date/time fields
     return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
+std::chrono::year_month_day time_utils::parse_date(std::string_view s) {
+    auto parse_field = [](std::string_view sv, int& out) -> bool {
+        const auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), out);
+        return ec == std::errc{} && ptr == sv.data() + sv.size();
+    };
+
+    int y = 0, m = 0, d = 0;
+
+    if (s.size() == 8) {
+        // YYYYMMDD
+        if (!parse_field(s.substr(0, 4), y) ||
+            !parse_field(s.substr(4, 2), m) ||
+            !parse_field(s.substr(6, 2), d))
+            throw std::invalid_argument("invalid date: " + std::string(s));
+    } else if (s.size() == 10 && s[4] == '-' && s[7] == '-') {
+        // YYYY-MM-DD
+        if (!parse_field(s.substr(0, 4), y) ||
+            !parse_field(s.substr(5, 2), m) ||
+            !parse_field(s.substr(8, 2), d))
+            throw std::invalid_argument("invalid date: " + std::string(s));
+    } else {
+        throw std::invalid_argument("unrecognised date format: " + std::string(s));
+    }
+
+    const std::chrono::year_month_day ymd{
+        std::chrono::year{y},
+        std::chrono::month{static_cast<unsigned>(m)},
+        std::chrono::day{static_cast<unsigned>(d)}};
+    if (!ymd.ok())
+        throw std::invalid_argument("invalid date: " + std::string(s));
+    return ymd;
+}
+
+std::string time_utils::format_date_compact(std::chrono::year_month_day date) {
+    return std::format("{:04d}{:02d}{:02d}",
+        static_cast<int>(date.year()),
+        static_cast<unsigned>(date.month()),
+        static_cast<unsigned>(date.day()));
+}
+
+std::string time_utils::format_date_iso(std::chrono::year_month_day date) {
+    return std::format("{:04d}-{:02d}-{:02d}",
+        static_cast<int>(date.year()),
+        static_cast<unsigned>(date.month()),
+        static_cast<unsigned>(date.day()));
 }
 
 std::chrono::system_clock::time_point

@@ -19,23 +19,26 @@
  */
 #include "ores.ore/market/market_data_serializer.hpp"
 
-#include <chrono>
-#include <format>
 #include <ostream>
 #include <vector>
+#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::ore::market {
 
 void serialize_market_data(std::ostream& out,
                            const std::vector<market_datum>& data) {
-    for (const auto& d : data)
-        out << std::format("{:%Y%m%d}", d.date) << '\t' << d.key << '\t' << d.value << '\n';
+    for (const auto& d : data) {
+        out << ores::platform::time::time_utils::format_date_compact(d.date)
+            << '\t' << d.key << '\t' << d.value << '\n';
+    }
 }
 
 void serialize_fixings(std::ostream& out,
                        const std::vector<fixing>& fixings) {
-    for (const auto& f : fixings)
-        out << std::format("{:%F}", f.date) << '\t' << f.index_name << '\t' << f.value << '\n';
+    for (const auto& f : fixings) {
+        out << ores::platform::time::time_utils::format_date_iso(f.date)
+            << '\t' << f.index_name << '\t' << f.value << '\n';
+    }
 }
 
 } // namespace ores::ore::market

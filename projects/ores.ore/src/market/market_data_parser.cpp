@@ -19,60 +19,16 @@
  */
 #include "ores.ore/market/market_data_parser.hpp"
 
-#include <charconv>
-#include <chrono>
 #include <istream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
+#include "ores.platform/time/time_utils.hpp"
 
 namespace ores::ore::market {
 
 namespace {
-
-/**
- * @brief Parses a date string in either YYYYMMDD or YYYY-MM-DD format.
- *
- * Uses std::from_chars for allocation-free, locale-independent parsing.
- *
- * @param s The date string to parse.
- * @return The corresponding year_month_day.
- * @throws std::invalid_argument if the format is unrecognised or the date
- *         fields cannot be converted.
- */
-std::chrono::year_month_day parse_date(std::string_view s) {
-    auto parse_int = [](std::string_view sv, int& out) -> bool {
-        const auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), out);
-        return ec == std::errc{} && ptr == sv.data() + sv.size();
-    };
-
-    int y = 0, m = 0, d = 0;
-
-    if (s.size() == 8) {
-        // YYYYMMDD
-        if (!parse_int(s.substr(0, 4), y) ||
-            !parse_int(s.substr(4, 2), m) ||
-            !parse_int(s.substr(6, 2), d))
-            throw std::invalid_argument("invalid date: " + std::string(s));
-    } else if (s.size() == 10 && s[4] == '-' && s[7] == '-') {
-        // YYYY-MM-DD
-        if (!parse_int(s.substr(0, 4), y) ||
-            !parse_int(s.substr(5, 2), m) ||
-            !parse_int(s.substr(8, 2), d))
-            throw std::invalid_argument("invalid date: " + std::string(s));
-    } else {
-        throw std::invalid_argument("unrecognised date format: " + std::string(s));
-    }
-
-    const std::chrono::year_month_day ymd{
-        std::chrono::year{y},
-        std::chrono::month{static_cast<unsigned>(m)},
-        std::chrono::day{static_cast<unsigned>(d)}};
-    if (!ymd.ok())
-        throw std::invalid_argument("invalid date: " + std::string(s));
-    return ymd;
-}
 
 /**
  * @brief Tokenizes a data line into exactly three fields.
@@ -144,7 +100,7 @@ std::vector<market_datum> parse_market_data(std::istream& in) {
         try {
             const auto [date_str, key_str, val_str] = tokenize(sv);
             market_datum datum;
-            datum.date  = parse_date(date_str);
+            datum.date  = ores::platform::time::time_utils::parse_date(date_str);
             datum.key   = std::string(key_str);
             datum.value = std::string(val_str);
             result.push_back(std::move(datum));
@@ -179,7 +135,7 @@ std::vector<fixing> parse_fixings(std::istream& in) {
         try {
             const auto [date_str, idx_str, val_str] = tokenize(sv);
             fixing f;
-            f.date       = parse_date(date_str);
+            f.date       = ores::platform::time::time_utils::parse_date(date_str);
             f.index_name = std::string(idx_str);
             f.value      = std::string(val_str);
             result.push_back(std::move(f));

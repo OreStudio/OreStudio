@@ -135,6 +135,7 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -v telemetry_service_user="${ORES_TELEMETRY_SERVICE_DB_USER:-}" \
     -v trading_service_user="${ORES_TRADING_SERVICE_DB_USER:-}" \
     -v compute_service_user="${ORES_COMPUTE_SERVICE_DB_USER:-}" \
+    -v workflow_service_user="${ORES_WORKFLOW_SERVICE_DB_USER:-}" \
     -f "${SCRIPT_DIR}/setup_schema.sql"
 
 # Phase 3: Insert database metadata (schema version, build info, git info)

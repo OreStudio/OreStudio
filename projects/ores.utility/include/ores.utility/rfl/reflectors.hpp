@@ -161,6 +161,31 @@ struct Reflector<std::chrono::system_clock::time_point> {
 };
 
 /**
+ * @brief Custom reflector for std::chrono::year_month_day.
+ *
+ * Serializes to and from an ISO 8601 date string ("YYYY-MM-DD").
+ */
+template<>
+struct Reflector<std::chrono::year_month_day> {
+    using ReflType = std::string;
+
+    static std::chrono::year_month_day to(const ReflType& str) {
+        int y{}, m{}, d{};
+        char sep1{}, sep2{};
+        std::istringstream ss(str);
+        ss >> y >> sep1 >> m >> sep2 >> d;
+        if (!ss) throw std::runtime_error("Invalid date: " + str);
+        return std::chrono::year{y} /
+               std::chrono::month{static_cast<unsigned>(m)} /
+               std::chrono::day{static_cast<unsigned>(d)};
+    }
+
+    static ReflType from(const std::chrono::year_month_day& v) {
+        return std::format("{:%Y-%m-%d}", v);
+    }
+};
+
+/**
  * @brief Custom reflector for boost::asio::ip::address.
  *
  * Serializes IP address as string representation (supports both IPv4 and IPv6).

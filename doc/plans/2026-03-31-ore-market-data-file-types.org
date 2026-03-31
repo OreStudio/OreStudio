@@ -23,10 +23,13 @@ whitespace-delimited three-column line structure:
 DATE  KEY  VALUE
 #+end_example
 
-| File pattern         | Date format  | Key semantics               |
-|----------------------+--------------+-----------------------------|
-| =market*.txt=        | =YYYYMMDD=   | Instrument quote key        |
-| =fixings*.txt=       | =YYYY-MM-DD= | Index name                  |
+| File pattern         | Date formats           | Key semantics               |
+|----------------------+------------------------+-----------------------------|
+| =market*.txt=        | =YYYYMMDD= or =YYYY-MM-DD= | Instrument quote key    |
+| =fixings*.txt=       | =YYYYMMDD= or =YYYY-MM-DD= | Index name              |
+
+Both file types appear in both date formats in the ORE example library.
+The parser auto-detects the date format per line.
 
 Comment lines begin with =#= and blank lines are silently skipped by ORE.
 Both conventions must be preserved on serialization.
@@ -109,17 +112,67 @@ only to XML configuration files.
 
 * File Inventory
 
-Market data files from =external/ore/examples= that are used as test fixtures:
+A content-deduplication pass across all =external/ore/examples= identifies
+*52 unique market data text files* (many example directories share identical
+file content).  All 52 must parse without error.  The roundtrip test suite
+runs each unique file through parse → serialize → re-parse and asserts
+field-by-field equivalence.
 
-| File                                            | Type         | Notes                          |
-|-------------------------------------------------+--------------+--------------------------------|
-| =ORE-API/Input/market_20160205.txt=             | Market data  | Most comprehensive; 38 types   |
-| =CurveBuilding/Input/market_20160205.txt=       | Market data  | Extended BASIS_SWAP coverage   |
-| =AmericanMonteCarlo/Input/market.txt=           | Market data  | Smaller; good smoke test       |
-| =Academy/TA001_Equity_Option/Input/marketdata.txt= | Market data | Equity-focused                 |
-| =AmericanMonteCarlo/Input/fixings.txt=          | Fixings      | IBOR/OIS fixings               |
-| =InitialMargin/Input/fixings_20160205.txt=      | Fixings      | Equity fixings (=EQ-= prefix)  |
-| =XvaRisk/Input/fixings_inflation.txt=           | Fixings      | Inflation index fixings        |
+** Unique market data files (38 files)
+
+| Date fmt     | Path (relative to =examples/=)                              |
+|--------------+-------------------------------------------------------------|
+| =YYYYMMDD=   | =Input/market_20160205.txt=                                 |
+| =YYYYMMDD=   | =Input/market_20160205_flat.txt=                            |
+| =YYYYMMDD=   | =CurveBuilding/Input/market_20160205.txt=                   |
+| =YYYYMMDD=   | =Legacy/Example_19/Input/market_20160205_smile.txt=         |
+| =YYYYMMDD=   | =AmericanMonteCarlo/Input/market_20160205_flat_fixed_fxfwd.txt= |
+| =YYYYMMDD=   | =Exposure/Input/market_flipview.txt=                        |
+| =YYYYMMDD=   | =InitialMargin/Input/Simm/simm_market.txt=                  |
+| =YYYYMMDD=   | =Legacy/Example_56/Input/market.txt=                        |
+| =YYYYMMDD=   | =Academy/TA002_IR_Swap/Input/market.txt=                    |
+| =YYYYMMDD=   | =ORE-Python/Notebooks/Example_2/Input/market.txt=           |
+| =YYYYMMDD=   | =ORE-Python/Notebooks/Example_3/Input/market.txt=           |
+| =YYYYMMDD=   | =ORE-Python/Notebooks/Example_6/Input/market.txt=           |
+| =YYYYMMDD=   | =ORE-Python/Notebooks/Example_7/Input/market.txt=           |
+| =YYYYMMDD=   | =ORE-Python/Notebooks/Example_9/Input/market_20160205.txt=  |
+| =YYYYMMDD=   | =ORE-Python/Notebooks/Example_9/Input/market_20160205_flat.txt= |
+| =YYYYMMDD=   | =XvaRisk/Input/market_20160205_eonia_200bp_up.txt=          |
+| =YYYYMMDD=   | =XvaRisk/Input/market_20160205_eur6m_200bp_up.txt=          |
+| =YYYY-MM-DD= | =AmericanMonteCarlo/Input/market.txt=                       |
+| =YYYY-MM-DD= | =Academy/FC003_Reporting_Currency/Input/marketdata.txt=     |
+| =YYYY-MM-DD= | =Academy/TA001_Equity_Option/Input/marketdata.txt=          |
+| =YYYY-MM-DD= | =Exposure/Input/market_inflation.txt=                       |
+| =YYYY-MM-DD= | =Legacy/Example_45/Input/market.txt=                        |
+| =YYYY-MM-DD= | =Legacy/Example_46/Input/market.txt=                        |
+| =YYYY-MM-DD= | =Legacy/Example_47/Input/market.txt=                        |
+| =YYYY-MM-DD= | =Legacy/Example_48/Input/market.txt=                        |
+| =YYYY-MM-DD= | =Legacy/Example_55/Input/market.txt=                        |
+| =YYYY-MM-DD= | =Legacy/Example_73/Input/market.txt=                        |
+| =YYYY-MM-DD= | =MarketRisk/Input/Curvealgebra/market.txt=                  |
+| =YYYY-MM-DD= | =MarketRisk/Input/HistSimVar/market.txt=                    |
+| =YYYY-MM-DD= | =MarketRisk/Input/Pnl/market.txt=                           |
+| =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_5/Input/market.txt=           |
+| =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_8/Input/Example_62/market.txt= |
+
+** Unique fixings files (14 files)
+
+| Date fmt     | Path (relative to =examples/=)                              |
+|--------------+-------------------------------------------------------------|
+| =YYYYMMDD=   | =Legacy/Example_54/Input/fixings_20160205.txt=              |
+| =YYYYMMDD=   | =ORE-Python/Notebooks/Example_9/Input/fixings_20160205.txt= |
+| =YYYY-MM-DD= | =Input/fixings_20160205.txt=                                |
+| =YYYY-MM-DD= | =AmericanMonteCarlo/Input/fixings.txt=                      |
+| =YYYY-MM-DD= | =Exposure/Input/fixings_inflation.txt=                      |
+| =YYYY-MM-DD= | =Legacy/Example_45/Input/fixings.txt=                       |
+| =YYYY-MM-DD= | =Legacy/Example_46/Input/fixings.txt=                       |
+| =YYYY-MM-DD= | =Legacy/Example_47/Input/fixings.txt=                       |
+| =YYYY-MM-DD= | =Legacy/Example_48/Input/fixings.txt=                       |
+| =YYYY-MM-DD= | =MarketRisk/Input/HistSimVar/fixings.txt=                   |
+| =YYYY-MM-DD= | =MarketRisk/Input/Pnl/fixings.txt=                          |
+| =YYYY-MM-DD= | =ORE-API/Input/fixings_20160205.txt=                        |
+| =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_3/Input/fixings.txt=          |
+| =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_5/Input/fixings.txt=          |
 
 * Implementation Plan
 

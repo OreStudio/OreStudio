@@ -21,6 +21,7 @@
 #define ORES_TRADING_MESSAGING_INSTRUMENT_PROTOCOL_HPP
 
 #include <string>
+#include <variant>
 #include <vector>
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/swap_leg.hpp"
@@ -493,6 +494,64 @@ struct get_scripted_instrument_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::scripted_instrument> history;
+};
+
+// ---- Instrument-for-trade fetch ----
+
+/**
+ * @brief Swap instrument with its legs, used in export/fetch results.
+ */
+struct swap_export_result {
+    ores::trading::domain::instrument instrument;
+    std::vector<ores::trading::domain::swap_leg> legs;
+};
+
+/**
+ * @brief Composite instrument with its constituent legs.
+ */
+struct composite_export_result {
+    ores::trading::domain::composite_instrument instrument;
+    std::vector<ores::trading::domain::composite_leg> legs;
+};
+
+/**
+ * @brief Discriminated union of all possible instrument representations.
+ *
+ * std::monostate indicates the trade has no linked instrument (or the family
+ * is not recognised). Used in get_instrument_for_trade_response and
+ * export_portfolio_response.
+ */
+using instrument_export_result = std::variant<
+    std::monostate,
+    swap_export_result,
+    ores::trading::domain::fx_instrument,
+    ores::trading::domain::bond_instrument,
+    ores::trading::domain::credit_instrument,
+    ores::trading::domain::equity_instrument,
+    ores::trading::domain::commodity_instrument,
+    composite_export_result,
+    ores::trading::domain::scripted_instrument
+>;
+
+/**
+ * @brief Fetch the instrument linked to a specific trade.
+ *
+ * The caller supplies instrument_family and instrument_id taken directly from
+ * the trade record. The server routes to the correct extension table and
+ * returns the populated instrument_export_result variant.
+ */
+struct get_instrument_for_trade_request {
+    using response_type = struct get_instrument_for_trade_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.trades.instrument.get";
+    std::string instrument_family;
+    std::string instrument_id;
+};
+
+struct get_instrument_for_trade_response {
+    bool success = false;
+    std::string message;
+    instrument_export_result instrument;
 };
 
 }

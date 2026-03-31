@@ -254,6 +254,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.list_legs(std::move(msg));
         }));
 
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_instrument_for_trade_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_handler h(nats, ctx, verifier);
+            h.get_instrument_for_trade(std::move(msg));
+        }));
+
     // FX instruments
     subs.push_back(nats.queue_subscribe(
         std::string(get_fx_instruments_request::nats_subject), queue,

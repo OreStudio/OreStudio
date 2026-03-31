@@ -70,6 +70,80 @@ std::string make_params_json(const std::string& put_call,
            "\"Strike\":" + std::to_string(strike) + "}";
 }
 
+// Parse a JSON array of strings: ["val1","val2",...] -> vector of strings.
+std::vector<std::string> parse_json_string_array(const std::string& json) {
+    std::vector<std::string> result;
+    std::size_t i = 0;
+    while (i < json.size() && json[i] != '[') ++i;
+    if (i >= json.size()) return result;
+    ++i; // skip '['
+    while (i < json.size()) {
+        while (i < json.size() &&
+               (json[i] == ' ' || json[i] == ',' || json[i] == '\t')) ++i;
+        if (i >= json.size() || json[i] == ']') break;
+        if (json[i] != '"') { ++i; continue; }
+        ++i; // skip opening quote
+        std::string val;
+        while (i < json.size() && json[i] != '"') {
+            if (json[i] == '\\' && i + 1 < json.size()) {
+                ++i;
+                if (json[i] == '"')       val += '"';
+                else if (json[i] == '\\') val += '\\';
+                else                      val += json[i];
+            } else {
+                val += json[i];
+            }
+            ++i;
+        }
+        ++i; // skip closing quote
+        result.push_back(std::move(val));
+    }
+    return result;
+}
+
+// Parse a simple JSON object: {"Key":"strval",...} or {"Key":numval,...}.
+// Values are returned as strings; numeric values are kept as their JSON text.
+std::vector<std::pair<std::string,std::string>>
+parse_json_object(const std::string& json) {
+    std::vector<std::pair<std::string,std::string>> result;
+    std::size_t i = 0;
+    while (i < json.size() && json[i] != '{') ++i;
+    if (i >= json.size()) return result;
+    ++i; // skip '{'
+    while (i < json.size()) {
+        while (i < json.size() &&
+               (json[i] == ' ' || json[i] == ',' || json[i] == '\t')) ++i;
+        if (i >= json.size() || json[i] == '}') break;
+        if (json[i] != '"') { ++i; continue; }
+        ++i; // skip opening quote of key
+        std::string key;
+        while (i < json.size() && json[i] != '"') { key += json[i]; ++i; }
+        ++i; // skip closing quote of key
+        while (i < json.size() && json[i] != ':') ++i;
+        ++i; // skip ':'
+        while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) ++i;
+        std::string val;
+        if (i < json.size() && json[i] == '"') {
+            ++i; // skip opening quote of string value
+            while (i < json.size() && json[i] != '"') {
+                if (json[i] == '\\' && i + 1 < json.size()) {
+                    ++i; val += json[i];
+                } else {
+                    val += json[i];
+                }
+                ++i;
+            }
+            ++i; // skip closing quote
+        } else {
+            // numeric or other bare value – read until ',' or '}'
+            while (i < json.size() && json[i] != ',' && json[i] != '}')
+                val += json[i++];
+        }
+        result.emplace_back(std::move(key), std::move(val));
+    }
+    return result;
+}
+
 } // namespace
 
 // ---------------------------------------------------------------------------
@@ -165,6 +239,42 @@ trade scripted_instrument_mapper::reverse_scripted_trade(
         static_cast<std::string&>(sn) = instr.script_name;
         d.ScriptName = std::move(sn);
     }
+
+    // Reconstruct inline script body if present.
+    if (!instr.script_body.empty()) {
+        ore_script s;
+        static_cast<std::string&>(s.Code) = instr.script_body;
+        d.Script = std::move(s);
+    }
+
+    // Reconstruct Index entries from underlyings_json (JSON array of strings).
+    // Synthetic names "Underlying_N" are used because the serialised array form
+    // does not preserve the original parameter names.
+    if (!instr.underlyings_json.empty()) {
+        const auto vals = parse_json_string_array(instr.underlyings_json);
+        for (std::size_t idx = 0; idx < vals.size(); ++idx) {
+            scriptedTradeData_Data_t_Index_t entry;
+            static_cast<std::string&>(entry.Name) =
+                "Underlying_" + std::to_string(idx);
+            scriptedTradeData_Data_t_Index_t_Value_t v;
+            static_cast<std::string&>(v) = vals[idx];
+            entry.Value = std::move(v);
+            d.Data.Index.push_back(std::move(entry));
+        }
+    }
+
+    // Reconstruct Number entries from parameters_json (JSON object).
+    if (!instr.parameters_json.empty()) {
+        for (const auto& [key, val] : parse_json_object(instr.parameters_json)) {
+            scriptedTradeData_Data_t_Number_t entry;
+            static_cast<std::string&>(entry.Name) = key;
+            scriptedTradeData_Data_t_Number_t_Value_t v;
+            static_cast<std::string&>(v) = val;
+            entry.Value = std::move(v);
+            d.Data.Number.push_back(std::move(entry));
+        }
+    }
+
     t.ScriptedTradeData = std::move(d);
     return t;
 }

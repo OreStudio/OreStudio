@@ -195,7 +195,12 @@ trade composite_instrument_mapper::reverse_composite_trade(
     trade t;
     t.TradeType = oreTradeType::CompositeTrade;
     compositeTradeData d;
-    // Use USD as a safe default for the required currency field
+    // compositeTradeData requires a Currency element in the ORE XSD, but the
+    // composite_instrument domain model does not carry a currency field because
+    // composite trades are currency-agnostic at the basket level — currency is
+    // specified per component leg.  USD is used as a structural placeholder so
+    // that the serialised XML is schema-valid; a full export pipeline would
+    // need to derive the settlement currency from the component legs.
     d.Currency = parse_currency_code("USD");
     if (!instr.description.empty()) {
         compositeTradeData_BasketName_t bn;
@@ -216,6 +221,14 @@ trade composite_instrument_mapper::reverse_multi_leg_option(
     (void)instr;
     trade t;
     t.TradeType = oreTradeType::MultiLegOption;
+    // MultiLegOption leg data (strikes, barriers, underlying leg definitions)
+    // is stored in composite_leg records in the ORES domain, not in the
+    // composite_instrument itself.  Reconstructing a fully populated
+    // MultiLegOptionData therefore requires access to the associated leg
+    // records, which are outside the scope of this single-instrument reverse
+    // mapper.  The trade shell produced here is structurally valid and
+    // sufficient for round-trip type identity; a complete export must enrich
+    // it with legs from the composite_leg repository.
     multiLegOptionData d;
     t.MultiLegOptionData = std::move(d);
     return t;

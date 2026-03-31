@@ -61,9 +61,8 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(role_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(role_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -86,9 +85,8 @@ public:
     }
 
     void assign(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(role_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(role_handler_lg(), msg);
         auto req = decode<assign_role_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn)
@@ -121,9 +119,8 @@ public:
     }
 
     void revoke(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(role_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(role_handler_lg(), msg);
         auto req = decode<revoke_role_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn)
@@ -167,9 +164,8 @@ public:
     }
 
     void by_account(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(role_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(role_handler_lg(), msg);
         auto req = decode<get_account_roles_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn)
@@ -201,9 +197,8 @@ public:
     }
 
     void assign_by_name(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(role_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(role_handler_lg(), msg);
         auto req = decode<assign_role_by_name_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn)
@@ -280,9 +275,8 @@ public:
     }
 
     void revoke_by_name(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(role_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(role_handler_lg(), msg);
         auto req = decode<revoke_role_by_name_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn)
@@ -374,9 +368,8 @@ public:
     }
 
     void suggest_commands(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(role_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(role_handler_lg(), msg);
         auto req = decode<suggest_role_commands_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(role_handler_lg(), warn)

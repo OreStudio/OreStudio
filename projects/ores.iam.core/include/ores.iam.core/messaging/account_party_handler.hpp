@@ -58,9 +58,8 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_party_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_party_handler_lg(), msg);
         try {
             service::account_party_service svc(ctx_);
             auto aps = svc.list_account_parties();
@@ -79,9 +78,8 @@ public:
     }
 
     void by_account(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_party_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_party_handler_lg(), msg);
         auto req = decode<get_account_parties_by_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_party_handler_lg(), warn)
@@ -107,9 +105,8 @@ public:
     }
 
     void save(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_party_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_party_handler_lg(), msg);
         auto req = decode<save_account_party_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_party_handler_lg(), warn)
@@ -146,9 +143,8 @@ public:
     }
 
     void del(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_party_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_party_handler_lg(), msg);
         auto req = decode<delete_account_party_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_party_handler_lg(), warn)

@@ -55,8 +55,8 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_market_tier_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(currency_market_tier_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -87,8 +87,8 @@ public:
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_market_tier_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(currency_market_tier_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -122,8 +122,8 @@ public:
     }
 
     void del(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_market_tier_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(currency_market_tier_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -157,8 +157,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(currency_market_tier_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(currency_market_tier_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {

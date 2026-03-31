@@ -60,9 +60,8 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_handler_lg(), msg);
         try {
             repository::tenant_repository repo(ctx_);
             get_tenants_response resp;
@@ -78,9 +77,8 @@ public:
     }
 
     void save(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_handler_lg(), msg);
         auto req = decode<save_tenant_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn)
@@ -117,9 +115,8 @@ public:
     }
 
     void del(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_handler_lg(), msg);
         auto req = decode<delete_tenant_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn)
@@ -144,9 +141,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_handler_lg(), msg);
         auto req = decode<get_tenant_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_handler_lg(), warn)

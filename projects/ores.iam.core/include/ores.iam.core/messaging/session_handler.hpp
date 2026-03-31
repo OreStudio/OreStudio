@@ -52,27 +52,24 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(session_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(session_handler_lg(), msg);
         BOOST_LOG_SEV(session_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, list_sessions_response{});
     }
 
     void active(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(session_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(session_handler_lg(), msg);
         BOOST_LOG_SEV(session_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, get_active_sessions_response{});
     }
 
     void samples(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(session_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(session_handler_lg(), msg);
         BOOST_LOG_SEV(session_handler_lg(), debug)
             << "Completed " << msg.subject;
         reply(nats_, msg, get_session_samples_response{});

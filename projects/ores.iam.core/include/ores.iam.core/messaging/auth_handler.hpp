@@ -181,8 +181,8 @@ public:
     }
 
     void signup(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<signup_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(auth_handler_lg(), warn)
@@ -222,8 +222,8 @@ public:
     }
 
     void login(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<login_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(auth_handler_lg(), warn)
@@ -401,8 +401,8 @@ public:
     }
 
     void public_key(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(auth_handler_lg(), msg);
         if (msg.reply_subject.empty()) return;
         try {
             auto pub_key = signer_.get_public_key_pem();
@@ -423,8 +423,8 @@ public:
     }
 
     void logout(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(auth_handler_lg(), msg);
         auto token = auth_extract_bearer_token(msg);
         try {
             if (!token.empty()) {
@@ -488,8 +488,8 @@ public:
     }
 
     void refresh(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(auth_handler_lg(), msg);
 
         const auto token = auth_extract_bearer_token(msg);
         if (token.empty()) {
@@ -579,8 +579,8 @@ public:
     }
 
     void service_login(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(auth_handler_lg(), debug) << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(auth_handler_lg(), msg);
         auto req = decode<service_login_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(auth_handler_lg(), warn)

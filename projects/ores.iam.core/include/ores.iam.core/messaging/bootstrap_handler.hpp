@@ -65,9 +65,8 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
 
     void status(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(bootstrap_handler_lg(), msg);
         try {
             auto auth_svc =
                 std::make_shared<service::authorization_service>(ctx_);
@@ -87,9 +86,8 @@ public:
     }
 
     void create_admin(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(bootstrap_handler_lg(), msg);
         auto req = decode<create_initial_admin_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), warn)
@@ -151,9 +149,8 @@ public:
     }
 
     void provision_tenant(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(bootstrap_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(bootstrap_handler_lg(), msg);
         auto req = decode<provision_tenant_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(bootstrap_handler_lg(), warn)

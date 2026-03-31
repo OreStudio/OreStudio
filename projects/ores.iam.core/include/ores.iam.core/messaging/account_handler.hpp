@@ -145,9 +145,8 @@ public:
     }
 
     void list(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -173,9 +172,8 @@ public:
     }
 
     void save(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<save_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -237,9 +235,8 @@ public:
     }
 
     void del(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<delete_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -274,9 +271,8 @@ public:
     }
 
     void lock(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<lock_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -314,9 +310,8 @@ public:
     }
 
     void unlock(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<unlock_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -354,9 +349,8 @@ public:
     }
 
     void login_info(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -380,9 +374,8 @@ public:
     }
 
     void reset_password(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<reset_password_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -428,9 +421,8 @@ public:
     }
 
     void change_password(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<change_password_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -482,9 +474,8 @@ public:
     }
 
     void update(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_account_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -521,9 +512,8 @@ public:
     }
 
     void update_email(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<update_my_email_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -574,9 +564,8 @@ public:
     }
 
     void select_party(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<select_party_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)
@@ -696,9 +685,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(account_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(account_handler_lg(), msg);
         auto req = decode<get_account_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(account_handler_lg(), warn)

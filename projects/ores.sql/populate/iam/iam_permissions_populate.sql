@@ -362,6 +362,15 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'telemetry
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'synthetic::*', 'Full access to all synthetic data operations');
 
 -- =============================================================================
+-- Workflow Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'workflow::instances:read',   'View workflow instances');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'workflow::instances:write',  'Create workflow instances');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'workflow::instances:delete', 'Delete workflow instances');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'workflow::*', 'Full access to all workflow operations');
+
+-- =============================================================================
 -- Global Wildcard Permission
 -- =============================================================================
 

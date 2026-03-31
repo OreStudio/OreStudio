@@ -113,7 +113,7 @@ echo "=========================================="
 echo ""
 echo "  Environment : ${ENVIRONMENT}"
 echo "  Database    : ${DB_NAME}"
-echo "  Host        : ${ORES_TEST_DB_HOST:-localhost}"
+echo "  Host        : ${ORES_DB_HOST:?ORES_DB_HOST must be set}"
 echo "  Validation  : ${SKIP_VALIDATION}"
 echo ""
 echo "=========================================="
@@ -153,8 +153,8 @@ fi
 
 # Drop existing database if it exists
 echo "--- Dropping ${DB_NAME} (if exists) ---"
-psql -h localhost -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();"
-psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"
+psql -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();"
+psql -h "${ORES_DB_HOST}" -U postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"
 
 # Create database, schema, and metadata via shared helper
 SKIP_ARG=""

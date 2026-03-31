@@ -169,6 +169,19 @@ select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'Comp
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ComputeService', 'iam::tenants:read');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'ComputeService', 'refdata::*');
 
+-- Workflow service: full own-component + iam write (for party provisioning saga) +
+-- refdata write (for party creation)
+select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'Workflow orchestration domain service');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'workflow::*');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'iam::tenants:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'iam::accounts:create');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'iam::accounts:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'iam::accounts:update');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'iam::roles:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'iam::roles:assign');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'refdata::parties:read');
+select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'WorkflowService', 'refdata::parties:write');
+
 -- Synthetic service: read access across all domain components for data generation
 select ores_iam_roles_upsert_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'Synthetic data generation service');
 select ores_iam_role_permissions_assign_fn(ores_iam_system_tenant_id_fn(), 'SyntheticService', 'synthetic::*');

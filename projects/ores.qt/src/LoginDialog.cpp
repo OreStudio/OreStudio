@@ -578,6 +578,11 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                                           << ")";
                 statusLabel_->setText("Login successful!");
                 emit loginSucceeded(usernameEdit_->text().trimmed());
+                if (clientManager_->lastPartySetupRequired()) {
+                    BOOST_LOG_SEV(lg(), info)
+                        << "Selected party is inactive - party provisioning wizard required";
+                    emit partySetupDetected();
+                }
                 emit closeRequested();
             } else {
                 BOOST_LOG_SEV(lg(), warn) << "Party selection canceled by user";

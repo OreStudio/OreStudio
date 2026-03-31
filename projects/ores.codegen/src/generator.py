@@ -279,6 +279,19 @@ def is_component_model(model_filename):
     return model_filename.endswith("_component.json")
 
 
+def is_service_registry_model(model_filename):
+    """
+    Check if a model file is a service registry model.
+
+    Args:
+        model_filename (str): The model filename
+
+    Returns:
+        bool: True if this is a service registry model
+    """
+    return model_filename.endswith("_service_registry.json")
+
+
 def get_model_type(model_filename):
     """
     Determine the model type from the filename.
@@ -287,12 +300,15 @@ def get_model_type(model_filename):
         model_filename (str): The model filename
 
     Returns:
-        str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data', or 'unknown')
+        str: The model type ('domain_entity', 'junction', 'enum', 'schema', 'data',
+             'component', 'service_registry', or 'unknown')
     """
     if is_domain_entity_model(model_filename):
         return 'domain_entity'
     elif is_junction_model(model_filename):
         return 'junction'
+    elif is_service_registry_model(model_filename):
+        return 'service_registry'
     elif is_component_model(model_filename):
         return 'component'
     elif is_enum_model(model_filename):
@@ -390,6 +406,10 @@ def resolve_output_path(output_pattern, model_data, model_type):
 
         result = result.replace('{component}', name)
         result = result.replace('{component_full}', full_name)
+
+    elif model_type == 'service_registry':
+        # Service registry output paths are fixed — no placeholder substitution needed.
+        pass
 
     elif 'schema' in model_data:
         schema = model_data['schema']
@@ -916,6 +936,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
     is_junction = is_junction_model(model_filename)
     is_enum = is_enum_model(model_filename)
     is_component = is_component_model(model_filename)
+    is_service_registry = is_service_registry_model(model_filename)
 
     # Check for C++ generation flag (--cpp or cpp_ prefix in target_template)
     generate_cpp = target_template and target_template.startswith('cpp_') and not target_template.startswith('cpp_qt_')
@@ -940,6 +961,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             templates_to_process = [target_template]
         else:
             print(f"Component model '{model_filename}' requires --profile component")
+            return
+    elif is_service_registry:
+        # Service registry models must be used via a profile (no default templates)
+        if target_template:
+            templates_to_process = [target_template]
+        else:
+            print(f"Service registry model '{model_filename}' requires --profile service-registry")
             return
     elif is_schema_model:
         # Entity schema models use a different template set
@@ -1106,6 +1134,25 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         component['name_upper'] = name.replace('.', '_').upper()
         component['namespace'] = full_name.replace('.', '::')
         data['component'] = component
+
+    # Special processing for service registry models
+    if is_service_registry and isinstance(model, dict) and 'service_registry' in model:
+        service_registry = model['service_registry']
+        services = service_registry.get('services', [])
+        # Mark last service for comma/semicolon handling in templates
+        _mark_last_item(services)
+        # Propagate psql_var into nested grant lists so templates can reference
+        # the parent service variable from within a nested loop (Mustache has
+        # no parent-context access, so we add the field to each nested item).
+        for svc in services:
+            psql_var = svc.get('psql_var', '')
+            for item in svc.get('dml_prefixes', []):
+                item['psql_var'] = psql_var
+            for item in svc.get('select_tables', []):
+                item['psql_var'] = psql_var
+            for item in svc.get('select_prefixes', []):
+                item['psql_var'] = psql_var
+        data['service_registry'] = service_registry
 
     # Special processing for entity schema models
     if is_schema_model and isinstance(model, dict) and 'entity' in model:

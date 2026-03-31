@@ -19,23 +19,17 @@
  */
 
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_service_accounts_populate.mustache
+ *
  * Service Accounts Population Script
  *
  * Creates system service accounts for non-human processes.
  * Service accounts belong to the system tenant and cannot login with passwords.
  * They authenticate by creating sessions directly at startup.
  *
- * Account names match the environment-scoped database user names from
- * setup_user.sql (e.g. ores_local2_iam_service).
- *
- * Required psql variables (set by setup_database.sh / recreate_database.sh):
- *   :ddl_user, :cli_user, :wt_user, :shell_user, :http_user,
- *   :test_ddl_user, :test_dml_user,
- *   :iam_service_user, :refdata_service_user, :dq_service_user,
- *   :variability_service_user, :assets_service_user,
- *   :synthetic_service_user, :scheduler_service_user,
- *   :reporting_service_user, :telemetry_service_user,
- *   :trading_service_user, :compute_service_user
+ * Account names match the environment-scoped database user names
+ * (e.g. ores_local2_iam_service).
  *
  * This script is idempotent.
  */
@@ -47,17 +41,18 @@
 -- psql execution time; the result is bound to the named variable.
 \set wt_service_pw          `echo "$ORES_WT_DB_PASSWORD"`
 \set http_service_pw        `echo "$ORES_HTTP_SERVER_DB_PASSWORD"`
-\set iam_service_pw         `echo "$ORES_IAM_SERVICE_DB_PASSWORD"`
-\set refdata_service_pw     `echo "$ORES_REFDATA_SERVICE_DB_PASSWORD"`
-\set dq_service_pw          `echo "$ORES_DQ_SERVICE_DB_PASSWORD"`
-\set variability_service_pw `echo "$ORES_VARIABILITY_SERVICE_DB_PASSWORD"`
-\set assets_service_pw      `echo "$ORES_ASSETS_SERVICE_DB_PASSWORD"`
-\set synthetic_service_pw   `echo "$ORES_SYNTHETIC_SERVICE_DB_PASSWORD"`
-\set scheduler_service_pw   `echo "$ORES_SCHEDULER_SERVICE_DB_PASSWORD"`
-\set reporting_service_pw   `echo "$ORES_REPORTING_SERVICE_DB_PASSWORD"`
-\set telemetry_service_pw   `echo "$ORES_TELEMETRY_SERVICE_DB_PASSWORD"`
-\set trading_service_pw     `echo "$ORES_TRADING_SERVICE_DB_PASSWORD"`
-\set compute_service_pw     `echo "$ORES_COMPUTE_SERVICE_DB_PASSWORD"`
+\set iam_service_pw    `echo "$ORES_IAM_SERVICE_DB_PASSWORD"`
+\set refdata_service_pw    `echo "$ORES_REFDATA_SERVICE_DB_PASSWORD"`
+\set dq_service_pw    `echo "$ORES_DQ_SERVICE_DB_PASSWORD"`
+\set variability_service_pw    `echo "$ORES_VARIABILITY_SERVICE_DB_PASSWORD"`
+\set assets_service_pw    `echo "$ORES_ASSETS_SERVICE_DB_PASSWORD"`
+\set scheduler_service_pw    `echo "$ORES_SCHEDULER_SERVICE_DB_PASSWORD"`
+\set reporting_service_pw    `echo "$ORES_REPORTING_SERVICE_DB_PASSWORD"`
+\set telemetry_service_pw    `echo "$ORES_TELEMETRY_SERVICE_DB_PASSWORD"`
+\set trading_service_pw    `echo "$ORES_TRADING_SERVICE_DB_PASSWORD"`
+\set compute_service_pw    `echo "$ORES_COMPUTE_SERVICE_DB_PASSWORD"`
+\set synthetic_service_pw    `echo "$ORES_SYNTHETIC_SERVICE_DB_PASSWORD"`
+\set workflow_service_pw    `echo "$ORES_WORKFLOW_SERVICE_DB_PASSWORD"`
 
 select ores_iam_service_accounts_upsert_fn(
     :'ddl_user',
@@ -139,13 +134,6 @@ select ores_iam_service_accounts_upsert_fn(
 );
 
 select ores_iam_service_accounts_upsert_fn(
-    :'synthetic_service_user',
-    'synthetic_service@system.ores',
-    'System service account for Synthetic NATS domain service',
-    :'synthetic_service_pw'
-);
-
-select ores_iam_service_accounts_upsert_fn(
     :'scheduler_service_user',
     'scheduler_service@system.ores',
     'System service account for Scheduler NATS domain service',
@@ -178,6 +166,20 @@ select ores_iam_service_accounts_upsert_fn(
     'compute_service@system.ores',
     'System service account for Compute Grid NATS domain service',
     :'compute_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'synthetic_service_user',
+    'synthetic_service@system.ores',
+    'System service account for Synthetic NATS domain service',
+    :'synthetic_service_pw'
+);
+
+select ores_iam_service_accounts_upsert_fn(
+    :'workflow_service_user',
+    'workflow_service@system.ores',
+    'System service account for Workflow Orchestration NATS domain service',
+    :'workflow_service_pw'
 );
 
 -- Summary

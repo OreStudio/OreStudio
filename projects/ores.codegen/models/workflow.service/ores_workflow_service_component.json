@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "workflow.service",
+    "full_name": "ores.workflow.service",
+    "brief": "Workflow orchestration microservice",
+    "description": "Standalone NATS microservice hosting workflow saga handlers: party provisioning, compensation logic, and other long-running distributed operations."
+  }
+}

@@ -119,7 +119,7 @@ export PGPASSWORD="${PGPASSWORD}"
 
 # Step 1: Kill all connections to the database
 echo "--- Step 1: Killing connections to ${DB_NAME} ---"
-PGPASSWORD="${PGPASSWORD}" psql -h localhost -U postgres -At -c \
+PGPASSWORD="${PGPASSWORD}" psql -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" -U postgres -At -c \
     "SELECT pg_terminate_backend(pid)
      FROM pg_stat_activity
      WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();" \
@@ -129,7 +129,7 @@ echo ""
 
 # Step 2: Drop the database
 echo "--- Step 2: Dropping database ${DB_NAME} ---"
-PGPASSWORD="${PGPASSWORD}" psql -h localhost -U postgres \
+PGPASSWORD="${PGPASSWORD}" psql -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" -U postgres \
     -c "DROP DATABASE IF EXISTS ${DB_NAME};"
 echo "Database dropped."
 echo ""
@@ -137,7 +137,7 @@ echo ""
 # Step 3: Drop all cluster-level roles for this environment
 echo "--- Step 3: Dropping roles for environment '${ENVIRONMENT}' ---"
 PGPASSWORD="${PGPASSWORD}" psql \
-    -h localhost \
+    -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
     -U postgres \
     --set ON_ERROR_STOP=on \
     -v env_label="${ENVIRONMENT}" \

@@ -175,10 +175,19 @@ LoginResult ClientManager::login(const std::string& username,
             }
         }
 
-        // Set party context
+        // Set party context: find the matching party by UUID so name/category
+        // correspond to the actually selected party, not just the first in the list.
         if (!selected_party_id.is_nil()) {
             current_party_id_ = selected_party_id;
-            if (!response.available_parties.empty()) {
+            const auto selected_str = boost::uuids::to_string(selected_party_id);
+            const auto it = std::find_if(
+                response.available_parties.begin(),
+                response.available_parties.end(),
+                [&](const auto& p) { return p.id == selected_str; });
+            if (it != response.available_parties.end()) {
+                current_party_name_ = QString::fromStdString(it->name);
+                current_party_category_ = QString::fromStdString(it->party_category);
+            } else if (!response.available_parties.empty()) {
                 current_party_name_ = QString::fromStdString(
                     response.available_parties.front().name);
                 current_party_category_ = QString::fromStdString(
@@ -478,8 +487,10 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
 
         current_party_id_ = party_id;
         current_party_name_ = party_name;
+        last_party_setup_required_ = result->party_setup_required;
         arm_refresh_timer(result->access_lifetime_s);
-        BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString()
+            << (result->party_setup_required ? " (setup required)" : "");
         return true;
 
     } catch (const std::exception& e) {

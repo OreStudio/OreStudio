@@ -45,6 +45,7 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::log_handler_entry;
 using namespace ores::logging;
 
 class book_status_handler {
@@ -55,8 +56,8 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), verifier_(std::move(verifier)) {}
 
     void list(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_status_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(book_status_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -78,8 +79,8 @@ public:
     }
 
     void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_status_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(book_status_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -112,8 +113,8 @@ public:
     }
 
     void del(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_status_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(book_status_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {
@@ -147,8 +148,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(book_status_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(book_status_handler_lg(), msg);
         auto ctx_expected = ores::service::service::make_request_context(
             ctx_, msg, verifier_);
         if (!ctx_expected) {

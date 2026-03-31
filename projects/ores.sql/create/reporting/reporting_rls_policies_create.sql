@@ -39,11 +39,16 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Party isolation (RESTRICTIVE — ANDed with the permissive tenant policy).
+-- When no party context is set (visible_party_ids is NULL), the policy
+-- passes through, preserving backward compatibility with service contexts
+-- that set only tenant context (e.g. report populators, test helpers).
 create policy ores_reporting_report_definitions_party_isolation_policy
 on ores_reporting_report_definitions_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -64,7 +69,8 @@ create policy ores_reporting_risk_report_configs_party_isolation_policy
 on ores_reporting_risk_report_configs_tbl
 as restrictive
 for all using (
-    exists (
+    ores_iam_visible_party_ids_fn() is null
+    or exists (
         select 1
         from ores_reporting_report_definitions_tbl rd
         where rd.tenant_id = ores_reporting_risk_report_configs_tbl.tenant_id
@@ -74,7 +80,8 @@ for all using (
     )
 )
 with check (
-    exists (
+    ores_iam_visible_party_ids_fn() is null
+    or exists (
         select 1
         from ores_reporting_report_definitions_tbl rd
         where rd.tenant_id = ores_reporting_risk_report_configs_tbl.tenant_id
@@ -102,7 +109,8 @@ create policy ores_reporting_risk_report_config_portfolios_party_isolation_polic
 on ores_reporting_risk_report_config_portfolios_tbl
 as restrictive
 for all using (
-    exists (
+    ores_iam_visible_party_ids_fn() is null
+    or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
         join ores_reporting_report_definitions_tbl rd
@@ -116,7 +124,8 @@ for all using (
     )
 )
 with check (
-    exists (
+    ores_iam_visible_party_ids_fn() is null
+    or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
         join ores_reporting_report_definitions_tbl rd
@@ -148,7 +157,8 @@ create policy ores_reporting_risk_report_config_books_party_isolation_policy
 on ores_reporting_risk_report_config_books_tbl
 as restrictive
 for all using (
-    exists (
+    ores_iam_visible_party_ids_fn() is null
+    or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
         join ores_reporting_report_definitions_tbl rd
@@ -162,7 +172,8 @@ for all using (
     )
 )
 with check (
-    exists (
+    ores_iam_visible_party_ids_fn() is null
+    or exists (
         select 1
         from ores_reporting_risk_report_configs_tbl rc
         join ores_reporting_report_definitions_tbl rd
@@ -190,9 +201,13 @@ with check (
     tenant_id = ores_iam_current_tenant_id_fn()
 );
 
+-- Party isolation (RESTRICTIVE — ANDed with the permissive tenant policy).
+-- Same null-bypass semantics as report_definitions: when no party context
+-- is set, the policy passes through for compatibility with service contexts.
 create policy ores_reporting_report_instances_party_isolation_policy
 on ores_reporting_report_instances_tbl
 as restrictive
 for select using (
-    party_id = ANY(ores_iam_visible_party_ids_fn())
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );

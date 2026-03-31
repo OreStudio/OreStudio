@@ -48,6 +48,8 @@ using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::log_handler_entry;
+using namespace ores::logging;
 
 class tenant_type_handler {
 public:
@@ -57,9 +59,8 @@ public:
         : nats_(nats), ctx_(std::move(ctx)), signer_(std::move(signer)) {}
 
     void list(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_type_handler_lg(), msg);
         try {
             service::tenant_type_service svc(ctx_);
             BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
@@ -74,9 +75,8 @@ public:
     }
 
     void save(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_type_handler_lg(), msg);
         auto req = decode<save_tenant_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_type_handler_lg(), warn)
@@ -111,9 +111,8 @@ public:
     }
 
     void del(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_type_handler_lg(), msg);
         auto req = decode<delete_tenant_type_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_type_handler_lg(), warn)
@@ -147,9 +146,8 @@ public:
     }
 
     void history(ores::nats::message msg) {
-        using namespace ores::logging;
-        BOOST_LOG_SEV(tenant_type_handler_lg(), debug)
-            << "Handling " << msg.subject;
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_type_handler_lg(), msg);
         auto req = decode<get_tenant_type_history_request>(msg);
         if (!req) {
             BOOST_LOG_SEV(tenant_type_handler_lg(), warn)

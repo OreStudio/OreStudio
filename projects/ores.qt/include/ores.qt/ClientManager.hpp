@@ -292,6 +292,11 @@ public:
     bool isSystemParty() const { return current_party_category_ == "System"; }
 
     /**
+     * @brief Whether the last selectParty call indicated the party needs setup.
+     */
+    bool lastPartySetupRequired() const { return last_party_setup_required_; }
+
+    /**
      * @brief Select a party for the current session.
      */
     bool selectParty(const boost::uuids::uuid& party_id, const QString& party_name);
@@ -501,6 +506,7 @@ private:
     boost::uuids::uuid current_party_id_;
     QString current_party_name_;
     QString current_party_category_;
+    bool last_party_setup_required_ = false;
 
     // Active NATS event subscriptions keyed by subject
     std::unordered_map<std::string, nats::service::subscription> nats_subscriptions_;

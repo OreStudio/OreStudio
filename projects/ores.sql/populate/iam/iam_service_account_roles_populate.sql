@@ -19,17 +19,13 @@
  */
 
 /**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_service_account_roles_populate.mustache
+ *
  * Service Account Role Assignments
  *
  * Assigns each domain service account its corresponding NATS RBAC role.
  * Must run after iam_service_accounts_populate.sql and iam_roles_populate.sql.
- *
- * Required psql variables (set by setup_database.sh / recreate_database.sh):
- *   :iam_service_user, :refdata_service_user, :dq_service_user,
- *   :variability_service_user, :assets_service_user,
- *   :synthetic_service_user, :scheduler_service_user,
- *   :reporting_service_user, :telemetry_service_user,
- *   :trading_service_user, :compute_service_user
  *
  * This script is idempotent.
  */
@@ -52,9 +48,6 @@ select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'assets_service_user', 'AssetsService');
 
 select ores_iam_account_role_assign_fn(
-    ores_iam_system_tenant_id_fn(), :'synthetic_service_user', 'SyntheticService');
-
-select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'scheduler_service_user', 'SchedulerService');
 
 select ores_iam_account_role_assign_fn(
@@ -68,6 +61,12 @@ select ores_iam_account_role_assign_fn(
 
 select ores_iam_account_role_assign_fn(
     ores_iam_system_tenant_id_fn(), :'compute_service_user', 'ComputeService');
+
+select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'synthetic_service_user', 'SyntheticService');
+
+select ores_iam_account_role_assign_fn(
+    ores_iam_system_tenant_id_fn(), :'workflow_service_user', 'WorkflowService');
 
 -- Summary
 select 'Service Account Role Assignments' as entity, count(*) as count

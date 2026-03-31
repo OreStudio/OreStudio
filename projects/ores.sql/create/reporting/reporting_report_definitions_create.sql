@@ -73,9 +73,9 @@ create unique index if not exists ores_reporting_report_definitions_id_uniq_idx
 on "ores_reporting_report_definitions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Natural key: unique definition name per tenant
+-- Natural key: unique definition name per party
 create unique index if not exists ores_reporting_report_definitions_name_uniq_idx
-on "ores_reporting_report_definitions_tbl" (tenant_id, name)
+on "ores_reporting_report_definitions_tbl" (tenant_id, party_id, name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Unique scheduler_job_id among active records (NULL allowed when not scheduled)

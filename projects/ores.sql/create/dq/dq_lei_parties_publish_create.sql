@@ -248,7 +248,7 @@ begin
                 parent_map.party_uuid,
                 -- Default business centre from country
                 coalesce(bc_map.business_center_code, 'WRLD'),
-                'Active',
+                'Inactive',
                 coalesce(ores_iam_current_service_fn(), current_user), current_user, 'system.external_data_import',
                 'Imported from GLEIF LEI dataset: ' || v_dataset_name
             from lei_party_subtree m

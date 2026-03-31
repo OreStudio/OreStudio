@@ -68,6 +68,11 @@ for arg in "${@:2}"; do
     esac
 done
 
+if [[ -z "${ORES_DB_HOST:-}" ]]; then
+    echo "Error: ORES_DB_HOST must be set" >&2
+    exit 1
+fi
+
 DDL_USER="${ORES_DB_DDL_USER:-}"
 if [[ -z "${DDL_USER}" ]]; then
     echo "Error: ORES_DB_DDL_USER must be set" >&2
@@ -95,7 +100,7 @@ done
 # Phase 1: Create database, extensions, and schema grants (postgres superuser)
 echo "--- Phase 1: Creating database ${DB_NAME} ---"
 psql \
-    -h localhost \
+    -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
     -U postgres \
     --set ON_ERROR_STOP=on \
     -v db_name="${DB_NAME}" \
@@ -106,10 +111,23 @@ psql \
     -v ddl_user="${DDL_USER}" \
     -f "${SCRIPT_DIR}/create_database.sql"
 
+# Source the generated service registry to get SERVICE_NAMES
+# shellcheck source=service_vars.sh
+source "${SCRIPT_DIR}/service_vars.sh"
+
+# Build psql -v args for each domain service user (passwords not needed here —
+# Phase 2 runs as the DDL user and only needs user names for GRANT statements).
+_SVC_PSQL_ARGS=()
+for _svc in "${SERVICE_NAMES[@]}"; do
+    _upper="$(echo "${_svc}" | tr '[:lower:]' '[:upper:]')_SERVICE"
+    _uvar="ORES_${_upper}_DB_USER"
+    _SVC_PSQL_ARGS+=(-v "${_svc}_service_user=${!_uvar:-}")
+done
+
 # Phase 2: Create tables, populate seed data, grant permissions (DDL user)
 echo "--- Phase 2: Setting up schema ---"
 PGPASSWORD="${DDL_PASSWORD}" psql \
-    -h localhost \
+    -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
     -U "${DDL_USER}" \
     -d "${DB_NAME}" \
     --set ON_ERROR_STOP=on \
@@ -124,17 +142,7 @@ PGPASSWORD="${DDL_PASSWORD}" psql \
     -v http_user="${ORES_DB_HTTP_USER:-}" \
     -v test_ddl_user="${ORES_TEST_DB_DDL_USER:-}" \
     -v test_dml_user="${ORES_TEST_DB_USER:-}" \
-    -v iam_service_user="${ORES_IAM_SERVICE_DB_USER:-}" \
-    -v refdata_service_user="${ORES_REFDATA_SERVICE_DB_USER:-}" \
-    -v dq_service_user="${ORES_DQ_SERVICE_DB_USER:-}" \
-    -v variability_service_user="${ORES_VARIABILITY_SERVICE_DB_USER:-}" \
-    -v assets_service_user="${ORES_ASSETS_SERVICE_DB_USER:-}" \
-    -v synthetic_service_user="${ORES_SYNTHETIC_SERVICE_DB_USER:-}" \
-    -v scheduler_service_user="${ORES_SCHEDULER_SERVICE_DB_USER:-}" \
-    -v reporting_service_user="${ORES_REPORTING_SERVICE_DB_USER:-}" \
-    -v telemetry_service_user="${ORES_TELEMETRY_SERVICE_DB_USER:-}" \
-    -v trading_service_user="${ORES_TRADING_SERVICE_DB_USER:-}" \
-    -v compute_service_user="${ORES_COMPUTE_SERVICE_DB_USER:-}" \
+    "${_SVC_PSQL_ARGS[@]}" \
     -f "${SCRIPT_DIR}/setup_schema.sql"
 
 # Phase 3: Insert database metadata (schema version, build info, git info)
@@ -157,7 +165,7 @@ echo "  Git commit:        ${GIT_COMMIT}"
 echo "  Git date:          ${GIT_DATE}"
 
 psql \
-    -h localhost \
+    -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
     -U postgres \
     -d "${DB_NAME}" \
     --set ON_ERROR_STOP=on \

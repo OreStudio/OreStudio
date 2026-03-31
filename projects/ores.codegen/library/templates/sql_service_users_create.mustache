@@ -1,0 +1,27 @@
+{{{sql_license}}}
+
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_service_users_create.mustache
+ *
+ * Creates/updates domain service database users (idempotent).
+ * Included by recreate_database.sql (postgres superuser phase).
+ *
+ * Required psql variables (one pair per service):
+ *   :{name}_service_user, :{name}_service_password
+ *   :service_role
+ */
+
+{{#service_registry}}
+{{#services}}
+-- {{description}} domain service
+select set_config('ores.cur_user', :'{{psql_var}}_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :{{psql_var}}_user with password :'{{psql_var}}_password';
+grant :service_role to :{{psql_var}}_user;
+alter  role :{{psql_var}}_user set search_path to public;
+
+{{/services}}
+{{/service_registry}}

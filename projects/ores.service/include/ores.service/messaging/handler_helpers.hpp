@@ -25,14 +25,39 @@
 #include <string_view>
 #include <boost/uuid/uuid.hpp>
 #include <rfl/json.hpp>
+#include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
+#include "ores.nats/domain/correlation.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include "ores.service/error_code.hpp"
 
 namespace ores::service::messaging {
+
+/**
+ * @brief Extracts (or generates) the correlation ID from an inbound NATS
+ * message and logs it at INFO level alongside the message subject.
+ *
+ * Call this at the entry of every handler method so that all log lines for a
+ * single top-level request share the same correlation ID and can be grepped:
+ *
+ * @code
+ *   [[maybe_unused]] const auto cid = log_handler_entry(my_lg(), msg);
+ * @endcode
+ *
+ * The returned string can be threaded into downstream NATS calls via
+ * nats_client::with_correlation_id(cid) when the handler makes outbound calls.
+ */
+template<typename Logger>
+inline std::string log_handler_entry(Logger& lg,
+    const ores::nats::message& msg) {
+    using namespace ores::logging;
+    auto cid = ores::nats::extract_or_generate_correlation_id(msg);
+    BOOST_LOG_SEV(lg, info) << msg.subject << " correlation_id=" << cid;
+    return cid;
+}
 
 /**
  * @brief Default change reason codes for server-stamped writes.

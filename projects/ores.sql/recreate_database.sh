@@ -54,17 +54,7 @@ Passwords are read from environment variables (set via .env or CI environment):
     ORES_DB_READONLY_USER               Read-only database user name (env-prefixed)
     ORES_TEST_DB_DDL_USER               Test DDL database user name (env-prefixed)
     ORES_TEST_DB_USER                   Test DML database user name (env-prefixed)
-    ORES_IAM_SERVICE_DB_USER            IAM domain service user name (env-prefixed)
-    ORES_REFDATA_SERVICE_DB_USER        Reference Data domain service user name
-    ORES_DQ_SERVICE_DB_USER             Data Quality domain service user name
-    ORES_VARIABILITY_SERVICE_DB_USER    Variability domain service user name
-    ORES_ASSETS_SERVICE_DB_USER         Assets domain service user name
-    ORES_SYNTHETIC_SERVICE_DB_USER      Synthetic domain service user name
-    ORES_SCHEDULER_SERVICE_DB_USER      Scheduler domain service user name
-    ORES_REPORTING_SERVICE_DB_USER      Reporting domain service user name
-    ORES_TELEMETRY_SERVICE_DB_USER      Telemetry domain service user name
-    ORES_TRADING_SERVICE_DB_USER        Trading domain service user name
-    ORES_COMPUTE_SERVICE_DB_USER        Compute domain service user name
+    ORES_{NAME}_SERVICE_DB_USER         Domain service user name (one per service in service_vars.sh)
     ORES_DB_DDL_PASSWORD                Password for the DDL database user
     ORES_DB_CLI_PASSWORD                Password for the CLI database user
     ORES_DB_WT_PASSWORD                 Password for the Web Toolkit database user
@@ -73,17 +63,7 @@ Passwords are read from environment variables (set via .env or CI environment):
     ORES_TEST_DB_DDL_PASSWORD           Password for the test DDL database user
     ORES_TEST_DB_PASSWORD               Password for the test DML database user
     ORES_DB_READONLY_PASSWORD           Password for the read-only database user
-    ORES_IAM_SERVICE_DB_PASSWORD        Password for the IAM domain service user
-    ORES_REFDATA_SERVICE_DB_PASSWORD    Password for the Reference Data domain service user
-    ORES_DQ_SERVICE_DB_PASSWORD         Password for the Data Quality domain service user
-    ORES_VARIABILITY_SERVICE_DB_PASSWORD Password for the Variability domain service user
-    ORES_ASSETS_SERVICE_DB_PASSWORD     Password for the Assets domain service user
-    ORES_SYNTHETIC_SERVICE_DB_PASSWORD  Password for the Synthetic domain service user
-    ORES_SCHEDULER_SERVICE_DB_PASSWORD  Password for the Scheduler domain service user
-    ORES_REPORTING_SERVICE_DB_PASSWORD  Password for the Reporting domain service user
-    ORES_TELEMETRY_SERVICE_DB_PASSWORD  Password for the Telemetry domain service user
-    ORES_TRADING_SERVICE_DB_PASSWORD    Password for the Trading domain service user
-    ORES_COMPUTE_SERVICE_DB_PASSWORD    Password for the Compute domain service user
+    ORES_{NAME}_SERVICE_DB_PASSWORD     Password for the domain service user (one per service in service_vars.sh)
 
 Optional arguments:
     -D, --database NAME                 Database name (default: ${DEFAULT_DB_NAME})
@@ -126,6 +106,7 @@ done
 
 # Validate required user names and passwords are present in the environment
 MISSING_PASSWORDS=()
+[[ -z "${ORES_DB_HOST:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_HOST")
 [[ -z "${PGPASSWORD:-}" ]] && MISSING_PASSWORDS+=("PGPASSWORD")
 [[ -z "${ORES_DB_OWNER_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_OWNER_ROLE")
 [[ -z "${ORES_DB_RW_ROLE:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_RW_ROLE")
@@ -139,17 +120,14 @@ MISSING_PASSWORDS=()
 [[ -z "${ORES_DB_READONLY_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_READONLY_USER")
 [[ -z "${ORES_TEST_DB_DDL_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_DDL_USER")
 [[ -z "${ORES_TEST_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_USER")
-[[ -z "${ORES_IAM_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_IAM_SERVICE_DB_USER")
-[[ -z "${ORES_REFDATA_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_REFDATA_SERVICE_DB_USER")
-[[ -z "${ORES_DQ_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_DQ_SERVICE_DB_USER")
-[[ -z "${ORES_VARIABILITY_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_VARIABILITY_SERVICE_DB_USER")
-[[ -z "${ORES_ASSETS_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_ASSETS_SERVICE_DB_USER")
-[[ -z "${ORES_SYNTHETIC_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_SYNTHETIC_SERVICE_DB_USER")
-[[ -z "${ORES_SCHEDULER_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_SCHEDULER_SERVICE_DB_USER")
-[[ -z "${ORES_REPORTING_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_REPORTING_SERVICE_DB_USER")
-[[ -z "${ORES_TELEMETRY_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TELEMETRY_SERVICE_DB_USER")
-[[ -z "${ORES_TRADING_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_TRADING_SERVICE_DB_USER")
-[[ -z "${ORES_COMPUTE_SERVICE_DB_USER:-}" ]] && MISSING_PASSWORDS+=("ORES_COMPUTE_SERVICE_DB_USER")
+# Source the generated service registry to get SERVICE_NAMES
+# shellcheck source=service_vars.sh
+source "${SCRIPT_DIR}/service_vars.sh"
+for _svc in "${SERVICE_NAMES[@]}"; do
+    _upper="$(echo "${_svc}" | tr '[:lower:]' '[:upper:]')_SERVICE"
+    _uvar="ORES_${_upper}_DB_USER"
+    [[ -z "${!_uvar:-}" ]] && MISSING_PASSWORDS+=("${_uvar}")
+done
 [[ -z "${ORES_DB_DDL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_DDL_PASSWORD")
 [[ -z "${ORES_DB_CLI_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_CLI_PASSWORD")
 [[ -z "${ORES_DB_WT_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_WT_PASSWORD")
@@ -158,17 +136,11 @@ MISSING_PASSWORDS=()
 [[ -z "${ORES_TEST_DB_DDL_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_DDL_PASSWORD")
 [[ -z "${ORES_TEST_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TEST_DB_PASSWORD")
 [[ -z "${ORES_DB_READONLY_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DB_READONLY_PASSWORD")
-[[ -z "${ORES_IAM_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_IAM_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_REFDATA_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_REFDATA_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_DQ_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_DQ_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_VARIABILITY_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_VARIABILITY_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_ASSETS_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_ASSETS_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_SYNTHETIC_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_SYNTHETIC_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_SCHEDULER_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_SCHEDULER_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_REPORTING_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_REPORTING_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_TELEMETRY_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TELEMETRY_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_TRADING_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_TRADING_SERVICE_DB_PASSWORD")
-[[ -z "${ORES_COMPUTE_SERVICE_DB_PASSWORD:-}" ]] && MISSING_PASSWORDS+=("ORES_COMPUTE_SERVICE_DB_PASSWORD")
+for _svc in "${SERVICE_NAMES[@]}"; do
+    _upper="$(echo "${_svc}" | tr '[:lower:]' '[:upper:]')_SERVICE"
+    _pvar="ORES_${_upper}_DB_PASSWORD"
+    [[ -z "${!_pvar:-}" ]] && MISSING_PASSWORDS+=("${_pvar}")
+done
 
 if [[ ${#MISSING_PASSWORDS[@]} -gt 0 ]]; then
     echo "Error: Missing required password environment variables:" >&2
@@ -227,12 +199,23 @@ if [[ -z "${ASSUME_YES}" ]]; then
     echo ""
 fi
 
+# Build psql -v args for each domain service user/password.
+# SERVICE_NAMES is sourced from the generated service_vars.sh above.
+_SVC_PSQL_ARGS=()
+for _svc in "${SERVICE_NAMES[@]}"; do
+    _upper="$(echo "${_svc}" | tr '[:lower:]' '[:upper:]')_SERVICE"
+    _uvar="ORES_${_upper}_DB_USER"
+    _pvar="ORES_${_upper}_DB_PASSWORD"
+    _SVC_PSQL_ARGS+=(-v "${_svc}_service_user=${!_uvar:-}")
+    _SVC_PSQL_ARGS+=(-v "${_svc}_service_password=${!_pvar:-}")
+done
+
 # Phase 1: Drop database, recreate roles and users (postgres superuser)
 # Note: psql's :'var' syntax handles quoting for string literals
 # Note: db_name should NOT have quotes (it's an identifier in SQL)
 # Note: -h localhost forces TCP connection (password auth vs peer auth on socket)
 PGPASSWORD="${PGPASSWORD}" psql \
-    -h localhost \
+    -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" \
     -f ./recreate_database.sql \
     -U postgres \
     -v owner_role="${ORES_DB_OWNER_ROLE}" \
@@ -247,17 +230,6 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v readonly_user="${ORES_DB_READONLY_USER}" \
     -v test_ddl_user="${ORES_TEST_DB_DDL_USER}" \
     -v test_dml_user="${ORES_TEST_DB_USER}" \
-    -v iam_service_user="${ORES_IAM_SERVICE_DB_USER}" \
-    -v refdata_service_user="${ORES_REFDATA_SERVICE_DB_USER}" \
-    -v dq_service_user="${ORES_DQ_SERVICE_DB_USER}" \
-    -v variability_service_user="${ORES_VARIABILITY_SERVICE_DB_USER}" \
-    -v assets_service_user="${ORES_ASSETS_SERVICE_DB_USER}" \
-    -v synthetic_service_user="${ORES_SYNTHETIC_SERVICE_DB_USER}" \
-    -v scheduler_service_user="${ORES_SCHEDULER_SERVICE_DB_USER}" \
-    -v reporting_service_user="${ORES_REPORTING_SERVICE_DB_USER}" \
-    -v telemetry_service_user="${ORES_TELEMETRY_SERVICE_DB_USER}" \
-    -v trading_service_user="${ORES_TRADING_SERVICE_DB_USER}" \
-    -v compute_service_user="${ORES_COMPUTE_SERVICE_DB_USER}" \
     -v ddl_password="${ORES_DB_DDL_PASSWORD}" \
     -v cli_password="${ORES_DB_CLI_PASSWORD}" \
     -v wt_password="${ORES_DB_WT_PASSWORD}" \
@@ -266,17 +238,7 @@ PGPASSWORD="${PGPASSWORD}" psql \
     -v test_ddl_password="${ORES_TEST_DB_DDL_PASSWORD}" \
     -v test_dml_password="${ORES_TEST_DB_PASSWORD}" \
     -v ro_password="${ORES_DB_READONLY_PASSWORD}" \
-    -v iam_service_password="${ORES_IAM_SERVICE_DB_PASSWORD}" \
-    -v refdata_service_password="${ORES_REFDATA_SERVICE_DB_PASSWORD}" \
-    -v dq_service_password="${ORES_DQ_SERVICE_DB_PASSWORD}" \
-    -v variability_service_password="${ORES_VARIABILITY_SERVICE_DB_PASSWORD}" \
-    -v assets_service_password="${ORES_ASSETS_SERVICE_DB_PASSWORD}" \
-    -v synthetic_service_password="${ORES_SYNTHETIC_SERVICE_DB_PASSWORD}" \
-    -v scheduler_service_password="${ORES_SCHEDULER_SERVICE_DB_PASSWORD}" \
-    -v reporting_service_password="${ORES_REPORTING_SERVICE_DB_PASSWORD}" \
-    -v telemetry_service_password="${ORES_TELEMETRY_SERVICE_DB_PASSWORD}" \
-    -v trading_service_password="${ORES_TRADING_SERVICE_DB_PASSWORD}" \
-    -v compute_service_password="${ORES_COMPUTE_SERVICE_DB_PASSWORD}" \
+    "${_SVC_PSQL_ARGS[@]}" \
     -v db_name="${DB_NAME}"
 
 # Phases 2–4: Create database, schema, and metadata via shared helper

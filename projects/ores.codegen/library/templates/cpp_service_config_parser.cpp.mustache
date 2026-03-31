@@ -39,7 +39,7 @@ options_description make_options_description() {
     r.add(common_configuration::make_options_description());
     r.add(logging_configuration::make_options_description("{{full_name}}.log"));
     r.add(database_configuration::make_options_description());
-    r.add(nats_configuration::make_options_description("{{full_name}}"));
+    r.add(nats_configuration::make_options_description());
     return r;
 }
 

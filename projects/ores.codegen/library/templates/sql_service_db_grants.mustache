@@ -1,0 +1,102 @@
+{{{sql_license}}}
+
+-- AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+-- Template: sql_service_db_grants.mustache
+--
+-- Service Account DB Permission Grants
+--
+-- Each domain service user receives SELECT/INSERT/UPDATE/DELETE on its own
+-- component tables only, plus SELECT on specific cross-component tables it
+-- legitimately reads. This replaces the previous broad rw_role membership.
+--
+-- All tables live in the public schema with the naming convention:
+--   ores_<component>_*_tbl
+--
+-- Uses a temporary helper function to grant DML on all tables matching a
+-- prefix, so grants automatically cover new tables added to a component.
+--
+-- Variables (passed via psql -v from setup_database.sh):
+--   One {name}_service_user variable per service (see service_vars.sh).
+
+-- ---------------------------------------------------------------------------
+-- Helper: grant DML on every table whose name starts with p_prefix.
+-- Dropped at the bottom of this script.
+-- ---------------------------------------------------------------------------
+create or replace function _ores_grant_dml_fn(p_prefix text, p_user text)
+returns void language plpgsql as $$
+declare
+    v_tbl text;
+begin
+    for v_tbl in
+        select tablename
+        from pg_tables
+        where schemaname = 'public'
+          and tablename like p_prefix || '%'
+    loop
+        execute format(
+            'grant select, insert, update, delete on %I to %I',
+            v_tbl, p_user);
+    end loop;
+end $$;
+
+-- Helper: grant SELECT on every table whose name starts with p_prefix.
+create or replace function _ores_grant_select_fn(p_prefix text, p_user text)
+returns void language plpgsql as $$
+declare
+    v_tbl text;
+begin
+    for v_tbl in
+        select tablename
+        from pg_tables
+        where schemaname = 'public'
+          and tablename like p_prefix || '%'
+    loop
+        execute format('grant select on %I to %I', v_tbl, p_user);
+    end loop;
+end $$;
+
+-- ---------------------------------------------------------------------------
+-- Sequence access — granted to all service users.
+-- ---------------------------------------------------------------------------
+grant usage, select on all sequences in schema public
+    to
+{{#service_registry}}
+{{#services}}
+    :{{psql_var}}_user{{^last}},{{/last}}{{#last}};{{/last}}
+{{/services}}
+{{/service_registry}}
+
+alter default privileges in schema public
+    grant usage, select on sequences
+    to
+{{#service_registry}}
+{{#services}}
+    :{{psql_var}}_user{{^last}},{{/last}}{{#last}};{{/last}}
+{{/services}}
+{{/service_registry}}
+
+-- ---------------------------------------------------------------------------
+-- Per-service grants
+-- ---------------------------------------------------------------------------
+{{#service_registry}}
+{{#services}}
+-- ---------------------------------------------------------------------------
+-- {{psql_var}}: {{description}} domain service
+-- ---------------------------------------------------------------------------
+{{#dml_prefixes}}
+select _ores_grant_dml_fn('{{prefix}}', :'{{psql_var}}_user');
+{{/dml_prefixes}}
+{{#select_tables}}
+grant select on {{table}} to :{{psql_var}}_user;
+{{/select_tables}}
+{{#select_prefixes}}
+select _ores_grant_select_fn('{{prefix}}', :'{{psql_var}}_user');
+{{/select_prefixes}}
+
+{{/services}}
+{{/service_registry}}
+-- ---------------------------------------------------------------------------
+-- Clean up helper functions
+-- ---------------------------------------------------------------------------
+drop function _ores_grant_dml_fn(text, text);
+drop function _ores_grant_select_fn(text, text);

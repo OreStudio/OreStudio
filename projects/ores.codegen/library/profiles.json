@@ -385,8 +385,34 @@
           "output": "projects/{component_full}/tests/main.cpp"
         },
         {
-          "template": "cpp_component_stub_test.cpp.mustache",
+          "template": "cpp_service_stub_test.cpp.mustache",
           "output": "projects/{component_full}/tests/stub_tests.cpp"
+        }
+      ]
+    },
+    "service-registry": {
+      "description": "Database service registration scripts (service vars, user creation, grants, accounts, roles)",
+      "model_types": ["service_registry"],
+      "templates": [
+        {
+          "template": "shell_service_vars.mustache",
+          "output": "projects/ores.sql/service_vars.sh"
+        },
+        {
+          "template": "sql_service_users_create.mustache",
+          "output": "projects/ores.sql/create/iam/service_users_create.sql"
+        },
+        {
+          "template": "sql_service_db_grants.mustache",
+          "output": "projects/ores.sql/create/iam/iam_service_db_grants_create.sql"
+        },
+        {
+          "template": "sql_service_accounts_populate.mustache",
+          "output": "projects/ores.sql/populate/iam/iam_service_accounts_populate.sql"
+        },
+        {
+          "template": "sql_service_account_roles_populate.mustache",
+          "output": "projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql"
         }
       ]
     }

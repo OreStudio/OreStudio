@@ -215,6 +215,85 @@ trade composite_instrument_mapper::reverse_composite_trade(
 // Reverse: MultiLegOption
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Forward: TotalReturnSwap
+// ---------------------------------------------------------------------------
+
+composite_mapping_result
+composite_instrument_mapper::forward_total_return_swap(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping TotalReturnSwap: "
+                               << std::string(t.id);
+    composite_mapping_result result;
+    result.instrument = make_base("TotalReturnSwap");
+    if (!t.TotalReturnSwapData) return result;
+    const auto& d = *t.TotalReturnSwapData;
+    // Extract the underlying trade type as description
+    if (!d.UnderlyingData.Trade.empty())
+        result.instrument.description =
+            to_string(d.UnderlyingData.Trade.front().TradeType);
+    else if (!d.UnderlyingData.Derivative.empty())
+        result.instrument.description =
+            to_string(d.UnderlyingData.Derivative.front().Trade.TradeType);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: ContractForDifference
+// ---------------------------------------------------------------------------
+
+composite_mapping_result
+composite_instrument_mapper::forward_contract_for_difference(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ContractForDifference: "
+                               << std::string(t.id);
+    composite_mapping_result result;
+    result.instrument = make_base("ContractForDifference");
+    if (!t.ContractForDifferenceData) return result;
+    const auto& d = *t.ContractForDifferenceData;
+    if (!d.UnderlyingData.Trade.empty())
+        result.instrument.description =
+            to_string(d.UnderlyingData.Trade.front().TradeType);
+    else if (!d.UnderlyingData.Derivative.empty())
+        result.instrument.description =
+            to_string(d.UnderlyingData.Derivative.front().Trade.TradeType);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: TotalReturnSwap
+// ---------------------------------------------------------------------------
+
+trade composite_instrument_mapper::reverse_total_return_swap(
+        const composite_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping TotalReturnSwap";
+    (void)instr;
+    trade t;
+    t.TradeType = oreTradeType::TotalReturnSwap;
+    // totalReturnSwapData requires UnderlyingData and ReturnData. A full
+    // reconstruction requires constituent trade data stored separately in
+    // composite_leg records. This produces a structurally valid shell
+    // sufficient for round-trip type identity.
+    totalReturnSwapData d;
+    t.TotalReturnSwapData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: ContractForDifference
+// ---------------------------------------------------------------------------
+
+trade composite_instrument_mapper::reverse_contract_for_difference(
+        const composite_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping ContractForDifference";
+    (void)instr;
+    trade t;
+    t.TradeType = oreTradeType::ContractForDifference;
+    totalReturnSwapData d;
+    t.ContractForDifferenceData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+
 trade composite_instrument_mapper::reverse_multi_leg_option(
         const composite_instrument& instr) {
     BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping MultiLegOption";

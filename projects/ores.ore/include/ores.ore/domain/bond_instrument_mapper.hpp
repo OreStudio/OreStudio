@@ -78,6 +78,7 @@ public:
     static bond_mapping_result forward_convertible_bond(const trade& t);
     static bond_mapping_result forward_bond_option(const trade& t);
     static bond_mapping_result forward_bond_trs(const trade& t);
+    static bond_mapping_result forward_bond_repo(const trade& t);
 
     static trade reverse_bond(
         const ores::trading::domain::bond_instrument& instr);
@@ -90,6 +91,8 @@ public:
     static trade reverse_bond_option(
         const ores::trading::domain::bond_instrument& instr);
     static trade reverse_bond_trs(
+        const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond_repo(
         const ores::trading::domain::bond_instrument& instr);
 };
 

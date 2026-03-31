@@ -49,6 +49,9 @@ struct fx_mapping_result {
  *   - FxAccumulator          (FxAccumulatorData)
  *   - FxTaRF                 (FxTaRFData)
  *   - FxGenericBarrierOption (FxGenericBarrierOptionData)
+ *   - FxDoubleBarrierOption  (FxDoubleBarrierOptionData — same struct as FxBarrierOptionData)
+ *   - FxEuropeanBarrierOption (FxEuropeanBarrierOptionData — same struct)
+ *   - FxKIKOBarrierOption    (FxKIKOBarrierOptionData)
  *
  * Forward mapping (ORE XSD → ORES domain) captures economic fields stored
  * in the ORES relational model. Fields not yet modelled are silently dropped;
@@ -133,6 +136,19 @@ public:
     static trade reverse_fx_tarf(
         const ores::trading::domain::fx_instrument& instr);
     static trade reverse_fx_generic_barrier_option(
+        const ores::trading::domain::fx_instrument& instr);
+
+    // Phase 10 — forward
+    static fx_mapping_result forward_fx_double_barrier_option(const trade& t);
+    static fx_mapping_result forward_fx_european_barrier_option(const trade& t);
+    static fx_mapping_result forward_fx_kiko_barrier_option(const trade& t);
+
+    // Phase 10 — reverse
+    static trade reverse_fx_double_barrier_option(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_european_barrier_option(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_kiko_barrier_option(
         const ores::trading::domain::fx_instrument& instr);
 
 private:

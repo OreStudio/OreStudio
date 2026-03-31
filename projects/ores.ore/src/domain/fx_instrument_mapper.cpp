@@ -940,4 +940,168 @@ trade fx_instrument_mapper::reverse_fx_generic_barrier_option(
     return t;
 }
 
+// ---------------------------------------------------------------------------
+// Forward: FxDoubleBarrierOption (same data struct as FxBarrierOption)
+// ---------------------------------------------------------------------------
+
+fx_mapping_result fx_instrument_mapper::forward_fx_double_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxDoubleBarrierOption: "
+                               << std::string(t.id);
+    fx_mapping_result result;
+    result.instrument = make_base("FxDoubleBarrierOption");
+    if (!t.FxDoubleBarrierOptionData) return result;
+    const auto& d = *t.FxDoubleBarrierOptionData;
+    result.instrument.bought_currency = to_string(d.BoughtCurrency);
+    result.instrument.bought_amount   = static_cast<double>(d.BoughtAmount);
+    result.instrument.sold_currency   = to_string(d.SoldCurrency);
+    result.instrument.sold_amount     = static_cast<double>(d.SoldAmount);
+    result.instrument.option_type     = option_type_from_vec(d.OptionData);
+    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
+    if (!d.BarrierData.empty()) {
+        result.instrument.barrier_type = to_string(d.BarrierData.front().Type);
+        if (!d.BarrierData.front().Levels.Level.empty())
+            result.instrument.lower_barrier =
+                static_cast<double>(d.BarrierData.front().Levels.Level.front());
+        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
+            result.instrument.upper_barrier =
+                static_cast<double>(d.BarrierData[1].Levels.Level.front());
+    }
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: FxEuropeanBarrierOption (same data struct as FxBarrierOption)
+// ---------------------------------------------------------------------------
+
+fx_mapping_result fx_instrument_mapper::forward_fx_european_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxEuropeanBarrierOption: "
+                               << std::string(t.id);
+    fx_mapping_result result;
+    result.instrument = make_base("FxEuropeanBarrierOption");
+    if (!t.FxEuropeanBarrierOptionData) return result;
+    const auto& d = *t.FxEuropeanBarrierOptionData;
+    result.instrument.bought_currency = to_string(d.BoughtCurrency);
+    result.instrument.bought_amount   = static_cast<double>(d.BoughtAmount);
+    result.instrument.sold_currency   = to_string(d.SoldCurrency);
+    result.instrument.sold_amount     = static_cast<double>(d.SoldAmount);
+    result.instrument.option_type     = option_type_from_vec(d.OptionData);
+    result.instrument.expiry_date     = expiry_date_from_vec(d.OptionData);
+    if (!d.BarrierData.empty()) {
+        result.instrument.barrier_type = to_string(d.BarrierData.front().Type);
+        if (!d.BarrierData.front().Levels.Level.empty())
+            result.instrument.lower_barrier =
+                static_cast<double>(d.BarrierData.front().Levels.Level.front());
+        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
+            result.instrument.upper_barrier =
+                static_cast<double>(d.BarrierData[1].Levels.Level.front());
+    }
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: FxKIKOBarrierOption (distinct struct: single OptionData, Barriers)
+// ---------------------------------------------------------------------------
+
+fx_mapping_result fx_instrument_mapper::forward_fx_kiko_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping FxKIKOBarrierOption: "
+                               << std::string(t.id);
+    fx_mapping_result result;
+    result.instrument = make_base("FxKIKOBarrierOption");
+    if (!t.FxKIKOBarrierOptionData) return result;
+    const auto& d = *t.FxKIKOBarrierOptionData;
+    result.instrument.bought_currency = to_string(d.BoughtCurrency);
+    result.instrument.bought_amount   = static_cast<double>(d.BoughtAmount);
+    result.instrument.sold_currency   = to_string(d.SoldCurrency);
+    result.instrument.sold_amount     = static_cast<double>(d.SoldAmount);
+    if (d.OptionData.OptionType)
+        result.instrument.option_type = std::string(*d.OptionData.OptionType);
+    result.instrument.expiry_date = expiry_date_from_single(d.OptionData);
+    if (!d.Barriers.BarrierData.empty()) {
+        result.instrument.barrier_type =
+            to_string(d.Barriers.BarrierData.front().Type);
+        if (!d.Barriers.BarrierData.front().Levels.Level.empty())
+            result.instrument.lower_barrier = static_cast<double>(
+                d.Barriers.BarrierData.front().Levels.Level.front());
+        if (d.Barriers.BarrierData.size() > 1 &&
+                !d.Barriers.BarrierData[1].Levels.Level.empty())
+            result.instrument.upper_barrier = static_cast<double>(
+                d.Barriers.BarrierData[1].Levels.Level.front());
+    }
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: FxDoubleBarrierOption
+// ---------------------------------------------------------------------------
+
+trade fx_instrument_mapper::reverse_fx_double_barrier_option(
+        const fx_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxDoubleBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::FxDoubleBarrierOption;
+    fxBarrierOptionData d;
+    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
+    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    d.SoldAmount     = static_cast<float>(instr.sold_amount);
+    d.OptionData.push_back(make_fx_option_entry(instr));
+    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (instr.upper_barrier != 0.0)
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier));
+    t.FxDoubleBarrierOptionData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: FxEuropeanBarrierOption
+// ---------------------------------------------------------------------------
+
+trade fx_instrument_mapper::reverse_fx_european_barrier_option(
+        const fx_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxEuropeanBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::FxEuropeanBarrierOption;
+    fxBarrierOptionData d;
+    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
+    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    d.SoldAmount     = static_cast<float>(instr.sold_amount);
+    d.OptionData.push_back(make_fx_option_entry(instr));
+    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (instr.upper_barrier != 0.0)
+        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.upper_barrier));
+    t.FxEuropeanBarrierOptionData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: FxKIKOBarrierOption
+// ---------------------------------------------------------------------------
+
+trade fx_instrument_mapper::reverse_fx_kiko_barrier_option(
+        const fx_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping FxKIKOBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::FxKIKOBarrierOption;
+    fxKIKOBarrierOptionData d;
+    d.BoughtCurrency = parse_currency_code(instr.bought_currency);
+    d.BoughtAmount   = static_cast<float>(instr.bought_amount);
+    d.SoldCurrency   = parse_currency_code(instr.sold_currency);
+    d.SoldAmount     = static_cast<float>(instr.sold_amount);
+    d.OptionData = make_fx_option_entry(instr);
+    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.lower_barrier));
+    if (instr.upper_barrier != 0.0)
+        d.Barriers.BarrierData.push_back(
+            make_barrier(instr.barrier_type, instr.upper_barrier));
+    t.FxKIKOBarrierOptionData = std::move(d);
+    return t;
+}
+
 }

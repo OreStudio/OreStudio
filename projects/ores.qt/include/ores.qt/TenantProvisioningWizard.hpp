@@ -94,6 +94,14 @@ public:
     void setNewAccountUsername(const QString& u) { newAccountUsername_ = u; }
 
     /**
+     * @brief Correlation ID echoed from provision_parties_response (set by PartyProvisionPage).
+     *
+     * Shown on the summary page so operators can cross-reference logs across services.
+     */
+    QString provisionCorrelationId() const { return provisionCorrelationId_; }
+    void setProvisionCorrelationId(const QString& id) { provisionCorrelationId_ = id; }
+
+    /**
      * @brief Clears the system.bootstrap_mode flag for the current tenant.
      */
     void clearBootstrapFlag();
@@ -108,6 +116,7 @@ private:
     QString selectedBundleCode_;
     QString selectedBundleName_;
     QString newAccountUsername_;
+    QString provisionCorrelationId_;
 };
 
 // Forward declarations

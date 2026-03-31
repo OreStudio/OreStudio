@@ -20,6 +20,7 @@
 #include "ores.ore/xml/importer.hpp"
 
 #include <sstream>
+#include <type_traits>
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.ore/domain/domain.hpp"
@@ -131,6 +132,22 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
         if (t.Envelope && t.Envelope->CounterParty) {
             item.ore_counterparty_name = std::string(*t.Envelope->CounterParty);
         }
+
+        item.instrument = domain::trade_mapper::map_instrument(t);
+
+        // Patch instrument.id = trade.id for all mapped instrument types.
+        // Swap results also need instrument_id set on each leg.
+        std::visit([&](auto& result) {
+            using T = std::decay_t<decltype(result)>;
+            if constexpr (!std::is_same_v<T, std::monostate>) {
+                result.instrument.id = item.trade.id;
+                if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
+                    for (auto& leg : result.legs)
+                        leg.instrument_id = item.trade.id;
+                }
+            }
+        }, item.instrument);
+
         r.push_back(std::move(item));
     }
 

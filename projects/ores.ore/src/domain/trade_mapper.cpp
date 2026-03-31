@@ -128,4 +128,11 @@ trade_mapper::map_bond_instrument(const trade& v) {
     return std::nullopt;
 }
 
+instrument_mapping_result trade_mapper::map_instrument(const trade& v) {
+    if (auto r = map_swap_instrument(v)) return *r;
+    if (auto r = map_fx_instrument(v))   return *r;
+    if (auto r = map_bond_instrument(v)) return *r;
+    return std::monostate{};
+}
+
 }

@@ -52,6 +52,7 @@ inline auto& role_handler_lg() {
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::log_handler_entry;
+using namespace ores::logging;
 using ores::service::messaging::error_reply;
 
 class role_handler {

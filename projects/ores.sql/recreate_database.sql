@@ -241,6 +241,15 @@ alter  user :compute_service_user with password :'compute_service_password';
 grant :service_role to :compute_service_user;
 alter  role :compute_service_user set search_path to public;
 
+-- Workflow orchestration domain service
+select set_config('ores.cur_user', :'workflow_service_user', false);
+do $$ begin
+    if not exists (select 1 from pg_roles where rolname = current_setting('ores.cur_user')) then
+        execute format('create user %I', current_setting('ores.cur_user')); end if; end $$;
+alter  user :workflow_service_user with password :'workflow_service_password';
+grant :service_role to :workflow_service_user;
+alter  role :workflow_service_user set search_path to public;
+
 -- HTTP user
 select set_config('ores.cur_user', :'http_user', false);
 do $$ begin

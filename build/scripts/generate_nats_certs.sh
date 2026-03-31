@@ -66,11 +66,11 @@ maybe_generate() {
 echo "==> CA"
 if maybe_generate "$KEYS_DIR/ca.key"; then
     openssl ecparam -name prime256v1 -genkey -noout -out "$KEYS_DIR/ca.key"
-    openssl req -new -x509 \
+    MSYS2_ARG_CONV_EXCL="/CN=" openssl req -new -x509 \
         -key "$KEYS_DIR/ca.key" \
         -out "$KEYS_DIR/ca.crt" \
         -days "$CA_DAYS" \
-        -subj "//CN=ores-nats-ca/O=ORE Studio"
+        -subj "/CN=ores-nats-ca/O=ORE Studio"
     echo "  Generated CA: $KEYS_DIR/ca.crt"
 fi
 
@@ -78,10 +78,10 @@ echo "==> NATS server certificate"
 if maybe_generate "$KEYS_DIR/nats-server.key"; then
     openssl ecparam -name prime256v1 -genkey -noout \
         -out "$KEYS_DIR/nats-server.key"
-    openssl req -new \
+    MSYS2_ARG_CONV_EXCL="/CN=" openssl req -new \
         -key "$KEYS_DIR/nats-server.key" \
         -out "$KEYS_DIR/nats-server.csr" \
-        -subj "//CN=nats-server/O=ORE Studio"
+        -subj "/CN=nats-server/O=ORE Studio"
     # SAN extension for localhost and the deployment hostname
     SAN_EXT="subjectAltName=DNS:localhost,DNS:${HOSTNAME},IP:127.0.0.1"
     openssl x509 -req \
@@ -102,10 +102,10 @@ for SERVICE in "${SERVICES[@]}"; do
     CERT="$KEYS_DIR/${SERVICE}.crt"
     if maybe_generate "$KEY"; then
         openssl ecparam -name prime256v1 -genkey -noout -out "$KEY"
-        openssl req -new \
+        MSYS2_ARG_CONV_EXCL="/CN=" openssl req -new \
             -key "$KEY" \
             -out "$KEYS_DIR/${SERVICE}.csr" \
-            -subj "//CN=${SERVICE}/O=ORE Studio"
+            -subj "/CN=${SERVICE}/O=ORE Studio"
         openssl x509 -req \
             -in "$KEYS_DIR/${SERVICE}.csr" \
             -CA "$KEYS_DIR/ca.crt" \

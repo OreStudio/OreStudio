@@ -30,6 +30,7 @@ create table if not exists "ores_trading_composite_instruments_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_id" uuid null,
     "trade_type_code" text not null,
     "description" text null,
     "modified_by" text not null,
@@ -68,6 +69,12 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create index if not exists ores_trading_composite_instruments_trade_type_idx
 on "ores_trading_composite_instruments_tbl" (tenant_id, trade_type_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Soft FK back to trade (NULL for standalone instruments)
+create unique index if not exists ores_trading_composite_instruments_trade_id_idx
+on "ores_trading_composite_instruments_tbl" (tenant_id, trade_id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and trade_id is not null;
 
 create or replace function ores_trading_composite_instruments_insert_fn()
 returns trigger as $$

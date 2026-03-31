@@ -66,7 +66,7 @@ maybe_generate() {
 echo "==> CA"
 if maybe_generate "$KEYS_DIR/ca.key"; then
     openssl ecparam -name prime256v1 -genkey -noout -out "$KEYS_DIR/ca.key"
-    MSYS_NO_PATHCONV=1 openssl req -new -x509 \
+    MSYS2_ARG_CONV_EXCL="/CN=" openssl req -new -x509 \
         -key "$KEYS_DIR/ca.key" \
         -out "$KEYS_DIR/ca.crt" \
         -days "$CA_DAYS" \
@@ -78,7 +78,7 @@ echo "==> NATS server certificate"
 if maybe_generate "$KEYS_DIR/nats-server.key"; then
     openssl ecparam -name prime256v1 -genkey -noout \
         -out "$KEYS_DIR/nats-server.key"
-    MSYS_NO_PATHCONV=1 openssl req -new \
+    MSYS2_ARG_CONV_EXCL="/CN=" openssl req -new \
         -key "$KEYS_DIR/nats-server.key" \
         -out "$KEYS_DIR/nats-server.csr" \
         -subj "/CN=nats-server/O=ORE Studio"
@@ -102,7 +102,7 @@ for SERVICE in "${SERVICES[@]}"; do
     CERT="$KEYS_DIR/${SERVICE}.crt"
     if maybe_generate "$KEY"; then
         openssl ecparam -name prime256v1 -genkey -noout -out "$KEY"
-        MSYS_NO_PATHCONV=1 openssl req -new \
+        MSYS2_ARG_CONV_EXCL="/CN=" openssl req -new \
             -key "$KEY" \
             -out "$KEYS_DIR/${SERVICE}.csr" \
             -subj "/CN=${SERVICE}/O=ORE Studio"

@@ -25,6 +25,7 @@
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
 #include "ores.ore/domain/bond_instrument_mapper.hpp"
 #include "ores.ore/domain/credit_instrument_mapper.hpp"
+#include "ores.ore/domain/equity_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
 
@@ -151,11 +152,44 @@ trade_mapper::map_credit_instrument(const trade& v) {
     return std::nullopt;
 }
 
+std::optional<equity_mapping_result>
+trade_mapper::map_equity_instrument(const trade& v) {
+    const std::string type = to_string(v.TradeType);
+    if (type == "EquityOption")
+        return equity_instrument_mapper::forward_equity_option(v);
+    if (type == "EquityForward")
+        return equity_instrument_mapper::forward_equity_forward(v);
+    if (type == "EquitySwap")
+        return equity_instrument_mapper::forward_equity_swap(v);
+    if (type == "EquityVarianceSwap")
+        return equity_instrument_mapper::forward_equity_variance_swap(v);
+    if (type == "EquityBarrierOption")
+        return equity_instrument_mapper::forward_equity_barrier_option(v);
+    if (type == "EquityAsianOption")
+        return equity_instrument_mapper::forward_equity_asian_option(v);
+    if (type == "EquityDigitalOption")
+        return equity_instrument_mapper::forward_equity_digital_option(v);
+    if (type == "EquityTouchOption")
+        return equity_instrument_mapper::forward_equity_touch_option(v);
+    if (type == "EquityOutperformanceOption")
+        return equity_instrument_mapper::forward_equity_outperformance_option(v);
+    if (type == "EquityAccumulator")
+        return equity_instrument_mapper::forward_equity_accumulator(v);
+    if (type == "EquityTaRF")
+        return equity_instrument_mapper::forward_equity_tarf(v);
+    if (type == "EquityCliquetOption")
+        return equity_instrument_mapper::forward_equity_cliquet_option(v);
+    if (type == "EquityWorstOfBasketSwap")
+        return equity_instrument_mapper::forward_equity_worst_of_basket_swap(v);
+    return std::nullopt;
+}
+
 instrument_mapping_result trade_mapper::map_instrument(const trade& v) {
     if (auto r = map_swap_instrument(v))   return *r;
     if (auto r = map_fx_instrument(v))     return *r;
     if (auto r = map_bond_instrument(v))   return *r;
     if (auto r = map_credit_instrument(v)) return *r;
+    if (auto r = map_equity_instrument(v)) return *r;
     return std::monostate{};
 }
 

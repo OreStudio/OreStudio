@@ -38,6 +38,7 @@ struct scripted_instrument_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::optional<std::string> trade_id;
     std::string trade_type_code;
     std::string script_name;
     std::optional<std::string> script_body;

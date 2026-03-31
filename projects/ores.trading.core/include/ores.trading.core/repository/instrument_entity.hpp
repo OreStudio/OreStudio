@@ -38,6 +38,7 @@ struct instrument_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+    std::optional<std::string> trade_id;
     std::string trade_type_code;
     double notional = 0.0;
     std::string currency;

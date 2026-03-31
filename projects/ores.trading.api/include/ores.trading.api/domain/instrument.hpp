@@ -54,6 +54,14 @@ struct instrument final {
     boost::uuids::uuid id;
 
     /**
+     * @brief UUID of the associated trade record.
+     *
+     * Soft FK to ores_trading_trades_tbl. Absent for standalone instruments
+     * that are not yet linked to a trade.
+     */
+    std::optional<boost::uuids::uuid> trade_id;
+
+    /**
      * @brief ORE product type code discriminating the asset class.
      *
      * Examples: 'Swap', 'CrossCurrencySwap', 'CapFloor', 'Swaption'.

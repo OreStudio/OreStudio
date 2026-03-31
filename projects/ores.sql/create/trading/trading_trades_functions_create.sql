@@ -28,12 +28,13 @@
 -- collects all books in that subtree, then returns the current versions of
 -- all trades belonging to those books for the given tenant.
 --
--- Column order matches the C++ raw_row_to_trade() mapper (22 columns):
+-- Column order matches the C++ raw_row_to_trade() mapper (24 columns):
 --   0:id  1:tenant_id  2:version  3:party_id  4:external_id  5:book_id
 --   6:portfolio_id  7:successor_trade_id  8:counterparty_id  9:trade_type
---   10:netting_set_id  11:activity_type_code  12:status_id  13:trade_date
---   14:execution_timestamp  15:effective_date  16:termination_date  17:modified_by
---   18:performed_by  19:change_reason_code  20:change_commentary  21:valid_from
+--   10:instrument_family  11:instrument_id
+--   12:netting_set_id  13:activity_type_code  14:status_id  15:trade_date
+--   16:execution_timestamp  17:effective_date  18:termination_date  19:modified_by
+--   20:performed_by  21:change_reason_code  22:change_commentary  23:valid_from
 create or replace function ores_trading_read_trades_by_portfolio_fn(
     p_tenant_id   uuid,
     p_portfolio_id uuid,
@@ -51,6 +52,8 @@ returns table (
     successor_trade_id  uuid,
     counterparty_id     uuid,
     trade_type          text,
+    instrument_family   instrument_family_t,
+    instrument_id       uuid,
     netting_set_id      text,
     activity_type_code  text,
     status_id           uuid,
@@ -94,6 +97,8 @@ begin
         t.successor_trade_id,
         t.counterparty_id,
         t.trade_type,
+        t.instrument_family,
+        t.instrument_id,
         t.netting_set_id,
         t.activity_type_code,
         t.status_id,

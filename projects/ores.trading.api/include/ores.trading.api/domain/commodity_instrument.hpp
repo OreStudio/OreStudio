@@ -62,6 +62,13 @@ struct commodity_instrument final {
     boost::uuids::uuid id;
 
     /**
+     * @brief UUID of the associated trade record.
+     *
+     * Soft FK to ores_trading_trades_tbl. Absent for standalone instruments.
+     */
+    std::optional<boost::uuids::uuid> trade_id;
+
+    /**
      * @brief ORE product type code (CommodityForward, CommodityOption, etc.).
      */
     std::string trade_type_code;

@@ -568,9 +568,12 @@ bool PartyProvisionPage::validatePage() {
     }
 
     BOOST_LOG_SEV(lg(), info) << "Party provisioned: " << partyName
-                              << " account: " << principal;
+                              << " account: " << principal
+                              << " correlation_id: " << response->correlation_id;
     statusLabel_->setText(tr("Party and account provisioned successfully."));
     wizard_->setNewAccountUsername(QString::fromStdString(principal));
+    wizard_->setProvisionCorrelationId(
+        QString::fromStdString(response->correlation_id));
     return true;
 }
 
@@ -637,6 +640,11 @@ void TenantApplyAndSummaryPage::initializePage() {
     if (!wizard_->newAccountUsername().isEmpty()) {
         summary += tr("<p><b>Party admin account created:</b> %1</p>")
             .arg(wizard_->newAccountUsername());
+    }
+
+    if (!wizard_->provisionCorrelationId().isEmpty()) {
+        summary += tr("<p><b>Correlation ID:</b> <tt>%1</tt></p>")
+            .arg(wizard_->provisionCorrelationId());
     }
 
     summary += tr("<p>The bootstrap mode flag has been cleared. "

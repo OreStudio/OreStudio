@@ -3,8 +3,11 @@
 ## Status
 
 - Phase 1 (tenant/party wizard split): **Complete** — merged PR #582
-- Phase 2 (per-party status trigger, Qt wizard updates): **In progress** — step 4 (IAM backend cleanup) in progress
+- Phase 2 (per-party status trigger, Qt wizard updates): **Complete** — merged PR #619
 - Phase 3 (`ores.workflow` orchestration service): **Complete** — merged PR #611 (SQL), #614 (executor)
+- Correlation ID infrastructure: **Complete** — merged PR #619
+- Phase 4 (UX polish): **Deferred** — password reset, multi-select LEI, async wizard
+- Phase 5 (financial workflows): **Deferred** — trade-expiry, barrier-event
 
 ---
 

@@ -1,0 +1,313 @@
+:PROPERTIES:
+:ID: 9f3c2d87-5b14-4e8a-b6d1-0a7c3f921e45
+:END:
+#+title: ORE Market Data Domain Model
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+This plan implements a first-class market data domain in ORE Studio:
+ingestion of ORE market data files into a structured, bitemporal, multi-tenant
+database, with a clean C++ CDM that can be consumed by the pricing engine and
+the UI.
+
+** Goals
+
+- Model ORE market data correctly at two levels: the /series/ (what is being
+  observed — a yield curve, a vol surface, a spot price) and the /observation/
+  (a value on that series at a specific date and point).
+- All data is tenant-isolated, bitemporal (full transaction-time history), and
+  stored in TimescaleDB for efficient time-series queries.
+- ORE key strings are decomposed into structured fields at ingest time; the
+  full key is always reconstructable from components.
+- Fixings (historical index realisations) are modelled separately from
+  forward-looking quotes but share the same series catalog.
+- The C++ CDM is the canonical representation; the repository layer maps
+  between the CDM and the DB.
+
+** Out of scope
+
+- Real-time market data feeds (covered by a future plan).
+- Vol surface interpolation and bootstrapping.
+- ORE pricing engine integration.
+
+** Success criteria
+
+- All 54 ORE example =market.txt= and =fixings.txt= files can be ingested into
+  the database via the service layer.
+- Observations can be corrected: inserting a new value for the same
+  (series, observation_date, point_id) closes the old row and creates a new
+  version. Full history is retained.
+- =ores.ore= parser decomposes every key into (series_type, metric, qualifier,
+  point_id) without data loss; the full key roundtrips.
+
+* Key Design Decisions
+
+** Two-level data model
+
+Every ORE market datum belongs to a /market series/ — an identified,
+classifiable object such as "EUR yield curve" or "EUR/USD spot FX rate". The
+series is the stable reference entity. Each /observation/ is a value for that
+series at a specific date and (for term structures) a specific tenor or surface
+point.
+
+#+begin_example
+ores_marketdata_series_tbl        one row per market series
+  ↑ series_id
+ores_marketdata_observations_tbl  one row per (series, date, point)
+ores_marketdata_fixings_tbl       one row per (index series, fixing date)
+#+end_example
+
+** Key decomposition
+
+Every ORE market data key follows the skeleton:
+
+#+begin_example
+TYPE / METRIC / [QUALIFIER...] / [POINT_ID]
+#+end_example
+
+| Segment      | Stored in      | Examples                              |
+|--------------+----------------+---------------------------------------|
+| =TYPE=       | =series_type=  | =DISCOUNT=, =SWAPTION=, =FX=          |
+| =METRIC=     | =metric=       | =RATE=, =PRICE=, =RATE_LNVOL=         |
+| =QUALIFIER=  | =qualifier=    | =EUR=, =EUR/USD=, =CPTY_A/SR/USD=     |
+| =POINT_ID=   | =point_id=     | =1Y=, =5Y/2Y/ATM=, null for scalars   |
+
+The split between =qualifier= and =point_id= is type-specific and lives in a
+C++ registry. The DB stores both as free text; reconstruction of the full key
+is =series_type/metric/qualifier/point_id= (omitting =point_id= for scalars).
+
+** Asset class and subclass taxonomy
+
+Both fields live on =ores_marketdata_series_tbl=. Together they enable efficient
+queries without parsing key strings.
+
+| Asset class   | Subclass     | ORE types                                         |
+|---------------+--------------+---------------------------------------------------|
+| =FX=          | =SPOT=       | FX                                                |
+| =FX=          | =FORWARD=    | FXFWD                                             |
+| =FX=          | =VOLATILITY= | FX_OPTION                                         |
+| =RATES=       | =YIELD=      | MM, DISCOUNT, ZERO, IR_SWAP                       |
+| =RATES=       | =VOLATILITY= | SWAPTION, CAPFLOOR                                |
+| =RATES=       | =BASIS=      | BASIS_SWAP, BMA_SWAP                              |
+| =RATES=       | =FRA=        | FRA, IMM_FRA, MM_FUTURE                           |
+| =RATES=       | =XCCY=       | CC_BASIS_SWAP, CC_FIX_FLOAT_SWAP                  |
+| =CREDIT=      | =SPREAD=     | HAZARD_RATE, CDS                                  |
+| =CREDIT=      | =INDEX=      | CDS_INDEX, INDEX_CDS_OPTION                       |
+| =CREDIT=      | =RECOVERY=   | RECOVERY_RATE                                     |
+| =EQUITY=      | =SPOT=       | EQUITY                                            |
+| =EQUITY=      | =FORWARD=    | EQUITY_FWD, EQUITY_DIVIDEND                       |
+| =EQUITY=      | =VOLATILITY= | EQUITY_OPTION                                     |
+| =COMMODITY=   | =SPOT=       | COMMODITY                                         |
+| =COMMODITY=   | =FORWARD=    | COMMODITY_FWD                                     |
+| =COMMODITY=   | =VOLATILITY= | COMMODITY_OPTION                                  |
+| =INFLATION=   | =SWAP=       | ZC_INFLATIONSWAP, YY_INFLATIONSWAP                |
+| =INFLATION=   | =CAPFLOOR=   | ZC_INFLATIONCAPFLOOR, YY_INFLATIONCAPFLOOR        |
+| =INFLATION=   | =SEASONALITY=| SEASONALITY                                       |
+| =BOND=        | =PRICE=      | BOND (PRICE metric)                               |
+| =BOND=        | =SPREAD=     | BOND (YIELD_SPREAD metric)                        |
+| =CROSS_ASSET= | =CORRELATION=| CORRELATION                                       |
+
+** Bitemporality without GIST on hypertables
+
+=ores_marketdata_series_tbl= is a standard temporal table and uses GIST exclusion
+normally.
+
+=ores_marketdata_observations_tbl= and =ores_marketdata_fixings_tbl= are TimescaleDB
+hypertables. GIST exclusion constraints are incompatible with hypertables.
+Transaction-time uniqueness is enforced via:
+
+1. A unique partial index on the natural key =WHERE valid_to = infinity()= —
+   guarantees at most one current row per (series, date, point).
+2. An insert trigger that closes the previous current row before the new one
+   is stamped.
+3. A soft-delete rule that sets =valid_to = now()= instead of removing rows.
+
+* Phases
+
+** Phase 1 — Database schema [DONE]
+
+Create the three-table schema and wire into all orchestration scripts.
+
+*** Tasks
+
+- [X] Create =ores_marketdata_series_tbl= (standard temporal with GIST)
+- [X] Create =ores_marketdata_observations_tbl= (TimescaleDB, partition by
+      =observation_date=, 30-day chunks)
+- [X] Create =ores_marketdata_fixings_tbl= (TimescaleDB, partition by
+      =fixing_date=, 30-day chunks)
+- [X] RLS policies for all three tables
+- [X] Drop scripts for all three tables
+- [X] Wire into =create/create.sql=, =drop/drop.sql=, =rls/rls_create.sql=,
+      =rls/rls_drop.sql=
+
+*** Files
+
+| File | Description |
+|------+-------------|
+| =create/marketdata/marketdata_series_create.sql=       | Series catalog table |
+| =create/marketdata/marketdata_observations_create.sql= | Observations hypertable |
+| =create/marketdata/marketdata_fixings_create.sql=      | Fixings hypertable |
+| =create/marketdata/marketdata_rls_policies_create.sql= | RLS policies |
+| =create/marketdata/marketdata_create.sql=              | Component master script |
+| =drop/marketdata/= (matching drop files)               | |
+
+** Phase 2 — C++ CDM (ores.marketdata)
+
+Create a new =ores.marketdata= project containing the C++ domain model.
+
+*** Tasks
+
+- [ ] Create =ores.marketdata= project skeleton (CMakeLists, includes, src, tests)
+- [ ] =asset_class= enum (FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
+      CROSS_ASSET)
+- [ ] =series_subclass= enum (SPOT, FORWARD, VOLATILITY, YIELD, BASIS, FRA, XCCY,
+      SPREAD, INDEX, RECOVERY, SWAP, CAPFLOOR, SEASONALITY, PRICE, CORRELATION)
+- [ ] =market_series= domain entity
+- [ ] =market_observation= domain entity
+- [ ] =market_fixing= domain entity
+- [ ] Unit tests for all domain entities
+
+*** Key types
+
+#+begin_src cpp
+namespace ores::marketdata::domain {
+
+enum class asset_class {
+    fx, rates, credit, equity, commodity, inflation, bond, cross_asset
+};
+
+enum class series_subclass {
+    spot, forward, volatility, yield, basis, fra, xccy,
+    spread, index_credit, recovery, swap, capfloor, seasonality,
+    price, correlation
+};
+
+struct market_series {
+    boost::uuids::uuid id;
+    boost::uuids::uuid tenant_id;
+    std::string series_type;    // DISCOUNT, MM, FX, SWAPTION, ...
+    std::string metric;         // RATE, PRICE, RATE_LNVOL, ...
+    std::string qualifier;      // EUR, EUR/USD, CPTY_A/SR/USD, ...
+    asset_class asset_class;
+    series_subclass subclass;
+    bool is_scalar;
+    // standard temporal fields
+};
+
+struct market_observation {
+    boost::uuids::uuid id;
+    boost::uuids::uuid tenant_id;
+    boost::uuids::uuid series_id;
+    std::chrono::year_month_day observation_date;
+    std::optional<std::string> point_id; // null for scalars
+    std::string value;
+    std::optional<std::string> source;
+    // standard temporal fields
+};
+
+struct market_fixing {
+    boost::uuids::uuid id;
+    boost::uuids::uuid tenant_id;
+    boost::uuids::uuid series_id;
+    std::chrono::year_month_day fixing_date;
+    std::string value;
+    std::optional<std::string> source;
+    // standard temporal fields
+};
+
+} // namespace ores::marketdata::domain
+#+end_src
+
+** Phase 3 — ORE key decomposition (ores.ore updates)
+
+Extend the =ores.ore= parser/CDM so that =market_datum= and =fixing= carry
+decomposed fields, and the key can always be reconstructed.
+
+*** Tasks
+
+- [ ] Define a =series_key_registry= mapping each ORE =series_type= to
+      =(qualifier_depth, is_scalar)=. This is a static compile-time table.
+- [ ] Update =market_datum= struct to carry =(series_type, metric, qualifier,
+      point_id)= alongside =key= (for validation/roundtrip).
+- [ ] Update =fixing= struct to carry =series_type=, =qualifier= (the index name).
+- [ ] Update =market_data_parser= to fill the decomposed fields.
+- [ ] Update =market_data_serializer= to reconstruct =key= from components.
+- [ ] Update all roundtrip tests to validate decomposed fields.
+
+*** Registry example
+
+#+begin_src cpp
+// Maps series_type → (qualifier_depth, is_scalar)
+// qualifier_depth = number of components after metric that belong to the qualifier
+static const std::unordered_map<std::string, series_key_info> k_registry = {
+    {"DISCOUNT",           {2, false}},  // DISCOUNT/RATE/{ccy}/{curve_id}/{tenor}
+    {"MM",                 {2, false}},  // MM/RATE/{ccy}/{index_tenor}/{tenor}
+    {"FX",                 {2, true}},   // FX/RATE/{ccy1}/{ccy2}
+    {"FXFWD",              {2, false}},  // FXFWD/RATE/{ccy1}/{ccy2}/{tenor}
+    {"SWAPTION",           {1, false}},  // SWAPTION/metric/{ccy}/{expiry}/{tenor}/{strike}
+    {"CAPFLOOR",           {1, false}},  // CAPFLOOR/metric/{ccy}/{...point_id...}
+    {"HAZARD_RATE",        {3, false}},  // HAZARD_RATE/RATE/{entity}/{seniority}/{ccy}/{tenor}
+    // ...etc
+};
+#+end_src
+
+** Phase 4 — Database repository (ores.database)
+
+Add repository classes and mappers for the three market data tables.
+
+*** Tasks
+
+- [ ] DB entity structs for =ores_marketdata_series_tbl=,
+      =ores_marketdata_observations_tbl=, =ores_marketdata_fixings_tbl=
+- [ ] Mapper: =market_series= ↔ series entity
+- [ ] Mapper: =market_observation= ↔ observation entity
+- [ ] Mapper: =market_fixing= ↔ fixing entity
+- [ ] =market_series_repository=: get_all, get_by_id, get_by_type, save
+- [ ] =market_observations_repository=: get_by_series, get_by_date_range, save_bulk
+- [ ] =market_fixings_repository=: get_by_series, get_by_date_range, save_bulk
+- [ ] Integration tests against a real DB
+
+** Phase 5 — Service layer (ores.marketdata.service)
+
+Expose market data via NATS, implement file import.
+
+*** Tasks
+
+- [ ] NATS message types for market data (get/save series, get/save observations,
+      get/save fixings)
+- [ ] Service handlers
+- [ ] =import_market_data= handler: accepts ORE =market.txt= + =fixings.txt=
+      content, decomposes keys, upserts series, bulk-inserts observations/fixings
+- [ ] Service configuration and wiring
+
+** Future: Surface construction configuration (not in scope)
+
+Vol surfaces (FX, swaption, equity, commodity) require construction metadata
+beyond what raw market data carries. This is deferred to the pricing engine
+phase and will require a separate table keyed to =series_id=:
+
+- Delta convention (spot vs. forward delta, switch tenor)
+- ATM convention (DNS vs. ATMF, split tenor)
+- Smile model (SABR β=1, flat, five-point spline)
+- Active delta pillars (25Δ only vs. 25Δ + 10Δ)
+- Cross-tenor interpolation method (market vs. physical parameter space)
+- Master/slave surface relationships (e.g. EUR/GBP derived from EUR/USD and
+  GBP/USD via correlation)
+
+The raw observation data stored in =ores_marketdata_observations_tbl= is already
+correct for this future layer: the compound =point_id= (e.g. =1Y/ATM=,
+=6M/25RR=, =3M/25STR=) encodes the 2D structure without ambiguity. The
+construction config is a separate concern.
+
+** Phase 6 — Qt client (ores.qt.client)
+
+Basic market data browsing UI.
+
+*** Tasks
+
+- [ ] Market series list view (filterable by asset_class, series_subclass)
+- [ ] Observation time series view for a selected series
+- [ ] Fixing history view for a selected index series

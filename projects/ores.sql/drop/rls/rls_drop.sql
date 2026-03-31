@@ -24,6 +24,7 @@
 -- RLS policies must be dropped before the tables they reference. This
 -- orchestration file includes all component RLS policy drops.
 
+\ir ../marketdata/marketdata_rls_policies_drop.sql
 \ir ../workflow/workflow_rls_policies_drop.sql
 \ir ../compute/compute_rls_policies_drop.sql
 \ir ../scheduler/scheduler_rls_policies_drop.sql

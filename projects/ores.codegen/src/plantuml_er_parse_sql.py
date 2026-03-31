@@ -51,6 +51,7 @@ COMPONENT_PREFIXES = {
     'ores_reporting_': {'name': 'reporting', 'description': 'Reporting & Analytics', 'schema': 'public', 'color': '#E0F7FA', 'order': 12},
     'ores_compute_': {'name': 'compute', 'description': 'Distributed Compute Grid (BOINC)', 'schema': 'public', 'color': '#EDE7F6', 'order': 13},
     'ores_workflow_': {'name': 'workflow', 'description': 'Workflow Orchestration (Saga)', 'schema': 'public', 'color': '#FFF8E1', 'order': 14},
+    'ores_marketdata_': {'name': 'marketdata', 'description': 'Market Data (Quotes, Fixings, Series)', 'schema': 'public', 'color': '#E3F2FD', 'order': 18},
     'ores_utility_': {'name': 'utility', 'description': 'Utility Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 15},
     'ores_seed_': {'name': 'seed', 'description': 'Seed Functions', 'schema': 'public', 'color': '#ECEFF1', 'order': 16},
     'ores_database_': {'name': 'database', 'description': 'Database Infrastructure', 'schema': 'public', 'color': '#EFEBE9', 'order': 17},

@@ -23,6 +23,8 @@
 #include <ctime>
 #include <chrono>
 #include <filesystem>
+#include <string>
+#include <string_view>
 
 namespace ores::platform::time {
 
@@ -96,6 +98,41 @@ public:
      */
     static std::chrono::system_clock::time_point
     to_time_point_local(std::tm tm);
+
+    /**
+     * @brief Parses a calendar date string in YYYYMMDD or YYYY-MM-DD format.
+     *
+     * Uses std::from_chars for allocation-free, locale-independent parsing.
+     * Both formats are auto-detected from the string length and separators.
+     *
+     * @param s The date string to parse.
+     * @return The corresponding year_month_day.
+     * @throws std::invalid_argument if the format is unrecognised or the
+     *         resulting date is not a valid calendar date.
+     */
+    static std::chrono::year_month_day parse_date(std::string_view s);
+
+    /**
+     * @brief Formats a calendar date as YYYYMMDD (e.g. "20160205").
+     *
+     * Uses manual integer formatting to avoid reliance on C++20 chrono
+     * format specifiers, which are not fully implemented on all platforms.
+     *
+     * @param date The calendar date to format.
+     * @return Eight-character string in YYYYMMDD format.
+     */
+    static std::string format_date_compact(std::chrono::year_month_day date);
+
+    /**
+     * @brief Formats a calendar date as YYYY-MM-DD (ISO 8601, e.g. "2016-02-05").
+     *
+     * Uses manual integer formatting to avoid reliance on C++20 chrono
+     * format specifiers, which are not fully implemented on all platforms.
+     *
+     * @param date The calendar date to format.
+     * @return Ten-character string in YYYY-MM-DD format.
+     */
+    static std::string format_date_iso(std::chrono::year_month_day date);
 
     /**
      * @brief Converts a filesystem file_time_type to a system_clock::time_point.

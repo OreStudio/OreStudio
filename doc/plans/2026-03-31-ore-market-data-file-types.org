@@ -23,13 +23,15 @@ whitespace-delimited three-column line structure:
 DATE  KEY  VALUE
 #+end_example
 
-| File pattern         | Date formats           | Key semantics               |
-|----------------------+------------------------+-----------------------------|
-| =market*.txt=        | =YYYYMMDD= or =YYYY-MM-DD= | Instrument quote key    |
-| =fixings*.txt=       | =YYYYMMDD= or =YYYY-MM-DD= | Index name              |
+| File pattern         | Date formats               | Delimiter          | Key semantics           |
+|----------------------+----------------------------+--------------------+-------------------------|
+| =market*.txt=        | =YYYYMMDD= or =YYYY-MM-DD= | whitespace or =,=  | Instrument quote key    |
+| =fixings*.txt=       | =YYYYMMDD= or =YYYY-MM-DD= | whitespace or =,=  | Index name              |
 
 Both file types appear in both date formats in the ORE example library.
-The parser auto-detects the date format per line.
+Some files use comma as the field delimiter instead of whitespace; some
+files (e.g. =Legacy/Example_45=) mix both delimiters within the same file.
+The parser auto-detects the date format and delimiter per line.
 
 Comment lines begin with =#= and blank lines are silently skipped by ORE.
 Both conventions must be preserved on serialization.
@@ -113,8 +115,8 @@ only to XML configuration files.
 * File Inventory
 
 A content-deduplication pass across all =external/ore/examples= identifies
-*52 unique market data text files* (many example directories share identical
-file content).  All 52 must parse without error.  The roundtrip test suite
+*54 unique market data text files* (many example directories share identical
+file content).  All 54 must parse without error.  The roundtrip test suite
 runs each unique file through parse → serialize → re-parse and asserts
 field-by-field equivalence.
 
@@ -154,8 +156,9 @@ field-by-field equivalence.
 | =YYYY-MM-DD= | =MarketRisk/Input/Pnl/market.txt=                           |
 | =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_5/Input/market.txt=           |
 | =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_8/Input/Example_62/market.txt= |
+| =YYYY-MM-DD= | =Legacy/Example_61/Input/market.txt= (comma-delimited)         |
 
-** Unique fixings files (14 files)
+** Unique fixings files (15 files)
 
 | Date fmt     | Path (relative to =examples/=)                              |
 |--------------+-------------------------------------------------------------|
@@ -173,6 +176,7 @@ field-by-field equivalence.
 | =YYYY-MM-DD= | =ORE-API/Input/fixings_20160205.txt=                        |
 | =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_3/Input/fixings.txt=          |
 | =YYYY-MM-DD= | =ORE-Python/Notebooks/Example_5/Input/fixings.txt=          |
+| =YYYY-MM-DD= | =Legacy/Example_61/Input/fixings.txt= (comma-delimited)      |
 
 * Implementation Plan
 

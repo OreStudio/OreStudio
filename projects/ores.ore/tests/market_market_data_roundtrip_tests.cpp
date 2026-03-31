@@ -214,6 +214,10 @@ TEST_CASE("roundtrip_market_OREPython_Example_8_Example_62_market", tags) {
     check_market_roundtrip("ORE-Python/Notebooks/Example_8/Input/Example_62/market.txt");
 }
 
+TEST_CASE("roundtrip_market_Legacy_Example_61_market", tags) {
+    check_market_roundtrip("Legacy/Example_61/Input/market.txt");
+}
+
 // =============================================================================
 // Fixings files — YYYYMMDD date format (2 files)
 // =============================================================================
@@ -264,4 +268,7 @@ TEST_CASE("roundtrip_fixings_OREPython_Example_3_fixings", tags) {
 }
 TEST_CASE("roundtrip_fixings_OREPython_Example_5_fixings", tags) {
     check_fixings_roundtrip("ORE-Python/Notebooks/Example_5/Input/fixings.txt");
+}
+TEST_CASE("roundtrip_fixings_Legacy_Example_61_fixings", tags) {
+    check_fixings_roundtrip("Legacy/Example_61/Input/fixings.txt");
 }

@@ -33,8 +33,10 @@ namespace {
 /**
  * @brief Tokenizes a data line into exactly three fields.
  *
- * Splits on whitespace.  The value field consumes the remainder of the line
- * after the first two tokens, stripped of leading whitespace.
+ * Auto-detects the delimiter: if the line contains two or more commas the
+ * fields are split on commas (some ORE example files use CSV format);
+ * otherwise fields are split on whitespace.  The value field consumes the
+ * remainder of the line after the first two tokens.
  *
  * @return {date_str, key_str, value_str} or throws on fewer than 3 tokens.
  */
@@ -49,6 +51,24 @@ line_tokens tokenize(std::string_view line) {
         const auto p = sv.find_first_not_of(" \t\r");
         return p == std::string_view::npos ? std::string_view{} : sv.substr(p);
     };
+
+    line = skip_ws(line);
+
+    // Detect comma-delimited format: if there are at least two commas, split on commas.
+    const auto c1 = line.find(',');
+    if (c1 != std::string_view::npos) {
+        const auto c2 = line.find(',', c1 + 1);
+        if (c2 != std::string_view::npos) {
+            const auto date  = line.substr(0, c1);
+            const auto key   = line.substr(c1 + 1, c2 - c1 - 1);
+            const auto value = line.substr(c2 + 1);
+            if (date.empty() || key.empty() || value.empty())
+                throw std::invalid_argument("fewer than 3 tokens: " + std::string(line));
+            return {date, key, value};
+        }
+    }
+
+    // Whitespace-delimited format.
     auto next_token = [](std::string_view sv) -> std::pair<std::string_view, std::string_view> {
         const auto end = sv.find_first_of(" \t\r");
         if (end == std::string_view::npos)
@@ -56,7 +76,6 @@ line_tokens tokenize(std::string_view line) {
         return {sv.substr(0, end), sv.substr(end)};
     };
 
-    line = skip_ws(line);
     auto [date, rest1] = next_token(line);
     if (date.empty() || rest1.empty())
         throw std::invalid_argument("fewer than 3 tokens: " + std::string(line));

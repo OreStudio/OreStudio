@@ -142,6 +142,27 @@ TEST_CASE("parse_market_data_accepts_tab_separated_line", tags) {
     CHECK(result[0].value == "1.0947");
 }
 
+TEST_CASE("parse_market_data_accepts_comma_separated_line", tags) {
+    std::istringstream in("2022-09-26,BOND/YIELD_SPREAD/ISIN:US15135BAW19,0.02080707597\n");
+    const auto result = parse_market_data(in);
+
+    REQUIRE(result.size() == 1);
+    CHECK(result[0].date  == ymd(2022, 9, 26));
+    CHECK(result[0].key   == "BOND/YIELD_SPREAD/ISIN:US15135BAW19");
+    CHECK(result[0].value == "0.02080707597");
+}
+
+TEST_CASE("parse_market_data_handles_mixed_delimiter_file", tags) {
+    std::istringstream in(
+        "2022-09-26 BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y 0.0026500000\n"
+        "2022-09-26,BOND/YIELD_SPREAD/ISIN:US15135BAW19,0.02080707597\n");
+    const auto result = parse_market_data(in);
+
+    REQUIRE(result.size() == 2);
+    CHECK(result[0].key == "BASIS_SWAP/BASIS_SPREAD/3M/1D/USD/10Y");
+    CHECK(result[1].key == "BOND/YIELD_SPREAD/ISIN:US15135BAW19");
+}
+
 // =============================================================================
 // parse_market_data — error handling
 // =============================================================================

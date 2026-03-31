@@ -59,6 +59,11 @@ struct bond_instrument final {
     std::string trade_type_code;
 
     /**
+     * @brief Security identifier (e.g. ISIN) for the bond.
+     */
+    std::string security_id;
+
+    /**
      * @brief Name of the bond issuer.
      */
     std::string issuer;

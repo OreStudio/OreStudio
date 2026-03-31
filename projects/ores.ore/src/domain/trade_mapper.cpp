@@ -126,6 +126,10 @@ trade_mapper::map_bond_instrument(const trade& v) {
         return bond_instrument_mapper::forward_callable_bond(v);
     if (type == "ConvertibleBond")
         return bond_instrument_mapper::forward_convertible_bond(v);
+    if (type == "BondOption")
+        return bond_instrument_mapper::forward_bond_option(v);
+    if (type == "BondTRS")
+        return bond_instrument_mapper::forward_bond_trs(v);
     return std::nullopt;
 }
 

@@ -791,14 +791,12 @@ trade equity_instrument_mapper::reverse_equity_barrier_option(
     }
     if (!instr.barrier_type.empty()) {
         barrierData bd;
-        if (instr.barrier_type == "UpAndOut")
-            bd.Type = barrierType::UpAndOut;
-        else if (instr.barrier_type == "UpAndIn")
-            bd.Type = barrierType::UpAndIn;
-        else if (instr.barrier_type == "DownAndOut")
-            bd.Type = barrierType::DownAndOut;
-        else if (instr.barrier_type == "DownAndIn")
-            bd.Type = barrierType::DownAndIn;
+        if (instr.barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
+        else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
+        else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
+        else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
         else
             throw std::runtime_error(
                 "reverse_equity_barrier_option: unrecognized barrier type '"
@@ -1045,6 +1043,148 @@ trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
     d.FloatingPeriodSchedule.Rules.push_back(rule);
     d.FloatingPayDates.Rules.push_back(std::move(rule));
     t.EquityWorstOfBasketSwapData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: EquityDoubleBarrierOption (same struct as EquityBarrierOption)
+// ---------------------------------------------------------------------------
+
+equity_mapping_result
+equity_instrument_mapper::forward_equity_double_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping EquityDoubleBarrierOption: "
+                               << std::string(t.id);
+    equity_mapping_result result;
+    result.instrument = make_base("EquityDoubleBarrierOption");
+    if (!t.EquityDoubleBarrierOptionData) return result;
+    const auto& d = *t.EquityDoubleBarrierOptionData;
+    result.instrument.underlying_code =
+        extract_underlying_name(d.underlyingTypes);
+    result.instrument.currency = to_string(d.Currency);
+    result.instrument.quantity = static_cast<double>(d.Quantity);
+    result.instrument.option_type = extract_option_type(d.OptionData);
+    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
+    result.instrument.maturity_date = first_exercise_date(d.OptionData);
+    result.instrument.strike_price = extract_strike(d.strikeGroup);
+    if (d.StartDate)
+        result.instrument.start_date = std::string(*d.StartDate);
+    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
+    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
+    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: EquityEuropeanBarrierOption (same struct as EquityBarrierOption)
+// ---------------------------------------------------------------------------
+
+equity_mapping_result
+equity_instrument_mapper::forward_equity_european_barrier_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Forward-mapping EquityEuropeanBarrierOption: "
+        << std::string(t.id);
+    equity_mapping_result result;
+    result.instrument = make_base("EquityEuropeanBarrierOption");
+    if (!t.EquityEuropeanBarrierOptionData) return result;
+    const auto& d = *t.EquityEuropeanBarrierOptionData;
+    result.instrument.underlying_code =
+        extract_underlying_name(d.underlyingTypes);
+    result.instrument.currency = to_string(d.Currency);
+    result.instrument.quantity = static_cast<double>(d.Quantity);
+    result.instrument.option_type = extract_option_type(d.OptionData);
+    result.instrument.exercise_type = extract_exercise_style(d.OptionData);
+    result.instrument.maturity_date = first_exercise_date(d.OptionData);
+    result.instrument.strike_price = extract_strike(d.strikeGroup);
+    if (d.StartDate)
+        result.instrument.start_date = std::string(*d.StartDate);
+    result.instrument.barrier_type = barrier_type_str(d.BarrierData);
+    result.instrument.lower_barrier = first_barrier_level(d.BarrierData);
+    result.instrument.upper_barrier = second_barrier_level(d.BarrierData);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: EquityDoubleBarrierOption
+// ---------------------------------------------------------------------------
+
+trade equity_instrument_mapper::reverse_equity_double_barrier_option(
+        const equity_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping EquityDoubleBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::EquityDoubleBarrierOption;
+    eqBarrierOptionData d;
+    d.OptionData = make_option_data(instr);
+    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.Currency = parse_currency_code(instr.currency);
+    d.Quantity = static_cast<float>(instr.quantity);
+    if (instr.strike_price != 0.0) {
+        _Strike_t s;
+        static_cast<std::string&>(s) = std::to_string(instr.strike_price);
+        d.strikeGroup.Strike = std::move(s);
+    }
+    if (!instr.barrier_type.empty()) {
+        barrierData bd;
+        if (instr.barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
+        else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
+        else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
+        else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
+        else
+            throw std::runtime_error(
+                "reverse_equity_double_barrier_option: unrecognized barrier type '"
+                + instr.barrier_type + "'");
+        if (instr.lower_barrier != 0.0)
+            bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier));
+        if (instr.upper_barrier != 0.0)
+            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier));
+        d.BarrierData = std::move(bd);
+    }
+    t.EquityDoubleBarrierOptionData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: EquityEuropeanBarrierOption
+// ---------------------------------------------------------------------------
+
+trade equity_instrument_mapper::reverse_equity_european_barrier_option(
+        const equity_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Reverse-mapping EquityEuropeanBarrierOption";
+    trade t;
+    t.TradeType = oreTradeType::EquityEuropeanBarrierOption;
+    eqBarrierOptionData d;
+    d.OptionData = make_option_data(instr);
+    d.underlyingTypes = make_underlying_type(instr.underlying_code);
+    d.Currency = parse_currency_code(instr.currency);
+    d.Quantity = static_cast<float>(instr.quantity);
+    if (instr.strike_price != 0.0) {
+        _Strike_t s;
+        static_cast<std::string&>(s) = std::to_string(instr.strike_price);
+        d.strikeGroup.Strike = std::move(s);
+    }
+    if (!instr.barrier_type.empty()) {
+        barrierData bd;
+        if (instr.barrier_type == "UpAndOut")        bd.Type = barrierType::UpAndOut;
+        else if (instr.barrier_type == "UpAndIn")    bd.Type = barrierType::UpAndIn;
+        else if (instr.barrier_type == "DownAndOut") bd.Type = barrierType::DownAndOut;
+        else if (instr.barrier_type == "DownAndIn")  bd.Type = barrierType::DownAndIn;
+        else if (instr.barrier_type == "KnockOut")   bd.Type = barrierType::KnockOut;
+        else if (instr.barrier_type == "KnockIn")    bd.Type = barrierType::KnockIn;
+        else
+            throw std::runtime_error(
+                "reverse_equity_european_barrier_option: unrecognized barrier type '"
+                + instr.barrier_type + "'");
+        if (instr.lower_barrier != 0.0)
+            bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier));
+        if (instr.upper_barrier != 0.0)
+            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier));
+        d.BarrierData = std::move(bd);
+    }
+    t.EquityEuropeanBarrierOptionData = std::move(d);
     return t;
 }
 

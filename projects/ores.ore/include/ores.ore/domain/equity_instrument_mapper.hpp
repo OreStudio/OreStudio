@@ -90,6 +90,12 @@ public:
     static equity_mapping_result forward_equity_outperformance_option(
         const trade& t);
 
+    // Phase 10 — forward (barrier variant extensions)
+    static equity_mapping_result forward_equity_double_barrier_option(
+        const trade& t);
+    static equity_mapping_result forward_equity_european_barrier_option(
+        const trade& t);
+
     // Phase 5 — forward
     static equity_mapping_result forward_equity_accumulator(const trade& t);
     static equity_mapping_result forward_equity_tarf(const trade& t);
@@ -115,6 +121,12 @@ public:
     static trade reverse_equity_touch_option(
         const ores::trading::domain::equity_instrument& instr);
     static trade reverse_equity_outperformance_option(
+        const ores::trading::domain::equity_instrument& instr);
+
+    // Phase 10 — reverse (barrier variant extensions)
+    static trade reverse_equity_double_barrier_option(
+        const ores::trading::domain::equity_instrument& instr);
+    static trade reverse_equity_european_barrier_option(
         const ores::trading::domain::equity_instrument& instr);
 
     // Phase 5 — reverse

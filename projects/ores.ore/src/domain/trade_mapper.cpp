@@ -134,6 +134,12 @@ trade_mapper::map_fx_instrument(const trade& v) {
         return fx_instrument_mapper::forward_fx_tarf(v);
     if (type == "FxGenericBarrierOption")
         return fx_instrument_mapper::forward_fx_generic_barrier_option(v);
+    if (type == "FxDoubleBarrierOption")
+        return fx_instrument_mapper::forward_fx_double_barrier_option(v);
+    if (type == "FxEuropeanBarrierOption")
+        return fx_instrument_mapper::forward_fx_european_barrier_option(v);
+    if (type == "FxKIKOBarrierOption")
+        return fx_instrument_mapper::forward_fx_kiko_barrier_option(v);
     return std::nullopt;
 }
 
@@ -152,6 +158,8 @@ trade_mapper::map_bond_instrument(const trade& v) {
         return bond_instrument_mapper::forward_bond_option(v);
     if (type == "BondTRS")
         return bond_instrument_mapper::forward_bond_trs(v);
+    if (type == "BondRepo")
+        return bond_instrument_mapper::forward_bond_repo(v);
     return std::nullopt;
 }
 
@@ -202,6 +210,10 @@ trade_mapper::map_equity_instrument(const trade& v) {
         return equity_instrument_mapper::forward_equity_cliquet_option(v);
     if (type == "EquityWorstOfBasketSwap")
         return equity_instrument_mapper::forward_equity_worst_of_basket_swap(v);
+    if (type == "EquityDoubleBarrierOption")
+        return equity_instrument_mapper::forward_equity_double_barrier_option(v);
+    if (type == "EquityEuropeanBarrierOption")
+        return equity_instrument_mapper::forward_equity_european_barrier_option(v);
     return std::nullopt;
 }
 
@@ -230,6 +242,12 @@ trade_mapper::map_scripted_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "ScriptedTrade")
         return scripted_instrument_mapper::forward_scripted_trade(v);
+    if (type == "DoubleDigitalOption")
+        return scripted_instrument_mapper::forward_double_digital_option(v);
+    if (type == "PerformanceOption_01")
+        return scripted_instrument_mapper::forward_performance_option_01(v);
+    if (type == "KnockOutSwap")
+        return scripted_instrument_mapper::forward_knock_out_swap(v);
     return std::nullopt;
 }
 
@@ -240,6 +258,10 @@ trade_mapper::map_composite_instrument(const trade& v) {
         return composite_instrument_mapper::forward_composite_trade(v);
     if (type == "MultiLegOption")
         return composite_instrument_mapper::forward_multi_leg_option(v);
+    if (type == "TotalReturnSwap")
+        return composite_instrument_mapper::forward_total_return_swap(v);
+    if (type == "ContractForDifference")
+        return composite_instrument_mapper::forward_contract_for_difference(v);
     return std::nullopt;
 }
 

@@ -279,4 +279,215 @@ trade scripted_instrument_mapper::reverse_scripted_trade(
     return t;
 }
 
+// ---------------------------------------------------------------------------
+// Forward: DoubleDigitalOption
+// ---------------------------------------------------------------------------
+
+scripted_mapping_result scripted_instrument_mapper::forward_double_digital_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping DoubleDigitalOption: "
+                               << std::string(t.id);
+    scripted_mapping_result result;
+    result.instrument = make_base("DoubleDigitalOption");
+    if (!t.DoubleDigitalOptionData) return result;
+    const auto& d = *t.DoubleDigitalOptionData;
+    result.instrument.script_name = "DoubleDigitalOption";
+
+    // Underlyings from Underlying1/Underlying2
+    std::string underlyings = "[";
+    bool first = true;
+    for (const auto* u : {d.Underlying1 ? &*d.Underlying1 : nullptr,
+                          d.Underlying2 ? &*d.Underlying2 : nullptr,
+                          d.Underlying3 ? &*d.Underlying3 : nullptr,
+                          d.Underlying4 ? &*d.Underlying4 : nullptr}) {
+        if (!u) continue;
+        if (!first) underlyings += ",";
+        underlyings += "\"" + std::string(u->Name) + "\"";
+        first = false;
+    }
+    underlyings += "]";
+    result.instrument.underlyings_json = underlyings;
+
+    result.instrument.parameters_json =
+        "{\"BinaryPayout\":" + std::to_string(d.BinaryPayout) +
+        ",\"BinaryLevel1\":" + std::to_string(d.BinaryLevel1) +
+        ",\"BinaryLevel2\":" + std::to_string(d.BinaryLevel2) +
+        ",\"Type1\":\"" + std::string(d.Type1) + "\"" +
+        ",\"Type2\":\"" + std::string(d.Type2) + "\"" +
+        ",\"Position\":\"" + to_string(d.Position) + "\"" +
+        ",\"Expiry\":\"" + std::string(d.Expiry) + "\"" +
+        ",\"Settlement\":\"" + std::string(d.Settlement) + "\"" +
+        ",\"PayCcy\":\"" + to_string(d.PayCcy) + "\"" +
+        "}";
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: PerformanceOption_01
+// ---------------------------------------------------------------------------
+
+scripted_mapping_result scripted_instrument_mapper::forward_performance_option_01(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping PerformanceOption_01: "
+                               << std::string(t.id);
+    scripted_mapping_result result;
+    result.instrument = make_base("PerformanceOption_01");
+    if (!t.PerformanceOption01Data) return result;
+    const auto& d = *t.PerformanceOption01Data;
+    result.instrument.script_name = "PerformanceOption_01";
+
+    // Underlyings
+    std::string underlyings = "[";
+    bool first = true;
+    for (const auto& u : d.Underlyings.Underlying) {
+        if (!first) underlyings += ",";
+        underlyings += "\"" + std::string(u.Name) + "\"";
+        first = false;
+    }
+    underlyings += "]";
+    result.instrument.underlyings_json = underlyings;
+
+    result.instrument.parameters_json =
+        "{\"NotionalAmount\":" + std::to_string(d.NotionalAmount) +
+        ",\"ParticipationRate\":" + std::to_string(d.ParticipationRate) +
+        ",\"Strike\":" + std::to_string(d.Strike) +
+        ",\"ValuationDate\":\"" + std::string(d.ValuationDate) + "\"" +
+        ",\"SettlementDate\":\"" + std::string(d.SettlementDate) + "\"" +
+        ",\"Position\":\"" + to_string(d.Position) + "\"" +
+        ",\"PayCcy\":\"" + to_string(d.PayCcy) + "\"" +
+        "}";
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: KnockOutSwap
+// ---------------------------------------------------------------------------
+
+scripted_mapping_result scripted_instrument_mapper::forward_knock_out_swap(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping KnockOutSwap: "
+                               << std::string(t.id);
+    scripted_mapping_result result;
+    result.instrument = make_base("KnockOutSwap");
+    if (!t.KnockOutSwapData) return result;
+    const auto& d = *t.KnockOutSwapData;
+    result.instrument.script_name = "KnockOutSwap";
+
+    std::string params =
+        "{\"BarrierType\":\"" + to_string(d.BarrierData.Type) + "\"" +
+        ",\"BarrierStartDate\":\"" + std::string(d.BarrierStartDate) + "\"";
+    if (!d.BarrierData.Levels.Level.empty())
+        params += ",\"BarrierLevel\":" +
+            std::to_string(d.BarrierData.Levels.Level.front());
+    params += "}";
+    result.instrument.parameters_json = params;
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: DoubleDigitalOption
+// ---------------------------------------------------------------------------
+
+trade scripted_instrument_mapper::reverse_double_digital_option(
+        const scripted_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping DoubleDigitalOption";
+    trade t;
+    t.TradeType = oreTradeType::DoubleDigitalOption;
+    doubleDigitalOptionData d;
+    // Required fields — parse from parameters_json where possible
+    static_cast<std::string&>(d.Expiry)     = "2000-01-01";
+    static_cast<std::string&>(d.Settlement) = "2000-01-01";
+    static_cast<std::string&>(d.Type1) = "OverOrUnder";
+    static_cast<std::string&>(d.Type2) = "OverOrUnder";
+    d.Position = longShort::Long;
+    d.PayCcy   = currencyCode::USD;
+    for (const auto& [key, val] : parse_json_object(instr.parameters_json)) {
+        if      (key == "BinaryPayout")  d.BinaryPayout  = std::stof(val);
+        else if (key == "BinaryLevel1")  d.BinaryLevel1  = std::stof(val);
+        else if (key == "BinaryLevel2")  d.BinaryLevel2  = std::stof(val);
+        else if (key == "Type1")         static_cast<std::string&>(d.Type1) = val;
+        else if (key == "Type2")         static_cast<std::string&>(d.Type2) = val;
+        else if (key == "Expiry")        static_cast<std::string&>(d.Expiry) = val;
+        else if (key == "Settlement")    static_cast<std::string&>(d.Settlement) = val;
+        else if (key == "Position")      d.Position = (val == "Short") ?
+                                             longShort::Short : longShort::Long;
+    }
+    // Reconstruct underlyings from underlyings_json
+    const auto unames = parse_json_string_array(instr.underlyings_json);
+    auto make_underlying = [](const std::string& name) {
+        underlying u;
+        static_cast<std::string&>(u.Name) = name;
+        return u;
+    };
+    if (unames.size() > 0) d.Underlying1 = make_underlying(unames[0]);
+    if (unames.size() > 1) d.Underlying2 = make_underlying(unames[1]);
+    if (unames.size() > 2) d.Underlying3 = make_underlying(unames[2]);
+    if (unames.size() > 3) d.Underlying4 = make_underlying(unames[3]);
+    t.DoubleDigitalOptionData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: PerformanceOption_01
+// ---------------------------------------------------------------------------
+
+trade scripted_instrument_mapper::reverse_performance_option_01(
+        const scripted_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping PerformanceOption_01";
+    trade t;
+    t.TradeType = oreTradeType::PerformanceOption_01;
+    performanceOption01Data d;
+    d.Position = longShort::Long;
+    d.PayCcy   = currencyCode::USD;
+    static_cast<std::string&>(d.ValuationDate)  = "2000-01-01";
+    static_cast<std::string&>(d.SettlementDate) = "2000-01-01";
+    for (const auto& [key, val] : parse_json_object(instr.parameters_json)) {
+        if      (key == "NotionalAmount")    d.NotionalAmount    = std::stof(val);
+        else if (key == "ParticipationRate") d.ParticipationRate = std::stof(val);
+        else if (key == "Strike")            d.Strike            = std::stof(val);
+        else if (key == "ValuationDate")
+            static_cast<std::string&>(d.ValuationDate) = val;
+        else if (key == "SettlementDate")
+            static_cast<std::string&>(d.SettlementDate) = val;
+        else if (key == "Position")
+            d.Position = (val == "Short") ? longShort::Short : longShort::Long;
+    }
+    // Reconstruct underlyings from underlyings_json
+    for (const auto& name : parse_json_string_array(instr.underlyings_json)) {
+        underlying u;
+        static_cast<std::string&>(u.Name) = name;
+        d.Underlyings.Underlying.push_back(std::move(u));
+    }
+    t.PerformanceOption01Data = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: KnockOutSwap
+// ---------------------------------------------------------------------------
+
+trade scripted_instrument_mapper::reverse_knock_out_swap(
+        const scripted_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping KnockOutSwap";
+    trade t;
+    t.TradeType = oreTradeType::KnockOutSwap;
+    knockOutSwapData d;
+    d.BarrierData.Type = barrierType::DownAndOut;
+    static_cast<std::string&>(d.BarrierStartDate) = "2000-01-01";
+    for (const auto& [key, val] : parse_json_object(instr.parameters_json)) {
+        if (key == "BarrierStartDate")
+            static_cast<std::string&>(d.BarrierStartDate) = val;
+        else if (key == "BarrierLevel")
+            d.BarrierData.Levels.Level.push_back(std::stof(val));
+        else if (key == "BarrierType") {
+            if      (val == "UpAndOut")    d.BarrierData.Type = barrierType::UpAndOut;
+            else if (val == "UpAndIn")     d.BarrierData.Type = barrierType::UpAndIn;
+            else if (val == "DownAndIn")   d.BarrierData.Type = barrierType::DownAndIn;
+            else                           d.BarrierData.Type = barrierType::DownAndOut;
+        }
+    }
+    t.KnockOutSwapData = std::move(d);
+    return t;
+}
+
 }

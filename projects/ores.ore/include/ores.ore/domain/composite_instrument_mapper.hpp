@@ -38,10 +38,10 @@ struct composite_mapping_result {
  * @brief Maps ORE XSD composite trade types to ORES domain types and back.
  *
  * Handles:
- *   - CompositeTrade   (compositeTradeData) — top-level wrapper only;
- *                      component trades are stored separately as
- *                      composite_leg records.
- *   - MultiLegOption   (multiLegOptionData)
+ *   - CompositeTrade         (compositeTradeData)
+ *   - MultiLegOption         (multiLegOptionData)
+ *   - TotalReturnSwap        (totalReturnSwapData)
+ *   - ContractForDifference  (totalReturnSwapData via ContractForDifferenceData)
  */
 class composite_instrument_mapper {
 private:
@@ -57,10 +57,17 @@ private:
 public:
     static composite_mapping_result forward_composite_trade(const trade& t);
     static composite_mapping_result forward_multi_leg_option(const trade& t);
+    static composite_mapping_result forward_total_return_swap(const trade& t);
+    static composite_mapping_result forward_contract_for_difference(
+        const trade& t);
 
     static trade reverse_composite_trade(
         const ores::trading::domain::composite_instrument& instr);
     static trade reverse_multi_leg_option(
+        const ores::trading::domain::composite_instrument& instr);
+    static trade reverse_total_return_swap(
+        const ores::trading::domain::composite_instrument& instr);
+    static trade reverse_contract_for_difference(
         const ores::trading::domain::composite_instrument& instr);
 };
 

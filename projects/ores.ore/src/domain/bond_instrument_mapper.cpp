@@ -408,4 +408,42 @@ trade bond_instrument_mapper::reverse_bond_trs(
     return t;
 }
 
+// ---------------------------------------------------------------------------
+// Forward: BondRepo
+// ---------------------------------------------------------------------------
+
+bond_mapping_result bond_instrument_mapper::forward_bond_repo(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondRepo: "
+                               << std::string(t.id);
+    bond_mapping_result result;
+    result.instrument = make_base("BondRepo");
+    if (!t.BondRepoData) return result;
+    const auto& d = *t.BondRepoData;
+    map_bond_data(d.BondData, result.instrument);
+    // Repo leg: capture payment frequency from leg type
+    if (d.RepoData.LegData.LegType == legType::Floating) {
+        result.instrument.coupon_frequency_code = "Quarterly";
+    } else {
+        result.instrument.coupon_frequency_code = "Maturity";
+    }
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: BondRepo
+// ---------------------------------------------------------------------------
+
+trade bond_instrument_mapper::reverse_bond_repo(const bond_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BondRepo";
+    trade t;
+    t.TradeType = oreTradeType::BondRepo;
+    bondRepoData d;
+    d.BondData = reverse_bond_data(instr);
+    // Reconstruct a minimal repo leg (fixed, non-payer)
+    d.RepoData.LegData.Payer = false;
+    d.RepoData.LegData.LegType = legType::Fixed;
+    t.BondRepoData = std::move(d);
+    return t;
+}
+
 }

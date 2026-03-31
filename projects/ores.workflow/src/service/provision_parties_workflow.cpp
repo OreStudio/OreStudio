@@ -38,13 +38,14 @@
 
 namespace ores::workflow::service {
 
+using namespace ores::logging;
+
 namespace {
 
 inline static std::string_view logger_name =
     "ores.workflow.service.provision_parties_workflow";
 
 static auto& lg() {
-    using namespace ores::logging;
     static auto instance = make_logger(logger_name);
     return instance;
 }

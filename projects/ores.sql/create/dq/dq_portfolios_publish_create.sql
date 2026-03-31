@@ -57,17 +57,8 @@ declare
     v_max_depth int;
     v_level_count bigint;
 begin
-    -- Idempotency: skip if tenant already has portfolios
-    if exists (
-        select 1 from ores_refdata_portfolios_tbl
-        where tenant_id = p_target_tenant_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        return query select 'skipped'::text, 0::bigint;
-        return;
-    end if;
-
-    -- Resolve root party: explicit param or query tenant's operational root
+    -- Resolve root party: explicit param or query tenant's operational root.
+    -- Must run before the idempotency check so we can scope by party_id.
     v_root_party_id := coalesce(
         (p_params ->> 'party_id')::uuid,
         (select id from ores_refdata_parties_tbl
@@ -80,6 +71,17 @@ begin
 
     if v_root_party_id is null then
         return query select 'skipped_no_party'::text, 0::bigint;
+        return;
+    end if;
+
+    -- Idempotency: skip if this party already has portfolios
+    if exists (
+        select 1 from ores_refdata_portfolios_tbl
+        where tenant_id = p_target_tenant_id
+          and party_id = v_root_party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        return query select 'skipped'::text, 0::bigint;
         return;
     end if;
 

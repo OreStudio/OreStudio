@@ -34,6 +34,7 @@
 
 namespace ores::workflow::messaging {
 
+using namespace ores::logging;
 using namespace ores::service::messaging;
 
 workflow_handler::workflow_handler(ores::nats::service::client& nats,

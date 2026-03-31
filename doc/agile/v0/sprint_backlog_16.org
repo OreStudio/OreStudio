@@ -435,6 +435,87 @@ temporal/audit fields).
   =PositionHistoryDialog=, =PositionController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
+*** TODO Source report definitions from DQ instead of hardcoded C++   :code:
+
+*Background*
+
+Report definitions in =PartyProvisioningWizard= are currently hardcoded as a
+=constexpr std::array= in C++ (=PartyProvisioningWizard.cpp=, ~line 427). This
+is architecturally inconsistent with how all other seedable reference data is
+handled in OreStudio, which uses the DQ artefact pipeline:
+
+- A staging table (=dq_*_artefact_tbl=) holds the source data
+- An artefact type entry in =ores_dq_artefact_types_tbl= maps staging → target
+  + publish function
+- A dataset (e.g. =ore.report_definitions=) references the staging table
+- Bundles (=organisation=, or a new =ore_analytics= bundle) group datasets
+- The publish function copies approved rows into the target table
+
+Business units, portfolios, and books already follow this pattern. Report
+definitions do not, causing two problems:
+
+1. *Off-by-one fragility*: the array was declared =std::array<ReportEntry, 28>=
+   with only 27 entries, producing a zero-initialised trailing entry with
+   =name = ""=. This triggered a DB check constraint violation during party
+   provisioning (fixed as a stopgap by changing the array size to 27).
+2. *Non-evolvable*: adding, renaming, or adjusting a report definition requires
+   a C++ recompile and new release. There is no way to update defaults via data
+   tooling or deliver them as part of a bundle update.
+
+*Target architecture*
+
+#+begin_example
+SQL seed data (populate script)
+  → ores_dq_report_definitions_artefact_tbl   (staging)
+    → ores_dq_report_definitions_publish_fn   (publish function)
+      → ores_reporting_report_definitions_tbl (target, party-scoped)
+#+end_example
+
+The =PartyProvisioningWizard= loads candidate definitions by querying the DQ
+artefact table for the selected bundle, presents them with checkboxes (same UX
+as today), and on confirmation calls the existing
+=reporting.v1.report-definitions.save= endpoint for each selected entry. The
+hardcoded =k_default_reports= array is deleted.
+
+*Scope*
+
+This story covers the full stack end-to-end: SQL schema, DQ pipeline, seed
+data, and Qt wizard refactor.
+
+***** Tasks
+
+- [ ] SQL: create =ores_dq_report_definitions_artefact_tbl= with columns
+      =name=, =description=, =report_type=, =schedule_expression=,
+      =concurrency_policy=, =display_order= plus standard DQ audit/temporal
+      fields; add to =dq_create.sql= and =drop_dq.sql=
+- [ ] SQL: write =ores_dq_report_definitions_publish_fn= that inserts approved
+      artefact rows into =ores_reporting_report_definitions_tbl= scoped to the
+      calling party (mirrors =ores_dq_books_publish_fn= pattern)
+- [ ] SQL: register the new artefact type =report_definitions= in
+      =dq_artefact_types_populate.sql= pointing at the staging table, target
+      table, and publish function
+- [ ] SQL: create seed populate script
+      =populate/reporting/reporting_report_definitions_populate.sql= with the
+      27 standard ORE analytics definitions (migrate from =k_default_reports=)
+      and wire it into the reporting populate orchestrator
+- [ ] SQL: add a new bundle =ore_analytics= (or extend =organisation=) in
+      =dq_dataset_bundle_populate.sql= and register the
+      =ore.report_definitions= dataset as a member
+- [ ] API: add =get_report_definition_templates_request/response= to
+      =ores.reporting.api= (or reuse the DQ artefact list endpoint) so the Qt
+      client can fetch candidates without a direct DB query
+- [ ] Qt: refactor =PartyReportSetupPage= to load report definition candidates
+      from the API call above on =initializePage()= instead of iterating
+      =k_default_reports=; remove the =constexpr= array entirely
+- [ ] Qt: handle async load in =PartyReportSetupPage=: show a spinner while
+      fetching, populate the list widget on success, show an error label on
+      failure
+- [ ] SQL: recreate database to pick up new tables and seed data; verify
+      27 artefact rows present in staging table after =populate= run
+- [ ] End-to-end test: run party provisioning wizard, confirm report
+      definitions created in =ores_reporting_report_definitions_tbl= match the
+      selected artefacts, confirm no check constraint violations
+
 *** TODO Add missing party isolation RLS policies                      :code:
 
 Several tables have a =party_id= column and tenant-level RLS enabled, but are

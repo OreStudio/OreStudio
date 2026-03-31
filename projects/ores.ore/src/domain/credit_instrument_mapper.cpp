@@ -329,6 +329,11 @@ trade credit_instrument_mapper::reverse_credit_linked_swap(
     static_cast<std::string&>(d.CreditCurveId) = instr.reference_entity;
     if (instr.recovery_rate != 0.0)
         d.FixedRecoveryRate = static_cast<float>(instr.recovery_rate);
+    if (!instr.currency.empty() || instr.notional != 0.0) {
+        creditLinkedSwapData_ContingentPayments_t cp;
+        cp.LegData.push_back(reverse_cds_leg(instr));
+        d.ContingentPayments = std::move(cp);
+    }
     t.CreditLinkedSwapData = std::move(d);
     return t;
 }

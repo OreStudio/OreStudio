@@ -391,9 +391,19 @@ trade bond_instrument_mapper::reverse_bond_trs(
     totalReturnData_PriceType_t pt;
     static_cast<std::string&>(pt) = "Dirty";
     d.TotalReturnData.PriceType = std::move(pt);
-    // Minimal FundingData leg
-    d.FundingData.LegData.LegType = legType::Fixed;
+    // Reconstruct funding leg from captured code.
     d.FundingData.LegData.Payer = false;
+    if (instr.trs_funding_leg_code.empty() ||
+            instr.trs_funding_leg_code == "Fixed") {
+        d.FundingData.LegData.LegType = legType::Fixed;
+    } else {
+        d.FundingData.LegData.LegType = legType::Floating;
+        _FloatingLegData_t fld;
+        static_cast<std::string&>(fld.Index) = instr.trs_funding_leg_code;
+        legDataType_group_t ldt;
+        ldt.FloatingLegData = std::move(fld);
+        d.FundingData.LegData.legDataType = std::move(ldt);
+    }
     t.BondTRSData = std::move(d);
     return t;
 }

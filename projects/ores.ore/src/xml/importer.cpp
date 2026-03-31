@@ -133,20 +133,26 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
             item.ore_counterparty_name = std::string(*t.Envelope->CounterParty);
         }
 
-        item.instrument = domain::trade_mapper::map_instrument(t);
+        try {
+            item.instrument = domain::trade_mapper::map_instrument(t);
 
-        // Patch instrument.id = trade.id for all mapped instrument types.
-        // Swap results also need instrument_id set on each leg.
-        std::visit([&](auto& result) {
-            using T = std::decay_t<decltype(result)>;
-            if constexpr (!std::is_same_v<T, std::monostate>) {
-                result.instrument.id = item.trade.id;
-                if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
-                    for (auto& leg : result.legs)
-                        leg.instrument_id = item.trade.id;
+            // Patch instrument.id = trade.id for all mapped instrument types.
+            // Swap results also need instrument_id set on each leg.
+            std::visit([&](auto& result) {
+                using T = std::decay_t<decltype(result)>;
+                if constexpr (!std::is_same_v<T, std::monostate>) {
+                    result.instrument.id = item.trade.id;
+                    if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
+                        for (auto& leg : result.legs)
+                            leg.instrument_id = item.trade.id;
+                    }
                 }
-            }
-        }, item.instrument);
+            }, item.instrument);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to map instrument for trade "
+                << std::string(t.id) << ": " << e.what();
+        }
 
         r.push_back(std::move(item));
     }

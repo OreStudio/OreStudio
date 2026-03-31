@@ -1138,6 +1138,8 @@ trade equity_instrument_mapper::reverse_equity_double_barrier_option(
                 + instr.barrier_type + "'");
         if (instr.lower_barrier != 0.0)
             bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier));
+        if (instr.upper_barrier != 0.0)
+            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier));
         d.BarrierData = std::move(bd);
     }
     t.EquityDoubleBarrierOptionData = std::move(d);
@@ -1176,6 +1178,8 @@ trade equity_instrument_mapper::reverse_equity_european_barrier_option(
                 + instr.barrier_type + "'");
         if (instr.lower_barrier != 0.0)
             bd.Levels.Level.push_back(static_cast<float>(instr.lower_barrier));
+        if (instr.upper_barrier != 0.0)
+            bd.Levels.Level.push_back(static_cast<float>(instr.upper_barrier));
         d.BarrierData = std::move(bd);
     }
     t.EquityEuropeanBarrierOptionData = std::move(d);

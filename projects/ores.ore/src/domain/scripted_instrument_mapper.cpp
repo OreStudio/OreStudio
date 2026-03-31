@@ -412,6 +412,17 @@ trade scripted_instrument_mapper::reverse_double_digital_option(
         else if (key == "Position")      d.Position = (val == "Short") ?
                                              longShort::Short : longShort::Long;
     }
+    // Reconstruct underlyings from underlyings_json
+    const auto unames = parse_json_string_array(instr.underlyings_json);
+    auto make_underlying = [](const std::string& name) {
+        underlying u;
+        static_cast<std::string&>(u.Name) = name;
+        return u;
+    };
+    if (unames.size() > 0) d.Underlying1 = make_underlying(unames[0]);
+    if (unames.size() > 1) d.Underlying2 = make_underlying(unames[1]);
+    if (unames.size() > 2) d.Underlying3 = make_underlying(unames[2]);
+    if (unames.size() > 3) d.Underlying4 = make_underlying(unames[3]);
     t.DoubleDigitalOptionData = std::move(d);
     return t;
 }

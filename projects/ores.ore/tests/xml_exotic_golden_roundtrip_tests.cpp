@@ -26,19 +26,18 @@
 #include "ores.testing/project_root.hpp"
 
 /**
- * @file xml_commodity_golden_roundtrip_tests.cpp
- * @brief Thing 1: XSD serialization fidelity golden file tests for Commodity
- * instruments: Swap, Forward, Option, AveragePriceOption, OptionStrip,
- * Swaption, and VarianceSwap.
- *
- * CommoditySwap files use SwapData (already dispatched by the swap mapper);
- * the remaining types have their own CommodityXxxData elements.
+ * @file xml_exotic_golden_roundtrip_tests.cpp
+ * @brief Thing 1: XSD serialization fidelity golden file tests for Exotic
+ * instruments: DoubleDigitalOption, EquityAccumulator, EquityCliquetOption,
+ * EquityTaRF, EquityWorstOfBasketSwap, FXWorstOfBasketSwap,
+ * Formula-Based Coupon (SwapData), FxAccumulator, FxGenericBarrierOption,
+ * FxTaRF, KnockOutSwap, PerformanceOption (COM/FX), and RainbowOption.
  */
 
 namespace {
 
-const std::string_view test_suite("ores.ore.commodity.golden.roundtrip.tests");
-const std::string tags("[ore][xml][roundtrip][golden][commodity]");
+const std::string_view test_suite("ores.ore.exotic.golden.roundtrip.tests");
+const std::string tags("[ore][xml][roundtrip][golden][exotic]");
 
 using ores::ore::domain::portfolio;
 using namespace ores::logging;
@@ -74,69 +73,105 @@ void run_golden_test(const std::string& filename) {
 } // namespace
 
 // =============================================================================
-// CommoditySwap tests (SwapData with commodity legs)
+// DoubleDigitalOption tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_commodity_basis_swap_nymex_cl", tags) {
-    run_golden_test("Commodity_Basis_Swap_NYMEX_CL.xml");
-}
-
-TEST_CASE("golden_roundtrip_commodity_swap_lme_al_avg_alt", tags) {
-    run_golden_test("Commodity_Swap_LME_AL_AVG_ALT.xml");
-}
-
-TEST_CASE("golden_roundtrip_commodity_swap_nymex_a7q", tags) {
-    run_golden_test("Commodity_Swap_NYMEX_A7Q.xml");
+TEST_CASE("golden_roundtrip_exotic_double_digital_option", tags) {
+    run_golden_test("Exotic_Double_Digital_Option.xml");
 }
 
 // =============================================================================
-// CommodityForward tests
+// EquityAccumulator tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_commodity_forward", tags) {
-    run_golden_test("Commodity_Forward.xml");
+TEST_CASE("golden_roundtrip_exotic_equity_accumulator_single_name", tags) {
+    run_golden_test("Exotic_EquityAccumulator_single_name.xml");
 }
 
 // =============================================================================
-// CommodityOption tests
+// EquityCliquetOption tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_commodity_option", tags) {
-    run_golden_test("Commodity_Option.xml");
+TEST_CASE("golden_roundtrip_exotic_equity_cliquet_option", tags) {
+    run_golden_test("Exotic_Equity_Cliquet_Option.xml");
 }
 
 // =============================================================================
-// CommodityAveragePriceOption tests
+// EquityTaRF tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_commodity_apo_nymex_cl", tags) {
-    run_golden_test("Commodity_APO_NYMEX_CL.xml");
+TEST_CASE("golden_roundtrip_exotic_equity_tarf", tags) {
+    run_golden_test("Exotic_EquityTaRF.xml");
 }
 
 // =============================================================================
-// CommodityOptionStrip tests
+// EquityWorstOfBasketSwap tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_commodity_apo_strip_nymex_csx", tags) {
-    run_golden_test("Commodity_APO_Strip_NYMEX_CSX.xml");
+TEST_CASE("golden_roundtrip_exotic_equity_worst_of_basket_swap", tags) {
+    run_golden_test("Exotic_EquityWorstOfBasketSwap.xml");
 }
 
-TEST_CASE("golden_roundtrip_commodity_option_strip_nymex_ng", tags) {
-    run_golden_test("Commodity_Option_Strip_NYMEX_NG.xml");
-}
-
-// =============================================================================
-// CommoditySwaption tests
-// =============================================================================
-
-TEST_CASE("golden_roundtrip_commodity_swaption_nymex_ng", tags) {
-    run_golden_test("Commodity_Swaption_NYMEX_NG.xml");
+TEST_CASE("golden_roundtrip_exotic_fx_worst_of_basket_swap", tags) {
+    run_golden_test("Exotic_FXWorstOfBasketSwap.xml");
 }
 
 // =============================================================================
-// CommodityVarianceSwap tests
+// Formula-Based Coupon (SwapData) tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_commodity_variance_swap", tags) {
-    run_golden_test("Commodity_Variance_Swap.xml");
+TEST_CASE("golden_roundtrip_exotic_formula_based_coupon", tags) {
+    run_golden_test("Exotic_Formula_Based_Coupon.xml");
+}
+
+// =============================================================================
+// FxAccumulator tests
+// =============================================================================
+
+TEST_CASE("golden_roundtrip_exotic_fx_accumulator", tags) {
+    run_golden_test("Exotic_FxAccumulator.xml");
+}
+
+// =============================================================================
+// FxGenericBarrierOption tests
+// =============================================================================
+
+TEST_CASE("golden_roundtrip_exotic_fx_generic_barrier_option", tags) {
+    run_golden_test("Exotic_FxGenericBarrierOption.xml");
+}
+
+// =============================================================================
+// FxTaRF tests
+// =============================================================================
+
+TEST_CASE("golden_roundtrip_exotic_fx_tarf", tags) {
+    run_golden_test("Exotic_FxTaRF.xml");
+}
+
+// =============================================================================
+// KnockOutSwap tests
+// =============================================================================
+
+TEST_CASE("golden_roundtrip_exotic_knock_out_swap", tags) {
+    run_golden_test("Exotic_KnockOutSwap.xml");
+}
+
+// =============================================================================
+// PerformanceOption tests
+// =============================================================================
+
+TEST_CASE("golden_roundtrip_exotic_performance_option_com", tags) {
+    run_golden_test("Exotic_PerformanceOption_01_COM.xml");
+}
+
+TEST_CASE("golden_roundtrip_exotic_performance_option_fx", tags) {
+    run_golden_test("Exotic_PerformanceOption_01_FX.xml");
+}
+
+// =============================================================================
+// RainbowOption tests
+// =============================================================================
+
+TEST_CASE("golden_roundtrip_exotic_rainbow_option", tags) {
+    run_golden_test("Exotic_RainbowOption.xml");
 }

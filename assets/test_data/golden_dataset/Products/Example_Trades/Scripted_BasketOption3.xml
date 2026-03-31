@@ -1,0 +1,40 @@
+<Portfolio>
+  <Trade id="LookbackCallBasketOption#1">
+    <TradeType>ScriptedTrade</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+      <AdditionalFields>
+        <party_id>party</party_id>
+        <valuation_date>2025-02-10</valuation_date>
+      </AdditionalFields>
+    </Envelope>
+    <LookbackCallBasketOptionData>
+      <Expiry type="event">2025-08-31</Expiry>
+      <Settlement type="event">2025-09-05</Settlement>
+      <ObservationDates type="event">
+        <ScheduleData>
+          <Rules>
+            <StartDate>2024-08-22</StartDate>
+            <EndDate>2025-08-22</EndDate>
+            <Tenor>1D</Tenor>
+            <Calendar>US</Calendar>
+            <Convention>F</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </ObservationDates>
+      <LongShort type="longShort">Long</LongShort>
+      <Notional type="number">1</Notional>
+      <Underlyings type="index">
+        <Value>EQ-RIC:.SPX</Value>
+        <Value>EQ-RIC:.STOXX50E</Value>
+      </Underlyings>
+      <Weights type="number">
+        <Value>1</Value>
+        <Value>1</Value>
+      </Weights>
+      <PayCcy type="currency">USD</PayCcy>
+    </LookbackCallBasketOptionData>
+  </Trade>
+</Portfolio>

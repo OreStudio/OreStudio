@@ -26,17 +26,17 @@
 #include "ores.testing/project_root.hpp"
 
 /**
- * @file xml_credit_golden_roundtrip_tests.cpp
- * @brief Thing 1: XSD serialization fidelity golden file tests for Credit
- * instruments: CreditDefaultSwap, IndexCreditDefaultSwap,
- * IndexCreditDefaultSwapOption, CreditLinkedSwap,
- * RiskParticipationAgreement, and CdoData.
+ * @file xml_hybrid_golden_roundtrip_tests.cpp
+ * @brief Thing 1: XSD serialization fidelity golden file tests for Hybrid
+ * instruments: ContractForDifference, CompositeTrade, and GenericTRS
+ * (nine variants covering bond, convertible bond, derivative, equity, and
+ * mixed-basket underlyings).
  */
 
 namespace {
 
-const std::string_view test_suite("ores.ore.credit.golden.roundtrip.tests");
-const std::string tags("[ore][xml][roundtrip][golden][credit]");
+const std::string_view test_suite("ores.ore.hybrid.golden.roundtrip.tests");
+const std::string tags("[ore][xml][roundtrip][golden][hybrid]");
 
 using ores::ore::domain::portfolio;
 using namespace ores::logging;
@@ -72,57 +72,57 @@ void run_golden_test(const std::string& filename) {
 } // namespace
 
 // =============================================================================
-// CreditDefaultSwap tests
+// ContractForDifference tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_credit_default_swap", tags) {
-    run_golden_test("Credit_Default_Swap.xml");
+TEST_CASE("golden_roundtrip_hybrid_cfd", tags) {
+    run_golden_test("Hybrid_CFD.xml");
 }
 
 // =============================================================================
-// IndexCreditDefaultSwap tests
+// CompositeTrade tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_credit_index_cds", tags) {
-    run_golden_test("Credit_Index_Credit_Default_Swap.xml");
-}
-
-TEST_CASE("golden_roundtrip_credit_index_cds_bespoke_basket", tags) {
-    run_golden_test("Credit_Index_Credit_Default_Swap_Bespoke_Basket.xml");
+TEST_CASE("golden_roundtrip_hybrid_composite_trade", tags) {
+    run_golden_test("Hybrid_CompositeTrade.xml");
 }
 
 // =============================================================================
-// IndexCreditDefaultSwapOption tests
+// GenericTRS tests
 // =============================================================================
 
-TEST_CASE("golden_roundtrip_credit_index_cds_option", tags) {
-    run_golden_test("Credit_Index_CDS_Option.xml");
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_bond_forward_futures", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_BondForward_Futures.xml");
 }
 
-// =============================================================================
-// CreditLinkedSwap tests
-// =============================================================================
-
-TEST_CASE("golden_roundtrip_credit_linked_swap", tags) {
-    run_golden_test("Credit_CreditLinkedSwap.xml");
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_bond_position", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_BondPosition.xml");
 }
 
-// =============================================================================
-// RiskParticipationAgreement tests
-// =============================================================================
-
-TEST_CASE("golden_roundtrip_credit_rpa_vanilla_swap", tags) {
-    run_golden_test("Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml");
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_bond", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_Bond.xml");
 }
 
-TEST_CASE("golden_roundtrip_credit_rpa_callable_swap", tags) {
-    run_golden_test("Credit_RiskParticipationAgreement_on_CallableSwap.xml");
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_convertible_bond", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_ConvertibleBond.xml");
 }
 
-// =============================================================================
-// CdoData tests
-// =============================================================================
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_derivative", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_Derivative.xml");
+}
 
-TEST_CASE("golden_roundtrip_credit_synthetic_cdo", tags) {
-    run_golden_test("Credit_Synthetic_CDO_refdata.xml");
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_equity_option_position", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_EquityOptionPosition.xml");
+}
+
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_equity_position", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_EquityPosition.xml");
+}
+
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_mixed_basket", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_MixedBasket.xml");
+}
+
+TEST_CASE("golden_roundtrip_hybrid_generic_trs_portfolio_index_trade_data", tags) {
+    run_golden_test("Hybrid_GenericTRS_with_PortfolioIndexTradeData.xml");
 }

@@ -114,7 +114,7 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
     }
 
     if (!ok) {
-        BOOST_LOG_SEV(lg(), warning) << "provision_parties_workflow failed: "
+        BOOST_LOG_SEV(lg(), warn) << "provision_parties_workflow failed: "
                                      << executor.error()
                                      << ". Starting compensation.";
 

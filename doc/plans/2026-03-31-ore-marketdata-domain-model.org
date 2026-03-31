@@ -154,21 +154,21 @@ Create the three-table schema and wire into all orchestration scripts.
 | =create/marketdata/marketdata_create.sql=              | Component master script |
 | =drop/marketdata/= (matching drop files)               | |
 
-** Phase 2 — C++ CDM (ores.marketdata)
+** Phase 2 — C++ CDM (ores.marketdata.api) [DONE]
 
-Create a new =ores.marketdata= project containing the C++ domain model.
+Create a new =ores.marketdata.api= project containing the C++ domain model.
 
 *** Tasks
 
-- [ ] Create =ores.marketdata= project skeleton (CMakeLists, includes, src, tests)
-- [ ] =asset_class= enum (FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
-      CROSS_ASSET)
-- [ ] =series_subclass= enum (SPOT, FORWARD, VOLATILITY, YIELD, BASIS, FRA, XCCY,
-      SPREAD, INDEX, RECOVERY, SWAP, CAPFLOOR, SEASONALITY, PRICE, CORRELATION)
-- [ ] =market_series= domain entity
-- [ ] =market_observation= domain entity
-- [ ] =market_fixing= domain entity
-- [ ] Unit tests for all domain entities
+- [X] Create =ores.marketdata.api= project skeleton (CMakeLists, includes, src, tests)
+- [X] =asset_class= enum (fx, rates, credit, equity, commodity, inflation, bond,
+      cross_asset)
+- [X] =series_subclass= enum (spot, forward, volatility, yield, basis, fra, xccy,
+      spread, index_credit, recovery, swap, capfloor, seasonality, price, correlation)
+- [X] =market_series= domain entity
+- [X] =market_observation= domain entity
+- [X] =market_fixing= domain entity
+- [X] Unit tests for all domain entities (14 tests, 77 assertions)
 
 *** Key types
 

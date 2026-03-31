@@ -25,6 +25,7 @@
 #include <string_view>
 #include <vector>
 #include "ores.platform/time/time_utils.hpp"
+#include "ores.ore/market/series_key_registry.hpp"
 
 namespace ores::ore::market {
 
@@ -122,6 +123,11 @@ std::vector<market_datum> parse_market_data(std::istream& in) {
             datum.date  = ores::platform::time::time_utils::parse_date(date_str);
             datum.key   = std::string(key_str);
             datum.value = std::string(val_str);
+            const auto dk = decompose_key(datum.key);
+            datum.series_type = dk.series_type;
+            datum.metric      = dk.metric;
+            datum.qualifier   = dk.qualifier;
+            datum.point_id    = dk.point_id;
             result.push_back(std::move(datum));
         } catch (const std::invalid_argument& ex) {
             throw std::invalid_argument(
@@ -156,6 +162,7 @@ std::vector<fixing> parse_fixings(std::istream& in) {
             fixing f;
             f.date       = ores::platform::time::time_utils::parse_date(date_str);
             f.index_name = std::string(idx_str);
+            f.qualifier  = f.index_name;
             f.value      = std::string(val_str);
             result.push_back(std::move(f));
         } catch (const std::invalid_argument& ex) {

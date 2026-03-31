@@ -40,9 +40,9 @@ struct fixing {
     std::chrono::year_month_day date;
 
     /**
-     * @brief The index name (e.g. "EUR-EONIA", "EQ-SP5", "UKRPI").
+     * @brief The index name stored verbatim from the file (e.g. "EUR-EONIA").
      *
-     * Stored verbatim from the file.
+     * Retained for legacy consumers and debugging.
      */
     std::string index_name;
 
@@ -52,6 +52,18 @@ struct fixing {
      * Preserving the original string ensures exact round-trip fidelity.
      */
     std::string value;
+
+    // ── Decomposed fields ─────────────────────────────────────────────────────
+
+    /**
+     * @brief Qualifier for the series catalog — equals index_name.
+     *
+     * Fixings do not follow the TYPE/METRIC/QUALIFIER/POINT_ID key structure;
+     * the index_name is the full series identifier.  The qualifier field
+     * mirrors it so that the fixing can be joined to ores_marketdata_series_tbl
+     * without a separate mapping step.
+     */
+    std::string qualifier;
 };
 
 } // namespace ores::ore::market

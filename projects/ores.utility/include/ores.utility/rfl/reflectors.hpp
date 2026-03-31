@@ -173,11 +173,15 @@ struct Reflector<std::chrono::year_month_day> {
         int y{}, m{}, d{};
         char sep1{}, sep2{};
         std::istringstream ss(str);
-        ss >> y >> sep1 >> m >> sep2 >> d;
-        if (!ss) throw std::runtime_error("Invalid date: " + str);
-        return std::chrono::year{y} /
-               std::chrono::month{static_cast<unsigned>(m)} /
-               std::chrono::day{static_cast<unsigned>(d)};
+        ss.imbue(std::locale::classic());
+        if (!(ss >> y >> sep1 >> m >> sep2 >> d) || sep1 != '-' || sep2 != '-' || !ss.eof())
+            throw std::runtime_error("Invalid date format: " + str);
+        auto ymd = std::chrono::year{y} /
+                   std::chrono::month{static_cast<unsigned>(m)} /
+                   std::chrono::day{static_cast<unsigned>(d)};
+        if (!ymd.ok())
+            throw std::runtime_error("Invalid date value: " + str);
+        return ymd;
     }
 
     static ReflType from(const std::chrono::year_month_day& v) {

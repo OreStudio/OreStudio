@@ -186,6 +186,25 @@ TENANT_001 ores_compute_app_version_platforms_tbl
 TENANT_001 ores_telemetry_service_samples_tbl
 
 # =============================================================================
+# Market data TimescaleDB hypertables — observations and fixings.
+# These tables use (id, date) as the primary key because TimescaleDB requires
+# the partition column in the PK. GIST exclusion is incompatible with
+# hypertables; bitemporality is enforced via partial unique index + trigger
+# instead. version/modified_by/change_reason_code are intentionally absent:
+# these are time-series ingest tables, not user-managed entities.
+# =============================================================================
+TEMPORAL_003 ores_marketdata_observations_tbl
+TEMPORAL_003 ores_marketdata_fixings_tbl
+TEMPORAL_004 ores_marketdata_observations_tbl
+TEMPORAL_004 ores_marketdata_fixings_tbl
+TEMPORAL_005 ores_marketdata_observations_tbl
+TEMPORAL_005 ores_marketdata_fixings_tbl
+TEMPORAL_006 ores_marketdata_observations_tbl
+TEMPORAL_006 ores_marketdata_fixings_tbl
+TENANT_002 ores_marketdata_observations_tbl
+TENANT_002 ores_marketdata_fixings_tbl
+
+# =============================================================================
 # Workflow instances table - tenant_id present but not in PK by design.
 # Uses a UUID primary key for global uniqueness. tenant_id is carried for RLS
 # and filtering, not for uniqueness. Same pattern as other append-only tables.

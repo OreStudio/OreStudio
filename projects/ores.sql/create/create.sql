@@ -48,6 +48,7 @@
 \ir ./mq/mq_create.sql
 \ir ./compute/compute_create.sql
 \ir ./workflow/workflow_create.sql
+\ir ./marketdata/marketdata_create.sql
 
 -- =============================================================================
 -- 5. Row-Level Security Policies (depend on all tables and IAM functions)

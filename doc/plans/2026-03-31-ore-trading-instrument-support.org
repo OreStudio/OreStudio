@@ -1,0 +1,649 @@
+#+title: ORE Trading Instrument Support — Complete Implementation
+#+options: <:nil c:nil ^:nil d:nil date:nil author:nil toc:t html-postamble:nil
+
+* Overview
+
+This plan completes Layer 2 (=ores.trading=) instrument mapper coverage for all
+131 ORE XML instrument types. Layer 1 (=ores.ore= xsdcpp-generated types) is
+100% complete — 131/131 golden roundtrip tests pass with zero field gaps.
+
+All SQL tables, C++ domain types, NATS messaging, service, and handler layers
+already exist for every instrument type. The work is exclusively in mappers and
+the import pipeline.
+
+* Motivation
+
+Without Layer 2 mappers, instrument economics are never persisted during import.
+The trades table receives the trade envelope (=external_id=, =trade_type=,
+=netting_set_id=) but all product-specific data — leg rates, notionals,
+barriers, underlyings — is silently discarded. Grid job valuation reconstructs
+ORE XML from the relational model; missing fields produce wrong valuations with
+no error signal.
+
+* Gaps to Close
+
+- *Gap 1 — Import pipeline*: =trade_import_item= carries no instrument data.
+  =import_portfolio_with_context()= never calls any instrument mapper. Nothing is
+  persisted during import — not even for the three already-complete mappers
+  (swap, FX, bond).
+
+- *Gap 2 — Missing mappers*: credit, equity, commodity, composite/TRS, and
+  scripted families. Also FX barrier/exotic extensions and bond option/TRS
+  extensions.
+
+- *Gap 3 — Missing Thing 3 tests*: mapper fidelity (forward + reverse) tests
+  for all new mapper families.
+
+* What Already Exists (Do Not Re-Implement)
+
+** Layer 2 mappers
+- =swap_instrument_mapper= — Swap, CrossCurrencySwap, InflationSwap, FRA,
+  CapFloor, Swaption, CallableSwap, FlexiSwap, BalanceGuaranteedSwap
+- =fx_instrument_mapper= — FxForward, FxSwap, FxOption
+- =bond_instrument_mapper= — Bond, ForwardBond, CallableBond, ConvertibleBond
+
+** Thing 3 tests
+=xml_ir_mapper_roundtrip_tests.cpp=, =xml_swaption_mapper_roundtrip_tests.cpp=,
+=xml_fx_mapper_roundtrip_tests.cpp=, =xml_bond_mapper_roundtrip_tests.cpp=
+
+** Infrastructure (all exist with full columns/fields)
+All SQL tables, C++ domain types, NATS messaging protocol, service layer, and
+NATS handlers for: instruments/swap_legs, fx_instruments, bond_instruments,
+credit_instruments, equity_instruments, commodity_instruments,
+composite_instruments/composite_legs, scripted_instruments.
+
+* PR Organisation
+
+Two phases per PR to maximise throughput. Phase 1 goes alone as every subsequent
+phase depends on it.
+
+| PR | Phases | Contents                                  |
+|----+--------+-------------------------------------------|
+|  1 | 1      | Import pipeline wire-up (foundational)    |
+|  2 | 2+3    | Credit mapper + Bond option/TRS extension |
+|  3 | 4+5    | Equity mapper vanilla + exotic            |
+|  4 | 6+7    | FX exotic extensions + Commodity mapper   |
+|  5 | 8+9    | Composite/TRS mapper + Scripted mapper    |
+
+* Phase 1 — Import Pipeline Wire-Up
+
+** Goal
+Wire the three existing mappers (swap, FX, bond) into
+=import_portfolio_with_context()= so instruments are persisted during import.
+No new mappers are written; this is purely an enabling change.
+
+** Key invariant
+=instrument.id= must equal =trade.id= (same UUID) so the database can join them.
+Set this immediately after =map_instrument()= returns.
+
+** Dispatch design: =instrument_mapping_result= variant
+
+Rather than multiple =std::optional= fields and a growing =if/else= chain, the
+import pipeline uses a single =std::variant= field and a unified dispatch method.
+
+*Type alias* (declared in =trade_mapper.hpp=, starts with three families;
+each subsequent phase adds one arm):
+
+#+begin_src cpp
+using instrument_mapping_result = std::variant<
+    std::monostate,          // unmapped (exotic/scripted/unknown at this phase)
+    swap_mapping_result,
+    fx_mapping_result,
+    bond_mapping_result
+    // Phases 2–9 extend: credit_mapping_result, equity_mapping_result, ...
+>;
+#+end_src
+
+*New method* on =trade_mapper=:
+
+#+begin_src cpp
+static instrument_mapping_result map_instrument(const trade& v);
+#+end_src
+
+Implementation delegates to the existing per-family methods — four lines:
+
+#+begin_src cpp
+instrument_mapping_result trade_mapper::map_instrument(const trade& v) {
+    if (auto r = map_swap_instrument(v))  return *r;
+    if (auto r = map_fx_instrument(v))    return *r;
+    if (auto r = map_bond_instrument(v))  return *r;
+    return std::monostate{};
+}
+#+end_src
+
+** Files to modify
+
+=projects/ores.ore/include/ores.ore/domain/trade_mapper.hpp= — add the
+=instrument_mapping_result= typedef and =map_instrument()= declaration.
+
+=projects/ores.ore/src/domain/trade_mapper.cpp= — implement =map_instrument()=
+as above (three delegating lines).
+
+=projects/ores.ore/include/ores.ore/xml/importer.hpp= — replace any legacy
+optional instrument fields with a single field:
+
+#+begin_src cpp
+instrument_mapping_result instrument;  ///< monostate until resolved
+#+end_src
+
+=projects/ores.ore/src/xml/importer.cpp= — in the trade loop inside
+=import_portfolio_with_context()=, after setting =item.trade=, one call:
+
+#+begin_src cpp
+item.instrument = domain::trade_mapper::map_instrument(t);
+// Patch the instrument id — visitors below need it set before any persist.
+std::visit(overloaded{
+    [](std::monostate) {},
+    [&](auto& r) { r.instrument.id = item.trade.id; }
+}, item.instrument);
+#+end_src
+
+Consumers (services, Qt import dialog) use =std::visit= with an exhaustive
+visitor:
+
+#+begin_src cpp
+std::visit(overloaded{
+    [](std::monostate)          { /* not yet mapped */ },
+    [&](swap_mapping_result& r) { /* persist swap instrument + legs */ },
+    [&](fx_mapping_result& r)   { /* persist fx instrument */ },
+    [&](bond_mapping_result& r) { /* persist bond instrument */ },
+}, item.instrument);
+#+end_src
+
+** Extending for new phases
+Each subsequent phase adds exactly two changes:
+1. Append the new family type to the =instrument_mapping_result= variant.
+2. Add one line to =map_instrument()=: =if (auto r = map_X_instrument(v)) return *r;=.
+
+The =importer.hpp= and =importer.cpp= files are *not* modified again after
+Phase 1. =std::visit= call-sites get a new arm for the new variant member.
+
+** Tests
+Extend existing =xml_trade_import_tests.cpp=: load a known swap portfolio file,
+assert =std::holds_alternative<swap_mapping_result>(item.instrument)= and
+=std::get<swap_mapping_result>(item.instrument).instrument.id == item.trade.id=.
+
+* Phase 2 — Credit Instrument Mapper
+
+** ORE trade types covered
+
+| ORE file                                             | TradeType                      |
+|------------------------------------------------------+--------------------------------|
+| Credit_Default_Swap.xml                              | CreditDefaultSwap              |
+| Credit_Index_Credit_Default_Swap.xml                 | IndexCreditDefaultSwap         |
+| Credit_Index_Credit_Default_Swap_Bespoke_Basket.xml  | IndexCreditDefaultSwap         |
+| Credit_Index_CDS_Option.xml                          | IndexCreditDefaultSwapOption   |
+| Credit_CreditLinkedSwap.xml                          | CreditLinkedSwap               |
+| Credit_RiskParticipationAgreement_on_Vanilla_Swap.xml | RiskParticipationAgreement    |
+| Credit_RiskParticipationAgreement_on_CallableSwap.xml | RiskParticipationAgreement    |
+| Credit_Synthetic_CDO_refdata.xml                     | SyntheticCDO                   |
+
+** Fields to populate (=credit_instrument=)
+- =trade_type_code=, =reference_entity= (=CreditCurveId= or =IssuerId=)
+- =currency=, =notional= — from first =LegData=
+- =spread= — =FixedLegData.Rates.Rate= (running premium)
+- =start_date=, =maturity_date=, =day_count_code=, =payment_frequency_code=
+- =index_name=, =index_series=, =seniority=, =restructuring= — IndexCDS
+- =option_type=, =option_expiry_date=, =option_strike= — CDSOption
+- =linked_asset_code= — CreditLinkedSwap
+- =tranche_attachment=, =tranche_detachment= — SyntheticCDO
+
+** Mapping result struct
+#+begin_src cpp
+struct credit_mapping_result {
+    ores::trading::domain::credit_instrument instrument;
+};
+#+end_src
+
+** New files
+#+begin_example
+projects/ores.ore/include/ores.ore/domain/credit_instrument_mapper.hpp
+projects/ores.ore/src/domain/credit_instrument_mapper.cpp
+projects/ores.ore/tests/xml_credit_mapper_roundtrip_tests.cpp
+#+end_example
+
+** Files to modify
+- =trade_mapper.hpp= — add include + =map_credit_instrument()= declaration;
+  append =credit_mapping_result= to =instrument_mapping_result= variant
+- =trade_mapper.cpp= — implement =map_credit_instrument()= dispatch;
+  add =if (auto r = map_credit_instrument(v)) return *r;= to =map_instrument()=
+
+** Thing 3 test cases (tags =[ore][xml][mapper][roundtrip][credit]=)
+- =Credit_Default_Swap.xml= — assert =trade_type_code == "CreditDefaultSwap"=,
+  =reference_entity= non-empty, =spread > 0=; reverse → =CreditDefaultSwapData= populated
+- =Credit_Index_Credit_Default_Swap.xml= — assert =index_name= non-empty
+- =Credit_Index_CDS_Option.xml= — assert =option_expiry_date= non-empty,
+  =option_strike.has_value()=
+- =Credit_Synthetic_CDO_refdata.xml= — assert =tranche_attachment.has_value()=
+
+* Phase 3 — Bond Instrument Extensions (BondOption, BondTRS)
+
+** Goal
+Extend the existing =bond_instrument_mapper= with two new method pairs. The
+=bond_instrument= table already has =option_type=, =option_expiry_date=,
+=option_strike=, =trs_return_type=, =trs_funding_leg_code= columns.
+
+** ORE trade types covered
+
+| ORE file                              | TradeType         |
+|---------------------------------------+-------------------|
+| BondOption_StrikePrice_StrikeYield.xml | BondOption       |
+| Credit_BondOption.xml                 | BondOption        |
+| Credit_Bond_TRS.xml                   | TotalReturnSwap   |
+| Credit_Bond_TRS_with_Indexings.xml    | TotalReturnSwap   |
+
+TRS routing rule: if =TotalReturnSwapData= underlying trade type == =Bond= →
+=bond_instrument_mapper::forward_bond_trs()=; all other TRS → Phase 8 composite.
+
+** Fields for BondOption
+Base bond fields + =option_type=, =option_expiry_date=, =option_strike=
+
+** Fields for BondTRS
+Base bond fields + =trs_return_type=, =trs_funding_leg_code=
+
+** Files to modify (extend existing — no new header/impl)
+- =bond_instrument_mapper.hpp= — add =forward_bond_option=, =forward_bond_trs=,
+  two reverse methods
+- =bond_instrument_mapper.cpp= — implement the four methods
+- =trade_mapper.cpp= — add =BondOption= and bond-underlying =TotalReturnSwap=
+  branches to =map_bond_instrument()=
+
+** New test file
+#+begin_example
+projects/ores.ore/tests/xml_bond_option_mapper_roundtrip_tests.cpp
+#+end_example
+
+Tags =[ore][xml][mapper][roundtrip][bond]=:
+- =Credit_BondOption.xml= — assert =trade_type_code == "BondOption"=,
+  =option_type == "Call"=, =option_strike.has_value()=; reverse → =BondOptionData= populated
+- =Credit_Bond_TRS.xml= — assert =trade_type_code == "TotalReturnSwap"=,
+  =trs_funding_leg_code= non-empty
+
+* Phase 4 — Equity Instrument Mapper (Vanilla)
+
+** ORE trade types covered
+
+| ORE file                                  | TradeType             |
+|-------------------------------------------+-----------------------|
+| Equity_Option_European.xml                | EquityOption          |
+| Equity_Option_European_ISIN_CCY_MIC.xml   | EquityOption          |
+| Equity_Forward.xml                        | EquityForward         |
+| Equity_Swap.xml                           | EquitySwap            |
+| Equity_Swap_Indexed_Funding_Leg.xml       | EquitySwap            |
+| Equity_Variance_Swap.xml                  | EquityVarianceSwap    |
+| Equity_Barrier_Option.xml                 | EquityBarrierOption   |
+| Equity_Double_Barrier_Option.xml          | EquityBarrierOption   |
+| Equity_European_Barrier_Option.xml        | EquityBarrierOption   |
+| Equity_Asian_Option.xml                   | EquityAsianOption     |
+| Equity_Digital_Option.xml                 | EquityDigitalOption   |
+| Equity_OneTouch_Option.xml                | EquityTouchOption     |
+| Equity_OutperformanceOption.xml           | EquityOutperformanceOption |
+
+** Fields to populate (=equity_instrument=)
+- Common: =trade_type_code=, =underlying_code=, =currency=, =notional=,
+  =quantity=, =start_date=, =maturity_date=
+- Options: =option_type=, =strike_price=, =exercise_type=
+- Barriers: =barrier_type=, =lower_barrier=, =upper_barrier=
+- Asian: =average_type=, =averaging_start_date=
+- Variance: =variance_strike=
+- Swaps: =return_type=, =day_count_code=, =payment_frequency_code=
+- Outperformance: =basket_json= (two underlyings as JSON array)
+
+** Mapping result struct
+#+begin_src cpp
+struct equity_mapping_result {
+    ores::trading::domain::equity_instrument instrument;
+};
+#+end_src
+
+** New files
+#+begin_example
+projects/ores.ore/include/ores.ore/domain/equity_instrument_mapper.hpp
+projects/ores.ore/src/domain/equity_instrument_mapper.cpp
+projects/ores.ore/tests/xml_equity_mapper_roundtrip_tests.cpp
+#+end_example
+
+** Files to modify
+- =trade_mapper.hpp= — add include + =map_equity_instrument()= declaration;
+  append =equity_mapping_result= to =instrument_mapping_result= variant
+- =trade_mapper.cpp= — implement =map_equity_instrument()= dispatch;
+  add =if (auto r = map_equity_instrument(v)) return *r;= to =map_instrument()=
+
+** Thing 3 test cases (tags =[ore][xml][mapper][roundtrip][equity]=)
+- =Equity_Option_European.xml= — assert =underlying_code= non-empty,
+  =option_type == "Call"=, =strike_price > 0=; reverse → =EquityOptionData= populated
+- =Equity_Forward.xml= — assert =trade_type_code == "EquityForward"=
+- =Equity_Swap.xml= — assert =return_type= non-empty
+- =Equity_Barrier_Option.xml= — assert =barrier_type= non-empty
+- =Equity_Asian_Option.xml= — assert =average_type= non-empty
+- =Equity_Variance_Swap.xml= — assert =variance_strike > 0=
+- =Equity_OutperformanceOption.xml= — assert =basket_json= parses to array of size 2
+
+* Phase 5 — Equity Instrument Mapper (Exotic Extensions)
+
+** Goal
+Extend =equity_instrument_mapper= with four exotic types using
+=accumulation_amount=, =cliquet_frequency_code=, and =basket_json=.
+
+** ORE trade types covered
+
+| ORE file                              | TradeType                |
+|---------------------------------------+--------------------------|
+| Exotic_EquityAccumulator_single_name.xml | EquityAccumulator     |
+| Exotic_EquityTaRF.xml                 | EquityTaRF               |
+| Exotic_Equity_Cliquet_Option.xml      | EquityCliquetOption      |
+| Exotic_EquityWorstOfBasketSwap.xml    | EquityWorstOfBasketSwap  |
+
+** Fields
+- Accumulator/TaRF: =accumulation_amount=, =knock_out_barrier=, =option_type=, =strike_price=
+- Cliquet: =cliquet_frequency_code=, =option_type=, =lower_barrier=, =upper_barrier=
+- Worst-of basket: =basket_json= (JSON array of underlyings)
+
+** Files to modify (extend existing — no new header/impl)
+- =equity_instrument_mapper.hpp= — add 4 forward + 4 reverse method pairs
+- =equity_instrument_mapper.cpp= — implement
+- =trade_mapper.cpp= — add 4 new dispatch branches
+
+** New test cases (appended to =xml_equity_mapper_roundtrip_tests.cpp=)
+- =Exotic_EquityAccumulator_single_name.xml= — assert =accumulation_amount > 0=,
+  =knock_out_barrier > 0=
+- =Exotic_EquityTaRF.xml= — assert =accumulation_amount > 0=
+- =Exotic_Equity_Cliquet_Option.xml= — assert =cliquet_frequency_code= non-empty
+- =Exotic_EquityWorstOfBasketSwap.xml= — assert =basket_json= parses to valid array
+
+* Phase 6 — FX Exotic Extensions
+
+** Goal
+Extend =fx_instrument_mapper= with barrier/exotic FX trade types. The
+=fx_instrument= table already has =barrier_type=, =lower_barrier=,
+=upper_barrier= columns.
+
+** ORE trade types covered
+
+| ORE file                        | TradeType              |
+|---------------------------------+------------------------|
+| FX_Barrier_Option.xml           | FxBarrierOption        |
+| FX_FxEuropeanBarrierOption.xml  | FxBarrierOption        |
+| FX_DoubleBarrierOption.xml      | FxBarrierOption        |
+| FX_KIKO_Barrier_Option.xml      | FxBarrierOption        |
+| FX_Digital_Option.xml           | FxDigitalOption        |
+| FX_Digital_Barrier_Option.xml   | FxDigitalOption        |
+| FX_OneTouch_option.xml          | FxTouchOption          |
+| FX_DoubleTouch_Option.xml       | FxTouchOption          |
+| FX_NoTouch_option.xml           | FxTouchOption          |
+| FX_Variance_Swap.xml            | FxVarianceSwap         |
+| Exotic_FxAccumulator.xml        | FxAccumulator          |
+| Exotic_FxTaRF.xml               | FxTaRF                 |
+| Exotic_FxGenericBarrierOption.xml | FxGenericBarrierOption |
+| FX_Average_Forward.xml          | FxAverageForward       |
+| Exotic_FXWorstOfBasketSwap.xml  | FxWorstOfBasketSwap    |
+
+Note: confirm =fx_instrument= domain type has =barrier_type=, =lower_barrier=,
+=upper_barrier= fields before implementing; add them if missing.
+
+** Files to modify (extend existing — no new header/impl)
+- =fx_instrument_mapper.hpp= — add ~10 new forward/reverse method pairs
+- =fx_instrument_mapper.cpp= — implement
+- =trade_mapper.cpp= — extend =map_fx_instrument()= with all new type branches
+
+** New test file
+#+begin_example
+projects/ores.ore/tests/xml_fx_exotic_mapper_roundtrip_tests.cpp
+#+end_example
+
+Tags =[ore][xml][mapper][roundtrip][fx][exotic]=:
+- =FX_Barrier_Option.xml= — assert =barrier_type= non-empty,
+  =bought_currency= non-empty; reverse → =FxBarrierOptionData= populated
+- =FX_Digital_Option.xml= — assert =trade_type_code == "FxDigitalOption"=
+- =FX_OneTouch_option.xml= — assert =trade_type_code == "FxTouchOption"=
+- =FX_Variance_Swap.xml= — assert =trade_type_code == "FxVarianceSwap"=
+
+* Phase 7 — Commodity Instrument Mapper
+
+** ORE trade types covered
+
+| ORE file                          | TradeType                    |
+|-----------------------------------+------------------------------|
+| Commodity_Forward.xml             | CommodityForward             |
+| Commodity_Option.xml              | CommodityOption              |
+| Commodity_Option_Strip_NYMEX_NG.xml | CommodityOptionStrip       |
+| Commodity_APO_NYMEX_CL.xml        | CommodityAveragePriceOption  |
+| Commodity_APO_Strip_NYMEX_CSX.xml | CommodityAveragePriceOption  |
+| Commodity_Variance_Swap.xml       | CommodityVarianceSwap        |
+| Commodity_Swaption_NYMEX_NG.xml   | CommoditySwaption            |
+| Commodity_Swap_NYMEX_A7Q.xml      | CommoditySwap                |
+| Commodity_Swap_LME_AL_AVG_ALT.xml | CommoditySwap                |
+| Commodity_Basis_Swap_NYMEX_CL.xml | CommoditySpreadOption        |
+
+** Fields to populate (=commodity_instrument=)
+- Common: =trade_type_code=, =commodity_code=, =currency=, =quantity=, =unit=,
+  =start_date=, =maturity_date=
+- Forward: =fixed_price=
+- Option: =option_type=, =exercise_type=, =strike_price=
+- Option strip: =strip_frequency_code=
+- APO: =average_type=, =averaging_start_date=, =averaging_end_date=
+- Variance: =variance_strike=
+- Swaption: =swaption_expiry_date=
+- Swap: =day_count_code=, =payment_frequency_code=
+
+** Mapping result struct
+#+begin_src cpp
+struct commodity_mapping_result {
+    ores::trading::domain::commodity_instrument instrument;
+};
+#+end_src
+
+** New files
+#+begin_example
+projects/ores.ore/include/ores.ore/domain/commodity_instrument_mapper.hpp
+projects/ores.ore/src/domain/commodity_instrument_mapper.cpp
+projects/ores.ore/tests/xml_commodity_mapper_roundtrip_tests.cpp
+#+end_example
+
+** Files to modify
+- =trade_mapper.hpp= — add include + =map_commodity_instrument()= declaration;
+  append =commodity_mapping_result= to =instrument_mapping_result= variant
+- =trade_mapper.cpp= — implement =map_commodity_instrument()= dispatch;
+  add =if (auto r = map_commodity_instrument(v)) return *r;= to =map_instrument()=
+
+** Thing 3 test cases (tags =[ore][xml][mapper][roundtrip][commodity]=)
+- =Commodity_Forward.xml= — assert =commodity_code= non-empty,
+  =fixed_price.has_value()=; reverse → =CommodityForwardData= populated
+- =Commodity_Option.xml= — assert =option_type= non-empty, =strike_price.has_value()=
+- =Commodity_APO_NYMEX_CL.xml= — assert =average_type= non-empty,
+  =averaging_start_date= non-empty
+- =Commodity_Variance_Swap.xml= — assert =variance_strike.has_value()=
+- =Commodity_Swaption_NYMEX_NG.xml= — assert =swaption_expiry_date= non-empty
+
+* Phase 8 — Composite / TRS Instrument Mapper
+
+** Goal
+Implement =composite_instrument_mapper= for =CompositeTrade=, =TotalReturnSwap=
+with non-bond underlyings, and =ContractForDifference=. Constituent trade IDs
+are stored in =composite_leg= records.
+
+** ORE trade types covered
+
+| ORE file                                       | TradeType            |
+|------------------------------------------------+----------------------|
+| Hybrid_CompositeTrade.xml                      | CompositeTrade       |
+| Hybrid_CFD.xml                                 | ContractForDifference |
+| Hybrid_GenericTRS_with_BondPosition.xml        | TotalReturnSwap      |
+| Hybrid_GenericTRS_with_ConvertibleBond.xml     | TotalReturnSwap      |
+| Hybrid_GenericTRS_with_BondForward_Futures.xml | TotalReturnSwap      |
+| Hybrid_GenericTRS_with_Derivative.xml          | TotalReturnSwap      |
+| Hybrid_GenericTRS_with_EquityPosition.xml      | TotalReturnSwap      |
+| Hybrid_GenericTRS_with_EquityOptionPosition.xml | TotalReturnSwap     |
+| Hybrid_GenericTRS_with_MixedBasket.xml         | TotalReturnSwap      |
+| Hybrid_GenericTRS_with_PortfolioIndexTradeData.xml | TotalReturnSwap  |
+
+Note: =Hybrid_GenericTRS_with_Bond.xml= and pure bond TRS go through Phase 3
+(=bond_instrument_mapper::forward_bond_trs()=). TRS routing in
+=map_composite_instrument()=: if underlying is a single =Bond= trade →
+delegate to =map_bond_instrument()=; otherwise dispatch here.
+
+** Fields to populate
+=composite_instrument=: =trade_type_code=, =description= (empty), audit fields.
+
+=composite_leg= (one per constituent): =instrument_id=, =leg_sequence= (1-based),
+=constituent_trade_id= — component's ORE =id= string; if anonymous inline
+component, store the component =TradeType= string as fallback.
+
+** Mapping result struct
+#+begin_src cpp
+struct composite_mapping_result {
+    ores::trading::domain::composite_instrument instrument;
+    std::vector<ores::trading::domain::composite_leg> legs;
+};
+#+end_src
+
+** New files
+#+begin_example
+projects/ores.ore/include/ores.ore/domain/composite_instrument_mapper.hpp
+projects/ores.ore/src/domain/composite_instrument_mapper.cpp
+projects/ores.ore/tests/xml_hybrid_mapper_roundtrip_tests.cpp
+#+end_example
+
+** Files to modify
+- =trade_mapper.hpp= — add include + =map_composite_instrument()= declaration;
+  append =composite_mapping_result= to =instrument_mapping_result= variant
+- =trade_mapper.cpp= — implement =map_composite_instrument()= dispatch (with TRS
+  routing logic); add =if (auto r = map_composite_instrument(v)) return *r;= to
+  =map_instrument()=
+
+** Thing 3 test cases (tags =[ore][xml][mapper][roundtrip][hybrid]=)
+- =Hybrid_CompositeTrade.xml= — assert =trade_type_code == "CompositeTrade"=,
+  =legs.size() == 2=, =legs[0].leg_sequence == 1=; reverse → =CompositeTradeData=
+  has 2 components
+- =Hybrid_GenericTRS_with_EquityPosition.xml= — assert
+  =trade_type_code == "TotalReturnSwap"=, =legs.size() >= 1=
+- =Hybrid_CFD.xml= — assert =trade_type_code == "ContractForDifference"=
+
+* Phase 9 — Scripted Instrument Mapper
+
+** Goal
+Implement =scripted_instrument_mapper= for all =ScriptedTrade= variants and
+named script product types. The domain stores =script_name=, =events_json=,
+=underlyings_json=, and =parameters_json= as opaque JSON to avoid modelling
+every script's schema.
+
+** ORE trade types covered
+
+| ORE file                               | TradeType/ScriptName         |
+|----------------------------------------+------------------------------|
+| Scripted_BasketOption.xml              | ScriptedTrade/AsianBasketOption |
+| Scripted_BasketOption2.xml             | ScriptedTrade/AverageStrikeBasketOption |
+| Scripted_BasketOption3.xml             | ScriptedTrade/LookbackCallBasketOption |
+| Scripted_FlooredAverageCPIZCYYIIS.xml  | ScriptedTrade                |
+| Scripted_IrregularYYIIS.xml            | ScriptedTrade                |
+| Scripted_MovingMaximumYYIIS.xml        | ScriptedTrade                |
+| Exotic_Double_Digital_Option.xml       | DoubleDigitalOption          |
+| Exotic_PerformanceOption_01_FX.xml     | PerformanceOption_01         |
+| Exotic_PerformanceOption_01_COM.xml    | PerformanceOption_01         |
+| Exotic_RainbowOption.xml               | BestOfAssetOrCashRainbowOption |
+| Exotic_KnockOutSwap.xml                | KnockOutSwap                 |
+| Exotic_Formula_Based_Coupon.xml        | FormulaBasedCoupon           |
+
+** Mapping strategy
+ORE scripted trades have two representations:
+1. *Named sugar syntax* (e.g. =AsianBasketOptionData=) — infer =script_name=
+   from the element tag (strip =Data= suffix).
+2. *Explicit =ScriptedTradeData=* — read =ScriptName= directly.
+
+Serialise events as =events_json= (=[{"name":"Expiry","value":"2025-08-31"}]=),
+underlyings as =underlyings_json= (=["EQ-RIC:.SPX","EQ-RIC:.STOXX50E"]=), and
+parameters as =parameters_json= (={"Strike":5000.0,"Notional":1.0}=). Use
+=nlohmann/json= (already in vcpkg).
+
+** Fields to populate (=scripted_instrument=)
+- =trade_type_code=, =script_name=, =script_body= (if inline; empty if library)
+- =events_json=, =underlyings_json=, =parameters_json=
+- Standard audit fields
+
+** Mapping result struct
+#+begin_src cpp
+struct scripted_mapping_result {
+    ores::trading::domain::scripted_instrument instrument;
+};
+#+end_src
+
+** New files
+#+begin_example
+projects/ores.ore/include/ores.ore/domain/scripted_instrument_mapper.hpp
+projects/ores.ore/src/domain/scripted_instrument_mapper.cpp
+projects/ores.ore/tests/xml_scripted_mapper_roundtrip_tests.cpp
+#+end_example
+
+** Files to modify
+- =trade_mapper.hpp= — add include + =map_scripted_instrument()= declaration;
+  append =scripted_mapping_result= to =instrument_mapping_result= variant
+- =trade_mapper.cpp= — implement =map_scripted_instrument()= (all =ScriptedTrade=
+  variants → =forward_scripted_trade()=; =DoubleDigitalOption=,
+  =PerformanceOption_01= → =forward_named_scripted_trade()=); add
+  =if (auto r = map_scripted_instrument(v)) return *r;= to =map_instrument()=
+
+** Thing 3 test cases (tags =[ore][xml][mapper][roundtrip][scripted]=)
+- =Scripted_BasketOption.xml= — assert =script_name == "AsianBasketOption"=,
+  =underlyings_json= parses to array of size 2, =events_json= non-empty; reverse →
+  =AsianBasketOptionData= or =ScriptedTradeData= populated
+- =Exotic_Double_Digital_Option.xml= — assert
+  =trade_type_code == "DoubleDigitalOption"=, =underlyings_json= non-empty
+- =Exotic_PerformanceOption_01_FX.xml= — assert =script_name == "PerformanceOption_01"=
+
+* Cross-Cutting Notes
+
+** CMakeLists — no changes needed
+Both =ores.ore/src/CMakeLists.txt= and =ores.ore/tests/CMakeLists.txt= use
+=file(GLOB_RECURSE ...)=. New =.cpp= files are picked up automatically.
+
+** Audit fields boilerplate
+Every mapper =.cpp= should have a =make_base()= helper setting
+=modified_by = "ores"=, =performed_by = "ores"=,
+=change_reason_code = "system.external_data_import"=,
+=change_commentary = "Imported from ORE XML"=. Copy from =fx_instrument_mapper.cpp=.
+
+** JSON serialisation
+Use =nlohmann/json= for =basket_json=, =events_json=, =underlyings_json=,
+=parameters_json=. Keep serialisation in a private helper in the =.cpp= only.
+
+** Commit message format
+=[ores.ore] Add <asset class> instrument mapper and Thing 3 tests=
+
+* New Files Summary
+
+| Phase | File                                                                        |
+|-------+-----------------------------------------------------------------------------|
+|     2 | =projects/ores.ore/include/ores.ore/domain/credit_instrument_mapper.hpp=   |
+|     2 | =projects/ores.ore/src/domain/credit_instrument_mapper.cpp=                |
+|     2 | =projects/ores.ore/tests/xml_credit_mapper_roundtrip_tests.cpp=            |
+|     3 | =projects/ores.ore/tests/xml_bond_option_mapper_roundtrip_tests.cpp=       |
+|   4–5 | =projects/ores.ore/include/ores.ore/domain/equity_instrument_mapper.hpp=   |
+|   4–5 | =projects/ores.ore/src/domain/equity_instrument_mapper.cpp=                |
+|   4–5 | =projects/ores.ore/tests/xml_equity_mapper_roundtrip_tests.cpp=            |
+|     6 | =projects/ores.ore/tests/xml_fx_exotic_mapper_roundtrip_tests.cpp=         |
+|     7 | =projects/ores.ore/include/ores.ore/domain/commodity_instrument_mapper.hpp= |
+|     7 | =projects/ores.ore/src/domain/commodity_instrument_mapper.cpp=             |
+|     7 | =projects/ores.ore/tests/xml_commodity_mapper_roundtrip_tests.cpp=         |
+|     8 | =projects/ores.ore/include/ores.ore/domain/composite_instrument_mapper.hpp= |
+|     8 | =projects/ores.ore/src/domain/composite_instrument_mapper.cpp=             |
+|     8 | =projects/ores.ore/tests/xml_hybrid_mapper_roundtrip_tests.cpp=            |
+|     9 | =projects/ores.ore/include/ores.ore/domain/scripted_instrument_mapper.hpp= |
+|     9 | =projects/ores.ore/src/domain/scripted_instrument_mapper.cpp=              |
+|     9 | =projects/ores.ore/tests/xml_scripted_mapper_roundtrip_tests.cpp=          |
+
+* Modified Files Summary
+
+| Phases   | File                                                                    | Change                                                        |
+|----------+-------------------------------------------------------------------------+---------------------------------------------------------------|
+|        1 | =projects/ores.ore/include/ores.ore/domain/trade_mapper.hpp=           | Add =instrument_mapping_result= variant + =map_instrument()=  |
+|        1 | =projects/ores.ore/src/domain/trade_mapper.cpp=                        | Implement =map_instrument()= (3-line delegate)                |
+|        1 | =projects/ores.ore/include/ores.ore/xml/importer.hpp=                  | Replace per-family optionals with single =instrument= field   |
+|        1 | =projects/ores.ore/src/xml/importer.cpp=                               | Single =map_instrument()= call + visit for id patching        |
+| 2,4,7–9  | =projects/ores.ore/include/ores.ore/domain/trade_mapper.hpp=           | Add new family to variant; add =map_X_instrument()= decl      |
+| 2,4,7–9  | =projects/ores.ore/src/domain/trade_mapper.cpp=                        | Add one line to =map_instrument()= per new family             |
+|        3 | =projects/ores.ore/include/ores.ore/domain/bond_instrument_mapper.hpp= | Add BondOption/BondTRS methods                                |
+|        3 | =projects/ores.ore/src/domain/bond_instrument_mapper.cpp=              | Implement BondOption/BondTRS                                  |
+|        5 | =projects/ores.ore/include/ores.ore/domain/equity_instrument_mapper.hpp= | Add exotic method pairs                                     |
+|        5 | =projects/ores.ore/src/domain/equity_instrument_mapper.cpp=            | Implement exotic methods                                      |
+|        6 | =projects/ores.ore/include/ores.ore/domain/fx_instrument_mapper.hpp=   | Add exotic method pairs                                       |
+|        6 | =projects/ores.ore/src/domain/fx_instrument_mapper.cpp=                | Implement exotic methods                                      |

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/TenantProvisioningWizard.hpp"
+#include <cctype>
 #include "ores.qt/ClientDatasetBundleModel.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -523,10 +524,15 @@ bool PartyProvisionPage::validatePage() {
     const auto usernameBase = usernameBaseEdit_->text().trimmed().toStdString();
     const auto password = passwordEdit_->text().toStdString();
 
-    // Derive principal: username_base + "_" + lowercase(short_code, spaces→_)
+    // Derive principal: username_base + "_" + lowercase(short_code).
+    // Non-alphanumeric characters (including spaces) are replaced with '_'
+    // to produce a valid POSIX username component.
     std::string principal = usernameBase + "_";
-    for (char c : shortCode)
-        principal += (c == ' ' ? '_' : static_cast<char>(std::tolower(c)));
+    for (char c : shortCode) {
+        const char lc = static_cast<char>(
+            std::tolower(static_cast<unsigned char>(c)));
+        principal += (std::isalnum(static_cast<unsigned char>(lc)) ? lc : '_');
+    }
 
     statusLabel_->setText(tr("Provisioning party and account..."));
 

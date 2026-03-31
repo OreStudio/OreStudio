@@ -176,8 +176,9 @@ public:
      * @brief Sets the current party's status to 'Active' via save_party_request.
      *
      * Called from the summary page on successful completion of the wizard.
+     * Returns false (and logs a warning) if the party cannot be activated.
      */
-    void markPartyActive();
+    [[nodiscard]] bool markPartyActive();
 
 signals:
     void provisioningCompleted();

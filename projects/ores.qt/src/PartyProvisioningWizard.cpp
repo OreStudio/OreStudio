@@ -87,12 +87,14 @@ void PartyProvisioningWizard::setupPages() {
     setStartId(Page_Welcome);
 }
 
-void PartyProvisioningWizard::markPartyActive() {
+bool PartyProvisioningWizard::markPartyActive() {
     BOOST_LOG_SEV(lg(), info) << "Setting current party status to Active";
 
     const auto party_id = clientManager_->currentPartyId();
 
     // Fetch the current party record so we can do a full save with status=Active.
+    // A limit of 1000 is sufficient here: a freshly provisioned tenant will only
+    // ever have the single party that was created in the TenantProvisioningWizard.
     refdata::messaging::get_parties_request list_req;
     list_req.offset = 0;
     list_req.limit = 1000;
@@ -100,7 +102,7 @@ void PartyProvisioningWizard::markPartyActive() {
     if (!list_result) {
         BOOST_LOG_SEV(lg(), warn) << "markPartyActive: failed to fetch parties: "
                                   << list_result.error();
-        return;
+        return false;
     }
 
     refdata::domain::party party;
@@ -114,7 +116,7 @@ void PartyProvisioningWizard::markPartyActive() {
     }
     if (!found) {
         BOOST_LOG_SEV(lg(), warn) << "markPartyActive: party not found in list";
-        return;
+        return false;
     }
 
     party.status = "Active";
@@ -126,12 +128,15 @@ void PartyProvisioningWizard::markPartyActive() {
     if (!save_result) {
         BOOST_LOG_SEV(lg(), warn) << "markPartyActive: failed to save party: "
                                   << save_result.error();
-    } else if (!save_result->success) {
+        return false;
+    }
+    if (!save_result->success) {
         BOOST_LOG_SEV(lg(), warn) << "markPartyActive: save_party failed: "
                                   << (save_result->message.empty() ? "Unknown error" : save_result->message);
-    } else {
-        BOOST_LOG_SEV(lg(), info) << "Party status set to Active successfully";
+        return false;
     }
+    BOOST_LOG_SEV(lg(), info) << "Party status set to Active successfully";
+    return true;
 }
 
 // ============================================================================
@@ -1421,10 +1426,17 @@ void PartyApplyAndSummaryPage::setupUI() {
 
 void PartyApplyAndSummaryPage::initializePage() {
     // Set the current party status to Active now that setup is complete.
-    wizard_->markPartyActive();
+    const bool activated = wizard_->markPartyActive();
 
     // Build summary
-    QString summary = tr("<p>Your party setup has been completed successfully.</p>");
+    QString summary;
+    if (!activated) {
+        summary = tr("<p><b>Warning:</b> Could not activate the party — "
+                     "the party setup wizard may reappear on your next login. "
+                     "Please contact your administrator.</p>");
+    } else {
+        summary = tr("<p>Your party setup has been completed successfully.</p>");
+    }
 
     if (!wizard_->rootLei().isEmpty()) {
         summary += tr("<p><b>Root party (LEI):</b> %1 (%2)</p>")

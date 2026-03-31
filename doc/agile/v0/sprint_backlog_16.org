@@ -435,6 +435,47 @@ temporal/audit fields).
   =PositionHistoryDialog=, =PositionController=, =MainWindow= integration
 - [ ] Database: recreate to pick up new table
 
+*** TODO Add missing party isolation RLS policies                      :code:
+
+Several tables have a =party_id= column and tenant-level RLS enabled, but are
+missing the required =AS RESTRICTIVE= party isolation policy. These were
+identified by the =RLS_002= check in =validate_schemas.sh= and added to
+=validation_ignore.txt= as TODOs. Until the policies are added, a tenant admin
+can query rows belonging to any party in the tenant.
+
+For each table the fix is the same pattern: add an =AS RESTRICTIVE FOR SELECT=
+policy using =party_id = ANY(ores_iam_visible_party_ids_fn())= in the
+corresponding =*_rls_policies_create.sql= file, then remove the =RLS_002=
+ignore entry from =validation_ignore.txt=.
+
+Also covers hardening the trading instrument subtables (currently accessed
+only via the parent =ores_trading_instruments_tbl= which has RLS, but direct
+queries bypass it).
+
+***** Tasks
+
+- [ ] =ores_iam_account_parties_tbl=: add =AS RESTRICTIVE= party isolation
+      policy in =iam_rls_policies_create.sql=
+- [ ] =ores_refdata_business_units_tbl=: add =AS RESTRICTIVE= party isolation
+      policy in =refdata_rls_policies_create.sql=
+- [ ] =ores_refdata_party_contact_informations_tbl=: add =AS RESTRICTIVE= party
+      isolation policy in =refdata_rls_policies_create.sql=
+- [ ] =ores_refdata_party_countries_tbl=: add =AS RESTRICTIVE= party isolation
+      policy in =refdata_rls_policies_create.sql=
+- [ ] =ores_refdata_party_currencies_tbl=: add =AS RESTRICTIVE= party isolation
+      policy in =refdata_rls_policies_create.sql=
+- [ ] =ores_refdata_party_identifiers_tbl=: add =AS RESTRICTIVE= party
+      isolation policy in =refdata_rls_policies_create.sql=
+- [ ] =ores_scheduler_job_instances_tbl=: add =AS RESTRICTIVE= party isolation
+      policy in =scheduler_rls_policies_create.sql=
+- [ ] Trading instrument subtables: add =ENABLE ROW LEVEL SECURITY= + tenant
+      isolation policies for =ores_trading_instruments_tbl= and all subtables
+      (=bond=, =commodity=, =equity=, =fx=, =credit=, =scripted=, =composite=,
+      =composite_legs=, =swap_legs=) in =trading_rls_policies_create.sql=
+- [ ] For each fixed table: remove the corresponding =RLS_001= / =RLS_002=
+      ignore entry from =utility/validation_ignore.txt=
+- [ ] Run =validate_schemas.sh= and confirm zero warnings
+
 * Footer
 
 | Previous: [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Next: TBD |

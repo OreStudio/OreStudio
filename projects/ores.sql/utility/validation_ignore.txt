@@ -14,6 +14,9 @@
 # - TENANT_001: Missing tenant_id column
 # - TENANT_002: Missing tenant_id in primary key
 # - TENANT_003: Missing tenant_id in EXCLUDE constraint
+# - RLS_001: Table has tenant_id but no ENABLE ROW LEVEL SECURITY found
+# - RLS_002: Table has party_id but no AS RESTRICTIVE party isolation policy
+# - RLS_003: *_rls_policies_create.sql file not reachable from rls/rls_create.sql
 
 # =============================================================================
 # Change reason tables - intentionally missing change_reason_code
@@ -218,3 +221,127 @@ TENANT_002 ores_workflow_workflow_instances_tbl
 # steps table uses a subquery join to enforce tenant isolation.
 # =============================================================================
 TENANT_001 ores_workflow_workflow_steps_tbl
+
+# =============================================================================
+# RLS_001 ignores — tables with tenant_id that intentionally skip RLS
+# =============================================================================
+
+# DQ artefact/staging tables — pipeline-internal staging, populated by DDL user.
+# Not accessed by application users directly; no RLS needed.
+RLS_001 ores_dq_*_artefact_tbl
+RLS_001 ores_dq_artefact_types_tbl
+
+# DQ pipeline and publication log tables — append-only, populated by the
+# data quality pipeline. Tenant context is carried as a column for query
+# filtering only; RLS would add overhead with no security benefit.
+RLS_001 ores_dq_bundle_publications_tbl
+RLS_001 ores_dq_dataset_publications_tbl
+
+# DQ system tables — badge metadata and code domain lookups are managed by
+# the DQ pipeline, not by application users.
+RLS_001 ores_dq_badge_definitions_tbl
+RLS_001 ores_dq_badge_mappings_tbl
+RLS_001 ores_dq_badge_severities_tbl
+RLS_001 ores_dq_code_domains_tbl
+
+# IAM system enum/lookup tables — system-wide reference data, not user-created.
+# Account types, tenant statuses, and tenant types are seeded at startup and
+# never vary per tenant; RLS would add overhead with no benefit.
+RLS_001 ores_iam_account_types_tbl
+RLS_001 ores_iam_tenant_statuses_tbl
+RLS_001 ores_iam_tenant_types_tbl
+
+# IAM auth events — append-only audit log. The entire log is accessible to
+# tenant admins; party-level isolation is not applied to audit trails.
+RLS_001 ores_iam_auth_events_tbl
+
+# Refdata lookup/enum tables — system-wide or tenant-seeded reference data.
+# These are code tables (statuses, types, categories) with no per-party data.
+RLS_001 ores_refdata_book_statuses_tbl
+RLS_001 ores_refdata_business_unit_types_tbl
+RLS_001 ores_refdata_contact_types_tbl
+RLS_001 ores_refdata_party_categories_tbl
+RLS_001 ores_refdata_party_id_schemes_tbl
+RLS_001 ores_refdata_party_statuses_tbl
+RLS_001 ores_refdata_party_types_tbl
+RLS_001 ores_refdata_purpose_types_tbl
+RLS_001 ores_refdata_rounding_types_tbl
+
+# Reporting lookup tables — concurrency policy and report type codes are
+# system-wide enumerations seeded at startup.
+RLS_001 ores_reporting_concurrency_policies_tbl
+RLS_001 ores_reporting_report_types_tbl
+
+# MQ queue stats — aggregate metrics table, no user-created rows.
+# Isolation is enforced on the parent queue via its own policies.
+RLS_001 ores_mq_queue_stats_tbl
+
+# Telemetry NATS sample tables — high-volume time-series from infrastructure
+# monitoring. Not accessed by application users; no RLS needed.
+RLS_001 ores_telemetry_nats_server_samples_tbl
+RLS_001 ores_telemetry_nats_stream_samples_tbl
+
+# Compute sample tables — time-series metrics from the BOINC compute grid.
+# Not accessed by application users; no RLS needed.
+RLS_001 ores_compute_grid_samples_tbl
+RLS_001 ores_compute_node_samples_tbl
+
+# Trading instrument subtables — polymorphic subtype tables accessed only
+# through the parent ores_trading_instruments_tbl which has RLS. Direct
+# access to subtables (without the parent JOIN) is not an application path.
+# TODO: add explicit RLS to subtables to harden against direct queries.
+RLS_001 ores_trading_instruments_tbl
+RLS_001 ores_trading_bond_instruments_tbl
+RLS_001 ores_trading_commodity_instruments_tbl
+RLS_001 ores_trading_equity_instruments_tbl
+RLS_001 ores_trading_fx_instruments_tbl
+RLS_001 ores_trading_credit_instruments_tbl
+RLS_001 ores_trading_scripted_instruments_tbl
+RLS_001 ores_trading_composite_instruments_tbl
+RLS_001 ores_trading_composite_legs_tbl
+RLS_001 ores_trading_swap_legs_tbl
+
+# Trading type/enum tables — lookup codes seeded at startup; system-wide.
+RLS_001 ores_trading_business_day_convention_types_tbl
+RLS_001 ores_trading_day_count_fraction_types_tbl
+RLS_001 ores_trading_floating_index_types_tbl
+RLS_001 ores_trading_leg_types_tbl
+RLS_001 ores_trading_payment_frequency_types_tbl
+
+# =============================================================================
+# RLS_002 ignores — tables with party_id that intentionally skip party isolation
+# =============================================================================
+
+# IAM auth events — auth log; party_id records the session context for
+# debugging, not for data isolation. The whole log is tenant-scoped.
+RLS_002 ores_iam_auth_events_tbl
+
+# MQ messages and archive — access is controlled by queue ownership (which
+# queue a message belongs to), not by party_id. Custom queue-based policies
+# are applied inline in the create file.
+RLS_002 ores_mq_messages_tbl
+RLS_002 ores_mq_message_archive_tbl
+
+# MQ queue stats — aggregate metrics; no per-party row isolation needed.
+RLS_002 ores_mq_queue_stats_tbl
+
+# =============================================================================
+# RLS_002 TODOs — tables with party_id that are missing party isolation policies
+# These are genuine gaps. Remove from this list when policies are added.
+# =============================================================================
+
+# TODO: add AS RESTRICTIVE party isolation to iam_account_parties_tbl
+RLS_002 ores_iam_account_parties_tbl
+
+# TODO: add AS RESTRICTIVE party isolation to refdata party-scoped tables.
+# Also add RLS_001 ignores here since these tables have tenant_id but no RLS yet.
+RLS_001 ores_refdata_party_countries_tbl
+RLS_001 ores_refdata_party_currencies_tbl
+RLS_002 ores_refdata_business_units_tbl
+RLS_002 ores_refdata_party_contact_informations_tbl
+RLS_002 ores_refdata_party_countries_tbl
+RLS_002 ores_refdata_party_currencies_tbl
+RLS_002 ores_refdata_party_identifiers_tbl
+
+# TODO: add AS RESTRICTIVE party isolation to scheduler_job_instances_tbl
+RLS_002 ores_scheduler_job_instances_tbl

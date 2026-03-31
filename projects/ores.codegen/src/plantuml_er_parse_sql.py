@@ -905,6 +905,108 @@ class SQLParser:
                             f"Use coalesce(ores_iam_current_actor_fn(), current_user) instead.",
                             entity_name=sql_file.name)
 
+    def validate_rls_policies(self, create_dir: Path) -> None:
+        """Validate Row-Level Security coverage across all tables.
+
+        Three checks:
+        - RLS_001: Table has tenant_id but no 'ALTER TABLE ... ENABLE ROW LEVEL SECURITY'
+                   found in any *_rls_policies_create.sql file.
+        - RLS_002: Table has party_id but no AS RESTRICTIVE policy on party_id found
+                   in any *_rls_policies_create.sql file.
+        - RLS_003: A *_rls_policies_create.sql file exists in create/ but is not reachable
+                   (directly or transitively) from rls/rls_create.sql.
+        """
+        # ---- Step 1: collect all *_rls_policies_create.sql files ----
+        rls_files = sorted(create_dir.rglob('*_rls_policies_create.sql'))
+        if not rls_files:
+            return
+
+        # ---- Step 2: scan ALL *_create.sql files for RLS directives ----
+        # Some components (e.g. mq) define RLS inline in the table create file
+        # rather than in a separate *_rls_policies_create.sql file. We accept both.
+        all_create_files = sorted(create_dir.rglob('*_create.sql'))
+
+        # enable_rls pattern: ALTER TABLE ["]?<name>["]? ENABLE ROW LEVEL SECURITY
+        enable_pattern = re.compile(
+            r'alter\s+table\s+"?(\w+)"?\s+enable\s+row\s+level\s+security',
+            re.IGNORECASE
+        )
+        # Restrictive party-isolation policy: AS RESTRICTIVE ... party_id
+        # We look for RESTRICTIVE policies that reference party_id in their USING clause.
+        # A simple heuristic: find CREATE POLICY blocks that are RESTRICTIVE and contain
+        # 'party_id' in the body.
+        restrictive_policy_pattern = re.compile(
+            r'create\s+policy\s+\S+\s+on\s+"?(\w+)"?'
+            r'(?:(?!;).)*?as\s+restrictive'
+            r'(?:(?!;).)*?party_id',
+            re.IGNORECASE | re.DOTALL
+        )
+
+        rls_enabled_tables: set[str] = set()
+        party_isolated_tables: set[str] = set()
+
+        for sql_file in all_create_files:
+            content = sql_file.read_text(encoding='utf-8', errors='replace')
+            for match in enable_pattern.finditer(content):
+                rls_enabled_tables.add(match.group(1))
+            for match in restrictive_policy_pattern.finditer(content):
+                party_isolated_tables.add(match.group(1))
+
+        # ---- Step 3: find which RLS files are reachable from rls/rls_create.sql ----
+        rls_orchestrator = create_dir / 'rls' / 'rls_create.sql'
+        reachable_rls_files: set[Path] = set()
+        if rls_orchestrator.exists():
+            self._collect_included_files(rls_orchestrator, reachable_rls_files)
+
+        # Map rls files by their resolved absolute path for comparison
+        rls_files_set = {f.resolve() for f in rls_files}
+
+        for rls_file in rls_files:
+            resolved = rls_file.resolve()
+            # The orchestrator itself is not required to be self-referencing
+            if resolved == rls_orchestrator.resolve():
+                continue
+            if resolved not in reachable_rls_files:
+                self._add_warning(
+                    str(rls_file), 0, 'RLS_003',
+                    f"RLS file '{rls_file.name}' is not reachable from rls/rls_create.sql "
+                    f"(add \\ir include to wire it in)",
+                    entity_name=rls_file.name)
+
+        # ---- Step 4: check each parsed table against the collected RLS info ----
+        for table_name, table in self.tables.items():
+            col_names = {c.name for c in table.columns}
+
+            if 'tenant_id' not in col_names:
+                continue  # Not a tenant-scoped table, RLS not expected
+
+            if table_name not in rls_enabled_tables:
+                self._add_warning(
+                    table.source_file, 0, 'RLS_001',
+                    f"Table '{table_name}' has tenant_id but no ENABLE ROW LEVEL SECURITY "
+                    f"found in any *_rls_policies_create.sql file",
+                    entity_name=table_name)
+
+            if 'party_id' in col_names and table_name not in party_isolated_tables:
+                self._add_warning(
+                    table.source_file, 0, 'RLS_002',
+                    f"Table '{table_name}' has party_id but no AS RESTRICTIVE party isolation "
+                    f"policy found in any *_rls_policies_create.sql file",
+                    entity_name=table_name)
+
+    def _collect_included_files(self, sql_file: Path, visited: set) -> None:
+        """Recursively collect files reachable via \\ir includes from sql_file."""
+        ir_pattern = re.compile(r'\\ir\s+(\S+)', re.IGNORECASE)
+        try:
+            content = sql_file.read_text(encoding='utf-8', errors='replace')
+        except OSError:
+            return
+        for match in ir_pattern.finditer(content):
+            included = (sql_file.parent / match.group(1)).resolve()
+            if included not in visited:
+                visited.add(included)
+                self._collect_included_files(included, visited)
+
     def _add_warning(self, file_path: str, line: int, code: str, message: str,
                      entity_name: str = '') -> None:
         """Add a warning if warnings are enabled and not ignored."""
@@ -1297,6 +1399,9 @@ def main():
 
     # Validate DQ populate functions use session actor for modified_by
     sql_parser.validate_dq_populate_actor(create_dir)
+
+    # Validate RLS coverage (tenant isolation, party isolation, orchestration completeness)
+    sql_parser.validate_rls_policies(create_dir)
 
     # Print summary
     print(f"\n=== Validation Summary ===", file=sys.stderr)

@@ -25,6 +25,7 @@
 #include <vector>
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
 
 namespace ores::trading::messaging {
 
@@ -86,6 +87,40 @@ struct get_trade_history_response {
     bool success = false;
     std::string message;
     std::vector<ores::trading::domain::trade> versions;
+};
+
+// ---- Portfolio export ----
+
+/**
+ * @brief One trade plus its resolved instrument data for export.
+ *
+ * The instrument field is monostate when the trade has no linked instrument
+ * or the instrument_family is unrecognised.
+ */
+struct trade_export_item {
+    ores::trading::domain::trade trade;
+    instrument_export_result instrument;
+};
+
+/**
+ * @brief Request to export all trades (and instruments) for a portfolio.
+ *
+ * Supply exactly one of portfolio_id or book_id.
+ */
+struct export_portfolio_request {
+    using response_type = struct export_portfolio_response;
+    static constexpr std::string_view nats_subject =
+        "trading.v1.trades.portfolio.export";
+    std::string portfolio_id;
+    std::string book_id;
+    int offset = 0;
+    int limit = 10000;
+};
+
+struct export_portfolio_response {
+    bool success = false;
+    std::string message;
+    std::vector<trade_export_item> items;
 };
 
 }

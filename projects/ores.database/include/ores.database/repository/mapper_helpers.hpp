@@ -109,7 +109,7 @@ timestamp_to_timepoint(std::string_view timestamp_str) {
  */
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(const sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">& ts) {
-    return platform::time::time_utils::to_time_point_local(ts.get());
+    return platform::time::time_utils::to_time_point_local(ts.tm());
 }
 
 /**

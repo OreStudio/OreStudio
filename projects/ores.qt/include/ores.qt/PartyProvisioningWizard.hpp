@@ -110,6 +110,14 @@ public:
     QString selectedBundleCode() const { return selectedBundleCode_; }
     void setSelectedBundleCode(const QString& code) { selectedBundleCode_ = code; }
 
+    /**
+     * @brief When true, the party hierarchy already exists from tenant provisioning.
+     * The wizard skips data source selection and party setup, going straight to
+     * counterparty setup.
+     */
+    bool partiesAlreadyProvisioned() const { return partiesAlreadyProvisioned_; }
+    void setPartiesAlreadyProvisioned(bool v) { partiesAlreadyProvisioned_ = v; }
+
     QString rootLei() const { return rootLei_; }
     void setRootLei(const QString& lei) { rootLei_ = lei; }
 
@@ -191,6 +199,7 @@ private:
 
     ClientManager* clientManager_;
     QString selectedBundleCode_ = "base";
+    bool partiesAlreadyProvisioned_ = false;
     QString rootLei_;
     QString rootLeiName_;
     QString leiDatasetSize_ = "large";
@@ -235,9 +244,12 @@ class PartyWelcomePage final : public QWizardPage {
 
 public:
     explicit PartyWelcomePage(PartyProvisioningWizard* wizard);
+    int nextId() const override;
+    void initializePage() override;
 
 private:
     void setupUI();
+    QLabel* stepsLabel_ = nullptr;
     PartyProvisioningWizard* wizard_;
 };
 

@@ -172,20 +172,10 @@ void PartyWelcomePage::setupUI() {
            "The setup process includes:"));
     layout->addWidget(descLabel);
 
-    auto* stepsLabel = new QLabel(this);
-    stepsLabel->setWordWrap(true);
-    stepsLabel->setTextFormat(Qt::RichText);
-    stepsLabel->setText(
-        tr("<ol>"
-           "<li><b>Choose Data Source</b> - Select between GLEIF registry "
-           "or generated synthetic data for parties, counterparties, and "
-           "organisational structure.</li>"
-           "<li><b>Organisation Setup</b> - Populate your organisation with "
-           "the selected data source.</li>"
-           "<li><b>Report Definitions</b> - Optionally create a set of "
-           "standard risk report definitions.</li>"
-           "</ol>"));
-    layout->addWidget(stepsLabel);
+    stepsLabel_ = new QLabel(this);
+    stepsLabel_->setWordWrap(true);
+    stepsLabel_->setTextFormat(Qt::RichText);
+    layout->addWidget(stepsLabel_);
 
     layout->addStretch();
 
@@ -199,6 +189,37 @@ void PartyWelcomePage::setupUI() {
     noteLabel->setWordWrap(true);
     noteLayout->addWidget(noteLabel);
     layout->addWidget(noteBox);
+}
+
+int PartyWelcomePage::nextId() const {
+    if (wizard_->partiesAlreadyProvisioned())
+        return PartyProvisioningWizard::Page_CounterpartySetup;
+    return PartyProvisioningWizard::Page_DataSourceSelection;
+}
+
+void PartyWelcomePage::initializePage() {
+    if (wizard_->partiesAlreadyProvisioned()) {
+        stepsLabel_->setText(
+            tr("<ol>"
+               "<li><b>Counterparty Setup</b> - Add the external counterparties "
+               "for this party from the GLEIF registry.</li>"
+               "<li><b>Organisation Setup</b> - Populate business units, "
+               "portfolios, and trading books.</li>"
+               "<li><b>Report Definitions</b> - Optionally create a set of "
+               "standard risk report definitions.</li>"
+               "</ol>"));
+    } else {
+        stepsLabel_->setText(
+            tr("<ol>"
+               "<li><b>Choose Data Source</b> - Select between GLEIF registry "
+               "or generated synthetic data for parties, counterparties, and "
+               "organisational structure.</li>"
+               "<li><b>Organisation Setup</b> - Populate your organisation with "
+               "the selected data source.</li>"
+               "<li><b>Report Definitions</b> - Optionally create a set of "
+               "standard risk report definitions.</li>"
+               "</ol>"));
+    }
 }
 
 // ============================================================================

@@ -24,6 +24,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.service/error_code.hpp"
+#include "ores.nats/domain/correlation.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -47,7 +48,9 @@ workflow_handler::workflow_handler(ores::nats::service::client& nats,
     , outbound_nats_(std::move(outbound_nats)) {}
 
 void workflow_handler::provision_parties(ores::nats::message msg) {
-    BOOST_LOG_SEV(lg(), debug) << "Handling provision_parties request.";
+    const auto correlation_id =
+        ores::nats::extract_or_generate_correlation_id(msg);
+    BOOST_LOG_SEV(lg(), info) << "provision_parties correlation_id=" << correlation_id;
 
     // Validate JWT and build per-request context
     auto ctx_expected = ores::service::service::make_request_context(
@@ -80,7 +83,9 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
     // Build the outbound nats_client with the caller's JWT delegated so
     // downstream services can build the correct DB context.
     const auto bearer = ores::nats::service::extract_bearer(msg);
-    auto delegated_nats = outbound_nats_.with_delegation(bearer);
+    auto delegated_nats = outbound_nats_
+        .with_delegation(bearer)
+        .with_correlation_id(correlation_id);
 
     // Serialize the request for audit storage
     const auto request_json = rfl::json::write(*req);
@@ -92,6 +97,7 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
     instance.type = "provision_parties_workflow";
     instance.status = "in_progress";
     instance.request_json = request_json;
+    instance.correlation_id = correlation_id;
     instance.created_by = delegated_actor(req_ctx);
     instance.created_at = std::chrono::system_clock::now();
 
@@ -99,7 +105,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
     instance_repo.create(req_ctx, instance);
 
     // Run the saga executor
-    service::provision_parties_workflow executor(instance.id, std::move(*req));
+    service::provision_parties_workflow executor(
+        instance.id, std::move(*req), correlation_id);
 
     bool ok = false;
     try {

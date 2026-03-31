@@ -55,7 +55,8 @@ public:
      * @param request      Decoded inbound provisioning request.
      */
     provision_parties_workflow(boost::uuids::uuid workflow_id,
-        messaging::provision_parties_request request);
+        messaging::provision_parties_request request,
+        std::string correlation_id);
 
     bool execute(ores::database::context ctx,
         ores::nats::service::nats_client& nats) override;
@@ -89,6 +90,7 @@ private:
 
     boost::uuids::uuid workflow_id_;
     messaging::provision_parties_request request_;
+    std::string correlation_id_;
     std::string error_;
     std::vector<party_state> party_states_;
     messaging::provision_parties_response result_;

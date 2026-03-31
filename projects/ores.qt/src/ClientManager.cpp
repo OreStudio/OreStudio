@@ -478,8 +478,10 @@ bool ClientManager::selectParty(const boost::uuids::uuid& party_id,
 
         current_party_id_ = party_id;
         current_party_name_ = party_name;
+        last_party_setup_required_ = result->party_setup_required;
         arm_refresh_timer(result->access_lifetime_s);
-        BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString();
+        BOOST_LOG_SEV(lg(), info) << "Party selected: " << party_name.toStdString()
+            << (result->party_setup_required ? " (setup required)" : "");
         return true;
 
     } catch (const std::exception& e) {

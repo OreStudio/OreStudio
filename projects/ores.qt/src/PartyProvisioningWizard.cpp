@@ -215,10 +215,7 @@ void PartyCounterpartySetupPage::setupUI() {
         tr("Counterparties represent the external entities your organisation "
            "trades with or has business relationships with.\n\n"
            "Counterparties are imported from the full GLEIF LEI registry dataset. "
-           "Choose the dataset size based on your needs:\n\n"
-           "  - <b>Small</b>: a curated subset of major institutions, suitable "
-           "for development and testing.\n"
-           "  - <b>Large</b>: the complete LEI registry, suitable for production use.\n\n"
+           "Select the dataset size to use for the import.\n\n"
            "You can also add counterparties manually from the Counterparties "
            "window after completing this wizard."));
     infoLabel->setTextFormat(Qt::RichText);
@@ -227,8 +224,8 @@ void PartyCounterpartySetupPage::setupUI() {
     auto* sizeLayout = new QHBoxLayout();
     sizeLayout->addWidget(new QLabel(tr("Dataset size:"), this));
     datasetSizeCombo_ = new QComboBox(this);
-    datasetSizeCombo_->addItem(tr("Small (development/testing)"), QStringLiteral("small"));
-    datasetSizeCombo_->addItem(tr("Large (production)"),          QStringLiteral("large"));
+    datasetSizeCombo_->addItem(tr("Large (~15,000 entities)"), QStringLiteral("large"));
+    datasetSizeCombo_->addItem(tr("Small (~6,000 entities)"),  QStringLiteral("small"));
     sizeLayout->addWidget(datasetSizeCombo_);
     sizeLayout->addStretch();
     layout->addLayout(sizeLayout);

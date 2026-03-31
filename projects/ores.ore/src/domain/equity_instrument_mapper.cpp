@@ -33,6 +33,34 @@ using ores::trading::domain::equity_instrument;
 
 namespace {
 
+std::string json_escape(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (char c : s) {
+        if (c == '"')       out += "\\\"";
+        else if (c == '\\') out += "\\\\";
+        else                out += c;
+    }
+    return out;
+}
+
+std::vector<std::string> parse_json_string_array(const std::string& json) {
+    std::vector<std::string> result;
+    std::size_t pos = 0;
+    while ((pos = json.find('"', pos)) != std::string::npos) {
+        ++pos;
+        std::string name;
+        while (pos < json.size() && json[pos] != '"') {
+            if (json[pos] == '\\' && pos + 1 < json.size())
+                ++pos; // skip escape char
+            name += json[pos++];
+        }
+        result.push_back(std::move(name));
+        ++pos;
+    }
+    return result;
+}
+
 equity_instrument make_base(const std::string& trade_type_code) {
     equity_instrument r;
     r.trade_type_code = trade_type_code;
@@ -253,7 +281,7 @@ std::string equity_instrument_mapper::underlyings_to_json(
     bool first = true;
     for (const auto& u : us.Underlying) {
         if (!first) json += ",";
-        json += "\"" + std::string(u.Name) + "\"";
+        json += "\"" + json_escape(std::string(u.Name)) + "\"";
         first = false;
     }
     json += "]";
@@ -504,7 +532,8 @@ equity_instrument_mapper::forward_equity_outperformance_option(
     // Store both underlyings as a JSON array
     const std::string n1 = std::string(d.Underlying1.Name);
     const std::string n2 = std::string(d.Underlying2.Name);
-    result.instrument.basket_json = "[\"" + n1 + "\",\"" + n2 + "\"]";
+    result.instrument.basket_json =
+        "[\"" + json_escape(n1) + "\",\"" + json_escape(n2) + "\"]";
     result.instrument.underlying_code = n1;
     return result;
 }
@@ -761,17 +790,19 @@ trade equity_instrument_mapper::reverse_equity_barrier_option(
         d.strikeGroup.Strike = std::move(s);
     }
     if (!instr.barrier_type.empty()) {
-        // Default to first level as lower barrier
         barrierData bd;
-        // Re-parse barrier type string
         if (instr.barrier_type == "UpAndOut")
             bd.Type = barrierType::UpAndOut;
         else if (instr.barrier_type == "UpAndIn")
             bd.Type = barrierType::UpAndIn;
         else if (instr.barrier_type == "DownAndOut")
             bd.Type = barrierType::DownAndOut;
-        else
+        else if (instr.barrier_type == "DownAndIn")
             bd.Type = barrierType::DownAndIn;
+        else
+            throw std::runtime_error(
+                "reverse_equity_barrier_option: unrecognized barrier type '"
+                + instr.barrier_type + "'");
         if (instr.lower_barrier != 0.0)
             bd.Levels.Level.push_back(
                 static_cast<float>(instr.lower_barrier));
@@ -874,10 +905,13 @@ trade equity_instrument_mapper::reverse_equity_outperformance_option(
     d.Currency = parse_currency_code(instr.currency);
     d.Notional = static_cast<float>(instr.notional);
     d.StrikeReturn = static_cast<float>(instr.strike_price);
-    // Reconstruct underlyings from basket_json (minimal: just underlying_code)
-    static_cast<std::string&>(d.Underlying1.Name) = instr.underlying_code;
+    // Reconstruct underlyings from basket_json
+    const auto names = parse_json_string_array(instr.basket_json);
+    const std::string u1 = names.size() > 0 ? names[0] : instr.underlying_code;
+    const std::string u2 = names.size() > 1 ? names[1] : u1;
+    static_cast<std::string&>(d.Underlying1.Name) = u1;
     static_cast<std::string&>(d.Underlying1.Type) = "Equity";
-    static_cast<std::string&>(d.Underlying2.Name) = instr.underlying_code;
+    static_cast<std::string&>(d.Underlying2.Name) = u2;
     static_cast<std::string&>(d.Underlying2.Type) = "Equity";
     t.EquityOutperformanceOptionData = std::move(d);
     return t;
@@ -954,8 +988,14 @@ trade equity_instrument_mapper::reverse_equity_cliquet_option(
     d.Currency = parse_currency_code(instr.currency);
     d.Notional = static_cast<float>(instr.notional);
     d.LongShort = longShort::Long;
-    d.OptionType = instr.option_type == "Put" ?
-        optionType::Put : optionType::Call;
+    if (instr.option_type == "Put")
+        d.OptionType = optionType::Put;
+    else if (instr.option_type == "Call")
+        d.OptionType = optionType::Call;
+    else
+        throw std::runtime_error(
+            "reverse_equity_cliquet_option: unrecognized option type '"
+            + instr.option_type + "'");
     d.Moneyness = 1.0f;
     // Schedule
     if (!instr.cliquet_frequency_code.empty()) {
@@ -984,8 +1024,16 @@ trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
     d.FixedRate = 0.0f;
     static_cast<std::string&>(d.FloatingIndex) = "EUR-EURIBOR-3M";
     d.FloatingDayCountFraction = dayCounter::Actual_360;
-    // Reconstruct underlyings from underlying_code (minimal)
-    if (!instr.underlying_code.empty()) {
+    // Reconstruct underlyings from basket_json
+    const auto names = parse_json_string_array(instr.basket_json);
+    if (!names.empty()) {
+        for (const auto& name : names) {
+            underlying u;
+            static_cast<std::string&>(u.Name) = name;
+            static_cast<std::string&>(u.Type) = "Equity";
+            d.Underlyings.Underlying.push_back(std::move(u));
+        }
+    } else if (!instr.underlying_code.empty()) {
         underlying u;
         static_cast<std::string&>(u.Name) = instr.underlying_code;
         static_cast<std::string&>(u.Type) = "Equity";

@@ -397,7 +397,10 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type,
     };
     barrierData b;
     const auto it = bmap.find(type);
-    b.Type = (it != bmap.end()) ? it->second : barrierType::DownAndOut;
+    if (it == bmap.end())
+        throw std::runtime_error(
+            "make_barrier: unrecognized barrier type '" + type + "'");
+    b.Type = it->second;
     b.Levels.Level.push_back(static_cast<float>(level));
     return b;
 }

@@ -154,21 +154,21 @@ Create the three-table schema and wire into all orchestration scripts.
 | =create/marketdata/marketdata_create.sql=              | Component master script |
 | =drop/marketdata/= (matching drop files)               | |
 
-** Phase 2 — C++ CDM (ores.marketdata)
+** Phase 2 — C++ CDM (ores.marketdata.api) [DONE]
 
-Create a new =ores.marketdata= project containing the C++ domain model.
+Create a new =ores.marketdata.api= project containing the C++ domain model.
 
 *** Tasks
 
-- [ ] Create =ores.marketdata= project skeleton (CMakeLists, includes, src, tests)
-- [ ] =asset_class= enum (FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
-      CROSS_ASSET)
-- [ ] =series_subclass= enum (SPOT, FORWARD, VOLATILITY, YIELD, BASIS, FRA, XCCY,
-      SPREAD, INDEX, RECOVERY, SWAP, CAPFLOOR, SEASONALITY, PRICE, CORRELATION)
-- [ ] =market_series= domain entity
-- [ ] =market_observation= domain entity
-- [ ] =market_fixing= domain entity
-- [ ] Unit tests for all domain entities
+- [X] Create =ores.marketdata.api= project skeleton (CMakeLists, includes, src, tests)
+- [X] =asset_class= enum (fx, rates, credit, equity, commodity, inflation, bond,
+      cross_asset)
+- [X] =series_subclass= enum (spot, forward, volatility, yield, basis, fra, xccy,
+      spread, index_credit, recovery, swap, capfloor, seasonality, price, correlation)
+- [X] =market_series= domain entity
+- [X] =market_observation= domain entity
+- [X] =market_fixing= domain entity
+- [X] Unit tests for all domain entities (14 tests, 77 assertions)
 
 *** Key types
 
@@ -221,21 +221,21 @@ struct market_fixing {
 } // namespace ores::marketdata::domain
 #+end_src
 
-** Phase 3 — ORE key decomposition (ores.ore updates)
+** Phase 3 — ORE key decomposition (ores.ore updates) [DONE]
 
 Extend the =ores.ore= parser/CDM so that =market_datum= and =fixing= carry
 decomposed fields, and the key can always be reconstructed.
 
 *** Tasks
 
-- [ ] Define a =series_key_registry= mapping each ORE =series_type= to
+- [X] Define a =series_key_registry= mapping each ORE =series_type= to
       =(qualifier_depth, is_scalar)=. This is a static compile-time table.
-- [ ] Update =market_datum= struct to carry =(series_type, metric, qualifier,
+- [X] Update =market_datum= struct to carry =(series_type, metric, qualifier,
       point_id)= alongside =key= (for validation/roundtrip).
-- [ ] Update =fixing= struct to carry =series_type=, =qualifier= (the index name).
-- [ ] Update =market_data_parser= to fill the decomposed fields.
-- [ ] Update =market_data_serializer= to reconstruct =key= from components.
-- [ ] Update all roundtrip tests to validate decomposed fields.
+- [X] Update =fixing= struct to carry =series_type=, =qualifier= (the index name).
+- [X] Update =market_data_parser= to fill the decomposed fields.
+- [X] Update =market_data_serializer= to reconstruct =key= from components.
+- [X] Update all roundtrip tests to validate decomposed fields.
 
 *** Registry example
 
@@ -254,21 +254,24 @@ static const std::unordered_map<std::string, series_key_info> k_registry = {
 };
 #+end_src
 
-** Phase 4 — Database repository (ores.database)
+** Phase 4 — Database repository (ores.marketdata.core) [DONE]
 
 Add repository classes and mappers for the three market data tables.
+New project =ores.marketdata.core= linking PUBLIC to =ores.marketdata.api=.
+Generators added to =ores.marketdata.api= for test data production.
 
 *** Tasks
 
-- [ ] DB entity structs for =ores_marketdata_series_tbl=,
+- [X] DB entity structs for =ores_marketdata_series_tbl=,
       =ores_marketdata_observations_tbl=, =ores_marketdata_fixings_tbl=
-- [ ] Mapper: =market_series= ↔ series entity
-- [ ] Mapper: =market_observation= ↔ observation entity
-- [ ] Mapper: =market_fixing= ↔ fixing entity
-- [ ] =market_series_repository=: get_all, get_by_id, get_by_type, save
-- [ ] =market_observations_repository=: get_by_series, get_by_date_range, save_bulk
-- [ ] =market_fixings_repository=: get_by_series, get_by_date_range, save_bulk
-- [ ] Integration tests against a real DB
+- [X] Mapper: =market_series= ↔ series entity (asset_class/series_subclass enum ↔ text)
+- [X] Mapper: =market_observation= ↔ observation entity (year_month_day ↔ date string)
+- [X] Mapper: =market_fixing= ↔ fixing entity (year_month_day ↔ date string)
+- [X] =market_series_repository=: write, read_latest, read_latest_by_type, read_all, remove
+- [X] =market_observations_repository=: write, read_latest (by series), read_latest (date range), remove
+- [X] =market_fixings_repository=: write, read_latest (by series), read_latest (date range), remove
+- [X] Synthetic generators for all three domain types
+- [X] Integration tests against a real DB
 
 ** Phase 5 — Service layer (ores.marketdata.service)
 

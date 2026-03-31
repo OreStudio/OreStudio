@@ -19,7 +19,6 @@
  */
 #include "ores.ore/domain/domain.hpp"
 
-#include <fstream>
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -62,12 +61,8 @@ void run_golden_test(const std::string& filename) {
     const std::string canonical = ores::ore::domain::save_data(p);
 
     const auto gpath = golden_path(filename);
-    if (!std::filesystem::exists(gpath)) {
-        std::filesystem::create_directories(gpath.parent_path());
-        file::write_content(gpath, canonical);
-        SUCCEED("Bootstrapped golden file: " + filename);
-        return;
-    }
+    INFO("Golden file missing (run with --reset-goldens to bootstrap): " + filename);
+    REQUIRE(std::filesystem::exists(gpath));
 
     const std::string golden = file::read_content(gpath);
     CHECK(canonical == golden);

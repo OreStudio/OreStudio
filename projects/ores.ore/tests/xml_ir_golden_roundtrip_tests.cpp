@@ -19,7 +19,6 @@
  */
 #include "ores.ore/domain/domain.hpp"
 
-#include <fstream>
 #include <filesystem>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -60,16 +59,10 @@ std::filesystem::path golden_path(const std::string& filename) {
         "assets/test_data/golden_dataset/Products/Example_Trades/" + filename);
 }
 
-/**
- * @brief Run a golden-file round-trip test for a single portfolio XML file.
- *
- * If the golden file does not exist, it is created from the first serialization
- * (bootstrap). On subsequent runs the serialized output must match exactly.
- */
 void test_golden_roundtrip(const std::string& filename) {
     auto lg(make_logger(test_suite));
     const auto src = example_path(filename);
-    const auto golden = golden_path(filename);
+    const auto gpath = golden_path(filename);
 
     BOOST_LOG_SEV(lg, debug) << "Testing golden roundtrip for: " << filename;
 
@@ -80,17 +73,10 @@ void test_golden_roundtrip(const std::string& filename) {
     ores::ore::domain::load_data(content, p);
     const std::string serialized = ores::ore::domain::save_data(p);
 
-    if (!std::filesystem::exists(golden)) {
-        BOOST_LOG_SEV(lg, info) << "No golden file found, writing: " << golden;
-        std::filesystem::create_directories(golden.parent_path());
-        std::ofstream out(golden);
-        out << serialized;
-        BOOST_LOG_SEV(lg, info) << "Golden file written: " << golden;
-        // First run: bootstrap. Test passes.
-        return;
-    }
+    INFO("Golden file missing (run with --reset-goldens to bootstrap): " + filename);
+    REQUIRE(std::filesystem::exists(gpath));
 
-    const std::string expected = file::read_content(golden);
+    const std::string expected = file::read_content(gpath);
     if (serialized != expected) {
         BOOST_LOG_SEV(lg, error) << "Golden diff for: " << filename;
         BOOST_LOG_SEV(lg, error) << "Expected length: " << expected.size()

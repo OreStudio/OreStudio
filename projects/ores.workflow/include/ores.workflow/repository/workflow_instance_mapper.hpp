@@ -43,6 +43,7 @@ public:
     static domain::workflow_instance map(const workflow_instance_entity& v);
     static std::vector<domain::workflow_instance>
     map(const std::vector<workflow_instance_entity>& v);
+    static workflow_instance_entity to_entity(const domain::workflow_instance& v);
 };
 
 }

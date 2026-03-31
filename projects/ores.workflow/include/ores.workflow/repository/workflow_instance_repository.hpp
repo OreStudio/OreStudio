@@ -20,8 +20,10 @@
 #ifndef ORES_WORKFLOW_REPOSITORY_WORKFLOW_INSTANCE_REPOSITORY_HPP
 #define ORES_WORKFLOW_REPOSITORY_WORKFLOW_INSTANCE_REPOSITORY_HPP
 
+#include <string>
 #include <vector>
 #include <sqlgen/postgres.hpp>
+#include <boost/uuid/uuid.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.workflow/domain/workflow_instance.hpp"
@@ -29,9 +31,7 @@
 namespace ores::workflow::repository {
 
 /**
- * @brief Reads workflow instances from data storage.
- *
- * This is a read-only repository for a non-temporal table.
+ * @brief Repository for workflow instances (non-temporal, append-mostly).
  */
 class workflow_instance_repository {
 private:
@@ -48,6 +48,21 @@ public:
     using context = ores::database::context;
 
     std::vector<domain::workflow_instance> read(context ctx);
+
+    /**
+     * @brief Inserts a new workflow instance record.
+     */
+    void create(context ctx, const domain::workflow_instance& v);
+
+    /**
+     * @brief Updates the status (and optional result/error) of a workflow instance.
+     *
+     * Sets @p status, @p result_json, @p error, and stamps completed_at to now.
+     */
+    void update_status(context ctx, const boost::uuids::uuid& id,
+        const std::string& status,
+        const std::string& result_json,
+        const std::string& error);
 };
 
 }

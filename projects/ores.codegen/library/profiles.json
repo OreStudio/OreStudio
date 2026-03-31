@@ -385,7 +385,7 @@
           "output": "projects/{component_full}/tests/main.cpp"
         },
         {
-          "template": "cpp_component_stub_test.cpp.mustache",
+          "template": "cpp_service_stub_test.cpp.mustache",
           "output": "projects/{component_full}/tests/stub_tests.cpp"
         }
       ]

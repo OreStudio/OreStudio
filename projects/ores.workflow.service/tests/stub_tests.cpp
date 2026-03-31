@@ -17,18 +17,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.workflow.service/domain/stub.hpp"
+#include "ores.workflow.service/config/parser.hpp"
 
+#include <sstream>
+#include <vector>
+#include <string>
 #include <catch2/catch_test_macros.hpp>
+#include "ores.workflow.service/config/parser_exception.hpp"
 
 namespace {
 
-const std::string tags("[domain]");
+const std::string_view test_suite("ores.workflow.service.tests");
+const std::string tags("[config]");
 
 }
 
-using namespace ores::workflow.service::domain;
+using namespace ores::workflow::service::config;
 
-TEST_CASE("create_stub", tags) {
-    REQUIRE(stub_function() == "STUB code to be removed");
+TEST_CASE("parse_help_does_not_throw", tags) {
+    std::ostringstream out, err;
+    parser p;
+    const auto r(p.parse({"--help"}, out, err));
+    REQUIRE(!r);
+}
+
+TEST_CASE("parse_version_does_not_throw", tags) {
+    std::ostringstream out, err;
+    parser p;
+    const auto r(p.parse({"--version"}, out, err));
+    REQUIRE(!r);
 }

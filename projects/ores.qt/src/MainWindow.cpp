@@ -3456,9 +3456,6 @@ void MainWindow::showPartyProvisioningWizard() {
     auto* wizard = new PartyProvisioningWizard(clientManager_, this);
     wizard->setWindowModality(Qt::ApplicationModal);
     wizard->setAttribute(Qt::WA_DeleteOnClose);
-    // If the party was created during tenant provisioning (GLEIF import), the
-    // party hierarchy already exists - skip data source selection and party setup.
-    wizard->setPartiesAlreadyProvisioned(clientManager_->lastPartySetupRequired());
 
     connect(wizard, &PartyProvisioningWizard::provisioningCompleted,
             this, [this]() {

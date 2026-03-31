@@ -20,7 +20,6 @@
 #include "ores.qt/PartyProvisioningWizard.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
-#include "ores.qt/LeiEntityPicker.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
 #include <array>
@@ -30,7 +29,6 @@
 #include <QGroupBox>
 #include <QListWidgetItem>
 #include <QPushButton>
-#include <QRegularExpressionValidator>
 #include <QSizePolicy>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -39,7 +37,6 @@
 #include "ores.dq.api/messaging/publish_bundle_protocol.hpp"
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.reporting.api/messaging/report_definition_protocol.hpp"
-#include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
 #include "ores.variability.api/domain/system_setting.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 
@@ -70,19 +67,16 @@ PartyProvisioningWizard::PartyProvisioningWizard(
     setOption(QWizard::NoCancelButtonOnLastPage, true);
 
     setupPages();
-
 }
 
 void PartyProvisioningWizard::setupPages() {
     WidgetUtils::setupComboBoxes(this);
-    setPage(Page_Welcome, new PartyWelcomePage(this));
-    setPage(Page_DataSourceSelection, new PartyDataSourceSelectionPage(this));
-    setPage(Page_PartySetup, new PartySetupPage(this));
+    setPage(Page_Welcome,          new PartyWelcomePage(this));
     setPage(Page_CounterpartySetup, new PartyCounterpartySetupPage(this));
     setPage(Page_OrganisationSetup, new PartyOrganisationSetupPage(this));
-    setPage(Page_ReportSetup, new PartyReportSetupPage(this));
-    setPage(Page_ReportInstall, new PartyReportInstallPage(this));
-    setPage(Page_Summary, new PartyApplyAndSummaryPage(this));
+    setPage(Page_ReportSetup,      new PartyReportSetupPage(this));
+    setPage(Page_ReportInstall,    new PartyReportInstallPage(this));
+    setPage(Page_Summary,          new PartyApplyAndSummaryPage(this));
 
     setStartId(Page_Welcome);
 }
@@ -92,9 +86,6 @@ bool PartyProvisioningWizard::markPartyActive() {
 
     const auto party_id = clientManager_->currentPartyId();
 
-    // Fetch the current party record so we can do a full save with status=Active.
-    // A limit of 1000 is sufficient here: a freshly provisioned tenant will only
-    // ever have the single party that was created in the TenantProvisioningWizard.
     refdata::messaging::get_parties_request list_req;
     list_req.offset = 0;
     list_req.limit = 1000;
@@ -132,7 +123,8 @@ bool PartyProvisioningWizard::markPartyActive() {
     }
     if (!save_result->success) {
         BOOST_LOG_SEV(lg(), warn) << "markPartyActive: save_party failed: "
-                                  << (save_result->message.empty() ? "Unknown error" : save_result->message);
+                                  << (save_result->message.empty()
+                                      ? "Unknown error" : save_result->message);
         return false;
     }
     BOOST_LOG_SEV(lg(), info) << "Party status set to Active successfully";
@@ -166,349 +158,37 @@ void PartyWelcomePage::setupUI() {
     auto* descLabel = new QLabel(this);
     descLabel->setWordWrap(true);
     descLabel->setText(
-        tr("This wizard will help you set up the operational structure of "
-           "your tenant, including parties, counterparties, organisational "
-           "hierarchy, and report definitions.\n\n"
+        tr("This wizard sets up the operational structure for this party. "
+           "The party hierarchy already exists — this wizard will import "
+           "counterparties and configure the organisational structure.\n\n"
            "The setup process includes:"));
     layout->addWidget(descLabel);
 
-    stepsLabel_ = new QLabel(this);
-    stepsLabel_->setWordWrap(true);
-    stepsLabel_->setTextFormat(Qt::RichText);
-    layout->addWidget(stepsLabel_);
+    auto* stepsLabel = new QLabel(this);
+    stepsLabel->setWordWrap(true);
+    stepsLabel->setTextFormat(Qt::RichText);
+    stepsLabel->setText(
+        tr("<ol>"
+           "<li><b>Counterparty Setup</b> - Select dataset size and import "
+           "counterparties from the GLEIF LEI registry.</li>"
+           "<li><b>Organisation Setup</b> - Publish business units, "
+           "portfolios, and trading books.</li>"
+           "<li><b>Report Definitions</b> - Optionally create a set of "
+           "standard risk report definitions.</li>"
+           "</ol>"));
+    layout->addWidget(stepsLabel);
 
     layout->addStretch();
 
     auto* noteBox = new QGroupBox(tr("Note"), this);
     auto* noteLayout = new QVBoxLayout(noteBox);
     auto* noteLabel = new QLabel(
-        tr("You can skip this setup by clicking Cancel. You can set up "
-           "parties and reports manually using the Parties window and "
-           "Reporting menu."),
+        tr("You can skip this setup by clicking Cancel. You can configure "
+           "counterparties and reports manually from the application menus."),
         this);
     noteLabel->setWordWrap(true);
     noteLayout->addWidget(noteLabel);
     layout->addWidget(noteBox);
-}
-
-int PartyWelcomePage::nextId() const {
-    if (wizard_->partiesAlreadyProvisioned())
-        return PartyProvisioningWizard::Page_CounterpartySetup;
-    return PartyProvisioningWizard::Page_DataSourceSelection;
-}
-
-void PartyWelcomePage::initializePage() {
-    if (wizard_->partiesAlreadyProvisioned()) {
-        stepsLabel_->setText(
-            tr("<ol>"
-               "<li><b>Counterparty Setup</b> - Add the external counterparties "
-               "for this party from the GLEIF registry.</li>"
-               "<li><b>Organisation Setup</b> - Populate business units, "
-               "portfolios, and trading books.</li>"
-               "<li><b>Report Definitions</b> - Optionally create a set of "
-               "standard risk report definitions.</li>"
-               "</ol>"));
-    } else {
-        stepsLabel_->setText(
-            tr("<ol>"
-               "<li><b>Choose Data Source</b> - Select between GLEIF registry "
-               "or generated synthetic data for parties, counterparties, and "
-               "organisational structure.</li>"
-               "<li><b>Organisation Setup</b> - Populate your organisation with "
-               "the selected data source.</li>"
-               "<li><b>Report Definitions</b> - Optionally create a set of "
-               "standard risk report definitions.</li>"
-               "</ol>"));
-    }
-}
-
-// ============================================================================
-// PartyDataSourceSelectionPage
-// ============================================================================
-
-PartyDataSourceSelectionPage::PartyDataSourceSelectionPage(
-    PartyProvisioningWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
-
-    setTitle(tr("Choose Data Source"));
-    setSubTitle(tr("Select how to populate parties, counterparties, and "
-                   "organisational structure for your tenant."));
-
-    setupUI();
-}
-
-void PartyDataSourceSelectionPage::setupUI() {
-    auto* layout = new QVBoxLayout(this);
-    layout->setSpacing(12);
-
-    gleifRadio_ = new QRadioButton(
-        tr("GLEIF Registry - Search the LEI registry for your organisation"),
-        this);
-    gleifRadio_->setChecked(true);
-    layout->addWidget(gleifRadio_);
-
-    syntheticRadio_ = new QRadioButton(
-        tr("Generate Synthetic Data - Create realistic generated data"),
-        this);
-    layout->addWidget(syntheticRadio_);
-
-    layout->addSpacing(8);
-
-    // Synthetic options group (shown only when synthetic is selected)
-    syntheticOptions_ = new QWidget(this);
-    auto* optLayout = new QGridLayout(syntheticOptions_);
-    optLayout->setContentsMargins(20, 0, 0, 0);
-    optLayout->setColumnStretch(1, 1);
-
-    int row = 0;
-
-    // --- Entity counts -------------------------------------------------------
-    optLayout->addWidget(new QLabel(tr("Country:"), this), row, 0);
-    countryCombo_ = new QComboBox(this);
-    countryCombo_->addItem(tr("United Kingdom (GB)"), "GB");
-    countryCombo_->addItem(tr("United States (US)"), "US");
-    optLayout->addWidget(countryCombo_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Party count:"), this), row, 0);
-    partyCountSpin_ = new QSpinBox(this);
-    partyCountSpin_->setRange(1, 100);
-    partyCountSpin_->setValue(5);
-    optLayout->addWidget(partyCountSpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Counterparty count:"), this), row, 0);
-    counterpartyCountSpin_ = new QSpinBox(this);
-    counterpartyCountSpin_->setRange(1, 200);
-    counterpartyCountSpin_->setValue(10);
-    optLayout->addWidget(counterpartyCountSpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Portfolio leaf count:"), this), row, 0);
-    portfolioLeafCountSpin_ = new QSpinBox(this);
-    portfolioLeafCountSpin_->setRange(1, 100);
-    portfolioLeafCountSpin_->setValue(8);
-    optLayout->addWidget(portfolioLeafCountSpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Books per portfolio:"), this), row, 0);
-    booksPerPortfolioSpin_ = new QSpinBox(this);
-    booksPerPortfolioSpin_->setRange(1, 20);
-    booksPerPortfolioSpin_->setValue(2);
-    optLayout->addWidget(booksPerPortfolioSpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Business unit count:"), this), row, 0);
-    businessUnitCountSpin_ = new QSpinBox(this);
-    businessUnitCountSpin_->setRange(1, 100);
-    businessUnitCountSpin_->setValue(10);
-    optLayout->addWidget(businessUnitCountSpin_, row, 1);
-    row++;
-
-    // --- Hierarchy depths ----------------------------------------------------
-    auto* depthSep = new QLabel(tr("<b>Hierarchy depths</b>"), this);
-    depthSep->setContentsMargins(0, 6, 0, 2);
-    optLayout->addWidget(depthSep, row, 0, 1, 2);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Party max depth:"), this), row, 0);
-    partyMaxDepthSpin_ = new QSpinBox(this);
-    partyMaxDepthSpin_->setRange(1, 10);
-    partyMaxDepthSpin_->setValue(3);
-    optLayout->addWidget(partyMaxDepthSpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Counterparty max depth:"), this), row, 0);
-    counterpartyMaxDepthSpin_ = new QSpinBox(this);
-    counterpartyMaxDepthSpin_->setRange(1, 10);
-    counterpartyMaxDepthSpin_->setValue(3);
-    optLayout->addWidget(counterpartyMaxDepthSpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Portfolio max depth:"), this), row, 0);
-    portfolioMaxDepthSpin_ = new QSpinBox(this);
-    portfolioMaxDepthSpin_->setRange(1, 10);
-    portfolioMaxDepthSpin_->setValue(4);
-    optLayout->addWidget(portfolioMaxDepthSpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Business unit max depth:"), this), row, 0);
-    businessUnitMaxDepthSpin_ = new QSpinBox(this);
-    businessUnitMaxDepthSpin_->setRange(1, 5);
-    businessUnitMaxDepthSpin_->setValue(2);
-    optLayout->addWidget(businessUnitMaxDepthSpin_, row, 1);
-    row++;
-
-    // --- Contact and identifier options --------------------------------------
-    auto* contactSep = new QLabel(tr("<b>Contacts &amp; identifiers</b>"), this);
-    contactSep->setContentsMargins(0, 6, 0, 2);
-    optLayout->addWidget(contactSep, row, 0, 1, 2);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Contacts per party:"), this), row, 0);
-    contactsPerPartySpin_ = new QSpinBox(this);
-    contactsPerPartySpin_->setRange(0, 10);
-    contactsPerPartySpin_->setValue(2);
-    optLayout->addWidget(contactsPerPartySpin_, row, 1);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Contacts per counterparty:"), this), row, 0);
-    contactsPerCounterpartySpin_ = new QSpinBox(this);
-    contactsPerCounterpartySpin_->setRange(0, 10);
-    contactsPerCounterpartySpin_->setValue(1);
-    optLayout->addWidget(contactsPerCounterpartySpin_, row, 1);
-    row++;
-
-    generateAddressesCheck_ = new QCheckBox(tr("Generate addresses"), this);
-    generateAddressesCheck_->setChecked(true);
-    optLayout->addWidget(generateAddressesCheck_, row, 0, 1, 2);
-    row++;
-
-    generateIdentifiersCheck_ = new QCheckBox(tr("Generate identifiers (LEI, BIC)"), this);
-    generateIdentifiersCheck_->setChecked(true);
-    optLayout->addWidget(generateIdentifiersCheck_, row, 0, 1, 2);
-    row++;
-
-    // --- Reproducibility -----------------------------------------------------
-    auto* seedSep = new QLabel(tr("<b>Reproducibility</b>"), this);
-    seedSep->setContentsMargins(0, 6, 0, 2);
-    optLayout->addWidget(seedSep, row, 0, 1, 2);
-    row++;
-
-    optLayout->addWidget(new QLabel(tr("Seed (optional):"), this), row, 0);
-    seedEdit_ = new QLineEdit(this);
-    seedEdit_->setPlaceholderText(tr("Leave blank for a random seed"));
-    seedEdit_->setValidator(new QRegularExpressionValidator(
-        QRegularExpression("[0-9]*"), seedEdit_));
-    optLayout->addWidget(seedEdit_, row, 1);
-    row++;
-
-    syntheticOptions_->setVisible(false);
-    layout->addWidget(syntheticOptions_);
-
-    layout->addStretch();
-
-    connect(gleifRadio_, &QRadioButton::toggled,
-            this, &PartyDataSourceSelectionPage::onModeChanged);
-    connect(syntheticRadio_, &QRadioButton::toggled,
-            this, &PartyDataSourceSelectionPage::onModeChanged);
-
-    WidgetUtils::setupComboBoxes(this);
-}
-
-void PartyDataSourceSelectionPage::onModeChanged() {
-    syntheticOptions_->setVisible(syntheticRadio_->isChecked());
-}
-
-bool PartyDataSourceSelectionPage::validatePage() {
-    if (syntheticRadio_->isChecked()) {
-        wizard_->setDataSourceMode(
-            PartyProvisioningWizard::DataSourceMode::synthetic);
-        wizard_->setSyntheticCountry(
-            countryCombo_->currentData().toString());
-        wizard_->setSyntheticPartyCount(partyCountSpin_->value());
-        wizard_->setSyntheticPartyMaxDepth(partyMaxDepthSpin_->value());
-        wizard_->setSyntheticCounterpartyCount(counterpartyCountSpin_->value());
-        wizard_->setSyntheticCounterpartyMaxDepth(counterpartyMaxDepthSpin_->value());
-        wizard_->setSyntheticPortfolioLeafCount(portfolioLeafCountSpin_->value());
-        wizard_->setSyntheticPortfolioMaxDepth(portfolioMaxDepthSpin_->value());
-        wizard_->setSyntheticBooksPerPortfolio(booksPerPortfolioSpin_->value());
-        wizard_->setSyntheticBusinessUnitCount(businessUnitCountSpin_->value());
-        wizard_->setSyntheticBusinessUnitMaxDepth(businessUnitMaxDepthSpin_->value());
-        wizard_->setSyntheticGenerateAddresses(generateAddressesCheck_->isChecked());
-        wizard_->setSyntheticContactsPerParty(contactsPerPartySpin_->value());
-        wizard_->setSyntheticContactsPerCounterparty(
-            contactsPerCounterpartySpin_->value());
-        wizard_->setSyntheticGenerateIdentifiers(generateIdentifiersCheck_->isChecked());
-
-        const auto seedText = seedEdit_->text().trimmed();
-        if (seedText.isEmpty()) {
-            wizard_->setSyntheticSeed(std::nullopt);
-        } else {
-            bool ok = false;
-            const auto seed = seedText.toULongLong(&ok);
-            wizard_->setSyntheticSeed(ok ? std::optional<std::uint64_t>{seed}
-                                         : std::nullopt);
-        }
-    } else {
-        wizard_->setDataSourceMode(
-            PartyProvisioningWizard::DataSourceMode::gleif);
-    }
-    return true;
-}
-
-int PartyDataSourceSelectionPage::nextId() const {
-    if (syntheticRadio_->isChecked()) {
-        // Skip LEI/counterparty pages, go straight to organisation setup
-        return PartyProvisioningWizard::Page_OrganisationSetup;
-    }
-    // GLEIF flow: go to party setup
-    return PartyProvisioningWizard::Page_PartySetup;
-}
-
-// ============================================================================
-// PartySetupPage
-// ============================================================================
-
-PartySetupPage::PartySetupPage(PartyProvisioningWizard* wizard)
-    : QWizardPage(wizard), wizard_(wizard) {
-
-    setTitle(tr("Party Setup (Optional)"));
-    setSubTitle(tr("Optionally select a root LEI entity to configure your "
-                   "organisation's party hierarchy."));
-
-    setupUI();
-}
-
-void PartySetupPage::setupUI() {
-    auto* layout = new QVBoxLayout(this);
-
-    instructionLabel_ = new QLabel(this);
-    instructionLabel_->setWordWrap(true);
-    instructionLabel_->setText(
-        tr("Search the GLEIF LEI registry for your organisation. The selected "
-           "entity will become the root of your party hierarchy.\n\n"
-           "This step is optional - you can skip it and set up parties "
-           "manually later from the Parties window."));
-    layout->addWidget(instructionLabel_);
-
-    layout->addSpacing(10);
-
-    // Dataset size selection
-    auto* sizeLayout = new QHBoxLayout();
-    sizeLayout->addWidget(new QLabel(tr("LEI dataset size:"), this));
-    datasetSizeCombo_ = new QComboBox(this);
-    datasetSizeCombo_->addItem(tr("Large (~15,000 entities)"), "large");
-    datasetSizeCombo_->addItem(tr("Small (~6,000 entities)"), "small");
-    datasetSizeCombo_->setCurrentIndex(0);
-    sizeLayout->addWidget(datasetSizeCombo_);
-    sizeLayout->addStretch();
-    layout->addLayout(sizeLayout);
-
-    layout->addSpacing(10);
-
-    leiPicker_ = new LeiEntityPicker(wizard_->clientManager(), this);
-    layout->addWidget(leiPicker_);
-
-    WidgetUtils::setupComboBoxes(this);
-}
-
-void PartySetupPage::initializePage() {
-    if (!leiLoaded_) {
-        leiPicker_->load();
-        leiLoaded_ = true;
-    }
-}
-
-bool PartySetupPage::validatePage() {
-    // Optional page - always allow advancing
-    if (leiPicker_->hasSelection()) {
-        wizard_->setRootLei(leiPicker_->selectedLei());
-        wizard_->setRootLeiName(leiPicker_->selectedName());
-    }
-    wizard_->setLeiDatasetSize(
-        datasetSizeCombo_->currentData().toString());
-    return true;
 }
 
 // ============================================================================
@@ -520,6 +200,7 @@ PartyCounterpartySetupPage::PartyCounterpartySetupPage(
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Counterparty Import"));
+    setSubTitle(tr("Select the GLEIF dataset size to use for counterparty import."));
     setupUI();
 }
 
@@ -533,14 +214,31 @@ void PartyCounterpartySetupPage::setupUI() {
     infoLabel->setText(
         tr("Counterparties represent the external entities your organisation "
            "trades with or has business relationships with.\n\n"
-           "Counterparties will be imported automatically from the GLEIF LEI "
-           "registry in the next step, based on the party hierarchy you "
-           "selected.\n\n"
+           "Counterparties are imported from the full GLEIF LEI registry dataset. "
+           "Choose the dataset size based on your needs:\n\n"
+           "  - <b>Small</b>: a curated subset of major institutions, suitable "
+           "for development and testing.\n"
+           "  - <b>Large</b>: the complete LEI registry, suitable for production use.\n\n"
            "You can also add counterparties manually from the Counterparties "
-           "window after completing this wizard. Click Next to continue."));
+           "window after completing this wizard."));
+    infoLabel->setTextFormat(Qt::RichText);
     layout->addWidget(infoLabel);
 
+    auto* sizeLayout = new QHBoxLayout();
+    sizeLayout->addWidget(new QLabel(tr("Dataset size:"), this));
+    datasetSizeCombo_ = new QComboBox(this);
+    datasetSizeCombo_->addItem(tr("Small (development/testing)"), QStringLiteral("small"));
+    datasetSizeCombo_->addItem(tr("Large (production)"),          QStringLiteral("large"));
+    sizeLayout->addWidget(datasetSizeCombo_);
+    sizeLayout->addStretch();
+    layout->addLayout(sizeLayout);
+
     layout->addStretch();
+}
+
+bool PartyCounterpartySetupPage::validatePage() {
+    wizard_->setLeiDatasetSize(datasetSizeCombo_->currentData().toString());
+    return true;
 }
 
 // ============================================================================
@@ -552,7 +250,7 @@ PartyOrganisationSetupPage::PartyOrganisationSetupPage(
     : QWizardPage(wizard), wizard_(wizard) {
 
     setTitle(tr("Organisation Setup"));
-    setSubTitle(tr("Setting up your organisation's structure."));
+    setSubTitle(tr("Importing counterparties and publishing organisation structure."));
     setFinalPage(false);
 
     auto* layout = new QVBoxLayout(this);
@@ -590,24 +288,7 @@ void PartyOrganisationSetupPage::initializePage() {
         "background: #2d2d2d; height: 20px; }"
         "QProgressBar::chunk { background-color: #4a9eff; }");
 
-    const bool isSynthetic = wizard_->dataSourceMode() ==
-        PartyProvisioningWizard::DataSourceMode::synthetic;
-
-    if (isSynthetic) {
-        setSubTitle(tr("Generating synthetic parties, counterparties, "
-                       "business units, portfolios, and trading books."));
-        statusLabel_->setText(tr("Generating synthetic organisation data..."));
-    } else if (!wizard_->rootLei().isEmpty()) {
-        setSubTitle(tr("Publishing GLEIF party hierarchy, business units, "
-                       "portfolios, and trading books for your organisation."));
-        statusLabel_->setText(tr("Publishing organisation data with GLEIF "
-                                 "parties..."));
-    } else {
-        setSubTitle(tr("Publishing business units, portfolios, and trading "
-                       "books for your organisation."));
-        statusLabel_->setText(tr("Publishing organisation data..."));
-    }
-
+    statusLabel_->setText(tr("Importing counterparties and organisation data..."));
     startPublish();
 }
 
@@ -619,38 +300,14 @@ void PartyOrganisationSetupPage::appendLog(const QString& message) {
 }
 
 void PartyOrganisationSetupPage::startPublish() {
-    const bool isSynthetic = wizard_->dataSourceMode() ==
-        PartyProvisioningWizard::DataSourceMode::synthetic;
-
-    if (isSynthetic) {
-        startSyntheticGeneration();
-    } else {
-        startBundlePublish();
-    }
-}
-
-void PartyOrganisationSetupPage::startBundlePublish() {
     const std::string publishedBy = wizard_->clientManager()->currentUsername();
     ClientManager* clientManager = wizard_->clientManager();
-    const std::string rootLei = wizard_->rootLei().toStdString();
-    const bool hasLei = !rootLei.empty();
     const std::string selectedBundle = wizard_->selectedBundleCode().toStdString();
+    const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
+    const std::string size = datasetSize.empty() ? "small" : datasetSize;
 
-    BOOST_LOG_SEV(lg(), info) << "Publishing organisation data"
-                              << (hasLei ? " with root LEI: " : "")
-                              << rootLei;
-
-    // Build LEI params for re-publishing the base bundle with opt-in datasets
-    std::string leiParamsJson = "{}";
-    if (hasLei) {
-        dq::messaging::publish_bundle_params leiParams;
-        leiParams.lei_parties = dq::messaging::lei_parties_params{rootLei};
-        const std::string datasetSize = wizard_->leiDatasetSize().toStdString();
-        const std::string size = datasetSize.empty() ? "small" : datasetSize;
-        leiParams.opted_in_datasets.push_back("gleif.lei_parties." + size);
-        leiParams.opted_in_datasets.push_back("gleif.lei_counterparties." + size);
-        leiParamsJson = dq::messaging::build_params_json(leiParams);
-    }
+    BOOST_LOG_SEV(lg(), info) << "Publishing counterparties (dataset: " << size
+                              << ") and organisation structure";
 
     using ResponseType = dq::messaging::publish_bundle_response;
 
@@ -683,9 +340,10 @@ void PartyOrganisationSetupPage::startBundlePublish() {
         } else {
             BOOST_LOG_SEV(lg(), info)
                 << "Organisation publication succeeded: "
-                << result->datasets_succeeded << " datasets";
-            statusLabel_->setText(
-                tr("Organisation data published successfully!"));
+                << result->datasets_succeeded << " datasets, "
+                << result->total_records_inserted << " inserted, "
+                << result->total_records_updated << " updated";
+            statusLabel_->setText(tr("Organisation setup complete!"));
             appendLog(tr("Published %1 datasets (%2 records inserted, %3 updated).")
                 .arg(result->datasets_succeeded)
                 .arg(result->total_records_inserted)
@@ -700,28 +358,32 @@ void PartyOrganisationSetupPage::startBundlePublish() {
 
     // Run both publishes sequentially on a background thread
     QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, publishedBy, leiParamsJson,
-         hasLei, rootLei, selectedBundle]() -> std::optional<ResponseType> {
+        [clientManager, publishedBy, selectedBundle, size]()
+            -> std::optional<ResponseType> {
 
-            // Step 1: Re-publish the selected bundle with root_lei params to
-            // populate LEI parties and counterparties for this party's hierarchy
-            if (hasLei) {
-                dq::messaging::publish_bundle_request leiRequest;
-                leiRequest.bundle_code = selectedBundle;
-                leiRequest.mode = dq::domain::publication_mode::upsert;
-                leiRequest.published_by = publishedBy;
-                leiRequest.atomic = true;
-                leiRequest.params_json = leiParamsJson;
+            // Step 1: Re-publish the selected bundle opting in counterparties only.
+            // No root_lei filtering — counterparties are the full GLEIF dataset.
+            dq::messaging::publish_bundle_params leiParams;
+            leiParams.opted_in_datasets.push_back(
+                "gleif.lei_counterparties." + size);
+            const std::string leiParamsJson =
+                dq::messaging::build_params_json(leiParams);
 
-                auto leiResult = clientManager->process_authenticated_request(
-                    std::move(leiRequest), std::chrono::minutes(5));
+            dq::messaging::publish_bundle_request leiRequest;
+            leiRequest.bundle_code = selectedBundle;
+            leiRequest.mode = dq::domain::publication_mode::upsert;
+            leiRequest.published_by = publishedBy;
+            leiRequest.atomic = true;
+            leiRequest.params_json = leiParamsJson;
 
-                if (!leiResult) {
-                    return std::nullopt;
-                }
-                if (!leiResult->success) {
-                    return *leiResult;
-                }
+            auto leiResult = clientManager->process_authenticated_request(
+                std::move(leiRequest), std::chrono::minutes(5));
+
+            if (!leiResult) {
+                return std::nullopt;
+            }
+            if (!leiResult->success) {
+                return *leiResult;
             }
 
             // Step 2: Publish organisation bundle (business units, portfolios, books)
@@ -743,130 +405,10 @@ void PartyOrganisationSetupPage::startBundlePublish() {
 
     watcher->setFuture(future);
 
-    if (hasLei) {
-        appendLog(tr("[1/2] Publishing GLEIF LEI parties and counterparties "
-                      "(root: %1, dataset: %2)...")
-            .arg(wizard_->rootLeiName(), wizard_->leiDatasetSize()));
-        appendLog(tr("[2/2] Publishing organisation structure (business units, "
-                      "portfolios, books)..."));
-    } else {
-        appendLog(tr("Publishing organisation bundle (business units, portfolios, "
-                      "books)..."));
-    }
-}
-
-void PartyOrganisationSetupPage::startSyntheticGeneration() {
-    ClientManager* clientManager = wizard_->clientManager();
-
-    BOOST_LOG_SEV(lg(), info) << "Generating synthetic organisation data";
-
-    using ResponseType = synthetic::messaging::generate_organisation_response;
-
-    synthetic::messaging::generate_organisation_request request;
-    request.country               = wizard_->syntheticCountry().toStdString();
-    request.party_count           =
-        static_cast<std::uint32_t>(wizard_->syntheticPartyCount());
-    request.party_max_depth       =
-        static_cast<std::uint32_t>(wizard_->syntheticPartyMaxDepth());
-    request.counterparty_count    =
-        static_cast<std::uint32_t>(wizard_->syntheticCounterpartyCount());
-    request.counterparty_max_depth =
-        static_cast<std::uint32_t>(wizard_->syntheticCounterpartyMaxDepth());
-    request.portfolio_leaf_count  =
-        static_cast<std::uint32_t>(wizard_->syntheticPortfolioLeafCount());
-    request.portfolio_max_depth   =
-        static_cast<std::uint32_t>(wizard_->syntheticPortfolioMaxDepth());
-    request.books_per_leaf_portfolio =
-        static_cast<std::uint32_t>(wizard_->syntheticBooksPerPortfolio());
-    request.business_unit_count   =
-        static_cast<std::uint32_t>(wizard_->syntheticBusinessUnitCount());
-    request.business_unit_max_depth =
-        static_cast<std::uint32_t>(wizard_->syntheticBusinessUnitMaxDepth());
-    request.generate_addresses    = wizard_->syntheticGenerateAddresses();
-    request.contacts_per_party    =
-        static_cast<std::uint32_t>(wizard_->syntheticContactsPerParty());
-    request.contacts_per_counterparty =
-        static_cast<std::uint32_t>(wizard_->syntheticContactsPerCounterparty());
-    request.generate_identifiers  = wizard_->syntheticGenerateIdentifiers();
-    request.seed                  = wizard_->syntheticSeed();
-
-    auto* watcher = new QFutureWatcher<std::optional<ResponseType>>(this);
-    connect(watcher, &QFutureWatcher<std::optional<ResponseType>>::finished,
-            [this, watcher]() {
-        const auto result = watcher->result();
-        watcher->deleteLater();
-
-        progressBar_->setRange(0, 1);
-        progressBar_->setValue(1);
-
-        if (!result || !result->success) {
-            publishSuccess_ = false;
-            statusLabel_->setText(tr("Generation failed!"));
-            progressBar_->setStyleSheet(
-                "QProgressBar::chunk { background-color: #cc0000; }");
-
-            if (!result) {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Synthetic generation: no server response";
-                appendLog(tr("ERROR: Failed to communicate with server."));
-            } else {
-                BOOST_LOG_SEV(lg(), error)
-                    << "Synthetic generation failed: "
-                    << result->error_message;
-                appendLog(tr("ERROR: %1").arg(
-                    QString::fromStdString(result->error_message)));
-            }
-        } else {
-            BOOST_LOG_SEV(lg(), info)
-                << "Synthetic generation succeeded: "
-                << result->parties_count << " parties, "
-                << result->counterparties_count << " counterparties"
-                << " (seed: " << result->seed << ")";
-            statusLabel_->setText(
-                tr("Synthetic organisation generated successfully!"));
-            appendLog(tr("Generated %1 parties, %2 counterparties, "
-                         "%3 business unit types, %4 business units, "
-                         "%5 portfolios, %6 books, "
-                         "%7 contacts, %8 identifiers.")
-                .arg(result->parties_count)
-                .arg(result->counterparties_count)
-                .arg(result->business_unit_types_count)
-                .arg(result->business_units_count)
-                .arg(result->portfolios_count)
-                .arg(result->books_count)
-                .arg(result->contacts_count)
-                .arg(result->identifiers_count));
-            appendLog(tr("Seed: %1 (use this to reproduce the same organisation)")
-                .arg(result->seed));
-            publishSuccess_ = true;
-            wizard_->setOrganisationPublished(true);
-        }
-
-        publishComplete_ = true;
-        emit completeChanged();
-    });
-
-    QFuture<std::optional<ResponseType>> future = QtConcurrent::run(
-        [clientManager, request = std::move(request)]() mutable
-            -> std::optional<ResponseType> {
-
-            auto result = clientManager->process_authenticated_request(
-                std::move(request));
-
-            if (!result) {
-                return std::nullopt;
-            }
-            return *result;
-        }
-    );
-
-    watcher->setFuture(future);
-
-    appendLog(tr("Generating synthetic organisation (country: %1, "
-                  "parties: %2, counterparties: %3)...")
-        .arg(wizard_->syntheticCountry())
-        .arg(wizard_->syntheticPartyCount())
-        .arg(wizard_->syntheticCounterpartyCount()));
+    appendLog(tr("[1/2] Importing GLEIF counterparties (dataset: %1)...")
+        .arg(QString::fromStdString(size)));
+    appendLog(tr("[2/2] Publishing organisation structure (business units, "
+                  "portfolios, books)..."));
 }
 
 // ============================================================================
@@ -902,191 +444,189 @@ constexpr std::array<ReportEntry, 28> k_default_reports{{
          "full term structure of interest rates used by all pricing "
          "engines. Essential prerequisite for NPV, sensitivity, and "
          "Monte Carlo exposure analytics.",
-     .schedule = "0 6 * * 1-5"},
+     .schedule = "0 5 * * 1-5"},
+    {.name = "FX Spot Rates",
+     .description =
+         "Loads and validates FX spot rates for all active currency pairs "
+         "from market data feeds. Provides consistent FX conversion for "
+         "multi-currency portfolio valuation, sensitivities, and "
+         "regulatory capital calculations that require base-currency "
+         "aggregation.",
+     .schedule = "0 5 * * 1-5"},
+    {.name = "Volatility Surfaces",
+     .description =
+         "Constructs implied volatility surfaces for interest rates, FX, "
+         "and equity from market option quotes. Applies smile interpolation "
+         "(SVI, SABR) and arbitrage-free calibration. Required for options "
+         "pricing, vega sensitivities, stressed VaR, and FRTB vega "
+         "capital computation.",
+     .schedule = "0 5 * * 1-5"},
     {.name = "Credit Curves",
      .description =
-         "Bootstraps credit default swap (CDS) spread curves for "
-         "counterparties and reference entities. Outputs survival "
-         "probability and hazard rate term structures. Used by CVA, "
-         "DVA, CRIF, and SIMM calculations as the credit risk input.",
-     .schedule = "0 6 * * 1-5"},
-    {.name = "Correlation",
+         "Bootstraps CDS-implied survival probability curves and "
+         "hazard rate curves for each counterparty and entity. Calibrates "
+         "credit models (Jarrow-Turnbull, Hull-White credit) to market "
+         "spreads. Prerequisite for CVA, DVA, FVA, and regulatory "
+         "SA-CVA capital computations.",
+     .schedule = "0 5 * * 1-5"},
+
+    // --- Portfolio valuation (6-7 am) ----------------------------------
+    {.name = "NPV",
      .description =
-         "Computes and outputs the correlation matrix between risk "
-         "factors across all asset classes (rates, FX, equity, credit, "
-         "commodities). Used as the covariance input for parametric "
-         "VaR, SIMM initial margin, and scenario generation.",
+         "Full mark-to-market portfolio valuation producing present values "
+         "for all active trades. Applies validated yield curves and FX "
+         "rates. Provides the daily P&L baseline, feeds downstream "
+         "sensitivities, and serves as the reference for risk-neutral "
+         "pricing across all asset classes.",
      .schedule = "0 6 * * 1-5"},
-    {.name = "Scenario Generation",
+    {.name = "Cashflows",
      .description =
-         "Generates Monte Carlo scenario paths across the simulation "
-         "date grid using calibrated stochastic models. Produces the "
-         "scenario cube consumed downstream by counterparty exposure, "
-         "XVA, dynamic initial margin, and historical simulation VaR "
-         "analytics.",
+         "Projects all future contractual cashflows across the portfolio: "
+         "fixed, floating, contingent, and collateral flows. Used for "
+         "liquidity risk, funding cost estimation, hedge effectiveness "
+         "testing, and IFRS 9 / IFRS 7 cashflow disclosure.",
      .schedule = "0 6 * * 1-5"},
-    // --- Core valuation (6-7 am) ----------------------------------------
-    {.name = "Portfolio NPV",
+
+    // --- Sensitivities (7-8 am) ----------------------------------------
+    {.name = "Delta and Gamma",
      .description =
-         "Daily mark-to-market net present value of the entire portfolio "
-         "in base reporting currency. Produces trade-level and "
-         "portfolio-level valuations using today's market data. Primary "
-         "source for P&L reporting, risk management, and the basis for "
-         "regulatory capital calculations.",
-     .schedule = "0 6 * * 1-5"},
-    {.name = "Cashflow Report",
-     .description =
-         "Projects and outputs the complete scheduled cash flow profile "
-         "for all live trades: fixed and floating coupons, notional "
-         "exchanges, and option exercise payoffs, broken down by date, "
-         "counterparty, and currency. Used for liquidity planning, "
-         "funding cost analysis, and collateral management.",
-     .schedule = "0 6 * * 1-5"},
-    {.name = "Portfolio Details",
-     .description =
-         "Detailed breakdown of all live portfolio positions including "
-         "trade attributes, notional, maturity, product type, pricing "
-         "model, and book or portfolio allocation. Supports portfolio "
-         "management reporting, limit monitoring, and regulatory "
-         "position reporting.",
-     .schedule = "0 6 * * 1-5"},
-    {.name = "CRIF",
-     .description =
-         "Generates the Common Risk Interchange Format (CRIF) "
-         "sensitivity file from trade-level sensitivities. CRIF is the "
-         "standardised input format required by the ISDA SIMM margin "
-         "model. Covers interest rate, FX, equity, credit qualifying, "
-         "credit non-qualifying, and commodity risk classes.",
+         "Computes first-order (delta) and second-order (gamma) price "
+         "sensitivities to interest rates, FX, and credit spreads using "
+         "bump-and-revalue. Produces risk ladder reports by tenor bucket "
+         "and currency. Feeds hedging, P&L attribution, and FRTB "
+         "sensitivity-based method capital.",
      .schedule = "0 7 * * 1-5"},
-    // --- Market risk (7-8 am) --------------------------------------------
-    {.name = "Market Risk Sensitivities",
+    {.name = "Vega",
      .description =
-         "First and second order sensitivities by risk factor. Delta "
-         "measures exposure to parallel rate or price shifts; Gamma "
-         "captures convexity; Vega measures exposure to implied "
-         "volatility. Outputs par and zero sensitivities with optional "
-         "Jacobian transformation for hedge ratio computation. Core "
-         "input for VaR, hedging, and limit monitoring.",
+         "Computes first-order sensitivity of portfolio value to implied "
+         "volatility across all relevant expiry and strike dimensions. "
+         "Aggregated by asset class, risk factor, and tenor. Required "
+         "for volatility hedging and FRTB SBM vega capital.",
      .schedule = "0 7 * * 1-5"},
-    {.name = "Sensitivity Stress",
+    {.name = "Bucketed DV01",
      .description =
-         "Sensitivities recomputed under each predefined stress "
-         "scenario, showing how the delta and vega profile shifts under "
-         "adverse market conditions. Supports stressed limits monitoring "
-         "and hedging strategy review under crisis market conditions.",
+         "Key-rate DV01 (dollar value of one basis point) decomposition "
+         "across standardised tenor buckets (1M, 3M, 6M, 1Y, 2Y, 5Y, "
+         "10Y, 20Y, 30Y). Provides a granular interest rate risk profile "
+         "per currency, netting set, and book. Core input to duration "
+         "management and FRTB delta capital.",
      .schedule = "0 7 * * 1-5"},
-    {.name = "P&L Report",
+
+    // --- Counterparty credit risk (8-9 am) ----------------------------
+    {.name = "Exposure",
      .description =
-         "Daily profit and loss by book, portfolio, and product type. "
-         "Decomposes P&L into new deals, matured deals, cash flows "
-         "received, and MTM change from market moves. Provides the "
-         "authoritative P&L number for front office, finance, and risk "
-         "management sign-off.",
-     .schedule = "0 7 * * 1-5"},
-    {.name = "P&L Attribution",
-     .description =
-         "P&L bridge report decomposing the daily MTM change into "
-         "contributions from individual risk factors: delta P&L (rate "
-         "and price moves), gamma P&L (convexity), theta (time decay), "
-         "vega (volatility change), and unexplained residual. Essential "
-         "for model validation, controller sign-off, and regulatory "
-         "P&L explain under FRTB.",
-     .schedule = "0 7 * * 1-5"},
-    // --- Counterparty risk (8-9 am) --------------------------------------
-    {.name = "Counterparty Exposure",
-     .description =
-         "Monte Carlo simulation of future counterparty credit exposure "
-         "across the portfolio lifetime. Computes Expected Positive "
-         "Exposure (EPE) and Expected Negative Exposure (ENE) profiles "
-         "per netting set at each simulation date. Prerequisite for "
-         "CVA, DVA, FVA, and Dynamic Initial Margin calculations.",
+         "Monte Carlo simulation of future exposure profiles (EE, PFE, "
+         "EPE, ENE) at the netting-set level using risk-factor simulation. "
+         "Drives CVA/DVA valuation, regulatory capital under SA-CCR, "
+         "and internal credit limits. Computationally intensive; "
+         "scheduled before XVA to provide input exposure paths.",
      .schedule = "0 8 * * 1-5"},
-    {.name = "Potential Future Exposure",
+    {.name = "CVA",
      .description =
-         "Potential Future Exposure (PFE) at specified confidence levels "
-         "(typically 95% and 99%) over the simulation horizon. Outputs "
-         "peak PFE and PFE profiles by counterparty and netting set. "
-         "Used for credit line utilisation monitoring, internal capital "
-         "allocation, and regulatory IMM model validation.",
+         "Credit Valuation Adjustment — the market value of counterparty "
+         "default risk embedded in OTC derivatives. Computed as the "
+         "risk-neutral expectation of loss given default, integrating "
+         "EPE profiles with counterparty survival probability and LGD. "
+         "Required for IFRS 13 fair value disclosure and regulatory "
+         "capital under SA-CVA and BA-CVA.",
      .schedule = "0 8 * * 1-5"},
-    {.name = "CVA/DVA Report",
+    {.name = "DVA",
      .description =
-         "Credit Valuation Adjustment (CVA) and Debit Valuation "
-         "Adjustment (DVA) calculated from simulated exposure profiles "
-         "and bootstrapped credit curves. Includes Funding Valuation "
-         "Adjustment (FVA) for uncollateralised portfolios and "
-         "Capital Valuation Adjustment (KVA) for regulatory capital "
-         "cost allocation. Primary output for XVA desk P&L, regulatory "
-         "reporting, and counterparty credit risk management.",
+         "Debt Valuation Adjustment — the own-credit component of OTC "
+         "derivative fair value, reflecting the benefit to the portfolio "
+         "holder from the institution's own default risk. Symmetric "
+         "counterpart to CVA. Required for IFRS 13 compliance and "
+         "bilateral CVA (BCVA) reporting.",
      .schedule = "0 8 * * 1-5"},
-    {.name = "Dynamic Initial Margin",
+    {.name = "FVA",
      .description =
-         "Dynamic Initial Margin (DIM) projection over the simulation "
-         "horizon using regression-based models (ISDA SIMM or "
-         "parametric VaR). Used to compute Margin Valuation Adjustment "
-         "(MVA) — the funding cost of posting variation margin and "
-         "initial margin over the life of a portfolio.",
+         "Funding Valuation Adjustment — the cost or benefit of funding "
+         "uncollateralised or partially collateralised derivative "
+         "positions at the institution's unsecured borrowing rate. "
+         "Decomposes into FCA (funding cost) and FBA (funding benefit). "
+         "Material for institutions with significant uncollateralised "
+         "derivative books.",
      .schedule = "0 8 * * 1-5"},
-    {.name = "Wrong-Way Risk",
+    {.name = "KVA",
      .description =
-         "Identifies and quantifies wrong-way risk (WWR): the adverse "
-         "correlation between counterparty credit quality and exposure. "
-         "Flags trades where default probability is positively correlated "
-         "with exposure, requiring capital add-ons or counterparty "
-         "limit adjustments under Basel III/IV.",
-     .schedule = "0 9 * * 1-5"},
-    // --- Scenario analysis (9-10 am) -------------------------------------
-    {.name = "Stress Test",
+         "Capital Valuation Adjustment — the cost of holding regulatory "
+         "capital against a derivative position over its lifetime, "
+         "discounted at the hurdle rate. Reflects the economic cost of "
+         "capital consumed by the trade under SA-CCR or IMM, including "
+         "CVA capital charges. Used in strategic pricing and deal "
+         "profitability analysis.",
+     .schedule = "0 8 * * 1-5"},
+
+    // --- Market risk (9-10 am) -----------------------------------------
+    {.name = "Historical VaR",
      .description =
-         "P&L and exposure impact under predefined stress scenarios "
-         "(rate shocks, FX crises, credit spread widening, equity "
-         "crashes). Outputs per-scenario P&L impact, VaR breach "
-         "probability, and limit utilisation. Required for ICAAP, "
-         "supervisory stress tests, and internal risk appetite "
-         "monitoring.",
-     .schedule = "0 9 * * 1-5"},
-    {.name = "Scenario Analysis",
-     .description =
-         "What-if analysis under custom user-defined market scenarios. "
-         "Reprices the entire portfolio under each scenario to show "
-         "P&L sensitivity to specific market moves. Used for trading "
-         "strategy evaluation, hedging optimisation, and regulatory "
-         "scenario submissions.",
-     .schedule = "0 9 * * 1-5"},
-    {.name = "Historical Simulation VaR",
-     .description =
-         "Value at Risk computed by replaying historical market moves "
-         "against today's portfolio. Uses at least 1 year (250 trading "
-         "days) of market data, as required by Basel III/IV. Outputs "
-         "1-day and 10-day VaR at 99% confidence for regulatory capital "
-         "and internal risk limit monitoring.",
+         "Historical simulation Value-at-Risk at 99% (regulatory) and "
+         "95% (internal) confidence levels over a 250-day look-back. "
+         "Applies full revaluation for non-linear exposures. Produces "
+         "VaR by risk factor, desk, and portfolio. Primary input to "
+         "Basel III Internal Models Approach capital.",
      .schedule = "0 9 * * 1-5"},
     {.name = "Parametric VaR",
      .description =
-         "Delta-normal parametric Value at Risk using the correlation "
-         "matrix and sensitivity vector. Faster than Monte Carlo or "
-         "historical simulation; used for real-time intraday limit "
-         "monitoring and for benchmarking full revaluation VaR results.",
+         "Delta-normal (parametric) VaR using a covariance matrix of "
+         "risk-factor returns. Faster than historical simulation; used "
+         "as an intraday risk estimate and for limit monitoring. "
+         "Decomposes into marginal VaR and component VaR by position "
+         "for attribution and hedging analysis.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "Stressed VaR",
+     .description =
+         "VaR computed over a stressed historical window (typically the "
+         "2008 financial crisis or COVID-2020 period) as required by "
+         "Basel 2.5. Uses full revaluation. Required as a capital add-on "
+         "under the IMA. Scenario window is updated annually per "
+         "regulatory review.",
      .schedule = "0 9 * * 1-5"},
     {.name = "Expected Shortfall",
      .description =
-         "Expected Shortfall (ES, also called CVaR) — the expected "
-         "loss conditional on the loss exceeding the VaR threshold. "
-         "Basel IV (FRTB) replaces VaR with ES at 97.5% confidence as "
-         "the primary market risk capital metric. Computed by averaging "
-         "the tail losses beyond the 97.5th percentile.",
+         "Expected Shortfall (ES) at 97.5% confidence, the Basel IV FRTB "
+         "replacement for VaR under IMA. Computed using a 12-month "
+         "liquidity-adjusted horizon with scenario weighting. Produces "
+         "partial ES by risk class (GIRR, CSR, FX, EQ, CMDTY) for the "
+         "FRTB capital formula.",
      .schedule = "0 9 * * 1-5"},
-    // --- Regulatory capital (10-11 am) -----------------------------------
-    {.name = "FRTB IMA",
+    {.name = "P&L Attribution",
      .description =
-         "Fundamental Review of the Trading Book (FRTB) Internal "
-         "Models Approach capital charge. Computes Expected Shortfall "
-         "under the IMA framework, including non-modellable risk factors "
-         "(NMRF) stress scenarios and P&L attribution testing (PLAT). "
-         "Requires regulatory approval. Higher precision but significant "
-         "operational cost.",
+         "Daily attribution of P&L into risk-factor components: delta, "
+         "gamma, vega, theta, and unexplained residual. Required for "
+         "FRTB IMA back-testing and P&L attribution test (PLAT) "
+         "compliance. Compares hypothetical P&L (from sensitivities) "
+         "against actual P&L to validate model quality.",
+     .schedule = "0 9 * * 1-5"},
+    {.name = "Back-Testing",
+     .description =
+         "Daily comparison of 1-day 99% VaR against actual and "
+         "hypothetical P&L over a 250-day rolling window. Counts "
+         "exceptions and assigns capital multiplier (green/amber/red "
+         "zone) per Basel internal models framework. Required for "
+         "ongoing IMA approval and supervisory reporting.",
+     .schedule = "0 9 * * 1-5"},
+
+    // --- Scenario analysis (10-11 am) ----------------------------------
+    {.name = "Stress Testing",
+     .description =
+         "Portfolio revaluation under a library of regulatory and "
+         "internal stress scenarios including: 2008 credit crisis, "
+         "2010 European sovereign debt, 2020 COVID shock, and custom "
+         "management scenarios. Produces P&L impact, VaR delta, and "
+         "liquidity stress metrics by desk and book.",
      .schedule = "0 10 * * 1-5"},
-    {.name = "FRTB SA",
+    {.name = "Sensitivity Analysis",
+     .description =
+         "Systematic grid-based sensitivity analysis varying key market "
+         "factors (rates, spreads, FX, vol) across a user-defined range. "
+         "Produces heat maps and waterfall charts for risk-factor impact "
+         "assessment. Complements historical VaR with forward-looking "
+         "scenario coverage.",
+     .schedule = "0 10 * * 1-5"},
+
+    // --- Regulatory capital (10-11 am) ---------------------------------
+    {.name = "FRTB-SA",
      .description =
          "Fundamental Review of the Trading Book (FRTB) Standardised "
          "Approach capital charge. Computes the sensitivity-based method "
@@ -1448,10 +988,8 @@ void PartyApplyAndSummaryPage::setupUI() {
 }
 
 void PartyApplyAndSummaryPage::initializePage() {
-    // Set the current party status to Active now that setup is complete.
     const bool activated = wizard_->markPartyActive();
 
-    // Build summary
     QString summary;
     if (!activated) {
         summary = tr("<p><b>Warning:</b> Could not activate the party — "
@@ -1461,21 +999,9 @@ void PartyApplyAndSummaryPage::initializePage() {
         summary = tr("<p>Your party setup has been completed successfully.</p>");
     }
 
-    if (!wizard_->rootLei().isEmpty()) {
-        summary += tr("<p><b>Root party (LEI):</b> %1 (%2)</p>")
-            .arg(wizard_->rootLeiName(), wizard_->rootLei());
-    }
-
     if (wizard_->organisationPublished()) {
-        if (wizard_->dataSourceMode() ==
-            PartyProvisioningWizard::DataSourceMode::synthetic) {
-            summary += tr("<p><b>Organisation data:</b> Synthetic parties, "
-                          "counterparties, business units, portfolios, and "
-                          "trading books generated.</p>");
-        } else {
-            summary += tr("<p><b>Organisation data:</b> Business units, portfolios, "
-                          "and trading books published.</p>");
-        }
+        summary += tr("<p><b>Organisation data:</b> Counterparties, business units, "
+                      "portfolios, and trading books published.</p>");
     }
 
     const auto& reports = wizard_->selectedReports();
@@ -1497,4 +1023,4 @@ void PartyApplyAndSummaryPage::initializePage() {
     emit wizard_->provisioningCompleted();
 }
 
-}
+} // namespace ores::qt

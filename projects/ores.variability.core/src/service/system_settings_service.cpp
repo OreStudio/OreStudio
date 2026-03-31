@@ -155,18 +155,6 @@ void system_settings_service::set_bootstrap_mode(bool enabled,
         modified_by, change_reason_code, change_commentary);
 }
 
-bool system_settings_service::is_party_setup_mode_enabled() const {
-    return get_bool("system.party_setup_mode");
-}
-
-void system_settings_service::set_party_setup_mode(bool enabled,
-    std::string_view modified_by,
-    std::string_view change_reason_code,
-    std::string_view change_commentary) {
-    set_bool_setting("system.party_setup_mode", enabled,
-        modified_by, change_reason_code, change_commentary);
-}
-
 bool system_settings_service::is_user_signups_enabled() const {
     return get_bool("system.user_signups");
 }

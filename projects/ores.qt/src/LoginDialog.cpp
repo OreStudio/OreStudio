@@ -594,9 +594,9 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
             emit loginSucceeded(usernameEdit_->text().trimmed());
             emit tenantBootstrapDetected();
             emit closeRequested();
-        } else if (result.party_setup_mode) {
+        } else if (result.party_setup_required) {
             BOOST_LOG_SEV(lg(), info)
-                << "Tenant is in party setup mode - party provisioning wizard required";
+                << "Party is inactive - party provisioning wizard required";
             statusLabel_->setText("Login successful!");
             emit loginSucceeded(usernameEdit_->text().trimmed());
             emit partySetupDetected();

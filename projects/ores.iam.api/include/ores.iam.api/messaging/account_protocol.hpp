@@ -160,6 +160,11 @@ struct select_party_response {
     std::string tenant_name;
     std::string party_name;
     /**
+     * @brief True when the selected party's status is 'Inactive'.
+     * The client should present the PartyProvisioningWizard immediately.
+     */
+    bool party_setup_required = false;
+    /**
      * @brief Token lifetime in seconds for the newly issued token.
      *
      * Clients re-arm the proactive refresh timer using this value.

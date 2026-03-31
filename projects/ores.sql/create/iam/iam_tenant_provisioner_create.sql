@@ -388,16 +388,6 @@ begin
 
     raise notice 'Seeded bootstrap mode system setting for tenant: %', p_code;
 
-    perform ores_variability_system_settings_upsert_fn(
-        v_new_tenant_id,
-        'system.party_setup_mode',
-        'true',
-        'boolean',
-        'Indicates whether the tenant is in party setup mode (waiting for first party provisioning).'
-    );
-
-    raise notice 'Seeded party setup mode system setting for tenant: %', p_code;
-
     -- =========================================================================
     -- Provisioning complete
     -- =========================================================================

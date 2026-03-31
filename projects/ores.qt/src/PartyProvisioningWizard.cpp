@@ -71,10 +71,6 @@ PartyProvisioningWizard::PartyProvisioningWizard(
 
     setupPages();
 
-    // Clear party setup flag on cancel/reject too
-    connect(this, &QWizard::rejected, this, [this]() {
-        clearPartySetupFlag();
-    });
 }
 
 void PartyProvisioningWizard::setupPages() {
@@ -91,29 +87,50 @@ void PartyProvisioningWizard::setupPages() {
     setStartId(Page_Welcome);
 }
 
-void PartyProvisioningWizard::clearPartySetupFlag() {
-    BOOST_LOG_SEV(lg(), info) << "Clearing party setup mode flag";
+void PartyProvisioningWizard::markPartyActive() {
+    BOOST_LOG_SEV(lg(), info) << "Setting current party status to Active";
 
-    variability::domain::system_setting setting;
-    setting.name = "system.party_setup_mode";
-    setting.value = "false";
-    setting.data_type = "boolean";
-    setting.description = "Party setup mode disabled after party provisioning";
-    setting.modified_by = clientManager_->currentUsername();
-    setting.change_reason_code = std::string(reason::codes::new_record);
-    setting.change_commentary = "Party setup wizard completed";
-    variability::messaging::save_setting_request req;
-    req.data = std::move(setting);
+    const auto party_id = clientManager_->currentPartyId();
 
-    auto result = clientManager_->process_authenticated_request(std::move(req));
-    if (!result) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to clear party setup flag: "
-                                  << "no response from server";
-    } else if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to clear party setup flag: "
-                                  << (result->message.empty() ? "Unknown error" : result->message);
+    // Fetch the current party record so we can do a full save with status=Active.
+    refdata::messaging::get_parties_request list_req;
+    list_req.offset = 0;
+    list_req.limit = 1000;
+    auto list_result = clientManager_->process_authenticated_request(std::move(list_req));
+    if (!list_result) {
+        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: failed to fetch parties: "
+                                  << list_result.error();
+        return;
+    }
+
+    refdata::domain::party party;
+    bool found = false;
+    for (const auto& p : list_result->parties) {
+        if (p.id == party_id) {
+            party = p;
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: party not found in list";
+        return;
+    }
+
+    party.status = "Active";
+    party.change_commentary = "Party setup wizard completed";
+
+    refdata::messaging::save_party_request save_req;
+    save_req.data = std::move(party);
+    auto save_result = clientManager_->process_authenticated_request(std::move(save_req));
+    if (!save_result) {
+        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: failed to save party: "
+                                  << save_result.error();
+    } else if (!save_result->success) {
+        BOOST_LOG_SEV(lg(), warn) << "markPartyActive: save_party failed: "
+                                  << (save_result->message.empty() ? "Unknown error" : save_result->message);
     } else {
-        BOOST_LOG_SEV(lg(), info) << "Party setup flag cleared successfully";
+        BOOST_LOG_SEV(lg(), info) << "Party status set to Active successfully";
     }
 }
 
@@ -1403,8 +1420,8 @@ void PartyApplyAndSummaryPage::setupUI() {
 }
 
 void PartyApplyAndSummaryPage::initializePage() {
-    // Clear the party setup flag
-    wizard_->clearPartySetupFlag();
+    // Set the current party status to Active now that setup is complete.
+    wizard_->markPartyActive();
 
     // Build summary
     QString summary = tr("<p>Your party setup has been completed successfully.</p>");

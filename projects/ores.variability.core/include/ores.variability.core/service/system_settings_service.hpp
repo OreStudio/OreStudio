@@ -139,11 +139,6 @@ public:
         std::string_view change_reason_code,
         std::string_view change_commentary);
 
-    [[nodiscard]] bool is_party_setup_mode_enabled() const;
-    void set_party_setup_mode(bool enabled, std::string_view modified_by,
-        std::string_view change_reason_code,
-        std::string_view change_commentary);
-
     [[nodiscard]] bool is_user_signups_enabled() const;
     void set_user_signups(bool enabled, std::string_view modified_by,
         std::string_view change_reason_code,

@@ -53,10 +53,10 @@ class LeiEntityPicker;
  * 5. Organisation Setup  - populate parties, counterparties, and org structure
  * 6. Report Setup        - select initial report definitions to create
  * 7. Report Install      - create the selected report definitions
- * 8. Summary             - clear party_setup_mode flag and show results
+ * 8. Summary             - set party status to 'Active' and show results
  *
- * This wizard appears automatically on first login when the tenant is in
- * party_setup_mode. It clears the party_setup_mode flag on completion or cancel.
+ * This wizard appears automatically on first login when the selected party's
+ * status is 'Inactive'. It sets the party status to 'Active' on completion.
  */
 class PartyProvisioningWizard final : public QWizard {
     Q_OBJECT
@@ -173,9 +173,11 @@ public:
     void setSelectedReports(std::vector<ReportSpec> r) { selectedReports_ = std::move(r); }
 
     /**
-     * @brief Clears the system.party_setup_mode flag for the current tenant.
+     * @brief Sets the current party's status to 'Active' via save_party_request.
+     *
+     * Called from the summary page on successful completion of the wizard.
      */
-    void clearPartySetupFlag();
+    void markPartyActive();
 
 signals:
     void provisioningCompleted();

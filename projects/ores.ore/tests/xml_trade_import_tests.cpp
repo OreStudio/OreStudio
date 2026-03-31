@@ -36,9 +36,19 @@ std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
 }
 
+std::filesystem::path example_path(const std::string& filename) {
+    return ores::testing::project_root::resolve(
+        "external/ore/examples/Products/Example_Trades/" + filename);
+}
+
 }
 
 using ores::ore::xml::importer;
+using ores::ore::xml::trade_import_item;
+using ores::ore::domain::instrument_mapping_result;
+using ores::ore::domain::swap_mapping_result;
+using ores::ore::domain::fx_mapping_result;
+using ores::ore::domain::bond_mapping_result;
 using ores::trading::domain::trade;
 using namespace ores::logging;
 
@@ -239,4 +249,84 @@ TEST_CASE("import_portfolio_all_ore_example_files_can_be_parsed", tags) {
     BOOST_LOG_SEV(lg, info) << "Total trades imported across all "
                             << portfolio_files.size() << " files: "
                             << trade_count;
+}
+
+// =============================================================================
+// import_portfolio_with_context instrument mapping tests
+// =============================================================================
+
+TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto f = example_path("IR_Swap_Vanilla.xml");
+    const auto items = importer::import_portfolio_with_context(f);
+    REQUIRE(items.size() == 1);
+
+    const auto& item = items.front();
+    INFO("Trade type: " << item.trade.trade_type);
+    REQUIRE(std::holds_alternative<swap_mapping_result>(item.instrument));
+
+    const auto& r = std::get<swap_mapping_result>(item.instrument);
+    CHECK(r.instrument.id == item.trade.id);
+    CHECK(!r.legs.empty());
+    for (const auto& leg : r.legs)
+        CHECK(leg.instrument_id == item.trade.id);
+
+    BOOST_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
+}
+
+TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto f = example_path("FX_Forward.xml");
+    const auto items = importer::import_portfolio_with_context(f);
+    REQUIRE(items.size() == 1);
+
+    const auto& item = items.front();
+    INFO("Trade type: " << item.trade.trade_type);
+    REQUIRE(std::holds_alternative<fx_mapping_result>(item.instrument));
+
+    const auto& r = std::get<fx_mapping_result>(item.instrument);
+    CHECK(r.instrument.id == item.trade.id);
+    CHECK(!r.instrument.bought_currency.empty());
+    CHECK(!r.instrument.sold_currency.empty());
+
+    BOOST_LOG_SEV(lg, info) << "FX instrument mapped: "
+                            << r.instrument.bought_currency << "/"
+                            << r.instrument.sold_currency;
+}
+
+TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto f = example_path("Cash_Bonds.xml");
+    const auto items = importer::import_portfolio_with_context(f);
+    REQUIRE(!items.empty());
+
+    // First trade in the portfolio must be a bond.
+    const auto& item = items.front();
+    INFO("Trade type: " << item.trade.trade_type);
+    REQUIRE(std::holds_alternative<bond_mapping_result>(item.instrument));
+
+    const auto& r = std::get<bond_mapping_result>(item.instrument);
+    CHECK(r.instrument.id == item.trade.id);
+    CHECK(!r.instrument.issuer.empty());
+
+    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.instrument.issuer;
+}
+
+TEST_CASE("import_portfolio_with_context_unmapped_type_is_monostate", tags) {
+    auto lg(make_logger(test_suite));
+
+    // A scripted trade should currently produce monostate (not yet mapped).
+    const auto f = example_path("Scripted_BasketOption.xml");
+    const auto items = importer::import_portfolio_with_context(f);
+    REQUIRE(!items.empty());
+
+    const auto& item = items.front();
+    INFO("Trade type: " << item.trade.trade_type);
+    CHECK(std::holds_alternative<std::monostate>(item.instrument));
+
+    BOOST_LOG_SEV(lg, info) << "Unmapped trade type '" << item.trade.trade_type
+                            << "' correctly yields monostate";
 }

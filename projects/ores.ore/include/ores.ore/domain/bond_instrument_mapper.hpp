@@ -37,13 +37,15 @@ struct bond_mapping_result {
  * @brief Maps ORE XSD bond trade types to ORES domain types and back.
  *
  * Handles:
- *   - Bond           (BondData)
- *   - ForwardBond    (ForwardBondData.BondData)
- *   - CallableBond   (CallableBondData.BondData)
- *   - ConvertibleBond(ConvertibleBondData.BondData)
+ *   - Bond              (BondData)
+ *   - ForwardBond       (ForwardBondData.BondData)
+ *   - CallableBond      (CallableBondData.BondData)
+ *   - ConvertibleBond   (ConvertibleBondData.BondData)
+ *   - BondOption        (BondOptionData)
+ *   - BondTRS           (BondTRSData)
  *
- * All four types share the same bondData structure; the wrapper type sets
- * trade_type_code and any type-specific fields.
+ * The first four types share the same bondData structure; BondOption and
+ * BondTRS add option/TRS-specific fields on top of the base bond fields.
  *
  * Forward mapping captures the economic fields stored in the ORES relational
  * model. Fields not yet modelled are silently dropped; gaps are reported by
@@ -74,6 +76,8 @@ public:
     static bond_mapping_result forward_forward_bond(const trade& t);
     static bond_mapping_result forward_callable_bond(const trade& t);
     static bond_mapping_result forward_convertible_bond(const trade& t);
+    static bond_mapping_result forward_bond_option(const trade& t);
+    static bond_mapping_result forward_bond_trs(const trade& t);
 
     static trade reverse_bond(
         const ores::trading::domain::bond_instrument& instr);
@@ -82,6 +86,10 @@ public:
     static trade reverse_callable_bond(
         const ores::trading::domain::bond_instrument& instr);
     static trade reverse_convertible_bond(
+        const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond_option(
+        const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond_trs(
         const ores::trading::domain::bond_instrument& instr);
 };
 

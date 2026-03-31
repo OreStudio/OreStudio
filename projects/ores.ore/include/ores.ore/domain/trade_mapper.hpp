@@ -20,6 +20,7 @@
 #ifndef ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 #define ORES_ORE_DOMAIN_TRADE_MAPPER_HPP
 
+#include <variant>
 #include <optional>
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
@@ -27,8 +28,23 @@
 #include "ores.ore/domain/swap_instrument_mapper.hpp"
 #include "ores.ore/domain/fx_instrument_mapper.hpp"
 #include "ores.ore/domain/bond_instrument_mapper.hpp"
+#include "ores.ore/domain/credit_instrument_mapper.hpp"
 
 namespace ores::ore::domain {
+
+/**
+ * @brief Discriminated union of all possible instrument mapping results.
+ *
+ * std::monostate represents an unmapped trade (exotic, scripted, or a type
+ * not yet covered). Each subsequent instrument phase appends a new member.
+ */
+using instrument_mapping_result = std::variant<
+    std::monostate,       ///< unmapped / not yet supported
+    swap_mapping_result,
+    fx_mapping_result,
+    bond_mapping_result,
+    credit_mapping_result
+>;
 
 /**
  * @brief Maps ORE XML trade types to trading domain entities.
@@ -93,6 +109,16 @@ public:
     map_fx_instrument(const trade& v);
 
     /**
+     * @brief Dispatches a credit-family trade to credit_instrument_mapper.
+     *
+     * Returns a populated result for CreditDefaultSwap, IndexCreditDefaultSwap,
+     * IndexCreditDefaultSwapOption, CreditLinkedSwap, SyntheticCDO, and
+     * RiskParticipationAgreement. Returns empty for all other types.
+     */
+    static std::optional<credit_mapping_result>
+    map_credit_instrument(const trade& v);
+
+    /**
      * @brief Dispatches a bond-family trade to bond_instrument_mapper.
      *
      * Returns a populated result for Bond, ForwardBond, CallableBond,
@@ -100,6 +126,16 @@ public:
      */
     static std::optional<bond_mapping_result>
     map_bond_instrument(const trade& v);
+
+    /**
+     * @brief Unified instrument dispatch: maps any supported ORE trade to its
+     * instrument_mapping_result.
+     *
+     * Tries swap, then FX, then bond in order. Returns std::monostate for any
+     * trade type not yet covered (exotic, scripted, credit, equity, commodity).
+     * Callers should use std::visit to handle the result.
+     */
+    static instrument_mapping_result map_instrument(const trade& v);
 };
 
 }

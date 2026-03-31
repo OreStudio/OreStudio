@@ -168,6 +168,29 @@ print(p)
 #+RESULTS: tags-chart
 [[file:sprint_backlog_16_tags.png]]
 
+*** TODO Positions domain model                                        :code:
+
+Implement the positions domain model. A position aggregates the net exposure
+for a given instrument and book combination, derived from the trade blotter.
+See [[file:../../plans/2026-03-31-ore-trading-instrument-support.org][plan]] for context.
+
+Covers long/short positions across all instrument families, backed by one new
+temporal table: =ores_trading_positions_tbl= (book_id, instrument_id,
+trade_type_code, quantity, notional, currency, as_of_date, and standard
+temporal/audit fields).
+
+***** Tasks
+
+- [ ] SQL: =ores_trading_positions_tbl= + notify trigger + drop files
+- [ ] SQL: Register in =trading_create.sql=, =drop_trading.sql=
+- [ ] Domain: =position= struct, JSON I/O, table I/O, protocol messages
+- [ ] Repository: =position= entity, mapper, repository
+- [ ] Service: =position_service=
+- [ ] Server: messaging handler + registrar registration
+- [ ] Qt UI: =ClientPositionModel=, =PositionMdiWindow=, =PositionDetailDialog=,
+  =PositionHistoryDialog=, =PositionController=, =MainWindow= integration
+- [ ] Database: recreate to pick up new table
+
 * Footer
 
 | Previous: [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Next: TBD |

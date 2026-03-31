@@ -55,6 +55,7 @@ std::string first_tenor(const xsd::optional<scheduleData>& sd) {
 
 void bond_instrument_mapper::map_bond_data(
         const bondData& bd, bond_instrument& instr) {
+    instr.security_id = std::string(bd.SecurityId);
     if (bd.IssuerId)
         instr.issuer = std::string(*bd.IssuerId);
     if (bd.IssueDate)
@@ -97,6 +98,7 @@ bondData bond_instrument_mapper::reverse_bond_data(
         const bond_instrument& instr) {
     bondData bd;
 
+    static_cast<std::string&>(bd.SecurityId) = instr.security_id;
     if (!instr.issuer.empty()) {
         bondData_IssuerId_t id;
         static_cast<std::string&>(id) = instr.issuer;
@@ -275,6 +277,134 @@ trade bond_instrument_mapper::reverse_convertible_bond(
     convertibleBondData cvbd;
     cvbd.BondData = reverse_bond_data(instr);
     t.ConvertibleBondData = std::move(cvbd);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: BondOption
+// ---------------------------------------------------------------------------
+
+bond_mapping_result bond_instrument_mapper::forward_bond_option(
+        const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondOption: "
+                               << std::string(t.id);
+    bond_mapping_result result;
+    result.instrument = make_base("BondOption");
+    if (!t.BondOptionData) return result;
+    const auto& d = *t.BondOptionData;
+
+    map_bond_data(d.BondData, result.instrument);
+
+    // Option fields
+    if (d.OptionData.OptionType)
+        result.instrument.option_type = std::string(*d.OptionData.OptionType);
+    if (d.OptionData.exerciseDatesGroup &&
+            d.OptionData.exerciseDatesGroup->ExerciseDates &&
+            !d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
+        result.instrument.option_expiry_date = std::string(
+            d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+    if (d.strikeGroup.Strike) {
+        const std::string s(*d.strikeGroup.Strike);
+        if (!s.empty())
+            result.instrument.option_strike = std::stod(s);
+    }
+
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Forward: BondTRS
+// ---------------------------------------------------------------------------
+
+bond_mapping_result bond_instrument_mapper::forward_bond_trs(const trade& t) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondTRS: "
+                               << std::string(t.id);
+    bond_mapping_result result;
+    result.instrument = make_base("BondTRS");
+    if (!t.BondTRSData) return result;
+    const auto& d = *t.BondTRSData;
+
+    map_bond_data(d.BondData, result.instrument);
+
+    result.instrument.trs_return_type = "TotalReturn";
+
+    // Funding leg: capture index if floating, otherwise note fixed rate
+    const auto& ld = d.FundingData.LegData;
+    if (ld.legDataType) {
+        if (ld.legDataType->FloatingLegData)
+            result.instrument.trs_funding_leg_code =
+                std::string(ld.legDataType->FloatingLegData->Index);
+        else if (ld.legDataType->FixedLegData &&
+                !ld.legDataType->FixedLegData->Rates.Rate.empty())
+            result.instrument.trs_funding_leg_code = "Fixed";
+    }
+
+    return result;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: BondOption
+// ---------------------------------------------------------------------------
+
+trade bond_instrument_mapper::reverse_bond_option(
+        const bond_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BondOption";
+    trade t;
+    t.TradeType = oreTradeType::BondOption;
+    bondOptionData d;
+    d.BondData = reverse_bond_data(instr);
+    if (!instr.option_type.empty()) {
+        optionData_OptionType_t ot;
+        static_cast<std::string&>(ot) = instr.option_type;
+        d.OptionData.OptionType = std::move(ot);
+    }
+    if (!instr.option_expiry_date.empty()) {
+        _ExerciseDates_t exd;
+        date ed;
+        static_cast<std::string&>(ed) = instr.option_expiry_date;
+        exd.ExerciseDate.push_back(ed);
+        exerciseDatesGroup_group_t eg;
+        eg.ExerciseDates = std::move(exd);
+        d.OptionData.exerciseDatesGroup = std::move(eg);
+    }
+    if (instr.option_strike) {
+        _Strike_t s;
+        static_cast<std::string&>(s) = std::to_string(*instr.option_strike);
+        d.strikeGroup.Strike = std::move(s);
+    }
+    t.BondOptionData = std::move(d);
+    return t;
+}
+
+// ---------------------------------------------------------------------------
+// Reverse: BondTRS
+// ---------------------------------------------------------------------------
+
+trade bond_instrument_mapper::reverse_bond_trs(
+        const bond_instrument& instr) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BondTRS";
+    trade t;
+    t.TradeType = oreTradeType::BondTRS;
+    bondTRSData d;
+    d.BondData = reverse_bond_data(instr);
+    // Minimal TotalReturnData — schedule required by XSD
+    totalReturnData_PriceType_t pt;
+    static_cast<std::string&>(pt) = "Dirty";
+    d.TotalReturnData.PriceType = std::move(pt);
+    // Reconstruct funding leg from captured code.
+    d.FundingData.LegData.Payer = false;
+    if (instr.trs_funding_leg_code.empty() ||
+            instr.trs_funding_leg_code == "Fixed") {
+        d.FundingData.LegData.LegType = legType::Fixed;
+    } else {
+        d.FundingData.LegData.LegType = legType::Floating;
+        _FloatingLegData_t fld;
+        static_cast<std::string&>(fld.Index) = instr.trs_funding_leg_code;
+        legDataType_group_t ldt;
+        ldt.FloatingLegData = std::move(fld);
+        d.FundingData.LegData.legDataType = std::move(ldt);
+    }
+    t.BondTRSData = std::move(d);
     return t;
 }
 

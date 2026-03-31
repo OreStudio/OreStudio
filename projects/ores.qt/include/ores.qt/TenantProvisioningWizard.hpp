@@ -22,6 +22,7 @@
 
 #include <QWizard>
 #include <QWizardPage>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
@@ -224,14 +225,20 @@ public:
 
 private:
     void setupUI();
+    void updateDerivedShortCode(const QString& partyName);
+    void updateDerivedUsername();
+    void onShowPasswordToggled(bool checked);
 
     TenantProvisioningWizard* wizard_;
     QLineEdit* partyNameEdit_;
     QLineEdit* shortCodeEdit_;
-    QLineEdit* usernameBaseEdit_;
+    QLineEdit* adminPrefixEdit_;
+    QLabel* derivedUsernameLabel_;
     QLineEdit* passwordEdit_;
     QLineEdit* confirmPasswordEdit_;
+    QCheckBox* showPasswordCheck_;
     QLabel* statusLabel_;
+    bool shortCodeEdited_ = false;  ///< true once user has manually edited the short code
 };
 
 /**

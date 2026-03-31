@@ -22,8 +22,11 @@
 #include "ores.qt/ClientDatasetBundleModel.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/PasswordMatchIndicator.hpp"
 #include "ores.qt/WidgetUtils.hpp"
 
+#include <QCheckBox>
+#include <QFormLayout>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
@@ -440,101 +443,143 @@ void PartyProvisionPage::setupUI() {
     auto* layout = new QVBoxLayout(this);
     layout->setSpacing(10);
 
-    auto* infoLabel = new QLabel(
-        tr("Enter the details for the root operational party. "
-           "An administrator account will be created with the username "
-           "<em>username_base</em>_<em>short_code</em> (e.g. "
-           "<code>party_admin_acmecorp</code>). "
-           "Log in with those credentials to complete party-level setup."),
-        this);
-    infoLabel->setWordWrap(true);
-    infoLabel->setTextFormat(Qt::RichText);
-    layout->addWidget(infoLabel);
-
-    layout->addSpacing(8);
-
-    auto* formLayout = new QHBoxLayout();
-    auto* labelCol = new QVBoxLayout();
-    auto* fieldCol = new QVBoxLayout();
-
-    labelCol->addWidget(new QLabel(tr("Party Name:"), this));
-    labelCol->addWidget(new QLabel(tr("Short Code:"), this));
-    labelCol->addWidget(new QLabel(tr("Username Base:"), this));
-    labelCol->addWidget(new QLabel(tr("Password:"), this));
-    labelCol->addWidget(new QLabel(tr("Confirm Password:"), this));
-    labelCol->addStretch();
+    auto* formLayout = new QFormLayout();
+    formLayout->setSpacing(8);
+    formLayout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
 
     partyNameEdit_ = new QLineEdit(this);
     partyNameEdit_->setPlaceholderText(tr("e.g. Acme Corporation"));
+    formLayout->addRow(tr("Party Name:"), partyNameEdit_);
 
     shortCodeEdit_ = new QLineEdit(this);
-    shortCodeEdit_->setPlaceholderText(tr("e.g. acmecorp"));
+    shortCodeEdit_->setPlaceholderText(tr("auto-derived from party name"));
+    formLayout->addRow(tr("Short Code:"), shortCodeEdit_);
 
-    usernameBaseEdit_ = new QLineEdit(this);
-    usernameBaseEdit_->setPlaceholderText(tr("e.g. party_admin"));
-    usernameBaseEdit_->setText(tr("party_admin"));
+    adminPrefixEdit_ = new QLineEdit(this);
+    adminPrefixEdit_->setPlaceholderText(tr("e.g. party_admin"));
+    adminPrefixEdit_->setText(QStringLiteral("party_admin"));
+    formLayout->addRow(tr("Party Admin Prefix:"), adminPrefixEdit_);
+
+    derivedUsernameLabel_ = new QLabel(this);
+    derivedUsernameLabel_->setStyleSheet(
+        QStringLiteral("QLabel { color: #888888; font-style: italic; }"));
+    formLayout->addRow(tr("Admin Username:"), derivedUsernameLabel_);
 
     passwordEdit_ = new QLineEdit(this);
     passwordEdit_->setEchoMode(QLineEdit::Password);
+    passwordEdit_->setPlaceholderText(tr("Minimum 8 characters"));
+    formLayout->addRow(tr("Password:"), passwordEdit_);
 
     confirmPasswordEdit_ = new QLineEdit(this);
     confirmPasswordEdit_->setEchoMode(QLineEdit::Password);
+    confirmPasswordEdit_->setPlaceholderText(tr("Re-enter password"));
+    formLayout->addRow(tr("Confirm Password:"), confirmPasswordEdit_);
 
-    fieldCol->addWidget(partyNameEdit_);
-    fieldCol->addWidget(shortCodeEdit_);
-    fieldCol->addWidget(usernameBaseEdit_);
-    fieldCol->addWidget(passwordEdit_);
-    fieldCol->addWidget(confirmPasswordEdit_);
-    fieldCol->addStretch();
+    showPasswordCheck_ = new QCheckBox(tr("Show password"), this);
+    formLayout->addRow(QString(), showPasswordCheck_);
 
-    formLayout->addLayout(labelCol);
-    formLayout->addLayout(fieldCol);
     layout->addLayout(formLayout);
-
     layout->addStretch();
 
     statusLabel_ = new QLabel(this);
     statusLabel_->setWordWrap(true);
+    statusLabel_->hide();
     layout->addWidget(statusLabel_);
 
+    PasswordMatchIndicator::connectFields(passwordEdit_, confirmPasswordEdit_);
+
+    connect(showPasswordCheck_, &QCheckBox::toggled,
+        this, &PartyProvisionPage::onShowPasswordToggled);
+
+    // Auto-derive short code from party name (unless user has manually edited it)
+    connect(partyNameEdit_, &QLineEdit::textChanged,
+        this, &PartyProvisionPage::updateDerivedShortCode);
+
+    // Mark short code as manually edited once the user touches it
+    connect(shortCodeEdit_, &QLineEdit::textEdited,
+        this, [this]() { shortCodeEdited_ = true; });
+
+    // Update derived username preview on any relevant change
+    connect(shortCodeEdit_,   &QLineEdit::textChanged,
+        this, &PartyProvisionPage::updateDerivedUsername);
+    connect(adminPrefixEdit_, &QLineEdit::textChanged,
+        this, &PartyProvisionPage::updateDerivedUsername);
+
     auto notify = [this]() { emit completeChanged(); };
-    connect(partyNameEdit_,     &QLineEdit::textChanged, this, notify);
-    connect(shortCodeEdit_,     &QLineEdit::textChanged, this, notify);
-    connect(usernameBaseEdit_,  &QLineEdit::textChanged, this, notify);
-    connect(passwordEdit_,      &QLineEdit::textChanged, this, notify);
-    connect(confirmPasswordEdit_,&QLineEdit::textChanged, this, notify);
+    connect(partyNameEdit_,       &QLineEdit::textChanged, this, notify);
+    connect(shortCodeEdit_,       &QLineEdit::textChanged, this, notify);
+    connect(adminPrefixEdit_,     &QLineEdit::textChanged, this, notify);
+    connect(passwordEdit_,        &QLineEdit::textChanged, this, notify);
+    connect(confirmPasswordEdit_, &QLineEdit::textChanged, this, notify);
+}
+
+void PartyProvisionPage::updateDerivedShortCode(const QString& partyName) {
+    if (shortCodeEdited_) return;
+
+    QString derived;
+    for (const QChar c : partyName.trimmed()) {
+        if (c.isLetterOrNumber())
+            derived += c.toLower();
+        else if (!derived.isEmpty() && !derived.endsWith(QLatin1Char('_')))
+            derived += QLatin1Char('_');
+    }
+    // Strip trailing underscore
+    while (derived.endsWith(QLatin1Char('_')))
+        derived.chop(1);
+
+    shortCodeEdit_->setText(derived);
+}
+
+void PartyProvisionPage::updateDerivedUsername() {
+    const auto prefix = adminPrefixEdit_->text().trimmed();
+    const auto code   = shortCodeEdit_->text().trimmed();
+    if (prefix.isEmpty() && code.isEmpty()) {
+        derivedUsernameLabel_->clear();
+        return;
+    }
+    derivedUsernameLabel_->setText(
+        prefix + (code.isEmpty() ? QString() : QLatin1Char('_') + code));
+}
+
+void PartyProvisionPage::onShowPasswordToggled(bool checked) {
+    const auto mode = checked ? QLineEdit::Normal : QLineEdit::Password;
+    passwordEdit_->setEchoMode(mode);
+    confirmPasswordEdit_->setEchoMode(mode);
 }
 
 bool PartyProvisionPage::isComplete() const {
     return !partyNameEdit_->text().trimmed().isEmpty()
         && !shortCodeEdit_->text().trimmed().isEmpty()
-        && !usernameBaseEdit_->text().trimmed().isEmpty()
+        && !adminPrefixEdit_->text().trimmed().isEmpty()
         && !passwordEdit_->text().isEmpty()
         && passwordEdit_->text() == confirmPasswordEdit_->text();
 }
 
 bool PartyProvisionPage::validatePage() {
+    auto showError = [this](const QString& msg) {
+        statusLabel_->setText(msg);
+        statusLabel_->setStyleSheet(
+            QStringLiteral("QLabel { color: #ffffff; background-color: #cc0000; "
+                           "padding: 6px; border-radius: 4px; }"));
+        statusLabel_->show();
+    };
+
     if (passwordEdit_->text() != confirmPasswordEdit_->text()) {
-        statusLabel_->setText(tr("Passwords do not match."));
+        showError(tr("Passwords do not match."));
         return false;
     }
 
-    const auto partyName = partyNameEdit_->text().trimmed().toStdString();
-    const auto shortCode = shortCodeEdit_->text().trimmed().toStdString();
-    const auto usernameBase = usernameBaseEdit_->text().trimmed().toStdString();
-    const auto password = passwordEdit_->text().toStdString();
+    const auto partyName   = partyNameEdit_->text().trimmed().toStdString();
+    const auto shortCode   = shortCodeEdit_->text().trimmed().toStdString();
+    const auto adminPrefix = adminPrefixEdit_->text().trimmed().toStdString();
+    const auto password    = passwordEdit_->text().toStdString();
 
-    // Derive principal: username_base + "_" + lowercase(short_code).
-    // Non-alphanumeric characters (including spaces) are replaced with '_'
-    // to produce a valid POSIX username component.
-    std::string principal = usernameBase + "_";
-    for (char c : shortCode) {
-        const char lc = static_cast<char>(
-            std::tolower(static_cast<unsigned char>(c)));
-        principal += (std::isalnum(static_cast<unsigned char>(lc)) ? lc : '_');
-    }
+    // Principal is the live-derived username shown in the preview label.
+    const auto principal = adminPrefix + "_" + shortCode;
 
-    statusLabel_->setText(tr("Provisioning party and account..."));
+    statusLabel_->setText(tr("Provisioning party and account\u2026"));
+    statusLabel_->setStyleSheet(QString());
+    statusLabel_->show();
 
     workflow::messaging::provision_party_input input;
     input.full_name = partyName;
@@ -555,14 +600,15 @@ bool PartyProvisionPage::validatePage() {
         std::move(request));
 
     if (!response) {
-        statusLabel_->setText(tr("Failed to communicate with workflow service."));
+        showError(tr("Could not reach the workflow service. "
+                     "Ensure ores.workflow is running and try again."));
         BOOST_LOG_SEV(lg(), error) << "provision_parties: no server response";
         return false;
     }
 
     if (!response->success) {
-        const auto msg = QString::fromStdString(response->message);
-        statusLabel_->setText(tr("Provisioning failed: %1").arg(msg));
+        showError(tr("Provisioning failed: %1")
+            .arg(QString::fromStdString(response->message)));
         BOOST_LOG_SEV(lg(), error) << "provision_parties failed: " << response->message;
         return false;
     }
@@ -571,6 +617,9 @@ bool PartyProvisionPage::validatePage() {
                               << " account: " << principal
                               << " correlation_id: " << response->correlation_id;
     statusLabel_->setText(tr("Party and account provisioned successfully."));
+    statusLabel_->setStyleSheet(
+        QStringLiteral("QLabel { color: #ffffff; background-color: #2e7d32; "
+                       "padding: 6px; border-radius: 4px; }"));
     wizard_->setNewAccountUsername(QString::fromStdString(principal));
     wizard_->setProvisionCorrelationId(
         QString::fromStdString(response->correlation_id));

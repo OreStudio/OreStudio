@@ -37,9 +37,18 @@ struct fx_mapping_result {
  * @brief Maps ORE XSD FX trade types to ORES domain types and back.
  *
  * Handles:
- *   - FxForward  (FxForwardData)
- *   - FxSwap     (FxSwapData)   — near leg mapped; far amounts noted as gap
- *   - FxOption   (FxOptionData) — vanilla European/American only
+ *   - FxForward              (FxForwardData)
+ *   - FxSwap                 (FxSwapData) — near leg mapped; far amounts noted as gap
+ *   - FxOption               (FxOptionData) — vanilla European/American only
+ *   - FxBarrierOption        (FxBarrierOptionData)
+ *   - FxDigitalOption        (FxDigitalOptionData)
+ *   - FxDigitalBarrierOption (FxDigitalBarrierOptionData)
+ *   - FxTouchOption          (FxTouchOptionData) — also covers FxDoubleTouchOption
+ *   - FxVarianceSwap         (FxVarianceSwapData)
+ *   - FxAverageForward       (FxAverageForwardData)
+ *   - FxAccumulator          (FxAccumulatorData)
+ *   - FxTaRF                 (FxTaRFData)
+ *   - FxGenericBarrierOption (FxGenericBarrierOptionData)
  *
  * Forward mapping (ORE XSD → ORES domain) captures economic fields stored
  * in the ORES relational model. Fields not yet modelled are silently dropped;
@@ -94,6 +103,40 @@ public:
      */
     static trade reverse_fx_option(
         const ores::trading::domain::fx_instrument& instr);
+
+    // Phase 6 — forward
+    static fx_mapping_result forward_fx_barrier_option(const trade& t);
+    static fx_mapping_result forward_fx_digital_option(const trade& t);
+    static fx_mapping_result forward_fx_digital_barrier_option(const trade& t);
+    static fx_mapping_result forward_fx_touch_option(const trade& t);
+    static fx_mapping_result forward_fx_variance_swap(const trade& t);
+    static fx_mapping_result forward_fx_average_forward(const trade& t);
+    static fx_mapping_result forward_fx_accumulator(const trade& t);
+    static fx_mapping_result forward_fx_tarf(const trade& t);
+    static fx_mapping_result forward_fx_generic_barrier_option(const trade& t);
+
+    // Phase 6 — reverse
+    static trade reverse_fx_barrier_option(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_digital_option(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_digital_barrier_option(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_touch_option(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_variance_swap(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_average_forward(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_accumulator(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_tarf(
+        const ores::trading::domain::fx_instrument& instr);
+    static trade reverse_fx_generic_barrier_option(
+        const ores::trading::domain::fx_instrument& instr);
+
+private:
+    static barrierData make_barrier(const std::string& type, double level);
 };
 
 }

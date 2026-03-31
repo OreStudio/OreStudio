@@ -113,6 +113,24 @@ trade_mapper::map_fx_instrument(const trade& v) {
         return fx_instrument_mapper::forward_fx_swap(v);
     if (type == "FxOption")
         return fx_instrument_mapper::forward_fx_option(v);
+    if (type == "FxBarrierOption")
+        return fx_instrument_mapper::forward_fx_barrier_option(v);
+    if (type == "FxDigitalOption")
+        return fx_instrument_mapper::forward_fx_digital_option(v);
+    if (type == "FxDigitalBarrierOption")
+        return fx_instrument_mapper::forward_fx_digital_barrier_option(v);
+    if (type == "FxTouchOption" || type == "FxDoubleTouchOption")
+        return fx_instrument_mapper::forward_fx_touch_option(v);
+    if (type == "FxVarianceSwap")
+        return fx_instrument_mapper::forward_fx_variance_swap(v);
+    if (type == "FxAverageForward")
+        return fx_instrument_mapper::forward_fx_average_forward(v);
+    if (type == "FxAccumulator")
+        return fx_instrument_mapper::forward_fx_accumulator(v);
+    if (type == "FxTaRF")
+        return fx_instrument_mapper::forward_fx_tarf(v);
+    if (type == "FxGenericBarrierOption")
+        return fx_instrument_mapper::forward_fx_generic_barrier_option(v);
     return std::nullopt;
 }
 

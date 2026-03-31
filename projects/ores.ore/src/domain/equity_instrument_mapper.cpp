@@ -19,6 +19,9 @@
  */
 #include "ores.ore/domain/equity_instrument_mapper.hpp"
 
+#include <map>
+#include <stdexcept>
+
 namespace ores::ore::domain {
 
 using namespace ores::logging;
@@ -71,6 +74,113 @@ underlyingTypes_group_t make_underlying_type(const std::string& name) {
     static_cast<std::string&>(n) = name;
     u.Name = std::move(n);
     return u;
+}
+
+currencyCode parse_currency_code(const std::string& s) {
+    static const std::map<std::string, currencyCode> map = {
+        {"AED", currencyCode::AED}, {"AFN", currencyCode::AFN},
+        {"ALL", currencyCode::ALL}, {"AMD", currencyCode::AMD},
+        {"ANG", currencyCode::ANG}, {"AOA", currencyCode::AOA},
+        {"ARS", currencyCode::ARS}, {"AUD", currencyCode::AUD},
+        {"AWG", currencyCode::AWG}, {"AZN", currencyCode::AZN},
+        {"BAM", currencyCode::BAM}, {"BBD", currencyCode::BBD},
+        {"BDT", currencyCode::BDT}, {"BGN", currencyCode::BGN},
+        {"BHD", currencyCode::BHD}, {"BIF", currencyCode::BIF},
+        {"BMD", currencyCode::BMD}, {"BND", currencyCode::BND},
+        {"BOB", currencyCode::BOB}, {"BOV", currencyCode::BOV},
+        {"BRL", currencyCode::BRL}, {"BSD", currencyCode::BSD},
+        {"BTN", currencyCode::BTN}, {"BWP", currencyCode::BWP},
+        {"BYN", currencyCode::BYN}, {"BZD", currencyCode::BZD},
+        {"CAD", currencyCode::CAD}, {"CDF", currencyCode::CDF},
+        {"CHE", currencyCode::CHE}, {"CHF", currencyCode::CHF},
+        {"CHW", currencyCode::CHW}, {"CLF", currencyCode::CLF},
+        {"CLP", currencyCode::CLP}, {"CNH", currencyCode::CNH},
+        {"CNT", currencyCode::CNT}, {"CNY", currencyCode::CNY},
+        {"COP", currencyCode::COP}, {"COU", currencyCode::COU},
+        {"CRC", currencyCode::CRC}, {"CUC", currencyCode::CUC},
+        {"CUP", currencyCode::CUP}, {"CVE", currencyCode::CVE},
+        {"CYP", currencyCode::CYP}, {"CZK", currencyCode::CZK},
+        {"DJF", currencyCode::DJF}, {"DKK", currencyCode::DKK},
+        {"DOP", currencyCode::DOP}, {"DZD", currencyCode::DZD},
+        {"EGP", currencyCode::EGP}, {"ERN", currencyCode::ERN},
+        {"ETB", currencyCode::ETB}, {"EUR", currencyCode::EUR},
+        {"FJD", currencyCode::FJD}, {"FKP", currencyCode::FKP},
+        {"GBP", currencyCode::GBP}, {"GEL", currencyCode::GEL},
+        {"GGP", currencyCode::GGP}, {"GHS", currencyCode::GHS},
+        {"GIP", currencyCode::GIP}, {"GMD", currencyCode::GMD},
+        {"GNF", currencyCode::GNF}, {"GTQ", currencyCode::GTQ},
+        {"GYD", currencyCode::GYD}, {"HKD", currencyCode::HKD},
+        {"HNL", currencyCode::HNL}, {"HRK", currencyCode::HRK},
+        {"HTG", currencyCode::HTG}, {"HUF", currencyCode::HUF},
+        {"IDR", currencyCode::IDR}, {"ILS", currencyCode::ILS},
+        {"IMP", currencyCode::IMP}, {"INR", currencyCode::INR},
+        {"IQD", currencyCode::IQD}, {"IRR", currencyCode::IRR},
+        {"ISK", currencyCode::ISK}, {"JEP", currencyCode::JEP},
+        {"JMD", currencyCode::JMD}, {"JOD", currencyCode::JOD},
+        {"JPY", currencyCode::JPY}, {"KES", currencyCode::KES},
+        {"KGS", currencyCode::KGS}, {"KHR", currencyCode::KHR},
+        {"KID", currencyCode::KID}, {"KMF", currencyCode::KMF},
+        {"KPW", currencyCode::KPW}, {"KRW", currencyCode::KRW},
+        {"KWD", currencyCode::KWD}, {"KYD", currencyCode::KYD},
+        {"KZT", currencyCode::KZT}, {"LAK", currencyCode::LAK},
+        {"LBP", currencyCode::LBP}, {"LKR", currencyCode::LKR},
+        {"LRD", currencyCode::LRD}, {"LSL", currencyCode::LSL},
+        {"LTL", currencyCode::LTL}, {"LVL", currencyCode::LVL},
+        {"LYD", currencyCode::LYD}, {"MAD", currencyCode::MAD},
+        {"MDL", currencyCode::MDL}, {"MGA", currencyCode::MGA},
+        {"MKD", currencyCode::MKD}, {"MMK", currencyCode::MMK},
+        {"MNT", currencyCode::MNT}, {"MOP", currencyCode::MOP},
+        {"MRU", currencyCode::MRU}, {"MUR", currencyCode::MUR},
+        {"MVR", currencyCode::MVR}, {"MWK", currencyCode::MWK},
+        {"MXN", currencyCode::MXN}, {"MXV", currencyCode::MXV},
+        {"MYR", currencyCode::MYR}, {"MZN", currencyCode::MZN},
+        {"NAD", currencyCode::NAD}, {"NGN", currencyCode::NGN},
+        {"NIO", currencyCode::NIO}, {"NOK", currencyCode::NOK},
+        {"NPR", currencyCode::NPR}, {"NZD", currencyCode::NZD},
+        {"OMR", currencyCode::OMR}, {"PAB", currencyCode::PAB},
+        {"PEN", currencyCode::PEN}, {"PGK", currencyCode::PGK},
+        {"PHP", currencyCode::PHP}, {"PKR", currencyCode::PKR},
+        {"PLN", currencyCode::PLN}, {"PYG", currencyCode::PYG},
+        {"QAR", currencyCode::QAR}, {"RON", currencyCode::RON},
+        {"RSD", currencyCode::RSD}, {"RUB", currencyCode::RUB},
+        {"RWF", currencyCode::RWF}, {"SAR", currencyCode::SAR},
+        {"SBD", currencyCode::SBD}, {"SCR", currencyCode::SCR},
+        {"SDG", currencyCode::SDG}, {"SEK", currencyCode::SEK},
+        {"SGD", currencyCode::SGD}, {"SHP", currencyCode::SHP},
+        {"SLL", currencyCode::SLL}, {"SOS", currencyCode::SOS},
+        {"SRD", currencyCode::SRD}, {"STN", currencyCode::STN},
+        {"SVC", currencyCode::SVC}, {"SYP", currencyCode::SYP},
+        {"SZL", currencyCode::SZL}, {"THB", currencyCode::THB},
+        {"TJS", currencyCode::TJS}, {"TMT", currencyCode::TMT},
+        {"TND", currencyCode::TND}, {"TOP", currencyCode::TOP},
+        {"TRY", currencyCode::TRY}, {"TTD", currencyCode::TTD},
+        {"TWD", currencyCode::TWD},
+        {"TZS", currencyCode::TZS}, {"UAH", currencyCode::UAH},
+        {"UGX", currencyCode::UGX}, {"USD", currencyCode::USD},
+        {"USN", currencyCode::USN}, {"UYI", currencyCode::UYI},
+        {"UYU", currencyCode::UYU}, {"UYW", currencyCode::UYW},
+        {"UZS", currencyCode::UZS}, {"VES", currencyCode::VES},
+        {"VND", currencyCode::VND}, {"VUV", currencyCode::VUV},
+        {"WST", currencyCode::WST}, {"XAF", currencyCode::XAF},
+        {"XAG", currencyCode::XAG}, {"XAU", currencyCode::XAU},
+        {"XCD", currencyCode::XCD},
+        {"XOF", currencyCode::XOF}, {"XPD", currencyCode::XPD},
+        {"XPF", currencyCode::XPF}, {"XPT", currencyCode::XPT},
+        {"XSU", currencyCode::XSU}, {"XUA", currencyCode::XUA},
+        {"YER", currencyCode::YER}, {"ZAR", currencyCode::ZAR},
+        {"ZMW", currencyCode::ZMW}, {"ZWL", currencyCode::ZWL},
+        {"BTC", currencyCode::BTC}, {"ETH", currencyCode::ETH},
+        {"XBT", currencyCode::XBT}, {"ETC", currencyCode::ETC},
+        {"BCH", currencyCode::BCH}, {"XRP", currencyCode::XRP},
+        {"LTC", currencyCode::LTC}, {"ZUR", currencyCode::ZUR},
+        {"ZUG", currencyCode::ZUG},
+    };
+    const auto it = map.find(s);
+    if (it == map.end())
+        throw std::runtime_error(
+            "parse_currency_code: unrecognised currency code '" + s +
+            "' — cannot produce valid ORE XML");
+    return it->second;
 }
 
 } // namespace
@@ -257,7 +367,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_variance_swap(
 
     result.instrument.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.notional = static_cast<double>(d.Notional);
     result.instrument.variance_strike = static_cast<double>(d.Strike);
     result.instrument.start_date = std::string(d.StartDate);
@@ -280,7 +390,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_barrier_option(
 
     result.instrument.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.quantity = static_cast<double>(d.Quantity);
     result.instrument.option_type = extract_option_type(d.OptionData);
     result.instrument.exercise_type = extract_exercise_style(d.OptionData);
@@ -309,7 +419,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_asian_option(
 
     if (d.Underlying)
         result.instrument.underlying_code = std::string(d.Underlying->Name);
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.quantity = static_cast<double>(d.Quantity);
     result.instrument.option_type = extract_option_type(d.OptionData);
     result.instrument.maturity_date = first_exercise_date(d.OptionData);
@@ -341,7 +451,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_digital_option(
     result.instrument.strike_price = static_cast<double>(d.Strike);
     result.instrument.notional = static_cast<double>(d.PayoffAmount);
     if (d.PayoffCurrency)
-        result.instrument.currency = std::string(*d.PayoffCurrency);
+        result.instrument.currency = to_string(*d.PayoffCurrency);
     return result;
 }
 
@@ -360,7 +470,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_touch_option(
 
     result.instrument.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.PayoffCurrency);
+    result.instrument.currency = to_string(d.PayoffCurrency);
     result.instrument.notional = static_cast<double>(d.PayoffAmount);
     result.instrument.option_type = extract_option_type(d.OptionData);
     result.instrument.maturity_date = first_exercise_date(d.OptionData);
@@ -385,7 +495,7 @@ equity_instrument_mapper::forward_equity_outperformance_option(
     if (!t.EquityOutperformanceOptionData) return result;
     const auto& d = *t.EquityOutperformanceOptionData;
 
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.notional = static_cast<double>(d.Notional);
     result.instrument.option_type = extract_option_type(d.OptionData);
     result.instrument.maturity_date = first_exercise_date(d.OptionData);
@@ -413,7 +523,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_accumulator(
     const auto& d = *t.EquityAccumulatorData;
 
     result.instrument.underlying_code = std::string(d.Underlying.Name);
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.accumulation_amount =
         static_cast<double>(d.FixingAmount);
     if (d.Strike)
@@ -450,7 +560,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_tarf(
     const auto& d = *t.EquityTaRFData;
 
     result.instrument.underlying_code = std::string(d.Underlying.Name);
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.accumulation_amount =
         static_cast<double>(d.FixingAmount);
     if (d.Strike)
@@ -482,7 +592,7 @@ equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
 
     result.instrument.underlying_code =
         extract_underlying_name(d.underlyingTypes);
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.notional = static_cast<double>(d.Notional);
     result.instrument.option_type = to_string(d.OptionType);
 
@@ -491,10 +601,10 @@ equity_mapping_result equity_instrument_mapper::forward_equity_cliquet_option(
         result.instrument.cliquet_frequency_code =
             std::string(d.ScheduleData.Rules.front().Tenor);
     else if (!d.ScheduleData.Dates.empty() &&
-             d.ScheduleData.Dates.front().Dates.size() >= 2) {
+             d.ScheduleData.Dates.front().Dates.Date.size() >= 2) {
         // For date-based schedules store the maturity date
         result.instrument.maturity_date = std::string(
-            d.ScheduleData.Dates.front().Dates.back());
+            d.ScheduleData.Dates.front().Dates.Date.back());
     }
     return result;
 }
@@ -513,7 +623,7 @@ equity_instrument_mapper::forward_equity_worst_of_basket_swap(
     if (!t.EquityWorstOfBasketSwapData) return result;
     const auto& d = *t.EquityWorstOfBasketSwapData;
 
-    result.instrument.currency = std::string(d.Currency);
+    result.instrument.currency = to_string(d.Currency);
     result.instrument.quantity = static_cast<double>(d.Quantity);
     result.instrument.basket_json = underlyings_to_json(d.Underlyings);
     if (!d.Underlyings.Underlying.empty())
@@ -555,7 +665,7 @@ trade equity_instrument_mapper::reverse_equity_forward(
     trade t;
     t.TradeType = oreTradeType::EquityForward;
     equityForwardData d;
-    static_cast<std::string&>(d.LongShort) = "Long";
+    d.LongShort = longShort::Long;
     static_cast<std::string&>(d.Maturity) = instr.maturity_date;
     d.underlyingTypes = make_underlying_type(instr.underlying_code);
     static_cast<std::string&>(d.Currency) = instr.currency;
@@ -621,7 +731,7 @@ trade equity_instrument_mapper::reverse_equity_variance_swap(
     varianceSwapData d;
     static_cast<std::string&>(d.StartDate) = instr.start_date;
     static_cast<std::string&>(d.EndDate) = instr.maturity_date;
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.Currency = parse_currency_code(instr.currency);
     d.underlyingTypes = make_underlying_type(instr.underlying_code);
     static_cast<std::string&>(d.LongShort) = "Long";
     d.Strike = static_cast<float>(instr.variance_strike);
@@ -643,7 +753,7 @@ trade equity_instrument_mapper::reverse_equity_barrier_option(
     eqBarrierOptionData d;
     d.OptionData = make_option_data(instr);
     d.underlyingTypes = make_underlying_type(instr.underlying_code);
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.Currency = parse_currency_code(instr.currency);
     d.Quantity = static_cast<float>(instr.quantity);
     if (instr.strike_price != 0.0) {
         _Strike_t s;
@@ -682,7 +792,7 @@ trade equity_instrument_mapper::reverse_equity_asian_option(
     t.TradeType = oreTradeType::EquityAsianOption;
     singleUnderlyingAsianOptionData d;
     d.OptionData = make_option_data(instr);
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.Currency = parse_currency_code(instr.currency);
     d.Quantity = static_cast<float>(instr.quantity);
     if (instr.strike_price != 0.0) {
         _StrikeData_t sd;
@@ -730,7 +840,7 @@ trade equity_instrument_mapper::reverse_equity_touch_option(
     eqTouchOptionData d;
     d.OptionData = make_option_data(instr);
     d.underlyingTypes = make_underlying_type(instr.underlying_code);
-    static_cast<std::string&>(d.PayoffCurrency) = instr.currency;
+    d.PayoffCurrency = parse_currency_code(instr.currency);
     d.PayoffAmount = static_cast<float>(instr.notional);
     if (!instr.barrier_type.empty()) {
         barrierData bd;
@@ -761,7 +871,7 @@ trade equity_instrument_mapper::reverse_equity_outperformance_option(
     t.TradeType = oreTradeType::EquityOutperformanceOption;
     eqOutperformanceOptionData d;
     d.OptionData = make_option_data(instr);
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.Currency = parse_currency_code(instr.currency);
     d.Notional = static_cast<float>(instr.notional);
     d.StrikeReturn = static_cast<float>(instr.strike_price);
     // Reconstruct underlyings from basket_json (minimal: just underlying_code)
@@ -783,7 +893,7 @@ trade equity_instrument_mapper::reverse_equity_accumulator(
     trade t;
     t.TradeType = oreTradeType::EquityAccumulator;
     accumulatorData d;
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.Currency = parse_currency_code(instr.currency);
     d.FixingAmount = static_cast<float>(instr.accumulation_amount);
     if (instr.strike_price != 0.0)
         d.Strike = static_cast<float>(instr.strike_price);
@@ -815,7 +925,7 @@ trade equity_instrument_mapper::reverse_equity_tarf(
     trade t;
     t.TradeType = oreTradeType::EquityTaRF;
     tarfData2 d;
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.Currency = parse_currency_code(instr.currency);
     d.FixingAmount = static_cast<float>(instr.accumulation_amount);
     if (instr.strike_price != 0.0)
         d.Strike = static_cast<float>(instr.strike_price);
@@ -841,9 +951,9 @@ trade equity_instrument_mapper::reverse_equity_cliquet_option(
     t.TradeType = oreTradeType::EquityCliquetOption;
     cliquetOptionData d;
     d.underlyingTypes = make_underlying_type(instr.underlying_code);
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.Currency = parse_currency_code(instr.currency);
     d.Notional = static_cast<float>(instr.notional);
-    static_cast<std::string&>(d.LongShort) = "Long";
+    d.LongShort = longShort::Long;
     d.OptionType = instr.option_type == "Put" ?
         optionType::Put : optionType::Call;
     d.Moneyness = 1.0f;
@@ -868,12 +978,12 @@ trade equity_instrument_mapper::reverse_equity_worst_of_basket_swap(
     trade t;
     t.TradeType = oreTradeType::EquityWorstOfBasketSwap;
     worstOfBasketSwapData2 d;
-    static_cast<std::string&>(d.LongShort) = "Long";
-    static_cast<std::string&>(d.Currency) = instr.currency;
+    d.LongShort = longShort::Long;
+    d.Currency = parse_currency_code(instr.currency);
     d.Quantity = static_cast<float>(instr.quantity);
     d.FixedRate = 0.0f;
     static_cast<std::string&>(d.FloatingIndex) = "EUR-EURIBOR-3M";
-    static_cast<std::string&>(d.FloatingDayCountFraction) = "Actual/360";
+    d.FloatingDayCountFraction = dayCounter::Actual_360;
     // Reconstruct underlyings from underlying_code (minimal)
     if (!instr.underlying_code.empty()) {
         underlying u;

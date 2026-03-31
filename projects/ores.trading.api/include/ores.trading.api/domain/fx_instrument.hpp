@@ -100,6 +100,51 @@ struct fx_instrument final {
     std::string expiry_date;
 
     /**
+     * @brief Barrier type (e.g. UpAndIn, DownAndOut). Empty for vanilla types.
+     */
+    std::string barrier_type;
+
+    /**
+     * @brief Lower (or only) barrier level. Zero when not applicable.
+     */
+    double lower_barrier = 0.0;
+
+    /**
+     * @brief Upper barrier level for double-barrier products. Zero when not applicable.
+     */
+    double upper_barrier = 0.0;
+
+    /**
+     * @brief Notional / payoff amount. Used for digital, touch, and variance products.
+     */
+    double notional = 0.0;
+
+    /**
+     * @brief Strike variance/volatility for variance swap products.
+     */
+    double variance_strike = 0.0;
+
+    /**
+     * @brief FX pair or index identifier (e.g. TR20H-EUR-USD).
+     */
+    std::string underlying_code;
+
+    /**
+     * @brief Start date for variance swaps and accumulators.
+     */
+    std::string start_date;
+
+    /**
+     * @brief Per-fixing accumulation amount for accumulator and TaRF products.
+     */
+    double accumulation_amount = 0.0;
+
+    /**
+     * @brief Knock-out barrier level for accumulator and TaRF products.
+     */
+    double knock_out_barrier = 0.0;
+
+    /**
      * @brief Optional free-text description.
      */
     std::string description;

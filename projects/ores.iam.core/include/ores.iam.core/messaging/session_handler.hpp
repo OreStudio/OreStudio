@@ -43,6 +43,7 @@ inline auto& session_handler_lg() {
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::log_handler_entry;
 
 class session_handler {
 public:

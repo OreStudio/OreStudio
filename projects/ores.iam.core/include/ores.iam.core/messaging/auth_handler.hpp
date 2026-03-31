@@ -158,6 +158,7 @@ inline bool auth_is_tenant_bootstrap_mode(
 
 using ores::service::messaging::reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::log_handler_entry;
 
 class auth_handler {
 public:

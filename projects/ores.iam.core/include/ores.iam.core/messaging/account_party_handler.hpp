@@ -49,6 +49,7 @@ using ores::service::messaging::decode;
 using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
+using ores::service::messaging::log_handler_entry;
 
 class account_party_handler {
 public:

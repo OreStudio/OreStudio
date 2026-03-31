@@ -267,7 +267,7 @@ void provision_parties_workflow::compensate(
             auto r = nats_call(nats, del_link, err);
             if (!r || !r->success) {
                 const auto reason = (r && !r->message.empty()) ? r->message : err;
-                BOOST_LOG_SEV(lg(), error)
+                BOOST_LOG_SEV(lg(), ores::logging::error)
                     << "Compensation delete_account_party failed for party "
                     << i << ": " << reason;
             }
@@ -282,7 +282,7 @@ void provision_parties_workflow::compensate(
             auto r = nats_call(nats, del_acct, err);
             if (!r || !r->success) {
                 const auto reason = (r && !r->message.empty()) ? r->message : err;
-                BOOST_LOG_SEV(lg(), error)
+                BOOST_LOG_SEV(lg(), ores::logging::error)
                     << "Compensation delete_account failed for party " << i
                     << ": " << reason;
             }
@@ -297,7 +297,7 @@ void provision_parties_workflow::compensate(
             auto r = nats_call(nats, del_party, err);
             if (!r || !r->success) {
                 const auto reason = (r && !r->message.empty()) ? r->message : err;
-                BOOST_LOG_SEV(lg(), error)
+                BOOST_LOG_SEV(lg(), ores::logging::error)
                     << "Compensation delete_party failed for party " << i
                     << ": " << reason;
             }

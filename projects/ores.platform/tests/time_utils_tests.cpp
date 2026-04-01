@@ -76,7 +76,8 @@ std::string utc_to_local_string(const std::chrono::system_clock::time_point& tp)
  */
 void parse_time(const std::string& s, const char* fmt, std::tm& tm) {
     std::istringstream ss(s);
-    ss >> std::get_time(&tm, fmt);
+    ss.imbue(std::locale("C"));
+    REQUIRE(ss >> std::get_time(&tm, fmt));
 }
 
 } // namespace

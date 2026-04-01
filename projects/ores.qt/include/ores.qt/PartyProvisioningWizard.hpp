@@ -33,6 +33,7 @@
 #include <string>
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
+#include "ores.reporting.api/domain/report_definition_template.hpp"
 
 namespace ores::qt {
 
@@ -201,19 +202,37 @@ private:
 
 /**
  * @brief Page for selecting which initial report definitions to create.
+ *
+ * Loads available templates from the reporting service on entry via the
+ * reporting.v1.report-definition-templates.list NATS endpoint.
  */
 class PartyReportSetupPage final : public QWizardPage {
     Q_OBJECT
 
+private:
+    inline static std::string_view logger_name =
+        "ores.qt.party_report_setup_page";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
     explicit PartyReportSetupPage(PartyProvisioningWizard* wizard);
+    void initializePage() override;
     bool validatePage() override;
     int nextId() const override;
 
 private:
     void setupUI();
+    void loadTemplates();
+    void populateList(const std::vector<ores::reporting::domain::report_definition_template>& templates);
 
     PartyProvisioningWizard* wizard_;
+    QLabel* loadingLabel_;
+    QLabel* errorLabel_;
     QListWidget* reportList_;
 };
 

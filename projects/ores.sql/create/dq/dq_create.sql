@@ -102,6 +102,9 @@
 \ir ./dq_portfolios_artefact_create.sql
 \ir ./dq_books_artefact_create.sql
 
+-- Analytics artefact tables
+\ir ./dq_report_definitions_artefact_create.sql
+
 -- GLEIF LEI artefact tables
 \ir ./dq_lei_entities_artefact_create.sql
 \ir ./dq_lei_relationships_artefact_create.sql
@@ -138,6 +141,7 @@
 \ir ./dq_business_units_publish_create.sql
 \ir ./dq_portfolios_publish_create.sql
 \ir ./dq_books_publish_create.sql
+\ir ./dq_report_definitions_publish_create.sql
 
 -- FSM Framework (finite state machine infrastructure, part of DQ metadata layer)
 \ir ./dq_fsm_create.sql

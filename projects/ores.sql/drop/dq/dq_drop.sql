@@ -25,12 +25,14 @@
 \ir ./dq_functions_drop.sql
 
 -- Publications (bundle before individual)
+\ir ./dq_report_definitions_publish_drop.sql
 \ir ./dq_lei_parties_publish_drop.sql
 \ir ./dq_lei_counterparties_publish_drop.sql
 \ir ./dq_bundle_publication_drop.sql
 \ir ./dq_publication_drop.sql
 
 -- Artefacts
+\ir ./dq_report_definitions_artefact_drop.sql
 \ir ./dq_books_artefact_drop.sql
 \ir ./dq_portfolios_artefact_drop.sql
 \ir ./dq_business_units_artefact_drop.sql

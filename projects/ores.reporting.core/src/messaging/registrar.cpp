@@ -30,6 +30,7 @@
 #include "ores.reporting.core/messaging/report_definition_handler.hpp"
 #include "ores.reporting.core/messaging/report_instance_handler.hpp"
 #include "ores.reporting.core/messaging/concurrency_policy_handler.hpp"
+#include "ores.reporting.core/messaging/report_definition_template_handler.hpp"
 
 namespace ores::reporting::messaging {
 
@@ -39,6 +40,14 @@ registrar::register_handlers(ores::nats::service::client& nats,
     std::optional<ores::security::jwt::jwt_authenticator> verifier,
     ores::nats::service::nats_client& svc_nats) {
     std::vector<ores::nats::service::subscription> subs;
+
+    // ----------------------------------------------------------------
+    // Report definition templates
+    // ----------------------------------------------------------------
+    auto rdth = std::make_shared<report_definition_template_handler>(nats, ctx, verifier);
+    subs.push_back(nats.queue_subscribe(
+        get_report_definition_templates_request::nats_subject, "ores.reporting.service",
+        [rdth](ores::nats::message msg) { rdth->list(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Report types

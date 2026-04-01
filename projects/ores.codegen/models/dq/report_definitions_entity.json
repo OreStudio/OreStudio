@@ -1,0 +1,32 @@
+{
+  "entity": {
+    "schema": "public",
+    "product": "ores",
+    "component": "dq",
+    "entity_singular": "report_definition",
+    "entity_plural": "report_definitions",
+    "description": "Report Definition artefacts - default report templates for the ORE analytics bundle",
+    "has_tenant_id": true,
+    "has_image_id": false,
+    "has_coding_scheme": false,
+    "has_artefact_insert_fn": false,
+    "primary_key": {
+      "column": "id",
+      "type": "uuid",
+      "is_text": false
+    },
+    "columns": [
+      {"name": "name", "type": "text", "nullable": false},
+      {"name": "description", "type": "text", "nullable": true},
+      {"name": "report_type", "type": "text", "nullable": false},
+      {"name": "schedule_expression", "type": "text", "nullable": false},
+      {"name": "concurrency_policy", "type": "text", "nullable": false},
+      {"name": "display_order", "type": "integer", "nullable": false}
+    ],
+    "artefact_indexes": [
+      {"name": "name", "columns": "name"},
+      {"name": "report_type", "columns": "report_type"}
+    ],
+    "indexes": []
+  }
+}

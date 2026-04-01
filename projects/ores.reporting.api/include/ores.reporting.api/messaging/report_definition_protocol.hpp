@@ -24,8 +24,22 @@
 #include <string_view>
 #include <vector>
 #include "ores.reporting.api/domain/report_definition.hpp"
+#include "ores.reporting.api/domain/report_definition_template.hpp"
 
 namespace ores::reporting::messaging {
+
+struct get_report_definition_templates_request {
+    using response_type = struct get_report_definition_templates_response;
+    static constexpr std::string_view nats_subject =
+        "reporting.v1.report-definition-templates.list";
+    std::string bundle_code = "ore_analytics";
+};
+
+struct get_report_definition_templates_response {
+    bool success = false;
+    std::string message;
+    std::vector<ores::reporting::domain::report_definition_template> templates;
+};
 
 struct get_report_definitions_request {
     using response_type = struct get_report_definitions_response;

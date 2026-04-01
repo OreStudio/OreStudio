@@ -199,4 +199,7 @@ from ores_dq_portfolios_artefact_tbl
 union all
 select 'Artefact: Books', count(*)
 from ores_dq_books_artefact_tbl
+union all
+select 'Artefact: Report Definitions', count(*)
+from ores_dq_report_definitions_artefact_tbl
 order by entity;

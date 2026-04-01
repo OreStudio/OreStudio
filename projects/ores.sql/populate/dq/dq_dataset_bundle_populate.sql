@@ -55,3 +55,9 @@ select ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
     'Organisation',
     'Sample organisational hierarchy data for development and testing. Includes business units, portfolios, and trading books.'
 );
+
+select ores_dq_dataset_bundles_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'ore_analytics',
+    'ORE Analytics',
+    'Default ORE analytics report definitions. Seeds the standard set of risk reports (NPV, VaR, CVA, XVA, etc.) for use during party provisioning.'
+);

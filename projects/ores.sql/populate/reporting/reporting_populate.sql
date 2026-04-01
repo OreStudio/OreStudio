@@ -38,6 +38,10 @@
 \ir ./dq_fsm_report_instance_lifecycle_populate.sql
 
 \echo ''
+\echo '--- Report Definition Seed Data ---'
+\ir ./reporting_report_definitions_populate.sql
+
+\echo ''
 \echo '=== Reporting Component Population Complete ==='
 
 -- Summary

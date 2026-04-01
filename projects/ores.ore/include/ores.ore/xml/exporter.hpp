@@ -21,9 +21,11 @@
 #ifndef ORES_ORE_XML_EXPORTER_HPP
 #define ORES_ORE_XML_EXPORTER_HPP
 
+#include <string>
 #include <vector>
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::ore::xml {
 
@@ -43,6 +45,16 @@ private:
 public:
     static std::string
     export_currency_config(const std::vector<refdata::domain::currency>& v);
+
+    /**
+     * @brief Reconstructs an ORE portfolio XML from a vector of
+     * (trade, instrument) pairs returned by export_portfolio_response.
+     *
+     * Each item is reverse-mapped through the appropriate instrument mapper.
+     * Items with monostate instruments (unmapped trade types) are skipped.
+     */
+    static std::string export_portfolio(
+        const std::vector<trading::messaging::trade_export_item>& items);
 };
 
 }

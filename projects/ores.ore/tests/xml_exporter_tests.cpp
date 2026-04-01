@@ -22,7 +22,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore/xml/importer.hpp"
+#include "ores.ore/domain/trade_mapper.hpp"
 #include "ores.testing/project_root.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace {
 
@@ -33,11 +35,48 @@ std::filesystem::path ore_path(const std::string& relative) {
     return ores::testing::project_root::resolve("external/ore/" + relative);
 }
 
+std::filesystem::path example_path(const std::string& filename) {
+    return ores::testing::project_root::resolve(
+        "external/ore/examples/Products/Example_Trades/" + filename);
+}
+
+// Convert an import-side instrument_mapping_result (from ores.ore) to the
+// export-side instrument_export_result (from ores.trading.api) for testing.
+ores::trading::messaging::instrument_export_result to_export_result(
+    const ores::ore::domain::instrument_mapping_result& r) {
+    using namespace ores::ore::domain;
+    using namespace ores::trading::messaging;
+    return std::visit([](const auto& v)
+            -> ores::trading::messaging::instrument_export_result {
+        using T = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<T, std::monostate>)
+            return std::monostate{};
+        else if constexpr (std::is_same_v<T, swap_mapping_result>)
+            return swap_export_result{v.instrument, v.legs};
+        else if constexpr (std::is_same_v<T, fx_mapping_result>)
+            return v.instrument;
+        else if constexpr (std::is_same_v<T, bond_mapping_result>)
+            return v.instrument;
+        else if constexpr (std::is_same_v<T, credit_mapping_result>)
+            return v.instrument;
+        else if constexpr (std::is_same_v<T, equity_mapping_result>)
+            return v.instrument;
+        else if constexpr (std::is_same_v<T, commodity_mapping_result>)
+            return v.instrument;
+        else if constexpr (std::is_same_v<T, scripted_mapping_result>)
+            return v.instrument;
+        else if constexpr (std::is_same_v<T, composite_mapping_result>)
+            return composite_export_result{v.instrument, {}};
+        return std::monostate{};
+    }, r);
+}
+
 }
 
 using ores::ore::xml::exporter;
 using ores::ore::xml::importer;
 using ores::refdata::domain::currency;
+using ores::trading::messaging::trade_export_item;
 using namespace ores::logging;
 
 // =============================================================================
@@ -180,4 +219,80 @@ TEST_CASE("export_all_rounding_types", tags) {
     for (const auto& rt : rounding_types) {
         CHECK(xml.contains("<RoundingType>" + rt + "</RoundingType>"));
     }
+}
+
+// =============================================================================
+// export_portfolio roundtrip tests
+// =============================================================================
+
+TEST_CASE("export_portfolio_empty_items_produces_valid_xml", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto xml = exporter::export_portfolio({});
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(!xml.empty());
+    CHECK(xml.contains("Portfolio"));
+}
+
+TEST_CASE("export_portfolio_swap_roundtrip", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto f = example_path("IR_Swap_Vanilla.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(imported.size() == 1);
+
+    std::vector<trade_export_item> items;
+    for (const auto& src : imported) {
+        trade_export_item item;
+        item.trade = src.trade;
+        item.instrument = to_export_result(src.instrument);
+        items.push_back(std::move(item));
+    }
+
+    const auto xml = exporter::export_portfolio(items);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(!xml.empty());
+    CHECK(xml.contains("<Portfolio>"));
+    CHECK(xml.contains("<SwapData>"));
+    CHECK(xml.contains(imported.front().trade.external_id));
+}
+
+TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto f = example_path("FX_Forward.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(imported.size() == 1);
+
+    std::vector<trade_export_item> items;
+    for (const auto& src : imported) {
+        trade_export_item item;
+        item.trade = src.trade;
+        item.instrument = to_export_result(src.instrument);
+        items.push_back(std::move(item));
+    }
+
+    const auto xml = exporter::export_portfolio(items);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(!xml.empty());
+    CHECK(xml.contains("<FxForwardData>"));
+    CHECK(xml.contains(imported.front().trade.external_id));
+}
+
+TEST_CASE("export_portfolio_monostate_items_are_skipped", tags) {
+    auto lg(make_logger(test_suite));
+
+    trade_export_item item;
+    item.trade.external_id = "UnmappedTrade001";
+    item.trade.trade_type = "UnknownType";
+    // instrument left as monostate
+
+    const auto xml = exporter::export_portfolio({item});
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(!xml.empty());
+    CHECK(!xml.contains("UnmappedTrade001"));
 }

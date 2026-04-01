@@ -121,6 +121,9 @@ values
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
     (ores_iam_system_tenant_id_fn(), 'books', 0, 'Books', 'Trading and banking books',
      'dq_books_artefact_tbl', 'refdata_books_tbl', 'ores_dq_books_publish_fn', 32,
+     current_user, current_user, 'system.initial_load', 'Initial population of artefact types'),
+    (ores_iam_system_tenant_id_fn(), 'report_definitions', 0, 'Report Definitions', 'ORE analytics report definition templates',
+     'dq_report_definitions_artefact_tbl', 'reporting_report_definitions_tbl', 'ores_dq_report_definitions_publish_fn', 33,
      current_user, current_user, 'system.initial_load', 'Initial population of artefact types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()

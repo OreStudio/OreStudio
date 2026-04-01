@@ -20,6 +20,8 @@
 #include "ores.platform/time/time_utils.hpp"
 
 #include <ctime>
+#include <iomanip>
+#include <sstream>
 #include <catch2/catch_test_macros.hpp>
 #include "ores.logging/make_logger.hpp"
 
@@ -66,6 +68,17 @@ std::string utc_to_local_string(const std::chrono::system_clock::time_point& tp)
     return buf;
 }
 
+/**
+ * @brief Portable strptime substitute using std::get_time.
+ *
+ * strptime is POSIX-only and absent on Windows. std::get_time is standard
+ * C++11 and available on all platforms.
+ */
+void parse_time(const std::string& s, const char* fmt, std::tm& tm) {
+    std::istringstream ss(s);
+    ss >> std::get_time(&tm, fmt);
+}
+
 } // namespace
 
 TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", tags) {
@@ -84,7 +97,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string", tags) {
     // Parse via strptime the same way rfl::Timestamp does (zero-init, then
     // strptime), and verify to_time_point_local recovers the original UTC tp.
     std::tm parsed_tm = {};
-    ::strptime(local_str.c_str(), "%Y-%m-%d %H:%M:%S", &parsed_tm);
+    parse_time(local_str, "%Y-%m-%d %H:%M:%S", parsed_tm);
 
     const auto result = time_utils::to_time_point_local(parsed_tm);
 
@@ -107,7 +120,7 @@ TEST_CASE("to_time_point_local_roundtrips_utc_via_local_string_winter", tags) {
         << "Local string for 2026-01-15 14:30:00 UTC: " << local_str;
 
     std::tm parsed_tm = {};
-    ::strptime(local_str.c_str(), "%Y-%m-%d %H:%M:%S", &parsed_tm);
+    parse_time(local_str, "%Y-%m-%d %H:%M:%S", parsed_tm);
 
     const auto result = time_utils::to_time_point_local(parsed_tm);
 

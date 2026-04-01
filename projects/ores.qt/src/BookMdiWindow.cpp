@@ -22,6 +22,9 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <optional>
+#include <QFile>
+#include <QFileInfo>
 #include <QFileDialog>
 #include <QtConcurrent>
 #include <QFutureWatcher>
@@ -34,7 +37,9 @@
 #include "ores.qt/WidgetUtils.hpp"
 #include "ores.qt/ImportTradeDialog.hpp"
 #include "ores.ore/xml/importer.hpp"
+#include "ores.ore/xml/exporter.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 
 namespace ores::qt {
 
@@ -61,7 +66,8 @@ BookMdiWindow::BookMdiWindow(
       editAction_(nullptr),
       deleteAction_(nullptr),
       historyAction_(nullptr),
-      importAction_(nullptr) {
+      importAction_(nullptr),
+      exportXmlAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -148,6 +154,16 @@ void BookMdiWindow::setupToolbar() {
     importAction_->setEnabled(false);
     connect(importAction_, &QAction::triggered, this,
             &BookMdiWindow::importTrades);
+
+    exportXmlAction_ = toolbar_->addAction(
+        IconUtils::createRecoloredIcon(
+            Icon::ExportOre, IconUtils::DefaultIconColor),
+        tr("Export"));
+    exportXmlAction_->setToolTip(
+        tr("Export all trades in the selected book to an ORE portfolio XML file"));
+    exportXmlAction_->setEnabled(false);
+    connect(exportXmlAction_, &QAction::triggered, this,
+            &BookMdiWindow::exportToXml);
 }
 
 void BookMdiWindow::setupTable() {
@@ -272,6 +288,7 @@ void BookMdiWindow::updateActionStates() {
     deleteAction_->setEnabled(hasSelection);
     historyAction_->setEnabled(hasSelection);
     importAction_->setEnabled(hasSelection);
+    exportXmlAction_->setEnabled(hasSelection);
 }
 
 void BookMdiWindow::addNew() {
@@ -409,6 +426,130 @@ void BookMdiWindow::importTrades() {
             tr("Failed to import portfolio XML file:\n%1").arg(e.what()));
         emit statusChanged(tr("Import failed"));
     }
+}
+
+void BookMdiWindow::exportToXml() {
+    BOOST_LOG_SEV(lg(), debug) << "Export to ORE XML triggered";
+
+    const auto selected = tableView_->selectionModel()->selectedRows();
+    if (selected.isEmpty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Export: no book selected";
+        return;
+    }
+
+    auto sourceIndex = proxyModel_->mapToSource(selected.first());
+    const auto* book = model_->getBook(sourceIndex.row());
+    if (!book) {
+        BOOST_LOG_SEV(lg(), warn) << "Export: could not get book";
+        return;
+    }
+
+    if (!clientManager_->isConnected()) {
+        MessageBoxHelper::warning(this, tr("Disconnected"),
+            tr("Cannot export trades while disconnected."));
+        return;
+    }
+
+    const std::string book_id = boost::uuids::to_string(book->id);
+    const std::string book_name = book->name;
+
+    emit statusChanged(tr("Fetching trades for export..."));
+
+    QPointer<BookMdiWindow> self = this;
+    using ExportResponse =
+        std::optional<trading::messaging::export_portfolio_response>;
+
+    auto task = [self, book_id]() -> ExportResponse {
+        if (!self) return std::nullopt;
+
+        trading::messaging::export_portfolio_request req;
+        req.book_id = book_id;
+
+        auto result = self->clientManager_->process_authenticated_request(
+            std::move(req));
+        if (!result) return std::nullopt;
+        return std::make_optional(std::move(*result));
+    };
+
+    auto* watcher = new QFutureWatcher<ExportResponse>(this);
+    connect(watcher, &QFutureWatcher<ExportResponse>::finished,
+            this, [self, watcher, book_name]() {
+        auto resp = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!resp || !resp->success) {
+            const auto msg = resp ? resp->message : "No response from server";
+            BOOST_LOG_SEV(lg(), error) << "Export failed: " << msg;
+            MessageBoxHelper::critical(self, tr("Export Error"),
+                tr("Failed to fetch trades for export:\n%1")
+                .arg(QString::fromStdString(msg)));
+            emit self->statusChanged(tr("Export failed"));
+            return;
+        }
+
+        if (resp->items.empty()) {
+            MessageBoxHelper::information(self, tr("No Trades"),
+                tr("Book '%1' has no trades to export.")
+                .arg(QString::fromStdString(book_name)));
+            emit self->statusChanged(tr("Export: no trades found"));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Exporting " << resp->items.size()
+                                  << " trades from book: " << book_name;
+
+        std::string xml;
+        try {
+            xml = ore::xml::exporter::export_portfolio(resp->items);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to generate XML: " << e.what();
+            MessageBoxHelper::critical(self, tr("Export Error"),
+                tr("Failed to generate ORE XML:\n%1").arg(e.what()));
+            emit self->statusChanged(tr("Export failed"));
+            return;
+        }
+
+        const QString defaultName =
+            QString::fromStdString("portfolio_" + book_name + ".xml");
+        const QString fileName = QFileDialog::getSaveFileName(
+            self,
+            tr("Save ORE Portfolio XML"),
+            defaultName,
+            tr("ORE Portfolio Files (*.xml);;All Files (*)"));
+
+        if (fileName.isEmpty()) {
+            BOOST_LOG_SEV(lg(), debug) << "Export: save dialog cancelled";
+            emit self->statusChanged(tr("Export cancelled"));
+            return;
+        }
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            BOOST_LOG_SEV(lg(), error) << "Cannot open file for writing: "
+                                       << fileName.toStdString();
+            MessageBoxHelper::critical(self, tr("Export Error"),
+                tr("Cannot write to file:\n%1").arg(fileName));
+            emit self->statusChanged(tr("Export failed"));
+            return;
+        }
+
+        file.write(QByteArray::fromStdString(xml));
+        file.close();
+
+        BOOST_LOG_SEV(lg(), info) << "Exported " << resp->items.size()
+                                  << " trades to: " << fileName.toStdString();
+        emit self->statusChanged(
+            tr("Exported %1 trades to %2")
+            .arg(resp->items.size())
+            .arg(QFileInfo(fileName).fileName()));
+        MessageBoxHelper::information(self, tr("Export Complete"),
+            tr("Successfully exported %1 trade(s) to:\n%2")
+            .arg(resp->items.size())
+            .arg(fileName));
+    });
+
+    watcher->setFuture(QtConcurrent::run(task));
 }
 
 void BookMdiWindow::deleteSelected() {

@@ -106,6 +106,10 @@ void CompositeInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void CompositeInstrumentController::openEdit(const trading::domain::composite_instrument& v) {
+    showDetailWindow(v);
+}
+
 void CompositeInstrumentController::onShowDetails(
     const trading::domain::composite_instrument& v) {
     showDetailWindow(v);

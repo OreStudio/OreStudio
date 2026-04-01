@@ -106,6 +106,10 @@ void ScriptedInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void ScriptedInstrumentController::openEdit(const trading::domain::scripted_instrument& v) {
+    showDetailWindow(v);
+}
+
 void ScriptedInstrumentController::onShowDetails(
     const trading::domain::scripted_instrument& v) {
     showDetailWindow(v);

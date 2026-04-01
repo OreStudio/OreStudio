@@ -103,6 +103,10 @@ void FxInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void FxInstrumentController::openEdit(const trading::domain::fx_instrument& v) {
+    showDetailWindow(v);
+}
+
 void FxInstrumentController::onShowDetails(
     const trading::domain::fx_instrument& v) {
     showDetailWindow(v);

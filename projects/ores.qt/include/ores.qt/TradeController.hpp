@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
@@ -71,6 +72,8 @@ public:
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
+    void openInstrumentResult(
+        const ores::trading::messaging::instrument_export_result& result);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
@@ -80,6 +83,7 @@ private slots:
     void onAddNewRequested();
     void onShowHistory(const trading::domain::trade& trade);
     void onImportTradesRequested();
+    void onOpenInstrumentRequested(const trading::domain::trade& trade);
     void onRevertVersion(const trading::domain::trade& trade);
     void onOpenVersion(const trading::domain::trade& trade,
                        int versionNumber);

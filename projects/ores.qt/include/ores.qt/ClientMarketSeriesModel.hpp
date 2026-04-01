@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <string>
+#include <QSize>
 #include <QFutureWatcher>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"

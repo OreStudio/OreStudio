@@ -776,6 +776,84 @@ queries bypass it).
       ignore entry from =utility/validation_ignore.txt=
 - [ ] Run =validate_schemas.sh= and confirm zero warnings
 
+*** TODO Automate new service registration                             :infra:
+
+*Background*
+
+When =ores.marketdata.service= was added to the running system, the following
+manual steps were required across multiple files, with no single checklist and
+no tooling to enforce completeness. Several were discovered only at runtime
+(missing NATS cert, missing DB user, missing IAM role, missing IAM
+permissions), requiring iterative =recreate_database= runs.
+
+*Manual steps identified (in discovery order)*
+
+1. =build/scripts/generate_nats_certs.sh= — add service name to =SERVICES=
+   array so that an mTLS client certificate is generated. Without this the
+   service crashes immediately on NATS connect with =Connection Closed=.
+
+2. =projects/ores.codegen/models/services/ores_services_service_registry.json=
+   — add service entry (name, psql_var, env_key, iam_role, dml_prefixes,
+   select_tables). Then re-run the =service-registry= code-gen profile to
+   regenerate five files:
+   - =projects/ores.sql/service_vars.sh=
+   - =projects/ores.sql/create/iam/service_users_create.sql=
+   - =projects/ores.sql/create/iam/iam_service_db_grants_create.sql=
+   - =projects/ores.sql/populate/iam/iam_service_accounts_populate.sql=
+   - =projects/ores.sql/populate/iam/iam_service_account_roles_populate.sql=
+
+3. =projects/ores.sql/teardown_all.sql= — add =drop role if exists
+   <env>_<service>_service;= entry (not covered by code-gen).
+
+4. =projects/ores.sql/populate/iam/iam_permissions_populate.sql= — register
+   all domain permissions (=<service>::<resource>:<action>= and
+   =<service>::*=). These must exist before any role can reference them.
+
+5. =projects/ores.sql/populate/iam/iam_roles_populate.sql= — create the IAM
+   role and assign permissions. Fails at runtime if permissions from step 4
+   are absent.
+
+6. =.env= — add =ORES_<SERVICE>_SERVICE_DB_USER= and
+   =ORES_<SERVICE>_SERVICE_DB_PASSWORD= variables (currently done by
+   =init-environment.sh=, but only if the service is known to that script).
+
+*Proposed improvements*
+
+- Extend =generate_nats_certs.sh= to derive its service list from
+  =service_vars.sh= (=SERVICE_NAMES= array) rather than a hard-coded
+  =SERVICES= array, so adding to the registry automatically covers cert
+  generation.
+
+- Extend the =service-registry= code-gen profile (or add a new template) to
+  also emit the IAM permissions and IAM role seed SQL for each service, driven
+  by the =dml_prefixes= and =select_prefixes= fields already in the registry.
+  This would cover steps 4 and 5 automatically.
+
+- Extend the =service-registry= code-gen profile to emit the
+  =teardown_all.sql= fragment for each service (or generate a separate
+  =teardown_services.sql= that is included), covering step 3.
+
+- Add a =new-service checklist= to =CLAUDE.md= or a dedicated
+  =doc/how-to/add-a-new-service.md= covering all manual steps, so that until
+  full automation is in place nothing is missed.
+
+- Add a validation step to =recreate_database.sh= (or =validate_schemas.sh=)
+  that cross-checks: every service in =service_vars.sh= has a NATS cert, an
+  IAM role, and at least one registered permission.
+
+***** Tasks
+
+- [ ] Drive =generate_nats_certs.sh= from =SERVICE_NAMES= in =service_vars.sh=
+      instead of a hard-coded array
+- [ ] Add service-registry code-gen template for IAM permissions seed SQL
+- [ ] Add service-registry code-gen template for IAM role seed SQL
+- [ ] Add service-registry code-gen template (or include fragment) for
+      =teardown_all.sql= service role drops
+- [ ] Add cross-check to =recreate_database.sh= / =validate_schemas.sh=:
+      every service has NATS cert + IAM role + ≥1 permission
+- [ ] Document the remaining manual steps in =doc/how-to/add-a-new-service.md=
+      as an interim checklist
+
 * Footer
 
 | Previous: [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Next: TBD |

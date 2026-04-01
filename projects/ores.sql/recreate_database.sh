@@ -68,6 +68,7 @@ Passwords are read from environment variables (set via .env or CI environment):
 Optional arguments:
     -D, --database NAME                 Database name (default: ${DEFAULT_DB_NAME})
     -y, --yes                           Assume yes to all prompts (skip confirmation)
+    -k, --kill                          Kill active database connections before recreating
     --no-sql-validation                 Skip input validation in seed functions (faster)
     -H, --help                          Show this help message
 
@@ -87,6 +88,7 @@ EOF
 
 DB_NAME="${DEFAULT_DB_NAME}"
 ASSUME_YES=""
+KILL_CONNECTIONS=""
 SKIP_VALIDATION="off"
 
 # Parse arguments using portable while/case (works on both GNU and BSD).
@@ -94,6 +96,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         -D|--database)           DB_NAME="$2";            shift 2 ;;
         -y|--yes)                ASSUME_YES="1";          shift   ;;
+        -k|--kill)               KILL_CONNECTIONS="1";    shift   ;;
         --no-sql-validation)     SKIP_VALIDATION="on";    shift   ;;
         -H|--help)               usage ;;
         --)                      shift; break ;;
@@ -172,19 +175,13 @@ source "${SCRIPT_DIR}/utility/check_db_connections.sh"
 
 # Check for active connections to the target database only
 echo "--- Checking for active connections ---"
-HAS_CONNECTIONS=0
-if ! check_db_connections "${DB_NAME}" >/dev/null 2>&1; then
-    check_db_connections "${DB_NAME}"
-    HAS_CONNECTIONS=1
+if [[ -n "${KILL_CONNECTIONS}" ]]; then
+    "${SCRIPT_DIR}/utility/kill_db_connections.sh" "${DB_NAME}"
 fi
-
-if [[ "${HAS_CONNECTIONS}" -eq 1 ]]; then
-    echo ""
-    echo "ERROR: Cannot proceed with recreation - active connections exist."
-    echo "Please disconnect all clients before recreating the database."
+if ! check_db_connections "${DB_NAME}"; then
+    echo "Hint: Use --kill (-k) flag to automatically terminate connections."
     exit 1
 fi
-echo "No active connections found."
 echo ""
 
 # Confirmation prompt (unless -y flag is set)

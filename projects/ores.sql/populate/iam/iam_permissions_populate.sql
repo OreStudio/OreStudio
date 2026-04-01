@@ -371,6 +371,19 @@ select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'workflow:
 select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'workflow::*', 'Full access to all workflow operations');
 
 -- =============================================================================
+-- Market Data Component Permissions
+-- =============================================================================
+
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::series:read',        'View market data series');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::series:write',       'Create and modify market data series');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::series:delete',      'Delete market data series');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::observations:read',  'View market data observations');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::observations:write', 'Create and modify market data observations');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::fixings:read',       'View market data fixings');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::fixings:write',      'Create and modify market data fixings');
+select ores_iam_permissions_upsert_fn(ores_iam_system_tenant_id_fn(), 'marketdata::*', 'Full access to all market data operations');
+
+-- =============================================================================
 -- Global Wildcard Permission
 -- =============================================================================
 

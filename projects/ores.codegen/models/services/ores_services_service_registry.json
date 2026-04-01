@@ -198,6 +198,21 @@
           {"table": "ores_iam_tenants_tbl"}
         ],
         "select_prefixes": []
+      },
+      {
+        "name": "marketdata",
+        "psql_var": "marketdata_service",
+        "env_key": "MARKETDATA_SERVICE",
+        "iam_role": "MarketdataService",
+        "description": "Market Data",
+        "email": "marketdata_service@system.ores",
+        "dml_prefixes": [
+          {"prefix": "ores_marketdata_"}
+        ],
+        "select_tables": [
+          {"table": "ores_iam_tenants_tbl"}
+        ],
+        "select_prefixes": []
       }
     ]
   }

@@ -129,14 +129,12 @@ export PGPASSWORD="${POSTGRES_PASSWORD}"
 source "${SCRIPT_DIR}/utility/check_db_connections.sh"
 
 # Check for active connections before proceeding
+if [[ -n "${KILL_CONNECTIONS}" ]]; then
+    "${SCRIPT_DIR}/utility/kill_db_connections.sh" "${DB_NAME}"
+fi
 if ! check_db_connections "${DB_NAME}"; then
-    if [[ -n "${KILL_CONNECTIONS}" ]]; then
-        echo "Killing active connections (--kill flag is set)..."
-        "${SCRIPT_DIR}/utility/kill_db_connections.sh" "${DB_NAME}"
-    else
-        echo "Hint: Use --kill (-k) flag to automatically terminate connections."
-        exit 1
-    fi
+    echo "Hint: Use --kill (-k) flag to automatically terminate connections."
+    exit 1
 fi
 
 # Confirmation prompt

@@ -25,8 +25,8 @@
 #include <boost/uuid/string_generator.hpp>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QGroupBox>
-#include <QFrame>
+#include <QHeaderView>
+#include <QButtonGroup>
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/ImageCache.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -51,22 +51,18 @@ PartyPickerDialog::PartyPickerDialog(
             this,          &PartyPickerDialog::onOkClicked);
     connect(cancelButton_, &QPushButton::clicked,
             this,          &QDialog::reject);
-    connect(listWidget_,   &QListWidget::itemDoubleClicked,
-            this,          &PartyPickerDialog::onOkClicked);
+    connect(listWidget_,   &QTreeWidget::itemDoubleClicked,
+            this,          [this](QTreeWidgetItem* item, int) {
+        selectOperationalItem(item);
+        onOkClicked();
+    });
 
-    // Apply flag icons once the image cache has finished loading
+    // Refresh flag icons when images become available (warm cache or async load)
     if (imageCache_) {
-        connect(imageCache_, &ImageCache::allLoaded, this, [this]() {
-            set_combo_flag_icons(centreCombo_, [this](const std::string& code) {
-                return code.empty() ? QIcon{} : imageCache_->getBusinessCentreFlagIcon(code);
-            });
-            for (int i = 0; i < listWidget_->count(); ++i) {
-                auto* item = listWidget_->item(i);
-                const auto bc = item->data(Qt::UserRole + 1).toString().toStdString();
-                if (!bc.empty())
-                    item->setIcon(imageCache_->getBusinessCentreFlagIcon(bc));
-            }
-        });
+        connect(imageCache_, &ImageCache::allLoaded,
+                this, &PartyPickerDialog::refreshFlagIcons);
+        connect(imageCache_, &ImageCache::imageLoaded,
+                this, [this](const QString&) { refreshFlagIcons(); });
     }
 }
 
@@ -78,16 +74,26 @@ QString PartyPickerDialog::selectedPartyName() const {
     return selectedName_;
 }
 
+// Returns a content widget with a left-indent that visually groups it under a
+// radio button header.
+static QWidget* makeContentWidget(QWidget* parent) {
+    auto* w = new QWidget(parent);
+    auto* l = new QVBoxLayout(w);
+    l->setContentsMargins(20, 2, 0, 4);
+    l->setSpacing(4);
+    return w;
+}
+
 void PartyPickerDialog::setupUi() {
     WidgetUtils::setupComboBoxes(this);
     setWindowTitle("Select Party");
     setModal(true);
-    setMinimumWidth(480);
-    setFixedWidth(480);
+    setMinimumWidth(580);
+    setFixedWidth(580);
     setSizeGripEnabled(false);
 
     auto* mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(10);
+    mainLayout->setSpacing(8);
 
     auto* infoLabel = new QLabel(
         "Your account is associated with multiple parties.\n"
@@ -96,67 +102,57 @@ void PartyPickerDialog::setupUi() {
     mainLayout->addWidget(infoLabel);
 
     // ----------------------------------------------------------------
-    // System party section
+    // Identify system party (at most one per tenant)
     // ----------------------------------------------------------------
     const PartyInfo* systemParty = nullptr;
     for (const auto& p : parties_) {
         if (p.is_system()) { systemParty = &p; break; }
     }
 
-    systemSection_ = new QGroupBox(tr("System"), this);
-    auto* sysLayout = new QHBoxLayout(systemSection_);
-    sysLayout->setContentsMargins(8, 4, 8, 4);
-
-    systemPartyLabel_ = new QLabel(
-        systemParty ? systemParty->name : QString{}, systemSection_);
-    systemPartyLabel_->setStyleSheet(
-        "QLabel { font-weight: bold; color: #e8a000; }");
-
-    auto* sysSelectBtn = new QPushButton(tr("Select"), systemSection_);
-    sysSelectBtn->setMaximumWidth(80);
-    sysSelectBtn->setIcon(
-        IconUtils::createRecoloredIcon(Icon::Checkmark, IconUtils::DefaultIconColor));
-
-    sysLayout->addWidget(systemPartyLabel_, 1);
-    sysLayout->addWidget(sysSelectBtn);
-    systemSection_->setVisible(systemParty != nullptr);
-    mainLayout->addWidget(systemSection_);
-
-    if (systemParty) {
-        const PartyInfo* sp = systemParty;
-        connect(sysSelectBtn, &QPushButton::clicked, this, [this, sp]() {
-            selectSystemParty();
-        });
-        connect(systemPartyLabel_, &QLabel::linkActivated, this, [this](){
-            selectSystemParty();
-        });
-    }
+    // ----------------------------------------------------------------
+    // System section
+    // ----------------------------------------------------------------
+    systemRadio_ = new QRadioButton(
+        systemParty ? systemParty->name : QString{}, this);
+    systemRadio_->setVisible(systemParty != nullptr);
+    mainLayout->addWidget(systemRadio_);
 
     // ----------------------------------------------------------------
+    // Operational section
+    // ----------------------------------------------------------------
+    operationalRadio_ = new QRadioButton(tr("Operational Party"), this);
+    mainLayout->addWidget(operationalRadio_);
+
+    operationalContent_ = makeContentWidget(this);
+    mainLayout->addWidget(operationalContent_);
+    auto* opsLayout = qobject_cast<QVBoxLayout*>(operationalContent_->layout());
+
     // Filter row
-    // ----------------------------------------------------------------
     auto* filterRow = new QHBoxLayout();
-
-    filterEdit_ = new QLineEdit(this);
+    filterEdit_ = new QLineEdit(operationalContent_);
     filterEdit_->setPlaceholderText(tr("Filter parties..."));
     filterEdit_->setClearButtonEnabled(true);
     filterRow->addWidget(filterEdit_, 1);
 
-    centreCombo_ = new QComboBox(this);
-    centreCombo_->setMinimumWidth(120);
+    centreCombo_ = new QComboBox(operationalContent_);
+    centreCombo_->setMinimumWidth(130);
     populateCentreCombo();
     filterRow->addWidget(centreCombo_);
+    opsLayout->addLayout(filterRow);
 
-    mainLayout->addLayout(filterRow);
-
-    // ----------------------------------------------------------------
-    // Operational party list
-    // ----------------------------------------------------------------
-    listWidget_ = new QListWidget(this);
+    // Party tree — col 0: Centre (flag + code), col 1: Party Name
+    listWidget_ = new QTreeWidget(operationalContent_);
+    listWidget_->setColumnCount(2);
+    listWidget_->setHeaderLabels({tr("Centre"), tr("Party Name")});
+    listWidget_->setRootIsDecorated(false);
     listWidget_->setAlternatingRowColors(true);
-    listWidget_->setMinimumHeight(200);
+    listWidget_->setMinimumHeight(220);
+    listWidget_->setSelectionMode(QAbstractItemView::SingleSelection);
+    listWidget_->header()->setStretchLastSection(true);
+    listWidget_->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    listWidget_->header()->setSectionResizeMode(1, QHeaderView::Stretch);
 
-    // Collect operational parties sorted by name
+    // Populate operational parties sorted alphabetically by name
     std::vector<const PartyInfo*> ops;
     for (const auto& p : parties_) {
         if (!p.is_system()) ops.push_back(&p);
@@ -167,25 +163,49 @@ void PartyPickerDialog::setupUi() {
         });
 
     for (const auto* p : ops) {
-        auto* item = new QListWidgetItem(listWidget_);
+        auto* item = new QTreeWidgetItem(listWidget_);
         const QString bc = p->business_center_code;
-        item->setText(bc.isEmpty()
-            ? p->name
-            : QString("%1  %2").arg(p->name, bc));
-        // UserRole: party name, UserRole+1: business centre code,
-        // UserRole+2: party UUID as string
-        item->setData(Qt::UserRole,     p->name);
-        item->setData(Qt::UserRole + 1, bc);
-        item->setData(Qt::UserRole + 2,
+        // col 0: business centre code (with flag icon)
+        // col 1: party name
+        item->setText(0, bc);
+        item->setText(1, p->name);
+        // UserRole on col 0: bc code; UserRole+1: party name; UserRole+2: UUID string
+        item->setData(0, Qt::UserRole,     bc);
+        item->setData(0, Qt::UserRole + 1, p->name);
+        item->setData(0, Qt::UserRole + 2,
             QString::fromStdString(boost::uuids::to_string(p->id)));
 
         if (imageCache_ && !bc.isEmpty())
-            item->setIcon(imageCache_->getBusinessCentreFlagIcon(bc.toStdString()));
-
-        listWidget_->addItem(item);
+            item->setIcon(0, imageCache_->getBusinessCentreFlagIcon(bc.toStdString()));
     }
+    opsLayout->addWidget(listWidget_);
 
-    mainLayout->addWidget(listWidget_);
+    // ----------------------------------------------------------------
+    // Mutual exclusion via QButtonGroup
+    // ----------------------------------------------------------------
+    auto* btnGroup = new QButtonGroup(this);
+    if (systemParty) btnGroup->addButton(systemRadio_);
+    btnGroup->addButton(operationalRadio_);
+
+    auto updateSections = [this](bool systemActive) {
+        operationalContent_->setEnabled(!systemActive);
+        if (systemActive) {
+            selectSystemParty();
+        } else {
+            auto* first = firstVisibleItem();
+            if (first) {
+                listWidget_->setCurrentItem(first);
+                selectOperationalItem(first);
+            }
+        }
+    };
+
+    if (systemParty) {
+        connect(systemRadio_, &QRadioButton::toggled, this,
+            [updateSections](bool checked) { if (checked) updateSections(true); });
+    }
+    connect(operationalRadio_, &QRadioButton::toggled, this,
+        [updateSections](bool checked) { if (checked) updateSections(false); });
 
     // ----------------------------------------------------------------
     // Buttons
@@ -207,33 +227,39 @@ void PartyPickerDialog::setupUi() {
     mainLayout->addLayout(btnLayout);
 
     // ----------------------------------------------------------------
-    // Wire up filtering
+    // Wire up filtering and list selection
     // ----------------------------------------------------------------
     connect(filterEdit_, &QLineEdit::textChanged,
             this, [this](const QString&) { applyFilter(); });
     connect(centreCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int) { applyFilter(); });
 
-    connect(listWidget_, &QListWidget::itemClicked,
-            this, [this](QListWidgetItem* item) {
+    connect(listWidget_, &QTreeWidget::itemClicked,
+            this, [this](QTreeWidgetItem* item, int) {
+        if (!operationalRadio_->isChecked())
+            operationalRadio_->setChecked(true);
         selectOperationalItem(item);
     });
 
-    // Auto-select if only one operational party and no system party
-    if (!systemParty && listWidget_->count() == 1) {
-        listWidget_->setCurrentRow(0);
-        selectOperationalItem(listWidget_->item(0));
-    }
-
-    // If system party exists, pre-select it
+    // ----------------------------------------------------------------
+    // Initial selection: system party has priority
+    // ----------------------------------------------------------------
     if (systemParty) {
-        selectSystemParty();
-    } else if (!ops.empty()) {
-        listWidget_->setCurrentRow(0);
-        selectOperationalItem(listWidget_->item(0));
+        systemRadio_->setChecked(true);
+        // toggled signal fires synchronously, so updateSections(true) already ran
+    } else {
+        operationalRadio_->setChecked(true);
+        auto* first = listWidget_->topLevelItem(0);
+        if (first) {
+            listWidget_->setCurrentItem(first);
+            selectOperationalItem(first);
+        }
     }
 
     filterEdit_->setFocus();
+
+    // Second pass: icons for images already loaded synchronously by populateCentreCombo
+    refreshFlagIcons();
 }
 
 void PartyPickerDialog::populateCentreCombo() {
@@ -251,23 +277,30 @@ void PartyPickerDialog::populateCentreCombo() {
                 imageCache_->getBusinessCentreFlagIcon(code.toStdString()));
     }
 
-    // Hide the combo if there's only one unique centre (or none)
     centreCombo_->setVisible(codes.size() > 1);
 }
 
 void PartyPickerDialog::applyFilter() {
-    const QString text = filterEdit_->text().trimmed().toLower();
+    const QString text   = filterEdit_->text().trimmed().toLower();
     const QString centre = centreCombo_->currentData().toString();
 
-    for (int i = 0; i < listWidget_->count(); ++i) {
-        auto* item = listWidget_->item(i);
-        const QString name = item->data(Qt::UserRole).toString().toLower();
-        const QString bc   = item->data(Qt::UserRole + 1).toString();
+    for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
+        auto* item = listWidget_->topLevelItem(i);
+        const QString name = item->data(0, Qt::UserRole + 1).toString().toLower();
+        const QString bc   = item->data(0, Qt::UserRole).toString();
 
-        const bool nameMatch   = text.isEmpty() || name.contains(text);
+        const bool nameMatch   = text.isEmpty()   || name.contains(text);
         const bool centreMatch = centre.isEmpty() || bc == centre;
         item->setHidden(!(nameMatch && centreMatch));
     }
+}
+
+QTreeWidgetItem* PartyPickerDialog::firstVisibleItem() const {
+    for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
+        auto* item = listWidget_->topLevelItem(i);
+        if (!item->isHidden()) return item;
+    }
+    return nullptr;
 }
 
 void PartyPickerDialog::selectSystemParty() {
@@ -276,24 +309,36 @@ void PartyPickerDialog::selectSystemParty() {
         selectedId_   = p.id;
         selectedName_ = p.name;
         listWidget_->clearSelection();
-        systemSection_->setStyleSheet(
-            "QGroupBox { border: 1px solid #e8a000; border-radius: 4px; }");
         okButton_->setEnabled(true);
         return;
     }
 }
 
-void PartyPickerDialog::selectOperationalItem(QListWidgetItem* item) {
+void PartyPickerDialog::selectOperationalItem(QTreeWidgetItem* item) {
     if (!item) return;
-    selectedName_ = item->data(Qt::UserRole).toString();
+    selectedName_ = item->data(0, Qt::UserRole + 1).toString();
     try {
         boost::uuids::string_generator gen;
-        selectedId_ = gen(item->data(Qt::UserRole + 2).toString().toStdString());
+        selectedId_ = gen(item->data(0, Qt::UserRole + 2).toString().toStdString());
     } catch (...) {
         selectedId_ = boost::uuids::uuid{};
     }
-    systemSection_->setStyleSheet(QString{});
     okButton_->setEnabled(true);
+}
+
+void PartyPickerDialog::refreshFlagIcons() {
+    if (!imageCache_) return;
+
+    set_combo_flag_icons(centreCombo_, [this](const std::string& code) {
+        return code.empty() ? QIcon{} : imageCache_->getBusinessCentreFlagIcon(code);
+    });
+
+    for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
+        auto* item = listWidget_->topLevelItem(i);
+        const auto bc = item->data(0, Qt::UserRole).toString().toStdString();
+        if (!bc.empty())
+            item->setIcon(0, imageCache_->getBusinessCentreFlagIcon(bc));
+    }
 }
 
 void PartyPickerDialog::onOkClicked() {

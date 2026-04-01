@@ -25,7 +25,8 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QComboBox>
-#include <QListWidget>
+#include <QRadioButton>
+#include <QTreeWidget>
 #include <QPushButton>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
@@ -37,11 +38,10 @@ class ImageCache;
 /**
  * @brief Modal dialog for selecting a party from a list of available parties.
  *
- * Shown after login when the account is associated with multiple parties.
- * The system party (party_category == "System") is shown in a dedicated
- * section at the top and is hidden if the user has no system-party access.
- * Operational parties are shown in an alphabetically sorted, filterable list
- * below, with business-centre codes and flag icons.
+ * Two mutually-exclusive sections, each headed by a native QRadioButton:
+ *   - System section (hidden when the user has no system-party access).
+ *   - Operational section with a filterable, alphabetically-sorted tree showing
+ *     business-centre code (col 0, with flag icon) and party name (col 1).
  */
 class PartyPickerDialog : public QDialog {
     Q_OBJECT
@@ -64,23 +64,24 @@ private:
     void populateCentreCombo();
     void applyFilter();
     void selectSystemParty();
-    void selectOperationalItem(QListWidgetItem* item);
+    void selectOperationalItem(QTreeWidgetItem* item);
+    QTreeWidgetItem* firstVisibleItem() const;
+    void refreshFlagIcons();
 
 private:
     ClientManager*         clientManager_;
     ImageCache*            imageCache_;
     std::vector<PartyInfo> parties_;
 
-    // System-party section (hidden when no system party available)
-    QWidget*     systemSection_;
-    QLabel*      systemPartyLabel_;
+    // System-party section (hidden when no system party is available)
+    QRadioButton* systemRadio_;
 
-    // Filter row
-    QLineEdit*   filterEdit_;
-    QComboBox*   centreCombo_;
-
-    // Operational party list
-    QListWidget* listWidget_;
+    // Operational-party section
+    QRadioButton* operationalRadio_;
+    QWidget*      operationalContent_;
+    QLineEdit*    filterEdit_;
+    QComboBox*    centreCombo_;
+    QTreeWidget*  listWidget_;
 
     QPushButton* okButton_;
     QPushButton* cancelButton_;

@@ -280,14 +280,14 @@ malformed lines, unsupported date formats, comment-only files, empty files.
 
 * Acceptance Criteria
 
-- [ ] All seven fixture files parse without error
-- [ ] Roundtrip test: every datum in the parsed output of =market_20160205.txt=
+- [X] All seven fixture files parse without error
+- [X] Roundtrip test: every datum in the parsed output of =market_20160205.txt=
   survives serialize → re-parse with identical field values
-- [ ] Roundtrip test: same for each fixings fixture file
-- [ ] Parser rejects lines with fewer than 3 whitespace-delimited tokens with a
+- [X] Roundtrip test: same for each fixings fixture file
+- [X] Parser rejects lines with fewer than 3 whitespace-delimited tokens with a
   descriptive error including the line number
-- [ ] Value strings are preserved exactly (=0.0074600000= stays =0.0074600000=)
-- [ ] All tests pass on Linux, macOS, and Windows CI
+- [X] Value strings are preserved exactly (=0.0074600000= stays =0.0074600000=)
+- [X] All tests pass on Linux, macOS, and Windows CI
 
 * Out of Scope (Phase 2)
 

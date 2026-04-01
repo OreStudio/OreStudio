@@ -273,18 +273,18 @@ Generators added to =ores.marketdata.api= for test data production.
 - [X] Synthetic generators for all three domain types
 - [X] Integration tests against a real DB
 
-** Phase 5 — Service layer (ores.marketdata.service)
+** Phase 5 — Service layer (ores.marketdata.service) [DONE]
 
 Expose market data via NATS, implement file import.
 
 *** Tasks
 
-- [ ] NATS message types for market data (get/save series, get/save observations,
+- [X] NATS message types for market data (get/save series, get/save observations,
       get/save fixings)
-- [ ] Service handlers
-- [ ] =import_market_data= handler: accepts ORE =market.txt= + =fixings.txt=
+- [X] Service handlers
+- [X] =import_market_data= handler: accepts ORE =market.txt= + =fixings.txt=
       content, decomposes keys, upserts series, bulk-inserts observations/fixings
-- [ ] Service configuration and wiring
+- [X] Service configuration and wiring
 
 ** Future: Surface construction configuration (not in scope)
 

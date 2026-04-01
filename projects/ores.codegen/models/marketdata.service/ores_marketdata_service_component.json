@@ -1,0 +1,8 @@
+{
+  "component": {
+    "name": "marketdata.service",
+    "full_name": "ores.marketdata.service",
+    "brief": "Market data ingestion and query service",
+    "description": "Standalone NATS microservice hosting market data handlers: series management, observation and fixing ingestion, and import of ORE market.txt and fixings.txt files."
+  }
+}

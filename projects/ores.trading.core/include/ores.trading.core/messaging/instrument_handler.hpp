@@ -30,6 +30,13 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.core/service/instrument_service.hpp"
+#include "ores.trading.core/service/fx_instrument_service.hpp"
+#include "ores.trading.core/service/bond_instrument_service.hpp"
+#include "ores.trading.core/service/credit_instrument_service.hpp"
+#include "ores.trading.core/service/equity_instrument_service.hpp"
+#include "ores.trading.core/service/commodity_instrument_service.hpp"
+#include "ores.trading.core/service/composite_instrument_service.hpp"
+#include "ores.trading.core/service/scripted_instrument_service.hpp"
 
 namespace ores::trading::messaging {
 
@@ -200,6 +207,76 @@ public:
         try {
             if (auto req = decode<get_swap_legs_request>(msg)) {
                 resp.legs = svc.get_legs(req->instrument_id);
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(instrument_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(instrument_handler_lg(), debug)
+            << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void get_instrument_for_trade(ores::nats::message msg) {
+        BOOST_LOG_SEV(instrument_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        get_instrument_for_trade_response resp;
+        try {
+            if (auto req = decode<get_instrument_for_trade_request>(msg)) {
+                const auto& family = req->instrument_family;
+                const auto& id = req->instrument_id;
+
+                if (family == "swap") {
+                    service::instrument_service svc(ctx);
+                    if (auto r = svc.find_instrument(id)) {
+                        swap_export_result ex;
+                        ex.instrument = std::move(*r);
+                        ex.legs = svc.get_legs(id);
+                        resp.instrument = std::move(ex);
+                    }
+                } else if (family == "fx") {
+                    service::fx_instrument_service svc(ctx);
+                    if (auto r = svc.find_fx_instrument(id))
+                        resp.instrument = std::move(*r);
+                } else if (family == "bond") {
+                    service::bond_instrument_service svc(ctx);
+                    if (auto r = svc.find_bond_instrument(id))
+                        resp.instrument = std::move(*r);
+                } else if (family == "credit") {
+                    service::credit_instrument_service svc(ctx);
+                    if (auto r = svc.find_credit_instrument(id))
+                        resp.instrument = std::move(*r);
+                } else if (family == "equity") {
+                    service::equity_instrument_service svc(ctx);
+                    if (auto r = svc.find_equity_instrument(id))
+                        resp.instrument = std::move(*r);
+                } else if (family == "commodity") {
+                    service::commodity_instrument_service svc(ctx);
+                    if (auto r = svc.find_commodity_instrument(id))
+                        resp.instrument = std::move(*r);
+                } else if (family == "composite") {
+                    service::composite_instrument_service svc(ctx);
+                    if (auto r = svc.find_composite_instrument(id)) {
+                        composite_export_result ex;
+                        ex.instrument = std::move(*r);
+                        ex.legs = svc.get_legs(id);
+                        resp.instrument = std::move(ex);
+                    }
+                } else if (family == "scripted") {
+                    service::scripted_instrument_service svc(ctx);
+                    if (auto r = svc.find_scripted_instrument(id))
+                        resp.instrument = std::move(*r);
+                }
+                resp.success = true;
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(instrument_handler_lg(), error)

@@ -37,6 +37,7 @@ composite_instrument_mapper::map(const composite_instrument_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.version = v.version;
+    r.trade_id = v.trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;
@@ -59,6 +60,7 @@ composite_instrument_mapper::map(const domain::composite_instrument& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+    r.trade_id = v.trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.trade_id)) : std::nullopt;
     r.trade_type_code = v.trade_type_code;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;

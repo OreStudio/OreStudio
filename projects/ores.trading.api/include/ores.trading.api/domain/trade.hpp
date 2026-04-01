@@ -104,6 +104,22 @@ struct trade final {
     std::string trade_type;
 
     /**
+     * @brief Discriminator routing to the instrument extension table.
+     *
+     * One of: swap, fx, bond, credit, equity, commodity, composite, scripted.
+     * Empty when no instrument record has been linked yet.
+     */
+    std::string instrument_family;
+
+    /**
+     * @brief UUID of the associated instrument record.
+     *
+     * Soft FK into the instrument extension table identified by
+     * instrument_family. Absent when no instrument has been linked.
+     */
+    std::optional<boost::uuids::uuid> instrument_id;
+
+    /**
      * @brief Netting set identifier for ORE aggregation.
      *
      * Groups trades under the same netting agreement.

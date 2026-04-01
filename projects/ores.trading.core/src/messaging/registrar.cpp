@@ -73,6 +73,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
             h.history(std::move(msg));
         }));
 
+    subs.push_back(nats.queue_subscribe(
+        std::string(export_portfolio_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            trade_handler h(nats, ctx, verifier);
+            h.export_portfolio(std::move(msg));
+        }));
+
     // Instrument reference data — day count fraction types
     subs.push_back(nats.queue_subscribe(
         std::string(get_day_count_fraction_types_request::nats_subject), queue,
@@ -252,6 +259,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
         [&nats, ctx, verifier](ores::nats::message msg) mutable {
             instrument_handler h(nats, ctx, verifier);
             h.list_legs(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(get_instrument_for_trade_request::nats_subject), queue,
+        [&nats, ctx, verifier](ores::nats::message msg) mutable {
+            instrument_handler h(nats, ctx, verifier);
+            h.get_instrument_for_trade(std::move(msg));
         }));
 
     // FX instruments

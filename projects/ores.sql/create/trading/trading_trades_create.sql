@@ -40,6 +40,8 @@ create table if not exists "ores_trading_trades_tbl" (
     "successor_trade_id" uuid null,
     "counterparty_id" uuid null,
     "trade_type" text not null,
+    "instrument_family" instrument_family_t null,
+    "instrument_id" uuid null,
     "netting_set_id" text not null,
     "activity_type_code" text not null,
     "status_id" uuid not null,
@@ -97,6 +99,13 @@ where valid_to = ores_utility_infinity_timestamp_fn();
 create index if not exists ores_trading_trades_trade_type_idx
 on "ores_trading_trades_tbl" (tenant_id, trade_type)
 where valid_to = ores_utility_infinity_timestamp_fn();
+
+-- Instrument routing index (instrument_family + instrument_id used to open
+-- the associated instrument record from a trade)
+create index if not exists ores_trading_trades_instrument_idx
+on "ores_trading_trades_tbl" (tenant_id, instrument_family, instrument_id)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and instrument_id is not null;
 
 create or replace function ores_trading_trades_insert_fn()
 returns trigger as $$

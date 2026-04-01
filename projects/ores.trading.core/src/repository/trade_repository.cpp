@@ -43,9 +43,10 @@ domain::trade raw_row_to_trade(
     // Column order matches explicit SELECT in read_latest_filtered CTE:
     // 0:id, 1:tenant_id, 2:version, 3:party_id, 4:external_id, 5:book_id,
     // 6:portfolio_id, 7:successor_trade_id, 8:counterparty_id, 9:trade_type,
-    // 10:netting_set_id, 11:activity_type_code, 12:status_id, 13:trade_date,
-    // 14:execution_timestamp, 15:effective_date, 16:termination_date, 17:modified_by,
-    // 18:performed_by, 19:change_reason_code, 20:change_commentary, 21:valid_from
+    // 10:instrument_family, 11:instrument_id,
+    // 12:netting_set_id, 13:activity_type_code, 14:status_id, 15:trade_date,
+    // 16:execution_timestamp, 17:effective_date, 18:termination_date, 19:modified_by,
+    // 20:performed_by, 21:change_reason_code, 22:change_commentary, 23:valid_from
     domain::trade r;
     r.id = boost::lexical_cast<boost::uuids::uuid>(row[0].value());
     r.tenant_id = utility::uuid::tenant_id::from_string(row[1].value()).value();
@@ -59,18 +60,21 @@ domain::trade raw_row_to_trade(
     if (row[8].has_value())
         r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(*row[8]);
     r.trade_type = row[9].value();
-    r.netting_set_id = row[10].value();
-    r.activity_type_code = row[11].value();
-    r.status_id = boost::lexical_cast<boost::uuids::uuid>(row[12].value());
-    r.trade_date = row[13].value();
-    r.execution_timestamp = row[14].value();
-    r.effective_date = row[15].value();
-    r.termination_date = row[16].value();
-    r.modified_by = row[17].value();
-    r.performed_by = row[18].value();
-    r.change_reason_code = row[19].value();
-    r.change_commentary = row[20].value();
-    r.recorded_at = timestamp_to_timepoint(std::string_view{row[21].value()});
+    r.instrument_family = row[10].value_or("");
+    if (row[11].has_value())
+        r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(*row[11]);
+    r.netting_set_id = row[12].value();
+    r.activity_type_code = row[13].value();
+    r.status_id = boost::lexical_cast<boost::uuids::uuid>(row[14].value());
+    r.trade_date = row[15].value();
+    r.execution_timestamp = row[16].value();
+    r.effective_date = row[17].value();
+    r.termination_date = row[18].value();
+    r.modified_by = row[19].value();
+    r.performed_by = row[20].value();
+    r.change_reason_code = row[21].value();
+    r.change_commentary = row[22].value();
+    r.recorded_at = timestamp_to_timepoint(std::string_view{row[23].value()});
     return r;
 }
 
@@ -219,7 +223,7 @@ trade_repository::read_latest_filtered(context ctx,
         std::vector<domain::trade> result;
         result.reserve(rows.size());
         for (const auto& row : rows) {
-            if (row.size() >= 21)
+            if (row.size() >= 24)
                 result.push_back(raw_row_to_trade(row));
         }
         return result;
@@ -241,7 +245,7 @@ trade_repository::read_latest_filtered(context ctx,
     std::vector<domain::trade> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() >= 21)
+        if (row.size() >= 24)
             result.push_back(raw_row_to_trade(row));
     }
     return result;

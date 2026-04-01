@@ -32,6 +32,14 @@
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/trade_service.hpp"
+#include "ores.trading.core/service/instrument_service.hpp"
+#include "ores.trading.core/service/fx_instrument_service.hpp"
+#include "ores.trading.core/service/bond_instrument_service.hpp"
+#include "ores.trading.core/service/credit_instrument_service.hpp"
+#include "ores.trading.core/service/equity_instrument_service.hpp"
+#include "ores.trading.core/service/commodity_instrument_service.hpp"
+#include "ores.trading.core/service/composite_instrument_service.hpp"
+#include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 
 namespace ores::trading::messaging {
@@ -218,6 +226,103 @@ public:
             BOOST_LOG_SEV(trade_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
         }
+    }
+
+    void export_portfolio(ores::nats::message msg) {
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "Handling " << msg.subject;
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        const auto& ctx = *ctx_expected;
+        export_portfolio_response resp;
+        try {
+            if (auto req = decode<export_portfolio_request>(msg)) {
+                service::trade_service svc(ctx);
+                const auto offset =
+                    static_cast<std::uint32_t>(req->offset);
+                const auto limit =
+                    static_cast<std::uint32_t>(req->limit);
+
+                std::vector<domain::trade> trades;
+                if (!req->book_id.empty()) {
+                    boost::uuids::string_generator gen;
+                    trades = svc.list_trades_filtered(offset, limit,
+                        std::optional<boost::uuids::uuid>(gen(req->book_id)),
+                        std::nullopt);
+                } else if (!req->portfolio_id.empty()) {
+                    boost::uuids::string_generator gen;
+                    trades = svc.list_trades_filtered(offset, limit,
+                        std::nullopt,
+                        std::optional<boost::uuids::uuid>(gen(req->portfolio_id)));
+                }
+
+                resp.items.reserve(trades.size());
+                for (auto& t : trades) {
+                    trade_export_item item;
+                    item.trade = t;
+
+                    if (t.instrument_id && !t.instrument_family.empty()) {
+                        const auto id = boost::uuids::to_string(*t.instrument_id);
+                        const auto& fam = t.instrument_family;
+                        if (fam == "swap") {
+                            service::instrument_service isvc(ctx);
+                            if (auto r = isvc.find_instrument(id)) {
+                                swap_export_result ex;
+                                ex.instrument = std::move(*r);
+                                ex.legs = isvc.get_legs(id);
+                                item.instrument = std::move(ex);
+                            }
+                        } else if (fam == "fx") {
+                            service::fx_instrument_service isvc(ctx);
+                            if (auto r = isvc.find_fx_instrument(id))
+                                item.instrument = std::move(*r);
+                        } else if (fam == "bond") {
+                            service::bond_instrument_service isvc(ctx);
+                            if (auto r = isvc.find_bond_instrument(id))
+                                item.instrument = std::move(*r);
+                        } else if (fam == "credit") {
+                            service::credit_instrument_service isvc(ctx);
+                            if (auto r = isvc.find_credit_instrument(id))
+                                item.instrument = std::move(*r);
+                        } else if (fam == "equity") {
+                            service::equity_instrument_service isvc(ctx);
+                            if (auto r = isvc.find_equity_instrument(id))
+                                item.instrument = std::move(*r);
+                        } else if (fam == "commodity") {
+                            service::commodity_instrument_service isvc(ctx);
+                            if (auto r = isvc.find_commodity_instrument(id))
+                                item.instrument = std::move(*r);
+                        } else if (fam == "composite") {
+                            service::composite_instrument_service isvc(ctx);
+                            if (auto r = isvc.find_composite_instrument(id)) {
+                                composite_export_result ex;
+                                ex.instrument = std::move(*r);
+                                ex.legs = isvc.get_legs(id);
+                                item.instrument = std::move(ex);
+                            }
+                        } else if (fam == "scripted") {
+                            service::scripted_instrument_service isvc(ctx);
+                            if (auto r = isvc.find_scripted_instrument(id))
+                                item.instrument = std::move(*r);
+                        }
+                    }
+                    resp.items.push_back(std::move(item));
+                }
+                resp.success = true;
+            }
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(trade_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            resp.success = false;
+            resp.message = e.what();
+        }
+        BOOST_LOG_SEV(trade_handler_lg(), debug)
+            << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
     }
 
 private:

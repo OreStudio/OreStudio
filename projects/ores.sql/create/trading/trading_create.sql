@@ -58,6 +58,9 @@
 \ir ./trading_leg_types_create.sql
 \ir ./trading_leg_types_notify_trigger_create.sql
 
+-- Instrument family discriminator enum (must precede all instrument tables)
+\ir ./trading_instrument_family_type_create.sql
+
 -- Rates instruments (depends on reference data above)
 \ir ./trading_instruments_create.sql
 \ir ./trading_instruments_notify_trigger_create.sql

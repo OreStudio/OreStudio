@@ -21,6 +21,7 @@
 
 #include <sstream>
 #include <type_traits>
+#include <boost/uuid/random_generator.hpp>
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.ore/domain/domain.hpp"
@@ -125,6 +126,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     std::vector<trade_import_item> r;
     r.reserve(p.Trade.size());
 
+    boost::uuids::random_generator gen;
     for (const auto& t : p.Trade) {
         trade_import_item item;
         item.trade = domain::trade_mapper::map(t);
@@ -136,15 +138,35 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
         try {
             item.instrument = domain::trade_mapper::map_instrument(t);
 
-            // Patch instrument.id = trade.id for all mapped instrument types.
-            // Swap results also need instrument_id set on each leg.
+            // Assign each instrument its own UUID (independent of the trade),
+            // wire the soft FKs in both directions, and record the routing
+            // discriminator on the trade.
             std::visit([&](auto& result) {
                 using T = std::decay_t<decltype(result)>;
                 if constexpr (!std::is_same_v<T, std::monostate>) {
-                    result.instrument.id = item.trade.id;
+                    const auto instr_id = gen();
+                    result.instrument.id = instr_id;
+                    result.instrument.trade_id = item.trade.id;
+                    item.trade.instrument_id = instr_id;
+
                     if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
+                        item.trade.instrument_family = "swap";
                         for (auto& leg : result.legs)
-                            leg.instrument_id = item.trade.id;
+                            leg.instrument_id = instr_id;
+                    } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {
+                        item.trade.instrument_family = "fx";
+                    } else if constexpr (std::is_same_v<T, domain::bond_mapping_result>) {
+                        item.trade.instrument_family = "bond";
+                    } else if constexpr (std::is_same_v<T, domain::credit_mapping_result>) {
+                        item.trade.instrument_family = "credit";
+                    } else if constexpr (std::is_same_v<T, domain::equity_mapping_result>) {
+                        item.trade.instrument_family = "equity";
+                    } else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>) {
+                        item.trade.instrument_family = "commodity";
+                    } else if constexpr (std::is_same_v<T, domain::composite_mapping_result>) {
+                        item.trade.instrument_family = "composite";
+                    } else if constexpr (std::is_same_v<T, domain::scripted_mapping_result>) {
+                        item.trade.instrument_family = "scripted";
                     }
                 }
             }, item.instrument);

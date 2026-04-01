@@ -597,13 +597,17 @@ void ImportTradeDialog::onImportClicked() {
         tti.instrument = item.instrument;
 
         tti.trade.id = boost::uuids::random_generator()();
-        // Patch instrument.id to match the new trade UUID.
+        // Assign fresh UUIDs and wire the soft FKs for this specific import.
+        // instrument_family is already set on tti.trade from the importer.
         std::visit([&](auto& r) {
             if constexpr (!std::is_same_v<std::decay_t<decltype(r)>, std::monostate>) {
-                r.instrument.id = tti.trade.id;
+                const auto instr_id = boost::uuids::random_generator()();
+                r.instrument.id = instr_id;
+                r.instrument.trade_id = tti.trade.id;
+                tti.trade.instrument_id = instr_id;
                 if constexpr (requires { r.legs; }) {
                     for (auto& leg : r.legs)
-                        leg.instrument_id = tti.trade.id;
+                        leg.instrument_id = instr_id;
                 }
             }
         }, tti.instrument);

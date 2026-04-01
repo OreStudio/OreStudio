@@ -244,9 +244,10 @@ Pass =trade_id= through the save requests.
 // After map_instrument():
 item.instrument = domain::trade_mapper::map_instrument(t);
 
+boost::uuids::random_generator uuid_gen;  // created once, outside the loop
 std::visit([&](auto& r) {
     if constexpr (!std::is_same_v<std::decay_t<decltype(r)>, std::monostate>) {
-        r.instrument.id = boost::uuids::random_generator()();  // own UUID
+        r.instrument.id = uuid_gen();  // own UUID
         r.instrument.trade_id = item.trade.id;                 // back-ref
         if constexpr (requires { r.legs; })
             for (auto& leg : r.legs)
@@ -293,7 +294,8 @@ struct get_instrument_for_trade_request {
     using response_type = get_instrument_for_trade_response;
     static constexpr std::string_view nats_subject =
         "trading.v1.instruments.get_for_trade";
-    boost::uuids::uuid trade_id;
+    std::string instrument_family;  // "fx", "swap", etc.
+    std::string instrument_id;      // UUID string of the instrument record
 };
 
 struct get_instrument_for_trade_response {

@@ -154,38 +154,20 @@ message nats_client::do_authenticated_request(std::string_view subject,
 }
 
 nats_client nats_client::with_delegation(std::string token) const {
-    nats_client copy;
-    copy.owned_client_     = owned_client_;
-    copy.auth_             = auth_;
-    copy.external_client_  = external_client_;
-    copy.token_provider_   = token_provider_;
+    nats_client copy = *this;
     copy.delegation_token_ = std::move(token);
-    copy.correlation_id_   = correlation_id_;
-    copy.session_id_       = session_id_;
     return copy;
 }
 
 nats_client nats_client::with_correlation_id(std::string cid) const {
-    nats_client copy;
-    copy.owned_client_     = owned_client_;
-    copy.auth_             = auth_;
-    copy.external_client_  = external_client_;
-    copy.token_provider_   = token_provider_;
-    copy.delegation_token_ = delegation_token_;
-    copy.correlation_id_   = std::move(cid);
-    copy.session_id_       = session_id_;
+    nats_client copy = *this;
+    copy.correlation_id_ = std::move(cid);
     return copy;
 }
 
 nats_client nats_client::with_session_id(std::string sid) const {
-    nats_client copy;
-    copy.owned_client_     = owned_client_;
-    copy.auth_             = auth_;
-    copy.external_client_  = external_client_;
-    copy.token_provider_   = token_provider_;
-    copy.delegation_token_ = delegation_token_;
-    copy.correlation_id_   = correlation_id_;
-    copy.session_id_       = std::move(sid);
+    nats_client copy = *this;
+    copy.session_id_ = std::move(sid);
     return copy;
 }
 

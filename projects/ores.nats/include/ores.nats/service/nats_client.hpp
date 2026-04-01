@@ -209,6 +209,18 @@ public:
     [[nodiscard]] nats_client with_correlation_id(std::string cid) const;
 
     /**
+     * @brief Returns a new nats_client that forwards a Nats-Session-Id
+     * header on every authenticated_request call.
+     *
+     * Generated once on Qt client login and threaded through every outbound
+     * NATS message for the session lifetime. Allows log aggregation to group
+     * all requests from a single user login session.
+     *
+     * Thread-safe: the returned value is independent of *this.
+     */
+    [[nodiscard]] nats_client with_session_id(std::string sid) const;
+
+    /**
      * @brief Return the underlying client (interactive path only).
      *
      * Returns nullptr if constructed via the service path.
@@ -234,6 +246,9 @@ private:
 
     // Optional correlation ID forwarded as Nats-Correlation-Id.
     std::string correlation_id_;
+
+    // Optional session ID forwarded as Nats-Session-Id.
+    std::string session_id_;
 };
 
 /**

@@ -44,6 +44,13 @@ inline constexpr std::string_view x_error                 = "X-Error";
 /// Distinct from the NATS-level Nats-Msg-Id used by JetStream deduplication.
 inline constexpr std::string_view nats_correlation_id     = "Nats-Correlation-Id";
 
+/// Session-level trace key generated once on Qt client login.
+/// Forwarded on every outbound NATS message for the duration of the login
+/// session, enabling log queries that group all requests from a single
+/// user session (e.g. "show all calls made during session X").
+/// Distinct from Nats-Correlation-Id which is per top-level operation.
+inline constexpr std::string_view nats_session_id         = "Nats-Session-Id";
+
 } // namespace ores::nats::headers
 
 #endif

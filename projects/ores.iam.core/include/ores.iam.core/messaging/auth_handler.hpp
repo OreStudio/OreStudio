@@ -325,6 +325,7 @@ public:
                 resp.selected_party_id = boost::uuids::to_string(party_id);
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 resp.access_lifetime_s = token_settings_.access_lifetime_s;
+                resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
                     if (ap.party_id == party_id)
@@ -373,6 +374,7 @@ public:
                 resp.email = acct.email;
                 resp.tenant_bootstrap_mode = in_tenant_bootstrap;
                 resp.access_lifetime_s = token_settings_.party_selection_lifetime_s;
+                resp.session_id = session_id_str;
                 for (const auto& ap : account_parties) {
                     auto p = auth_lookup_party(login_ctx, ap.party_id);
                     resp.available_parties.push_back(party_summary{

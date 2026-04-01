@@ -151,6 +151,13 @@ LoginResult ClientManager::login(const std::string& username,
             .tenant_name = response.tenant_name
         });
 
+        // Use the IAM session UUID returned by the server. This matches the
+        // record in ores_iam_sessions_tbl and is forwarded as Nats-Session-Id
+        // on every subsequent request so all calls from this login can be
+        // correlated in logs.
+        session_id_ = response.session_id;
+        BOOST_LOG_SEV(lg(), info) << "Session started: session_id=" << session_id_;
+
         // Store local state
         stored_username_ = username;
         stored_password_ = password;
@@ -434,6 +441,7 @@ void ClientManager::disconnect() {
     current_party_id_ = {};
     current_party_name_.clear();
     current_party_category_.clear();
+    session_id_.clear();
     stored_username_.clear();
     stored_password_.clear();
     disconnected_since_ = std::chrono::steady_clock::now();

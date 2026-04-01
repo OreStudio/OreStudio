@@ -55,7 +55,14 @@ inline std::string log_handler_entry(Logger& lg,
     const ores::nats::message& msg) {
     using namespace ores::logging;
     auto cid = ores::nats::extract_or_generate_correlation_id(msg);
-    BOOST_LOG_SEV(lg, info) << msg.subject << " correlation_id=" << cid;
+    const auto sid_it = msg.headers.find(
+        std::string(ores::nats::headers::nats_session_id));
+    if (sid_it != msg.headers.end() && !sid_it->second.empty())
+        BOOST_LOG_SEV(lg, info) << msg.subject
+            << " correlation_id=" << cid
+            << " session_id=" << sid_it->second;
+    else
+        BOOST_LOG_SEV(lg, info) << msg.subject << " correlation_id=" << cid;
     return cid;
 }
 

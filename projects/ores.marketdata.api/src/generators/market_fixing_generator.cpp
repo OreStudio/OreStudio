@@ -30,16 +30,21 @@ domain::market_fixing generate_synthetic_market_fixing(
     static std::atomic<int> counter{0};
     const int n = ++counter;
 
-    auto tp = ctx.past_timepoint();
-    auto dp = std::chrono::floor<std::chrono::days>(tp);
+    // Use a fixed base date offset by n days so that successive calls always
+    // produce distinct fixing_date values.  This prevents spurious duplicate-key
+    // failures when multiple fixings for the same series are generated in one
+    // test, since the unique constraint covers (tenant_id, series_id, fixing_date).
+    using namespace std::chrono;
+    const auto base = sys_days{year{2025} / January / 1};
+    const auto dp = base - days{n};
 
     domain::market_fixing r;
     r.id = ctx.generate_uuid();
     r.series_id = series_id;
-    r.fixing_date = std::chrono::year_month_day{dp};
+    r.fixing_date = year_month_day{dp};
     r.value = std::format("{:.6f}", 0.03 + 0.001 * n);
     r.source = std::nullopt;
-    r.recorded_at = tp;
+    r.recorded_at = ctx.past_timepoint();
     return r;
 }
 

@@ -55,12 +55,12 @@ public:
     void create(context ctx, const domain::workflow_step& v);
 
     /**
-     * @brief Updates the status (and optional response/error) of a workflow step.
+     * @brief Updates the FSM state (and optional response/error) of a workflow step.
      *
-     * Sets @p status, @p response_json, @p error, and stamps completed_at to now.
+     * Sets @p state_id, @p response_json, @p error, and stamps completed_at to now.
      */
-    void update_status(context ctx, const boost::uuids::uuid& id,
-        const std::string& status,
+    void update_state(context ctx, const boost::uuids::uuid& id,
+        const boost::uuids::uuid& state_id,
         const std::string& response_json,
         const std::string& error);
 };

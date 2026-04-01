@@ -67,6 +67,10 @@ registrar::register_handlers(ores::nats::service::client& nats,
         get_fsm_states_request::nats_subject, queue_group,
         [fsm](ores::nats::message msg) { fsm->list(std::move(msg)); }));
 
+    subs.push_back(nats.queue_subscribe(
+        get_fsm_transitions_request::nats_subject, queue_group,
+        [fsm](ores::nats::message msg) { fsm->list_transitions(std::move(msg)); }));
+
     // =========================================================================
     // Change Management
     // =========================================================================

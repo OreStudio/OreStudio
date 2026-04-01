@@ -41,6 +41,7 @@ target_link_libraries(${lib_target_name}
         ores.utility.lib
         ores.service.lib
         ores.nats.lib
+        ores.dq.api.lib
         ores.iam.api.lib
         ores.refdata.api.lib
         sqlgen::sqlgen

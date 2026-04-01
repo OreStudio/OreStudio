@@ -51,9 +51,9 @@ struct workflow_instance final {
     std::string type;
 
     /**
-     * @brief Current workflow status: pending, in_progress, completed, failed, compensating, compensated.
+     * @brief FK to the FSM state record (ores_dq_fsm_states_tbl) for this instance.
      */
-    std::string status;
+    boost::uuids::uuid state_id;
 
     /**
      * @brief Serialised JSON payload of the originating request.

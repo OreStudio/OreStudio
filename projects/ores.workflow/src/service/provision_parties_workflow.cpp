@@ -35,6 +35,7 @@
 #include "ores.iam.api/messaging/account_protocol.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.workflow/domain/workflow_step.hpp"
+#include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/repository/workflow_step_repository.hpp"
 
 namespace ores::workflow::service {
@@ -90,13 +91,14 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request,
 }
 
 domain::workflow_step make_step(const boost::uuids::uuid& workflow_id,
-    int index, std::string_view name, std::string_view request_json) {
+    int index, std::string_view name, std::string_view request_json,
+    const boost::uuids::uuid& in_progress_state_id) {
     domain::workflow_step s;
     s.id = boost::uuids::random_generator()();
     s.workflow_id = workflow_id;
     s.step_index = index;
     s.name = std::string(name);
-    s.status = "in_progress";
+    s.state_id = in_progress_state_id;
     s.request_json = std::string(request_json);
     s.started_at = std::chrono::system_clock::now();
     s.created_at = *s.started_at;
@@ -124,6 +126,12 @@ bool provision_parties_workflow::execute(
     ores::nats::service::nats_client& nats) {
     BOOST_LOG_SEV(lg(), debug) << "Executing provision_parties_workflow for "
                                << request_.parties.size() << " parties.";
+
+    // Load FSM states for workflow steps (one NATS round-trip).
+    const auto step_states = load_fsm_states(nats, "workflow_step");
+    const auto step_in_progress = step_states.require("in_progress");
+    const auto step_completed = step_states.require("completed");
+    const auto step_failed = step_states.require("failed");
 
     repository::workflow_step_repository step_repo;
     const int n = static_cast<int>(request_.parties.size());
@@ -162,7 +170,8 @@ bool provision_parties_workflow::execute(
             .data = std::move(party_obj)};
         const auto party_json = rfl::json::write(save_party);
 
-        auto step0 = make_step(workflow_id_, 3 * i + 0, "save_party", party_json);
+        auto step0 = make_step(workflow_id_, 3 * i + 0, "save_party", party_json,
+            step_in_progress);
         step_repo.create(ctx, step0);
 
         auto party_resp = nats_call(nats, save_party, error_);
@@ -170,10 +179,10 @@ bool provision_parties_workflow::execute(
             if (error_.empty())
                 error_ = std::format("save_party failed for party {}: {}",
                     i, party_resp ? party_resp->message : "(no response)");
-            step_repo.update_status(ctx, step0.id, "failed", "", error_);
+            step_repo.update_state(ctx, step0.id, step_failed, "", error_);
             return false;
         }
-        step_repo.update_status(ctx, step0.id, "completed",
+        step_repo.update_state(ctx, step0.id, step_completed,
             rfl::json::write(*party_resp), "");
         state.completed_steps = 1;
 
@@ -189,7 +198,7 @@ bool provision_parties_workflow::execute(
         const auto account_json = rfl::json::write(save_account);
 
         auto step1 = make_step(workflow_id_, 3 * i + 1, "save_account",
-            account_json);
+            account_json, step_in_progress);
         step_repo.create(ctx, step1);
 
         auto account_resp = nats_call(nats, save_account, error_);
@@ -197,11 +206,11 @@ bool provision_parties_workflow::execute(
             if (error_.empty())
                 error_ = std::format("save_account failed for party {}: {}",
                     i, account_resp ? account_resp->message : "(no response)");
-            step_repo.update_status(ctx, step1.id, "failed", "", error_);
+            step_repo.update_state(ctx, step1.id, step_failed, "", error_);
             return false;
         }
         state.account_id = account_resp->account_id;
-        step_repo.update_status(ctx, step1.id, "completed",
+        step_repo.update_state(ctx, step1.id, step_completed,
             rfl::json::write(*account_resp), "");
         state.completed_steps = 2;
 
@@ -220,7 +229,7 @@ bool provision_parties_workflow::execute(
         const auto link_json = rfl::json::write(save_link);
 
         auto step2 = make_step(workflow_id_, 3 * i + 2, "save_account_party",
-            link_json);
+            link_json, step_in_progress);
         step_repo.create(ctx, step2);
 
         auto link_resp = nats_call(nats, save_link, error_);
@@ -229,10 +238,10 @@ bool provision_parties_workflow::execute(
                 error_ = std::format(
                     "save_account_party failed for party {}: {}",
                     i, link_resp ? link_resp->message : "(no response)");
-            step_repo.update_status(ctx, step2.id, "failed", "", error_);
+            step_repo.update_state(ctx, step2.id, step_failed, "", error_);
             return false;
         }
-        step_repo.update_status(ctx, step2.id, "completed",
+        step_repo.update_state(ctx, step2.id, step_completed,
             rfl::json::write(*link_resp), "");
         state.completed_steps = 3;
     }

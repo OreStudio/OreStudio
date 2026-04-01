@@ -29,6 +29,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.utility/rfl/reflectors.hpp"
 #include "ores.dq.api/messaging/fsm_protocol.hpp"
 #include "ores.dq.core/service/fsm_service.hpp"
 
@@ -83,6 +84,40 @@ public:
             BOOST_LOG_SEV(fsm_handler_lg(), error)
                 << msg.subject << " failed: " << e.what();
             reply(nats_, msg, get_fsm_states_response{
+                .success = false, .message = e.what()});
+        }
+        BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Completed " << msg.subject;
+    }
+
+    void list_transitions(ores::nats::message msg) {
+        BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req = decode<get_fsm_transitions_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(fsm_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            reply(nats_, msg, get_fsm_transitions_response{
+                .success = false, .message = "Failed to decode request"});
+            return;
+        }
+        auto ctx_expected = ores::service::service::make_request_context(
+            ctx_, msg, verifier_);
+        if (!ctx_expected) {
+            error_reply(nats_, msg, ctx_expected.error());
+            return;
+        }
+        service::fsm_service svc(*ctx_expected);
+        try {
+            get_fsm_transitions_response resp;
+            if (req->machine_name.empty())
+                resp.transitions = svc.list_all_transitions();
+            else
+                resp.transitions = svc.list_transitions_for_machine(req->machine_name);
+            resp.success = true;
+            reply(nats_, msg, resp);
+        } catch (const std::exception& e) {
+            BOOST_LOG_SEV(fsm_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
+            reply(nats_, msg, get_fsm_transitions_response{
                 .success = false, .message = e.what()});
         }
         BOOST_LOG_SEV(fsm_handler_lg(), debug) << "Completed " << msg.subject;

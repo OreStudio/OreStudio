@@ -31,6 +31,7 @@
 #include "ores.workflow/domain/workflow_instance.hpp"
 #include "ores.workflow/messaging/workflow_protocol.hpp"
 #include "ores.workflow/repository/workflow_instance_repository.hpp"
+#include "ores.workflow/service/fsm_state_map.hpp"
 #include "ores.workflow/service/provision_parties_workflow.hpp"
 
 namespace ores::workflow::messaging {
@@ -87,6 +88,10 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
         .with_delegation(bearer)
         .with_correlation_id(correlation_id);
 
+    // Load FSM states for workflow instances (one NATS round-trip).
+    const auto instance_states = service::load_fsm_states(
+        delegated_nats, "workflow_instance");
+
     // Serialize the request for audit storage
     const auto request_json = rfl::json::write(*req);
 
@@ -95,7 +100,7 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
     instance.id = boost::uuids::random_generator()();
     instance.tenant_id = req_ctx.tenant_id().to_uuid();
     instance.type = "provision_parties_workflow";
-    instance.status = "in_progress";
+    instance.state_id = instance_states.require("in_progress");
     instance.request_json = request_json;
     instance.correlation_id = correlation_id;
     instance.created_by = delegated_actor(req_ctx);
@@ -114,7 +119,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
             << "Unhandled exception in workflow execution: " << e.what();
-        instance_repo.update_status(req_ctx, instance.id, "failed", "", e.what());
+        instance_repo.update_state(req_ctx, instance.id,
+            instance_states.require("failed"), "", e.what());
         reply(nats_, msg, provision_parties_response{
             .success = false, .message = e.what()});
         return;
@@ -125,8 +131,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
                                      << executor.failure_reason()
                                      << ". Starting compensation.";
 
-        instance_repo.update_status(req_ctx, instance.id,
-            "compensating", "", executor.failure_reason());
+        instance_repo.update_state(req_ctx, instance.id,
+            instance_states.require("compensating"), "", executor.failure_reason());
 
         try {
             executor.compensate(req_ctx, delegated_nats);
@@ -135,8 +141,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
                 << "Unhandled exception in workflow compensation: " << e.what();
         }
 
-        instance_repo.update_status(req_ctx, instance.id,
-            "compensated", "", executor.failure_reason());
+        instance_repo.update_state(req_ctx, instance.id,
+            instance_states.require("compensated"), "", executor.failure_reason());
 
         reply(nats_, msg, provision_parties_response{
             .success = false, .message = executor.failure_reason()});
@@ -144,8 +150,8 @@ void workflow_handler::provision_parties(ores::nats::message msg) {
     }
 
     const auto result_json = rfl::json::write(executor.result());
-    instance_repo.update_status(req_ctx, instance.id,
-        "completed", result_json, "");
+    instance_repo.update_state(req_ctx, instance.id,
+        instance_states.require("completed"), result_json, "");
 
     BOOST_LOG_SEV(lg(), debug) << "provision_parties_workflow completed.";
     reply(nats_, msg, executor.result());

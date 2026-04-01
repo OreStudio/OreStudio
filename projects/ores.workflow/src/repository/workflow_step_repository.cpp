@@ -62,16 +62,17 @@ void workflow_step_repository::create(
     BOOST_LOG_SEV(lg(), debug) << "Workflow step created.";
 }
 
-void workflow_step_repository::update_status(
+void workflow_step_repository::update_state(
     context ctx, const boost::uuids::uuid& id,
-    const std::string& status,
+    const boost::uuids::uuid& state_id,
     const std::string& response_json,
     const std::string& error) {
-    BOOST_LOG_SEV(lg(), debug) << "Updating workflow step status: "
+    BOOST_LOG_SEV(lg(), debug) << "Updating workflow step state: "
                                << boost::uuids::to_string(id)
-                               << " -> " << status;
+                               << " -> " << boost::uuids::to_string(state_id);
 
     const auto id_str = boost::uuids::to_string(id);
+    const auto state_id_str = boost::uuids::to_string(state_id);
     const auto now = timepoint_to_timestamp(
         std::chrono::system_clock::now(), lg());
     const auto opt_response = response_json.empty()
@@ -84,7 +85,7 @@ void workflow_step_repository::update_status(
     const auto opt_now = std::optional<ts_t>(now);
 
     const auto query = sqlgen::update<workflow_step_entity>(
-        "status"_c.set(status),
+        "state_id"_c.set(state_id_str),
         "response_json"_c.set(opt_response),
         "error"_c.set(opt_error),
         "completed_at"_c.set(opt_now)
@@ -94,7 +95,7 @@ void workflow_step_repository::update_status(
         .and_then(query);
     ensure_success(r, lg());
 
-    BOOST_LOG_SEV(lg(), debug) << "Workflow step status updated.";
+    BOOST_LOG_SEV(lg(), debug) << "Workflow step state updated.";
 }
 
 }

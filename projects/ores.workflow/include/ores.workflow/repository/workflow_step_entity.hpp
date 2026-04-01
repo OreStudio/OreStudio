@@ -39,7 +39,7 @@ struct workflow_step_entity {
     std::string workflow_id;
     int step_index;
     std::string name;
-    std::string status;
+    std::string state_id;
     std::string request_json;
     std::optional<std::string> response_json;
     std::optional<std::string> error;

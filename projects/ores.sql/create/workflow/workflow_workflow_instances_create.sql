@@ -33,7 +33,7 @@ create table if not exists "ores_workflow_workflow_instances_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "type" text not null,
-    "status" text not null default 'pending',
+    "state_id" uuid not null,
     "request_json" jsonb not null,
     "result_json" jsonb null,
     "error" text null,

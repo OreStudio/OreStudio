@@ -56,9 +56,9 @@ struct workflow_step final {
     std::string name;
 
     /**
-     * @brief Step status: pending, in_progress, completed, failed, compensated.
+     * @brief FK to the FSM state record (ores_dq_fsm_states_tbl) for this step.
      */
-    std::string status;
+    boost::uuids::uuid state_id;
 
     /**
      * @brief Serialised JSON payload sent to the downstream service for this step.

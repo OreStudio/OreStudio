@@ -29,6 +29,8 @@
 \echo ''
 
 \ir ./dq_fsm_trade_status_populate.sql
+\ir ./dq_fsm_workflow_instance_populate.sql
+\ir ./dq_fsm_workflow_step_populate.sql
 
 \echo ''
 \echo '=== FSM Population Complete ==='

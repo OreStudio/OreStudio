@@ -35,6 +35,7 @@ namespace ores::ore::xml {
 
 using refdata::domain::currency;
 using namespace ores::logging;
+using namespace ores::ore::domain;
 using trading::messaging::swap_export_result;
 using trading::messaging::composite_export_result;
 using trading::domain::fx_instrument;

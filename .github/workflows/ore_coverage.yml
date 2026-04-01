@@ -36,4 +36,4 @@ jobs:
           python-version: "3.12"
 
       - name: Run ORE coverage gap check
-        run: python3 scripts/ore_coverage_check.py
+        run: python3 scripts/ore_coverage_check.py --strict

@@ -23,6 +23,7 @@
 #include <vector>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include <QSize>
 #include <QFutureWatcher>
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"

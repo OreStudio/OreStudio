@@ -2309,7 +2309,7 @@ void MainWindow::createControllers() {
                     commodityInstrumentController_->openEdit(v);
             } else if constexpr (std::is_same_v<T, composite_export_result>) {
                 if (compositeInstrumentController_)
-                    compositeInstrumentController_->openEdit(v.instrument);
+                    compositeInstrumentController_->openEdit(v.instrument, v.legs);
             } else if constexpr (std::is_same_v<T, trading::domain::scripted_instrument>) {
                 if (scriptedInstrumentController_)
                     scriptedInstrumentController_->openEdit(v);

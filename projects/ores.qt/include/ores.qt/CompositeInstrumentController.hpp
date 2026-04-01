@@ -26,6 +26,7 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
+#include "ores.trading.api/domain/composite_leg.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 
 namespace ores::qt {
@@ -61,6 +62,8 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
     void openEdit(const trading::domain::composite_instrument& v);
+    void openEdit(const trading::domain::composite_instrument& v,
+                  const std::vector<trading::domain::composite_leg>& legs);
 
 signals:
     void statusMessage(const QString& message);
@@ -80,6 +83,8 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const trading::domain::composite_instrument& v);
+    void showDetailWindow(const trading::domain::composite_instrument& v,
+                          const std::vector<trading::domain::composite_leg>& legs);
     void showHistoryWindow(const QString& id);
 
     CompositeInstrumentMdiWindow* listWindow_;

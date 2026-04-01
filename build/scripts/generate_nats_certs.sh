@@ -83,8 +83,12 @@ if maybe_generate "$KEYS_DIR/nats-server.key"; then
         -key "$KEYS_DIR/nats-server.key" \
         -out "$KEYS_DIR/nats-server.csr" \
         -subj "/CN=nats-server/O=ORE Studio"
-    # SAN extension for localhost and the deployment hostname
+    # SAN extension for localhost and the deployment hostname.
+    # Write to a temp file — process substitution (<(...)) creates /proc/fd/N
+    # paths that do not exist on Windows (MSYS2/Git Bash).
     SAN_EXT="subjectAltName=DNS:localhost,DNS:${HOSTNAME},IP:127.0.0.1"
+    SAN_FILE="$(mktemp)"
+    echo "$SAN_EXT" > "$SAN_FILE"
     openssl x509 -req \
         -in "$KEYS_DIR/nats-server.csr" \
         -CA "$KEYS_DIR/ca.crt" \
@@ -92,7 +96,8 @@ if maybe_generate "$KEYS_DIR/nats-server.key"; then
         -CAcreateserial \
         -out "$KEYS_DIR/nats-server.crt" \
         -days "$LEAF_DAYS" \
-        -extfile <(echo "$SAN_EXT")
+        -extfile "$SAN_FILE" || { EXIT_CODE=$?; rm -f "$SAN_FILE" "$KEYS_DIR/nats-server.csr"; exit $EXIT_CODE; }
+    rm -f "$SAN_FILE"
     rm -f "$KEYS_DIR/nats-server.csr"
     echo "  Generated: $KEYS_DIR/nats-server.crt (SAN: localhost, $HOSTNAME)"
 fi

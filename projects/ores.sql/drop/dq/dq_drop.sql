@@ -31,6 +31,7 @@
 \ir ./dq_publication_drop.sql
 
 -- Artefacts
+\ir ./dq_report_definitions_artefact_drop.sql
 \ir ./dq_books_artefact_drop.sql
 \ir ./dq_portfolios_artefact_drop.sql
 \ir ./dq_business_units_artefact_drop.sql

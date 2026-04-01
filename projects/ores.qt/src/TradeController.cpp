@@ -97,8 +97,6 @@ void TradeController::showListWindow() {
             this, &TradeController::onShowHistory);
     connect(listWindow_, &TradeMdiWindow::importTradesRequested,
             this, &TradeController::onImportTradesRequested);
-    connect(listWindow_, &TradeMdiWindow::openInstrumentRequested,
-            this, &TradeController::onOpenInstrumentRequested);
 
     // Create MDI subwindow
     listMdiSubWindow_ = new DetachableMdiSubWindow(mainWindow_);
@@ -295,72 +293,6 @@ void TradeController::onImportTradesRequested() {
         MessageBoxHelper::critical(mainWindow_, tr("Import Error"),
             tr("Failed to import portfolio XML file:\n%1").arg(e.what()));
     }
-}
-
-void TradeController::onOpenInstrumentRequested(
-    const trading::domain::trade& trade) {
-    BOOST_LOG_SEV(lg(), debug) << "Open instrument requested for: "
-                               << trade.external_id
-                               << " product_type=" << trade.product_type;
-
-    if (trade.product_type.empty() || !trade.instrument_id) {
-        MessageBoxHelper::information(mainWindow_, tr("No Instrument"),
-            tr("Trade '%1' has no linked instrument.")
-            .arg(QString::fromStdString(trade.external_id)));
-        return;
-    }
-
-    if (!clientManager_->isConnected()) {
-        MessageBoxHelper::warning(mainWindow_, tr("Disconnected"),
-            tr("Cannot fetch instrument while disconnected."));
-        return;
-    }
-
-    QPointer<TradeController> self = this;
-    auto task = [self, trade]()
-        -> std::optional<trading::messaging::get_instrument_for_trade_response> {
-        if (!self) return std::nullopt;
-
-        trading::messaging::get_instrument_for_trade_request req;
-        req.product_type = trade.product_type;
-        req.instrument_id = boost::uuids::to_string(*trade.instrument_id);
-
-        auto result = self->clientManager_->process_authenticated_request(
-            std::move(req));
-        if (!result) return std::nullopt;
-        return std::make_optional(std::move(*result));
-    };
-
-    using Resp = std::optional<trading::messaging::get_instrument_for_trade_response>;
-    auto* watcher = new QFutureWatcher<Resp>(this);
-    connect(watcher, &QFutureWatcher<Resp>::finished,
-            this, [self, watcher, trade]() {
-        auto resp = watcher->result();
-        watcher->deleteLater();
-        if (!self) return;
-
-        if (!resp || !resp->success) {
-            const auto msg = resp ? resp->message : "No response from server";
-            BOOST_LOG_SEV(lg(), error) << "Failed to fetch instrument: " << msg;
-            MessageBoxHelper::critical(self->mainWindow_, tr("Error"),
-                tr("Failed to fetch instrument for '%1': %2")
-                .arg(QString::fromStdString(trade.external_id))
-                .arg(QString::fromStdString(msg)));
-            return;
-        }
-
-        if (std::holds_alternative<std::monostate>(resp->instrument)) {
-            MessageBoxHelper::information(self->mainWindow_, tr("No Instrument"),
-                tr("No instrument data found for trade '%1'.")
-                .arg(QString::fromStdString(trade.external_id)));
-            return;
-        }
-
-        BOOST_LOG_SEV(lg(), debug) << "Emitting openInstrumentResult";
-        emit self->openInstrumentResult(resp->instrument);
-    });
-
-    watcher->setFuture(QtConcurrent::run(task));
 }
 
 void TradeController::onShowHistory(

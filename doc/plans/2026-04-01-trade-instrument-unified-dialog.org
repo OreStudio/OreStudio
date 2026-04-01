@@ -27,6 +27,48 @@ synthetic trade will own the instrument so the unified dialog can be reused.
 4. Remove all standalone per-family instrument infrastructure from the codebase.
 5. Work one or two families per PR so the UI can be smoke-tested between merges.
 
+* Provenance and Change Management
+
+** Business rules
+
+- If the instrument changes, the trade version *must* also change so that
+  downstream consumers are notified of any modification to the deal terms.
+- If the trade envelope changes (counterparty, book, dates) but the instrument
+  is untouched, the trade version bumps but the instrument version does not.
+- A single change reason selection covers both records when both are saved
+  together; it is applied identically to whichever entity records are written.
+
+** Save ordering
+
+When Save is clicked the dialog applies the following logic:
+
+#+begin_src
+if instrumentHasChanges_ and instrumentLoaded_:
+    1. save instrument  (save_*_instrument_request)
+    2. on success: save trade  (save_trade_request)  -- always bumps trade version
+    3. on failure: surface error, do not save trade
+elif hasChanges_ (trade only):
+    1. save trade only
+#+end_src
+
+This client-side ordering guarantees the invariant in the happy path.
+A proper server-side atomic operation (single NATS call, single DB transaction)
+is a future enhancement noted in Open Questions.
+
+** Provenance tab layout
+
+A single "Provenance" tab contains two =QGroupBox= sections:
+
+- *Trade* (top): version, modified_by, performed_by, recorded_at,
+  change_reason_code, change_commentary — populated from the trade record.
+- *Instrument* (bottom): same fields — populated from the instrument record
+  once it loads. Hidden (group invisible) until an instrument is present.
+
+Each section embeds an =ores::qt::ProvenanceWidget= via the existing custom
+widget promotion mechanism. The base-class =provenanceWidget()= override
+continues to return the trade's widget; the instrument widget is managed
+separately by =TradeDetailDialog= itself.
+
 * Architecture
 
 ** Merged dialog tab structure

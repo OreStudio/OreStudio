@@ -27,6 +27,7 @@
 #include "ores.qt/ProvenanceWidget.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/fx_instrument.hpp"
 #include "ores.refdata.api/domain/book.hpp"
 #include "ores.refdata.api/domain/counterparty.hpp"
 
@@ -37,11 +38,17 @@ class TradeDetailDialog;
 namespace ores::qt {
 
 /**
- * @brief Detail dialog for viewing and editing trade records.
+ * @brief Detail dialog for viewing and editing a trade and its linked
+ *        instrument.
  *
- * This dialog allows viewing, creating, and editing trades.
- * It supports both create mode (for new records) and edit mode (for
- * existing records).
+ * The dialog contains trade tabs (General, Dates) followed by
+ * instrument-family tabs that are revealed once the instrument loads
+ * asynchronously. A single Provenance tab holds two sections — Trade and
+ * Instrument — so that both audit trails are visible in one place.
+ *
+ * Save semantics: if the instrument is dirty, it is saved first; the trade
+ * is then always saved so that any instrument change is reflected in the
+ * trade version number (downstream notification invariant).
  */
 class TradeDetailDialog final : public DetailDialogBase {
     Q_OBJECT
@@ -67,10 +74,12 @@ public:
     void setReadOnly(bool readOnly);
 
 protected:
-    QTabWidget* tabWidget() const override;
-    QWidget* provenanceTab() const override;
+    QTabWidget*       tabWidget()        const override;
+    QWidget*          provenanceTab()    const override;
     ProvenanceWidget* provenanceWidget() const override;
-    bool hasUnsavedChanges() const override { return hasChanges_; }
+    bool hasUnsavedChanges() const override {
+        return hasChanges_ || instrumentHasChanges_;
+    }
 
 signals:
     void tradeSaved(const QString& code);
@@ -81,6 +90,8 @@ private slots:
     void onDeleteClicked();
     void onCodeChanged(const QString& text);
     void onFieldChanged();
+    void onInstrumentFieldChanged();
+    void onFxTradeTypeChanged(const QString& text);
 
 private:
     void setupUi();
@@ -94,6 +105,16 @@ private:
     void updateSaveButtonState();
     bool validateInput();
 
+    // FX instrument support
+    void loadFxInstrument();
+    void populateFxInstrument();
+    void updateFxInstrumentFromUi();
+    void updateFxTabVisibility();
+    void setFxReadOnly(bool readOnly);
+    void saveFxThenTrade(const trading::domain::trade& trade,
+                         const trading::domain::fx_instrument& instrument);
+    void saveTrade(const trading::domain::trade& trade);
+
     Ui::TradeDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
@@ -103,6 +124,11 @@ private:
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
+
+    // Instrument state
+    trading::domain::fx_instrument fxInstrument_;
+    bool instrumentLoaded_{false};
+    bool instrumentHasChanges_{false};
 };
 
 }

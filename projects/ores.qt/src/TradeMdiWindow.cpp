@@ -52,8 +52,7 @@ TradeMdiWindow::TradeMdiWindow(
       editAction_(nullptr),
       deleteAction_(nullptr),
       historyAction_(nullptr),
-      importAction_(nullptr),
-      openInstrumentAction_(nullptr) {
+      importAction_(nullptr) {
 
     setupUi();
     setupConnections();
@@ -139,17 +138,6 @@ void TradeMdiWindow::setupToolbar() {
     connect(importAction_, &QAction::triggered,
             this, &TradeMdiWindow::importTradesRequested);
 
-    toolbar_->addSeparator();
-
-    openInstrumentAction_ = toolbar_->addAction(
-        IconUtils::createRecoloredIcon(
-            Icon::Open, IconUtils::DefaultIconColor),
-        tr("Instrument"));
-    openInstrumentAction_->setToolTip(
-        tr("Open the instrument linked to the selected trade"));
-    openInstrumentAction_->setEnabled(false);
-    connect(openInstrumentAction_, &QAction::triggered,
-            this, &TradeMdiWindow::openInstrumentSelected);
 }
 
 void TradeMdiWindow::setupTable() {
@@ -247,17 +235,6 @@ void TradeMdiWindow::updateActionStates() {
     editAction_->setEnabled(hasSelection);
     deleteAction_->setEnabled(hasSelection);
     historyAction_->setEnabled(hasSelection);
-
-    bool hasInstrument = false;
-    if (hasSelection) {
-        const auto selected = tableView_->selectionModel()->selectedRows();
-        if (!selected.isEmpty()) {
-            auto sourceIndex = proxyModel_->mapToSource(selected.first());
-            if (auto* trade = model_->getTrade(sourceIndex.row()))
-                hasInstrument = !trade->product_type.empty();
-        }
-    }
-    openInstrumentAction_->setEnabled(hasInstrument);
 }
 
 void TradeMdiWindow::addNew() {
@@ -425,19 +402,5 @@ void TradeMdiWindow::deleteSelected() {
     watcher->setFuture(future);
 }
 
-void TradeMdiWindow::openInstrumentSelected() {
-    const auto selected = tableView_->selectionModel()->selectedRows();
-    if (selected.isEmpty()) {
-        BOOST_LOG_SEV(lg(), warn) << "Open instrument: no row selected";
-        return;
-    }
-
-    auto sourceIndex = proxyModel_->mapToSource(selected.first());
-    if (auto* trade = model_->getTrade(sourceIndex.row())) {
-        BOOST_LOG_SEV(lg(), debug) << "Emitting openInstrumentRequested for: "
-                                   << trade->external_id;
-        emit openInstrumentRequested(*trade);
-    }
 }
 
-}

@@ -25,6 +25,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.dq.api/domain/fsm_state.hpp"
+#include "ores.dq.api/domain/fsm_transition.hpp"
 
 namespace ores::dq::service {
 
@@ -62,6 +63,20 @@ public:
      * @brief Lists all current FSM states across all machines.
      */
     std::vector<domain::fsm_state> list_all_states();
+
+    /**
+     * @brief Lists all current FSM transitions for the named machine.
+     *
+     * @param machine_name The machine name (e.g. "workflow_instance").
+     * @return Transitions ordered by name. Empty if the machine is not found.
+     */
+    std::vector<domain::fsm_transition>
+    list_transitions_for_machine(const std::string& machine_name);
+
+    /**
+     * @brief Lists all current FSM transitions across all machines.
+     */
+    std::vector<domain::fsm_transition> list_all_transitions();
 
 private:
     context ctx_;

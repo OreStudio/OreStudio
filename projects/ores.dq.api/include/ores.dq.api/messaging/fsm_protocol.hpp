@@ -24,6 +24,7 @@
 #include <string_view>
 #include <vector>
 #include "ores.dq.api/domain/fsm_state.hpp"
+#include "ores.dq.api/domain/fsm_transition.hpp"
 
 namespace ores::dq::messaging {
 
@@ -51,6 +52,32 @@ struct get_fsm_states_response {
     bool success{false};
     std::string message;
     std::vector<ores::dq::domain::fsm_state> states;
+};
+
+// =============================================================================
+// FSM Transition Protocol
+// =============================================================================
+
+/**
+ * @brief Lists FSM transitions, optionally filtered by machine name.
+ *
+ * FSM transitions are system-level reference data. The response always returns
+ * transitions from the system tenant regardless of the caller's tenant.
+ *
+ * @param machine_name If non-empty, only transitions for the named machine are
+ *        returned (e.g. "workflow_instance"). If empty, all current transitions
+ *        across all machines are returned.
+ */
+struct get_fsm_transitions_request {
+    using response_type = struct get_fsm_transitions_response;
+    static constexpr std::string_view nats_subject = "dq.v1.fsm-transitions.list";
+    std::string machine_name;
+};
+
+struct get_fsm_transitions_response {
+    bool success{false};
+    std::string message;
+    std::vector<ores::dq::domain::fsm_transition> transitions;
 };
 
 }

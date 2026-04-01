@@ -38,7 +38,7 @@ workflow_step_mapper::map(const workflow_step_entity& v) {
     r.workflow_id = boost::lexical_cast<boost::uuids::uuid>(v.workflow_id);
     r.step_index = v.step_index;
     r.name = v.name;
-    r.status = v.status;
+    r.state_id = boost::lexical_cast<boost::uuids::uuid>(v.state_id);
     r.request_json = v.request_json;
     r.response_json = v.response_json.value_or("");
     r.error = v.error.value_or("");
@@ -72,7 +72,7 @@ workflow_step_mapper::to_entity(const domain::workflow_step& v) {
     r.workflow_id = boost::uuids::to_string(v.workflow_id);
     r.step_index = v.step_index;
     r.name = v.name;
-    r.status = v.status;
+    r.state_id = boost::uuids::to_string(v.state_id);
     r.request_json = v.request_json;
     r.response_json = v.response_json.empty()
         ? std::nullopt : std::optional<std::string>(v.response_json);

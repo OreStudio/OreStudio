@@ -29,9 +29,8 @@
 create index if not exists ores_workflow_workflow_instances_tenant_id_idx
 on ores_workflow_workflow_instances_tbl (tenant_id);
 
-create index if not exists ores_workflow_workflow_instances_status_idx
-on ores_workflow_workflow_instances_tbl (status)
-where status not in ('completed', 'compensated');
+create index if not exists ores_workflow_workflow_instances_state_id_idx
+on ores_workflow_workflow_instances_tbl (state_id);
 
 create index if not exists ores_workflow_workflow_instances_correlation_id_idx
 on ores_workflow_workflow_instances_tbl (correlation_id)

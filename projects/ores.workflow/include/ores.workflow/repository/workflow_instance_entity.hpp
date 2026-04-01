@@ -38,7 +38,7 @@ struct workflow_instance_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     std::string type;
-    std::string status;
+    std::string state_id;
     std::string request_json;
     std::optional<std::string> result_json;
     std::optional<std::string> error;

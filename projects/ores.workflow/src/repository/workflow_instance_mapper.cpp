@@ -37,7 +37,7 @@ workflow_instance_mapper::map(const workflow_instance_entity& v) {
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
     r.tenant_id = boost::lexical_cast<boost::uuids::uuid>(v.tenant_id);
     r.type = v.type;
-    r.status = v.status;
+    r.state_id = boost::lexical_cast<boost::uuids::uuid>(v.state_id);
     r.request_json = v.request_json;
     r.result_json = v.result_json.value_or("");
     r.error = v.error.value_or("");
@@ -70,7 +70,7 @@ workflow_instance_mapper::to_entity(const domain::workflow_instance& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = boost::uuids::to_string(v.tenant_id);
     r.type = v.type;
-    r.status = v.status;
+    r.state_id = boost::uuids::to_string(v.state_id);
     r.request_json = v.request_json;
     r.result_json = v.result_json.empty()
         ? std::nullopt : std::optional<std::string>(v.result_json);

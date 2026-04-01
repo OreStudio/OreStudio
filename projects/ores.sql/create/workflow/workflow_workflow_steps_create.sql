@@ -34,7 +34,7 @@ create table if not exists "ores_workflow_workflow_steps_tbl" (
     "workflow_id" uuid not null,
     "step_index" integer not null,
     "name" text not null,
-    "status" text not null default 'pending',
+    "state_id" uuid not null,
     "request_json" jsonb not null,
     "response_json" jsonb null,
     "error" text null,

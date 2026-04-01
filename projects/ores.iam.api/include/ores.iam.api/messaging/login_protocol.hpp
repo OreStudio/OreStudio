@@ -29,6 +29,7 @@ struct party_summary {
     std::string id;
     std::string name;
     std::string party_category;
+    std::string business_center_code;
 };
 
 struct login_request {

@@ -24,6 +24,7 @@
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.qt/ChangePasswordDialog.hpp"
+#include "ores.qt/ImageCache.hpp"
 #include "ores.qt/PartyPickerDialog.hpp"
 #include "ores.utility/version/version.hpp"
 #include <QHBoxLayout>
@@ -77,6 +78,10 @@ void LoginDialog::keyPressEvent(QKeyEvent* event) {
     } else {
         QWidget::keyPressEvent(event);
     }
+}
+
+void LoginDialog::setImageCache(ImageCache* cache) {
+    imageCache_ = cache;
 }
 
 void LoginDialog::setQuickConnectItems(const QList<QuickConnectItem>& items) {
@@ -569,7 +574,7 @@ void LoginDialog::onLoginResult(const LoginResult& result) {
                                       << " parties available";
             statusLabel_->setText("Select party...");
 
-            PartyPickerDialog partyDialog(result.available_parties, clientManager_, this);
+            PartyPickerDialog partyDialog(result.available_parties, clientManager_, imageCache_, this);
             if (partyDialog.exec() == QDialog::Accepted) {
                 BOOST_LOG_SEV(lg(), info) << "Party selected: "
                                           << clientManager_->currentPartyName().toStdString()

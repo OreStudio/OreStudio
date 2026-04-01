@@ -222,7 +222,9 @@ LoginResult ClientManager::login(const std::string& username,
             }
             available_parties.push_back(PartyInfo{
                 .id = party_uuid,
-                .name = QString::fromStdString(ps.name)
+                .name = QString::fromStdString(ps.name),
+                .party_category = QString::fromStdString(ps.party_category),
+                .business_center_code = QString::fromStdString(ps.business_center_code)
             });
         }
 

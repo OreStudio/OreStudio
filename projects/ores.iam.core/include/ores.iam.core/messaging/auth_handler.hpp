@@ -335,7 +335,9 @@ public:
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},
                         .party_category =
-                            p ? p->party_category : std::string{}
+                            p ? p->party_category : std::string{},
+                        .business_center_code =
+                            p ? p->business_center_code : std::string{}
                     });
                 }
                 BOOST_LOG_SEV(auth_handler_lg(), debug)
@@ -381,7 +383,9 @@ public:
                         .id = boost::uuids::to_string(ap.party_id),
                         .name = p ? p->full_name : std::string{},
                         .party_category =
-                            p ? p->party_category : std::string{}
+                            p ? p->party_category : std::string{},
+                        .business_center_code =
+                            p ? p->business_center_code : std::string{}
                     });
                 }
                 BOOST_LOG_SEV(auth_handler_lg(), debug)

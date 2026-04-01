@@ -151,6 +151,36 @@ if [[ -z "${ASSUME_YES}" ]]; then
     echo ""
 fi
 
+# Verify that the cluster-level roles for this environment already exist.
+# recreate_env.sh does not create roles — that is done once by recreate_database.sh.
+echo "--- Checking environment roles ---"
+missing_roles=()
+for role in "${ORES_DB_OWNER_ROLE}" "${ORES_DB_RW_ROLE}" "${ORES_DB_RO_ROLE}" "${ORES_DB_SERVICE_ROLE}"; do
+    exists=$(psql -h "${ORES_DB_HOST}" -U postgres -tAc \
+        "SELECT 1 FROM pg_roles WHERE rolname = '${role}';" 2>/dev/null)
+    if [[ "${exists}" != "1" ]]; then
+        missing_roles+=("${role}")
+    fi
+done
+
+if [[ ${#missing_roles[@]} -gt 0 ]]; then
+    echo ""
+    echo "ERROR: The following cluster-level roles are missing:"
+    for role in "${missing_roles[@]}"; do
+        echo "  - ${role}"
+    done
+    echo ""
+    echo "This script does not create roles. Run recreate_database.sh once to"
+    echo "set up roles and users for this environment, then use recreate_env.sh"
+    echo "for subsequent schema resets:"
+    echo ""
+    echo "  ./recreate_database.sh -e ${ENVIRONMENT} -y"
+    echo ""
+    exit 1
+fi
+echo "Environment roles OK."
+echo ""
+
 # Drop existing database if it exists
 echo "--- Dropping ${DB_NAME} (if exists) ---"
 psql -h "${ORES_DB_HOST:?ORES_DB_HOST must be set}" -U postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '${DB_NAME}' AND pid <> pg_backend_pid();"

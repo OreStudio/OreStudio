@@ -34,6 +34,18 @@
  */
 
 -- =============================================================================
+-- Catalog Registration
+-- =============================================================================
+
+\echo '--- ORE Analytics Catalog ---'
+
+select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'ORE Analytics',
+    'ORE risk analytics seed data including report definition templates for provisioning new parties.',
+    'OreStudio Development Team'
+);
+
+-- =============================================================================
 -- Dataset Registration
 -- =============================================================================
 

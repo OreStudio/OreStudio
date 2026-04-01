@@ -31,6 +31,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
+#include "ores.platform/time/time_utils.hpp"
 #include "ores.marketdata.api/messaging/market_fixing_protocol.hpp"
 #include "ores.marketdata.core/service/market_fixing_service.hpp"
 
@@ -79,7 +80,15 @@ public:
         try {
             const auto sid =
                 boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            resp.fixings = svc.list(sid);
+            if (!req->from_date.empty() && !req->to_date.empty()) {
+                const auto from =
+                    ores::platform::time::time_utils::parse_date(req->from_date);
+                const auto to =
+                    ores::platform::time::time_utils::parse_date(req->to_date);
+                resp.fixings = svc.list(sid, from, to);
+            } else {
+                resp.fixings = svc.list(sid);
+            }
             resp.total_available_count =
                 static_cast<int>(resp.fixings.size());
             BOOST_LOG_SEV(market_fixing_handler_lg(), debug)

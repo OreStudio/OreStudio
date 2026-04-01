@@ -21,6 +21,7 @@
 
 #include <map>
 #include <sstream>
+#include <stdexcept>
 #include <tuple>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -104,8 +105,7 @@ series_classification classify_series_type(const std::string& series_type) {
     const auto it = k_table.find(series_type);
     if (it != k_table.end())
         return it->second;
-    // Default: rates/yield/non-scalar for unknown types.
-    return {ac::rates, sc::yield, false};
+    throw std::invalid_argument("Unknown ORE series_type: " + series_type);
 }
 
 } // namespace
@@ -115,6 +115,7 @@ import_service::import_service(context ctx) : ctx_(std::move(ctx)) {}
 messaging::import_market_data_response
 import_service::import(const messaging::import_market_data_request& req) {
     messaging::import_market_data_response resp;
+    boost::uuids::random_generator gen;
     repository::market_series_repository series_repo;
     repository::market_observations_repository obs_repo;
     repository::market_fixings_repository fixings_repo;
@@ -142,7 +143,7 @@ import_service::import(const messaging::import_market_data_request& req) {
         // Create a new series.
         const auto cl = classify_series_type(series_type);
         domain::market_series s;
-        s.id = boost::uuids::random_generator{}();
+        s.id = gen();
         s.tenant_id = ctx_.tenant_id();
         s.series_type = series_type;
         s.metric = metric;
@@ -174,7 +175,7 @@ import_service::import(const messaging::import_market_data_request& req) {
                 d.series_type, d.metric, d.qualifier);
 
             domain::market_observation obs;
-            obs.id = boost::uuids::random_generator{}();
+            obs.id = gen();
             obs.tenant_id = ctx_.tenant_id();
             obs.series_id = sid;
             obs.observation_date = d.date;
@@ -200,7 +201,7 @@ import_service::import(const messaging::import_market_data_request& req) {
             const auto sid = find_or_create_series("FIXING", "RATE", f.qualifier);
 
             domain::market_fixing fix;
-            fix.id = boost::uuids::random_generator{}();
+            fix.id = gen();
             fix.tenant_id = ctx_.tenant_id();
             fix.series_id = sid;
             fix.fixing_date = f.date;

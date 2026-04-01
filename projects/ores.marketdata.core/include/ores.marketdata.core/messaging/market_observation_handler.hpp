@@ -22,6 +22,7 @@
 
 #include <optional>
 #include <boost/lexical_cast.hpp>
+#include "ores.platform/time/time_utils.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
@@ -79,7 +80,15 @@ public:
         try {
             const auto sid =
                 boost::lexical_cast<boost::uuids::uuid>(req->series_id);
-            resp.observations = svc.list(sid);
+            if (!req->from_date.empty() && !req->to_date.empty()) {
+                const auto from =
+                    ores::platform::time::time_utils::parse_date(req->from_date);
+                const auto to =
+                    ores::platform::time::time_utils::parse_date(req->to_date);
+                resp.observations = svc.list(sid, from, to);
+            } else {
+                resp.observations = svc.list(sid);
+            }
             resp.total_available_count =
                 static_cast<int>(resp.observations.size());
             BOOST_LOG_SEV(market_observation_handler_lg(), debug)

@@ -20,6 +20,7 @@
 #ifndef ORES_MARKETDATA_CORE_MESSAGING_MARKET_SERIES_HANDLER_HPP
 #define ORES_MARKETDATA_CORE_MESSAGING_MARKET_SERIES_HANDLER_HPP
 
+#include <algorithm>
 #include <optional>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -68,11 +69,30 @@ public:
             return;
         }
         const auto& ctx = *ctx_expected;
+        auto req = decode<get_market_series_request>(msg);
+        if (!req) {
+            BOOST_LOG_SEV(market_series_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            return;
+        }
         service::market_series_service svc(ctx);
         get_market_series_response resp;
         try {
-            resp.series = svc.list();
-            resp.total_available_count = static_cast<int>(resp.series.size());
+            auto all = svc.list();
+            // Apply series_type filter if specified.
+            if (!req->series_type.empty()) {
+                all.erase(std::remove_if(all.begin(), all.end(),
+                    [&](const auto& s) {
+                        return s.series_type != req->series_type;
+                    }), all.end());
+            }
+            resp.total_available_count = static_cast<int>(all.size());
+            // Apply pagination.
+            const int offset = std::max(0, req->offset);
+            const int limit  = req->limit > 0 ? req->limit : 1000;
+            const auto begin = std::min(offset, static_cast<int>(all.size()));
+            const auto end   = std::min(begin + limit, static_cast<int>(all.size()));
+            resp.series.assign(all.begin() + begin, all.begin() + end);
             BOOST_LOG_SEV(market_series_handler_lg(), debug)
                 << "Completed " << msg.subject;
         } catch (const std::exception& e) {

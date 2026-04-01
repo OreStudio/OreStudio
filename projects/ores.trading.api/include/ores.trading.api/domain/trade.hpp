@@ -104,18 +104,20 @@ struct trade final {
     std::string trade_type;
 
     /**
-     * @brief Discriminator routing to the instrument extension table.
+     * @brief Product type: structural routing discriminator.
      *
+     * Identifies the kind of financial product (FpML: productType).
      * One of: swap, fx, bond, credit, equity, commodity, composite, scripted.
+     * Used to route the trade to its product-specific extension table.
      * Empty when no instrument record has been linked yet.
      */
-    std::string instrument_family;
+    std::string product_type;
 
     /**
      * @brief UUID of the associated instrument record.
      *
      * Soft FK into the instrument extension table identified by
-     * instrument_family. Absent when no instrument has been linked.
+     * product_type. Absent when no instrument has been linked.
      */
     std::optional<boost::uuids::uuid> instrument_id;
 

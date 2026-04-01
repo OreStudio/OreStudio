@@ -265,9 +265,9 @@ public:
                     trade_export_item item;
                     item.trade = t;
 
-                    if (t.instrument_id && !t.instrument_family.empty()) {
+                    if (t.instrument_id && !t.product_type.empty()) {
                         const auto id = boost::uuids::to_string(*t.instrument_id);
-                        const auto& fam = t.instrument_family;
+                        const auto& fam = t.product_type;
                         if (fam == "swap") {
                             service::instrument_service isvc(ctx);
                             if (auto r = isvc.find_instrument(id)) {

@@ -19,13 +19,13 @@ layer of the system uses the right concept for the right purpose.
 
 ** Goals
 
-- Define =asset_class= and =instrument_type= as two distinct, non-overlapping
+- Define =asset_class= and =product_type= as two distinct, non-overlapping
   concepts grounded in FpML and the ISDA Common Domain Model (CDM).
 - Make =ores_refdata_asset_classes_tbl= the single source of truth for the
   =asset_class= taxonomy, shared by both trading and market data domains.
 - Add =asset_class= to the trading domain (currently missing), giving trades
   a proper risk classification alongside their structural routing field.
-- Rename =instrument_family= → =instrument_type= throughout the system to
+- Rename =instrument_family= → =product_type= throughout the system to
   make its role as a structural discriminator unambiguous.
 - Eliminate all hardcoded asset class labels from Qt by replacing them with
   a new =refdata.v1.asset-classes.list= NATS endpoint.
@@ -34,7 +34,7 @@ layer of the system uses the right concept for the right purpose.
 
 ** Out of scope
 
-- Changing how instrument extension tables are routed — =instrument_type=
+- Changing how instrument extension tables are routed — =product_type=
   remains the routing key; only the name changes.
 - Adding =series_subclass= to refdata (deferred; see §Assessment below).
 - Real-time or streaming asset class cache invalidation in Qt.
@@ -89,7 +89,7 @@ ORE canonical values (=coding_scheme_code = 'ORE'=):
 /What kind of financial instrument is this structurally? Which extension table
 and pricing engine path should be used?/
 
-=instrument_type= (currently named =instrument_family=) applies *only to
+=product_type= (currently named =instrument_family=) applies *only to
 trades and instruments*. It is an engineering and product classification, not
 a risk classification. It tells the system how to store, route and value a
 trade. It has no meaning in the market data domain.
@@ -99,7 +99,7 @@ product type scheme, e.g. =ird:swap=, =fx:forward=).
 CDM counterpart: the concrete product type in CDM's product taxonomy
 (=InterestRatePayout=, =ForwardPayout=, =CreditDefaultPayout=, etc.).
 
-Current values (=instrument_family_t= PG enum, renamed to =instrument_type_t=):
+Current values (=instrument_family_t= PG enum, renamed to =product_type_t=):
 
 | Instrument type  | DB routing target                    | Notes                               |
 |------------------+--------------------------------------+-------------------------------------|
@@ -159,10 +159,10 @@ After this plan, a trade will carry two orthogonal classification fields:
 
 | Field             | Role                   | Source of truth                        |
 |-------------------+------------------------+----------------------------------------|
-| =instrument_type= | Structural / routing   | =instrument_type_t= PG enum (static)   |
+| =product_type= | Structural / routing   | =product_type_t= PG enum (static)   |
 | =asset_class=     | Risk / reporting       | =ores_refdata_asset_classes_tbl=       |
 
-The =instrument_type= column remains a fast PG enum for join performance and
+The =product_type= column remains a fast PG enum for join performance and
 routing correctness. The =asset_class= column is a validated TEXT FK into the
 refdata table.
 
@@ -214,7 +214,7 @@ ores_marketdata_series_tbl
                                      called from insert trigger
 
 ores_trading_trades_tbl
-  instrument_type instrument_type_t  (renamed from instrument_family)
+  product_type product_type_t  (renamed from instrument_family)
   asset_class     TEXT               new column, validated by same function
 
 NATS endpoint: refdata.v1.asset-classes.list
@@ -225,7 +225,7 @@ C++ enum: ores::marketdata::domain::asset_class   (stays in marketdata.api)
   → also referenced from ores.trading.api via shared header or re-export
   → startup assertion: C++ enum values == ORE codes in DB
 
-instrument_type_t PG enum (renamed from instrument_family_t)
+product_type_t PG enum (renamed from instrument_family_t)
   → values unchanged; only name clarified
 #+end_example
 
@@ -256,12 +256,12 @@ without the overhead of a DQ pipeline for a purely internal classification.
 
 ** Phase 1 — Conceptual cleanup and renaming [DDL + C++]
 
-Rename =instrument_family= → =instrument_type= throughout:
+Rename =instrument_family= → =product_type= throughout:
 
-- Rename PG enum type: =instrument_family_t= → =instrument_type_t=
-  (DDL: =ALTER TYPE instrument_family_t RENAME TO instrument_type_t=)
+- Rename PG enum type: =instrument_family_t= → =product_type_t=
+  (DDL: =ALTER TYPE instrument_family_t RENAME TO product_type_t=)
 - Rename column: =ores_trading_trades_tbl.instrument_family= →
-  =.instrument_type=
+  =.product_type=
 - Update all references: DDL files, trigger functions, indexes, C++ mappers,
   C++ domain structs, NATS message types, Qt model columns
 - Update SQL comments to make the routing role explicit
@@ -322,6 +322,6 @@ This is a pure rename — no value changes, no behaviour changes.
   in many files. Proceed file-by-file with CI validation at each step.
 - Phases 2–3 are additive SQL; they do not break existing data.
 - Phase 4's =asset_class= column is nullable, so existing trade rows are
-  unaffected. A follow-up migration can backfill based on =instrument_type=
-  heuristics for simple cases (e.g., =instrument_type = 'fx'= → =asset_class = 'fx'=).
+  unaffected. A follow-up migration can backfill based on =product_type=
+  heuristics for simple cases (e.g., =product_type = 'fx'= → =asset_class = 'fx'=).
 - Phase 5 is purely additive (new endpoint + Qt refactor); no schema changes.

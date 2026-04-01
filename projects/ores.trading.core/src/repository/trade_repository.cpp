@@ -43,7 +43,7 @@ domain::trade raw_row_to_trade(
     // Column order matches explicit SELECT in read_latest_filtered CTE:
     // 0:id, 1:tenant_id, 2:version, 3:party_id, 4:external_id, 5:book_id,
     // 6:portfolio_id, 7:successor_trade_id, 8:counterparty_id, 9:trade_type,
-    // 10:instrument_family, 11:instrument_id,
+    // 10:product_type, 11:instrument_id,
     // 12:netting_set_id, 13:activity_type_code, 14:status_id, 15:trade_date,
     // 16:execution_timestamp, 17:effective_date, 18:termination_date, 19:modified_by,
     // 20:performed_by, 21:change_reason_code, 22:change_commentary, 23:valid_from
@@ -60,7 +60,7 @@ domain::trade raw_row_to_trade(
     if (row[8].has_value())
         r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(*row[8]);
     r.trade_type = row[9].value();
-    r.instrument_family = row[10].value_or("");
+    r.product_type = row[10].value_or("");
     if (row[11].has_value())
         r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(*row[11]);
     r.netting_set_id = row[12].value();

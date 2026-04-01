@@ -111,6 +111,7 @@
 #include "ores.qt/ReportDefinitionController.hpp"
 #include "ores.qt/ReportInstanceController.hpp"
 #include "ores.qt/OreImportController.hpp"
+#include "ores.qt/MarketDataController.hpp"
 #include "ores.qt/PortfolioExplorerMdiWindow.hpp"
 #include "ores.qt/OrgExplorerMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -902,6 +903,22 @@ MainWindow::MainWindow(QWidget* parent) :
     });
     connect(actionAppVersions, &QAction::triggered, this, [this]() {
         if (appVersionController_) appVersionController_->showListWindow();
+    });
+
+    // Market Data menu
+    auto* marketDataMenu = menuBar()->addMenu(tr("Market Data"));
+    auto* actionMarketSeries = marketDataMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::ChartMultiple, IconUtils::DefaultIconColor),
+        tr("Market Series"));
+    auto* actionMarketFixings = marketDataMenu->addAction(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
+        tr("Market Fixings"));
+
+    connect(actionMarketSeries, &QAction::triggered, this, [this]() {
+        if (marketDataController_) marketDataController_->showListWindow();
+    });
+    connect(actionMarketFixings, &QAction::triggered, this, [this]() {
+        if (marketDataController_) marketDataController_->showFixingsWindow();
     });
 
     // Connect Reporting actions to controllers
@@ -2499,6 +2516,22 @@ void MainWindow::createControllers() {
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message, 5000);
     });
+
+    // Create market data controller
+    marketDataController_ = std::make_unique<MarketDataController>(
+        this, mdiArea_, clientManager_, QString::fromStdString(username_));
+    connect(marketDataController_.get(), &MarketDataController::statusMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message, 5000);
+    });
+    connect(marketDataController_.get(), &MarketDataController::errorMessage,
+            this, [this](const QString& message) {
+        ui_->statusbar->showMessage(message, 8000);
+    });
+    connect(marketDataController_.get(), &MarketDataController::detachableWindowCreated,
+            this, &MainWindow::onDetachableWindowCreated);
+    connect(marketDataController_.get(), &MarketDataController::detachableWindowDestroyed,
+            this, &MainWindow::onDetachableWindowDestroyed);
 
     BOOST_LOG_SEV(lg(), debug) << "Entity controllers created.";
 }

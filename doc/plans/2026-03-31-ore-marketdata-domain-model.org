@@ -311,6 +311,6 @@ Basic market data browsing UI.
 
 *** Tasks
 
-- [ ] Market series list view (filterable by asset_class, series_subclass)
-- [ ] Observation time series view for a selected series
-- [ ] Fixing history view for a selected index series
+- [X] Market series list view (filterable by asset_class, series_subclass)
+- [X] Observation time series view for a selected series
+- [X] Fixing history view for a selected index series

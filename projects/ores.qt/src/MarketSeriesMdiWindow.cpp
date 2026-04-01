@@ -69,7 +69,7 @@ void MarketSeriesMdiWindow::setupUi() {
     tableView_->setWordWrap(false);
     tableView_->setSortingEnabled(true);
     tableView_->verticalHeader()->setVisible(false);
-    tableView_->setItemDelegate(new EntityItemDelegate(this));
+    tableView_->setItemDelegate(new EntityItemDelegate(tableView_));
 
     initializeTableSettings(tableView_, model_.get(),
         "MarketSeriesListWindow", {}, {1100, 600}, 1);
@@ -147,14 +147,14 @@ void MarketSeriesMdiWindow::setupToolbar() {
     toolBar_->addWidget(filterLabel);
 
     assetClassCombo_->addItem(tr("All"), QString{});
-    assetClassCombo_->addItem(tr("FX"),         "FX");
-    assetClassCombo_->addItem(tr("Rates"),       "RATES");
-    assetClassCombo_->addItem(tr("Credit"),      "CREDIT");
-    assetClassCombo_->addItem(tr("Equity"),      "EQUITY");
-    assetClassCombo_->addItem(tr("Commodity"),   "COMMODITY");
-    assetClassCombo_->addItem(tr("Inflation"),   "INFLATION");
-    assetClassCombo_->addItem(tr("Bond"),        "BOND");
-    assetClassCombo_->addItem(tr("Cross Asset"), "CROSS_ASSET");
+    assetClassCombo_->addItem(tr("FX"),          "FX");
+    assetClassCombo_->addItem(tr("Rates"),       "Rates");
+    assetClassCombo_->addItem(tr("Credit"),      "Credit");
+    assetClassCombo_->addItem(tr("Equity"),      "Equity");
+    assetClassCombo_->addItem(tr("Commodity"),   "Commodity");
+    assetClassCombo_->addItem(tr("Inflation"),   "Inflation");
+    assetClassCombo_->addItem(tr("Bond"),        "Bond");
+    assetClassCombo_->addItem(tr("Cross Asset"), "Cross Asset");
     connect(assetClassCombo_,
             QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MarketSeriesMdiWindow::onAssetClassFilterChanged);

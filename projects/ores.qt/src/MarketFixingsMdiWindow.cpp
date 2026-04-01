@@ -66,7 +66,7 @@ void MarketFixingsMdiWindow::setupUi() {
     tableView_->setWordWrap(false);
     tableView_->setSortingEnabled(true);
     tableView_->verticalHeader()->setVisible(false);
-    tableView_->setItemDelegate(new EntityItemDelegate(this));
+    tableView_->setItemDelegate(new EntityItemDelegate(tableView_));
 
     initializeTableSettings(tableView_, model_.get(),
         "MarketFixingsListWindow", {}, {1100, 600}, 1);

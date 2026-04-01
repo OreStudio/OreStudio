@@ -103,6 +103,10 @@ void CreditInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void CreditInstrumentController::openEdit(const trading::domain::credit_instrument& v) {
+    showDetailWindow(v);
+}
+
 void CreditInstrumentController::onShowDetails(
     const trading::domain::credit_instrument& v) {
     showDetailWindow(v);

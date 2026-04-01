@@ -103,6 +103,10 @@ void BondInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void BondInstrumentController::openEdit(const trading::domain::bond_instrument& v) {
+    showDetailWindow(v);
+}
+
 void BondInstrumentController::onShowDetails(
     const trading::domain::bond_instrument& v) {
     showDetailWindow(v);

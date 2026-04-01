@@ -106,6 +106,14 @@ void CompositeInstrumentDetailDialog::setCompositeInstrument(
         loadLegs();
 }
 
+void CompositeInstrumentDetailDialog::setCompositeInstrumentWithLegs(
+    const trading::domain::composite_instrument& v,
+    const std::vector<trading::domain::composite_leg>& legs) {
+    instrument_ = v;
+    updateUiFromCompositeInstrument();
+    setLegs(legs);
+}
+
 void CompositeInstrumentDetailDialog::setLegs(
     const std::vector<trading::domain::composite_leg>& legs) {
     // Suppress hasChanges_ side-effect while restoring server data.

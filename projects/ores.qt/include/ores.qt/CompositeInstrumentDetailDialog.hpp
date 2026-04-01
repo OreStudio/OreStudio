@@ -57,6 +57,9 @@ public:
     void setUsername(const std::string& username);
     void setCompositeInstrument(
         const trading::domain::composite_instrument& v);
+    void setCompositeInstrumentWithLegs(
+        const trading::domain::composite_instrument& v,
+        const std::vector<trading::domain::composite_leg>& legs);
     void setLegs(
         const std::vector<trading::domain::composite_leg>& legs);
     void setCreateMode(bool createMode);

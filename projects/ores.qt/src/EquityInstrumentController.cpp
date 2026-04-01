@@ -103,6 +103,10 @@ void EquityInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void EquityInstrumentController::openEdit(const trading::domain::equity_instrument& v) {
+    showDetailWindow(v);
+}
+
 void EquityInstrumentController::onShowDetails(
     const trading::domain::equity_instrument& v) {
     showDetailWindow(v);

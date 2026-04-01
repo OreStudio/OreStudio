@@ -121,6 +121,10 @@ void InstrumentController::reloadListWindow() {
     }
 }
 
+void InstrumentController::openEdit(const trading::domain::instrument& v) {
+    showDetailWindow(v);
+}
+
 void InstrumentController::onShowDetails(
     const trading::domain::instrument& v) {
     BOOST_LOG_SEV(lg(), debug) << "Show details for: "

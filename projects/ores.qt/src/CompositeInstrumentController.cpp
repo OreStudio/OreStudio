@@ -106,6 +106,16 @@ void CompositeInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void CompositeInstrumentController::openEdit(const trading::domain::composite_instrument& v) {
+    showDetailWindow(v);
+}
+
+void CompositeInstrumentController::openEdit(
+    const trading::domain::composite_instrument& v,
+    const std::vector<trading::domain::composite_leg>& legs) {
+    showDetailWindow(v, legs);
+}
+
 void CompositeInstrumentController::onShowDetails(
     const trading::domain::composite_instrument& v) {
     showDetailWindow(v);
@@ -167,6 +177,61 @@ void CompositeInstrumentController::showDetailWindow(
     detailDialog->setUsername(username_.toStdString());
     detailDialog->setCreateMode(false);
     detailDialog->setCompositeInstrument(v);
+
+    connect(detailDialog, &CompositeInstrumentDetailDialog::statusMessage,
+            this, &CompositeInstrumentController::statusMessage);
+    connect(detailDialog, &CompositeInstrumentDetailDialog::errorMessage,
+            this, &CompositeInstrumentController::errorMessage);
+    connect(detailDialog,
+            &CompositeInstrumentDetailDialog::compositeInstrumentSaved,
+            this, [self = QPointer<CompositeInstrumentController>(this)](
+                const QString& /*id*/) {
+        if (!self) return;
+        self->handleEntitySaved();
+    });
+    connect(detailDialog,
+            &CompositeInstrumentDetailDialog::compositeInstrumentDeleted,
+            this, [self = QPointer<CompositeInstrumentController>(this),
+                   key](const QString& /*id*/) {
+        if (!self) return;
+        self->handleEntityDeleted();
+    });
+
+    auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
+    detailWindow->setAttribute(Qt::WA_DeleteOnClose);
+    detailWindow->setWidget(detailDialog);
+    detailWindow->setWindowTitle(
+        QString("Composite Instrument: %1").arg(identifier));
+    detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(
+        Icon::ArrowTrending, IconUtils::DefaultIconColor));
+
+    track_window(key, detailWindow);
+    register_detachable_window(detailWindow);
+
+    QPointer<CompositeInstrumentController> self = this;
+    connect(detailWindow, &QObject::destroyed, this,
+            [self, key]() { if (self) self->untrack_window(key); });
+
+    connect_dialog_close(detailDialog, detailWindow);
+    show_managed_window(detailWindow, listMdiSubWindow_);
+}
+
+void CompositeInstrumentController::showDetailWindow(
+    const trading::domain::composite_instrument& v,
+    const std::vector<trading::domain::composite_leg>& legs) {
+
+    const QString identifier =
+        QString::fromStdString(boost::uuids::to_string(v.id));
+    const QString key = build_window_key("details", identifier);
+
+    if (try_reuse_window(key)) return;
+
+    auto* detailDialog =
+        new CompositeInstrumentDetailDialog(mainWindow_);
+    detailDialog->setClientManager(clientManager_);
+    detailDialog->setUsername(username_.toStdString());
+    detailDialog->setCreateMode(false);
+    detailDialog->setCompositeInstrumentWithLegs(v, legs);
 
     connect(detailDialog, &CompositeInstrumentDetailDialog::statusMessage,
             this, &CompositeInstrumentController::statusMessage);

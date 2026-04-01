@@ -103,6 +103,10 @@ void CommodityInstrumentController::reloadListWindow() {
     if (listWindow_) listWindow_->reload();
 }
 
+void CommodityInstrumentController::openEdit(const trading::domain::commodity_instrument& v) {
+    showDetailWindow(v);
+}
+
 void CommodityInstrumentController::onShowDetails(
     const trading::domain::commodity_instrument& v) {
     showDetailWindow(v);

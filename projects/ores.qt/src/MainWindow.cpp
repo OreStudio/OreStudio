@@ -2280,6 +2280,43 @@ void MainWindow::createControllers() {
     connect(scriptedInstrumentController_.get(), &ScriptedInstrumentController::detachableWindowDestroyed,
             this, &MainWindow::onDetachableWindowDestroyed);
 
+    // Dispatch "Open Instrument" result from TradeController to the correct
+    // per-family instrument controller.
+    connect(tradeController_.get(), &TradeController::openInstrumentResult,
+            this, [this](const trading::messaging::instrument_export_result& r) {
+        using namespace trading::messaging;
+        std::visit([this](const auto& v) {
+            using T = std::decay_t<decltype(v)>;
+            if constexpr (std::is_same_v<T, std::monostate>) {
+                // handled upstream
+            } else if constexpr (std::is_same_v<T, swap_export_result>) {
+                if (instrumentController_)
+                    instrumentController_->openEdit(v.instrument);
+            } else if constexpr (std::is_same_v<T, trading::domain::fx_instrument>) {
+                if (fxInstrumentController_)
+                    fxInstrumentController_->openEdit(v);
+            } else if constexpr (std::is_same_v<T, trading::domain::bond_instrument>) {
+                if (bondInstrumentController_)
+                    bondInstrumentController_->openEdit(v);
+            } else if constexpr (std::is_same_v<T, trading::domain::credit_instrument>) {
+                if (creditInstrumentController_)
+                    creditInstrumentController_->openEdit(v);
+            } else if constexpr (std::is_same_v<T, trading::domain::equity_instrument>) {
+                if (equityInstrumentController_)
+                    equityInstrumentController_->openEdit(v);
+            } else if constexpr (std::is_same_v<T, trading::domain::commodity_instrument>) {
+                if (commodityInstrumentController_)
+                    commodityInstrumentController_->openEdit(v);
+            } else if constexpr (std::is_same_v<T, composite_export_result>) {
+                if (compositeInstrumentController_)
+                    compositeInstrumentController_->openEdit(v.instrument, v.legs);
+            } else if constexpr (std::is_same_v<T, trading::domain::scripted_instrument>) {
+                if (scriptedInstrumentController_)
+                    scriptedInstrumentController_->openEdit(v);
+            }
+        }, r);
+    });
+
     jobDefinitionController_ = std::make_unique<JobDefinitionController>(
         this, mdiArea_, clientManager_, QString::fromStdString(username_),
         changeReasonCache_, this);

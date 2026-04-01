@@ -60,6 +60,7 @@ public:
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
+    void openEdit(const trading::domain::bond_instrument& v);
 
 signals:
     void statusMessage(const QString& message);

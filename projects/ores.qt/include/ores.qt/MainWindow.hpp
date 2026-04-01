@@ -112,6 +112,7 @@ class CommodityInstrumentController;
 class CompositeInstrumentController;
 class ScriptedInstrumentController;
 class OreImportController;
+class MarketDataController;
 class PortfolioExplorerMdiWindow;
 class OrgExplorerMdiWindow;
 class ImageCache;
@@ -694,6 +695,7 @@ private:
     std::unique_ptr<ReportDefinitionController> reportDefinitionController_;
     std::unique_ptr<ReportInstanceController> reportInstanceController_;
     std::unique_ptr<OreImportController> oreImportController_;
+    std::unique_ptr<MarketDataController> marketDataController_;
 
     /** @brief Event bus for decoupled event handling */
     std::shared_ptr<eventing::service::event_bus> eventBus_;

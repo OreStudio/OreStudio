@@ -26,6 +26,7 @@
 #include <QLineEdit>
 #include <QComboBox>
 #include <QRadioButton>
+#include <QTimer>
 #include <QTreeWidget>
 #include <QPushButton>
 #include <boost/uuid/uuid.hpp>
@@ -60,6 +61,13 @@ private slots:
     void onOkClicked();
 
 private:
+    enum Role {
+        BusinessCentreRole = Qt::UserRole,
+        PartyNameRole,
+        PartyIdRole
+    };
+
+private:
     void setupUi();
     void populateCentreCombo();
     void applyFilter();
@@ -85,6 +93,7 @@ private:
 
     QPushButton* okButton_;
     QPushButton* cancelButton_;
+    QTimer*      flagRefreshTimer_;
 
     // Tracks which party is currently selected
     boost::uuids::uuid selectedId_;

@@ -57,12 +57,21 @@ PartyPickerDialog::PartyPickerDialog(
         onOkClicked();
     });
 
-    // Refresh flag icons when images become available (warm cache or async load)
+    // Refresh flag icons when images become available (warm cache or async load).
+    // imageLoaded fires once per image and can arrive in rapid bursts, so coalesce
+    // via a zero-interval single-shot timer to do at most one full refresh per
+    // event-loop cycle.
+    flagRefreshTimer_ = new QTimer(this);
+    flagRefreshTimer_->setSingleShot(true);
+    flagRefreshTimer_->setInterval(0);
+    connect(flagRefreshTimer_, &QTimer::timeout,
+            this, &PartyPickerDialog::refreshFlagIcons);
+
     if (imageCache_) {
         connect(imageCache_, &ImageCache::allLoaded,
                 this, &PartyPickerDialog::refreshFlagIcons);
         connect(imageCache_, &ImageCache::imageLoaded,
-                this, [this](const QString&) { refreshFlagIcons(); });
+                this, [this](const QString&) { flagRefreshTimer_->start(); });
     }
 }
 
@@ -89,7 +98,6 @@ void PartyPickerDialog::setupUi() {
     setWindowTitle("Select Party");
     setModal(true);
     setMinimumWidth(580);
-    setFixedWidth(580);
     setSizeGripEnabled(false);
 
     auto* mainLayout = new QVBoxLayout(this);
@@ -159,7 +167,7 @@ void PartyPickerDialog::setupUi() {
     }
     std::sort(ops.begin(), ops.end(),
         [](const PartyInfo* a, const PartyInfo* b) {
-            return a->name.toLower() < b->name.toLower();
+            return a->name.compare(b->name, Qt::CaseInsensitive) < 0;
         });
 
     for (const auto* p : ops) {
@@ -169,10 +177,9 @@ void PartyPickerDialog::setupUi() {
         // col 1: party name
         item->setText(0, bc);
         item->setText(1, p->name);
-        // UserRole on col 0: bc code; UserRole+1: party name; UserRole+2: UUID string
-        item->setData(0, Qt::UserRole,     bc);
-        item->setData(0, Qt::UserRole + 1, p->name);
-        item->setData(0, Qt::UserRole + 2,
+        item->setData(0, BusinessCentreRole, bc);
+        item->setData(0, PartyNameRole,      p->name);
+        item->setData(0, PartyIdRole,
             QString::fromStdString(boost::uuids::to_string(p->id)));
 
         if (imageCache_ && !bc.isEmpty())
@@ -257,9 +264,6 @@ void PartyPickerDialog::setupUi() {
     }
 
     filterEdit_->setFocus();
-
-    // Second pass: icons for images already loaded synchronously by populateCentreCombo
-    refreshFlagIcons();
 }
 
 void PartyPickerDialog::populateCentreCombo() {
@@ -286,8 +290,8 @@ void PartyPickerDialog::applyFilter() {
 
     for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
         auto* item = listWidget_->topLevelItem(i);
-        const QString name = item->data(0, Qt::UserRole + 1).toString().toLower();
-        const QString bc   = item->data(0, Qt::UserRole).toString();
+        const QString name = item->data(0, PartyNameRole).toString().toLower();
+        const QString bc   = item->data(0, BusinessCentreRole).toString();
 
         const bool nameMatch   = text.isEmpty()   || name.contains(text);
         const bool centreMatch = centre.isEmpty() || bc == centre;
@@ -316,10 +320,10 @@ void PartyPickerDialog::selectSystemParty() {
 
 void PartyPickerDialog::selectOperationalItem(QTreeWidgetItem* item) {
     if (!item) return;
-    selectedName_ = item->data(0, Qt::UserRole + 1).toString();
+    selectedName_ = item->data(0, PartyNameRole).toString();
     try {
         boost::uuids::string_generator gen;
-        selectedId_ = gen(item->data(0, Qt::UserRole + 2).toString().toStdString());
+        selectedId_ = gen(item->data(0, PartyIdRole).toString().toStdString());
     } catch (...) {
         selectedId_ = boost::uuids::uuid{};
     }
@@ -335,7 +339,7 @@ void PartyPickerDialog::refreshFlagIcons() {
 
     for (int i = 0; i < listWidget_->topLevelItemCount(); ++i) {
         auto* item = listWidget_->topLevelItem(i);
-        const auto bc = item->data(0, Qt::UserRole).toString().toStdString();
+        const auto bc = item->data(0, BusinessCentreRole).toString().toStdString();
         if (!bc.empty())
             item->setIcon(0, imageCache_->getBusinessCentreFlagIcon(bc));
     }

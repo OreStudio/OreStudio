@@ -267,10 +267,13 @@ TEST_CASE("import_portfolio_with_context_swap_has_instrument", tags) {
     REQUIRE(std::holds_alternative<swap_mapping_result>(item.instrument));
 
     const auto& r = std::get<swap_mapping_result>(item.instrument);
-    CHECK(r.instrument.id == item.trade.id);
+    CHECK(r.instrument.id != item.trade.id);
+    CHECK(r.instrument.trade_id == item.trade.id);
+    CHECK(item.trade.instrument_id == r.instrument.id);
+    CHECK(item.trade.instrument_family == "swap");
     CHECK(!r.legs.empty());
     for (const auto& leg : r.legs)
-        CHECK(leg.instrument_id == item.trade.id);
+        CHECK(leg.instrument_id == r.instrument.id);
 
     BOOST_LOG_SEV(lg, info) << "Swap instrument mapped. Legs: " << r.legs.size();
 }
@@ -287,7 +290,10 @@ TEST_CASE("import_portfolio_with_context_fx_forward_has_instrument", tags) {
     REQUIRE(std::holds_alternative<fx_mapping_result>(item.instrument));
 
     const auto& r = std::get<fx_mapping_result>(item.instrument);
-    CHECK(r.instrument.id == item.trade.id);
+    CHECK(r.instrument.id != item.trade.id);
+    CHECK(r.instrument.trade_id == item.trade.id);
+    CHECK(item.trade.instrument_id == r.instrument.id);
+    CHECK(item.trade.instrument_family == "fx");
     CHECK(!r.instrument.bought_currency.empty());
     CHECK(!r.instrument.sold_currency.empty());
 
@@ -309,7 +315,10 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     REQUIRE(std::holds_alternative<bond_mapping_result>(item.instrument));
 
     const auto& r = std::get<bond_mapping_result>(item.instrument);
-    CHECK(r.instrument.id == item.trade.id);
+    CHECK(r.instrument.id != item.trade.id);
+    CHECK(r.instrument.trade_id == item.trade.id);
+    CHECK(item.trade.instrument_id == r.instrument.id);
+    CHECK(item.trade.instrument_family == "bond");
     CHECK(!r.instrument.issuer.empty());
 
     BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.instrument.issuer;

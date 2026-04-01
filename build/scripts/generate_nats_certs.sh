@@ -96,7 +96,7 @@ if maybe_generate "$KEYS_DIR/nats-server.key"; then
         -CAcreateserial \
         -out "$KEYS_DIR/nats-server.crt" \
         -days "$LEAF_DAYS" \
-        -extfile "$SAN_FILE"
+        -extfile "$SAN_FILE" || { EXIT_CODE=$?; rm -f "$SAN_FILE" "$KEYS_DIR/nats-server.csr"; exit $EXIT_CODE; }
     rm -f "$SAN_FILE"
     rm -f "$KEYS_DIR/nats-server.csr"
     echo "  Generated: $KEYS_DIR/nats-server.crt (SAN: localhost, $HOSTNAME)"

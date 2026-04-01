@@ -69,7 +69,7 @@ void MarketSeriesMdiWindow::setupUi() {
     tableView_->setWordWrap(false);
     tableView_->setSortingEnabled(true);
     tableView_->verticalHeader()->setVisible(false);
-    tableView_->setItemDelegate(new EntityItemDelegate(tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate({}, tableView_));
 
     initializeTableSettings(tableView_, model_.get(),
         "MarketSeriesListWindow", {}, {1100, 600}, 1);
@@ -107,7 +107,9 @@ void MarketSeriesMdiWindow::setupUi() {
     });
 
     if (clientManager_) {
-        connect(clientManager_, &ClientManager::connectionStateChanged,
+        connect(clientManager_, &ClientManager::connected,
+                this, &MarketSeriesMdiWindow::onConnectionStateChanged);
+        connect(clientManager_, &ClientManager::reconnected,
                 this, &MarketSeriesMdiWindow::onConnectionStateChanged);
         if (clientManager_->isConnected())
             model_->refresh();
@@ -128,7 +130,7 @@ void MarketSeriesMdiWindow::setupToolbar() {
     connect(reloadAction_, &QAction::triggered,
             this, &MarketSeriesMdiWindow::doReload);
     toolBar_->addAction(reloadAction_);
-    initializeStaleIndicator(reloadAction_, Icon::ArrowSync);
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 
     toolBar_->addSeparator();
 

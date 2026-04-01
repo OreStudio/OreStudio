@@ -78,7 +78,7 @@ void MarketObservationMdiWindow::setupUi() {
     tableView_->setWordWrap(false);
     tableView_->setSortingEnabled(true);
     tableView_->verticalHeader()->setVisible(false);
-    tableView_->setItemDelegate(new EntityItemDelegate(tableView_));
+    tableView_->setItemDelegate(new EntityItemDelegate({}, tableView_));
 
     initializeTableSettings(tableView_, model_.get(),
         "MarketObservationWindow", {}, {800, 500}, 1);
@@ -103,7 +103,7 @@ void MarketObservationMdiWindow::setupToolbar() {
     connect(reloadAction_, &QAction::triggered,
             this, &MarketObservationMdiWindow::doReload);
     toolBar_->addAction(reloadAction_);
-    initializeStaleIndicator(reloadAction_, Icon::ArrowSync);
+    initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowSync));
 }
 
 void MarketObservationMdiWindow::doReload() {

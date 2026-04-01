@@ -2482,7 +2482,7 @@ void MainWindow::createControllers() {
 
     // Create market data controller
     marketDataController_ = std::make_unique<MarketDataController>(
-        this, mdiArea_, clientManager_, username);
+        this, mdiArea_, clientManager_, QString::fromStdString(username_));
     connect(marketDataController_.get(), &MarketDataController::statusMessage,
             this, [this](const QString& message) {
         ui_->statusbar->showMessage(message, 5000);

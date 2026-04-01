@@ -23,7 +23,6 @@
 #include <QDateTime>
 #include <QTimeZone>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/string_generator.hpp>
 #include "ores.nats/config/nats_options.hpp"
 #include "ores.nats/service/client.hpp"
@@ -152,10 +151,11 @@ LoginResult ClientManager::login(const std::string& username,
             .tenant_name = response.tenant_name
         });
 
-        // Generate a session trace ID once per login so that every outbound
-        // NATS request carries Nats-Session-Id, grouping all calls from this
-        // login in log aggregation.
-        session_id_ = boost::uuids::to_string(boost::uuids::random_generator()());
+        // Use the IAM session UUID returned by the server. This matches the
+        // record in ores_iam_sessions_tbl and is forwarded as Nats-Session-Id
+        // on every subsequent request so all calls from this login can be
+        // correlated in logs.
+        session_id_ = response.session_id;
         BOOST_LOG_SEV(lg(), info) << "Session started: session_id=" << session_id_;
 
         // Store local state

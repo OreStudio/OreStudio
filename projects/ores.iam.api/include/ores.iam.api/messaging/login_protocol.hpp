@@ -60,6 +60,14 @@ struct login_response {
      * timer interval tracks any server-side configuration changes.
      */
     int access_lifetime_s = 1800;
+    /**
+     * @brief The IAM session UUID created for this login.
+     *
+     * Matches the session record in ores_iam_sessions_tbl. Clients should
+     * forward this as Nats-Session-Id on every subsequent request so that
+     * all calls from a single login session can be correlated in logs.
+     */
+    std::string session_id;
 };
 
 struct logout_request {

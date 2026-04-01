@@ -95,7 +95,7 @@ struct get_trade_history_response {
  * @brief One trade plus its resolved instrument data for export.
  *
  * The instrument field is monostate when the trade has no linked instrument
- * or the instrument_family is unrecognised.
+ * or the product_type is unrecognised.
  */
 struct trade_export_item {
     ores::trading::domain::trade trade;

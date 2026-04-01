@@ -301,9 +301,9 @@ void TradeController::onOpenInstrumentRequested(
     const trading::domain::trade& trade) {
     BOOST_LOG_SEV(lg(), debug) << "Open instrument requested for: "
                                << trade.external_id
-                               << " family=" << trade.instrument_family;
+                               << " product_type=" << trade.product_type;
 
-    if (trade.instrument_family.empty() || !trade.instrument_id) {
+    if (trade.product_type.empty() || !trade.instrument_id) {
         MessageBoxHelper::information(mainWindow_, tr("No Instrument"),
             tr("Trade '%1' has no linked instrument.")
             .arg(QString::fromStdString(trade.external_id)));
@@ -322,7 +322,7 @@ void TradeController::onOpenInstrumentRequested(
         if (!self) return std::nullopt;
 
         trading::messaging::get_instrument_for_trade_request req;
-        req.instrument_family = trade.instrument_family;
+        req.product_type = trade.product_type;
         req.instrument_id = boost::uuids::to_string(*trade.instrument_id);
 
         auto result = self->clientManager_->process_authenticated_request(

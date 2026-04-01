@@ -232,7 +232,7 @@ public:
         get_instrument_for_trade_response resp;
         try {
             if (auto req = decode<get_instrument_for_trade_request>(msg)) {
-                const auto& family = req->instrument_family;
+                const auto& family = req->product_type;
                 const auto& id = req->instrument_id;
 
                 if (family == "swap") {

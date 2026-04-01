@@ -598,7 +598,7 @@ void ImportTradeDialog::onImportClicked() {
 
         tti.trade.id = boost::uuids::random_generator()();
         // Assign fresh UUIDs and wire the soft FKs for this specific import.
-        // instrument_family is already set on tti.trade from the importer.
+        // product_type is already set on tti.trade from the importer.
         std::visit([&](auto& r) {
             if constexpr (!std::is_same_v<std::decay_t<decltype(r)>, std::monostate>) {
                 const auto instr_id = boost::uuids::random_generator()();

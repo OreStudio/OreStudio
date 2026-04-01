@@ -516,7 +516,43 @@ data, and Qt wizard refactor.
       definitions created in =ores_reporting_report_definitions_tbl= match the
       selected artefacts, confirm no check constraint violations
 
-*** TODO Unify asset class modelling across trading and market data     :analysis:
+*** DONE Rename =instrument_family= to =product_type= across trading domain :code:
+
+The field =instrument_family= in =ores_trading_trades_tbl= is a DB routing
+discriminator — it tells the system which product-specific extension table to
+use, not which asset class the trade belongs to. The name "family" implies a
+risk taxonomy, which caused it to be confused with =asset_class=.
+
+FpML and the ISDA CDM both use *product* terminology: the abstract base type
+is =Product=; the structural classification is =productType=. Renaming to
+=product_type= makes the field's role explicit and aligns with industry-standard
+language.
+
+This is a pure rename — values (=swap=, =fx=, =bond=, =credit=, =equity=,
+=commodity=, =composite=, =scripted=) are unchanged. No behaviour changes.
+
+Scope: SQL DDL, C++ domain structs, NATS message types, trade handler,
+repository mapper, Qt trade window.
+
+***** Tasks
+
+- [X] Rename PG enum type: =instrument_family_t= → =product_type_t= in
+      =trading_instrument_family_type_create.sql=; rename file to
+      =trading_product_type_create.sql=
+- [X] Rename column and index in =trading_trades_create.sql=
+- [X] Update =trading_trades_functions_create.sql= and
+      =trading_trades_bu_functions_create.sql=
+- [X] Update =trading_create.sql= =\ir= include for renamed file
+- [X] Rename field in =ores.trading.api/domain/trade.hpp=
+- [X] Rename field in =ores.trading.api/messaging/instrument_protocol.hpp=
+- [X] Rename field in =ores.trading.core/include/.../trade_entity.hpp=
+- [X] Update =trade_mapper.cpp=, =trade_repository.cpp=, =instrument_handler.hpp=,
+      =trade_handler.hpp=
+- [X] Update =TradeMdiWindow.cpp=, =TradeController.cpp=, =ImportTradeDialog.cpp=,
+      =importer.cpp=, =xml_trade_import_tests.cpp=
+- [X] Update plan document and sprint backlog to reflect =product_type= decision
+
+*** IN-PROGRESS Unify asset class modelling across trading and market data :analysis:
 
 *Background*
 
@@ -578,16 +614,37 @@ Trading-only =instrument_family_t= values that have no asset class counterpart:
 | =composite=    | Instrument architecture                         |
 | =scripted=     | Instrument architecture                         |
 
-*Key finding: =instrument_family= and =asset_class= are different concepts*
+*Key finding: =instrument_family= and =asset_class= are two orthogonal concepts*
 
-=swap=, =composite=, and =scripted= are /instrument structures/ used by the
-trading layer to route a trade to its product-specific extension table. They
-are not risk classifications. A swap can belong to the =rates=, =credit=, or
-=equity= asset class; the instrument family just says it /is/ a swap. The
-overlap of names (=fx=, =bond=, =credit=, =equity=, =commodity=) is
-coincidental — in the trading schema they identify instrument subtables, not
-risk buckets. These two concepts should remain separate; the goal is to unify
-the /asset class/ taxonomy only, not to merge it with instrument routing.
+Two distinct concepts must be kept separate:
+
+- *Asset class* (=asset_class=) — /risk taxonomy/: answers "what underlying
+  economic risk does this expose you to?" Applies equally to market data
+  series and to trades. Corresponds to FpML's =assetClass= element and the
+  CDM's top-level product category. Values: =fx=, =rates=, =credit=,
+  =equity=, =commodity=, =inflation=, =bond=, =cross_asset=.
+
+- *Instrument type* (=instrument_family=, to be renamed =product_type=) —
+  /product structure and DB routing discriminator/: answers "what kind of
+  financial instrument is this structurally?" Applies only to trades.
+  Corresponds to FpML's =productType= and CDM's concrete product type.
+  Values: =swap=, =fx=, =bond=, =credit=, =equity=, =commodity=,
+  =composite=, =scripted=.
+
+The concepts are many-to-many: a =swap= (instrument type) can be =rates=,
+=credit=, =equity=, =inflation=, or =fx= (asset class) depending on the
+specific trade. =composite= and =scripted= have no single implied asset class
+at all. The name overlap (=fx=, =bond=, =credit=, =equity=, =commodity= appear
+in both) is coincidental: in the trading schema they identify DB extension
+tables and routing paths; they are not risk buckets.
+
+The goal is /not/ to end up with a single field; it is to give each concept a
+precise, non-overlapping definition and ensure both are present and validated
+where applicable. After this work:
+- Market data series: has =asset_class=, no =product_type=.
+- Trades: has both =product_type= (routing) AND =asset_class= (risk).
+
+See =doc/plans/2026-04-01-asset-class-unification.org= for full design.
 
 *Infrastructure that already exists*
 
@@ -624,52 +681,33 @@ and (c) a NATS endpoint so the Qt client can fetch the list dynamically.
 
 *Target architecture*
 
-=ores_refdata_asset_classes_tbl= (already exists) becomes the single
-source of truth:
-
 #+begin_example
-ores_refdata_asset_classes_tbl
-  code TEXT + coding_scheme_code TEXT  →  composite PK
+ores_refdata_asset_classes_tbl  ←  single source of truth
+  coding_scheme_code = 'ORE'         8 ORE codes (lowercase snake_case)
+  coding_scheme_code = 'FPML_ASSET_CLASS'  8 FpML codes (PascalCase)
 
-  coding_scheme_code = 'ORE'  (new, canonical):
-    fx, rates, credit, equity, commodity, inflation, bond, cross_asset
+ores_marketdata_series_tbl
+  asset_class TEXT    ← validated by ores_refdata_validate_asset_class_fn
+  series_subclass TEXT ← lightweight check constraint (no refdata table)
 
-  coding_scheme_code = 'FPML_ASSET_CLASS'  (already seeded, extend):
-    Commodity, Credit, Equity, ForeignExchange, InterestRate,
-    SecuritiesFinancing  +  add missing: Inflation, Bond
+ores_trading_trades_tbl
+  product_type product_type_t   (renamed from instrument_family)
+  asset_class     TEXT                (new column, same validation fn)
 
-ores_marketdata_series_tbl.asset_class  TEXT
-  → validated via ores_refdata_validate_asset_class_fn() in insert trigger
-  → FK enforced at DB level
-
-ores_trading_trades_tbl.instrument_family
-  → keep as instrument_family_t PG ENUM — it is a routing discriminator,
-     not an asset class; consider renaming to make the distinction clear
-
-Qt client
-  → load ORE asset classes from new refdata.v1.asset-classes.list endpoint
-  → remove hardcoded labels from ClientMarketSeriesModel and MarketSeriesMdiWindow
+NATS: refdata.v1.asset-classes.list
+  → Qt loads combo dynamically; no hardcoded labels remain
 #+end_example
 
-*Scope of this story*
+*Decisions*
 
-Analysis and design only. Output: a plan document under =doc/plans/= that
-specifies:
-
-- The canonical ORE asset class code set and how it relates to FpML codes
-  (separate coding scheme, not a conflict).
-- Whether =instrument_family_t= PG ENUM should be renamed to make explicit
-  that it is a routing discriminator, not an asset class taxonomy.
-- Migration path for =ores_marketdata_series_tbl.asset_class=: seed ORE
-  codes in =ores_dq_asset_classes_artefact_tbl= with =coding_scheme_code = 'ORE'=,
-  publish to =ores_refdata_asset_classes_tbl=, add validation function call
-  in the =market_series= insert trigger.
-- A new =refdata.v1.asset-classes.list= NATS endpoint so the Qt client can
-  load the combo dynamically.
-- How the C++ enums in =ores.marketdata.api= are kept in sync with the
-  database codes (startup assertion or generated constant set from seed data).
-- Whether =series_subclass= (currently also an unconstrained =TEXT= column
-  with a C++ enum but no DB validation) warrants the same treatment.
+- ORE codes are lowercase snake_case (=fx=, =rates=, =cross_asset=) — consistent
+  with all other ORE codes in the system.
+- =instrument_family= is renamed =product_type= everywhere: PG enum type,
+  column name, C++ field name. Values are unchanged.
+- =series_subclass= is validated via a DB check constraint (not a refdata
+  table); it is too tightly coupled to the ORE key structure to be worth
+  a full DQ pipeline.
+- Full design and implementation phases in =doc/plans/2026-04-01-asset-class-unification.org=.
 
 ***** Tasks
 
@@ -677,23 +715,25 @@ specifies:
       hard-coded: SQL enums, C++ enums, serialisers, Qt combo entries,
       seed data (done — see reconciliation table above)
 - [X] Establish that =instrument_family= and =asset_class= are different
-      concepts and should not be merged
+      concepts and should not be merged; define both precisely against
+      FpML/CDM (=asset_class= = risk taxonomy, =product_type= = structural
+      routing discriminator)
 - [X] Confirm that =ores_refdata_asset_classes_tbl= + validation function
       already provide the required infrastructure
-- [ ] Decide canonical ORE code set string format (currently lowercase
-      snake_case; confirm this is the preferred convention)
-- [ ] Write populate script seeding ORE codes into
-      =ores_dq_asset_classes_artefact_tbl= with =coding_scheme_code = 'ORE'=
-      (8 rows: =fx=, =rates=, =credit=, =equity=, =commodity=, =inflation=,
-      =bond=, =cross_asset=); wire into populate orchestrator
-- [ ] Add missing FpML entries (=Inflation=, =Bond=) to
-      =fpml_asset_class_artefact_populate.sql=
-- [ ] Call =ores_refdata_validate_asset_class_fn= from the =market_series=
-      insert/update trigger in =marketdata_series_create.sql=
-- [ ] Design =refdata.v1.asset-classes.list= NATS endpoint (request/response
-      types, handler, registration)
-- [ ] Assess whether =series_subclass= needs the same treatment
-- [ ] Write plan document capturing decisions and migration steps
+- [X] Decide canonical ORE code set string format: lowercase snake_case,
+      consistent with all other ORE codes
+- [X] Decide =instrument_family= → =product_type= rename (values unchanged)
+- [X] Assess =series_subclass=: DB check constraint sufficient, no refdata table
+- [X] Write plan document: =doc/plans/2026-04-01-asset-class-unification.org=
+- [ ] Phase 1: Rename =instrument_family= → =product_type= throughout
+      (DDL, C++, NATS messages, Qt)
+- [ ] Phase 2: Seed ORE codes + missing FpML codes into artefact table;
+      publish to refdata
+- [ ] Phase 3: Enforce =asset_class= validation in =marketdata_series= trigger;
+      add =series_subclass= check constraint
+- [ ] Phase 4: Add =asset_class= column to =ores_trading_trades_tbl= + C++ +
+      NATS messages + Qt trades view
+- [ ] Phase 5: =refdata.v1.asset-classes.list= NATS endpoint + Qt data-driven combo
 
 *** TODO Add missing party isolation RLS policies                      :code:
 

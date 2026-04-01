@@ -44,7 +44,7 @@ trade_mapper::map(const trade_entity& v) {
     r.successor_trade_id = v.successor_trade_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.successor_trade_id)) : std::nullopt;
     r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
-    r.instrument_family = v.instrument_family.value_or("");
+    r.product_type = v.product_type.value_or("");
     r.instrument_id = v.instrument_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.instrument_id)) : std::nullopt;
     r.netting_set_id = v.netting_set_id;
     r.activity_type_code = v.activity_type_code;
@@ -80,7 +80,7 @@ trade_mapper::map(const domain::trade& v) {
     r.successor_trade_id = v.successor_trade_id.has_value() ? std::optional(boost::uuids::to_string(*v.successor_trade_id)) : std::nullopt;
     r.counterparty_id = v.counterparty_id.has_value() ? std::optional(boost::uuids::to_string(*v.counterparty_id)) : std::nullopt;
     r.trade_type = v.trade_type;
-    r.instrument_family = v.instrument_family.empty() ? std::nullopt : std::optional(v.instrument_family);
+    r.product_type = v.product_type.empty() ? std::nullopt : std::optional(v.product_type);
     r.instrument_id = v.instrument_id.has_value() ? std::optional(boost::uuids::to_string(*v.instrument_id)) : std::nullopt;
     r.netting_set_id = v.netting_set_id;
     r.activity_type_code = v.activity_type_code;

@@ -150,23 +150,23 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                     item.trade.instrument_id = instr_id;
 
                     if constexpr (std::is_same_v<T, domain::swap_mapping_result>) {
-                        item.trade.instrument_family = "swap";
+                        item.trade.product_type = "swap";
                         for (auto& leg : result.legs)
                             leg.instrument_id = instr_id;
                     } else if constexpr (std::is_same_v<T, domain::fx_mapping_result>) {
-                        item.trade.instrument_family = "fx";
+                        item.trade.product_type = "fx";
                     } else if constexpr (std::is_same_v<T, domain::bond_mapping_result>) {
-                        item.trade.instrument_family = "bond";
+                        item.trade.product_type = "bond";
                     } else if constexpr (std::is_same_v<T, domain::credit_mapping_result>) {
-                        item.trade.instrument_family = "credit";
+                        item.trade.product_type = "credit";
                     } else if constexpr (std::is_same_v<T, domain::equity_mapping_result>) {
-                        item.trade.instrument_family = "equity";
+                        item.trade.product_type = "equity";
                     } else if constexpr (std::is_same_v<T, domain::commodity_mapping_result>) {
-                        item.trade.instrument_family = "commodity";
+                        item.trade.product_type = "commodity";
                     } else if constexpr (std::is_same_v<T, domain::composite_mapping_result>) {
-                        item.trade.instrument_family = "composite";
+                        item.trade.product_type = "composite";
                     } else if constexpr (std::is_same_v<T, domain::scripted_mapping_result>) {
-                        item.trade.instrument_family = "scripted";
+                        item.trade.product_type = "scripted";
                     }
                 }
             }, item.instrument);

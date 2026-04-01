@@ -254,7 +254,7 @@ void TradeMdiWindow::updateActionStates() {
         if (!selected.isEmpty()) {
             auto sourceIndex = proxyModel_->mapToSource(selected.first());
             if (auto* trade = model_->getTrade(sourceIndex.row()))
-                hasInstrument = !trade->instrument_family.empty();
+                hasInstrument = !trade->product_type.empty();
         }
     }
     openInstrumentAction_->setEnabled(hasInstrument);

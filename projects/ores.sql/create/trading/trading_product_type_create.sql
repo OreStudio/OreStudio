@@ -19,15 +19,21 @@
  */
 
 -- =============================================================================
--- Instrument Family Enum
+-- Product Type Enum
 --
--- Discriminator used by ores_trading_trades_tbl.instrument_family to route
--- a trade to its product-specific instrument extension table without requiring
--- application-layer decoding of the trade_type string.
+-- Discriminator used by ores_trading_trades_tbl.product_type to route a trade
+-- to its product-specific extension table without requiring application-layer
+-- decoding of the trade_type string.
+--
+-- This is a structural/routing classification, not a risk taxonomy. It answers
+-- "what kind of financial product is this?" (FpML: productType), not "what
+-- economic risk does it carry?" (FpML: assetClass). A swap, for example, can
+-- belong to the rates, credit, equity, or inflation asset class — the product
+-- type identifies the structure; the asset_class column identifies the risk.
 -- =============================================================================
 
 do $$ begin
-    create type instrument_family_t as enum (
+    create type product_type_t as enum (
         'swap',
         'fx',
         'bond',

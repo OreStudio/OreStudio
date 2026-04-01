@@ -536,7 +536,7 @@ using instrument_export_result = std::variant<
 /**
  * @brief Fetch the instrument linked to a specific trade.
  *
- * The caller supplies instrument_family and instrument_id taken directly from
+ * The caller supplies product_type and instrument_id taken directly from
  * the trade record. The server routes to the correct extension table and
  * returns the populated instrument_export_result variant.
  */
@@ -544,7 +544,7 @@ struct get_instrument_for_trade_request {
     using response_type = struct get_instrument_for_trade_response;
     static constexpr std::string_view nats_subject =
         "trading.v1.trades.instrument.get";
-    std::string instrument_family;
+    std::string product_type;
     std::string instrument_id;
 };
 

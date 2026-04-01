@@ -1,0 +1,327 @@
+:PROPERTIES:
+:ID: 4a7e9c12-3b85-4f2d-a8d6-1c5e0b734f92
+:END:
+#+title: Asset Class Unification
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:nil html-postamble:nil
+#+startup: inlineimages
+
+* Overview
+
+This plan establishes a single, coherent conceptual model for financial
+classification across the ORE Studio system. It resolves a long-standing
+inconsistency where the concept of /asset class/ was modelled independently
+— and incompatibly — in three places with no shared source of truth.
+
+The core outcome is not to collapse everything into a single field, but to
+give each concept a precise, industry-standard definition and ensure every
+layer of the system uses the right concept for the right purpose.
+
+** Goals
+
+- Define =asset_class= and =product_type= as two distinct, non-overlapping
+  concepts grounded in FpML and the ISDA Common Domain Model (CDM).
+- Make =ores_refdata_asset_classes_tbl= the single source of truth for the
+  =asset_class= taxonomy, shared by both trading and market data domains.
+- Add =asset_class= to the trading domain (currently missing), giving trades
+  a proper risk classification alongside their structural routing field.
+- Rename =instrument_family= → =product_type= throughout the system to
+  make its role as a structural discriminator unambiguous.
+- Eliminate all hardcoded asset class labels from Qt by replacing them with
+  a new =refdata.v1.asset-classes.list= NATS endpoint.
+- Enforce the =asset_class= taxonomy at the database level via the existing
+  validation function (currently unused).
+
+** Out of scope
+
+- Changing how instrument extension tables are routed — =product_type=
+  remains the routing key; only the name changes.
+- Adding =series_subclass= to refdata (deferred; see §Assessment below).
+- Real-time or streaming asset class cache invalidation in Qt.
+
+** Success criteria
+
+- A single ORE coding scheme row exists in =ores_refdata_asset_classes_tbl=
+  for each of the eight ORE asset class codes.
+- =ores_marketdata_series_tbl.asset_class= is validated by the trigger
+  against the refdata table; invalid codes are rejected at insert time.
+- =ores_trading_trades_tbl= carries an =asset_class= column validated by the
+  same function.
+- Qt loads the asset class combo from the server; no string literals for asset
+  class names exist in client code.
+- The C++ enum =asset_class= in =ores.marketdata.api= is the single in-process
+  representation; =ores.trading.api= references the same values.
+
+* Conceptual Model
+
+** The two concepts
+
+*** Asset Class — risk taxonomy
+
+/What underlying economic risk does this instrument or market series expose
+you to?/
+
+=asset_class= is a top-level risk classification that applies uniformly to
+*both* market data series and trades. It answers questions like: "Which
+P&L bucket does this belong to?", "Which risk desk owns this?", "What
+regulatory reporting category does this fall under?"
+
+FpML counterpart: =assetClass= (defined on every =trade= and on =underlyer=
+constructs).
+CDM counterpart: the top-level product category in the CDM taxonomy
+(=InterestRate=, =ForeignExchange=, =Credit=, =Equity=, =Commodity=, etc.).
+
+ORE canonical values (=coding_scheme_code = 'ORE'=):
+
+| ORE code       | FpML code          | Meaning                                         |
+|----------------+--------------------+-------------------------------------------------|
+| =fx=           | =ForeignExchange=  | FX rates, forwards, vol surfaces                |
+| =rates=        | =InterestRate=     | IR curves, swaption vols, basis spreads         |
+| =credit=       | =Credit=           | Credit spreads, CDS, hazard rates, recovery     |
+| =equity=       | =Equity=           | Equity spot, forwards, dividends, vol surfaces  |
+| =commodity=    | =Commodity=        | Commodity spot, forwards, vol surfaces          |
+| =inflation=    | /(FpML: add)=      | Inflation swap rates, cap/floor vols            |
+| =bond=         | /(FpML: add)/      | Bond prices, yield spreads                      |
+| =cross_asset=  | /(ORE-specific)/   | Cross-asset correlations                        |
+
+*** Instrument Type — product structure and routing discriminator
+
+/What kind of financial instrument is this structurally? Which extension table
+and pricing engine path should be used?/
+
+=product_type= (currently named =instrument_family=) applies *only to
+trades and instruments*. It is an engineering and product classification, not
+a risk classification. It tells the system how to store, route and value a
+trade. It has no meaning in the market data domain.
+
+FpML counterpart: =productType= (structural product classification within a
+product type scheme, e.g. =ird:swap=, =fx:forward=).
+CDM counterpart: the concrete product type in CDM's product taxonomy
+(=InterestRatePayout=, =ForwardPayout=, =CreditDefaultPayout=, etc.).
+
+Current values (=instrument_family_t= PG enum, renamed to =product_type_t=):
+
+| Instrument type  | DB routing target                    | Notes                               |
+|------------------+--------------------------------------+-------------------------------------|
+| =swap=           | =ores_trading_swaps_tbl= (etc.)      | Any rate, credit, equity swap       |
+| =fx=             | =ores_trading_fx_tbl=                | Spot, forward, NDF, option          |
+| =bond=           | =ores_trading_bonds_tbl=             | Fixed/floating rate debt            |
+| =credit=         | =ores_trading_credit_tbl=            | CDS, CLN, credit-linked note        |
+| =equity=         | =ores_trading_equity_tbl=            | Share, equity swap, equity option   |
+| =commodity=      | =ores_trading_commodity_tbl=         | Physical, financial commodity       |
+| =composite=      | multi-leg routing                    | ORE-specific: multi-leg structure   |
+| =scripted=       | payoff-definition routing            | ORE-specific: scripted payoff       |
+
+** Why these are different concepts
+
+The apparent name overlap (=fx=, =bond=, =credit=, =equity=, =commodity=
+appear in both taxonomies) is the primary source of confusion. They look
+similar but answer completely different questions:
+
+#+begin_example
+Instrument type = "swap"   →   could have asset_class = "rates"
+                           →   or asset_class = "credit"    (CDS)
+                           →   or asset_class = "equity"    (TRS)
+                           →   or asset_class = "inflation" (ZC inflation swap)
+                           →   or asset_class = "fx"        (XCCY basis swap)
+
+Instrument type = "bond"   →   could have asset_class = "bond"
+                           →   or asset_class = "credit"    (ABS, CDO tranche)
+                           →   or asset_class = "rates"     (govt inflation-linker)
+#+end_example
+
+This many-to-many relationship proves that instrument type is NOT a refinement
+of asset class, nor vice versa. A =swap= does not have an implied asset class;
+the asset class is a separate attribute of the specific trade. Conflating them
+(as =instrument_family_t= inadvertently suggested by sharing names) leads to
+incorrect reporting and schema ambiguity.
+
+=composite= and =scripted= are further evidence: they are ORE-specific
+structural meta-types with no natural asset class — they may span multiple
+asset classes — so they literally cannot be expressed in the asset class
+taxonomy.
+
+** Market data has asset class but not instrument type
+
+A market series is an observable, not an instrument. It does not have a
+product structure; it has a risk factor type. The =asset_class= and
+=series_subclass= fields on =ores_marketdata_series_tbl= classify the risk
+factor being observed, not any instrument.
+
+=series_subclass= (=spot=, =forward=, =volatility=, =yield=, etc.) is a
+market-data-specific sub-taxonomy within an asset class. It has no FpML
+equivalent and no counterpart in the trading schema. It is not being made
+data-driven in this plan (see §Assessment of series_subclass below).
+
+** Trades have instrument type AND asset class
+
+After this plan, a trade will carry two orthogonal classification fields:
+
+| Field             | Role                   | Source of truth                        |
+|-------------------+------------------------+----------------------------------------|
+| =product_type= | Structural / routing   | =product_type_t= PG enum (static)   |
+| =asset_class=     | Risk / reporting       | =ores_refdata_asset_classes_tbl=       |
+
+The =product_type= column remains a fast PG enum for join performance and
+routing correctness. The =asset_class= column is a validated TEXT FK into the
+refdata table.
+
+* Current State Audit
+
+** Market data domain
+
+| Location | Current representation | Problem |
+|----------+------------------------+---------|
+| =ores.marketdata.api/domain/asset_class.hpp= | C++ enum (8 values) | Not linked to DB |
+| =ores_marketdata_series_tbl.asset_class= | =TEXT NOT NULL= | No DB-level validation |
+| =market_series_mapper.cpp= | hand-coded enum↔string | String mismatch risk |
+| =ClientMarketSeriesModel.cpp= | hardcoded display labels | Duplicates server-side concept |
+| =MarketSeriesMdiWindow.cpp= | hardcoded combo entries | Silently diverges from DB |
+
+The insert trigger at =marketdata_series_insert_fn= does NOT call
+=ores_refdata_validate_asset_class_fn=. Any string is accepted.
+
+** Trading domain
+
+| Location | Current representation | Problem |
+|----------+------------------------+---------|
+| =trading_instrument_family_type_create.sql= | PG enum =instrument_family_t= | Named as if it were asset class |
+| =ores_trading_trades_tbl.instrument_family= | =instrument_family_t= column | No =asset_class= column at all |
+| =ores.trading.api/domain/trade.hpp= | =std::string instrument_family= | No asset class field |
+
+Trades have no asset class whatsoever. This means risk reporting by asset class
+is impossible without inferring from instrument type — which, as shown above,
+is ambiguous.
+
+** Refdata domain
+
+| Location | Current state | Gap |
+|----------+---------------+-----|
+| =ores_refdata_asset_classes_tbl= | Full bitemporal table | ORE coding scheme not seeded |
+| =ores_refdata_validate_asset_class_fn= | Implemented, works | Not called from market data trigger |
+| =ores_dq_asset_classes_publish_fn= | Implemented | ORE codes not in artefact table |
+| FpML populate script | 6 codes seeded | =Inflation=, =Bond= missing |
+
+* Target Architecture
+
+#+begin_example
+ores_refdata_asset_classes_tbl  ←  single source of truth for asset_class
+  coding_scheme_code = 'ORE'         8 ORE codes (fx, rates, credit, ...)
+  coding_scheme_code = 'FPML_ASSET_CLASS'  8 FpML codes (ForeignExchange, ...)
+
+ores_marketdata_series_tbl
+  asset_class TEXT                   validated by ores_refdata_validate_asset_class_fn
+                                     called from insert trigger
+
+ores_trading_trades_tbl
+  product_type product_type_t  (renamed from instrument_family)
+  asset_class     TEXT               new column, validated by same function
+
+NATS endpoint: refdata.v1.asset-classes.list
+  → returns ORE-coded asset classes for the current tenant
+  → Qt loads combo dynamically; no hardcoded labels
+
+C++ enum: ores::marketdata::domain::asset_class   (stays in marketdata.api)
+  → also referenced from ores.trading.api via shared header or re-export
+  → startup assertion: C++ enum values == ORE codes in DB
+
+product_type_t PG enum (renamed from instrument_family_t)
+  → values unchanged; only name clarified
+#+end_example
+
+* Assessment of =series_subclass=
+
+=series_subclass= (15 values: =spot=, =forward=, =volatility=, =yield=, etc.)
+is a market-data-specific sub-taxonomy that further classifies a risk factor
+within its asset class. It has no FpML or CDM counterpart and is tightly
+coupled to the ORE key structure and the 35 ORE series type codes.
+
+It does have the same structural problem as =asset_class= (unconstrained TEXT
+column, C++ enum with no DB validation), but:
+
+- It is purely internal to the market data domain — no trading or reporting
+  layer needs to filter or group by it externally.
+- The mapping from ORE series types to subclass values is mechanical and
+  documented in =series_key_registry=; adding a new subclass requires a new
+  ORE series type, which requires code changes anyway.
+- Making it data-driven would add a refdata table, a DQ pipeline, a NATS
+  endpoint, and an artefact populate script for marginal benefit.
+
+*Decision*: Add DB-level validation to =series_subclass= (via a simple check
+constraint or a lightweight validation function with a hardcoded set) but do
+not promote it to a full refdata-managed concept. This gives correctness
+without the overhead of a DQ pipeline for a purely internal classification.
+
+* Implementation Phases
+
+** Phase 1 — Conceptual cleanup and renaming [DDL + C++]
+
+Rename =instrument_family= → =product_type= throughout:
+
+- Rename PG enum type: =instrument_family_t= → =product_type_t=
+  (DDL: =ALTER TYPE instrument_family_t RENAME TO product_type_t=)
+- Rename column: =ores_trading_trades_tbl.instrument_family= →
+  =.product_type=
+- Update all references: DDL files, trigger functions, indexes, C++ mappers,
+  C++ domain structs, NATS message types, Qt model columns
+- Update SQL comments to make the routing role explicit
+
+This is a pure rename — no value changes, no behaviour changes.
+
+** Phase 2 — Seed ORE asset class codes [SQL]
+
+- Add 8 rows to =fpml_asset_class_artefact_populate.sql= (or a new
+  =ore_asset_class_artefact_populate.sql=) with
+  =coding_scheme_code = 'ORE'=:
+  =fx=, =rates=, =credit=, =equity=, =commodity=, =inflation=, =bond=,
+  =cross_asset=
+- Add missing FpML entries to the existing populate script:
+  =Inflation= and =Bond= with =coding_scheme_code = 'FPML_ASSET_CLASS'=
+- Wire the new ORE populate script into the populate orchestrator
+- Register a new DQ dataset =ore.asset_class= alongside =fpml.asset_class=
+- Publish both to =ores_refdata_asset_classes_tbl= via
+  =ores_dq_asset_classes_publish_fn=
+
+** Phase 3 — Enforce asset class in market data [DDL]
+
+- In =ores_marketdata_series_insert_fn=: add a call to
+  =ores_refdata_validate_asset_class_fn(new.tenant_id, new.asset_class)=
+  immediately after tenant validation
+- Add analogous validation for =series_subclass= via a check constraint
+  against the 15 known values (lightweight; no refdata table needed)
+- Update integration tests to verify a bad =asset_class= value is rejected
+
+** Phase 4 — Add asset class to trading [DDL + C++]
+
+- Add =asset_class TEXT= column to =ores_trading_trades_tbl= (nullable for
+  backwards compatibility with existing rows)
+- Add validation call to the trades insert trigger
+- Add =asset_class= field to =ores.trading.api/domain/trade.hpp=
+- Update trade mapper (=trade_mapper.cpp=) to read/write the field
+- Update trade repository queries
+- Update NATS message types for trade create/update/read to include
+  =asset_class=
+- Qt: add =Asset Class= column to the trades list view
+
+** Phase 5 — NATS endpoint and Qt data-driven combo [Service + Qt]
+
+- Define =refdata.v1.asset-classes.list= request/response types in
+  =ores.refdata.api=
+- Implement handler in =ores.refdata.service=: queries
+  =ores_refdata_asset_classes_tbl= for =coding_scheme_code = 'ORE'=
+- Register handler in the refdata service wiring
+- Qt: add =ClientAssetClassModel= (or reuse a generic refdata list model)
+- Remove hardcoded =asset_class_label()= function from
+  =ClientMarketSeriesModel.cpp=
+- =MarketSeriesMdiWindow=: populate combo from model, not from literals
+- Ensure sort order is consistent (alphabetical by ORE code or by display name)
+
+* Risk and Rollback Notes
+
+- Phase 1 (rename) is the riskiest phase because =instrument_family= appears
+  in many files. Proceed file-by-file with CI validation at each step.
+- Phases 2–3 are additive SQL; they do not break existing data.
+- Phase 4's =asset_class= column is nullable, so existing trade rows are
+  unaffected. A follow-up migration can backfill based on =product_type=
+  heuristics for simple cases (e.g., =product_type = 'fx'= → =asset_class = 'fx'=).
+- Phase 5 is purely additive (new endpoint + Qt refactor); no schema changes.

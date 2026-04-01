@@ -223,7 +223,7 @@ trade_repository::read_latest_filtered(context ctx,
         std::vector<domain::trade> result;
         result.reserve(rows.size());
         for (const auto& row : rows) {
-            if (row.size() >= 23)
+            if (row.size() >= 24)
                 result.push_back(raw_row_to_trade(row));
         }
         return result;
@@ -245,7 +245,7 @@ trade_repository::read_latest_filtered(context ctx,
     std::vector<domain::trade> result;
     result.reserve(rows.size());
     for (const auto& row : rows) {
-        if (row.size() >= 23)
+        if (row.size() >= 24)
             result.push_back(raw_row_to_trade(row));
     }
     return result;

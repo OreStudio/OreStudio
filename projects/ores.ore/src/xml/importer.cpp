@@ -126,6 +126,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     std::vector<trade_import_item> r;
     r.reserve(p.Trade.size());
 
+    boost::uuids::random_generator gen;
     for (const auto& t : p.Trade) {
         trade_import_item item;
         item.trade = domain::trade_mapper::map(t);
@@ -140,7 +141,6 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
             // Assign each instrument its own UUID (independent of the trade),
             // wire the soft FKs in both directions, and record the routing
             // discriminator on the trade.
-            static boost::uuids::random_generator gen;
             std::visit([&](auto& result) {
                 using T = std::decay_t<decltype(result)>;
                 if constexpr (!std::is_same_v<T, std::monostate>) {

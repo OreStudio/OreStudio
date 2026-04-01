@@ -713,35 +713,35 @@ void ImportTradeDialog::onImportClicked() {
                                 save_instrument_request req;
                                 req.data = r.instrument;
                                 req.legs = r.legs;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             } else if constexpr (std::is_same_v<T, ore::domain::fx_mapping_result>) {
                                 save_fx_instrument_request req;
                                 req.data = r.instrument;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             } else if constexpr (std::is_same_v<T, ore::domain::bond_mapping_result>) {
                                 save_bond_instrument_request req;
                                 req.data = r.instrument;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             } else if constexpr (std::is_same_v<T, ore::domain::credit_mapping_result>) {
                                 save_credit_instrument_request req;
                                 req.data = r.instrument;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             } else if constexpr (std::is_same_v<T, ore::domain::equity_mapping_result>) {
                                 save_equity_instrument_request req;
                                 req.data = r.instrument;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             } else if constexpr (std::is_same_v<T, ore::domain::commodity_mapping_result>) {
                                 save_commodity_instrument_request req;
                                 req.data = r.instrument;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             } else if constexpr (std::is_same_v<T, ore::domain::composite_mapping_result>) {
                                 save_composite_instrument_request req;
                                 req.data = r.instrument;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             } else if constexpr (std::is_same_v<T, ore::domain::scripted_mapping_result>) {
                                 save_scripted_instrument_request req;
                                 req.data = r.instrument;
-                                self->clientManager_->process_authenticated_request(std::move(req));
+                                (void)self->clientManager_->process_authenticated_request(std::move(req));
                             }
                         }, tti.instrument);
                         success_count++;

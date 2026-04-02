@@ -479,7 +479,7 @@ void TradeDetailDialog::populateFxInstrument() {
         QString::fromStdString(fxInstrument_.sold_currency));
     ui_->fxSoldAmountSpinBox->setValue(fxInstrument_.sold_amount);
     ui_->fxValueDateEdit->setText(
-        QString::fromStdString(fxInstrument_.value_date));
+        QString::fromStdString(fxInstrument_.value_date.value_or("")));
     ui_->fxSettlementEdit->setText(
         QString::fromStdString(fxInstrument_.settlement));
     ui_->fxOptionTypeEdit->setText(
@@ -515,8 +515,10 @@ void TradeDetailDialog::updateFxInstrumentFromUi() {
     fxInstrument_.sold_currency =
         ui_->fxSoldCurrencyEdit->text().trimmed().toStdString();
     fxInstrument_.sold_amount = ui_->fxSoldAmountSpinBox->value();
-    fxInstrument_.value_date =
-        ui_->fxValueDateEdit->text().trimmed().toStdString();
+    {
+        const auto vd = ui_->fxValueDateEdit->text().trimmed().toStdString();
+        fxInstrument_.value_date = vd.empty() ? std::nullopt : std::optional(vd);
+    }
     fxInstrument_.settlement =
         ui_->fxSettlementEdit->text().trimmed().toStdString();
     fxInstrument_.option_type =

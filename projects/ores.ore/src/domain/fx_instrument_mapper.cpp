@@ -248,7 +248,7 @@ trade fx_instrument_mapper::reverse_fx_forward(const fx_instrument& instr) {
     t.TradeType = oreTradeType::FxForward;
 
     fxForwardData fwd;
-    static_cast<std::string&>(fwd.ValueDate)  = instr.value_date;
+    static_cast<std::string&>(fwd.ValueDate)  = instr.value_date.value_or("");
     fwd.BoughtCurrency = parse_currency_code(instr.bought_currency);
     static_cast<float&>(fwd.BoughtAmount)     = static_cast<float>(instr.bought_amount);
     fwd.SoldCurrency   = parse_currency_code(instr.sold_currency);
@@ -269,7 +269,7 @@ trade fx_instrument_mapper::reverse_fx_swap(const fx_instrument& instr) {
     t.TradeType = oreTradeType::FxSwap;
 
     fxSwapData sw;
-    static_cast<std::string&>(sw.NearDate)     = instr.value_date;
+    static_cast<std::string&>(sw.NearDate)     = instr.value_date.value_or("");
     sw.NearBoughtCurrency = parse_currency_code(instr.bought_currency);
     static_cast<float&>(sw.NearBoughtAmount)   = static_cast<float>(instr.bought_amount);
     sw.NearSoldCurrency   = parse_currency_code(instr.sold_currency);
@@ -821,7 +821,7 @@ trade fx_instrument_mapper::reverse_fx_average_forward(
     t.TradeType = oreTradeType::FxAverageForward;
 
     fxAverageForwardData d;
-    static_cast<std::string&>(d.PaymentDate) = instr.value_date;
+    static_cast<std::string&>(d.PaymentDate) = instr.value_date.value_or("");
     d.ReferenceCurrency  = parse_currency_code(instr.bought_currency);
     d.ReferenceNotional  = static_cast<float>(instr.bought_amount);
     d.SettlementCurrency = parse_currency_code(instr.sold_currency);

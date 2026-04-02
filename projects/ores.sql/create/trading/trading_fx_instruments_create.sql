@@ -36,7 +36,7 @@ create table if not exists "ores_trading_fx_instruments_tbl" (
     "bought_amount" numeric(28, 10) not null,
     "sold_currency" text not null,
     "sold_amount" numeric(28, 10) not null,
-    "value_date" date not null,
+    "value_date" date null,
     "settlement" text null,
     "option_type" text null,
     "strike_price" numeric(28, 10) null,

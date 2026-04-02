@@ -78,7 +78,8 @@ TEST_CASE("mapper_roundtrip_fx_forward_forward", tags) {
     const auto& instr = result.instrument;
 
     CHECK(instr.trade_type_code == "FxForward");
-    CHECK(instr.value_date == "2033-02-20");
+    REQUIRE(instr.value_date.has_value());
+    CHECK(*instr.value_date == "2033-02-20");
     CHECK(instr.bought_currency == "EUR");
     CHECK(instr.bought_amount == Approx(1000000.0).epsilon(0.001));
     CHECK(instr.sold_currency == "USD");
@@ -117,7 +118,8 @@ TEST_CASE("mapper_roundtrip_fx_swap_forward", tags) {
     const auto& instr = result.instrument;
 
     CHECK(instr.trade_type_code == "FxSwap");
-    CHECK(instr.value_date == "2025-08-23");
+    REQUIRE(instr.value_date.has_value());
+    CHECK(*instr.value_date == "2025-08-23");
     CHECK(instr.bought_currency == "EUR");
     CHECK(instr.bought_amount == Approx(1000000.0).epsilon(0.001));
     CHECK(instr.sold_currency == "USD");

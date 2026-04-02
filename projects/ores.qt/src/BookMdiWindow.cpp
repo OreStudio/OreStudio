@@ -382,7 +382,7 @@ void BookMdiWindow::importTrades() {
         const QFileInfo fileInfo(fileName);
         auto* dialog = new ImportTradeDialog(
             *book, items, fileInfo.fileName(),
-            clientManager_, username_, this);
+            {}, {}, clientManager_, username_, this);
 
         connect(dialog, &ImportTradeDialog::importCompleted,
                 this, [this](int success_count, int total_count) {

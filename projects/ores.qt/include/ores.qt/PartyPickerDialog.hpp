@@ -23,57 +23,81 @@
 #include <vector>
 #include <QDialog>
 #include <QLabel>
-#include <QListWidget>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QRadioButton>
+#include <QTimer>
+#include <QTreeWidget>
 #include <QPushButton>
 #include <boost/uuid/uuid.hpp>
 #include "ores.qt/ClientManager.hpp"
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Modal dialog for selecting a party from a list of available parties.
  *
- * Shown after login when the account is associated with multiple parties.
- * The user must select exactly one party to bind the session context.
+ * Two mutually-exclusive sections, each headed by a native QRadioButton:
+ *   - System section (hidden when the user has no system-party access).
+ *   - Operational section with a filterable, alphabetically-sorted tree showing
+ *     business-centre code (col 0, with flag icon) and party name (col 1).
  */
 class PartyPickerDialog : public QDialog {
     Q_OBJECT
 
 public:
-    /**
-     * @brief Construct PartyPickerDialog.
-     *
-     * @param parties The list of parties to choose from.
-     * @param clientManager Pointer to the application's client manager.
-     * @param parent Parent widget.
-     */
     explicit PartyPickerDialog(
         const std::vector<PartyInfo>& parties,
         ClientManager* clientManager,
+        ImageCache* imageCache,
         QWidget* parent = nullptr);
 
-    /**
-     * @brief Get the UUID of the selected party.
-     */
     boost::uuids::uuid selectedPartyId() const;
-
-    /**
-     * @brief Get the name of the selected party.
-     */
     QString selectedPartyName() const;
 
 private slots:
     void onOkClicked();
 
 private:
-    void setupUi();
+    enum Role {
+        BusinessCentreRole = Qt::UserRole,
+        PartyNameRole,
+        PartyIdRole
+    };
 
 private:
-    QListWidget*   listWidget_;
-    QPushButton*   okButton_;
-    QPushButton*   cancelButton_;
-    ClientManager* clientManager_;
+    void setupUi();
+    void populateCentreCombo();
+    void applyFilter();
+    void selectSystemParty();
+    void selectOperationalItem(QTreeWidgetItem* item);
+    QTreeWidgetItem* firstVisibleItem() const;
+    void refreshFlagIcons();
+
+private:
+    ClientManager*         clientManager_;
+    ImageCache*            imageCache_;
     std::vector<PartyInfo> parties_;
+
+    // System-party section (hidden when no system party is available)
+    QRadioButton* systemRadio_;
+
+    // Operational-party section
+    QRadioButton* operationalRadio_;
+    QWidget*      operationalContent_;
+    QLineEdit*    filterEdit_;
+    QComboBox*    centreCombo_;
+    QTreeWidget*  listWidget_;
+
+    QPushButton* okButton_;
+    QPushButton* cancelButton_;
+    QTimer*      flagRefreshTimer_;
+
+    // Tracks which party is currently selected
+    boost::uuids::uuid selectedId_;
+    QString            selectedName_;
 };
 
 }

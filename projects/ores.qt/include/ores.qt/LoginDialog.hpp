@@ -35,6 +35,8 @@
 
 namespace ores::qt {
 
+class ImageCache;
+
 /**
  * @brief Login dialog with dark theme.
  *
@@ -81,6 +83,11 @@ public:
      * all fields including credentials. The combo is hidden when items is empty.
      */
     void setQuickConnectItems(const QList<QuickConnectItem>& items);
+
+    /**
+     * @brief Provide an image cache for flag icons in the party picker.
+     */
+    void setImageCache(ImageCache* cache);
 
     /**
      * @brief Set the server/host field value.
@@ -235,6 +242,7 @@ private:
 
     // Dependencies
     ClientManager* clientManager_{nullptr};
+    ImageCache* imageCache_{nullptr};
 };
 
 }

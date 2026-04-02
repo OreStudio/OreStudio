@@ -64,6 +64,10 @@ concept nats_request = requires {
 struct PartyInfo {
     boost::uuids::uuid id;
     QString name;
+    QString party_category;       // "System" or "Operational"
+    QString business_center_code; // FpML code, e.g. "GBLO", "USNY"
+
+    bool is_system() const { return party_category == "System"; }
 };
 
 /**

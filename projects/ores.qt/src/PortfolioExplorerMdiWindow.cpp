@@ -153,16 +153,8 @@ void PortfolioExplorerMdiWindow::setupToolbar() {
         if (!oreImportController_)
             return;
         const auto* node = treeModel_->node_from_index(treeView_->currentIndex());
-        if (node && node->kind == PortfolioTreeNode::Kind::Portfolio) {
-            oreImportController_->trigger(this, node->portfolio.id,
-                                          node->portfolio.name);
-        } else if (node && node->kind == PortfolioTreeNode::Kind::Book) {
-            const auto* par = node->parent;
-            if (par && par->kind == PortfolioTreeNode::Kind::Portfolio)
-                oreImportController_->trigger(this, par->portfolio.id,
-                                              par->portfolio.name);
-            else
-                oreImportController_->trigger(this);
+        if (node && node->kind == PortfolioTreeNode::Kind::Book) {
+            oreImportController_->trigger(this, node->book.id, node->book.name);
         } else {
             oreImportController_->trigger(this);
         }

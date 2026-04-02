@@ -110,7 +110,8 @@ where valid_to = ores_utility_infinity_timestamp_fn()
 create or replace function ores_trading_trades_insert_fn()
 returns trigger as $$
 declare
-    current_version integer;
+    current_version      integer;
+    v_book_portfolio_id  uuid;
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
@@ -126,8 +127,9 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Denormalise party_id from book for clean RLS enforcement (no JOIN in policy)
-    select party_id into NEW.party_id
+    -- Denormalise party_id and capture parent_portfolio_id from book
+    select party_id, parent_portfolio_id
+      into NEW.party_id, v_book_portfolio_id
     from ores_refdata_books_tbl
     where id = NEW.book_id
       and tenant_id = NEW.tenant_id
@@ -142,6 +144,13 @@ begin
     ) then
         raise exception 'Invalid portfolio_id: %. Portfolio must exist for tenant.', NEW.portfolio_id
             using errcode = '23503';
+    end if;
+
+    -- Validate that portfolio_id matches the book's parent portfolio
+    if NEW.portfolio_id != v_book_portfolio_id then
+        raise exception 'portfolio_id % does not match book parent_portfolio_id %.',
+            NEW.portfolio_id, v_book_portfolio_id
+            using errcode = '23514';
     end if;
 
     -- Validate successor_trade_id (optional self-referencing soft FK)

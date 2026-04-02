@@ -42,6 +42,7 @@
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.database/domain/change_reason_constants.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"
@@ -63,6 +64,7 @@ struct ImportResult {
     int portfolios = 0;
     int books = 0;
     int trades = 0;
+    int instruments = 0;
 };
 
 }
@@ -76,11 +78,12 @@ using namespace ores::logging;
 // ============================================================================
 
 OreImportWizard::OreImportWizard(ClientManager* clientManager,
-                                 std::optional<boost::uuids::uuid> parentPortfolioId,
-                                 const std::string& parentPortfolioName,
+                                 std::optional<boost::uuids::uuid> targetBookId,
+                                 const std::string& targetBookName,
                                  QWidget* parent)
     : QWizard(parent),
-      clientManager_(clientManager) {
+      clientManager_(clientManager),
+      targetBookName_(targetBookName) {
 
     setWindowTitle(tr("Import ORE Data"));
     setWindowIcon(IconUtils::createRecoloredIcon(
@@ -96,15 +99,13 @@ OreImportWizard::OreImportWizard(ClientManager* clientManager,
     // Default choices
     choices_.scan_exclusions  = {};          // scan all directories by default
     choices_.hierarchy_strip  = {"Input"};   // strip "Input" from hierarchy paths
-    choices_.create_parent_portfolio = true;
+    choices_.create_parent_portfolio = false;
     choices_.currency_mode = ore::planner::currency_import_mode::missing_only;
     choices_.party_id = clientManager_->currentPartyId();
 
-    // Pre-set parent portfolio context from Portfolio Explorer selection
-    if (parentPortfolioId) {
-        choices_.existing_parent_portfolio_id = parentPortfolioId;
-        choices_.parent_portfolio_name = parentPortfolioName;
-    }
+    // Pre-set target book context from Portfolio Explorer selection
+    if (targetBookId)
+        choices_.existing_target_book_id = targetBookId;
 
     setupPages();
 }
@@ -475,164 +476,126 @@ void OreCurrencyPage::onModeChanged() {
 OrePortfolioPage::OrePortfolioPage(OreImportWizard* wizard)
     : QWizardPage(wizard), wizard_(wizard) {
 
-    setTitle(tr("Portfolio Hierarchy"));
-    setSubTitle(tr("Configure the parent portfolio for imported data."));
+    setTitle(tr("Import Target"));
+    setSubTitle(tr("Select the book that trades will be imported into."));
 
     auto* layout = new QVBoxLayout(this);
 
-    // Banner shown when a portfolio was pre-selected in the Explorer
-    parentContextLabel_ = new QLabel(this);
-    parentContextLabel_->setWordWrap(true);
-    parentContextLabel_->hide();
-    layout->addWidget(parentContextLabel_);
-
-    createParentCheck_ = new QCheckBox(
-        tr("Set a portfolio as the parent of imported portfolios"), this);
-    createParentCheck_->setChecked(true);
-    layout->addWidget(createParentCheck_);
-
-    auto* nameRow = new QHBoxLayout;
-    nameRow->addWidget(new QLabel(tr("Parent portfolio:"), this));
+    auto* bookRow = new QHBoxLayout;
+    bookRow->addWidget(new QLabel(tr("Target book:"), this));
     parentCombo_ = new QComboBox(this);
-    parentCombo_->setEditable(true);
-    parentCombo_->setPlaceholderText(tr("Select or type a portfolio name…"));
-    nameRow->addWidget(parentCombo_);
-    layout->addLayout(nameRow);
+    parentCombo_->setEditable(false);
+    parentCombo_->setPlaceholderText(tr("Loading books…"));
+    bookRow->addWidget(parentCombo_);
+    layout->addLayout(bookRow);
 
     hierarchyPreviewLabel_ = new QLabel(this);
     hierarchyPreviewLabel_->setWordWrap(true);
     layout->addWidget(hierarchyPreviewLabel_);
 
-    auto* reimportGroup = new QGroupBox(tr("Re-import behaviour"), this);
-    auto* reimportLayout = new QVBoxLayout(reimportGroup);
-    addTradesRadio_ = new QRadioButton(
-        tr("Add new trades only — skip existing portfolios and books"), this);
-    newVersionsRadio_ = new QRadioButton(
-        tr("Create new versions of all entities (portfolios, books, and trades)"), this);
-    addTradesRadio_->setChecked(true);
-    reimportLayout->addWidget(addTradesRadio_);
-    reimportLayout->addWidget(newVersionsRadio_);
-    layout->addWidget(reimportGroup);
-
     layout->addStretch();
 
-    connect(createParentCheck_, &QCheckBox::toggled,
-            this, &OrePortfolioPage::onCreateParentToggled);
+    connect(parentCombo_, &QComboBox::currentTextChanged,
+            this, &OrePortfolioPage::onBookSelectionChanged);
 }
 
 void OrePortfolioPage::initializePage() {
     fetchDone_ = false;
-    const bool hasContext =
-        wizard_->choices().existing_parent_portfolio_id.has_value();
+    booksByName_.clear();
+    parentCombo_->clear();
+    parentCombo_->setEnabled(false);
+    hierarchyPreviewLabel_->setText(tr("Loading available books…"));
 
-    if (hasContext) {
-        // Parent is pre-selected from Explorer — lock the UI and skip fetch.
-        const auto name = wizard_->choices().parent_portfolio_name;
-        const auto display = name.empty()
-            ? tr("Importing under pre-selected portfolio.")
-            : tr("Importing under portfolio: <b>%1</b>")
-                .arg(QString::fromStdString(name));
-        parentContextLabel_->setText(display);
-        parentContextLabel_->show();
-        createParentCheck_->hide();
-        parentCombo_->hide();
-        fetchDone_ = true;
-    } else {
-        parentContextLabel_->hide();
-        createParentCheck_->show();
-        parentCombo_->show();
-        createParentCheck_->setChecked(wizard_->choices().create_parent_portfolio);
+    auto* cm = wizard_->clientManager();
+    using Result = std::vector<refdata::domain::book>;
+    auto* watcher = new QFutureWatcher<Result>(this);
+    connect(watcher, &QFutureWatcher<Result>::finished,
+            this, &OrePortfolioPage::onBooksFetchFinished);
 
-        // Fetch existing portfolios asynchronously to populate combo
-        parentCombo_->clear();
-        parentCombo_->setEnabled(false);
+    watcher->setFuture(QtConcurrent::run([cm]() -> Result {
+        refdata::messaging::get_books_request req;
+        req.limit = 1000;
+        const auto resp = cm->process_authenticated_request(std::move(req));
+        Result books;
+        if (resp) {
+            books = resp->books;
+            std::sort(books.begin(), books.end(),
+                      [](const auto& a, const auto& b) { return a.name < b.name; });
+        }
+        return books;
+    }));
+}
 
-        auto* cm = wizard_->clientManager();
-        using Result = std::vector<std::string>;
-        auto* watcher = new QFutureWatcher<Result>(this);
-        connect(watcher, &QFutureWatcher<Result>::finished,
-                this, &OrePortfolioPage::onPortfoliosFetchFinished);
-
-        watcher->setFuture(QtConcurrent::run([cm]() -> Result {
-            refdata::messaging::get_portfolios_request req;
-            req.limit = 1000;
-            const auto resp = cm->process_authenticated_request(std::move(req));
-            Result names;
-            if (resp) {
-                for (const auto& p : resp->portfolios)
-                    names.push_back(p.name);
-                std::sort(names.begin(), names.end());
-            }
-            return names;
-        }));
-
-        onCreateParentToggled(createParentCheck_->isChecked());
-    }
+bool OrePortfolioPage::isComplete() const {
+    if (!fetchDone_)
+        return false;
+    const auto name = parentCombo_->currentText().toStdString();
+    return booksByName_.count(name) > 0;
 }
 
 bool OrePortfolioPage::validatePage() {
-    wizard_->choices().create_parent_portfolio = createParentCheck_->isChecked();
-    wizard_->choices().parent_portfolio_name =
-        parentCombo_->currentText().trimmed().toStdString();
-    wizard_->choices().portfolio_reimport_mode =
-        newVersionsRadio_->isChecked()
-        ? ore::planner::reimport_mode::create_new_versions
-        : ore::planner::reimport_mode::add_trades_only;
+    const auto name = parentCombo_->currentText().toStdString();
+    const auto it = booksByName_.find(name);
+    if (it == booksByName_.end())
+        return false;
+    wizard_->choices().existing_target_book_id      = it->second.id;
+    wizard_->choices().existing_parent_portfolio_id = it->second.parent_portfolio_id;
     return true;
 }
 
-void OrePortfolioPage::onPortfoliosFetchFinished() {
-    auto* watcher = static_cast<QFutureWatcher<std::vector<std::string>>*>(sender());
+void OrePortfolioPage::onBooksFetchFinished() {
+    auto* watcher = static_cast<QFutureWatcher<std::vector<refdata::domain::book>>*>(sender());
     if (!watcher) return;
 
-    const auto names = watcher->result();
+    const auto books = watcher->result();
     watcher->deleteLater();
 
-    BOOST_LOG_SEV(lg(), info) << "Fetched " << names.size() << " existing portfolios";
+    BOOST_LOG_SEV(lg(), info) << "Fetched " << books.size() << " existing books";
 
-    wizard_->setExistingPortfolioNames(names);
+    for (const auto& b : books)
+        booksByName_[b.name] = b;
 
     parentCombo_->clear();
-    for (const auto& n : names)
-        parentCombo_->addItem(QString::fromStdString(n));
+    for (const auto& b : books)
+        parentCombo_->addItem(QString::fromStdString(b.name));
 
-    // Restore previously chosen name if any
-    const auto prev = QString::fromStdString(wizard_->choices().parent_portfolio_name);
-    if (!prev.isEmpty())
-        parentCombo_->setCurrentText(prev);
+    // Pre-select: context book (from Explorer) > empty
+    const auto& contextName = wizard_->targetBookName();
+    if (!contextName.empty())
+        parentCombo_->setCurrentText(QString::fromStdString(contextName));
 
-    parentCombo_->setEnabled(createParentCheck_->isChecked());
+    parentCombo_->setEnabled(true);
     fetchDone_ = true;
+    emit completeChanged();
+    onBookSelectionChanged();
 }
 
-void OrePortfolioPage::onCreateParentToggled(bool checked) {
-    parentCombo_->setEnabled(checked && fetchDone_);
-
-    // Show quick preview counts
+void OrePortfolioPage::onBookSelectionChanged() {
+    const auto name = parentCombo_->currentText().toStdString();
+    const auto it = booksByName_.find(name);
+    if (it == booksByName_.end()) {
+        hierarchyPreviewLabel_->setText(tr("Select a book to see import details."));
+        emit completeChanged();
+        return;
+    }
+    const auto& book = it->second;
+    // Count total trades from hierarchy
     const auto& sr = wizard_->scanResult();
     const auto& choices = wizard_->choices();
-
     ore::hierarchy::ore_hierarchy_builder builder(
         sr.portfolio_files, sr.root,
         std::unordered_set<std::string>(choices.hierarchy_strip.begin(),
                                         choices.hierarchy_strip.end()));
     const auto nodes = builder.build();
-
-    long portfolios = std::count_if(nodes.begin(), nodes.end(),
+    long total_files = std::count_if(nodes.begin(), nodes.end(),
         [](const auto& n) {
-            return n.type == ore::hierarchy::import_node::node_type::portfolio;
+            return n.type == ore::hierarchy::import_node::node_type::book;
         });
-    long books = static_cast<long>(nodes.size()) - portfolios;
-
-    if (checked) {
-        hierarchyPreviewLabel_->setText(
-            tr("%1 portfolio(s) + 1 parent + %2 book(s) will be created.")
-            .arg(portfolios).arg(books));
-    } else {
-        hierarchyPreviewLabel_->setText(
-            tr("%1 portfolio(s) + %2 book(s) will be created.")
-            .arg(portfolios).arg(books));
-    }
+    hierarchyPreviewLabel_->setText(
+        tr("Trades from %1 portfolio file(s) will be imported into book \"%2\".")
+        .arg(total_files)
+        .arg(QString::fromStdString(book.name)));
+    emit completeChanged();
 }
 
 // ============================================================================
@@ -1243,6 +1206,103 @@ void OreTradeImportPage::startImport() {
             if (total_trades > 0)
                 BOOST_LOG_SEV(local_lg, info) << "Saved " << res.trades << " trades";
 
+            // Step 5: save instruments for each imported trade
+            BOOST_LOG_SEV(local_lg, debug) << "Saving instruments for "
+                << plan.trades.size() << " trade(s)";
+            for (const auto& item : plan.trades) {
+                using namespace ores::trading::messaging;
+                using namespace ores::ore::domain;
+                std::visit([&](const auto& r) {
+                    using T = std::decay_t<decltype(r)>;
+                    if constexpr (std::is_same_v<T, std::monostate>) {
+                        // No instrument mapping for this trade type — skip.
+                    } else if constexpr (std::is_same_v<T, swap_mapping_result>) {
+                        save_instrument_request req;
+                        req.data = r.instrument;
+                        req.legs = r.legs;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save swap instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    } else if constexpr (std::is_same_v<T, fx_mapping_result>) {
+                        save_fx_instrument_request req;
+                        req.data = r.instrument;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save FX instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    } else if constexpr (std::is_same_v<T, bond_mapping_result>) {
+                        save_bond_instrument_request req;
+                        req.data = r.instrument;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save bond instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    } else if constexpr (std::is_same_v<T, credit_mapping_result>) {
+                        save_credit_instrument_request req;
+                        req.data = r.instrument;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save credit instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    } else if constexpr (std::is_same_v<T, equity_mapping_result>) {
+                        save_equity_instrument_request req;
+                        req.data = r.instrument;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save equity instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    } else if constexpr (std::is_same_v<T, commodity_mapping_result>) {
+                        save_commodity_instrument_request req;
+                        req.data = r.instrument;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save commodity instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    } else if constexpr (std::is_same_v<T, composite_mapping_result>) {
+                        save_composite_instrument_request req;
+                        req.data = r.instrument;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save composite instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    } else if constexpr (std::is_same_v<T, scripted_mapping_result>) {
+                        save_scripted_instrument_request req;
+                        req.data = r.instrument;
+                        const auto resp = cm->process_authenticated_request(std::move(req));
+                        if (!resp || !resp->success)
+                            BOOST_LOG_SEV(local_lg, warn)
+                                << "Failed to save scripted instrument for trade: "
+                                << item.trade.external_id;
+                        else
+                            ++res.instruments;
+                    }
+                }, item.instrument);
+            }
+            if (res.instruments > 0)
+                BOOST_LOG_SEV(local_lg, info) << "Saved " << res.instruments << " instruments";
+
             res.success = true;
             return res;
         } catch (const std::exception& ex) {
@@ -1260,7 +1320,8 @@ void OreTradeImportPage::onImportFinished() {
     fw->deleteLater();
 
     progressBar_->setValue(4);
-    wizard_->setImportResults(res.currencies, res.portfolios, res.books, res.trades);
+    wizard_->setImportResults(res.currencies, res.portfolios, res.books, res.trades,
+                              res.instruments);
     wizard_->setImportSuccess(res.success);
     wizard_->setImportError(res.error);
 
@@ -1269,12 +1330,14 @@ void OreTradeImportPage::onImportFinished() {
         appendLog(tr("Saved %1 portfolios.").arg(res.portfolios));
         appendLog(tr("Saved %1 books.").arg(res.books));
         appendLog(tr("Saved %1 trades.").arg(res.trades));
+        appendLog(tr("Saved %1 instruments.").arg(res.instruments));
         statusLabel_->setText(tr("Import completed successfully."));
         BOOST_LOG_SEV(lg(), info) << "ORE import complete: "
             << res.currencies << " currencies, "
             << res.portfolios << " portfolios, "
             << res.books << " books, "
-            << res.trades << " trades";
+            << res.trades << " trades, "
+            << res.instruments << " instruments";
         importDone_ = true;
         emit completeChanged();
     } else {

@@ -20,6 +20,7 @@
 #ifndef ORES_QT_ORE_IMPORT_WIZARD_HPP
 #define ORES_QT_ORE_IMPORT_WIZARD_HPP
 
+#include <map>
 #include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
@@ -41,6 +42,7 @@
 #include "ores.ore/scanner/scan_result.hpp"
 #include "ores.ore/planner/import_choices.hpp"
 #include "ores.ore/planner/ore_import_plan.hpp"
+#include "ores.refdata.api/domain/book.hpp"
 
 namespace ores::qt {
 
@@ -80,9 +82,11 @@ public:
     };
 
     explicit OreImportWizard(ClientManager* clientManager,
-                             std::optional<boost::uuids::uuid> parentPortfolioId = std::nullopt,
-                             const std::string& parentPortfolioName = "",
+                             std::optional<boost::uuids::uuid> targetBookId = std::nullopt,
+                             const std::string& targetBookName = "",
                              QWidget* parent = nullptr);
+
+    const std::string& targetBookName() const { return targetBookName_; }
     ~OreImportWizard() override = default;
 
     ClientManager* clientManager() const { return clientManager_; }
@@ -99,14 +103,17 @@ public:
     int savedPortfolios() const { return savedPortfolios_; }
     int savedBooks() const { return savedBooks_; }
     int savedTrades() const { return savedTrades_; }
+    int savedInstruments() const { return savedInstruments_; }
     bool importSuccess() const { return importSuccess_; }
     QString importError() const { return importError_; }
 
-    void setImportResults(int currencies, int portfolios, int books, int trades) {
+    void setImportResults(int currencies, int portfolios, int books, int trades,
+                          int instruments) {
         savedCurrencies_ = currencies;
         savedPortfolios_ = portfolios;
         savedBooks_ = books;
         savedTrades_ = trades;
+        savedInstruments_ = instruments;
     }
     void setImportSuccess(bool ok) { importSuccess_ = ok; }
     void setImportError(const QString& msg) { importError_ = msg; }
@@ -129,6 +136,7 @@ private:
     void setupPages();
 
     ClientManager* clientManager_;
+    std::string targetBookName_;
     ore::scanner::scan_result scanResult_;
     ore::planner::import_choices choices_;
     ore::planner::ore_import_plan importPlan_;
@@ -139,6 +147,7 @@ private:
     int savedPortfolios_ = 0;
     int savedBooks_ = 0;
     int savedTrades_ = 0;
+    int savedInstruments_ = 0;
     bool importSuccess_ = false;
     QString importError_;
 };
@@ -251,21 +260,20 @@ private:
 public:
     explicit OrePortfolioPage(OreImportWizard* wizard);
     void initializePage() override;
+    bool isComplete() const override;
     bool validatePage() override;
 
 private slots:
-    void onCreateParentToggled(bool checked);
-    void onPortfoliosFetchFinished();
+    void onBookSelectionChanged();
+    void onBooksFetchFinished();
 
 private:
     OreImportWizard* wizard_;
-    QLabel* parentContextLabel_{nullptr};  // shown when parent is pre-selected
-    QCheckBox* createParentCheck_;
     QComboBox* parentCombo_;
     QLabel* hierarchyPreviewLabel_;
-    QRadioButton* addTradesRadio_;
-    QRadioButton* newVersionsRadio_;
     bool fetchDone_ = false;
+    // name → book domain object for existing books fetched from server
+    std::map<std::string, refdata::domain::book> booksByName_;
 };
 
 class OreTradeImportPage final : public QWizardPage {

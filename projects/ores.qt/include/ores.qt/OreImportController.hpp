@@ -60,13 +60,13 @@ public:
      * @brief Show the ORE import wizard modal dialog.
      *
      * @param parent      Widget to use as the dialog parent (for centering).
-     * @param portfolioId If set, imported portfolios are placed under this
+     * @param bookId   If set, all imported trades are placed into this book.
      *                    existing portfolio instead of the root.
-     * @param portfolioName Display name for the pre-selected portfolio.
+     * @param bookName Display name for the pre-selected book.
      */
     void trigger(QWidget* parent = nullptr,
-                 std::optional<boost::uuids::uuid> portfolioId = std::nullopt,
-                 const std::string& portfolioName = "");
+                 std::optional<boost::uuids::uuid> bookId = std::nullopt,
+                 const std::string& bookName = "");
 
 signals:
     /**

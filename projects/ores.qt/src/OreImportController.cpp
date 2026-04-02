@@ -34,11 +34,11 @@ OreImportController::OreImportController(ClientManager* clientManager,
       clientManager_(clientManager) {}
 
 void OreImportController::trigger(QWidget* parent,
-                                   std::optional<boost::uuids::uuid> portfolioId,
-                                   const std::string& portfolioName) {
+                                   std::optional<boost::uuids::uuid> bookId,
+                                   const std::string& bookName) {
     BOOST_LOG_SEV(lg(), info) << "Opening ORE import wizard";
 
-    OreImportWizard wizard(clientManager_, portfolioId, portfolioName, parent);
+    OreImportWizard wizard(clientManager_, bookId, bookName, parent);
 
     if (wizard.exec() == QDialog::Accepted && wizard.importSuccess()) {
         BOOST_LOG_SEV(lg(), info) << "ORE import wizard accepted";

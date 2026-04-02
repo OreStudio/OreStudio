@@ -104,16 +104,18 @@ public:
     int savedBooks() const { return savedBooks_; }
     int savedTrades() const { return savedTrades_; }
     int savedInstruments() const { return savedInstruments_; }
+    int savedInstrumentFailures() const { return savedInstrumentFailures_; }
     bool importSuccess() const { return importSuccess_; }
     QString importError() const { return importError_; }
 
     void setImportResults(int currencies, int portfolios, int books, int trades,
-                          int instruments) {
+                          int instruments, int instrumentFailures = 0) {
         savedCurrencies_ = currencies;
         savedPortfolios_ = portfolios;
         savedBooks_ = books;
         savedTrades_ = trades;
         savedInstruments_ = instruments;
+        savedInstrumentFailures_ = instrumentFailures;
     }
     void setImportSuccess(bool ok) { importSuccess_ = ok; }
     void setImportError(const QString& msg) { importError_ = msg; }
@@ -148,6 +150,7 @@ private:
     int savedBooks_ = 0;
     int savedTrades_ = 0;
     int savedInstruments_ = 0;
+    int savedInstrumentFailures_ = 0;
     bool importSuccess_ = false;
     QString importError_;
 };

@@ -22,6 +22,8 @@
 
 #include <optional>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
@@ -246,9 +248,25 @@ void TradeController::onImportTradesRequested() {
                                   << " trades for import into book: "
                                   << selectedBook.name;
 
+        // Read market.txt and fixings.txt from the same folder as the XML.
+        const auto input_dir = path.parent_path();
+        const auto read_file = [&](const std::string& name) -> std::string {
+            const auto p = input_dir / name;
+            if (!std::filesystem::exists(p)) return {};
+            std::ifstream f(p);
+            if (!f) return {};
+            std::ostringstream ss;
+            ss << f.rdbuf();
+            BOOST_LOG_SEV(lg(), info) << "Found " << name << " for import";
+            return ss.str();
+        };
+        const auto market_data_content = read_file("market.txt");
+        const auto fixings_content     = read_file("fixings.txt");
+
         const QFileInfo fileInfo(fileName);
         auto* dialog = new ImportTradeDialog(
             selectedBook, items, fileInfo.fileName(),
+            market_data_content, fixings_content,
             clientManager_, username_, mainWindow_);
 
         connect(dialog, &ImportTradeDialog::importCompleted,

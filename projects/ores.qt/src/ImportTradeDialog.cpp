@@ -35,6 +35,7 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.marketdata.api/messaging/import_protocol.hpp"
 
 namespace ores::qt {
 
@@ -44,6 +45,8 @@ ImportTradeDialog::ImportTradeDialog(
     const refdata::domain::book& book,
     const std::vector<ore::xml::trade_import_item>& items,
     const QString& source_label,
+    const std::string& market_data_content,
+    const std::string& fixings_content,
     ClientManager* clientManager,
     const QString& username,
     QWidget* parent)
@@ -51,6 +54,8 @@ ImportTradeDialog::ImportTradeDialog(
       book_(book),
       items_(items),
       source_label_(source_label),
+      market_data_content_(market_data_content),
+      fixings_content_(fixings_content),
       clientManager_(clientManager),
       username_(username),
       tradeDateEdit_(nullptr),
@@ -659,10 +664,44 @@ void ImportTradeDialog::onImportClicked() {
     statusLabel_->setText(tr("Starting import..."));
 
     QPointer<ImportTradeDialog> self = this;
+    const std::string md_content = market_data_content_;
+    const std::string fx_content = fixings_content_;
 
     QFuture<std::pair<int, int>> future =
-        QtConcurrent::run([self, selected, total]() -> std::pair<int, int> {
+        QtConcurrent::run([self, selected, total,
+                           md_content, fx_content]() -> std::pair<int, int> {
             using namespace ores::trading::messaging;
+
+            // Import market data (market.txt + fixings.txt) before trades.
+            if (!md_content.empty() || !fx_content.empty()) {
+                if (self) {
+                    QMetaObject::invokeMethod(self, [self]() {
+                        if (self) self->statusLabel_->setText(
+                            "Importing market data...");
+                    }, Qt::QueuedConnection);
+                }
+
+                marketdata::messaging::import_market_data_request md_req;
+                md_req.market_data_content = md_content;
+                md_req.fixings_content     = fx_content;
+
+                if (self) {
+                    auto md_resp = self->clientManager_
+                        ->process_authenticated_request(std::move(md_req));
+                    if (md_resp && md_resp->success) {
+                        BOOST_LOG_SEV(lg(), info)
+                            << "Market data import succeeded: "
+                            << md_resp->series_count << " series, "
+                            << md_resp->observation_count << " observations, "
+                            << md_resp->fixing_count << " fixings";
+                    } else {
+                        const std::string msg =
+                            md_resp ? md_resp->message : "no response";
+                        BOOST_LOG_SEV(lg(), warn)
+                            << "Market data import failed: " << msg;
+                    }
+                }
+            }
 
             int success_count = 0;
             int current = 0;

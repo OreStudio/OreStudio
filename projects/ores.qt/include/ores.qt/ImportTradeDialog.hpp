@@ -74,8 +74,8 @@ public:
      * @param book The ORES book trades will be imported into
      * @param items Trades to import (each item carries its own source_file)
      * @param source_label Human-readable label shown at the top of the dialog
-     * @param market_data_content Content of market.txt, empty if not present
-     * @param fixings_content Content of fixings.txt, empty if not present
+     * @param market_data_dir Directory containing market.txt / fixings.txt;
+     *        empty if no market data should be imported
      * @param clientManager Client manager for server communication
      * @param username Current logged-in username
      * @param parent Parent widget
@@ -84,8 +84,7 @@ public:
         const refdata::domain::book& book,
         const std::vector<ore::xml::trade_import_item>& items,
         const QString& source_label,
-        const std::string& market_data_content,
-        const std::string& fixings_content,
+        const std::string& market_data_dir,
         ClientManager* clientManager,
         const QString& username,
         QWidget* parent = nullptr);
@@ -127,8 +126,7 @@ private:
     std::vector<std::string> validation_errors_;
     std::vector<refdata::domain::counterparty> counterparties_;
     QString source_label_;
-    std::string market_data_content_;
-    std::string fixings_content_;
+    std::string market_data_dir_;
     ClientManager* clientManager_;
     QString username_;
 

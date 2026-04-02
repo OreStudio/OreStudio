@@ -37,6 +37,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.refdata.api/messaging/book_protocol.hpp"
+#include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.qt/OreImporter.hpp"
 #include "ores.qt/FontUtils.hpp"
 #include "ores.qt/IconUtils.hpp"

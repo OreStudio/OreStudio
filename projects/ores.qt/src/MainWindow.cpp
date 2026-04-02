@@ -876,48 +876,39 @@ MainWindow::MainWindow(QWidget* parent) :
             jobDefinitionController_->showListWindow();
     });
 
-    // Compute grid menu
-    auto* computeMenu = menuBar()->addMenu(tr("Compute"));
-    auto* actionDashboard = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
-        tr("Dashboard"));
-    auto* actionConsole = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor),
-        tr("Console"));
-    computeMenu->addSeparator();
-    auto* actionApps = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor),
-        tr("Apps"));
-    auto* actionAppVersions = computeMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor),
-        tr("App Versions"));
+    // Compute menu — icons set here; structure defined in MainWindow.ui
+    ui_->ActionComputeDashboard->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
+    ui_->ActionComputeConsole->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ServerLink, IconUtils::DefaultIconColor));
+    ui_->ActionComputeApps->setIcon(
+        IconUtils::createRecoloredIcon(Icon::TasksApp, IconUtils::DefaultIconColor));
+    ui_->ActionComputeAppVersions->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Code, IconUtils::DefaultIconColor));
 
-    connect(actionDashboard, &QAction::triggered, this, [this]() {
+    connect(ui_->ActionComputeDashboard, &QAction::triggered, this, [this]() {
         if (computeDashboardController_) computeDashboardController_->showDashboard();
     });
-    connect(actionConsole, &QAction::triggered, this, [this]() {
+    connect(ui_->ActionComputeConsole, &QAction::triggered, this, [this]() {
         if (computeConsoleController_) computeConsoleController_->showConsole();
     });
-    connect(actionApps, &QAction::triggered, this, [this]() {
+    connect(ui_->ActionComputeApps, &QAction::triggered, this, [this]() {
         if (appController_) appController_->showListWindow();
     });
-    connect(actionAppVersions, &QAction::triggered, this, [this]() {
+    connect(ui_->ActionComputeAppVersions, &QAction::triggered, this, [this]() {
         if (appVersionController_) appVersionController_->showListWindow();
     });
 
-    // Market Data menu
-    auto* marketDataMenu = menuBar()->addMenu(tr("Market Data"));
-    auto* actionMarketSeries = marketDataMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::ChartMultiple, IconUtils::DefaultIconColor),
-        tr("Market Series"));
-    auto* actionMarketFixings = marketDataMenu->addAction(
-        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor),
-        tr("Market Fixings"));
+    // Market Data menu — icons set here; structure defined in MainWindow.ui
+    ui_->ActionMarketSeries->setIcon(
+        IconUtils::createRecoloredIcon(Icon::ChartMultiple, IconUtils::DefaultIconColor));
+    ui_->ActionMarketFixings->setIcon(
+        IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
 
-    connect(actionMarketSeries, &QAction::triggered, this, [this]() {
+    connect(ui_->ActionMarketSeries, &QAction::triggered, this, [this]() {
         if (marketDataController_) marketDataController_->showListWindow();
     });
-    connect(actionMarketFixings, &QAction::triggered, this, [this]() {
+    connect(ui_->ActionMarketFixings, &QAction::triggered, this, [this]() {
         if (marketDataController_) marketDataController_->showFixingsWindow();
     });
 

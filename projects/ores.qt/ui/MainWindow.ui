@@ -228,9 +228,28 @@
     </property>
     <addaction name="ActionAbout"/>
    </widget>
+   <widget class="QMenu" name="menuMarketData">
+    <property name="title">
+     <string>&amp;Market Data</string>
+    </property>
+    <addaction name="ActionMarketSeries"/>
+    <addaction name="ActionMarketFixings"/>
+   </widget>
+   <widget class="QMenu" name="menuCompute">
+    <property name="title">
+     <string>&amp;Compute</string>
+    </property>
+    <addaction name="ActionComputeDashboard"/>
+    <addaction name="ActionComputeConsole"/>
+    <addaction name="separator"/>
+    <addaction name="ActionComputeApps"/>
+    <addaction name="ActionComputeAppVersions"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuData"/>
    <addaction name="menuTrading"/>
+   <addaction name="menuMarketData"/>
+   <addaction name="menuCompute"/>
    <addaction name="menuReporting"/>
    <addaction name="menuSystem"/>
    <addaction name="menuWindow"/>
@@ -857,6 +876,54 @@
    </property>
    <property name="toolTip">
     <string>Manage currency market tier values</string>
+   </property>
+  </action>
+  <action name="ActionMarketSeries">
+   <property name="text">
+    <string>Market &amp;Series</string>
+   </property>
+   <property name="toolTip">
+    <string>Browse market data series</string>
+   </property>
+  </action>
+  <action name="ActionMarketFixings">
+   <property name="text">
+    <string>Market &amp;Fixings</string>
+   </property>
+   <property name="toolTip">
+    <string>Browse fixing series</string>
+   </property>
+  </action>
+  <action name="ActionComputeDashboard">
+   <property name="text">
+    <string>&amp;Dashboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Open compute grid dashboard</string>
+   </property>
+  </action>
+  <action name="ActionComputeConsole">
+   <property name="text">
+    <string>&amp;Console</string>
+   </property>
+   <property name="toolTip">
+    <string>Open compute console</string>
+   </property>
+  </action>
+  <action name="ActionComputeApps">
+   <property name="text">
+    <string>&amp;Apps</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage compute applications</string>
+   </property>
+  </action>
+  <action name="ActionComputeAppVersions">
+   <property name="text">
+    <string>App &amp;Versions</string>
+   </property>
+   <property name="toolTip">
+    <string>Manage compute application versions</string>
    </property>
   </action>
  </widget>

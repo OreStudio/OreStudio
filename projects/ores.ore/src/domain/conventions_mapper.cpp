@@ -20,6 +20,7 @@
 #include "ores.ore/domain/conventions_mapper.hpp"
 
 #include <algorithm>
+#include <stdexcept>
 
 namespace ores::ore::domain {
 
@@ -80,9 +81,10 @@ std::string conventions_mapper::normalize_bdc(domain::businessDayConvention v) {
     case bdc::U:
     case bdc::Unadjusted:
     case bdc::INDIFF:
+        return "Unadjusted";
     case bdc::_:
     default:
-        return "Unadjusted";
+        throw std::runtime_error("Unknown business day convention enum value");
     }
 }
 
@@ -184,7 +186,7 @@ std::string conventions_mapper::normalize_day_counter(domain::dayCounter v) {
     case dc::Month:
         return "Month";
     default:
-        return "ACT/365.FIXED";
+        throw std::runtime_error("Unknown day counter enum value");
     }
 }
 
@@ -219,7 +221,7 @@ std::string conventions_mapper::normalize_frequency(domain::frequencyType v) {
     case ft::Daily:
         return "Daily";
     default:
-        return "Annual";
+        throw std::runtime_error("Unknown frequency type enum value");
     }
 }
 
@@ -231,7 +233,8 @@ std::string conventions_mapper::normalize_compounding(domain::compounding v) {
     case cm::Continuous:         return "Continuous";
     case cm::SimpleThenCompounded: return "SimpleThenCompounded";
     case cm::_:
-    default:                     return "Compounded";
+    default:
+        throw std::runtime_error("Unknown compounding enum value");
     }
 }
 
@@ -254,7 +257,8 @@ std::string conventions_mapper::normalize_date_rule(domain::dateRule v) {
     case dr::LastWednesday:          return "LastWednesday";
     case dr::EveryThursday:          return "EveryThursday";
     case dr::_:
-    default:                         return "Backward";
+    default:
+        throw std::runtime_error("Unknown date rule enum value");
     }
 }
 
@@ -364,8 +368,12 @@ conventions_mapper::map_swap(const swapType& v) {
 
     if (v.SubPeriodsCouponType) {
         using sp = domain::subPeriodsCouponType;
-        r.sub_periods_coupon_type =
-            (*v.SubPeriodsCouponType == sp::Compounding) ? "Compounding" : "Averaging";
+        switch (*v.SubPeriodsCouponType) {
+        case sp::Compounding: r.sub_periods_coupon_type = "Compounding"; break;
+        case sp::Averaging:   r.sub_periods_coupon_type = "Averaging";   break;
+        default:
+            throw std::runtime_error("Unknown sub-periods coupon type enum value");
+        }
     }
 
     set_audit(r);

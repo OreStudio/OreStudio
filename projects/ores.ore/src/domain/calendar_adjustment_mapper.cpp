@@ -25,6 +25,14 @@ namespace ores::ore::domain {
 
 using namespace ores::logging;
 
+namespace {
+
+constexpr std::string_view audit_modified_by = "ores";
+constexpr std::string_view audit_reason_code = "system.external_data_import";
+constexpr std::string_view audit_commentary  = "Imported from ORE XML";
+
+} // namespace
+
 refdata::domain::calendar_adjustment
 calendar_adjustment_mapper::map(const newcalendar& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping ORE calendar: " << std::string(v.name);
@@ -47,9 +55,9 @@ calendar_adjustment_mapper::map(const newcalendar& v) {
             r.additional_business_days.push_back(std::string(d));
     }
 
-    r.modified_by = "ores";
-    r.change_reason_code = "system.external_data_import";
-    r.change_commentary = "Imported from ORE XML";
+    r.modified_by        = std::string(audit_modified_by);
+    r.change_reason_code = std::string(audit_reason_code);
+    r.change_commentary  = std::string(audit_commentary);
 
     BOOST_LOG_SEV(lg(), trace) << "Mapped calendar: " << r.calendar_name
                                << " holidays=" << r.additional_holidays.size()

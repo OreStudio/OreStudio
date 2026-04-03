@@ -38,6 +38,8 @@ using namespace ores::database::repository;
 
 namespace {
 
+using context = ores::database::context;
+
 std::vector<std::string> fetch_book_ids(
     context ctx, const std::string& fn,
     const std::string& tid, const std::string& id,

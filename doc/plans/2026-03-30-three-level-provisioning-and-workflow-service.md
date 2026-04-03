@@ -595,50 +595,15 @@ The `ores.logging` `make_logger` already supports structured key-value pairs. Ad
 
 ---
 
-## Phase 4: Party Wizard UX Improvements
+## Phase 4: Party Wizard UX Improvements — CLOSED
 
-These are follow-ons once Phases 2 and 3 are stable:
+Moved to sprint backlog 16: "Party wizard UX improvements" story.
+Not pursued here as it is out of scope for the core provisioning plan.
 
-1. **Force password reset**: Add `password_reset_required = true` flag to accounts
-   created by `provision-parties`. `auth_handler.hpp` already handles this flag.
+## Phase 5: Financial Workflows — CLOSED
 
-2. **Multi-select LEI picker**: `LeiEntityPicker` currently supports single selection.
-   Extend to multi-select for the `PartyProvisionPage` to allow selecting the full
-   GLEIF hierarchy in one pass.
-
-3. **Party wizard per-party customisation**: Allow each `PartyProvisionPage` entry to
-   override the shared username/password with a per-party credential.
-
-4. **Async wizard progress**: The `provision-parties` endpoint is currently synchronous.
-   For large party hierarchies (> 20), switch to async: return `workflow_id` immediately
-   and poll `workflow.v1.status` from the wizard's progress page.
-
----
-
-## Phase 5: Extend `ores.workflow` for Financial Workflows
-
-Once the service is established, the following workflows should be migrated to use it:
-
-### `trade-expiry`
-
-```
-Step 1: trading.v1.trades.expire      { trade_id }
-Step 2: risk.v1.positions.update      { trade_id }
-Step 3: reporting.v1.runs.trigger-pnl { party_id, date }
-Step 4: scheduler.v1.jobs.remove      { trade_id }
-
-Compensation:
-  Step 1: trading.v1.trades.reinstate  { trade_id }
-  (Steps 2-4 are idempotent / can be safely retried without compensation)
-```
-
-### `barrier-event`
-
-```
-Step 1: trading.v1.trades.apply-barrier-event { trade_id, event_type }
-Step 2: risk.v1.greeks.recompute              { trade_id }
-Step 3: reporting.v1.runs.trigger             { party_id }
-```
+Moved to sprint backlog 16: "Financial workflows: trade-expiry and barrier-event" story.
+Not pursued here as it is out of scope for the core provisioning plan.
 
 ---
 

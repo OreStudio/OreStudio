@@ -854,6 +854,45 @@ permissions), requiring iterative =recreate_database= runs.
 - [ ] Document the remaining manual steps in =doc/how-to/add-a-new-service.md=
       as an interim checklist
 
+*** TODO Party wizard UX improvements                                  :code:
+
+Follow-on UX polish for the three-level provisioning wizard, deferred from
+the [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][three-level provisioning plan]] (Phase 4).
+
+***** Tasks
+
+- [ ] Force password reset: add =password_reset_required = true= flag to
+      accounts created by =provision-parties=; =auth_handler.hpp= already
+      handles this flag
+- [ ] Multi-select LEI picker: extend =LeiEntityPicker= from single- to
+      multi-select so =PartyProvisionPage= can select a full GLEIF hierarchy
+      in one pass
+- [ ] Per-party credential override: allow each =PartyProvisionPage= entry to
+      override the shared username/password with per-party credentials
+- [ ] Async wizard progress: switch =provision-parties= to async for hierarchies
+      > 20 parties — return =workflow_id= immediately and poll
+      =workflow.v1.status= from the wizard progress page
+
+*** TODO Financial workflows: trade-expiry and barrier-event             :code:
+
+Extend =ores.workflow= with the first two financial workflow types, deferred
+from the [[file:../../plans/2026-03-30-three-level-provisioning-and-workflow-service.md][three-level provisioning plan]] (Phase 5).
+
+***** Tasks
+
+- [ ] Implement =trade-expiry= workflow executor:
+      - Step 1: =trading.v1.trades.expire= ={ trade_id }=
+      - Step 2: =risk.v1.positions.update= ={ trade_id }=
+      - Step 3: =reporting.v1.runs.trigger-pnl= ={ party_id, date }=
+      - Step 4: =scheduler.v1.jobs.remove= ={ trade_id }=
+      - Compensation: =trading.v1.trades.reinstate= on Step 1 failure
+- [ ] Implement =barrier-event= workflow executor:
+      - Step 1: =trading.v1.trades.apply-barrier-event= ={ trade_id, event_type }=
+      - Step 2: =risk.v1.greeks.recompute= ={ trade_id }=
+      - Step 3: =reporting.v1.runs.trigger= ={ party_id }=
+- [ ] Register both executors in workflow service wiring
+- [ ] Integration tests for both workflows (happy path + compensation)
+
 * Footer
 
 | Previous: [[id:0B23D554-23BA-11F1-9F0E-40B0768014EB][Sprint Backlog 15]] | Next: TBD |

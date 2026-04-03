@@ -55,9 +55,12 @@ struct options final {
     ores::nats::config::nats_options nats;
 
     /**
-     * @brief Root directory for compute grid file storage (packages, inputs, outputs).
+     * @brief Root directory for object storage (all buckets live under this path).
+     *
+     * Each well-known bucket (compute-packages, compute-inputs, compute-outputs,
+     * ore-imports, …) maps to a subdirectory of this root.
      */
-    std::string compute_storage_dir{"/var/ores/http-server/compute"};
+    std::string storage_dir{"/var/ores/http-server/storage"};
 
     /**
      * @brief Override for the HTTP base URL advertised via NATS service discovery.

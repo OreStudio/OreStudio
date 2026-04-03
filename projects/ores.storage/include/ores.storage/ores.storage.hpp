@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,21 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/config/options.hpp"
+#ifndef ORES_STORAGE_HPP
+#define ORES_STORAGE_HPP
 
-#include <ostream>
+/**
+ * @brief Generic object storage API for ORE Studio.
+ *
+ * Provides bucket name constants and HTTP path helpers for the generic S3-like object storage API (PUT/GET/DELETE/HEAD /api/v1/storage/{bucket}/{key}). The storage layer replaces compute-specific HTTP endpoints with a reusable abstraction that can back ORE imports, compute artifacts, and any future binary payload transfer. The filesystem-backed HTTP implementation lives in ores.http.core.
+ */
+namespace ores::storage {}
 
-namespace ores::http_server::config {
-
-std::ostream& operator<<(std::ostream& s, const options& v) {
-    s << "options {"
-      << " logging: " << (v.logging.has_value() ? "configured" : "none")
-      << " server: " << v.server
-      << " nats.url: " << v.nats.url
-      << " http_base_url: " << (v.http_base_url.empty() ? "(derived)" : v.http_base_url)
-      << " storage_dir: " << v.storage_dir
-      << " }";
-    return s;
-}
-
-}
+#endif

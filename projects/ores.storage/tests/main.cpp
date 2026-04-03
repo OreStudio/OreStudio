@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,21 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/config/options.hpp"
+#include <openssl/crypto.h>
+#include <boost/scope_exit.hpp>
+#include <catch2/catch_session.hpp>
+#include <catch2/reporters/catch_reporter_registrars.hpp>
+#include "ores.testing/logging_listener.hpp"
+#include "ores.testing/database_lifecycle_listener.hpp"
 
-#include <ostream>
+CATCH_REGISTER_LISTENER(ores::testing::logging_listener)
+CATCH_REGISTER_LISTENER(ores::testing::database_lifecycle_listener)
 
-namespace ores::http_server::config {
+int main(int argc, char* argv[]) {
+    BOOST_SCOPE_EXIT(void) {
+        OPENSSL_cleanup();
+    } BOOST_SCOPE_EXIT_END
 
-std::ostream& operator<<(std::ostream& s, const options& v) {
-    s << "options {"
-      << " logging: " << (v.logging.has_value() ? "configured" : "none")
-      << " server: " << v.server
-      << " nats.url: " << v.nats.url
-      << " http_base_url: " << (v.http_base_url.empty() ? "(derived)" : v.http_base_url)
-      << " storage_dir: " << v.storage_dir
-      << " }";
-    return s;
-}
-
+    ores::testing::logging_listener::set_test_module_name("ores.storage.tests");
+    return Catch::Session().run(argc, argv);
 }

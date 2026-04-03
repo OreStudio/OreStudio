@@ -235,16 +235,18 @@ void MarketSeriesMdiWindow::loadAssetClasses() {
                         self->clientManager_->process_authenticated_request(
                             std::move(req));
                     if (!result) return {};
-                    return std::move(result->asset_classes);
+                    AssetClassFetchResult r;
+                    r.asset_classes = std::move(result->asset_classes);
+                    return r;
                 }, "asset classes");
         });
     assetClassWatcher_->setFuture(future);
 }
 
 void MarketSeriesMdiWindow::onAssetClassesLoaded() {
-    const auto classes = assetClassWatcher_->result();
-    if (!classes.empty())
-        populateAssetClassCombo(classes);
+    const auto result = assetClassWatcher_->result();
+    if (result.success && !result.asset_classes.empty())
+        populateAssetClassCombo(result.asset_classes);
 }
 
 void MarketSeriesMdiWindow::populateAssetClassCombo(

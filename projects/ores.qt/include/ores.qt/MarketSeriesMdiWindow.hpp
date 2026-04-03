@@ -97,8 +97,12 @@ private:
     void populateAssetClassCombo(
         const std::vector<refdata::domain::asset_class_info>& classes);
 
-    using AssetClassFetchResult =
-        std::vector<refdata::domain::asset_class_info>;
+    struct AssetClassFetchResult {
+        bool success = true;
+        QString error_message;
+        QString error_details;
+        std::vector<refdata::domain::asset_class_info> asset_classes;
+    };
 
     QVBoxLayout* verticalLayout_;
     QTableView* tableView_;

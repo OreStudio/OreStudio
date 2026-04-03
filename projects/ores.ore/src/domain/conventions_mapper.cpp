@@ -460,8 +460,8 @@ conventions_mapper::map_fx(const fxType& v) {
     refdata::domain::fx_convention r;
     r.id = std::string(v.Id);
     r.spot_days = static_cast<int>(v.SpotDays);
-    r.source_currency = std::string(v.SourceCurrency);
-    r.target_currency = std::string(v.TargetCurrency);
+    r.source_currency = to_string(v.SourceCurrency);
+    r.target_currency = to_string(v.TargetCurrency);
     r.points_factor = v.PointsFactor;
 
     if (v.AdvanceCalendar)

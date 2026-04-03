@@ -70,6 +70,10 @@
 \ir ./trading_scripted_instruments_notify_trigger_drop.sql
 \ir ./trading_scripted_instruments_drop.sql
 
+-- Trade helper functions (drop before the table they query)
+\ir ./trading_trades_bu_functions_drop.sql
+\ir ./trading_trades_functions_drop.sql
+
 -- Trades (depends on reference data, drop after junction tables)
 \ir ./trading_trades_notify_trigger_drop.sql
 \ir ./trading_trades_drop.sql

@@ -19,8 +19,8 @@
  */
 #include "ores.trading.core/repository/trade_repository.hpp"
 
+#include <algorithm>
 #include <sqlgen/postgres.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.database/repository/helpers.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
@@ -38,45 +38,68 @@ using namespace ores::database::repository;
 
 namespace {
 
-domain::trade raw_row_to_trade(
-    const std::vector<std::optional<std::string>>& row) {
-    // Column order matches the table definition (SELECT * from the SQL functions):
-    // 0:id, 1:tenant_id, 2:version, 3:party_id, 4:external_id, 5:book_id,
-    // 6:portfolio_id, 7:successor_trade_id, 8:counterparty_id, 9:trade_type,
-    // 10:product_type, 11:instrument_id, 12:asset_class,
-    // 13:netting_set_id, 14:activity_type_code, 15:status_id, 16:trade_date,
-    // 17:execution_timestamp, 18:effective_date, 19:termination_date, 20:modified_by,
-    // 21:performed_by, 22:change_reason_code, 23:change_commentary, 24:valid_from
-    domain::trade r;
-    r.id = boost::lexical_cast<boost::uuids::uuid>(row[0].value());
-    r.tenant_id = utility::uuid::tenant_id::from_string(row[1].value()).value();
-    r.version = std::stoi(row[2].value());
-    r.party_id = boost::lexical_cast<boost::uuids::uuid>(row[3].value());
-    r.external_id = row[4].value_or("");
-    r.book_id = boost::lexical_cast<boost::uuids::uuid>(row[5].value());
-    r.portfolio_id = boost::lexical_cast<boost::uuids::uuid>(row[6].value());
-    if (row[7].has_value())
-        r.successor_trade_id = boost::lexical_cast<boost::uuids::uuid>(*row[7]);
-    if (row[8].has_value())
-        r.counterparty_id = boost::lexical_cast<boost::uuids::uuid>(*row[8]);
-    r.trade_type = row[9].value();
-    r.product_type = row[10].value_or("");
-    if (row[11].has_value())
-        r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(*row[11]);
-    r.asset_class = row[12];
-    r.netting_set_id = row[13].value();
-    r.activity_type_code = row[14].value();
-    r.status_id = boost::lexical_cast<boost::uuids::uuid>(row[15].value());
-    r.trade_date = row[16].value();
-    r.execution_timestamp = row[17].value();
-    r.effective_date = row[18].value();
-    r.termination_date = row[19].value();
-    r.modified_by = row[20].value();
-    r.performed_by = row[21].value();
-    r.change_reason_code = row[22].value();
-    r.change_commentary = row[23].value();
-    r.recorded_at = timestamp_to_timepoint(std::string_view{row[24].value()});
-    return r;
+std::vector<std::string> fetch_book_ids(
+    context ctx, const std::string& fn,
+    const std::string& tid, const std::string& id,
+    logging::logger_t& lg, const std::string& desc) {
+    const std::string sql =
+        "SELECT id::text FROM " + fn + "($1::uuid, $2::uuid)";
+    return execute_parameterized_string_query(ctx, sql, {tid, id}, lg, desc);
+}
+
+std::vector<domain::trade> read_trades_for_books(
+    context ctx,
+    const std::vector<std::string>& book_ids,
+    const std::string& tid,
+    std::uint32_t offset,
+    std::uint32_t limit,
+    logging::logger_t& lg) {
+
+    const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
+    std::vector<domain::trade> result;
+    for (const auto& bid : book_ids) {
+        const auto query = sqlgen::read<std::vector<trade_entity>> |
+            where("tenant_id"_c == tid && "valid_to"_c == max
+                  && "book_id"_c == bid) |
+            order_by("id"_c);
+        auto batch = execute_read_query<trade_entity, domain::trade>(
+            ctx, query,
+            [](const auto& entities) { return trade_mapper::map(entities); },
+            lg, "Reading trades for book");
+        result.insert(result.end(),
+            std::make_move_iterator(batch.begin()),
+            std::make_move_iterator(batch.end()));
+    }
+
+    std::ranges::sort(result, {}, &domain::trade::id);
+
+    if (offset >= result.size()) return {};
+    const auto end = std::min(static_cast<std::size_t>(offset + limit),
+                              result.size());
+    return std::vector<domain::trade>(
+        result.begin() + offset, result.begin() + end);
+}
+
+std::uint32_t count_trades_for_books(
+    context ctx,
+    const std::vector<std::string>& book_ids,
+    const std::string& tid,
+    logging::logger_t& lg) {
+
+    const auto max = make_timestamp(MAX_TIMESTAMP, lg).value();
+    struct count_result { long long count; };
+    std::uint32_t total = 0;
+    for (const auto& bid : book_ids) {
+        const auto query = sqlgen::select_from<trade_entity>(
+            sqlgen::count().as<"count">()) |
+            where("tenant_id"_c == tid && "valid_to"_c == max
+                  && "book_id"_c == bid) |
+            sqlgen::to<count_result>;
+        const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+        ensure_success(r, lg);
+        total += static_cast<std::uint32_t>(r->count);
+    }
+    return total;
 }
 
 } // anonymous namespace
@@ -212,44 +235,20 @@ trade_repository::read_latest_filtered(context ctx,
         const auto buid = boost::uuids::to_string(*business_unit_id);
         BOOST_LOG_SEV(lg(), debug)
             << "Reading trades filtered by business unit subtree: " << buid;
-
-        const std::string sql =
-            "SELECT * FROM ores_trading_read_trades_by_business_unit_fn('"
-            + tid + "'::uuid, '" + buid + "'::uuid, "
-            + std::to_string(offset) + ", " + std::to_string(limit) + ")";
-
-        const auto rows = execute_raw_multi_column_query(
-            ctx, sql, lg(), "Reading trades for business unit subtree");
-
-        std::vector<domain::trade> result;
-        result.reserve(rows.size());
-        for (const auto& row : rows) {
-            if (row.size() >= 25)
-                result.push_back(raw_row_to_trade(row));
-        }
-        return result;
+        const auto book_ids = fetch_book_ids(ctx,
+            "ores_trading_get_book_ids_by_business_unit_fn",
+            tid, buid, lg(), "Fetching book IDs for business unit subtree");
+        return read_trades_for_books(ctx, book_ids, tid, offset, limit, lg());
     }
 
-    // portfolio_id case: delegate to SQL function with recursive CTE
+    // portfolio_id case
     const auto pid = boost::uuids::to_string(*portfolio_id);
     BOOST_LOG_SEV(lg(), debug)
         << "Reading trades filtered by portfolio subtree: " << pid;
-
-    const std::string sql =
-        "SELECT * FROM ores_trading_read_trades_by_portfolio_fn('"
-        + tid + "'::uuid, '" + pid + "'::uuid, "
-        + std::to_string(offset) + ", " + std::to_string(limit) + ")";
-
-    const auto rows = execute_raw_multi_column_query(
-        ctx, sql, lg(), "Reading trades for portfolio subtree");
-
-    std::vector<domain::trade> result;
-    result.reserve(rows.size());
-    for (const auto& row : rows) {
-        if (row.size() >= 24)
-            result.push_back(raw_row_to_trade(row));
-    }
-    return result;
+    const auto book_ids = fetch_book_ids(ctx,
+        "ores_trading_get_book_ids_by_portfolio_fn",
+        tid, pid, lg(), "Fetching book IDs for portfolio subtree");
+    return read_trades_for_books(ctx, book_ids, tid, offset, limit, lg());
 }
 
 std::uint32_t
@@ -282,34 +281,20 @@ trade_repository::count_latest_filtered(context ctx,
         const auto buid = boost::uuids::to_string(*business_unit_id);
         BOOST_LOG_SEV(lg(), debug)
             << "Counting trades for business unit subtree: " << buid;
-
-        const std::string sql =
-            "SELECT ores_trading_count_trades_by_business_unit_fn('"
-            + tid + "'::uuid, '" + buid + "'::uuid)";
-
-        const auto rows = execute_raw_multi_column_query(
-            ctx, sql, lg(), "Counting trades for business unit subtree");
-
-        if (rows.empty() || rows[0].empty() || !rows[0][0].has_value())
-            return 0;
-        return static_cast<std::uint32_t>(std::stoll(*rows[0][0]));
+        const auto book_ids = fetch_book_ids(ctx,
+            "ores_trading_get_book_ids_by_business_unit_fn",
+            tid, buid, lg(), "Fetching book IDs for business unit subtree");
+        return count_trades_for_books(ctx, book_ids, tid, lg());
     }
 
-    // portfolio_id case: delegate to SQL function with recursive CTE
+    // portfolio_id case
     const auto pid = boost::uuids::to_string(*portfolio_id);
     BOOST_LOG_SEV(lg(), debug)
         << "Counting trades for portfolio subtree: " << pid;
-
-    const std::string sql =
-        "SELECT ores_trading_count_trades_by_portfolio_fn('"
-        + tid + "'::uuid, '" + pid + "'::uuid)";
-
-    const auto rows = execute_raw_multi_column_query(
-        ctx, sql, lg(), "Counting trades for portfolio subtree");
-
-    if (rows.empty() || rows[0].empty() || !rows[0][0].has_value())
-        return 0;
-    return static_cast<std::uint32_t>(std::stoll(*rows[0][0]));
+    const auto book_ids = fetch_book_ids(ctx,
+        "ores_trading_get_book_ids_by_portfolio_fn",
+        tid, pid, lg(), "Fetching book IDs for portfolio subtree");
+    return count_trades_for_books(ctx, book_ids, tid, lg());
 }
 
 void trade_repository::remove(context ctx, const std::string& id) {

@@ -651,7 +651,7 @@ void ComputeConsoleWindow::on_download_output() {
 
     const QUrl url = QUrl(
         QString::fromStdString(http_base_url_) +
-        "/api/v1/compute/results/" + selected_result_id_ + "/output");
+        "/api/v1/storage/compute/output/" + selected_result_id_ + ".tar.gz");
     auto* nam = new QNetworkAccessManager(this);
     auto* reply = nam->get(QNetworkRequest(url));
     QPointer<ComputeConsoleWindow> self = this;

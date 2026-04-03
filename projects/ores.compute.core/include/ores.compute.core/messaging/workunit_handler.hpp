@@ -27,6 +27,7 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include "ores.logging/make_logger.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.database/domain/context.hpp"
@@ -147,7 +148,8 @@ public:
                         .package_uri    = package_uri,
                         .input_uri      = req->workunit.input_uri,
                         .config_uri     = req->workunit.config_uri,
-                        .output_uri     = "api/v1/compute/results/" + result_id_str + "/output"};
+                        .output_uri     = ores::compute::net::compute_storage::output_path(
+                            result_id_str)};
                     const auto json = rfl::json::write(event);
                     const auto* p =
                         reinterpret_cast<const std::byte*>(json.data());

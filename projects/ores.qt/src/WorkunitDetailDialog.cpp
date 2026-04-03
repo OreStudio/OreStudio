@@ -349,7 +349,7 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
     const std::string id_str = boost::uuids::to_string(workunit_.id);
     {
         // Preserve the full extension (e.g. ".csv") for local inspection.
-        const std::string base = "api/v1/compute/workunits/" + id_str + "/input";
+        const std::string base = "api/v1/storage/compute/input/" + id_str;
         if (!selectedInputFilePath_.isEmpty()) {
             const std::string ext =
                 QFileInfo(selectedInputFilePath_).completeSuffix().toStdString();
@@ -359,7 +359,7 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
         }
     }
     if (!selectedConfigFilePath_.isEmpty()) {
-        const std::string base = "api/v1/compute/workunits/" + id_str + "/config";
+        const std::string base = "api/v1/storage/compute/config/" + id_str;
         const std::string ext =
             QFileInfo(selectedConfigFilePath_).completeSuffix().toStdString();
         workunit_.config_uri = base + (ext.empty() ? "" : "." + ext);
@@ -465,8 +465,8 @@ void WorkunitDetailDialog::onSaveClicked() {
     if (!selectedInputFilePath_.isEmpty()) {
         const QString ext_in = QFileInfo(selectedInputFilePath_).completeSuffix();
         QUrl inputUrl = httpBaseUrl_;
-        inputUrl.setPath("/api/v1/compute/workunits/"
-            + QString::fromStdString(id_str) + "/input"
+        inputUrl.setPath("/api/v1/storage/compute/input/"
+            + QString::fromStdString(id_str)
             + (ext_in.isEmpty() ? QString{} : "." + ext_in));
 
         auto* inputFile = new QFile(selectedInputFilePath_, this);
@@ -485,7 +485,7 @@ void WorkunitDetailDialog::onSaveClicked() {
                       QByteArray("application/octet-stream"));
 
         QPointer<WorkunitDetailDialog> self = this;
-        auto* inputReply = nm->post(req, inputFile);
+        auto* inputReply = nm->put(req, inputFile);
 
         connect(inputReply, &QNetworkReply::finished, this,
                 [self, inputReply, inputFile, nm, id_str]() {
@@ -520,8 +520,8 @@ void WorkunitDetailDialog::onSaveClicked() {
                 const QString ext_cfg =
                     QFileInfo(self->selectedConfigFilePath_).completeSuffix();
                 QUrl configUrl = self->httpBaseUrl_;
-                configUrl.setPath("/api/v1/compute/workunits/"
-                    + QString::fromStdString(id_str) + "/config"
+                configUrl.setPath("/api/v1/storage/compute/config/"
+                    + QString::fromStdString(id_str)
                     + (ext_cfg.isEmpty() ? QString{} : "." + ext_cfg));
 
                 auto* configFile = new QFile(self->selectedConfigFilePath_, self);
@@ -539,7 +539,7 @@ void WorkunitDetailDialog::onSaveClicked() {
                 req2.setHeader(QNetworkRequest::ContentTypeHeader,
                                QByteArray("application/octet-stream"));
 
-                auto* configReply = nm2->post(req2, configFile);
+                auto* configReply = nm2->put(req2, configFile);
 
                 connect(configReply, &QNetworkReply::finished, self,
                         [self, configReply, configFile, nm2, id_str]() {

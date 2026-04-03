@@ -22,7 +22,6 @@
 #include <set>
 #include <fstream>
 #include <filesystem>
-#include "ores.storage/net/buckets.hpp"
 #include "ores.http.api/domain/http_request.hpp"
 #include "ores.http.api/domain/http_response.hpp"
 
@@ -32,14 +31,11 @@ using namespace ores::logging;
 using namespace ores::http::domain;
 namespace asio = boost::asio;
 namespace fs   = std::filesystem;
-using buckets  = ores::storage::net::buckets;
 
 // All bucket names accepted by this server. Unknown buckets return 404.
 static const std::set<std::string> k_known_buckets {
-    std::string(buckets::compute_packages),
-    std::string(buckets::compute_inputs),
-    std::string(buckets::compute_outputs),
-    std::string(buckets::ore_imports),
+    "compute",
+    "ore-imports",
 };
 
 storage_routes::storage_routes(std::string storage_dir)

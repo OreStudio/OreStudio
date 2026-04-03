@@ -670,7 +670,10 @@
           <item row="4" column="1">
            <widget class="QDoubleSpinBox" name="bondCouponRateSpinBox">
             <property name="decimals"><number>6</number></property>
-            <property name="maximum"><double>999.000000</double></property>
+            <property name="maximum"><double>1.000000</double></property>
+            <property name="toolTip">
+             <string>Enter as decimal, e.g. 0.05 for 5%</string>
+            </property>
            </widget>
           </item>
           <item row="5" column="0">
@@ -871,8 +874,11 @@
           </item>
           <item row="4" column="1">
            <widget class="QDoubleSpinBox" name="creditSpreadSpinBox">
-            <property name="decimals"><number>6</number></property>
-            <property name="maximum"><double>99999.000000</double></property>
+            <property name="decimals"><number>2</number></property>
+            <property name="maximum"><double>10000.000000</double></property>
+            <property name="suffix">
+             <string> bps</string>
+            </property>
            </widget>
           </item>
           <item row="5" column="0">

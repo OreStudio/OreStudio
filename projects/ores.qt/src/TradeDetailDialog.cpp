@@ -1425,16 +1425,10 @@ void TradeDetailDialog::updateCreditInstrumentFromUi() {
     }
     creditInstrument_.linked_asset_code =
         ui_->creditLinkedAssetCodeEdit->text().trimmed().toStdString();
-    {
-        const double a = ui_->creditTrancheAttachmentSpinBox->value();
-        creditInstrument_.tranche_attachment = (a > 0.0)
-            ? std::optional<double>(a) : std::nullopt;
-    }
-    {
-        const double d = ui_->creditTrancheDetachmentSpinBox->value();
-        creditInstrument_.tranche_detachment = (d > 0.0)
-            ? std::optional<double>(d) : std::nullopt;
-    }
+    creditInstrument_.tranche_attachment =
+        ui_->creditTrancheAttachmentSpinBox->value();
+    creditInstrument_.tranche_detachment =
+        ui_->creditTrancheDetachmentSpinBox->value();
     creditInstrument_.modified_by = username_;
     creditInstrument_.performed_by = username_;
 }

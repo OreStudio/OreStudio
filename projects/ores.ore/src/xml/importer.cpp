@@ -26,6 +26,8 @@
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
 #include "ores.ore/domain/domain.hpp"
 #include "ores.ore/domain/currency_mapper.hpp"
+#include "ores.ore/domain/calendar_adjustment_mapper.hpp"
+#include "ores.ore/domain/conventions_mapper.hpp"
 #include "ores.ore/domain/trade_mapper.hpp"
 
 namespace ores::ore::xml {
@@ -77,6 +79,33 @@ importer::import_currency_config(const std::filesystem::path& path) {
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
                                << " currencies. Result: " << r;
 
+    return r;
+}
+
+std::string importer::validate_calendar_adjustment(
+    const refdata::domain::calendar_adjustment& ca) {
+    std::ostringstream errors;
+
+    if (ca.calendar_name.empty())
+        errors << "Calendar name is required\n";
+
+    return errors.str();
+}
+
+std::vector<refdata::domain::calendar_adjustment>
+importer::import_calendar_adjustments(const std::filesystem::path& path) {
+    BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
+
+    using namespace ores::platform::filesystem;
+    const std::string c(file::read_content(path));
+    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+
+    domain::calendaradjustment ca;
+    domain::load_data(c, ca);
+    const auto r = domain::calendar_adjustment_mapper::map(ca);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
+                               << " calendar adjustments.";
     return r;
 }
 
@@ -181,6 +210,23 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
 
     BOOST_LOG_SEV(lg(), debug) << "Finished importing " << r.size()
                                << " trades with context.";
+    return r;
+}
+
+domain::mapped_conventions
+importer::import_conventions(const std::filesystem::path& path) {
+    BOOST_LOG_SEV(lg(), debug) << "Started import: " << path.generic_string();
+
+    using namespace ores::platform::filesystem;
+    const std::string c(file::read_content(path));
+    BOOST_LOG_SEV(lg(), trace) << "File content: " << c;
+
+    domain::conventions conv;
+    domain::load_data(c, conv);
+    const auto r = domain::conventions_mapper::map(conv);
+
+    BOOST_LOG_SEV(lg(), debug) << "Finished importing conventions from "
+                               << path.generic_string();
     return r;
 }
 

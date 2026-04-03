@@ -35,7 +35,7 @@
 #include "ores.http.core/routes/risk_routes.hpp"
 #include "ores.http.core/routes/variability_routes.hpp"
 #include "ores.http.core/routes/assets_routes.hpp"
-#include "ores.http.core/routes/compute_routes.hpp"
+#include "ores.http.core/routes/storage_routes.hpp"
 #include "ores.http.server/messaging/registrar.hpp"
 #include "ores.geo/service/geolocation_service.hpp"
 #include "ores.eventing/service/event_bus.hpp"
@@ -178,9 +178,9 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
     routes::assets_routes assets(ctx, sessions);
     assets.register_routes(router, registry);
 
-    // Register Compute routes (packages, inputs, outputs)
-    routes::compute_routes compute(cfg.compute_storage_dir);
-    compute.register_routes(router, registry);
+    // Register Storage routes (packages, inputs, outputs, ore-imports)
+    routes::storage_routes storage(cfg.storage_dir);
+    storage.register_routes(router, registry);
 
     BOOST_LOG_SEV(lg(), info) << "API routes registered, starting server...";
     BOOST_LOG_SEV(lg(), info) << "Total endpoints: " << router->routes().size();

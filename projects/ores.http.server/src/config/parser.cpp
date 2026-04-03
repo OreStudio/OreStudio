@@ -49,7 +49,7 @@ const std::string server_jwt_audience_arg("jwt-audience");
 const std::string server_disable_cors_arg("disable-cors");
 const std::string server_cors_origins_arg("cors-origins");
 const std::string server_identifier_arg("identifier");
-const std::string compute_storage_dir_arg("compute-storage-dir");
+const std::string storage_dir_arg("storage-dir");
 const std::string http_base_url_arg("http-base-url");
 
 using boost::program_options::value;
@@ -98,11 +98,11 @@ options_description make_options_description() {
         ("identifier,i", value<std::string>()->default_value("ores-http-server-v1"),
             "Server identifier for responses.");
 
-    options_description cod("Compute Storage");
+    options_description cod("Object Storage");
     cod.add_options()
-        (compute_storage_dir_arg.c_str(),
-            value<std::string>()->default_value("/var/ores/http-server/compute"),
-            "Root directory for compute grid file storage (packages, inputs, outputs).");
+        (storage_dir_arg.c_str(),
+            value<std::string>()->default_value("/var/ores/http-server/storage"),
+            "Root directory for object storage (all buckets live under this path).");
 
     options_description nod("HTTP service discovery");
     nod.add_options()
@@ -213,7 +213,7 @@ parse_arguments(const std::vector<std::string>& arguments, std::ostream& info) {
     r.database = database_configuration::read_options(vm);
     r.nats = nats_configuration::read_options(vm);
     r.http_base_url = vm[http_base_url_arg].as<std::string>();
-    r.compute_storage_dir = vm[compute_storage_dir_arg].as<std::string>();
+    r.storage_dir = vm[storage_dir_arg].as<std::string>();
 
     // Validate required configuration
     if (r.server.jwt_secret.empty()) {

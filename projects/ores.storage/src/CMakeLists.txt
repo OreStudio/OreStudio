@@ -9,13 +9,14 @@
 #
 # This program is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
 #
 # You should have received a copy of the GNU General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
-# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
-set(name "ores.http.core")
+set(name "ores.storage")
 set(lib_binary_name ${name})
 set(lib_target_name ${name}.lib)
 
@@ -32,21 +33,10 @@ set_target_properties(${lib_target_name}
     PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
 
 target_include_directories(${lib_target_name} PUBLIC
-    ${CMAKE_SOURCE_DIR}/projects/ores.http.core/include)
+    ${CMAKE_SOURCE_DIR}/projects/${name}/include)
 
 target_link_libraries(${lib_target_name}
-    PUBLIC
-        ores.storage.lib
-        ores.http.api.lib
-        ores.iam.core.lib
-        ores.refdata.core.lib
-        ores.assets.core.lib
-        ores.variability.core.lib
-        ores.compute.core.lib
-        ores.geo.lib
     PRIVATE
-        ores.utility.lib
-        ores.security.lib
-        ores.database.lib)
+        ores.utility.lib)
 
 install(TARGETS ${lib_target_name} LIBRARY DESTINATION lib)

@@ -1,6 +1,6 @@
 /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
- * Copyright (C) 2025 Marco Craveiro <marco.craveiro@gmail.com>
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
@@ -17,21 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.http.server/config/options.hpp"
+#include "ores.storage/domain/stub.hpp"
 
-#include <ostream>
+namespace ores::storage::domain {
 
-namespace ores::http_server::config {
-
-std::ostream& operator<<(std::ostream& s, const options& v) {
-    s << "options {"
-      << " logging: " << (v.logging.has_value() ? "configured" : "none")
-      << " server: " << v.server
-      << " nats.url: " << v.nats.url
-      << " http_base_url: " << (v.http_base_url.empty() ? "(derived)" : v.http_base_url)
-      << " storage_dir: " << v.storage_dir
-      << " }";
-    return s;
+std::string stub_function() {
+    return "STUB code to be removed";
 }
 
 }

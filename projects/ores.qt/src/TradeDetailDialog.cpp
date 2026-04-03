@@ -291,7 +291,7 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
     selectCurrentBook();
     selectCurrentCounterparty();
 
-    if (trade_.instrument_family == "fx" && trade_.instrument_id.has_value())
+    if (trade_.product_type == "fx" && trade_.instrument_id.has_value())
         loadFxInstrument();
 }
 
@@ -402,7 +402,7 @@ void TradeDetailDialog::updateTradeFromUi() {
 void TradeDetailDialog::loadFxInstrument() {
     if (!clientManager_ || !trade_.instrument_id.has_value()) return;
 
-    const std::string family = trade_.instrument_family;
+    const std::string family = trade_.product_type;
     const std::string id = boost::uuids::to_string(*trade_.instrument_id);
 
     struct FxResult {
@@ -435,7 +435,7 @@ void TradeDetailDialog::loadFxInstrument() {
             return {false, "Dialog closed", {}};
 
         trading::messaging::get_instrument_for_trade_request req;
-        req.instrument_family = family;
+        req.product_type = family;
         req.instrument_id = id;
         auto r = self->clientManager_->process_authenticated_request(
             std::move(req));

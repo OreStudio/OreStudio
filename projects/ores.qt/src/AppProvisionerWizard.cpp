@@ -18,6 +18,7 @@
  *
  */
 #include "ores.qt/AppProvisionerWizard.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 
 #include <vector>
 #include <string>
@@ -378,8 +379,10 @@ private slots:
         const QString ext = QFileInfo(path).completeSuffix();
         const QString id  = QString::fromStdString(
             boost::uuids::to_string(app_version_id_));
-        const QString uri = "api/v1/compute/packages/" + id
-            + (ext.isEmpty() ? QString{} : "." + ext);
+        const QString uri = QString::fromStdString(
+            ores::compute::net::compute_storage::package_path(
+                id.toStdString(),
+                ext.isEmpty() ? "" : "." + ext.toStdString()));
         if (uri_edit_->text().isEmpty())
             uri_edit_->setText(uri);
     }
@@ -397,10 +400,11 @@ private slots:
         const QString ext = QFileInfo(file_path_edit_->text()).completeSuffix();
         const QString id  = QString::fromStdString(
             boost::uuids::to_string(app_version_id_));
-        const QString path = "/api/v1/compute/packages/" + id
-            + (ext.isEmpty() ? QString{} : "." + ext);
         QUrl url(http_base);
-        url.setPath(path);
+        url.setPath(QString::fromStdString(
+            ores::compute::net::compute_storage::package_path(
+                id.toStdString(),
+                ext.isEmpty() ? "" : "." + ext.toStdString())));
 
         auto* file = new QFile(file_path_edit_->text(), this);
         if (!file->open(QIODevice::ReadOnly)) {
@@ -422,7 +426,7 @@ private slots:
         req.setHeader(QNetworkRequest::ContentTypeHeader,
                       QByteArray("application/octet-stream"));
 
-        auto* reply = nm->post(req, file);
+        auto* reply = nm->put(req, file);
 
         connect(reply, &QNetworkReply::uploadProgress,
                 this, [this](qint64 sent, qint64 total) {
@@ -446,9 +450,10 @@ private slots:
                 return;
             }
 
-            const QString uri = "api/v1/compute/packages/" + id
-                + (ext.isEmpty() ? QString{} : "." + ext);
-            uri_edit_->setText(uri);
+            uri_edit_->setText(QString::fromStdString(
+                ores::compute::net::compute_storage::package_path(
+                    id.toStdString(),
+                    ext.isEmpty() ? "" : "." + ext.toStdString())));
             status_label_->setText(tr("Upload complete."));
             emit completeChanged();
         });

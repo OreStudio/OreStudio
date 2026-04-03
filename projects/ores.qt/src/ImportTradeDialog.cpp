@@ -19,6 +19,9 @@
  */
 #include "ores.qt/ImportTradeDialog.hpp"
 
+#include <fstream>
+#include <sstream>
+#include <filesystem>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGridLayout>
@@ -35,6 +38,7 @@
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.marketdata.api/messaging/import_protocol.hpp"
 
 namespace ores::qt {
 
@@ -44,6 +48,7 @@ ImportTradeDialog::ImportTradeDialog(
     const refdata::domain::book& book,
     const std::vector<ore::xml::trade_import_item>& items,
     const QString& source_label,
+    const std::string& market_data_dir,
     ClientManager* clientManager,
     const QString& username,
     QWidget* parent)
@@ -51,6 +56,7 @@ ImportTradeDialog::ImportTradeDialog(
       book_(book),
       items_(items),
       source_label_(source_label),
+      market_data_dir_(market_data_dir),
       clientManager_(clientManager),
       username_(username),
       tradeDateEdit_(nullptr),
@@ -659,10 +665,70 @@ void ImportTradeDialog::onImportClicked() {
     statusLabel_->setText(tr("Starting import..."));
 
     QPointer<ImportTradeDialog> self = this;
+    const std::string md_dir = market_data_dir_;
 
     QFuture<std::pair<int, int>> future =
-        QtConcurrent::run([self, selected, total]() -> std::pair<int, int> {
+        QtConcurrent::run([self, selected, total,
+                           md_dir]() -> std::pair<int, int> {
             using namespace ores::trading::messaging;
+
+            // Read and import market data (market.txt + fixings.txt) before
+            // trades. File I/O is performed here on the worker thread to avoid
+            // blocking the UI thread for large data sets.
+            if (!md_dir.empty()) {
+                const auto read_file = [&](const std::string& name) -> std::string {
+                    namespace fs = std::filesystem;
+                    const auto p = fs::path(md_dir) / name;
+                    if (!fs::exists(p)) return {};
+                    std::ifstream f(p);
+                    if (!f) return {};
+                    std::ostringstream ss;
+                    ss << f.rdbuf();
+                    BOOST_LOG_SEV(lg(), info) << "Found " << name << " for import";
+                    return ss.str();
+                };
+
+                auto md_content = read_file("market.txt");
+                auto fx_content = read_file("fixings.txt");
+
+                if (!md_content.empty() || !fx_content.empty()) {
+                    if (self) {
+                        QMetaObject::invokeMethod(self, [self]() {
+                            if (self) self->statusLabel_->setText(
+                                self->tr("Importing market data..."));
+                        }, Qt::QueuedConnection);
+                    }
+
+                    marketdata::messaging::import_market_data_request md_req;
+                    md_req.market_data_content = std::move(md_content);
+                    md_req.fixings_content     = std::move(fx_content);
+
+                    if (self) {
+                        auto md_resp = self->clientManager_
+                            ->process_authenticated_request(std::move(md_req));
+                        if (md_resp && md_resp->success) {
+                            BOOST_LOG_SEV(lg(), info)
+                                << "Market data import succeeded: "
+                                << md_resp->series_count << " series, "
+                                << md_resp->observation_count << " observations, "
+                                << md_resp->fixing_count << " fixings";
+                        } else {
+                            const std::string msg =
+                                md_resp ? md_resp->message : "no response";
+                            BOOST_LOG_SEV(lg(), warn)
+                                << "Market data import failed: " << msg;
+                            if (self) {
+                                const QString err = QString::fromStdString(msg);
+                                QMetaObject::invokeMethod(self, [self, err]() {
+                                    if (self) self->statusLabel_->setText(
+                                        self->tr("Market data import failed: %1")
+                                            .arg(err));
+                                }, Qt::QueuedConnection);
+                            }
+                        }
+                    }
+                }
+            }
 
             int success_count = 0;
             int current = 0;

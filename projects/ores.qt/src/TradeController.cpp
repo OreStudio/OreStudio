@@ -246,10 +246,14 @@ void TradeController::onImportTradesRequested() {
                                   << " trades for import into book: "
                                   << selectedBook.name;
 
+        // Pass the XML's parent directory to the dialog so it can read
+        // market.txt and fixings.txt on the import worker thread.
+        const std::string market_data_dir = path.parent_path().string();
+
         const QFileInfo fileInfo(fileName);
         auto* dialog = new ImportTradeDialog(
             selectedBook, items, fileInfo.fileName(),
-            clientManager_, username_, mainWindow_);
+            market_data_dir, clientManager_, username_, mainWindow_);
 
         connect(dialog, &ImportTradeDialog::importCompleted,
                 this, [self = QPointer<TradeController>(this)](

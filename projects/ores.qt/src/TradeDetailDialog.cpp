@@ -647,15 +647,15 @@ void TradeDetailDialog::loadSwapInstrument() {
         self->populateSwapInstrument();
     });
 
-    watcher->setFuture(QtConcurrent::run([self, family, id]() -> SwapResult {
-        if (!self || !self->clientManager_)
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> SwapResult {
+        if (!cm)
             return {false, "Dialog closed", {}, {}};
 
         trading::messaging::get_instrument_for_trade_request req;
         req.product_type = family;
         req.instrument_id = id;
-        auto r = self->clientManager_->process_authenticated_request(
-            std::move(req));
+        auto r = cm->process_authenticated_request(std::move(req));
         if (!r)
             return {false, "Failed to communicate with server", {}, {}};
         if (!r->success)
@@ -830,15 +830,15 @@ void TradeDetailDialog::saveSwapThenTrade(
         self->saveTrade(trade);
     });
 
+    auto* cm = clientManager_;
     watcher->setFuture(QtConcurrent::run(
-        [self, instrument, legs]() -> SwapSaveResult {
-        if (!self || !self->clientManager_)
+        [cm, instrument, legs]() -> SwapSaveResult {
+        if (!cm)
             return {false, "Dialog closed"};
         trading::messaging::save_instrument_request req;
         req.data = instrument;
         req.legs = legs;
-        auto r = self->clientManager_->process_authenticated_request(
-            std::move(req));
+        auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, "Failed to communicate with server"};
         return {r->success, r->message};
     }));

@@ -25,6 +25,7 @@
 #include <filesystem>
 #include "ores.logging/make_logger.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
+#include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.ore/domain/trade_mapper.hpp"
 
@@ -75,6 +76,27 @@ public:
 
     static std::vector<refdata::domain::currency>
     import_currency_config(const std::filesystem::path& path);
+
+    /**
+     * @brief Validates a calendar adjustment entry.
+     *
+     * @param ca Calendar adjustment to validate
+     * @return Empty string if valid, otherwise error message
+     */
+    static std::string validate_calendar_adjustment(
+        const refdata::domain::calendar_adjustment& ca);
+
+    /**
+     * @brief Imports calendar adjustments from an ORE calendaradjustment XML file.
+     *
+     * Reads additional holidays and business day overrides for named ORE
+     * calendars. The file format is defined by @c calendaradjustment.xsd.
+     *
+     * @param path Path to the calendaradjustment.xml file
+     * @return Vector of calendar adjustments, one per @c <Calendar> element
+     */
+    static std::vector<refdata::domain::calendar_adjustment>
+    import_calendar_adjustments(const std::filesystem::path& path);
 
     /**
      * @brief Validates a trade against minimum import requirements.

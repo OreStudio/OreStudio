@@ -155,8 +155,13 @@ begin
             using errcode = '23502';
     end if;
 
-    -- Allow pass-through during bootstrap (empty table)
-    if not exists (select 1 from ores_refdata_asset_classes_tbl limit 1) then
+    -- Allow pass-through during bootstrap (no asset classes seeded for this tenant)
+    if not exists (
+        select 1 from ores_refdata_asset_classes_tbl
+        where tenant_id = p_tenant_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+        limit 1
+    ) then
         return p_value;
     end if;
 

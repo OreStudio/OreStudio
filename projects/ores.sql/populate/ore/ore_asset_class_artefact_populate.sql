@@ -17,145 +17,83 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-/**
- * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
- * Template: sql_populate_refdata.mustache
- * To modify, update the template and regenerate.
- *
- * DQ Artefact FpML Asset Class Population Script
- *
- * Populates the dq_asset_classes_artefact_tbl with reference data.
- * Dataset: fpml.asset_class
- *
- * This script is idempotent - clears and repopulates for the dataset.
- * Use dq_populate_asset_classes() to publish to production.
- */
-
 
 -- =============================================================================
--- DQ Artefact FpML Asset Class
+-- DQ Artefact ORE Asset Class
+--
+-- Seeds the eight ORE asset class codes used by market data series and trades.
+-- The description field matches the display label used in the Qt UI so that
+-- the data-driven combo filter aligns with asset_class_label() in the model.
 -- =============================================================================
 
-\echo '--- DQ Artefact FpML Asset Class ---'
+\echo '--- DQ Artefact ORE Asset Class ---'
 
 do $$
 declare
     v_dataset_id uuid;
     v_count integer := 0;
 begin
-    -- Get the dataset ID
     select id into v_dataset_id
     from ores_dq_datasets_tbl
-    where code = 'fpml.asset_class'
+    where code = 'ore.asset_class'
     and valid_to = ores_utility_infinity_timestamp_fn();
 
     if v_dataset_id is null then
-        raise exception 'Dataset fpml.asset_class not found. Run dataset population first.';
+        raise exception 'Dataset ore.asset_class not found. Run dataset population first.';
     end if;
 
-    -- Clear existing data for this dataset
     delete from ores_dq_asset_classes_artefact_tbl
     where dataset_id = v_dataset_id;
 
-    -- Insert reference data
     insert into ores_dq_asset_classes_artefact_tbl (
         dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'Commodity',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'Commodity.'
-    );
-    v_count := v_count + 1;
-    insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'Credit',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'Credit.'
-    );
-    v_count := v_count + 1;
-    insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'Equity',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'Equity.'
-    );
-    v_count := v_count + 1;
-    insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'ForeignExchange',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'ForeignExchange.'
-    );
-    v_count := v_count + 1;
-    insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'InterestRate',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'InterestRate.'
-    );
-    v_count := v_count + 1;
-    insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'SecuritiesFinancing',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'SecuritiesFinancing.'
-    );
-    v_count := v_count + 1;
-    insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'Inflation',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'Inflation.'
-    );
-    v_count := v_count + 1;
-    insert into ores_dq_asset_classes_artefact_tbl (
-        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
-    ) values (
-        v_dataset_id,
-        ores_iam_system_tenant_id_fn(),
-        'Bond',
-        1,
-        'FPML_ASSET_CLASS',
-        'FpML',
-        'Bond.'
-    );
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'fx', 1, 'ORE_ASSET_CLASS', 'ORE', 'FX');
     v_count := v_count + 1;
 
-    raise notice 'Populated % records into dq_asset_classes_artefact_tbl', v_count;
+    insert into ores_dq_asset_classes_artefact_tbl (
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'rates', 1, 'ORE_ASSET_CLASS', 'ORE', 'Rates');
+    v_count := v_count + 1;
+
+    insert into ores_dq_asset_classes_artefact_tbl (
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'credit', 1, 'ORE_ASSET_CLASS', 'ORE', 'Credit');
+    v_count := v_count + 1;
+
+    insert into ores_dq_asset_classes_artefact_tbl (
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'equity', 1, 'ORE_ASSET_CLASS', 'ORE', 'Equity');
+    v_count := v_count + 1;
+
+    insert into ores_dq_asset_classes_artefact_tbl (
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'commodity', 1, 'ORE_ASSET_CLASS', 'ORE', 'Commodity');
+    v_count := v_count + 1;
+
+    insert into ores_dq_asset_classes_artefact_tbl (
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'inflation', 1, 'ORE_ASSET_CLASS', 'ORE', 'Inflation');
+    v_count := v_count + 1;
+
+    insert into ores_dq_asset_classes_artefact_tbl (
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'bond', 1, 'ORE_ASSET_CLASS', 'ORE', 'Bond');
+    v_count := v_count + 1;
+
+    insert into ores_dq_asset_classes_artefact_tbl (
+        dataset_id, tenant_id, code, version, coding_scheme_code, source, description
+    ) values (v_dataset_id, ores_iam_system_tenant_id_fn(),
+        'cross_asset', 1, 'ORE_ASSET_CLASS', 'ORE', 'Cross Asset');
+    v_count := v_count + 1;
+
+    raise notice 'Populated % ORE asset class records into dq_asset_classes_artefact_tbl', v_count;
 end;
 $$;
 
@@ -164,10 +102,7 @@ $$;
 -- =============================================================================
 
 \echo ''
-\echo '--- Summary ---'
-
-select 'dq_asset_classes_artefact' as entity, count(*) as count
-from ores_dq_asset_classes_artefact_tbl;
+\echo '--- ORE Asset Class Artefact Summary ---'
 
 select coding_scheme_code, count(*) as count
 from ores_dq_asset_classes_artefact_tbl

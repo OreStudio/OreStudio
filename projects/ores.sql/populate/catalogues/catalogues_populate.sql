@@ -93,6 +93,17 @@
 \ir ../fpml/fpml_populate.sql
 
 -- =============================================================================
+-- ORE (Open Risk Engine reference data — asset classes)
+-- Must come after FPML so FPML_ASSET_CLASS coding scheme is already published.
+-- Publishes both FpML and ORE asset classes to production so that market data
+-- validation works from initial database setup.
+-- =============================================================================
+
+\echo ''
+\echo '--- ORE ---'
+\ir ../ore/ore_populate.sql
+
+-- =============================================================================
 -- Cryptocurrency (digital currency reference data)
 -- =============================================================================
 

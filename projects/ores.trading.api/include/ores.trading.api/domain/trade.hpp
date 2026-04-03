@@ -122,6 +122,14 @@ struct trade final {
     std::optional<boost::uuids::uuid> instrument_id;
 
     /**
+     * @brief Asset class for this trade (e.g. fx, rates, credit).
+     *
+     * ORE asset class code. Soft FK to ores_refdata_asset_classes_tbl
+     * (coding_scheme_code = 'ORE_ASSET_CLASS'). Absent when not yet classified.
+     */
+    std::optional<std::string> asset_class;
+
+    /**
      * @brief Netting set identifier for ORE aggregation.
      *
      * Groups trades under the same netting agreement.

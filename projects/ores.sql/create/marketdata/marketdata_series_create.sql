@@ -139,6 +139,9 @@ begin
     new.change_reason_code := ores_dq_validate_change_reason_fn(
         new.tenant_id, new.change_reason_code);
 
+    new.asset_class := ores_refdata_validate_asset_class_fn(
+        new.tenant_id, new.asset_class);
+
     return new;
 end;
 $$ language plpgsql;

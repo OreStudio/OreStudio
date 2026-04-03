@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,9 +17,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_REFDATA_API_DOMAIN_ASSET_CLASS_INFO_HPP
+#define ORES_REFDATA_API_DOMAIN_ASSET_CLASS_INFO_HPP
 
--- =============================================================================
--- Drop Business Unit Book ID Helper
--- =============================================================================
+#include <string>
 
-drop function if exists ores_trading_get_book_ids_by_business_unit_fn(uuid, uuid);
+namespace ores::refdata::domain {
+
+/**
+ * @brief An asset class entry from the refdata catalogue.
+ *
+ * Carries the code, human-readable description and coding scheme so callers
+ * can build display labels and filter values without hard-coding them.
+ */
+struct asset_class_info {
+    std::string code;               ///< e.g. "fx", "rates", "Commodity"
+    std::string description;        ///< Display label, e.g. "FX", "Rates"
+    std::string coding_scheme_code; ///< e.g. "ORE_ASSET_CLASS", "FPML_ASSET_CLASS"
+};
+
+}
+
+#endif

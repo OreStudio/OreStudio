@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,9 +17,26 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.refdata.core/service/asset_class_service.hpp"
 
--- =============================================================================
--- Drop Business Unit Book ID Helper
--- =============================================================================
+namespace ores::refdata::service {
 
-drop function if exists ores_trading_get_book_ids_by_business_unit_fn(uuid, uuid);
+using namespace ores::logging;
+
+std::vector<domain::asset_class_info>
+asset_class_service::list_asset_classes(
+    const std::string& coding_scheme,
+    std::uint32_t offset,
+    std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Listing asset classes. scheme=" << coding_scheme;
+    return repo_.read_latest(ctx_, coding_scheme, offset, limit);
+}
+
+std::uint32_t
+asset_class_service::count_asset_classes(
+    const std::string& coding_scheme) {
+    return repo_.count_latest(ctx_, coding_scheme);
+}
+
+}

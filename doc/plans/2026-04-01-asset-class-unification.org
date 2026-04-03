@@ -254,7 +254,7 @@ without the overhead of a DQ pipeline for a purely internal classification.
 
 * Implementation Phases
 
-** Phase 1 — Conceptual cleanup and renaming [DDL + C++]
+** Phase 1 — Conceptual cleanup and renaming [DDL + C++] [DONE]
 
 Rename =instrument_family= → =product_type= throughout:
 

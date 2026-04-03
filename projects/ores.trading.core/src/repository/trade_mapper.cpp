@@ -46,6 +46,7 @@ trade_mapper::map(const trade_entity& v) {
     r.trade_type = v.trade_type;
     r.product_type = v.product_type.value_or("");
     r.instrument_id = v.instrument_id.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.instrument_id)) : std::nullopt;
+    r.asset_class = v.asset_class;
     r.netting_set_id = v.netting_set_id;
     r.activity_type_code = v.activity_type_code;
     r.status_id = boost::lexical_cast<boost::uuids::uuid>(v.status_id);
@@ -82,6 +83,7 @@ trade_mapper::map(const domain::trade& v) {
     r.trade_type = v.trade_type;
     r.product_type = v.product_type.empty() ? std::nullopt : std::optional(v.product_type);
     r.instrument_id = v.instrument_id.has_value() ? std::optional(boost::uuids::to_string(*v.instrument_id)) : std::nullopt;
+    r.asset_class = v.asset_class;
     r.netting_set_id = v.netting_set_id;
     r.activity_type_code = v.activity_type_code;
     r.status_id = boost::uuids::to_string(v.status_id);

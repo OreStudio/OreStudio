@@ -19,7 +19,13 @@
  */
 
 -- =============================================================================
--- Drop Business Unit Book ID Helper
+-- ORE Catalog
 -- =============================================================================
 
-drop function if exists ores_trading_get_book_ids_by_business_unit_fn(uuid, uuid);
+\echo '--- ORE Catalog ---'
+
+select ores_dq_catalogs_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'ORE',
+    'Open Risk Engine (ORE) reference data and coding schemes. Includes asset class categorization codes used for market data series and trade classification.',
+    'Reference Data Team'
+);

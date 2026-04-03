@@ -62,6 +62,14 @@ The specific seed and generation parameters are tracked separately from
 the methodology itself.'
 );
 
+select ores_dq_methodologies_upsert_fn(ores_iam_system_tenant_id_fn(),
+    'ORE Internal',
+    'Reference data defined internally by the ORE (Open Risk Engine) project and maintained as part of the OreStudio system configuration',
+    'https://ore.opensourcerisk.org',
+    'Authoritative ORE codes hand-curated from the ORE documentation and source code.
+Updated when a new ORE version introduces new codes or deprecates existing ones.'
+);
+
 -- =============================================================================
 -- Summary
 -- =============================================================================

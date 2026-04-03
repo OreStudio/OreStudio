@@ -45,6 +45,7 @@
 #include "ores.refdata.core/messaging/monetary_nature_handler.hpp"
 #include "ores.refdata.core/messaging/rounding_type_handler.hpp"
 #include "ores.refdata.core/messaging/purpose_type_handler.hpp"
+#include "ores.refdata.core/messaging/asset_class_handler.hpp"
 #include "ores.refdata.api/messaging/country_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_history_protocol.hpp"
@@ -68,6 +69,7 @@
 #include "ores.refdata.api/messaging/monetary_nature_protocol.hpp"
 #include "ores.refdata.api/messaging/rounding_type_protocol.hpp"
 #include "ores.refdata.api/messaging/purpose_type_protocol.hpp"
+#include "ores.refdata.api/messaging/asset_class_protocol.hpp"
 
 namespace ores::refdata::messaging {
 
@@ -496,6 +498,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
         subs.push_back(nats.queue_subscribe(
             get_purpose_type_history_request::nats_subject, queue_group,
             [h](ores::nats::message msg) { h->history(std::move(msg)); }));
+    }
+
+    // ----------------------------------------------------------------
+    // Asset classes
+    // ----------------------------------------------------------------
+    {
+        auto h = std::make_shared<asset_class_handler>(nats, ctx, verifier);
+        subs.push_back(nats.queue_subscribe(
+            get_asset_classes_request::nats_subject, queue_group,
+            [h](ores::nats::message msg) { h->list(std::move(msg)); }));
     }
 
     return subs;

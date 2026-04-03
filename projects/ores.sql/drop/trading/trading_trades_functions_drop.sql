@@ -19,7 +19,7 @@
  */
 
 -- =============================================================================
--- Drop Business Unit Book ID Helper
+-- Drop Portfolio Book ID Helper
 -- =============================================================================
 
-drop function if exists ores_trading_get_book_ids_by_business_unit_fn(uuid, uuid);
+drop function if exists ores_trading_get_book_ids_by_portfolio_fn(uuid, uuid);

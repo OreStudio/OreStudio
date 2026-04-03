@@ -42,6 +42,7 @@ create table if not exists "ores_trading_trades_tbl" (
     "trade_type" text not null,
     "product_type" product_type_t null,
     "instrument_id" uuid null,
+    "asset_class" text null,
     "netting_set_id" text not null,
     "activity_type_code" text not null,
     "status_id" uuid not null,
@@ -106,6 +107,12 @@ create index if not exists ores_trading_trades_instrument_idx
 on "ores_trading_trades_tbl" (tenant_id, product_type, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and instrument_id is not null;
+
+-- Asset class index for filtering trades by asset class
+create index if not exists ores_trading_trades_asset_class_idx
+on "ores_trading_trades_tbl" (tenant_id, asset_class)
+where valid_to = ores_utility_infinity_timestamp_fn()
+  and asset_class is not null;
 
 create or replace function ores_trading_trades_insert_fn()
 returns trigger as $$
@@ -177,6 +184,12 @@ begin
             raise exception 'Invalid counterparty_id: %. Counterparty must exist for tenant.', NEW.counterparty_id
                 using errcode = '23503';
         end if;
+    end if;
+
+    -- Validate asset_class (optional field — skip validation when null)
+    if NEW.asset_class is not null then
+        NEW.asset_class := ores_refdata_validate_asset_class_fn(
+            NEW.tenant_id, NEW.asset_class);
     end if;
 
     -- Validate trade_type

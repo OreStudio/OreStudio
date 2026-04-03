@@ -61,6 +61,18 @@ static bool isSwapRatesExtensionType(const QString& tradeTypeCode) {
            tradeTypeCode == "InflationSwap";
 }
 
+static bool isBondExtensionType(const QString& tradeTypeCode) {
+    return tradeTypeCode == "BondFuture" ||
+           tradeTypeCode == "BondOption" ||
+           tradeTypeCode == "BondTRS" ||
+           tradeTypeCode == "Ascot";
+}
+
+static bool isCreditExtensionType(const QString& tradeTypeCode) {
+    return tradeTypeCode == "CreditDefaultSwapOption" ||
+           tradeTypeCode == "IndexCreditDefaultSwap";
+}
+
 // ---------------------------------------------------------------------------
 // Construction
 // ---------------------------------------------------------------------------
@@ -107,6 +119,16 @@ void TradeDetailDialog::setupUi() {
         ui_->tabWidget->indexOf(ui_->swapCoreTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->swapRatesTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondEconomicsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondOptionalTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondExtensionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->creditEconomicsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->creditExtensionsTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
 }
 
@@ -168,6 +190,106 @@ void TradeDetailDialog::setupConnections() {
             QOverload<int>::of(&QSpinBox::valueChanged),
             this, &TradeDetailDialog::onInstrumentFieldChanged);
     connect(ui_->swapBaseCpiSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+
+    // Bond instrument fields
+    connect(ui_->bondTradeTypeCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onBondTradeTypeChanged);
+    connect(ui_->bondIssuerEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondCurrencyEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondIssueDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondMaturityDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondCallDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondDescriptionEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondCouponFrequencyCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondDayCountCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondFutureExpiryDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondOptionTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondOptionExpiryDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondTrsReturnTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondTrsFundingLegCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondAscotOptionTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondFaceValueSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondCouponRateSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondSettlementDaysSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondConversionRatioSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->bondOptionStrikeSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+
+    // Credit instrument fields
+    connect(ui_->creditTradeTypeCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onCreditTradeTypeChanged);
+    connect(ui_->creditReferenceEntityEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditCurrencyEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditTenorEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditStartDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditMaturityDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditDayCountCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditPaymentFrequencyCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditIndexNameEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditSeniorityEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditRestructuringEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditDescriptionEdit, &QPlainTextEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditOptionTypeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditOptionExpiryDateEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditLinkedAssetCodeEdit, &QLineEdit::textChanged, this,
+            &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditNotionalSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditSpreadSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditRecoveryRateSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditIndexSeriesSpinBox,
+            QOverload<int>::of(&QSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditOptionStrikeSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditTrancheAttachmentSpinBox,
+            QOverload<double>::of(&QDoubleSpinBox::valueChanged),
+            this, &TradeDetailDialog::onInstrumentFieldChanged);
+    connect(ui_->creditTrancheDetachmentSpinBox,
             QOverload<double>::of(&QDoubleSpinBox::valueChanged),
             this, &TradeDetailDialog::onInstrumentFieldChanged);
 
@@ -339,6 +461,10 @@ void TradeDetailDialog::setTrade(const trading::domain::trade& trade) {
         loadFxInstrument();
     else if (trade_.product_type == "swap" && trade_.instrument_id.has_value())
         loadSwapInstrument();
+    else if (trade_.product_type == "bond" && trade_.instrument_id.has_value())
+        loadBondInstrument();
+    else if (trade_.product_type == "credit" && trade_.instrument_id.has_value())
+        loadCreditInstrument();
 }
 
 void TradeDetailDialog::setCreateMode(bool createMode) {
@@ -360,6 +486,16 @@ void TradeDetailDialog::setCreateMode(bool createMode) {
         ui_->tabWidget->indexOf(ui_->swapCoreTab), false);
     ui_->tabWidget->setTabVisible(
         ui_->tabWidget->indexOf(ui_->swapRatesTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondEconomicsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondOptionalTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondExtensionsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->creditEconomicsTab), false);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->creditExtensionsTab), false);
     ui_->instrumentProvenanceGroup->setVisible(false);
 
     setProvenanceEnabled(!createMode);
@@ -384,6 +520,8 @@ void TradeDetailDialog::setReadOnly(bool readOnly) {
     ui_->deleteButton->setVisible(!readOnly);
     setFxReadOnly(readOnly);
     setSwapReadOnly(readOnly);
+    setBondReadOnly(readOnly);
+    setCreditReadOnly(readOnly);
 }
 
 // ---------------------------------------------------------------------------
@@ -481,15 +619,15 @@ void TradeDetailDialog::loadFxInstrument() {
         self->populateFxInstrument();
     });
 
-    watcher->setFuture(QtConcurrent::run([self, family, id]() -> FxResult {
-        if (!self || !self->clientManager_)
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> FxResult {
+        if (!cm)
             return {false, "Dialog closed", {}};
 
         trading::messaging::get_instrument_for_trade_request req;
         req.product_type = family;
         req.instrument_id = id;
-        auto r = self->clientManager_->process_authenticated_request(
-            std::move(req));
+        auto r = cm->process_authenticated_request(std::move(req));
         if (!r)
             return {false, "Failed to communicate with server", {}};
         if (!r->success)
@@ -845,6 +983,540 @@ void TradeDetailDialog::saveSwapThenTrade(
 }
 
 // ---------------------------------------------------------------------------
+// Bond instrument support
+// ---------------------------------------------------------------------------
+
+void TradeDetailDialog::loadBondInstrument() {
+    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
+
+    const std::string family = trade_.product_type;
+    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
+
+    struct BondResult {
+        bool success;
+        std::string message;
+        trading::domain::bond_instrument instrument;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<BondResult>(self);
+    connect(watcher, &QFutureWatcher<BondResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to load bond instrument: " << result.message;
+            return;
+        }
+
+        self->bondInstrument_ = std::move(result.instrument);
+        self->instrumentLoaded_ = true;
+        self->populateBondInstrument();
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> BondResult {
+        if (!cm)
+            return {false, "Dialog closed", {}};
+
+        trading::messaging::get_instrument_for_trade_request req;
+        req.product_type = family;
+        req.instrument_id = id;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server", {}};
+        if (!r->success)
+            return {false, r->message, {}};
+
+        const auto* bond =
+            std::get_if<trading::domain::bond_instrument>(&r->instrument);
+        if (!bond)
+            return {false, "Unexpected instrument type in response", {}};
+
+        return {true, {}, *bond};
+    }));
+}
+
+void TradeDetailDialog::populateBondInstrument() {
+    const auto block = [this](bool b) {
+        ui_->bondTradeTypeCodeEdit->blockSignals(b);
+        ui_->bondIssuerEdit->blockSignals(b);
+        ui_->bondCurrencyEdit->blockSignals(b);
+        ui_->bondFaceValueSpinBox->blockSignals(b);
+        ui_->bondCouponRateSpinBox->blockSignals(b);
+        ui_->bondCouponFrequencyCodeEdit->blockSignals(b);
+        ui_->bondDayCountCodeEdit->blockSignals(b);
+        ui_->bondIssueDateEdit->blockSignals(b);
+        ui_->bondMaturityDateEdit->blockSignals(b);
+        ui_->bondSettlementDaysSpinBox->blockSignals(b);
+        ui_->bondCallDateEdit->blockSignals(b);
+        ui_->bondConversionRatioSpinBox->blockSignals(b);
+        ui_->bondDescriptionEdit->blockSignals(b);
+        ui_->bondFutureExpiryDateEdit->blockSignals(b);
+        ui_->bondOptionTypeEdit->blockSignals(b);
+        ui_->bondOptionExpiryDateEdit->blockSignals(b);
+        ui_->bondOptionStrikeSpinBox->blockSignals(b);
+        ui_->bondTrsReturnTypeEdit->blockSignals(b);
+        ui_->bondTrsFundingLegCodeEdit->blockSignals(b);
+        ui_->bondAscotOptionTypeEdit->blockSignals(b);
+    };
+
+    block(true);
+    ui_->bondTradeTypeCodeEdit->setText(
+        QString::fromStdString(bondInstrument_.trade_type_code));
+    ui_->bondIssuerEdit->setText(
+        QString::fromStdString(bondInstrument_.issuer));
+    ui_->bondCurrencyEdit->setText(
+        QString::fromStdString(bondInstrument_.currency));
+    ui_->bondFaceValueSpinBox->setValue(bondInstrument_.face_value);
+    ui_->bondCouponRateSpinBox->setValue(bondInstrument_.coupon_rate);
+    ui_->bondCouponFrequencyCodeEdit->setText(
+        QString::fromStdString(bondInstrument_.coupon_frequency_code));
+    ui_->bondDayCountCodeEdit->setText(
+        QString::fromStdString(bondInstrument_.day_count_code));
+    ui_->bondIssueDateEdit->setText(
+        QString::fromStdString(bondInstrument_.issue_date));
+    ui_->bondMaturityDateEdit->setText(
+        QString::fromStdString(bondInstrument_.maturity_date));
+    ui_->bondSettlementDaysSpinBox->setValue(bondInstrument_.settlement_days);
+    ui_->bondCallDateEdit->setText(
+        QString::fromStdString(bondInstrument_.call_date));
+    ui_->bondConversionRatioSpinBox->setValue(bondInstrument_.conversion_ratio);
+    ui_->bondDescriptionEdit->setPlainText(
+        QString::fromStdString(bondInstrument_.description));
+    ui_->bondFutureExpiryDateEdit->setText(
+        QString::fromStdString(bondInstrument_.future_expiry_date));
+    ui_->bondOptionTypeEdit->setText(
+        QString::fromStdString(bondInstrument_.option_type));
+    ui_->bondOptionExpiryDateEdit->setText(
+        QString::fromStdString(bondInstrument_.option_expiry_date));
+    ui_->bondOptionStrikeSpinBox->setValue(
+        bondInstrument_.option_strike.value_or(0.0));
+    ui_->bondTrsReturnTypeEdit->setText(
+        QString::fromStdString(bondInstrument_.trs_return_type));
+    ui_->bondTrsFundingLegCodeEdit->setText(
+        QString::fromStdString(bondInstrument_.trs_funding_leg_code));
+    ui_->bondAscotOptionTypeEdit->setText(
+        QString::fromStdString(bondInstrument_.ascot_option_type));
+    block(false);
+
+    ui_->instrumentProvenanceWidget->populate(
+        bondInstrument_.version,
+        bondInstrument_.modified_by,
+        bondInstrument_.performed_by,
+        bondInstrument_.recorded_at,
+        bondInstrument_.change_reason_code,
+        bondInstrument_.change_commentary);
+    ui_->instrumentProvenanceGroup->setVisible(true);
+
+    instrumentHasChanges_ = false;
+    updateBondTabVisibility();
+    updateSaveButtonState();
+}
+
+void TradeDetailDialog::updateBondInstrumentFromUi() {
+    bondInstrument_.trade_type_code =
+        ui_->bondTradeTypeCodeEdit->text().trimmed().toStdString();
+    bondInstrument_.issuer =
+        ui_->bondIssuerEdit->text().trimmed().toStdString();
+    bondInstrument_.currency =
+        ui_->bondCurrencyEdit->text().trimmed().toStdString();
+    bondInstrument_.face_value = ui_->bondFaceValueSpinBox->value();
+    bondInstrument_.coupon_rate = ui_->bondCouponRateSpinBox->value();
+    bondInstrument_.coupon_frequency_code =
+        ui_->bondCouponFrequencyCodeEdit->text().trimmed().toStdString();
+    bondInstrument_.day_count_code =
+        ui_->bondDayCountCodeEdit->text().trimmed().toStdString();
+    bondInstrument_.issue_date =
+        ui_->bondIssueDateEdit->text().trimmed().toStdString();
+    bondInstrument_.maturity_date =
+        ui_->bondMaturityDateEdit->text().trimmed().toStdString();
+    bondInstrument_.settlement_days = ui_->bondSettlementDaysSpinBox->value();
+    bondInstrument_.call_date =
+        ui_->bondCallDateEdit->text().trimmed().toStdString();
+    bondInstrument_.conversion_ratio = ui_->bondConversionRatioSpinBox->value();
+    bondInstrument_.description =
+        ui_->bondDescriptionEdit->toPlainText().trimmed().toStdString();
+    bondInstrument_.future_expiry_date =
+        ui_->bondFutureExpiryDateEdit->text().trimmed().toStdString();
+    bondInstrument_.option_type =
+        ui_->bondOptionTypeEdit->text().trimmed().toStdString();
+    bondInstrument_.option_expiry_date =
+        ui_->bondOptionExpiryDateEdit->text().trimmed().toStdString();
+    {
+        const double s = ui_->bondOptionStrikeSpinBox->value();
+        bondInstrument_.option_strike = (s > 0.0)
+            ? std::optional<double>(s) : std::nullopt;
+    }
+    bondInstrument_.trs_return_type =
+        ui_->bondTrsReturnTypeEdit->text().trimmed().toStdString();
+    bondInstrument_.trs_funding_leg_code =
+        ui_->bondTrsFundingLegCodeEdit->text().trimmed().toStdString();
+    bondInstrument_.ascot_option_type =
+        ui_->bondAscotOptionTypeEdit->text().trimmed().toStdString();
+    bondInstrument_.modified_by = username_;
+    bondInstrument_.performed_by = username_;
+}
+
+void TradeDetailDialog::updateBondTabVisibility() {
+    const QString tradeType = ui_->bondTradeTypeCodeEdit->text().trimmed();
+    const bool showCore = instrumentLoaded_ && !tradeType.isEmpty();
+    const bool showExtensions = instrumentLoaded_ &&
+        (isBondExtensionType(tradeType) ||
+         !bondInstrument_.future_expiry_date.empty() ||
+         !bondInstrument_.option_type.empty() ||
+         !bondInstrument_.trs_return_type.empty() ||
+         !bondInstrument_.ascot_option_type.empty());
+
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondEconomicsTab), showCore);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondOptionalTab), showCore);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->bondExtensionsTab), showExtensions);
+}
+
+void TradeDetailDialog::setBondReadOnly(bool readOnly) {
+    ui_->bondTradeTypeCodeEdit->setReadOnly(readOnly);
+    ui_->bondIssuerEdit->setReadOnly(readOnly);
+    ui_->bondCurrencyEdit->setReadOnly(readOnly);
+    ui_->bondFaceValueSpinBox->setReadOnly(readOnly);
+    ui_->bondCouponRateSpinBox->setReadOnly(readOnly);
+    ui_->bondCouponFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->bondDayCountCodeEdit->setReadOnly(readOnly);
+    ui_->bondIssueDateEdit->setReadOnly(readOnly);
+    ui_->bondMaturityDateEdit->setReadOnly(readOnly);
+    ui_->bondSettlementDaysSpinBox->setReadOnly(readOnly);
+    ui_->bondCallDateEdit->setReadOnly(readOnly);
+    ui_->bondConversionRatioSpinBox->setReadOnly(readOnly);
+    ui_->bondDescriptionEdit->setReadOnly(readOnly);
+    ui_->bondFutureExpiryDateEdit->setReadOnly(readOnly);
+    ui_->bondOptionTypeEdit->setReadOnly(readOnly);
+    ui_->bondOptionExpiryDateEdit->setReadOnly(readOnly);
+    ui_->bondOptionStrikeSpinBox->setReadOnly(readOnly);
+    ui_->bondTrsReturnTypeEdit->setReadOnly(readOnly);
+    ui_->bondTrsFundingLegCodeEdit->setReadOnly(readOnly);
+    ui_->bondAscotOptionTypeEdit->setReadOnly(readOnly);
+}
+
+void TradeDetailDialog::saveBondThenTrade(
+    const trading::domain::trade& trade,
+    const trading::domain::bond_instrument& instrument) {
+
+    struct BondSaveResult { bool success; std::string message; };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<BondSaveResult>(self);
+    connect(watcher, &QFutureWatcher<BondSaveResult>::finished,
+            self, [self, watcher, trade]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Bond instrument save failed: "
+                                       << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed",
+                tr("Failed to save bond instrument:\n%1").arg(errorMsg));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Bond instrument saved; saving trade";
+        self->instrumentHasChanges_ = false;
+        self->saveTrade(trade);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run(
+        [cm, instrument]() -> BondSaveResult {
+        if (!cm)
+            return {false, "Dialog closed"};
+        trading::messaging::save_bond_instrument_request req;
+        req.data = instrument;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r) return {false, "Failed to communicate with server"};
+        return {r->success, r->message};
+    }));
+}
+
+// ---------------------------------------------------------------------------
+// Credit instrument support
+// ---------------------------------------------------------------------------
+
+void TradeDetailDialog::loadCreditInstrument() {
+    if (!clientManager_ || !trade_.instrument_id.has_value()) return;
+
+    const std::string family = trade_.product_type;
+    const std::string id = boost::uuids::to_string(*trade_.instrument_id);
+
+    struct CreditResult {
+        bool success;
+        std::string message;
+        trading::domain::credit_instrument instrument;
+    };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<CreditResult>(self);
+    connect(watcher, &QFutureWatcher<CreditResult>::finished,
+            self, [self, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to load credit instrument: " << result.message;
+            return;
+        }
+
+        self->creditInstrument_ = std::move(result.instrument);
+        self->instrumentLoaded_ = true;
+        self->populateCreditInstrument();
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run([cm, family, id]() -> CreditResult {
+        if (!cm)
+            return {false, "Dialog closed", {}};
+
+        trading::messaging::get_instrument_for_trade_request req;
+        req.product_type = family;
+        req.instrument_id = id;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r)
+            return {false, "Failed to communicate with server", {}};
+        if (!r->success)
+            return {false, r->message, {}};
+
+        const auto* credit =
+            std::get_if<trading::domain::credit_instrument>(&r->instrument);
+        if (!credit)
+            return {false, "Unexpected instrument type in response", {}};
+
+        return {true, {}, *credit};
+    }));
+}
+
+void TradeDetailDialog::populateCreditInstrument() {
+    const auto block = [this](bool b) {
+        ui_->creditTradeTypeCodeEdit->blockSignals(b);
+        ui_->creditReferenceEntityEdit->blockSignals(b);
+        ui_->creditCurrencyEdit->blockSignals(b);
+        ui_->creditNotionalSpinBox->blockSignals(b);
+        ui_->creditSpreadSpinBox->blockSignals(b);
+        ui_->creditRecoveryRateSpinBox->blockSignals(b);
+        ui_->creditTenorEdit->blockSignals(b);
+        ui_->creditStartDateEdit->blockSignals(b);
+        ui_->creditMaturityDateEdit->blockSignals(b);
+        ui_->creditDayCountCodeEdit->blockSignals(b);
+        ui_->creditPaymentFrequencyCodeEdit->blockSignals(b);
+        ui_->creditIndexNameEdit->blockSignals(b);
+        ui_->creditIndexSeriesSpinBox->blockSignals(b);
+        ui_->creditSeniorityEdit->blockSignals(b);
+        ui_->creditRestructuringEdit->blockSignals(b);
+        ui_->creditDescriptionEdit->blockSignals(b);
+        ui_->creditOptionTypeEdit->blockSignals(b);
+        ui_->creditOptionExpiryDateEdit->blockSignals(b);
+        ui_->creditOptionStrikeSpinBox->blockSignals(b);
+        ui_->creditLinkedAssetCodeEdit->blockSignals(b);
+        ui_->creditTrancheAttachmentSpinBox->blockSignals(b);
+        ui_->creditTrancheDetachmentSpinBox->blockSignals(b);
+    };
+
+    block(true);
+    ui_->creditTradeTypeCodeEdit->setText(
+        QString::fromStdString(creditInstrument_.trade_type_code));
+    ui_->creditReferenceEntityEdit->setText(
+        QString::fromStdString(creditInstrument_.reference_entity));
+    ui_->creditCurrencyEdit->setText(
+        QString::fromStdString(creditInstrument_.currency));
+    ui_->creditNotionalSpinBox->setValue(creditInstrument_.notional);
+    ui_->creditSpreadSpinBox->setValue(creditInstrument_.spread);
+    ui_->creditRecoveryRateSpinBox->setValue(creditInstrument_.recovery_rate);
+    ui_->creditTenorEdit->setText(
+        QString::fromStdString(creditInstrument_.tenor));
+    ui_->creditStartDateEdit->setText(
+        QString::fromStdString(creditInstrument_.start_date));
+    ui_->creditMaturityDateEdit->setText(
+        QString::fromStdString(creditInstrument_.maturity_date));
+    ui_->creditDayCountCodeEdit->setText(
+        QString::fromStdString(creditInstrument_.day_count_code));
+    ui_->creditPaymentFrequencyCodeEdit->setText(
+        QString::fromStdString(creditInstrument_.payment_frequency_code));
+    ui_->creditIndexNameEdit->setText(
+        QString::fromStdString(creditInstrument_.index_name));
+    ui_->creditIndexSeriesSpinBox->setValue(creditInstrument_.index_series);
+    ui_->creditSeniorityEdit->setText(
+        QString::fromStdString(creditInstrument_.seniority));
+    ui_->creditRestructuringEdit->setText(
+        QString::fromStdString(creditInstrument_.restructuring));
+    ui_->creditDescriptionEdit->setPlainText(
+        QString::fromStdString(creditInstrument_.description));
+    ui_->creditOptionTypeEdit->setText(
+        QString::fromStdString(creditInstrument_.option_type));
+    ui_->creditOptionExpiryDateEdit->setText(
+        QString::fromStdString(creditInstrument_.option_expiry_date));
+    ui_->creditOptionStrikeSpinBox->setValue(
+        creditInstrument_.option_strike.value_or(0.0));
+    ui_->creditLinkedAssetCodeEdit->setText(
+        QString::fromStdString(creditInstrument_.linked_asset_code));
+    ui_->creditTrancheAttachmentSpinBox->setValue(
+        creditInstrument_.tranche_attachment.value_or(0.0));
+    ui_->creditTrancheDetachmentSpinBox->setValue(
+        creditInstrument_.tranche_detachment.value_or(0.0));
+    block(false);
+
+    ui_->instrumentProvenanceWidget->populate(
+        creditInstrument_.version,
+        creditInstrument_.modified_by,
+        creditInstrument_.performed_by,
+        creditInstrument_.recorded_at,
+        creditInstrument_.change_reason_code,
+        creditInstrument_.change_commentary);
+    ui_->instrumentProvenanceGroup->setVisible(true);
+
+    instrumentHasChanges_ = false;
+    updateCreditTabVisibility();
+    updateSaveButtonState();
+}
+
+void TradeDetailDialog::updateCreditInstrumentFromUi() {
+    creditInstrument_.trade_type_code =
+        ui_->creditTradeTypeCodeEdit->text().trimmed().toStdString();
+    creditInstrument_.reference_entity =
+        ui_->creditReferenceEntityEdit->text().trimmed().toStdString();
+    creditInstrument_.currency =
+        ui_->creditCurrencyEdit->text().trimmed().toStdString();
+    creditInstrument_.notional = ui_->creditNotionalSpinBox->value();
+    creditInstrument_.spread = ui_->creditSpreadSpinBox->value();
+    creditInstrument_.recovery_rate = ui_->creditRecoveryRateSpinBox->value();
+    creditInstrument_.tenor =
+        ui_->creditTenorEdit->text().trimmed().toStdString();
+    creditInstrument_.start_date =
+        ui_->creditStartDateEdit->text().trimmed().toStdString();
+    creditInstrument_.maturity_date =
+        ui_->creditMaturityDateEdit->text().trimmed().toStdString();
+    creditInstrument_.day_count_code =
+        ui_->creditDayCountCodeEdit->text().trimmed().toStdString();
+    creditInstrument_.payment_frequency_code =
+        ui_->creditPaymentFrequencyCodeEdit->text().trimmed().toStdString();
+    creditInstrument_.index_name =
+        ui_->creditIndexNameEdit->text().trimmed().toStdString();
+    creditInstrument_.index_series = ui_->creditIndexSeriesSpinBox->value();
+    creditInstrument_.seniority =
+        ui_->creditSeniorityEdit->text().trimmed().toStdString();
+    creditInstrument_.restructuring =
+        ui_->creditRestructuringEdit->text().trimmed().toStdString();
+    creditInstrument_.description =
+        ui_->creditDescriptionEdit->toPlainText().trimmed().toStdString();
+    creditInstrument_.option_type =
+        ui_->creditOptionTypeEdit->text().trimmed().toStdString();
+    creditInstrument_.option_expiry_date =
+        ui_->creditOptionExpiryDateEdit->text().trimmed().toStdString();
+    {
+        const double s = ui_->creditOptionStrikeSpinBox->value();
+        creditInstrument_.option_strike = (s > 0.0)
+            ? std::optional<double>(s) : std::nullopt;
+    }
+    creditInstrument_.linked_asset_code =
+        ui_->creditLinkedAssetCodeEdit->text().trimmed().toStdString();
+    creditInstrument_.tranche_attachment =
+        ui_->creditTrancheAttachmentSpinBox->value();
+    creditInstrument_.tranche_detachment =
+        ui_->creditTrancheDetachmentSpinBox->value();
+    creditInstrument_.modified_by = username_;
+    creditInstrument_.performed_by = username_;
+}
+
+void TradeDetailDialog::updateCreditTabVisibility() {
+    const QString tradeType = ui_->creditTradeTypeCodeEdit->text().trimmed();
+    const bool showCore = instrumentLoaded_ && !tradeType.isEmpty();
+    const bool showExtensions = instrumentLoaded_ &&
+        (isCreditExtensionType(tradeType) ||
+         !creditInstrument_.option_type.empty() ||
+         !creditInstrument_.linked_asset_code.empty() ||
+         creditInstrument_.tranche_attachment.has_value() ||
+         creditInstrument_.tranche_detachment.has_value());
+
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->creditEconomicsTab), showCore);
+    ui_->tabWidget->setTabVisible(
+        ui_->tabWidget->indexOf(ui_->creditExtensionsTab), showExtensions);
+}
+
+void TradeDetailDialog::setCreditReadOnly(bool readOnly) {
+    ui_->creditTradeTypeCodeEdit->setReadOnly(readOnly);
+    ui_->creditReferenceEntityEdit->setReadOnly(readOnly);
+    ui_->creditCurrencyEdit->setReadOnly(readOnly);
+    ui_->creditNotionalSpinBox->setReadOnly(readOnly);
+    ui_->creditSpreadSpinBox->setReadOnly(readOnly);
+    ui_->creditRecoveryRateSpinBox->setReadOnly(readOnly);
+    ui_->creditTenorEdit->setReadOnly(readOnly);
+    ui_->creditStartDateEdit->setReadOnly(readOnly);
+    ui_->creditMaturityDateEdit->setReadOnly(readOnly);
+    ui_->creditDayCountCodeEdit->setReadOnly(readOnly);
+    ui_->creditPaymentFrequencyCodeEdit->setReadOnly(readOnly);
+    ui_->creditIndexNameEdit->setReadOnly(readOnly);
+    ui_->creditIndexSeriesSpinBox->setReadOnly(readOnly);
+    ui_->creditSeniorityEdit->setReadOnly(readOnly);
+    ui_->creditRestructuringEdit->setReadOnly(readOnly);
+    ui_->creditDescriptionEdit->setReadOnly(readOnly);
+    ui_->creditOptionTypeEdit->setReadOnly(readOnly);
+    ui_->creditOptionExpiryDateEdit->setReadOnly(readOnly);
+    ui_->creditOptionStrikeSpinBox->setReadOnly(readOnly);
+    ui_->creditLinkedAssetCodeEdit->setReadOnly(readOnly);
+    ui_->creditTrancheAttachmentSpinBox->setReadOnly(readOnly);
+    ui_->creditTrancheDetachmentSpinBox->setReadOnly(readOnly);
+}
+
+void TradeDetailDialog::saveCreditThenTrade(
+    const trading::domain::trade& trade,
+    const trading::domain::credit_instrument& instrument) {
+
+    struct CreditSaveResult { bool success; std::string message; };
+
+    QPointer<TradeDetailDialog> self = this;
+    auto* watcher = new QFutureWatcher<CreditSaveResult>(self);
+    connect(watcher, &QFutureWatcher<CreditSaveResult>::finished,
+            self, [self, watcher, trade]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+        if (!self) return;
+
+        if (!result.success) {
+            BOOST_LOG_SEV(lg(), error) << "Credit instrument save failed: "
+                                       << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Save Failed",
+                tr("Failed to save credit instrument:\n%1").arg(errorMsg));
+            return;
+        }
+
+        BOOST_LOG_SEV(lg(), info) << "Credit instrument saved; saving trade";
+        self->instrumentHasChanges_ = false;
+        self->saveTrade(trade);
+    });
+
+    auto* cm = clientManager_;
+    watcher->setFuture(QtConcurrent::run(
+        [cm, instrument]() -> CreditSaveResult {
+        if (!cm)
+            return {false, "Dialog closed"};
+        trading::messaging::save_credit_instrument_request req;
+        req.data = instrument;
+        auto r = cm->process_authenticated_request(std::move(req));
+        if (!r) return {false, "Failed to communicate with server"};
+        return {r->success, r->message};
+    }));
+}
+
+// ---------------------------------------------------------------------------
 // Change tracking
 // ---------------------------------------------------------------------------
 
@@ -876,6 +1548,22 @@ void TradeDetailDialog::onSwapTradeTypeChanged(const QString&) {
     if (instrumentLoaded_) {
         instrumentHasChanges_ = true;
         updateSwapTabVisibility();
+        updateSaveButtonState();
+    }
+}
+
+void TradeDetailDialog::onBondTradeTypeChanged(const QString&) {
+    if (instrumentLoaded_) {
+        instrumentHasChanges_ = true;
+        updateBondTabVisibility();
+        updateSaveButtonState();
+    }
+}
+
+void TradeDetailDialog::onCreditTradeTypeChanged(const QString&) {
+    if (instrumentLoaded_) {
+        instrumentHasChanges_ = true;
+        updateCreditTabVisibility();
         updateSaveButtonState();
     }
 }
@@ -917,6 +1605,10 @@ void TradeDetailDialog::onSaveClicked() {
             updateFxInstrumentFromUi();
         else if (trade_.product_type == "swap")
             updateSwapInstrumentFromUi();
+        else if (trade_.product_type == "bond")
+            updateBondInstrumentFromUi();
+        else if (trade_.product_type == "credit")
+            updateCreditInstrumentFromUi();
     }
 
     const auto crOpType = createMode_
@@ -938,6 +1630,12 @@ void TradeDetailDialog::onSaveClicked() {
         } else if (trade_.product_type == "swap") {
             swapInstrument_.change_reason_code = crSel->reason_code;
             swapInstrument_.change_commentary  = crSel->commentary;
+        } else if (trade_.product_type == "bond") {
+            bondInstrument_.change_reason_code = crSel->reason_code;
+            bondInstrument_.change_commentary  = crSel->commentary;
+        } else if (trade_.product_type == "credit") {
+            creditInstrument_.change_reason_code = crSel->reason_code;
+            creditInstrument_.change_commentary  = crSel->commentary;
         }
     }
 
@@ -950,6 +1648,14 @@ void TradeDetailDialog::onSaveClicked() {
             BOOST_LOG_SEV(lg(), info) << "Saving swap instrument then trade: "
                                       << trade_.external_id;
             saveSwapThenTrade(trade_, swapInstrument_, swapLegs_);
+        } else if (trade_.product_type == "bond") {
+            BOOST_LOG_SEV(lg(), info) << "Saving bond instrument then trade: "
+                                      << trade_.external_id;
+            saveBondThenTrade(trade_, bondInstrument_);
+        } else if (trade_.product_type == "credit") {
+            BOOST_LOG_SEV(lg(), info) << "Saving credit instrument then trade: "
+                                      << trade_.external_id;
+            saveCreditThenTrade(trade_, creditInstrument_);
         }
     } else {
         BOOST_LOG_SEV(lg(), info) << "Saving trade only: " << trade_.external_id;
@@ -986,14 +1692,14 @@ void TradeDetailDialog::saveFxThenTrade(
         self->saveTrade(trade);
     });
 
+    auto* cm = clientManager_;
     watcher->setFuture(QtConcurrent::run(
-        [self, instrument]() -> FxSaveResult {
-        if (!self || !self->clientManager_)
+        [cm, instrument]() -> FxSaveResult {
+        if (!cm)
             return {false, "Dialog closed"};
         trading::messaging::save_fx_instrument_request req;
         req.data = instrument;
-        auto r = self->clientManager_->process_authenticated_request(
-            std::move(req));
+        auto r = cm->process_authenticated_request(std::move(req));
         if (!r) return {false, "Failed to communicate with server"};
         return {r->success, r->message};
     }));

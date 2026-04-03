@@ -33,6 +33,7 @@
 #include <QNetworkRequest>
 #include <QUrl>
 #include "ores.qt/AppProvisionerWizard.hpp"
+#include "ores.compute.api/net/compute_storage.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
 #include "ores.qt/EntityItemDelegate.hpp"
 #include "ores.qt/BadgeCache.hpp"
@@ -614,7 +615,7 @@ void ComputeConsoleWindow::on_download_input() {
         tr("Archives (*.tar.gz *.zip);;All Files (*)"));
     if (save_path.isEmpty()) return;
 
-    const QUrl url = QUrl(QString::fromStdString(http_base_url_) + "/" + uri);
+    const QUrl url = QUrl(QString::fromStdString(http_base_url_) + uri);
     auto* nam = new QNetworkAccessManager(this);
     auto* reply = nam->get(QNetworkRequest(url));
     QPointer<ComputeConsoleWindow> self = this;
@@ -651,7 +652,8 @@ void ComputeConsoleWindow::on_download_output() {
 
     const QUrl url = QUrl(
         QString::fromStdString(http_base_url_) +
-        "/api/v1/storage/compute/output/" + selected_result_id_ + ".tar.gz");
+        QString::fromStdString(ores::compute::net::compute_storage::output_path(
+            selected_result_id_.toStdString())));
     auto* nam = new QNetworkAccessManager(this);
     auto* reply = nam->get(QNetworkRequest(url));
     QPointer<ComputeConsoleWindow> self = this;
